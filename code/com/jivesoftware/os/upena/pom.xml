@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.jivesoftware.jive</groupId>
+    <artifactId>upena</artifactId>
+    <version>unspecified</version>
+    <packaging>pom</packaging>
+    <modules>
+        <module>hello-routing-bird</module>
+        <module>upena-ui</module>
+        <module>upena-routing-shared</module>
+        <module>upena-service</module>
+        <module>upena-shared</module>
+        <module>upena-deployable</module>
+        <module>uba-service</module>
+        <module>uba-shared</module>
+        <module>upena-scripts</module>
+        <module>upena-main</module>
+        <module>upena-deployer-plugin</module>
+        <module>reporter-service</module>
+        <module>reporter-shared</module>
+        <module>uba-config-extractor</module>
+        <module>upena-config</module>
+        <module>upena-config-shared</module>
+        <module>inheritance-poms</module>
+        <module>tenant-routing-http-client</module>
+        <module>server-http-jetty-jersey</module>
+    </modules>
+</project>

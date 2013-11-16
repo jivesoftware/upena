@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.jivesoftware.os.upena.inheritance.poms</groupId>
+        <artifactId>shared-lib-build-management</artifactId>
+        <version>unspecified</version>
+        <relativePath>../inheritance-poms/shared-lib-build-management/pom.xml</relativePath>
+    </parent>
+    <groupId>com.jivesoftware.os.upena</groupId>
+    <artifactId>tenant-routing-http-server-endpoints</artifactId>
+    <properties>
+        <module.type>shared_lib</module.type>
+        <jetty.version>9.1.0.M0</jetty.version>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>javax.ws.rs</groupId>
+            <artifactId>javax.ws.rs-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.jivesoftware.os.jive.utils</groupId>
+            <artifactId>jaxrs-util</artifactId>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>com.jivesoftware.os.jive.utils</groupId>
+            <artifactId>logger</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.jivesoftware.os.upena</groupId>
+            <artifactId>upena-routing-shared</artifactId>
+            <version>unspecified</version>
+            <type>jar</type>
+        </dependency>
+    </dependencies>
+</project>

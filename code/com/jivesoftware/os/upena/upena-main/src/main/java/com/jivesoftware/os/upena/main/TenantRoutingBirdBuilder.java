@@ -1,0 +1,86 @@
+package com.jivesoftware.os.upena.main;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.jivesoftware.os.jive.utils.http.client.HttpClient;
+import com.jivesoftware.os.jive.utils.http.client.HttpClientConfig;
+import com.jivesoftware.os.jive.utils.http.client.HttpClientConfiguration;
+import com.jivesoftware.os.jive.utils.http.client.HttpClientFactoryProvider;
+import com.jivesoftware.os.jive.utils.http.client.HttpResponse;
+import com.jivesoftware.os.jive.utils.logger.MetricLogger;
+import com.jivesoftware.os.jive.utils.logger.MetricLoggerFactory;
+import com.jivesoftware.os.upena.routing.shared.ConnectionDescriptorsProvider;
+import com.jivesoftware.os.upena.routing.shared.ConnectionDescriptorsRequest;
+import com.jivesoftware.os.upena.routing.shared.ConnectionDescriptorsResponse;
+import com.jivesoftware.os.upena.routing.shared.TenantRoutingProvider;
+import java.util.Arrays;
+
+public class TenantRoutingBirdBuilder {
+
+    private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
+
+    private final String routesHost;
+    private final int routesPort;
+    private String instanceId;
+
+    public TenantRoutingBirdBuilder(String routesHost, int routesPort) {
+        this.routesHost = routesHost;
+        this.routesPort = routesPort;
+    }
+
+    public TenantRoutingBirdBuilder setInstanceId(String instanceId) {
+        this.instanceId = instanceId;
+        return this;
+    }
+
+    public TenantRoutingProvider build() {
+
+        HttpClientConfig httpClientConfig = HttpClientConfig.newBuilder().build();
+        final HttpClient httpClient = new HttpClientFactoryProvider()
+                .createHttpClientFactory(Arrays.<HttpClientConfiguration>asList(httpClientConfig))
+                .createClient(routesHost, routesPort);
+
+        final ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
+        ConnectionDescriptorsProvider connectionsProvider = new ConnectionDescriptorsProvider() {
+            @Override
+            public ConnectionDescriptorsResponse requestConnections(ConnectionDescriptorsRequest connectionsRequest) {
+                LOG.info("Requesting connections:" + connectionsRequest);
+
+                String postEntity;
+                try {
+                    postEntity = mapper.writeValueAsString(connectionsRequest);
+                } catch (Exception e) {
+                    LOG.error("Error serializing request parameters object to a string.  Object "
+                            + "was " + connectionsRequest + " " + e.getMessage());
+                    return null;
+                }
+
+                HttpResponse response;
+                String path = "/upena/request/connections";
+                try {
+                    response = httpClient.postJson(path, postEntity);
+                } catch (Exception e) {
+                    LOG.error("Error posting query request to server.  The entity posted "
+                            + "was \"" + postEntity + "\" and the endpoint posted to was \"" + path + "\". " + e.getMessage());
+                    return null;
+                }
+
+                int statusCode = response.getStatusCode();
+                if (statusCode >= 200 && statusCode < 300) {
+                    byte[] responseBody = response.getResponseBody();
+                    try {
+                        ConnectionDescriptorsResponse connectionDescriptorsResponse = mapper.readValue(responseBody, ConnectionDescriptorsResponse.class);
+                        LOG.info("Request:" + connectionsRequest + "\nConnectionDescriptors:" + connectionDescriptorsResponse);
+                        return connectionDescriptorsResponse;
+                    } catch (Exception x) {
+                        LOG.error("Failed to deserialize response:" + new String(responseBody) + " " + x.getMessage());
+                        return null;
+                    }
+                }
+                return null;
+            }
+        };
+        return new TenantRoutingProvider(instanceId, connectionsProvider);
+    }
+}

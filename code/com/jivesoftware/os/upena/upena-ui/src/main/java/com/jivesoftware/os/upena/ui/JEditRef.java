@@ -1,0 +1,164 @@
+package com.jivesoftware.os.upena.ui;
+
+import com.jivesoftware.os.upena.shared.Key;
+import com.jivesoftware.os.upena.shared.Stored;
+import java.awt.BorderLayout;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.concurrent.atomic.AtomicReference;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+
+public class JEditRef implements JField {
+
+    public JObjectFactory factory;
+    public String name;
+    public Class valueClass;
+    public String ref;
+    public String viewValue;
+    public JButton editField;
+    public JLabel viewField;
+
+    public JEditRef(JObjectFactory factory, String name, Class valueClass, String ref) {
+        this.factory = factory;
+        this.name = name;
+        this.valueClass = valueClass;
+        this.ref = ref;
+        this.viewValue = "null";
+    }
+
+    @Override
+    public boolean isFilterable() {
+        return true;
+    }
+
+    @Override
+    public JComponent getEditor(int w, final IPicked picked) {
+        editField = new JButton(viewValue);
+        editField.setBackground(Util.getHashSolid(valueClass.getSimpleName()));
+        editField.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String title = "Choose a " + valueClass.getSimpleName();
+
+                final JFrame d = new JFrame(title);
+                final AtomicReference<JObject> hack = new AtomicReference<>();
+                JObject<? extends Key, ?, ?> create = factory.create(valueClass, false, new IPicked() {
+                    @Override
+                    public void picked(Object key, Stored v) {
+                        d.setVisible(false);
+                        if (key == null) {
+                            setValue("");
+                        } else {
+                            setValue(key.toString()); // hack
+                        }
+                        if (picked != null) {
+                            picked.picked(key, v);
+                        }
+                    }
+                });
+                hack.set(create);
+                JPanel p = new JPanel(new BorderLayout());
+                p.add(create, BorderLayout.CENTER);
+                p.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+                d.setPreferredSize(new Dimension(800, 600));
+                d.getContentPane().add(p);
+                d.pack();
+                d.setLocationRelativeTo(null);
+                d.setVisible(true);
+                create.find(null);
+            }
+        });
+        return editField;
+    }
+
+    @Override
+    public JComponent getViewer(int w) {
+        viewField = new JLabel(viewValue);
+        return viewField;
+    }
+
+    public String getValue() {
+        return ref;
+    }
+
+    @Override
+    public void clear() {
+        setValue("");
+    }
+
+    public void setValue(String value) {
+        ref = value;
+        if (value == null || value.length() == 0) {
+            viewValue = "null";
+            if (editField != null) {
+                editField.setText("Pick a " + valueClass.getSimpleName());
+                editField.revalidate();
+            }
+            if (viewField != null) {
+                viewField.setText("Pick a " + valueClass.getSimpleName());
+                viewField.revalidate();
+            }
+        } else {
+            final JObject vobjects = factory.create(valueClass, false, null);
+            vobjects.get(vobjects.objectFields.key(value), new IPicked() {
+                @Override
+                public void picked(Object key, Stored v) {
+                    if (v != null) {
+                        String shortName = vobjects.objectFields.shortName(v);
+                        viewValue = shortName;
+                        if (editField != null) {
+                            editField.setText(shortName);
+                            editField.revalidate();
+                            Container parent = editField.getParent();
+                            if (parent != null) {
+                                parent.revalidate();
+                            }
+                        }
+                        if (viewField != null) {
+                            viewField.setText(viewValue);
+                            viewField.revalidate();
+                            Container parent = viewField.getParent();
+                            if (parent != null) {
+                                parent.revalidate();
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    @Override
+    public JComponent getClear(final IPicked picked) {
+        JButton b = new JButton(Util.icon("clear-left"));
+        b.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Util.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        setValue("");
+                        if (picked != null) {
+                            picked.picked(null, null);
+                        }
+                    }
+                });
+
+            }
+        });
+        return b;
+    }
+
+    @Override
+    public String name() {
+        return name;
+    }
+}

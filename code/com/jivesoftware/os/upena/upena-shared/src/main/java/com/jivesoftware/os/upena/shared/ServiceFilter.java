@@ -1,0 +1,68 @@
+package com.jivesoftware.os.upena.shared;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.jivesoftware.os.amza.shared.KeyValueFilter;
+import com.jivesoftware.os.amza.shared.TimestampedValue;
+import java.util.concurrent.ConcurrentNavigableMap;
+import java.util.concurrent.ConcurrentSkipListMap;
+
+public class ServiceFilter implements KeyValueFilter<ServiceKey, Service> {
+
+    public final String name;
+    public final String description;
+    public final int start;
+    public final int count;
+    public int hit;
+
+    @JsonCreator
+    public ServiceFilter(@JsonProperty("name") String name,
+            @JsonProperty("description") String description,
+            @JsonProperty("start") int start,
+            @JsonProperty("count") int count) {
+        this.name = name;
+        this.description = description;
+        this.start = start;
+        this.count = count;
+    }
+
+    @Override
+    public String toString() {
+        return "ServiceFilter{" + "name=" + name + ", description=" + description + ", start=" + start + ", count=" + count + ", hit=" + hit + '}';
+    }
+
+    @Override
+    public ConcurrentNavigableMap<ServiceKey, TimestampedValue<Service>> createCollector() {
+        return new ServiceFilter.Results();
+    }
+
+    public static class Results extends ConcurrentSkipListMap<ServiceKey, TimestampedValue<Service>> {
+    }
+
+    @Override
+    public boolean filter(ServiceKey key, Service value) {
+        if (name != null && value.name != null) {
+            if (!value.name.contains(name)) {
+                return false;
+            }
+        }
+        if (description != null && value.description != null) {
+            if (!value.description.contains(description)) {
+                return false;
+            }
+        }
+        hit++;
+        if (hit < start) {
+            return false;
+        }
+        if (hit > start + count) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public void reset() {
+        hit = 0;
+    }
+}

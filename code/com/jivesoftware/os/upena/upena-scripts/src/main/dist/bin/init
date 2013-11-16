@@ -1,0 +1,29 @@
+#!/bin/bash
+
+source $(cd $(dirname $0); pwd)/common;
+
+source $ENV_CONFIG
+
+function ensure_directory_structure() {
+
+    if [ ! -d $VAR_DATA ]; then
+        mkdir -p $VAR_DATA
+    fi
+
+    if [ ! -d $VAR_LOG ]; then
+        mkdir -p $VAR_LOG
+    fi
+}
+
+function generateDefaultConfig() {
+
+    echo "Generating default config...."
+    cd $APP_ROOT && $JAVA_HOME/bin/java \
+      -cp $(build_classpath) \
+      com.jivesoftware.jive.symphony.uba.config.extractor.ConfigExtractor ${UPENA_HOST} ${UPENA_PORT} ${INSTANCE_KEY}
+    echo "Generated default config."
+}
+
+ensure_directory_structure;
+generateDefaultConfig;
+exit 0;

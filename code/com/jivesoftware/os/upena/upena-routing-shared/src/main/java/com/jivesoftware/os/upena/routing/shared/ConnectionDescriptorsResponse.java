@@ -1,0 +1,98 @@
+package com.jivesoftware.os.upena.routing.shared;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+
+public class ConnectionDescriptorsResponse {
+
+    private final int returnCode;
+    private final List<String> messages;
+    private final String userId;
+    private final List<ConnectionDescriptor> connections;
+    private final Set<String> validUserIds;
+
+    @JsonCreator
+    public ConnectionDescriptorsResponse(@JsonProperty("returnCode") int returnCode,
+            @JsonProperty("messages") List<String> messages,
+            @JsonProperty("userId") String userId,
+            @JsonProperty("connections") List<ConnectionDescriptor> connections,
+            @JsonProperty("validUserIds") Set<String> validUserIds) {
+        this.returnCode = returnCode;
+        this.messages = messages;
+        this.userId = userId;
+        this.connections = connections;
+        this.validUserIds = validUserIds;
+    }
+
+    public int getReturnCode() {
+        return returnCode;
+    }
+
+    public List<String> getMessages() {
+        return messages;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public List<ConnectionDescriptor> getConnections() {
+        return connections;
+    }
+
+    public Set<String> getValidUserIds() {
+        return validUserIds;
+    }
+
+    @Override
+    public String toString() {
+        return "ConnectionDescriptorsResponse{"
+                + "returnCode=" + returnCode
+                + ", messages=" + messages
+                + ", userId=" + userId
+                + ", connections=" + connections
+                + ", validUserIds=" + validUserIds
+                + '}';
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 89 * hash + this.returnCode;
+        hash = 89 * hash + Objects.hashCode(this.messages);
+        hash = 89 * hash + Objects.hashCode(this.userId);
+        hash = 89 * hash + Objects.hashCode(this.connections);
+        hash = 89 * hash + Objects.hashCode(this.validUserIds);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final ConnectionDescriptorsResponse other = (ConnectionDescriptorsResponse) obj;
+        if (this.returnCode != other.returnCode) {
+            return false;
+        }
+        if (!Objects.equals(this.messages, other.messages)) {
+            return false;
+        }
+        if (!Objects.equals(this.userId, other.userId)) {
+            return false;
+        }
+        if (!Objects.equals(this.connections, other.connections)) {
+            return false;
+        }
+        if (!Objects.equals(this.validUserIds, other.validUserIds)) {
+            return false;
+        }
+        return true;
+    }
+}

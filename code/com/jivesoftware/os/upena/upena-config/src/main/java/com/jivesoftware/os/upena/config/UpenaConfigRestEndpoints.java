@@ -1,0 +1,117 @@
+package com.jivesoftware.os.upena.config;
+
+import com.jivesoftware.os.jive.utils.jaxrs.util.ResponseHelper;
+import com.jivesoftware.os.jive.utils.logger.MetricLogger;
+import com.jivesoftware.os.jive.utils.logger.MetricLoggerFactory;
+import com.jivesoftware.os.upena.config.shared.UpenaConfig;
+import java.util.ArrayList;
+import java.util.Map;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
+@Path("/upenaConfig")
+public class UpenaConfigRestEndpoints {
+
+    private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
+    private final UpenaConfigStore upenaConfigStore;
+
+    public UpenaConfigRestEndpoints(@Context UpenaConfigStore upenaConfigStore) {
+        this.upenaConfigStore = upenaConfigStore;
+    }
+
+    @POST
+    @Consumes("application/json")
+    @Path("/set")
+    public Response set(UpenaConfig config) {
+        try {
+            LOG.debug("Attempting to get: " + config);
+            upenaConfigStore.set(config.instanceKey, config.context,
+                    config.properties);
+            Map<String, String> got = upenaConfigStore.get(config.instanceKey, config.context,
+                    new ArrayList<>(config.properties.keySet()));
+            LOG.info("Set " + got.size() + " properties");
+            return ResponseHelper.INSTANCE.jsonResponse(new UpenaConfig(config.context,
+                    config.instanceKey, got));
+        } catch (Exception x) {
+            LOG.warn("Failed to get: " + config, x);
+            return ResponseHelper.INSTANCE.errorResponse("Failed to get " + config, x);
+        }
+    }
+
+    @POST
+    @Consumes("application/json")
+    @Path("/get")
+    public Response get(UpenaConfig config) {
+        try {
+            LOG.debug("Attempting to get: " + config);
+            Map<String, String> got = upenaConfigStore.get(config.instanceKey, config.context,
+                    new ArrayList<>(config.properties.keySet()));
+            LOG.info("Got " + got.size() + " properties for " + config);
+            return ResponseHelper.INSTANCE.jsonResponse(new UpenaConfig(config.context,
+                    config.instanceKey, got));
+        } catch (Exception x) {
+            LOG.warn("Failed to get: " + config, x);
+            return ResponseHelper.INSTANCE.errorResponse("Failed to get " + config, x);
+        }
+    }
+
+    @POST
+    @Consumes("application/json")
+    @Path("/remove")
+    public Response remove(UpenaConfig config) {
+        try {
+            LOG.debug("Attempting to remove: " + config);
+            upenaConfigStore.remove(config.instanceKey, config.context,
+                    config.properties.keySet());
+            Map<String, String> got = upenaConfigStore.get(config.instanceKey, config.context,
+                    new ArrayList<>(config.properties.keySet()));
+            LOG.info("Removed " + got.size() + " properties");
+            return ResponseHelper.INSTANCE.jsonResponse(new UpenaConfig(config.context,
+                    config.instanceKey, got));
+        } catch (Exception x) {
+            LOG.warn("Failed to remove: " + config, x);
+            return ResponseHelper.INSTANCE.errorResponse("Failed to get " + config, x);
+        }
+    }
+
+    @POST
+    @Consumes("application/json")
+    @Path("/removeReleaseGroup")
+    public Response removeReleaseGroup(String instanceKey) {
+        try {
+            LOG.debug("Attempting to remove: " + instanceKey);
+            upenaConfigStore.remove(instanceKey);
+            return ResponseHelper.INSTANCE.jsonResponse("removed");
+        } catch (Exception x) {
+            LOG.warn("Failed to remove: " + instanceKey, x);
+            return ResponseHelper.INSTANCE.errorResponse("Failed to remove " + instanceKey, x);
+        }
+    }
+
+    @GET
+    @Consumes("application/json")
+    @Path("/instanceConfig")
+    public Response getInstanceConfig(@QueryParam("instanceKey") String instanceKey, @QueryParam("context") String context) {
+        try {
+            LOG.debug("Attempting to get: " + instanceKey);
+            Map<String, String> got = upenaConfigStore.get(instanceKey, context, new ArrayList<String>());
+            StringBuilder sb = new StringBuilder();
+            for (Map.Entry<String, String> entry : got.entrySet()) {
+                String key = entry.getKey();
+                String value = entry.getValue();
+                sb.append(key).append('=').append(value).append('\n');
+            }
+
+            return Response.ok(sb.toString(), MediaType.TEXT_PLAIN).build();
+        } catch (Exception x) {
+            LOG.warn("Failed to get: " + instanceKey + " " + context, x);
+            return ResponseHelper.INSTANCE.errorResponse("Failed to get " + instanceKey + " " + context, x);
+        }
+    }
+}
