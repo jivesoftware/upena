@@ -17,8 +17,9 @@ package com.jivesoftware.os.upena.shared;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.io.Serializable;
 
-public class Tenant implements Stored<Tenant> {
+public class Tenant implements Stored<Tenant>, Serializable {
 
     public final String tenantId;
     public final String description;

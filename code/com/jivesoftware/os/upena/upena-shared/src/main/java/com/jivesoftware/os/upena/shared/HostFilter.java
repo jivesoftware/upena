@@ -20,11 +20,12 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.jivesoftware.os.amza.shared.KeyValueFilter;
 import com.jivesoftware.os.amza.shared.TimestampedValue;
+import java.io.Serializable;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class HostFilter implements KeyValueFilter<HostKey, Host> {
+public class HostFilter implements KeyValueFilter<HostKey, Host>, Serializable {
 
     public final String name;
     public final String hostName;

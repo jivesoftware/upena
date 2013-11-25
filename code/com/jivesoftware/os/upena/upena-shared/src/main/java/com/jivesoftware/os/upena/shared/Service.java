@@ -17,8 +17,9 @@ package com.jivesoftware.os.upena.shared;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.io.Serializable;
 
-public class Service implements Stored<Service> {
+public class Service implements Stored<Service>, Serializable {
 
     public final String name;
     public final String description;

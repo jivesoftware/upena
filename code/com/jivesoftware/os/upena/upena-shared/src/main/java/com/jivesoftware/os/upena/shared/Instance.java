@@ -17,11 +17,12 @@ package com.jivesoftware.os.upena.shared;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class Instance implements Stored<Instance> {
+public class Instance implements Stored<Instance>, Serializable {
 
     public static final String PORT_MAIN = "main";
     public static final String PORT_MANAGE = "manage";
@@ -92,7 +93,7 @@ public class Instance implements Stored<Instance> {
         return c;
     }
 
-    public static class Port {
+    public static class Port implements Serializable {
 
         public int port;
         public Map<String, String> properties = new HashMap<>();

@@ -37,14 +37,8 @@ public class LaunchUI {
 
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                System.out.println(info.getName());
-//                if ("Nimbus".equals(info.getName())) {
-//                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-//                    //UIManager.put("nimbusBase", new Color(128, 128, 138));
-//                }
                 if ("GTK+".equals(info.getName())) {
                     javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    //UIManager.put("nimbusBase", new Color(128, 128, 138));
                 }
             }
         } catch (ClassNotFoundException ex) {

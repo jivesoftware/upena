@@ -17,9 +17,10 @@ package com.jivesoftware.os.upena.shared;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.io.Serializable;
 import java.util.Objects;
 
-public class Key<T extends Key> implements Comparable<T> {
+public class Key<T extends Key> implements Comparable<T>, Serializable {
 
     private final String key;
 

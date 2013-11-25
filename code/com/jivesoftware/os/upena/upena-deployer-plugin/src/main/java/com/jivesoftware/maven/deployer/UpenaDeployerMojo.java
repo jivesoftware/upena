@@ -75,22 +75,19 @@ public class UpenaDeployerMojo extends AbstractMojo {
     private String composerHost;
     /**
      *
-     * @parameter expression="${upena.port}" default-value="56300"
+     * @parameter expression="${upena.port}" default-value="1175"
      */
     private String composerPort;
-
     /**
      *
      * @parameter expression="${upena.release}" default-value=""
      */
     private String release;
-
     /**
      *
      * @parameter expression="${upena.instance.number}" default-value="1"
      */
     private String instanceNumber;
-
     /**
      * @parameter default-value="${project}"
      */
@@ -98,7 +95,7 @@ public class UpenaDeployerMojo extends AbstractMojo {
 
     @Override
     public void execute()
-            throws MojoExecutionException, MojoFailureException {
+        throws MojoExecutionException, MojoFailureException {
 
         Repository repository;
         try {
@@ -172,11 +169,11 @@ public class UpenaDeployerMojo extends AbstractMojo {
             }
 
             ReleaseGroupFilter filter = new ReleaseGroupFilter(filterName,
-                    filterEmail,
-                    null,
-                    "",
-                    0,
-                    Integer.MAX_VALUE);
+                filterEmail,
+                null,
+                "",
+                0,
+                Integer.MAX_VALUE);
             ReleaseGroupFilter.Results results = requestHelper.executeRequest(filter, "/upena/releaseGroup/find", ReleaseGroupFilter.Results.class, null);
             if (results != null && !results.isEmpty()) {
                 Map.Entry<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> firstEntry = results.firstEntry();
@@ -185,11 +182,10 @@ public class UpenaDeployerMojo extends AbstractMojo {
             } else {
                 getLog().info("------------------------------------------------------------------------");
                 getLog().info("No releaseGroup with name:" + name + ". Automatically adding new releaseGroup.");
-                getLog().info("------------------------------------------------------------------------");
                 releaseGroupKey = requestHelper.executeRequest(new ReleaseGroup(name,
-                        email,
-                        version,
-                        ""), "/upena/releaseGroup/add", ReleaseGroupKey.class, null);
+                    email,
+                    version,
+                    ""), "/upena/releaseGroup/add", ReleaseGroupKey.class, null);
             }
         } catch (Exception x) {
             throw new MojoFailureException("failed to establish releaseGroup:" + name + " <" + email + ">", x);
@@ -206,9 +202,8 @@ public class UpenaDeployerMojo extends AbstractMojo {
             } else {
                 getLog().info("------------------------------------------------------------------------");
                 getLog().info("No service named:" + serviceName + ". Automatically adding new service.");
-                getLog().info("------------------------------------------------------------------------");
                 serviceKey = requestHelper.executeRequest(new Service(serviceName, ""),
-                        "/upena/service/add", ServiceKey.class, null);
+                    "/upena/service/add", ServiceKey.class, null);
             }
         } catch (Exception x) {
             throw new MojoFailureException("failed to establish service:" + serviceName, x);
@@ -225,11 +220,10 @@ public class UpenaDeployerMojo extends AbstractMojo {
             } else {
                 getLog().info("------------------------------------------------------------------------");
                 getLog().info("No cluster named:" + clusterName + ". Automatically adding new cluster.");
-                getLog().info("------------------------------------------------------------------------");
                 Map<ServiceKey, ReleaseGroupKey> defaultReleaseGroups = new HashMap<>();
                 defaultReleaseGroups.put(serviceKey, releaseGroupKey);
                 clusterKey = requestHelper.executeRequest(new Cluster(clusterName, "", defaultReleaseGroups),
-                        "/upena/cluster/add", ClusterKey.class, null);
+                    "/upena/cluster/add", ClusterKey.class, null);
             }
         } catch (Exception x) {
             throw new MojoFailureException("failed to establish cluster:" + clusterName, x);
@@ -240,13 +234,11 @@ public class UpenaDeployerMojo extends AbstractMojo {
         try {
             getLog().info("------------------------------------------------------------------------");
             getLog().info("Looking for declared instance for service:" + serviceName + ".");
-            getLog().info("------------------------------------------------------------------------");
             InstanceFilter filter = new InstanceFilter(clusterKey, null, serviceKey, releaseGroupKey, null, 0, Integer.MAX_VALUE);
             results = requestHelper.executeRequest(filter, "/upena/instance/find", InstanceResults.class, null);
             if (results != null && !results.isEmpty()) {
                 getLog().info("------------------------------------------------------------------------");
                 getLog().info("Found (" + results.size() + ") instance of service:" + serviceName + ".");
-                getLog().info("------------------------------------------------------------------------");
                 for (Entry<String, TimestampedValue<Instance>> e : results.entrySet()) {
                     TimestampedValue<Instance> instance = e.getValue();
                     if (instance.getTombstoned()) {
@@ -263,7 +255,6 @@ public class UpenaDeployerMojo extends AbstractMojo {
             } else {
                 getLog().info("------------------------------------------------------------------------");
                 getLog().info("No declared instance for service:" + serviceName + ". Automatically adding new instance.");
-                getLog().info("------------------------------------------------------------------------");
                 try {
                     HostFilter hostFilter = new HostFilter(null, null, null, null, clusterKey, 0, Integer.MAX_VALUE);
                     HostResults hostResults = requestHelper.executeRequest(hostFilter, "/upena/host/find", HostResults.class, null);
@@ -272,8 +263,8 @@ public class UpenaDeployerMojo extends AbstractMojo {
                         HostKey hostKey = new HostKey(firstEntry.getKey());
 
                         InstanceKey instanceKey = requestHelper.executeRequest(
-                                new Instance(clusterKey, hostKey, serviceKey, releaseGroupKey, Integer.parseInt(instanceNumber), true, false),
-                                "/upena/instance/add", InstanceKey.class, null);
+                            new Instance(clusterKey, hostKey, serviceKey, releaseGroupKey, Integer.parseInt(instanceNumber), true, false),
+                            "/upena/instance/add", InstanceKey.class, null);
 
                         Instance instance = requestHelper.executeRequest(instanceKey, "/upena/instance/get", Instance.class, null);
                         if (instance != null) {
@@ -285,7 +276,6 @@ public class UpenaDeployerMojo extends AbstractMojo {
                     } else {
                         getLog().info("------------------------------------------------------------------------");
                         getLog().info("There are no hosts assosicated with cluster:" + clusterKey + ".");
-                        getLog().info("------------------------------------------------------------------------");
                         throw new MojoFailureException("No host available to deploy to.");
                     }
                 } catch (Exception x) {
@@ -299,22 +289,18 @@ public class UpenaDeployerMojo extends AbstractMojo {
 
         getLog().info("------------------------------------------------------------------------");
         getLog().info("Beginning the upload. This may take a bit please be patient.");
-        getLog().info("------------------------------------------------------------------------");
         long time = System.currentTimeMillis();
         deployPlanner.upload();
         getLog().info("------------------------------------------------------------------------");
         getLog().info("Upload SUCCESSFUL. Elapse:" + (System.currentTimeMillis() - time));
-        getLog().info("------------------------------------------------------------------------");
 
         getLog().info("------------------------------------------------------------------------");
         getLog().info("Beginning the deploy.");
-        getLog().info("------------------------------------------------------------------------");
         time = System.currentTimeMillis();
         deployPlanner.deploy(serviceName, requestHelper, version);
 
         getLog().info("------------------------------------------------------------------------");
         getLog().info("Deploy was SUCCESSFUL. Elapse:" + (System.currentTimeMillis() - time));
-        getLog().info("------------------------------------------------------------------------");
 
     }
 
@@ -361,7 +347,7 @@ public class UpenaDeployerMojo extends AbstractMojo {
 
             String name = artifact.getName();
             String extension = "";
-            for (String ext : new String[]{".tgz", ".tar.gz", "jar", "zip"}) {
+            for (String ext : new String[]{ ".tgz", ".tar.gz", "jar", "zip" }) {
                 if (name.endsWith(ext)) {
                     extension = ext;
                     break;
@@ -432,14 +418,13 @@ public class UpenaDeployerMojo extends AbstractMojo {
                 Instance instance = e.getValue();
                 ReleaseGroup rg = cacheReleaseGroups.get(instance.releaseGroupKey.getKey());
                 if (rg == null) {
-                    getLog().info("????????" + releaseGroup);
                     ReleaseGroup update = new ReleaseGroup(releaseGroup.name,
-                            releaseGroup.email,
-                            version,
-                            "Created by deployer plugin. " + new Date());
+                        releaseGroup.email,
+                        version,
+                        "Created by deployer plugin. " + new Date());
 
                     ReleaseGroupKey releaseGroupKey = requestHelper
-                            .executeRequest(update, "/upena/releaseGroup/update?key=" + instance.releaseGroupKey.getKey(), ReleaseGroupKey.class, null);
+                        .executeRequest(update, "/upena/releaseGroup/update?key=" + instance.releaseGroupKey.getKey(), ReleaseGroupKey.class, null);
 
                     if (releaseGroupKey == null) {
                         throw new MojoFailureException("Failed to update releaseGroupKey:" + e.getKey());
@@ -451,7 +436,7 @@ public class UpenaDeployerMojo extends AbstractMojo {
                 }
 
                 getLog().info(" Instance: " + serviceName + "." + instance.instanceId + " will be availiable shortly "
-                        + "on host:" + host.hostName + " port:" + instance.ports.get("main").port);
+                    + "on host:" + host.hostName + " port:" + instance.ports.get("main").port);
             }
             getLog().info("------------------------------------------------------------------------");
 

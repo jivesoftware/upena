@@ -17,8 +17,9 @@ package com.jivesoftware.os.upena.shared;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.io.Serializable;
 
-public class HostKey extends Key<HostKey> implements Stored<HostKey> {
+public class HostKey extends Key<HostKey> implements Stored<HostKey>, Serializable {
 
     @JsonCreator
     public HostKey(@JsonProperty("key") String key) {

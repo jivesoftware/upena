@@ -17,8 +17,9 @@ package com.jivesoftware.os.upena.shared;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.io.Serializable;
 
-public class ClusterKey extends Key<ClusterKey> implements Stored<ClusterKey> {
+public class ClusterKey extends Key<ClusterKey> implements Stored<ClusterKey>, Serializable {
 
     @JsonCreator
     public ClusterKey(@JsonProperty("key") String key) {

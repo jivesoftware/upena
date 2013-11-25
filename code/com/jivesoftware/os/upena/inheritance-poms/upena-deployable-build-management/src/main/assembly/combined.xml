@@ -8,6 +8,6 @@
     </formats>
     <includeBaseDirectory>false</includeBaseDirectory>
     <componentDescriptors>
-        <componentDescriptor>java-deployable.xml</componentDescriptor>
+        <componentDescriptor>upena-deployable.xml</componentDescriptor>
     </componentDescriptors>
 </assembly>

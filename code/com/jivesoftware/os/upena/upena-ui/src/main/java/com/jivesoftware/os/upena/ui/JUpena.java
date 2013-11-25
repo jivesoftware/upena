@@ -61,7 +61,7 @@ public class JUpena extends javax.swing.JFrame {
         connectTo.add(editHost);
         connectTo.add(Box.createRigidArea(new Dimension(10, 0)));
         connectTo.add(new JLabel("port:"));
-        final JTextField editPort = new JTextField("56300", 48);
+        final JTextField editPort = new JTextField("1175", 48);
         editPort.setMinimumSize(new Dimension(120, 24));
         editPort.setMaximumSize(new Dimension(120, 24));
         connectTo.add(editPort);

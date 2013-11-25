@@ -17,10 +17,11 @@ package com.jivesoftware.os.upena.shared;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.io.Serializable;
 import java.util.Map;
 import java.util.Objects;
 
-public class Cluster implements Stored<Cluster> {
+public class Cluster implements Stored<Cluster>, Serializable {
 
     public final String name;
     public final String description;

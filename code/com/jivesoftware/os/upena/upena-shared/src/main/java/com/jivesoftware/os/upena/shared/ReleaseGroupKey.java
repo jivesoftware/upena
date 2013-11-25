@@ -17,8 +17,9 @@ package com.jivesoftware.os.upena.shared;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.io.Serializable;
 
-public class ReleaseGroupKey extends Key<ReleaseGroupKey> implements Stored<ReleaseGroupKey> {
+public class ReleaseGroupKey extends Key<ReleaseGroupKey> implements Stored<ReleaseGroupKey>, Serializable {
 
     @JsonCreator
     public ReleaseGroupKey(@JsonProperty("key") String key) {

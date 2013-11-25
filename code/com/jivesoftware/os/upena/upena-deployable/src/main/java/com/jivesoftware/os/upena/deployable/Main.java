@@ -79,12 +79,12 @@ public class Main {
 
         String hostname = args[0];
         int port = Integer.parseInt(System.getProperty("amza.port", "1175"));
-        String multicastGroup = System.getProperty("amza.discovery.group", "225.4.5.6");
-        int multicastPort = Integer.parseInt(System.getProperty("amza.port", "1123"));
+        String multicastGroup = System.getProperty("amza.multicast.group", "225.4.5.6");
+        int multicastPort = Integer.parseInt(System.getProperty("amza.multicast.port", "1123"));
         String clusterName = (args.length > 1 ? args[1] : null);
 
         RingHost ringHost = new RingHost(hostname, port);
-        final OrderIdProvider orderIdProvider = new OrderIdProviderImpl(new Random().nextInt(1024)); // todo need a better way to create writter id.
+        final OrderIdProvider orderIdProvider = new OrderIdProviderImpl(new Random().nextInt(512)); // todo need a better way to create writter id.
 
         final ObjectMapper mapper = new ObjectMapper();
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -102,7 +102,7 @@ public class Main {
 
                 RowMarshaller<K, V, String> rowMarshaller = new StringRowMarshaller<>(mapper, tableName);
                 RowTableFile<K, V, String> rowTableFile = new RowTableFile<>(orderIdProvider, rowMarshaller, reader, writer);
-                return new FileBackedTableStorage(rowTableFile);
+                return new FileBackedTableStorage<>(rowTableFile);
             }
         };
 

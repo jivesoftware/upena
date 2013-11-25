@@ -17,9 +17,10 @@ package com.jivesoftware.os.upena.shared;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.io.Serializable;
 import java.util.Objects;
 
-public class ReleaseGroup implements Stored<ReleaseGroup> {
+public class ReleaseGroup implements Stored<ReleaseGroup>, Serializable {
 
     public final String name;
     public final String email;

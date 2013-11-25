@@ -30,6 +30,56 @@
     </build>
     <profiles>
         <profile>
+            <id>make-deployable</id>
+            <properties>
+                <config.home>${project.basedir}</config.home>
+                <assembly.home>${project.parent.basedir}/../upena-deployable-build-management</assembly.home>
+                <path.to.assembly>${assembly.home}/src/main/assembly/combined.xml</path.to.assembly>
+                <not.make.deployable>false</not.make.deployable>
+            </properties>
+            <build>
+                <plugins>
+                    <!--Packs git information into the artifact jars in a format deployable understands.-->
+<!--                    <plugin>
+                        <groupId>com.jivesoftware.jive.build.configuration.maven.plugins</groupId>
+                        <artifactId>git-release-notes-plugin</artifactId>
+                        <version>unspecified</version>
+                        <executions>
+                            <execution>
+                                <phase>compile</phase>
+                                <goals>
+                                    <goal>git-release-notes</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>-->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <configuration>
+                            <attach>false</attach>
+                            <appendAssemblyId>false</appendAssemblyId>
+                            <descriptors>
+                                <descriptor>${path.to.assembly}</descriptor>
+                            </descriptors>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-deploy-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <phase>deploy</phase>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <file>${project.build.directory}/${project.name}-${project.version}.tar.gz</file>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
             <id>deploy-service</id>
             <build>
                 <plugins>
@@ -107,56 +157,6 @@
                         </executions>
                         <configuration>
                             <verbose>true</verbose>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-            <id>make-deployable</id>
-            <properties>
-                <config.home>${project.basedir}</config.home>
-                <assembly.home>${project.parent.basedir}/../deployable-build-management</assembly.home>
-                <path.to.assembly>${assembly.home}/src/main/assembly/combined.xml</path.to.assembly>
-                <not.make.deployable>false</not.make.deployable>
-            </properties>
-            <build>
-                <plugins>
-                    <!--Packs git information into the artifact jars in a format deployable understands.-->
-                    <plugin>
-                        <groupId>com.jivesoftware.jive.build.configuration.maven.plugins</groupId>
-                        <artifactId>git-release-notes-plugin</artifactId>
-                        <version>unspecified</version>
-                        <executions>
-                            <execution>
-                                <phase>compile</phase>
-                                <goals>
-                                    <goal>git-release-notes</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-assembly-plugin</artifactId>
-                        <configuration>
-                            <attach>false</attach>
-                            <appendAssemblyId>false</appendAssemblyId>
-                            <descriptors>
-                                <descriptor>${path.to.assembly}</descriptor>
-                            </descriptors>
-                        </configuration>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-deploy-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <phase>deploy</phase>
-                            </execution>
-                        </executions>
-                        <configuration>
-                            <file>${project.build.directory}/${project.name}-${project.version}.tar.gz</file>
                         </configuration>
                     </plugin>
                 </plugins>

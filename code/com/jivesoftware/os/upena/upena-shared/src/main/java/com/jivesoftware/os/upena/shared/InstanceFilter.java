@@ -19,10 +19,11 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.jivesoftware.os.amza.shared.KeyValueFilter;
 import com.jivesoftware.os.amza.shared.TimestampedValue;
+import java.io.Serializable;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
-public class InstanceFilter implements KeyValueFilter<InstanceKey, Instance> {
+public class InstanceFilter implements KeyValueFilter<InstanceKey, Instance>, Serializable {
 
     public final ClusterKey clusterKey;
     public final HostKey hostKey;
