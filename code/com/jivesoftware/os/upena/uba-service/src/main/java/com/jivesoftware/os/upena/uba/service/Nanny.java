@@ -123,13 +123,14 @@ public class Nanny {
         }
     }
 
-    synchronized void destroy() {
+    synchronized Boolean destroy() throws InterruptedException, ExecutionException {
         destroyed.set(true);
         NannyDestroyCallable nannyTask = new NannyDestroyCallable(
                 instancePath,
                 deployLog,
                 invokeScript);
-        threadPoolExecutor.submit(nannyTask);
+        Future<Boolean> waitForDestory = threadPoolExecutor.submit(nannyTask);
+        return waitForDestory.get();
 
     }
 

@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 
 public class UbaService {
 
@@ -106,10 +107,14 @@ public class UbaService {
             if (!unexpectedPlayerKeys.isEmpty()) {
                 for (String unexpectedPlayerKey : unexpectedPlayerKeys) {
                     Nanny nanny = nannies.get(unexpectedPlayerKey);
-                    LOG.info("Destroying player:" + nanny);
-                    nanny.destroy();
-                    nanny.stop();
-                    nannies.remove(unexpectedPlayerKey);
+                    LOG.info("Destroying service:" + nanny);
+                    try {
+                        nanny.destroy();
+                        nanny.stop();
+                        nannies.remove(unexpectedPlayerKey);
+                    } catch (InterruptedException | ExecutionException x) {
+                        LOG.error("Failed to destroy " + nanny.getInstanceDescriptor(), x);
+                    }
                 }
             }
 
@@ -123,7 +128,11 @@ public class UbaService {
 
     public void decommisionUbaService() throws Exception {
         for (Nanny nanny : rollCall().values()) {
-            nanny.destroy();
+            try {
+                nanny.destroy();
+            } catch (InterruptedException | ExecutionException x) {
+                LOG.error("Failed to destroy " + nanny.getInstanceDescriptor(), x);
+            }
         }
     }
 
