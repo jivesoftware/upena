@@ -65,6 +65,12 @@
             <version>unspecified</version>
             <type>jar</type>
         </dependency>
+        <dependency>
+            <groupId>com.jivesoftware.os.upena</groupId>
+            <artifactId>reporter-service</artifactId>
+            <version>unspecified</version>
+            <type>jar</type>
+        </dependency>
     </dependencies>
     <name>upena-main</name>
 </project>

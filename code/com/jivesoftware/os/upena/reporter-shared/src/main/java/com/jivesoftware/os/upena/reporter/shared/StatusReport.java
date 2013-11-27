@@ -16,6 +16,7 @@
 package com.jivesoftware.os.upena.reporter.shared;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Deliberately not final and not a formal bean because its expected that jackson will be used to map to and from json.
@@ -29,7 +30,7 @@ public class StatusReport {
     public String jvmVersion;
     public List<String> jvmHostnames;
     public List<String> jvmIpAddrs;
-    public String instanceKey;
+    public Map<String, String> instance;
     public int timestampInSeconds;
     public int startupTimestampInSeconds;
     public float load;
@@ -47,7 +48,7 @@ public class StatusReport {
             String jvmVersion,
             List<String> jvmHostnames,
             List<String> jvmIpAddrs,
-            String instanceKey,
+            Map<String, String> instance,
             int timestampInSeconds,
             int startupTimestampInSeconds,
             float load,
@@ -62,7 +63,7 @@ public class StatusReport {
         this.jvmVersion = jvmVersion;
         this.jvmHostnames = jvmHostnames;
         this.jvmIpAddrs = jvmIpAddrs;
-        this.instanceKey = instanceKey;
+        this.instance = instance;
         this.timestampInSeconds = timestampInSeconds;
         this.startupTimestampInSeconds = startupTimestampInSeconds;
         this.load = load;

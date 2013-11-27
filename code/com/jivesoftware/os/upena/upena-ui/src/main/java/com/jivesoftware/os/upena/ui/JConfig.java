@@ -33,6 +33,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -75,6 +76,7 @@ public class JConfig extends JPanel {
 
     JTextField filterKeys;
     JTextField filterValues;
+    JToggleButton hideDefaults;
 
     public JConfig(RequestHelperProvider requestHelperProvider, JObjectFactory factory) {
         this.requestHelperProvider = requestHelperProvider;
@@ -96,6 +98,21 @@ public class JConfig extends JPanel {
         viewResults = new JPanel(new BorderLayout());
 
         JPanel filter = new JPanel(new SpringLayout());
+        hideDefaults = new JToggleButton("Overriden", false);
+        hideDefaults.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Util.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        filter();
+                    }
+                });
+            }
+        });
+        filter.add(hideDefaults);
+        filter.add(Box.createHorizontalStrut(10));
         filter.add(new JLabel("filter keys:"));
         filter.add(Box.createHorizontalStrut(10));
         filterKeys = new JTextField("", 120);
@@ -129,7 +146,7 @@ public class JConfig extends JPanel {
         });
         filter.add(filterValues);
 
-        SpringUtils.makeCompactGrid(filter, 1, 6, 24, 24, 16, 16);
+        SpringUtils.makeCompactGrid(filter, 1, 8, 16, 16, 16, 16);
 
         JPanel panel = new JPanel(new BorderLayout(10, 10));
         panel.add(filter, BorderLayout.NORTH);
@@ -415,6 +432,11 @@ public class JConfig extends JPanel {
                             continue;
                         }
                     }
+                    if (hideDefaults.isSelected()) {
+                        if (override == null && !config.changes.containsKey(propertyKey)) {
+                            continue;
+                        }
+                    }
                     aPropertyValues.add(config);
                 }
             }
@@ -426,6 +448,11 @@ public class JConfig extends JPanel {
                     String override = config.override(propertyKey);
                     if (filterValues.getText().length() > 0) {
                         if (!value.contains(filterValues.getText()) && !override.contains(filterValues.getText())) {
+                            continue;
+                        }
+                    }
+                    if (hideDefaults.isSelected()) {
+                        if (override == null && !config.changes.containsKey(propertyKey)) {
                             continue;
                         }
                     }
@@ -518,8 +545,22 @@ public class JConfig extends JPanel {
                 JLabel instanceLabel = new JLabel(idToString(config.instanceKey(), idNames));
 
                 String override = config.override(propertyKey);
+                if (config.changes.containsKey(propertyKey)) {
+                    override = config.changes.get(propertyKey);
+                }
 
-                editValue = new JTextField(override);
+                editValue = new JTextField(override) {
+
+                    @Override
+                    protected void paintBorder(Graphics g) {
+                        super.paintBorder(g);
+                        if (config.changes.containsKey(propertyKey) || config.override.properties.containsKey(propertyKey)) {
+                            g.setColor(Color.orange);
+                            g.drawRect(0, 0, getWidth(), getHeight());
+                        }
+                    }
+
+                };
                 editValue.setMinimumSize(new Dimension(50, 24));
                 editValue.setPreferredSize(new Dimension(100, 24));
                 editValue.setMaximumSize(new Dimension(600, 24));

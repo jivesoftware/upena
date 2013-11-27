@@ -19,7 +19,7 @@ import org.merlin.config.Config;
 import org.merlin.config.defaults.Default;
 import org.merlin.config.defaults.IntDefault;
 
-public interface RoutableDeployableConfig extends Config {
+public interface InstanceConfig extends Config {
 
     @Default("localhost")
     String getHost();

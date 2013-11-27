@@ -15,18 +15,30 @@
  */
 package com.jivesoftware.os.upena.main;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jivesoftware.os.jive.utils.base.service.ServiceHandle;
+import com.jivesoftware.os.jive.utils.http.client.HttpClient;
+import com.jivesoftware.os.jive.utils.http.client.HttpClientConfig;
+import com.jivesoftware.os.jive.utils.http.client.HttpClientConfiguration;
+import com.jivesoftware.os.jive.utils.http.client.HttpClientException;
+import com.jivesoftware.os.jive.utils.http.client.HttpClientFactoryProvider;
 import com.jivesoftware.os.server.http.jetty.jersey.endpoints.configuration.MainProperties;
 import com.jivesoftware.os.server.http.jetty.jersey.endpoints.configuration.MainPropertiesEndpoints;
 import com.jivesoftware.os.server.http.jetty.jersey.server.InitializeRestfulServer;
 import com.jivesoftware.os.server.http.jetty.jersey.server.JerseyEndpoints;
 import com.jivesoftware.os.server.http.jetty.jersey.server.RestfulManageServer;
 import com.jivesoftware.os.server.http.jetty.jersey.server.util.Resource;
+import com.jivesoftware.os.upena.reporter.service.StatusReportBroadcaster;
+import com.jivesoftware.os.upena.reporter.service.StatusReportBroadcaster.StatusReportCallback;
+import com.jivesoftware.os.upena.reporter.service.StatusReportConfig;
+import com.jivesoftware.os.upena.reporter.shared.StatusReport;
 import com.jivesoftware.os.upena.routing.shared.TenantRoutingProvider;
 import com.jivesoftware.os.upena.tenant.routing.http.server.endpoints.TenantRoutingRestEndpoints;
 import com.jivesoftware.os.upena.uba.config.extractor.ConfigBinder;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.merlin.config.Config;
 
@@ -43,15 +55,15 @@ public class Deployable {
 
     public Deployable(String[] args) throws IOException {
         configBinder = new ConfigBinder(args);
-        RoutableDeployableConfig routableDeployableConfig = configBinder.bind(RoutableDeployableConfig.class);
+        InstanceConfig instanceConfig = configBinder.bind(InstanceConfig.class);
 
-        TenantRoutingBirdBuilder tenantRoutingBirdBuilder = new TenantRoutingBirdBuilder(routableDeployableConfig.getRoutesHost(),
-                routableDeployableConfig.getRoutesPort());
-        tenantRoutingBirdBuilder.setInstanceId(routableDeployableConfig.getInstanceKey());
+        TenantRoutingBirdBuilder tenantRoutingBirdBuilder = new TenantRoutingBirdBuilder(instanceConfig.getRoutesHost(),
+                instanceConfig.getRoutesPort());
+        tenantRoutingBirdBuilder.setInstanceId(instanceConfig.getInstanceKey());
         tenantRoutingProvider = tenantRoutingBirdBuilder.build();
 
-        String applicationName = "manage " + routableDeployableConfig.getServiceName() + " " + routableDeployableConfig.getClusterName();
-        restfulManageServer = new RestfulManageServer(routableDeployableConfig.getManagePort(),
+        String applicationName = "manage " + instanceConfig.getServiceName() + " " + instanceConfig.getClusterName();
+        restfulManageServer = new RestfulManageServer(instanceConfig.getManagePort(),
                 applicationName,
                 128,
                 10000);
@@ -62,10 +74,48 @@ public class Deployable {
         restfulManageServer.addInjectable(MainProperties.class, new MainProperties(args));
 
         jerseyEndpoints = new JerseyEndpoints();
-        restfulServer = new InitializeRestfulServer(routableDeployableConfig.getMainPort(),
+        restfulServer = new InitializeRestfulServer(instanceConfig.getMainPort(),
                 applicationName,
                 128,
                 10000);
+    }
+
+    public ServiceHandle buildStatusReporter(StatusReportCallback statusReportCallback) {
+        StatusReportConfig config = configBinder.bind(StatusReportConfig.class);
+        Map<String,String> rawInstanceProperties = new HashMap<>();
+        InstanceConfig instanceConfig = configBinder.bind(InstanceConfig.class, rawInstanceProperties);
+        if (statusReportCallback == null) {
+            final ObjectMapper mapper = new ObjectMapper();
+
+            HttpClientConfig httpClientConfig = HttpClientConfig.newBuilder().build();
+            final HttpClient httpClient = new HttpClientFactoryProvider()
+                    .createHttpClientFactory(Arrays.<HttpClientConfiguration>asList(httpClientConfig))
+                    .createClient(instanceConfig.getRoutesHost(), instanceConfig.getRoutesPort());
+
+            statusReportCallback = new StatusReportCallback() {
+                @Override
+                public void annouce(StatusReport statusReport) throws Exception {
+                    try {
+                        String postEntity = mapper.writeValueAsString(statusReport);
+
+                        String path = "/upena/request/connections";
+                        try {
+                            httpClient.postJson(path, postEntity);
+                        } catch (HttpClientException e) {
+                            e.printStackTrace();
+                        }
+                    } catch (Exception x) {
+                        x.printStackTrace();
+
+                    }
+                }
+            };
+        }
+
+        StatusReportBroadcaster broadcaster = new StatusReportBroadcaster(rawInstanceProperties,
+                config.getAnnouceEveryNMills(),
+                statusReportCallback);
+        return broadcaster;
     }
 
     public TenantRoutingProvider getTenantRoutingProvider() {
@@ -93,8 +143,8 @@ public class Deployable {
     public ServiceHandle buildManageServer() throws Exception {
         if (manageServerStarted.compareAndSet(false, true)) {
             long time = System.currentTimeMillis();
-            RoutableDeployableConfig routableDeployableConfig = configBinder.bind(RoutableDeployableConfig.class);
-            String applicationName = "manage " + routableDeployableConfig.getServiceName() + " " + routableDeployableConfig.getClusterName();
+            InstanceConfig instanceConfig = configBinder.bind(InstanceConfig.class);
+            String applicationName = "manage " + instanceConfig.getServiceName() + " " + instanceConfig.getClusterName();
             ComponentHealthCheck healthCheck = new ComponentHealthCheck("'" + applicationName + "'service initialization", true);
             restfulManageServer.addHealthCheck(healthCheck);
             try {
@@ -142,9 +192,9 @@ public class Deployable {
     }
 
     public ServiceHandle buildServer() throws Exception {
-        if (manageServerStarted.compareAndSet(false, true)) {
-            RoutableDeployableConfig routableDeployableConfig = configBinder.bind(RoutableDeployableConfig.class);
-            String applicationName = routableDeployableConfig.getServiceName() + " " + routableDeployableConfig.getClusterName();
+        if (serverStarted.compareAndSet(false, true)) {
+            InstanceConfig instanceConfig = configBinder.bind(InstanceConfig.class);
+            String applicationName = instanceConfig.getServiceName() + " " + instanceConfig.getClusterName();
             ComponentHealthCheck healthCheck = new ComponentHealthCheck("'" + applicationName + "' service initialization", true);
             restfulManageServer.addHealthCheck(healthCheck);
             try {
@@ -171,21 +221,21 @@ public class Deployable {
     }
 
     void startedUpBanner() {
-        RoutableDeployableConfig routableDeployableConfig = configBinder.bind(RoutableDeployableConfig.class);
+        InstanceConfig instanceConfig = configBinder.bind(InstanceConfig.class);
 
         System.out.println(pad("-", "", "-", '-', 100));
         System.out.println(pad("|", "", "|", ' ', 100));
-        System.out.println(pad("|", "      Service INSTANCEKEY:" + routableDeployableConfig.getInstanceKey(), "|", ' ', 100));
+        System.out.println(pad("|", "      Service INSTANCEKEY:" + instanceConfig.getInstanceKey(), "|", ' ', 100));
         System.out.println(pad("|", "", "|", ' ', 100));
-        System.out.println(pad("|", "      Service CLUSTER:" + routableDeployableConfig.getClusterName(), "|", ' ', 100));
-        System.out.println(pad("|", "         Service HOST:" + routableDeployableConfig.getHost(), "|", ' ', 100));
-        System.out.println(pad("|", "      Service SERVICE:" + routableDeployableConfig.getServiceName(), "|", ' ', 100));
-        System.out.println(pad("|", "     Service INSTANCE:" + routableDeployableConfig.getInstanceName(), "|", ' ', 100));
-        System.out.println(pad("|", "         Primary PORT:" + routableDeployableConfig.getMainPort(), "|", ' ', 100));
-        System.out.println(pad("|", "          Manage PORT:" + routableDeployableConfig.getManagePort(), "|", ' ', 100));
+        System.out.println(pad("|", "      Service CLUSTER:" + instanceConfig.getClusterName(), "|", ' ', 100));
+        System.out.println(pad("|", "         Service HOST:" + instanceConfig.getHost(), "|", ' ', 100));
+        System.out.println(pad("|", "      Service SERVICE:" + instanceConfig.getServiceName(), "|", ' ', 100));
+        System.out.println(pad("|", "     Service INSTANCE:" + instanceConfig.getInstanceName(), "|", ' ', 100));
+        System.out.println(pad("|", "         Primary PORT:" + instanceConfig.getMainPort(), "|", ' ', 100));
+        System.out.println(pad("|", "          Manage PORT:" + instanceConfig.getManagePort(), "|", ' ', 100));
         System.out.println(pad("|", "", "|", ' ', 100));
-        System.out.println(pad("|", "        curl " + routableDeployableConfig.getHost()
-                + ":" + routableDeployableConfig.getManagePort() + "/manage/help", "|", ' ', 100));
+        System.out.println(pad("|", "        curl " + instanceConfig.getHost()
+                + ":" + instanceConfig.getManagePort() + "/manage/help", "|", ' ', 100));
         System.out.println(pad("|", "", "|", ' ', 100));
         System.out.println(pad("-", "", "-", '-', 100));
     }

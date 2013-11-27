@@ -50,7 +50,15 @@ public class ConfigBinder {
         this.properties = properties;
     }
 
+    public String get(String propertyKey) {
+        return properties.getProperty(propertyKey);
+    }
+
     public <T extends Config> T bind(Class<T> configInterface) {
+        return bind(configInterface, new HashMap<String, String>());
+    }
+
+    public <T extends Config> T bind(Class<T> configInterface, Map<String, String> backingStorage) {
         Config config = bound.get(configInterface);
         if (config != null) {
             return (T) config;

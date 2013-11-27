@@ -16,14 +16,17 @@
 package com.jivesoftware.os.upena.main;
 
 import org.merlin.config.Config;
+import org.merlin.config.defaults.BooleanDefault;
 import org.merlin.config.defaults.IntDefault;
 
-public interface JavaStartupConfiguration extends Config {
+public interface AsyncLoggingConfig extends Config {
 
-    @IntDefault(512)
-    public Integer getXmx();
+    @BooleanDefault(false)
+    public Boolean getUseAsyncLogger();
 
-    @IntDefault(64)
-    public Integer getXms();
+    @BooleanDefault(true)
+    public Boolean getIsBlocking();
 
+    @IntDefault(128)
+    public int getBufferSize();
 }

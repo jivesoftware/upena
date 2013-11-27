@@ -50,5 +50,7 @@ public class Main {
         deployable.addResource(resource);
         deployable.buildServer().start();
 
+        //deployable.buildStatusReporter(null).start();
+
     }
 }

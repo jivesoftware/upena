@@ -8,15 +8,16 @@ LOG_PATH=${APP_ROOT}/var/log
 SERVICE_NAME=$(basename $APP_ROOT);
 
 
-CLASSPATH=`cat $APP_ROOT/lib/build.properties | grep classpath | tr '=' ' ' | awk '{ print $2 }' | sed 's/\\\\//g'`
-DEPLOYABLE_ARTIFACT=`cat $APP_ROOT/lib/build.properties | grep deployable.artifact | tr '=' ' ' | awk '{ print $2 }'`
-JAVA_MAIN=`cat $APP_ROOT/lib/build.properties | grep "java.main" | tr '=' ' ' | awk '{ print $2 }'`
+CLASSPATH=`grep classpath $APP_ROOT/lib/build.properties | sed -e 's/.*=//g' | sed 's/\\\\//g'`
+DEPLOYABLE_ARTIFACT=`grep deployable.artifact $APP_ROOT/lib/build.properties | sed -e 's/.*=//g'`
+JAVA_MAIN=`grep "java.main" $APP_ROOT/lib/build.properties | sed -e 's/.*=//g'`
 
-JMX_PORT=`cat $APP_ROOT/config/instance.properties | grep RoutableDeployableConfig_default_jmxPort | tr '=' ' ' | awk '{ print $2 }'`
-DEBUG_PORT=`cat $APP_ROOT/config/instance.properties | grep RoutableDeployableConfig_default_debugPort | tr '=' ' ' | awk '{ print $2 }'`
+JMX_PORT=`grep InstanceConfig_default_jmxPort $APP_ROOT/config/instance.properties | sed -e 's/.*=//g'`
+DEBUG_PORT=`grep InstanceConfig_default_debugPort $APP_ROOT/config/instance.properties | sed -e 's/.*=//g'`
 
-JAVA_XMX=`cat $APP_ROOT/config/config.properties | grep JavaStartupConfiguration_default_xmx | tr '=' ' ' | awk '{ print $2 }'`
-JAVA_XMS=`cat $APP_ROOT/config/config.properties | grep JavaStartupConfiguration_default_xms | tr '=' ' ' | awk '{ print $2 }'`
+JAVA_XMX=`grep JavaStartupConfig_default_xmx $APP_ROOT/config/config.properties | sed -e 's/.*=//g'`
+JAVA_XMS=`grep JavaStartupConfig_default_xms $APP_ROOT/config/config.properties | sed -e 's/.*=//g'`
+JAVA_GC=`grep JavaStartupConfig_default_garbageCollector $APP_ROOT/config/config.properties | sed -e 's/.*=//g'`
 
 
 # is the service already running?
@@ -40,7 +41,6 @@ echo "java.xms="${JAVA_XMS}
 
 cd $APP_ROOT && nohup $JAVA_HOME/bin/java \
   -DserviceName=${SERVICE_NAME} \
-  $JAVA_LIBRARY_PATH_OPTS \
   -cp ${DEPLOYABLE_ARTIFACT}:${CLASSPATH} \
   -Xms${JAVA_XMS}m \
   -Xmx${JAVA_XMX}m \

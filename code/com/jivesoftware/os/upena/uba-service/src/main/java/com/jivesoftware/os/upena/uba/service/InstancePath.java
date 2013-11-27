@@ -57,7 +57,7 @@ public class InstancePath {
         return instanceProperties;
     }
 
-    static String instancePrefix = "RoutableDeployableConfig_default_";
+    static String instancePrefix = "InstanceConfig_default_";
 
     InstanceDescriptor readInstanceDescriptor() throws FileNotFoundException, IOException {
         Properties properties = new Properties();

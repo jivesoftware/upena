@@ -1,10 +1,10 @@
 #!/bin/bash
 
 APP_ROOT=$(cd $(dirname $0)/..; pwd);
-CLASSPATH=`cat $APP_ROOT/lib/build.properties | grep classpath | tr '=' ' ' | awk '{ print $2 }' | sed 's/\\\\//g'`
-CONFIG_HOST=`cat $APP_ROOT/config/instance.properties | grep RoutableDeployableConfig_default_routesHost | tr '=' ' ' | awk '{ print $2 }'`
-CONFIG_PORT=`cat $APP_ROOT/config/instance.properties | grep RoutableDeployableConfig_default_routesPort | tr '=' ' ' | awk '{ print $2 }'`
-INSTANCE_KEY=`cat $APP_ROOT/config/instance.properties | grep RoutableDeployableConfig_default_instanceKey | tr '=' ' ' | awk '{ print $2 }'`
+CLASSPATH=`grep classpath $APP_ROOT/lib/build.properties | sed -e 's/.*=//g' | sed 's/\\\\//g'`
+CONFIG_HOST=`grep InstanceConfig_default_routesHost $APP_ROOT/config/instance.properties | sed -e 's/.*=//g'`
+CONFIG_PORT=`grep InstanceConfig_default_routesPort $APP_ROOT/config/instance.properties | sed -e 's/.*=//g'`
+INSTANCE_KEY=`grep InstanceConfig_default_instanceKey $APP_ROOT/config/instance.properties | sed -e 's/.*=//g'`
 
 echo "Generating default config...."
 cd $APP_ROOT && $JAVA_HOME/bin/java \

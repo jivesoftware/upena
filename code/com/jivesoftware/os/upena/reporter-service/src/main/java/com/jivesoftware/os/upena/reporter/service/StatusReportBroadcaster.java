@@ -15,6 +15,7 @@
  */
 package com.jivesoftware.os.upena.reporter.service;
 
+import com.jivesoftware.os.jive.utils.base.service.ServiceHandle;
 import com.jivesoftware.os.jive.utils.logger.LoggerSummary;
 import com.jivesoftware.os.upena.reporter.shared.StatusReport;
 import java.io.File;
@@ -27,6 +28,7 @@ import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -35,32 +37,40 @@ import java.util.concurrent.TimeUnit;
 /**
  *
  */
-public class StatusReportBroadcaster {
+public class StatusReportBroadcaster implements ServiceHandle {
 
     static public interface StatusReportCallback {
 
         void annouce(StatusReport statusReport) throws Exception;
     }
-    private static ScheduledExecutorService newScheduledThreadPool;
-    private static final int startupTimestampInSeconds = (int) TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis());
+    private ScheduledExecutorService newScheduledThreadPool;
+    private final int startupTimestampInSeconds = (int) TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis());
+    private final String uuid = UUID.randomUUID().toString();
+    private final Map<String,String> instance;
+    private final long annouceEveryNMills;
+    private final StatusReportCallback statusReportCallback;
 
-    synchronized public static void initialize(
-            String instanceKey,
-            long annouceEveryNMills,
-            StatusReportCallback statusReportCallback) throws SocketException {
+    public StatusReportBroadcaster(Map<String,String> instance, long annouceEveryNMills, StatusReportCallback statusReportCallback) {
+        this.instance = instance;
+        this.annouceEveryNMills = annouceEveryNMills;
+        this.statusReportCallback = statusReportCallback;
+    }
+
+    @Override
+    synchronized public void start() throws SocketException {
         ArrayList<String> ipAddrs = new ArrayList<>();
         ArrayList<String> hostnames = new ArrayList<>();
         scanNics(ipAddrs, hostnames);
 
         StatusReport statusReport = new StatusReport(
-                UUID.randomUUID().toString(),
+                uuid,
                 new File("." + File.separator).getAbsolutePath(),
                 ManagementFactory.getRuntimeMXBean().getVmName(),
                 ManagementFactory.getRuntimeMXBean().getVmVendor(),
                 ManagementFactory.getRuntimeMXBean().getVmVersion(),
                 hostnames,
                 ipAddrs,
-                instanceKey,
+                instance,
                 (int) TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()),
                 startupTimestampInSeconds,
                 0.0f,
@@ -69,21 +79,24 @@ public class StatusReportBroadcaster {
                 LoggerSummary.INSTANCE_EXTERNAL_INTERACTIONS.errors);
 
         newScheduledThreadPool = Executors.newScheduledThreadPool(1);
-        newScheduledThreadPool.scheduleWithFixedDelay(
-                new StatusReportTask(statusReport, statusReportCallback),
-                0,
-                annouceEveryNMills,
-                TimeUnit.MILLISECONDS);
+        if (annouceEveryNMills > 0) {
+            newScheduledThreadPool.scheduleWithFixedDelay(
+                    new StatusReportTask(statusReport, statusReportCallback),
+                    0,
+                    annouceEveryNMills,
+                    TimeUnit.MILLISECONDS);
+        }
     }
 
-    synchronized public static void shutdown() {
+    @Override
+    synchronized public void stop() {
         if (newScheduledThreadPool != null) {
             newScheduledThreadPool.shutdownNow();
         }
         newScheduledThreadPool = null;
     }
 
-    synchronized public static boolean isTerminated() {
+    synchronized public boolean isTerminated() {
         return newScheduledThreadPool == null || newScheduledThreadPool.isTerminated();
     }
 
