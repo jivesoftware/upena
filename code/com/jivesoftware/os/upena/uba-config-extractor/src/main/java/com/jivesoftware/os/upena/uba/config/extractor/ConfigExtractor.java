@@ -62,35 +62,50 @@ public class ConfigExtractor {
             File configDir = new File("./config");
             configDir.mkdirs();
             ConfigExtractor configExtractor = new ConfigExtractor(new PropertyPrefix(), subTypesOf);
-            configExtractor.writeDefaultsToFile(new File("config/default-config.properties"));
+            File defaultConfigFile = new File(configDir, "default-config.properties");
+            configExtractor.writeDefaultsToFile(defaultConfigFile);
 
             RequestHelper buildRequestHelper = buildRequestHelper(args[0], Integer.parseInt(args[1]));
 
             Properties defaultProperties = createKeySortedProperties();
-            defaultProperties.load(new FileInputStream("config/default-config.properties"));
+            defaultProperties.load(new FileInputStream(defaultConfigFile));
             Map<String, String> config = new HashMap<>();
             for (Map.Entry<Object, Object> entry : defaultProperties.entrySet()) {
                 config.put(entry.getKey().toString(), entry.getValue().toString());
             }
 
-            UpenaConfig upenaConfig = new UpenaConfig("default", args[2], config);
-            UpenaConfig gotConfig = buildRequestHelper.executeRequest(upenaConfig, "/upenaConfig/set", UpenaConfig.class, null);
-            if (gotConfig == null) {
-                throw new RuntimeException("Failed to publish default config for " + Arrays.deepToString(args));
+            UpenaConfig setDefaults = new UpenaConfig("default", args[2], config);
+            UpenaConfig setConfig = buildRequestHelper.executeRequest(setDefaults, "/upenaConfig/set", UpenaConfig.class, null);
+            if (setConfig == null) {
+                System.out.println("Failed to publish default config for " + Arrays.deepToString(args));
             }
 
-            upenaConfig = new UpenaConfig("override", args[2], config);
-            gotConfig = buildRequestHelper.executeRequest(upenaConfig, "/upenaConfig/get", UpenaConfig.class, null);
+            UpenaConfig getOverrides = new UpenaConfig("override", args[2], config);
+            UpenaConfig gotConfig = buildRequestHelper.executeRequest(getOverrides, "/upenaConfig/get", UpenaConfig.class, null);
             if (gotConfig == null) {
-                throw new RuntimeException("Failed to get override config for " + Arrays.deepToString(args));
+                System.out.println("Failed to publish default config for " + Arrays.deepToString(args));
+            } else {
+                Properties override = createKeySortedProperties();
+                override.putAll(gotConfig.properties);
+                override.store(new FileOutputStream("config/override-config.properties"), "");
             }
-            Properties overlay = createKeySortedProperties();
-            overlay.putAll(gotConfig.properties);
-            overlay.store(new FileOutputStream("config/override-config.properties"), "");
+
+            Properties instanceProperties = createKeySortedProperties();
+            File configFile = new File("config/instance.properties");
+            if (configFile.exists()) {
+                instanceProperties.load(new FileInputStream(configFile));
+            }
+
+            Properties overrideProperties = createKeySortedProperties();
+            configFile = new File("config/override-config.properties");
+            if (configFile.exists()) {
+                overrideProperties.load(new FileInputStream(configFile));
+            }
 
             Properties properties = createKeySortedProperties();
             properties.putAll(defaultProperties);
-            properties.putAll(gotConfig.properties);
+            properties.putAll(overrideProperties);
+            properties.putAll(instanceProperties);
             properties.store(new FileOutputStream("config/config.properties"), "");
 
             System.exit(0);

@@ -95,20 +95,6 @@ public class UpenaConfigRestEndpoints {
         }
     }
 
-    @POST
-    @Consumes("application/json")
-    @Path("/removeReleaseGroup")
-    public Response removeReleaseGroup(String instanceKey) {
-        try {
-            LOG.debug("Attempting to remove: " + instanceKey);
-            upenaConfigStore.remove(instanceKey);
-            return ResponseHelper.INSTANCE.jsonResponse("removed");
-        } catch (Exception x) {
-            LOG.warn("Failed to remove: " + instanceKey, x);
-            return ResponseHelper.INSTANCE.errorResponse("Failed to remove " + instanceKey, x);
-        }
-    }
-
     @GET
     @Consumes("application/json")
     @Path("/instanceConfig")

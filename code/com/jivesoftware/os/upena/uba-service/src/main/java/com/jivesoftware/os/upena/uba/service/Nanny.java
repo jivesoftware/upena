@@ -34,7 +34,6 @@ public class Nanny {
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
     private final InstancePath instancePath;
     private final DeployableValidator deployableValidator;
-    private final DeployableFoundation deployableFoundation;
     private final DeployLog deployLog;
     private final DeployableScriptInvoker invokeScript;
     private final AtomicBoolean redeploy;
@@ -46,13 +45,11 @@ public class Nanny {
     public Nanny(InstanceDescriptor instanceDescriptor,
             InstancePath instancePath,
             DeployableValidator deployableValidator,
-            DeployableFoundation deployableFoundation,
             DeployLog deployLog,
             DeployableScriptInvoker invokeScript) {
         this.instanceDescriptor = new AtomicReference<>(instanceDescriptor);
         this.instancePath = instancePath;
         this.deployableValidator = deployableValidator;
-        this.deployableFoundation = deployableFoundation;
         this.deployLog = deployLog;
         this.invokeScript = invokeScript;
         linkedBlockingQueue = new LinkedBlockingQueue<>(10);
@@ -85,13 +82,13 @@ public class Nanny {
     }
 
     synchronized public String nanny(String host, String upenaHost, int upenaPort) {
-        deployLog.clear();
         if (destroyed.get()) {
             deployLog.log("Nanny tried to check a service that has been destroyed. " + this, null);
             return deployLog.getState();
         }
         if (linkedBlockingQueue.size() == 0) {
             try {
+                deployLog.clear();
                 if (redeploy.get()) {
                     NannyDestroyCallable destroyTask = new NannyDestroyCallable(
                             instancePath,
@@ -102,7 +99,7 @@ public class Nanny {
 
                         NannyDeployCallable deployTask = new NannyDeployCallable(host, upenaHost, upenaPort,
                                 instanceDescriptor.get(), instancePath,
-                                deployLog, deployableValidator, deployableFoundation,
+                                deployLog, deployableValidator,
                                 invokeScript);
                         Future<Boolean> deployedFuture = threadPoolExecutor.submit(deployTask);
                         if (deployedFuture.get()) {

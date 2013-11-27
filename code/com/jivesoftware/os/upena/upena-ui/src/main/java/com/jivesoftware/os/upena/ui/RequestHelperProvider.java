@@ -30,10 +30,10 @@ public class RequestHelperProvider extends JPanel {
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
         final ImageIcon background = Util.icon("cluster");
         JLabel banner = new JLabel(background);
-        banner.setMinimumSize(new Dimension(48, 48));
-        banner.setSize(new Dimension(48, 48));
-        banner.setPreferredSize(new Dimension(48, 48));
-        banner.setMaximumSize(new Dimension(48, 48));
+        banner.setMinimumSize(new Dimension(72, 48));
+        banner.setSize(new Dimension(72, 48));
+        banner.setPreferredSize(new Dimension(72, 48));
+        banner.setMaximumSize(new Dimension(72, 48));
         add(banner);
         add(Box.createRigidArea(new Dimension(10, 0)));
 

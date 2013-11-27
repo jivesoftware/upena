@@ -15,9 +15,8 @@
  */
 package com.jivesoftware.os.upena.uba.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jivesoftware.os.upena.routing.shared.InstanceDescriptor;
-import java.io.File;
+import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -29,15 +28,13 @@ public class Uba {
     final String host;
     final String upenaHost;
     final int upenaPort;
-    private final ObjectMapper mapper;
     private final UbaTree ubaTree;
     private final DeployableScriptInvoker invokeScript;
 
-    public Uba(String host, String upenaHost, int upenaPort, ObjectMapper mapper, UbaTree ubaTree) {
+    public Uba(String host, String upenaHost, int upenaPort, UbaTree ubaTree) {
         this.host = host;
         this.upenaHost = upenaHost;
         this.upenaPort = upenaPort;
-        this.mapper = mapper;
         this.ubaTree = ubaTree;
         this.invokeScript = new DeployableScriptInvoker(Executors.newCachedThreadPool(new ThreadFactory() {
             private final AtomicLong count = new AtomicLong();
@@ -55,9 +52,13 @@ public class Uba {
             @Override
             public void conductorPath(NameAndKey[] path) {
                 InstancePath instancePath = new InstancePath(ubaTree.getRoot(), path);
-                InstanceDescriptor instanceDescriptor = instanceDescriptor(instancePath);
-                if (instanceDescriptor != null) {
-                    instances.put(instanceDescriptor, instancePath);
+                try {
+                    if (instancePath.instanceProperties().exists()) {
+                        InstanceDescriptor id = instancePath.readInstanceDescriptor();
+                        instances.put(id, instancePath);
+                    }
+                } catch (IOException ex) {
+                    ex.printStackTrace(); //hmmm
                 }
             }
         });
@@ -81,21 +82,7 @@ public class Uba {
             new NameAndKey(Integer.toString(instanceDescriptor.instanceName), instanceDescriptor.instanceKey)
         });
 
-        return new Nanny(instanceDescriptor, instancePath, new DeployableValidator(), new DeployableFoundation(mapper), new DeployLog(), invokeScript);
-    }
-
-    private InstanceDescriptor instanceDescriptor(InstancePath instancePath) {
-        File instanceDescriptorFile = new File(instancePath.serviceRoot(), "instanceDescriptor.json");
-        if (instanceDescriptorFile.exists()) {
-            try {
-                return mapper.readValue(instanceDescriptorFile, InstanceDescriptor.class);
-            } catch (Exception x) {
-                x.printStackTrace(); // Hmmm
-                return null;
-            }
-        } else {
-            return null;
-        }
+        return new Nanny(instanceDescriptor, instancePath, new DeployableValidator(), new DeployLog(), invokeScript);
     }
 
 }

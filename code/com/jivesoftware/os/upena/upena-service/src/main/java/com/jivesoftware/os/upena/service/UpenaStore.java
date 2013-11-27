@@ -51,6 +51,7 @@ public class UpenaStore {
 
     private final AmzaService amzaService;
     private final InstanceChanges instanceChanges;
+    private final InstanceChanges instanceRemoved;
     private final TenantChanges tenantChanges;
 
     public final TableName<ClusterKey, Cluster> clusterStoreKey = new TableName<>("master", "clusters", ClusterKey.class, null, null, Cluster.class);
@@ -71,9 +72,11 @@ public class UpenaStore {
 
     public UpenaStore(AmzaService amzaService,
             InstanceChanges instanceChanges,
+            InstanceChanges instanceRemoved,
             TenantChanges tenantChanges) throws Exception {
         this.amzaService = amzaService;
         this.instanceChanges = instanceChanges;
+        this.instanceRemoved = instanceRemoved;
         this.tenantChanges = tenantChanges;
 
         clusters = new UpenaTable<>(amzaService.getTable(clusterStoreKey), new ClusterKeyProvider(), null);
@@ -189,7 +192,15 @@ public class UpenaStore {
                 changes.add(new InstanceChanged(value.getValue().hostKey.getKey(), key.getKey()));
                 instanceChanges.changed(changes);
             }
-        }, null));
+        }, new KeyValueChange<InstanceKey, Instance>() {
+
+            @Override
+            public void change(InstanceKey key, TimestampedValue<Instance> value) throws Exception {
+                List<InstanceChanged> changes = new ArrayList<>();
+                changes.add(new InstanceChanged(value.getValue().hostKey.getKey(), key.getKey()));
+                instanceRemoved.changed(changes);
+            }
+        }));
 
         amzaService.watch(tenantStoreKey, new Changes<>(new KeyValueChange<TenantKey, Tenant>() {
             @Override

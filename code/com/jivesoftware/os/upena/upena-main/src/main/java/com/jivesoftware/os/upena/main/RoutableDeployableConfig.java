@@ -21,33 +21,46 @@ import org.merlin.config.defaults.IntDefault;
 
 public interface RoutableDeployableConfig extends Config {
 
-    @Default("unspecified")
-    String getInstanceGUID();
-
-    @Default("local")
-    String getCluster();
-
     @Default("localhost")
     String getHost();
-
-    @Default("unspecified")
-    String getServiceName();
-
-    @Default("unspecified")
-    String getVersion();
-
-    @IntDefault(-1)
-    Integer getInstanceId();
-
-    @IntDefault(-1)
-    Integer getManagePort();
-
-    @IntDefault(-1)
-    Integer getPort();
 
     @Default("localhost")
     String getRoutesHost();
 
     @IntDefault(-1)
     Integer getRoutesPort();
+
+    @Default("-1")
+    String getClusterKey();
+
+    @Default("unspecified")
+    String getClusterName();
+
+    @Default("-1")
+    String getServiceKey();
+
+    @Default("unspecified")
+    String getServiceName();
+
+    @Default("-1")
+    String getReleaseGroupKey();
+
+    @Default("unspecified")
+    String getReleaseGroupName();
+
+    @Default("unspecified")
+    String getInstanceKey();
+
+    @IntDefault(-1)
+    Integer getInstanceName();
+
+    @Default("unspecified")
+    String getVersion();
+
+    @IntDefault(-1)
+    Integer getMainPort();
+
+    @IntDefault(-1)
+    Integer getManagePort();
+
 }

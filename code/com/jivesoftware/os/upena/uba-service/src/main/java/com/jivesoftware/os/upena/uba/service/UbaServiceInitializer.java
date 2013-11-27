@@ -39,7 +39,7 @@ public class UbaServiceInitializer {
         File root = new File(new File(workingDir), "services/");
         root.mkdirs();
         UbaTree tree = new UbaTree(root, new String[]{"cluster", "service", "release", "instance"});
-        Uba conductor = new Uba(composerHost, composerHost, composerPort, mapper, tree);
+        Uba conductor = new Uba(composerHost, composerHost, composerPort, tree);
         UbaService conductorService = new UbaService(conductorClient, conductor, hostKey);
         return conductorService;
     }

@@ -130,6 +130,12 @@ public class Main {
         System.out.println("|      Amza Service Online");
         System.out.println("-----------------------------------------------------------------------");
 
+        final UpenaConfigStore upenaConfigStore = new UpenaConfigStore(amzaService);
+
+        System.out.println("-----------------------------------------------------------------------");
+        System.out.println("|      Upena Config Store Online");
+        System.out.println("-----------------------------------------------------------------------");
+
         final AtomicReference<UbaService> conductor = new AtomicReference<>();
         UpenaStore upenaStore = new UpenaStore(amzaService, new InstanceChanges() {
             @Override
@@ -148,6 +154,15 @@ public class Main {
                         }
                     }
                 });
+            }
+        }, new InstanceChanges() {
+
+            @Override
+            public void changed(List<InstanceChanged> changes) throws Exception {
+                for (InstanceChanged instanceChanged : changes) {
+                    upenaConfigStore.remove(instanceChanged.getInstanceId(), "default");
+                    upenaConfigStore.remove(instanceChanged.getInstanceId(), "override");
+                }
             }
         }, new TenantChanges() {
             @Override
@@ -179,11 +194,6 @@ public class Main {
         System.out.println("|      Upena Service Online");
         System.out.println("-----------------------------------------------------------------------");
 
-        UpenaConfigStore upenaConfigStore = new UpenaConfigStore(amzaService);
-
-        System.out.println("-----------------------------------------------------------------------");
-        System.out.println("|      Upena Config Store Online");
-        System.out.println("-----------------------------------------------------------------------");
 
         final UbaService conductorService = new UbaServiceInitializer().initialize(hostKey.getKey(),
                 workingDir,

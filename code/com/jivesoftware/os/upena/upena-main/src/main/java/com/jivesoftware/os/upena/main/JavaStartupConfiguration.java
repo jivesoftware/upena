@@ -20,10 +20,10 @@ import org.merlin.config.defaults.IntDefault;
 
 public interface JavaStartupConfiguration extends Config {
 
-    @IntDefault(64)
+    @IntDefault(512)
     public Integer getXmx();
 
-    @IntDefault(512)
+    @IntDefault(64)
     public Integer getXms();
 
 }

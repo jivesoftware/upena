@@ -72,7 +72,7 @@ public class UbaService {
         InstanceDescriptorsRequest request = new InstanceDescriptorsRequest(hostKey);
         InstanceDescriptorsResponse declaredInstances = upenaClient.instanceDescriptor(request);
         if (declaredInstances.decommisionRequestingHost) {
-            decommisionOrchestraService();
+            decommisionUbaService();
             return Collections.emptyMap();
         } else {
             Map<InstanceDescriptor, InstancePath> onDiskInstances = uba.getOnDiskInstances();
@@ -121,7 +121,7 @@ public class UbaService {
         }
     }
 
-    public void decommisionOrchestraService() throws Exception {
+    public void decommisionUbaService() throws Exception {
         for (Nanny nanny : rollCall().values()) {
             nanny.destroy();
         }
@@ -137,8 +137,8 @@ public class UbaService {
     public UbaReport report() throws Exception {
         UbaReport report = new UbaReport();
         for (Nanny nanny : rollCall().values()) {
-            nanny.nanny(uba.host, uba.upenaHost, uba.upenaPort);
             report.nannyReports.add(nanny.report());
+            nanny.nanny(uba.host, uba.upenaHost, uba.upenaPort);
         }
         return report;
     }

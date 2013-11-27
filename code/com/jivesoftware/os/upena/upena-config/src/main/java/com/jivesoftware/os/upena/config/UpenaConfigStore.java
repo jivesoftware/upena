@@ -15,10 +15,11 @@
  */
 package com.jivesoftware.os.upena.config;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jivesoftware.os.amza.service.AmzaService;
 import com.jivesoftware.os.amza.service.AmzaTable;
 import com.jivesoftware.os.amza.shared.TableName;
-import com.jivesoftware.os.amza.shared.TimestampedValue;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,69 +28,77 @@ import java.util.Set;
 public class UpenaConfigStore {
 
     private final AmzaService amzaService;
+    private final ObjectMapper mapper = new ObjectMapper();
 
     public UpenaConfigStore(AmzaService amzaService) {
         this.amzaService = amzaService;
     }
 
     private String createTableName(String instanceKey, String context) {
-        return "upena.config." + instanceKey + "/" + context;
+        return "config/" + instanceKey + "/" + context;
     }
 
-    synchronized private AmzaTable<String, String> getPartition(String instanceKey, String context) throws Exception {
+    synchronized private AmzaTable<String, byte[]> getPartition() throws Exception {
 
-        String pname = createTableName(instanceKey, context);
-        TableName<String, String> tableName = new TableName<>("master",
-                pname,
-                String.class, null, null, String.class);
+        TableName<String, byte[]> tableName = new TableName<>("master",
+                "config",
+                String.class, null, null, byte[].class);
         return amzaService.getTable(tableName);
     }
 
-    synchronized public void remove(String instanceKey) throws Exception {
-        Map<TableName, AmzaTable> tables = amzaService.getTables();
-        for (Map.Entry<TableName, AmzaTable> entry : tables.entrySet()) {
-            TableName tableName = entry.getKey();
-            if (tableName.getTableName().startsWith("upena.config." + instanceKey)) {
-                amzaService.destroyTable(tableName);
-            }
+    synchronized public void remove(String instanceKey, String context) throws Exception {
+        AmzaTable<String, byte[]> partition = getPartition();
+        String key = createTableName(instanceKey, context);
+        partition.remove(key);
+    }
+
+    public void set(String instanceKey, String context, Map<String, String> properties) throws Exception {
+        AmzaTable<String, byte[]> partition = getPartition();
+        String key = createTableName(instanceKey, context);
+        byte[] rawProperties = partition.get(key);
+        if (rawProperties == null) {
+            partition.set(key, mapper.writeValueAsBytes(properties));
+        } else {
+            Map<String, String> current = mapper.readValue(rawProperties, new TypeReference<HashMap<String, String>>() {
+            });
+            current.putAll(properties);
+            partition.set(key, mapper.writeValueAsBytes(current));
         }
     }
 
-    public void set(String releaseGroupKey, String context, Map<String, String> properties) throws Exception {
-        getPartition(releaseGroupKey, context).set(properties.entrySet()); // TODO only update if changed.
-    }
-
-    public void remove(String releaseGroupKey, String context, Set<String> keys) throws Exception {
-        getPartition(releaseGroupKey, context).remove(keys); // TODO only update if changed.
+    public void remove(String instanceKey, String context, Set<String> keys) throws Exception {
+        AmzaTable<String, byte[]> partition = getPartition();
+        String key = createTableName(instanceKey, context);
+        byte[] rawProperties = partition.get(key);
+        if (rawProperties != null) {
+            Map<String, String> current = mapper.readValue(rawProperties, new TypeReference<HashMap<String, String>>() {
+            });
+            for (String k : keys) {
+                current.remove(k);
+            }
+            partition.set(key, mapper.writeValueAsBytes(current));
+        }
     }
 
     public Map<String, String> get(String instanceKey, String context, List<String> keys) throws Exception {
         final Map<String, String> results = new HashMap<>();
-        if (keys != null && !keys.isEmpty()) {
-            getPartition(instanceKey, context).get(keys, new AmzaTable.ValueStream<Map.Entry<String, String>>() {
-
-                @Override
-                public Map.Entry<String, String> stream(Map.Entry<String, String> value) {
-                    if (value != null) {
-                        results.put(value.getKey(), value.getValue());
-                    }
-                    return value;
-                }
+        AmzaTable<String, byte[]> partition = getPartition();
+        String key = createTableName(instanceKey, context);
+        byte[] rawProperties = partition.get(key);
+        if (rawProperties != null) {
+            Map<String, String> current = mapper.readValue(rawProperties, new TypeReference<HashMap<String, String>>() {
             });
-            return results;
-        } else {
-            AmzaTable<String, String> partition = getPartition(instanceKey, context);
-            partition.listEntries(new AmzaTable.ValueStream<Map.Entry<String, TimestampedValue<String>>>() {
-
-                @Override
-                public Map.Entry<String, TimestampedValue<String>> stream(Map.Entry<String, TimestampedValue<String>> value) {
-                    if (value != null && !value.getValue().getTombstoned()) {
-                        results.put(value.getKey(), value.getValue().getValue());
+            if (keys != null && !keys.isEmpty()) {
+                for (String k : keys) {
+                    String v = current.get(k);
+                    if (v != null) {
+                        results.put(k, v);
                     }
-                    return value;
                 }
-            });
-            return results;
+            } else {
+                results.putAll(current);
+            }
         }
+        return results;
     }
 }

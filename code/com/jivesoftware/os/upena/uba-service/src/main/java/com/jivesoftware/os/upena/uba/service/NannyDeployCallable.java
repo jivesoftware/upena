@@ -46,12 +46,11 @@ class NannyDeployCallable implements Callable<Boolean> {
     private final InstancePath instancePath;
     private final DeployLog deployLog;
     private final DeployableValidator deployableValidator;
-    private final DeployableFoundation deployableFoundation;
     private final DeployableScriptInvoker invokeScript;
 
     public NannyDeployCallable(String host, String upenaHost, int upenaPort,
             InstanceDescriptor id, InstancePath instancePath,
-            DeployLog deployLog, DeployableValidator deployableValidator, DeployableFoundation deployableFoundation,
+            DeployLog deployLog, DeployableValidator deployableValidator,
             DeployableScriptInvoker invokeScript) {
         this.host = host;
         this.upenaHost = upenaHost;
@@ -60,7 +59,6 @@ class NannyDeployCallable implements Callable<Boolean> {
         this.instancePath = instancePath;
         this.deployLog = deployLog;
         this.deployableValidator = deployableValidator;
-        this.deployableFoundation = deployableFoundation;
         this.invokeScript = invokeScript;
     }
 
@@ -68,7 +66,7 @@ class NannyDeployCallable implements Callable<Boolean> {
     public Boolean call() throws Exception {
         try {
             if (deploy()) {
-                deployableFoundation.initialize(host, upenaHost, upenaPort, id, instancePath, deployLog);
+                instancePath.writeInstanceDescriptor(host, upenaHost, upenaPort, id);
                 if (!invokeScript.invoke(deployLog, instancePath, "init")) {
                     deployLog.log("nanny failed to init service.", null);
                     return false;

@@ -47,10 +47,10 @@ public class Deployable {
 
         TenantRoutingBirdBuilder tenantRoutingBirdBuilder = new TenantRoutingBirdBuilder(routableDeployableConfig.getRoutesHost(),
                 routableDeployableConfig.getRoutesPort());
-        tenantRoutingBirdBuilder.setInstanceId(routableDeployableConfig.getInstanceGUID());
+        tenantRoutingBirdBuilder.setInstanceId(routableDeployableConfig.getInstanceKey());
         tenantRoutingProvider = tenantRoutingBirdBuilder.build();
 
-        String applicationName = "manage " + routableDeployableConfig.getServiceName() + " " + routableDeployableConfig.getCluster();
+        String applicationName = "manage " + routableDeployableConfig.getServiceName() + " " + routableDeployableConfig.getClusterName();
         restfulManageServer = new RestfulManageServer(routableDeployableConfig.getManagePort(),
                 applicationName,
                 128,
@@ -62,7 +62,7 @@ public class Deployable {
         restfulManageServer.addInjectable(MainProperties.class, new MainProperties(args));
 
         jerseyEndpoints = new JerseyEndpoints();
-        restfulServer = new InitializeRestfulServer(routableDeployableConfig.getPort(),
+        restfulServer = new InitializeRestfulServer(routableDeployableConfig.getMainPort(),
                 applicationName,
                 128,
                 10000);
@@ -94,7 +94,7 @@ public class Deployable {
         if (manageServerStarted.compareAndSet(false, true)) {
             long time = System.currentTimeMillis();
             RoutableDeployableConfig routableDeployableConfig = configBinder.bind(RoutableDeployableConfig.class);
-            String applicationName = "manage " + routableDeployableConfig.getServiceName() + " " + routableDeployableConfig.getCluster();
+            String applicationName = "manage " + routableDeployableConfig.getServiceName() + " " + routableDeployableConfig.getClusterName();
             ComponentHealthCheck healthCheck = new ComponentHealthCheck("'" + applicationName + "'service initialization", true);
             restfulManageServer.addHealthCheck(healthCheck);
             try {
@@ -144,7 +144,7 @@ public class Deployable {
     public ServiceHandle buildServer() throws Exception {
         if (manageServerStarted.compareAndSet(false, true)) {
             RoutableDeployableConfig routableDeployableConfig = configBinder.bind(RoutableDeployableConfig.class);
-            String applicationName = routableDeployableConfig.getServiceName() + " " + routableDeployableConfig.getCluster();
+            String applicationName = routableDeployableConfig.getServiceName() + " " + routableDeployableConfig.getClusterName();
             ComponentHealthCheck healthCheck = new ComponentHealthCheck("'" + applicationName + "' service initialization", true);
             restfulManageServer.addHealthCheck(healthCheck);
             try {
@@ -175,13 +175,13 @@ public class Deployable {
 
         System.out.println(pad("-", "", "-", '-', 100));
         System.out.println(pad("|", "", "|", ' ', 100));
-        System.out.println(pad("|", "      Service INSTANCEID:" + routableDeployableConfig.getInstanceGUID(), "|", ' ', 100));
+        System.out.println(pad("|", "      Service INSTANCEKEY:" + routableDeployableConfig.getInstanceKey(), "|", ' ', 100));
         System.out.println(pad("|", "", "|", ' ', 100));
-        System.out.println(pad("|", "      Service CLUSTER:" + routableDeployableConfig.getCluster(), "|", ' ', 100));
+        System.out.println(pad("|", "      Service CLUSTER:" + routableDeployableConfig.getClusterName(), "|", ' ', 100));
         System.out.println(pad("|", "         Service HOST:" + routableDeployableConfig.getHost(), "|", ' ', 100));
         System.out.println(pad("|", "      Service SERVICE:" + routableDeployableConfig.getServiceName(), "|", ' ', 100));
-        System.out.println(pad("|", "     Service INSTANCE:" + routableDeployableConfig.getInstanceId(), "|", ' ', 100));
-        System.out.println(pad("|", "         Primary PORT:" + routableDeployableConfig.getPort(), "|", ' ', 100));
+        System.out.println(pad("|", "     Service INSTANCE:" + routableDeployableConfig.getInstanceName(), "|", ' ', 100));
+        System.out.println(pad("|", "         Primary PORT:" + routableDeployableConfig.getMainPort(), "|", ' ', 100));
         System.out.println(pad("|", "          Manage PORT:" + routableDeployableConfig.getManagePort(), "|", ' ', 100));
         System.out.println(pad("|", "", "|", ' ', 100));
         System.out.println(pad("|", "        curl " + routableDeployableConfig.getHost()
