@@ -16,7 +16,6 @@
 package com.jivesoftware.os.upena.ui;
 
 import com.jivesoftware.os.amza.shared.KeyValueFilter;
-import com.jivesoftware.os.jive.utils.http.client.rest.RequestHelper;
 import com.jivesoftware.os.upena.shared.Cluster;
 import com.jivesoftware.os.upena.shared.ClusterFilter;
 import com.jivesoftware.os.upena.shared.ClusterKey;
@@ -44,13 +43,13 @@ public class JObjectFactory {
 
     private final Map<Class, Creator<? extends Key, ?, ? extends KeyValueFilter<?, ?>>> factory = new HashMap<>();
 
-    public JObjectFactory(final RequestHelper requestHelper) {
+    public JObjectFactory(final RequestHelperProvider requestHelperProvider) {
 
         factory.put(Instance.class, new Creator<InstanceKey, Instance, InstanceFilter>() {
             @Override
             public JObject<InstanceKey, Instance, InstanceFilter> create(boolean hasPopup, IPicked<InstanceKey, Instance> picked) {
 
-                JExecutor<InstanceKey, Instance, InstanceFilter> vExecutor = new JExecutor<>(requestHelper, "instance");
+                JExecutor<InstanceKey, Instance, InstanceFilter> vExecutor = new JExecutor<>(requestHelperProvider, "instance");
                 JFieldsForInstance fields = new JFieldsForInstance(JObjectFactory.this, "", null);
                 return new JObject<>(fields, vExecutor, hasPopup, picked);
             }
@@ -60,7 +59,7 @@ public class JObjectFactory {
             @Override
             public JObject<ClusterKey, Cluster, ClusterFilter> create(boolean hasPopup, IPicked<ClusterKey, Cluster> picked) {
 
-                JExecutor<ClusterKey, Cluster, ClusterFilter> vExecutor = new JExecutor<>(requestHelper, "cluster");
+                JExecutor<ClusterKey, Cluster, ClusterFilter> vExecutor = new JExecutor<>(requestHelperProvider, "cluster");
                 JFieldsForCluster fields = new JFieldsForCluster(JObjectFactory.this, "", null);
                 return new JObject<>(fields, vExecutor, hasPopup, picked);
             }
@@ -70,7 +69,7 @@ public class JObjectFactory {
             @Override
             public JObject<HostKey, Host, HostFilter> create(boolean hasPopup, IPicked<HostKey, Host> picked) {
 
-                JExecutor<HostKey, Host, HostFilter> vExecutor = new JExecutor<>(requestHelper, "host");
+                JExecutor<HostKey, Host, HostFilter> vExecutor = new JExecutor<>(requestHelperProvider, "host");
                 JFieldsForHost fields = new JFieldsForHost(JObjectFactory.this, "", null);
                 return new JObject<>(fields, vExecutor, hasPopup, picked);
             }
@@ -80,7 +79,7 @@ public class JObjectFactory {
             @Override
             public JObject<ServiceKey, Service, ServiceFilter> create(boolean hasPopup, IPicked<ServiceKey, Service> picked) {
 
-                JExecutor<ServiceKey, Service, ServiceFilter> vExecutor = new JExecutor<>(requestHelper, "service");
+                JExecutor<ServiceKey, Service, ServiceFilter> vExecutor = new JExecutor<>(requestHelperProvider, "service");
                 JFieldsForService fields = new JFieldsForService("", null);
                 return new JObject<>(fields, vExecutor, hasPopup, picked);
             }
@@ -90,7 +89,7 @@ public class JObjectFactory {
             @Override
             public JObject<ReleaseGroupKey, ReleaseGroup, ReleaseGroupFilter> create(boolean hasPopup, IPicked<ReleaseGroupKey, ReleaseGroup> picked) {
 
-                JExecutor<ReleaseGroupKey, ReleaseGroup, ReleaseGroupFilter> vExecutor = new JExecutor<>(requestHelper, "releaseGroup");
+                JExecutor<ReleaseGroupKey, ReleaseGroup, ReleaseGroupFilter> vExecutor = new JExecutor<>(requestHelperProvider, "releaseGroup");
                 JFieldsForReleaseGroup fields = new JFieldsForReleaseGroup("", null);
                 return new JObject<>(fields, vExecutor, hasPopup, picked);
             }
@@ -100,7 +99,7 @@ public class JObjectFactory {
             @Override
             public JObject<TenantKey, Tenant, TenantFilter> create(boolean hasPopup, IPicked<TenantKey, Tenant> picked) {
 
-                JExecutor<TenantKey, Tenant, TenantFilter> vExecutor = new JExecutor<>(requestHelper, "tenant");
+                JExecutor<TenantKey, Tenant, TenantFilter> vExecutor = new JExecutor<>(requestHelperProvider, "tenant");
                 JFieldsTenant fields = new JFieldsTenant(JObjectFactory.this, "", null);
                 return new JObject<>(fields, vExecutor, hasPopup, picked);
             }

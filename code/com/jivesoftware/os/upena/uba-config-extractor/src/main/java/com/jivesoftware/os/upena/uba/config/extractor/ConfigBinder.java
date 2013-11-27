@@ -13,8 +13,11 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.jivesoftware.jive.symphony.uba.config.extractor;
+package com.jivesoftware.os.upena.uba.config.extractor;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -30,6 +33,17 @@ public class ConfigBinder {
     private final Properties properties;
     private final PropertyPrefix propertyPrefix;
     private final Map<Class, Config> bound = new ConcurrentHashMap<>();
+
+    public ConfigBinder(String[] args) throws IOException {
+        this.propertyPrefix = new PropertyPrefix();
+        this.properties = new Properties();
+        for (String arg : args) {
+            File f = new File(arg);
+            if (f.exists()) {
+                this.properties.load(new FileInputStream(f));
+            }
+        }
+    }
 
     public ConfigBinder(Properties properties) {
         this.propertyPrefix = new PropertyPrefix();

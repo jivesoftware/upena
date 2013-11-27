@@ -16,7 +16,6 @@
 package com.jivesoftware.os.upena.ui;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jivesoftware.os.jive.utils.http.client.rest.RequestHelper;
 import com.jivesoftware.os.jive.utils.shell.utils.Curl;
 import com.jivesoftware.os.uba.shared.NannyReport;
 import com.jivesoftware.os.uba.shared.UbaReport;
@@ -47,23 +46,22 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
-public class JCluster extends javax.swing.JFrame {
+public class JCluster extends JPanel {
 
     List<JNannyReport> visibleInstanceDescriptors = new ArrayList<>();
-    RequestHelper requestHelper;
+    RequestHelperProvider requestHelperProvider;
     JObjectFactory factory;
     JPanel viewResults;
     JEditRef hostId;
     Host host;
 
-    public JCluster(RequestHelper requestHelper, JObjectFactory factory) {
-        this.requestHelper = requestHelper;
+    public JCluster(RequestHelperProvider requestHelperProvider, JObjectFactory factory) {
+        this.requestHelperProvider = requestHelperProvider;
         this.factory = factory;
         initComponents();
     }
 
     private void initComponents() {
-        setTitle("Cluster");
 
         viewResults = new JPanel();
         viewResults.setLayout(new BoxLayout(viewResults, BoxLayout.Y_AXIS));
@@ -112,9 +110,9 @@ public class JCluster extends javax.swing.JFrame {
         panel.add(scrollRoutes, BorderLayout.CENTER);
         panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        add(panel);
+        setLayout(new BorderLayout());
+        add(panel, BorderLayout.CENTER);
         setPreferredSize(new Dimension(900, 600));
-        pack();
 
     }
 
@@ -183,6 +181,25 @@ public class JCluster extends javax.swing.JFrame {
                             try {
                                 openWebpage(new URI("http://" + host.hostName + ":" + id.ports.get("manage").port + "/manage/help"));
                             } catch (URISyntaxException ex) {
+                                ex.printStackTrace();
+                            }
+                        }
+                    });
+                }
+            });
+
+            buttons.add(button);
+
+            button = new JButton("Properties");
+            button.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    Util.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                status("/manage/configuration/properties");
+                            } catch (IOException ex) {
                                 ex.printStackTrace();
                             }
                         }
@@ -287,6 +304,25 @@ public class JCluster extends javax.swing.JFrame {
 
             buttons.add(button);
 
+            button = new JButton("Shutdown");
+            button.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    Util.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                status("/manage/shutdown?userName=" + requestHelperProvider.editUserName.getText());
+                            } catch (IOException ex) {
+                                ex.printStackTrace();
+                            }
+                        }
+                    });
+                }
+            });
+
+            buttons.add(button);
+
             tail = new JTextArea();
             JScrollPane scrollTail = new JScrollPane(tail,
                     JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
@@ -309,6 +345,7 @@ public class JCluster extends javax.swing.JFrame {
                 tail.setText(curl);
             } catch (Exception x) {
                 tail.setText("failed to call " + url + " " + new Date());
+                x.printStackTrace();
             }
             tail.revalidate();
             revalidate();

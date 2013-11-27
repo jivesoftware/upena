@@ -19,7 +19,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.jivesoftware.os.amza.shared.KeyValueFilter;
 import com.jivesoftware.os.amza.shared.TimestampedValue;
-import com.jivesoftware.os.jive.utils.http.client.rest.RequestHelper;
 import com.jivesoftware.os.upena.shared.Key;
 import com.jivesoftware.os.upena.shared.Stored;
 import java.awt.Color;
@@ -51,12 +50,12 @@ import javax.swing.event.MouseInputAdapter;
 public class JExecutor<K extends Key, V extends Stored, F extends KeyValueFilter<K, V>> {
 
     private final Executor thread = Executors.newSingleThreadExecutor();
-    private final RequestHelper requestHelper;
+    private final RequestHelperProvider requestHelperProvider;
     private final String context;
     private final ObjectMapper mapper = new ObjectMapper();
 
-    public JExecutor(RequestHelper requestHelper, String context) {
-        this.requestHelper = requestHelper;
+    public JExecutor(RequestHelperProvider requestHelperProvider, String context) {
+        this.requestHelperProvider = requestHelperProvider;
         this.context = context;
         mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
     }
@@ -205,7 +204,7 @@ public class JExecutor<K extends Key, V extends Stored, F extends KeyValueFilter
             thread.execute(new Runnable() {
                 @Override
                 public void run() {
-                    V result = requestHelper.executeRequest(key, "/upena/" + context + "/get", valueClass, null);
+                    V result = requestHelperProvider.get().executeRequest(key, "/upena/" + context + "/get", valueClass, null);
                     if (result != null) {
                         picked.picked(key, result);
                     } else {
@@ -225,7 +224,7 @@ public class JExecutor<K extends Key, V extends Stored, F extends KeyValueFilter
             @Override
             public void run() {
 
-                Boolean key = requestHelper.executeRequest(objectFields.key(), "/upena/" + context + "/remove", Boolean.class, null);
+                Boolean key = requestHelperProvider.get().executeRequest(objectFields.key(), "/upena/" + context + "/remove", Boolean.class, null);
                 if (key != null) {
                     viewResults.removeAll();
                     viewResults.add(new JLabel("Removed:" + key));
@@ -246,9 +245,9 @@ public class JExecutor<K extends Key, V extends Stored, F extends KeyValueFilter
             @Override
             public void run() {
                 V v = objectFields.fieldsToObject();
-                K key = requestHelper.executeRequest(v, "/upena/" + context + "/add", objectFields.keyClass(), null);
+                K key = requestHelperProvider.get().executeRequest(v, "/upena/" + context + "/add", objectFields.keyClass(), null);
                 if (key != null) {
-                    V result = requestHelper.executeRequest(key, "/upena/" + context + "/get", objectFields.valueClass(), null);
+                    V result = requestHelperProvider.get().executeRequest(key, "/upena/" + context + "/get", objectFields.valueClass(), null);
                     if (result != null) {
                         picked.picked(key, v);
                     }
@@ -265,9 +264,10 @@ public class JExecutor<K extends Key, V extends Stored, F extends KeyValueFilter
             @Override
             public void run() {
                 V v = objectFields.fieldsToObject();
-                K key = requestHelper.executeRequest(v, "/upena/" + context + "/update?key=" + objectFields.key().getKey(), objectFields.keyClass(), null);
+                String objectKey = objectFields.key().getKey();
+                K key = requestHelperProvider.get().executeRequest(v, "/upena/" + context + "/update?key=" + objectKey, objectFields.keyClass(), null);
                 if (key != null) {
-                    V result = requestHelper.executeRequest(key, "/upena/" + context + "/get", objectFields.valueClass(), null);
+                    V result = requestHelperProvider.get().executeRequest(key, "/upena/" + context + "/get", objectFields.valueClass(), null);
                     if (result != null) {
                         picked.picked(key, v);
                     }
@@ -286,7 +286,7 @@ public class JExecutor<K extends Key, V extends Stored, F extends KeyValueFilter
             @Override
             public void run() {
                 try {
-                    ConcurrentSkipListMap<String, TimestampedValue<V>> results = requestHelper.executeRequest(filter,
+                    ConcurrentSkipListMap<String, TimestampedValue<V>> results = requestHelperProvider.get().executeRequest(filter,
                             "/upena/" + context + "/find", objectFields.responseClass(), null);
                     if (results != null) {
                         viewResults.removeAll();

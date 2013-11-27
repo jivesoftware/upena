@@ -53,7 +53,7 @@ public class InstanceDescriptor {
         this.releaseGroupName = releaseGroupName.replaceAll("[^a-zA-Z0-9-_\\.]", "_");
         this.instanceKey = instanceKey;
         this.instanceName = instanceName;
-        this.versionName = versionName.replaceAll("[^a-zA-Z0-9-_\\.]", "_");
+        this.versionName = versionName;
     }
 
     public static class InstanceDescriptorPort {

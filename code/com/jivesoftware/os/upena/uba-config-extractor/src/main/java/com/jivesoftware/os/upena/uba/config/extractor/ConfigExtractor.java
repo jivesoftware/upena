@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.jivesoftware.jive.symphony.uba.config.extractor;
+package com.jivesoftware.os.upena.uba.config.extractor;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jivesoftware.os.jive.utils.http.client.HttpClient;
@@ -25,15 +25,19 @@ import com.jivesoftware.os.jive.utils.http.client.rest.RequestHelper;
 import com.jivesoftware.os.upena.config.shared.UpenaConfig;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeSet;
 import org.apache.commons.io.FileUtils;
 import org.merlin.config.BindInterfaceToConfiguration;
 import org.merlin.config.Config;
@@ -52,19 +56,20 @@ public class ConfigExtractor {
 
         try {
             Reflections reflections = new Reflections(new ConfigurationBuilder()
-                    .setUrls(ClasspathHelper.forPackage("com.jivesoftware"))
+                    .setUrls(ClasspathHelper.forPackage("com.jivesoftware")) // GRRR
                     .setScanners(new SubTypesScanner(), new TypesScanner(), new MethodAnnotationsScanner(), new TypeAnnotationsScanner()));
             Set<Class<? extends Config>> subTypesOf = reflections.getSubTypesOf(Config.class);
-
+            File configDir = new File("./config");
+            configDir.mkdirs();
             ConfigExtractor configExtractor = new ConfigExtractor(new PropertyPrefix(), subTypesOf);
-            configExtractor.writeDefaultsToFile(new File("config.properties"));
+            configExtractor.writeDefaultsToFile(new File("config/default-config.properties"));
 
             RequestHelper buildRequestHelper = buildRequestHelper(args[0], Integer.parseInt(args[1]));
 
-            Properties prop = new Properties();
-            prop.load(new FileInputStream("config.properties"));
+            Properties defaultProperties = createKeySortedProperties();
+            defaultProperties.load(new FileInputStream("config/default-config.properties"));
             Map<String, String> config = new HashMap<>();
-            for (Map.Entry<Object, Object> entry : prop.entrySet()) {
+            for (Map.Entry<Object, Object> entry : defaultProperties.entrySet()) {
                 config.put(entry.getKey().toString(), entry.getValue().toString());
             }
 
@@ -74,12 +79,35 @@ public class ConfigExtractor {
                 throw new RuntimeException("Failed to publish default config for " + Arrays.deepToString(args));
             }
 
+            upenaConfig = new UpenaConfig("override", args[2], config);
+            gotConfig = buildRequestHelper.executeRequest(upenaConfig, "/upenaConfig/get", UpenaConfig.class, null);
+            if (gotConfig == null) {
+                throw new RuntimeException("Failed to get override config for " + Arrays.deepToString(args));
+            }
+            Properties overlay = createKeySortedProperties();
+            overlay.putAll(gotConfig.properties);
+            overlay.store(new FileOutputStream("config/override-config.properties"), "");
+
+            Properties properties = createKeySortedProperties();
+            properties.putAll(defaultProperties);
+            properties.putAll(gotConfig.properties);
+            properties.store(new FileOutputStream("config/config.properties"), "");
+
             System.exit(0);
         } catch (Exception x) {
             x.printStackTrace();
             System.exit(1);
         }
 
+    }
+
+    static Properties createKeySortedProperties() {
+        return new Properties() {
+            @Override
+            public synchronized Enumeration<Object> keys() {
+                return Collections.enumeration(new TreeSet<>(super.keySet()));
+            }
+        };
     }
 
     static RequestHelper buildRequestHelper(String host, int port) {

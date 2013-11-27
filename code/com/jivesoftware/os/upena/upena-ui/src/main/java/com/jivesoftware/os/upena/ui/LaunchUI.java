@@ -57,7 +57,6 @@ public class LaunchUI {
             upena.setIconImage(icon.getImage());
         }
 
-        /* Create and display the form */
         Util.invokeLater(new Runnable() {
             @Override
             public void run() {

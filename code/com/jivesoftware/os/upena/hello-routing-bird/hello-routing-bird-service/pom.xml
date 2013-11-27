@@ -45,13 +45,11 @@
         <dependency>
             <groupId>com.jivesoftware.os.jive.utils</groupId>
             <artifactId>http-client</artifactId>
-            <version>unspecified</version>
             <type>jar</type>
         </dependency>
         <dependency>
             <groupId>com.jivesoftware.os.jive.utils</groupId>
             <artifactId>jaxrs-util</artifactId>
-            <version>unspecified</version>
             <type>jar</type>
         </dependency>
     </dependencies>

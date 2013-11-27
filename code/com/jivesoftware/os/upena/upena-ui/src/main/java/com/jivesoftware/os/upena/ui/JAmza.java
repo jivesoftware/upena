@@ -16,7 +16,6 @@
 package com.jivesoftware.os.upena.ui;
 
 import com.jivesoftware.os.amza.shared.RingHost;
-import com.jivesoftware.os.jive.utils.http.client.rest.RequestHelper;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -33,13 +32,13 @@ import javax.swing.SpringLayout;
 
 public class JAmza extends JPanel {
 
-    RequestHelper requestHelper;
+    RequestHelperProvider requestHelperProvider;
     JPanel viewResults;
     JTextField hostName;
     JTextField port;
 
-    public JAmza(RequestHelper requestHelper) {
-        this.requestHelper = requestHelper;
+    public JAmza(RequestHelperProvider requestHelperProvider) {
+        this.requestHelperProvider = requestHelperProvider;
         initComponents();
     }
 
@@ -78,7 +77,21 @@ public class JAmza extends JPanel {
         JPanel buttons = new JPanel();
         buttons.setLayout(new BoxLayout(buttons, BoxLayout.X_AXIS));
 
-        JButton list = new JButton("List");
+        JButton tableNames = new JButton("List Tables");
+        tableNames.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                java.awt.EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        tables();
+                    }
+                });
+            }
+        });
+        buttons.add(tableNames);
+
+        JButton list = new JButton("List Ring");
         list.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -146,9 +159,33 @@ public class JAmza extends JPanel {
         });
     }
 
+    public void tables() {
+
+        List tableNames = requestHelperProvider.get().executeRequest("",
+                "/amza/tables", List.class, null);
+        System.out.println(tableNames);
+        if (tableNames != null) {
+            viewResults.removeAll();
+            int count = 0;
+            for (Object h : tableNames) {
+                viewResults.add(new JLabel("Table:" + h));
+                count++;
+            }
+            SpringUtils.makeCompactGrid(viewResults, count, 1, 0, 0, 0, 0);
+            viewResults.revalidate();
+            viewResults.repaint();
+        } else {
+            viewResults.removeAll();
+            viewResults.add(new JLabel("No results"));
+            viewResults.revalidate();
+        }
+        viewResults.getParent().revalidate();
+        viewResults.getParent().repaint();
+    }
+
     public void ring() {
 
-        List ring = requestHelper.executeRequest("",
+        List ring = requestHelperProvider.get().executeRequest("",
                 "/amza/ring", List.class, null);
         System.out.println(ring);
         if (ring != null) {
@@ -173,7 +210,7 @@ public class JAmza extends JPanel {
     public void addRingHost() {
 
         RingHost host = new RingHost(hostName.getText(), Integer.parseInt(port.getText()));
-        Boolean response = requestHelper.executeRequest(host,
+        Boolean response = requestHelperProvider.get().executeRequest(host,
                 "/amza/ring/add", Boolean.class, null);
 
         if (response != null) {
@@ -191,7 +228,7 @@ public class JAmza extends JPanel {
     public void removeRingHost() {
 
         RingHost host = new RingHost(hostName.getText(), Integer.parseInt(port.getText()));
-        Boolean response = requestHelper.executeRequest(host,
+        Boolean response = requestHelperProvider.get().executeRequest(host,
                 "/amza/ring/remove", Boolean.class, null);
 
         if (response != null) {

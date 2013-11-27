@@ -15,7 +15,6 @@
  */
 package com.jivesoftware.os.upena.ui;
 
-import com.jivesoftware.os.jive.utils.http.client.rest.RequestHelper;
 import com.jivesoftware.os.upena.shared.Cluster;
 import com.jivesoftware.os.upena.shared.Host;
 import com.jivesoftware.os.upena.shared.Instance;
@@ -24,19 +23,20 @@ import com.jivesoftware.os.upena.shared.ReleaseGroup;
 import com.jivesoftware.os.upena.shared.Service;
 import com.jivesoftware.os.upena.shared.Tenant;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-public class JUpenaServices extends javax.swing.JFrame {
+public class JUpenaServices extends JPanel {
 
-    RequestHelper requestHelper;
+    RequestHelperProvider requestHelperProvider;
     JObjectFactory factory;
 
-    public JUpenaServices(RequestHelper requestHelper, JObjectFactory factory) {
-        this.requestHelper = requestHelper;
+    public JUpenaServices(RequestHelperProvider requestHelperProvider, JObjectFactory factory) {
+        this.requestHelperProvider = requestHelperProvider;
         this.factory = factory;
         initComponents();
     }
@@ -44,6 +44,9 @@ public class JUpenaServices extends javax.swing.JFrame {
     private void initComponents() {
 
         JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.SCROLL_TAB_LAYOUT);
+        JCluster cluster = new JCluster(requestHelperProvider, factory);
+        tabbedPane.add("Status", cluster);
+
         final JObject<? extends Key, ?, ?> instances = factory.create(Instance.class, true, null);
         tabbedPane.add("Instances", instances);
         tabbedPane.add("Clusters", factory.create(Cluster.class, true, null));
@@ -52,14 +55,15 @@ public class JUpenaServices extends javax.swing.JFrame {
         tabbedPane.add("Services", factory.create(Service.class, true, null));
         tabbedPane.add("Tenants", factory.create(Tenant.class, true, null));
 
-        JRoutes routes = new JRoutes(requestHelper, factory);
+        JRoutes routes = new JRoutes(requestHelperProvider, factory);
         tabbedPane.add("Routes", routes);
 
-        JConfig config = new JConfig(requestHelper, factory);
+        JConfig config = new JConfig(requestHelperProvider, factory);
         tabbedPane.add("Config", config);
 
-        JAmza amza = new JAmza(requestHelper);
+        JAmza amza = new JAmza(requestHelperProvider);
         tabbedPane.add("Admin", amza);
+
         tabbedPane.setPreferredSize(new Dimension(800, 250));
 
         tabbedPane.addChangeListener(new ChangeListener() {
@@ -79,16 +83,18 @@ public class JUpenaServices extends javax.swing.JFrame {
 
             }
         });
+        tabbedPane.setOpaque(true);
+        tabbedPane.setBackground(Color.white);
 
         JPanel m = new JPanel();
         m.setLayout(new BorderLayout(8, 8));
 
         m.add(tabbedPane, BorderLayout.CENTER);
 
-        add(m);
+        setLayout(new BorderLayout());
+        add(m, BorderLayout.CENTER);
         setSize(1024, 768);
         setPreferredSize(new Dimension(1024, 768));
-        pack();
 
         Util.invokeLater(new Runnable() {
             @Override

@@ -1,4 +1,14 @@
 #!/bin/bash
 
-echo "Refresh config not implemented"
-exit 1;
+APP_ROOT=$(cd $(dirname $0)/..; pwd);
+CLASSPATH=`cat $APP_ROOT/lib/build.properties | grep classpath | tr '=' ' ' | awk '{ print $2 }' | sed 's/\\\\//g'`
+ENV_CONFIG=$APP_ROOT/instance-env.sh
+
+source $ENV_CONFIG;
+
+echo "Generating default config...."
+cd $APP_ROOT && $JAVA_HOME/bin/java \
+  -cp :${CLASSPATH} \
+  com.jivesoftware.os.upena.uba.config.extractor.ConfigExtractor ${UPENA_HOST} ${UPENA_PORT} ${INSTANCE_KEY}
+echo "Generated default config."
+exit 0;

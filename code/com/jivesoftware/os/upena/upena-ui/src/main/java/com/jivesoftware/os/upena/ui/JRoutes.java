@@ -15,7 +15,6 @@
  */
 package com.jivesoftware.os.upena.ui;
 
-import com.jivesoftware.os.jive.utils.http.client.rest.RequestHelper;
 import com.jivesoftware.os.upena.routing.shared.ConnectionDescriptor;
 import com.jivesoftware.os.upena.routing.shared.ConnectionDescriptorsRequest;
 import com.jivesoftware.os.upena.routing.shared.ConnectionDescriptorsResponse;
@@ -42,7 +41,7 @@ import org.apache.commons.lang.mutable.MutableObject;
 
 public class JRoutes extends JPanel {
 
-    RequestHelper requestHelper;
+    RequestHelperProvider requestHelperProvider;
     JObjectFactory factory;
     JPanel viewResults;
     JEditRef tenantId;
@@ -50,8 +49,8 @@ public class JRoutes extends JPanel {
     JEditRef connectToServiceNamed;
     JTextField portName;
 
-    public JRoutes(RequestHelper requestHelper, JObjectFactory factory) {
-        this.requestHelper = requestHelper;
+    public JRoutes(RequestHelperProvider requestHelperProvider, JObjectFactory factory) {
+        this.requestHelperProvider = requestHelperProvider;
         this.factory = factory;
         initComponents();
     }
@@ -160,7 +159,7 @@ public class JRoutes extends JPanel {
     public void refresh() {
 
         final MutableObject serviceName = new MutableObject("");
-        JExecutor<ServiceKey, Service, ServiceFilter> vExecutor = new JExecutor<>(requestHelper, "service");
+        JExecutor<ServiceKey, Service, ServiceFilter> vExecutor = new JExecutor<>(requestHelperProvider, "service");
         final CountDownLatch latch = new CountDownLatch(1);
         vExecutor.get(Service.class, new ServiceKey(connectToServiceNamed.getValue()), new JPanel(), new IPicked<ServiceKey, Service>() {
             @Override
@@ -183,7 +182,7 @@ public class JRoutes extends JPanel {
 
         ConnectionDescriptorsRequest connectionDescriptorsRequest = new ConnectionDescriptorsRequest(tenantId.getValue(),
                 instanceId.getValue(), serviceName.getValue().toString(), portName.getText());
-        ConnectionDescriptorsResponse connectionDescriptorsResponse = requestHelper.executeRequest(connectionDescriptorsRequest,
+        ConnectionDescriptorsResponse connectionDescriptorsResponse = requestHelperProvider.get().executeRequest(connectionDescriptorsRequest,
                 "/upena/request/connections", ConnectionDescriptorsResponse.class, null);
 
         if (connectionDescriptorsResponse != null) {

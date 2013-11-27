@@ -13,9 +13,21 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.jivesoftware.os.upena.main;
+package com.jivesoftware.os.upena.uba.config.extractor;
 
-public interface ComponentHealthCheckProvider {
+import org.merlin.config.Config;
 
-    ComponentHealthCheck create(String name, boolean fatal);
+public class PropertyPrefix {
+
+    public String propertyPrefix(Class c) {
+        String name = c.getSimpleName();
+        String instance = "default";
+        Class[] implemented = c.getInterfaces();
+        if (implemented != null && implemented.length == 1 && implemented[0] != Config.class) {
+            name = implemented[0].getSimpleName();
+            instance = c.getSimpleName();
+        }
+
+        return name + "_" + instance + "_";
+    }
 }

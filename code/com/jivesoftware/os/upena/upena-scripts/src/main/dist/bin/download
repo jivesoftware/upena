@@ -1,4 +1,0 @@
-#!/bin/bash
-
-echo "Download not implemented"
-exit 1;

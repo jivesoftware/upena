@@ -43,7 +43,7 @@ public class UbaServiceRestEndpoints {
     public Response upload(DeployableUpload deploy) {
         try {
             LOG.info("Uploading instanceIds:" + deploy.instanceIds + " version:" + deploy.version);
-            ubaService.upload(deploy.instanceIds, deploy.version, deploy.deployableFileBytes, deploy.extension);
+            //ubaService.upload(deploy.instanceIds, deploy.version, deploy.deployableFileBytes, deploy.extension);
             LOG.info("Uploaded version:" + deploy.version + " for instanceids:" + deploy.instanceIds);
             return ResponseHelper.INSTANCE.jsonResponse("Successfuly uploaded version:" + deploy.version);
         } catch (Exception x) {

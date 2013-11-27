@@ -14,54 +14,5 @@
     <properties>
         <main.class></main.class>
     </properties>
-
-    <profiles>
-        <profile>
-            <id>make-fat-jar</id>
-            <build>
-                <plugins>
-<!--                    <plugin>
-                        <groupId>com.jivesoftware.jive.build.configuration.maven.plugins</groupId>
-                        <artifactId>git-release-notes-plugin</artifactId>
-                        <version>unspecified</version>
-                        <executions>
-                            <execution>
-                                <phase>compile</phase>
-                                <goals>
-                                    <goal>git-release-notes</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>-->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-assembly-plugin</artifactId>
-                        <configuration>
-                            <descriptorRefs>
-                                <descriptorRef>jar-with-dependencies</descriptorRef>
-                            </descriptorRefs>
-                            <archive>
-                                <manifest>
-                                    <mainClass>${main.class}</mainClass>
-                                </manifest>
-                            </archive>
-                        </configuration>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-deploy-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <phase>deploy</phase>
-                            </execution>
-                        </executions>
-                        <configuration>
-                            <file>${project.build.directory}/${project.name}-${project.version}-jar-with-dependencies.jar</file>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 </project>
 

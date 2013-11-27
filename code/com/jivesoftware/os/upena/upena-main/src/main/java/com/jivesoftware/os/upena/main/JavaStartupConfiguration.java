@@ -15,10 +15,15 @@
  */
 package com.jivesoftware.os.upena.main;
 
-import com.jivesoftware.jive.symphony.uba.config.extractor.ConfigBinder;
-import com.jivesoftware.os.server.http.jetty.jersey.server.RestfulManageServer;
+import org.merlin.config.Config;
+import org.merlin.config.defaults.IntDefault;
 
-public interface RoutableDeployable {
+public interface JavaStartupConfiguration extends Config {
 
-    void run(ConfigBinder configBinder, RestfulManageServer restfulManageServer, ShutdownHook shutdownHook) throws Exception;
+    @IntDefault(64)
+    public Integer getXmx();
+
+    @IntDefault(512)
+    public Integer getXms();
+
 }

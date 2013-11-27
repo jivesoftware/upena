@@ -16,7 +16,6 @@
 package com.jivesoftware.os.upena.ui;
 
 import com.jivesoftware.os.amza.shared.TimestampedValue;
-import com.jivesoftware.os.jive.utils.http.client.rest.RequestHelper;
 import com.jivesoftware.os.upena.config.shared.UpenaConfig;
 import com.jivesoftware.os.upena.shared.Cluster;
 import com.jivesoftware.os.upena.shared.ClusterKey;
@@ -29,7 +28,6 @@ import com.jivesoftware.os.upena.shared.ReleaseGroup;
 import com.jivesoftware.os.upena.shared.ReleaseGroupKey;
 import com.jivesoftware.os.upena.shared.Service;
 import com.jivesoftware.os.upena.shared.ServiceKey;
-import com.jivesoftware.os.upena.shared.Stored;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -41,11 +39,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -57,27 +57,37 @@ import javax.swing.border.SoftBevelBorder;
 
 public class JConfig extends JPanel {
 
-    RequestHelper requestHelper;
+    RequestHelperProvider requestHelperProvider;
     JObjectFactory factory;
     JPanel viewResults;
 
-    Map<String, UpenaConfig> aConfigs = new ConcurrentSkipListMap<>();
+    Map<String, String> aNames = new HashMap<>();
+    Map<String, String> bNames = new HashMap<>();
+
     Map<String, String> aConfigKeys = new ConcurrentSkipListMap<>();
+    Map<String, DefaultAndOverride> aConfigs = new ConcurrentSkipListMap<>();
 
-    Map<String, UpenaConfig> bConfigs = new ConcurrentSkipListMap<>();
     Map<String, String> bConfigKeys = new ConcurrentSkipListMap<>();
+    Map<String, DefaultAndOverride> bConfigs = new ConcurrentSkipListMap<>();
 
-    FindInstances aFindInstances;
-    FindInstances bFindInstances;
+    JConfigFindInstances aFindInstances;
+    JConfigFindInstances bFindInstances;
 
     JTextField filterKeys;
     JTextField filterValues;
 
-    public JConfig(RequestHelper requestHelper, JObjectFactory factory) {
-        this.requestHelper = requestHelper;
+    public JConfig(RequestHelperProvider requestHelperProvider, JObjectFactory factory) {
+        this.requestHelperProvider = requestHelperProvider;
         this.factory = factory;
-        aFindInstances = new FindInstances(new Color(255, 245, 240));
-        bFindInstances = new FindInstances(new Color(245, 240, 255));
+        Runnable changed = new Runnable() {
+
+            @Override
+            public void run() {
+                refresh();
+            }
+        };
+        aFindInstances = new JConfigFindInstances(factory, new Color(255, 245, 240), changed);
+        bFindInstances = new JConfigFindInstances(factory, new Color(245, 240, 255), changed);
         initComponents();
     }
 
@@ -148,7 +158,15 @@ public class JConfig extends JPanel {
                 Util.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-
+                        CommitValues commitValues = new CommitValues();
+                        commitValues.add();
+                        final JFrame d = new JFrame("Save config changes?");
+                        commitValues.d = d;
+                        d.setPreferredSize(new Dimension(800, 600));
+                        d.getContentPane().add(commitValues);
+                        d.pack();
+                        d.setLocationRelativeTo(null);
+                        d.setVisible(true);
                     }
                 });
             }
@@ -157,126 +175,112 @@ public class JConfig extends JPanel {
         add(commit, BorderLayout.SOUTH);
     }
 
-    public class FindInstances extends JPanel {
+    class CommitValues extends JPanel {
 
-        Color color;
-        JEditRef clusterId;
-        JEditRef hostId;
-        JEditRef serviceId;
-        JEditRef releaseGroupId;
-        JTextField instanceId;
+        JFrame d;
+        JPanel commitableValues;
 
-        public FindInstances(Color color) {
-            this.color = color;
-            setLayout(new SpringLayout());
+        public CommitValues() {
+            setLayout(new BorderLayout(10, 10));
 
-            clusterId = new JEditRef(factory, "cluster", Cluster.class, "");
-            add(clusterId.getEditor(40, new IPicked() {
-                @Override
-                public void picked(Object key, Stored v) {
-                    Util.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            refresh();
-                        }
-                    });
-                }
-            }));
-            clusterId.setValue("");
+            commitableValues = new JPanel(new BorderLayout());
 
-            hostId = new JEditRef(factory, "host", Host.class, "");
-            add(hostId.getEditor(40, new IPicked() {
-                @Override
-                public void picked(Object key, Stored v) {
-                    Util.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            refresh();
-                        }
-                    });
-                }
-            }));
-            hostId.setValue("");
+            JScrollPane scrollRoutes = new JScrollPane(commitableValues,
+                    JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+                    JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+            add(scrollRoutes, BorderLayout.CENTER);
 
-            serviceId = new JEditRef(factory, "service", Service.class, "");
-            add(serviceId.getEditor(40, new IPicked() {
-                @Override
-                public void picked(Object key, Stored v) {
-                    Util.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            refresh();
-                        }
-                    });
-                }
-            }));
-            serviceId.setValue("");
-
-            releaseGroupId = new JEditRef(factory, "release-group", ReleaseGroup.class, "");
-            add(releaseGroupId.getEditor(40, new IPicked() {
-                @Override
-                public void picked(Object key, Stored v) {
-                    Util.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            refresh();
-                        }
-                    });
-                }
-            }));
-            releaseGroupId.setValue("");
-
-            instanceId = new JTextField("", 120);
-            instanceId.addActionListener(new ActionListener() {
-
+            JButton save = new JButton("Save");
+            save.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     Util.invokeLater(new Runnable() {
                         @Override
                         public void run() {
-                            refresh();
+                            if (d != null) {
+                                d.setVisible(false);
+                            }
+                            save();
                         }
                     });
                 }
             });
-            add(instanceId);
-
-            JButton clear = new JButton(Util.icon("clear-left"));
-            clear.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    Util.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            clusterId.setValue("");
-                            hostId.setValue("");
-                            serviceId.setValue("");
-                            releaseGroupId.setValue("");
-                            instanceId.setText("");
-                            refresh();
-                        }
-                    });
-                }
-            });
-            add(clear);
-
-            SpringUtils.makeCompactGrid(this, 1, 6, 10, 10, 10, 10);
-            setBackground(color);
+            add(save, BorderLayout.SOUTH);
+            setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         }
-    }
 
-    Map<String, String> aNames = new HashMap<>();
-    Map<String, String> bNames = new HashMap<>();
+        public void add() {
+            JPanel changes = new JPanel(new SpringLayout());
+            int count = 0;
+            for (DefaultAndOverride dao : aConfigs.values()) {
+                if (!dao.changes.isEmpty()) {
+                    changes.add(new JLabel(idToString(dao.instanceKey(), aNames) + " " + dao.changes));
+                    count++;
+                }
+            }
+            for (DefaultAndOverride dao : bConfigs.values()) {
+                if (!dao.changes.isEmpty()) {
+                    changes.add(new JLabel(idToString(dao.instanceKey(), bNames) + " " + dao.changes));
+                    count++;
+                }
+            }
+            SpringUtils.makeCompactGrid(changes, count, 1, 24, 24, 16, 16);
+            commitableValues.add(changes, BorderLayout.CENTER);
+        }
+
+        public void save() {
+            for (DefaultAndOverride dao : aConfigs.values()) {
+                if (!dao.changes.isEmpty()) {
+                    dao.override.properties.clear();
+                    boolean update = false;
+                    for (String key : dao.changes.keySet()) {
+                        String change = dao.changes.get(key);
+                        if (change == null || change.length() == 0) { // clears out override
+                        } else if (change.equals(dao.config.properties.get(key))) { // clears out override
+                        } else { // apply override
+                            dao.override.properties.put(key, change);
+                            update = true;
+                        }
+                    }
+                    if (update) {
+                        UpenaConfig gotUpdated = requestHelperProvider.get().executeRequest(dao.override, "/upenaConfig/set", UpenaConfig.class, null);
+                        System.out.println("Updated:" + gotUpdated);
+                    }
+                    boolean remove = false;
+                    for (String key : dao.changes.keySet()) {
+                        String change = dao.changes.get(key);
+                        if (change == null || change.length() == 0) { // clears out override
+                            dao.override.properties.put(key, "");
+                            remove = true;
+                        } else if (change.equals(dao.config.properties.get(key))) { // clears out override
+                            dao.override.properties.put(key, "");
+                            remove = true;
+                        }
+                    }
+                    if (remove) {
+                        UpenaConfig gotRemoved = requestHelperProvider.get().executeRequest(dao.override, "/upenaConfig/remove", UpenaConfig.class, null);
+                        System.out.println("Removed:" + gotRemoved);
+                    }
+                }
+            }
+            refresh();
+        }
+
+    }
 
     public void refresh() {
         aNames.clear();
+        bNames.clear();
         refresh(aFindInstances, aConfigKeys, aConfigs, aNames);
         refresh(bFindInstances, bConfigKeys, bConfigs, bNames);
         filter();
 
     }
 
-    public void refresh(FindInstances find, Map<String, String> configKeys, Map<String, UpenaConfig> configs, Map<String, String> names) {
+    void refresh(JConfigFindInstances find,
+            Map<String, String> configKeys,
+            Map<String, DefaultAndOverride> configs,
+            Map<String, String> names) {
 
         try {
             configs.clear();
@@ -297,89 +301,92 @@ public class JConfig extends JPanel {
                 return;
             }
 
-            ConcurrentSkipListMap<InstanceKey, TimestampedValue<Instance>> results = requestHelper.executeRequest(filter,
+            ConcurrentSkipListMap<InstanceKey, TimestampedValue<Instance>> results = requestHelperProvider.get().executeRequest(filter,
                     "/upena/instance/find", InstanceFilter.Results.class, null);
             if (results != null) {
 
                 for (Map.Entry<InstanceKey, TimestampedValue<Instance>> e : results.entrySet()) {
                     if (!e.getValue().getTombstoned()) {
-                        UpenaConfig get = new UpenaConfig("default",
-                                e.getKey().getKey(),
-                                new HashMap<String, String>());
-
-                        String key = key(get);
-                        if (configs.containsKey(key)) {
-                            continue;
-                        }
-
-                        Instance i = e.getValue().getValue();
-                        String k = i.clusterKey.getKey();
-                        if (!names.containsKey(k)) {
-                            Cluster cluster = get(Cluster.class, new ClusterKey(k), "cluster");
-                            if (cluster != null) {
-                                names.put(k, cluster.name);
-                            }
-                        }
-
-                        k = i.hostKey.getKey();
-                        if (!names.containsKey(k)) {
-                            Host host = get(Host.class, new HostKey(k), "host");
-                            if (host != null) {
-                                names.put(k, host.name);
-                            }
-                        }
-
-                        k = i.serviceKey.getKey();
-                        if (!names.containsKey(k)) {
-                            Service service = get(Service.class, new ServiceKey(k), "service");
-                            if (service != null) {
-                                names.put(k, service.name);
-                            }
-                        }
-
-                        k = i.releaseGroupKey.getKey();
-                        if (!names.containsKey(k)) {
-                            ReleaseGroup releaseGroup = get(ReleaseGroup.class, new ReleaseGroupKey(k), "releaseGroup");
-                            if (releaseGroup != null) {
-                                names.put(k, releaseGroup.name);
-                            }
-                        }
-
-                        String name = "";
-                        if (filter.clusterKey == null) {
-                            name += names.get(i.clusterKey.getKey()) + " - ";
-                        }
-                        if (filter.hostKey == null) {
-                            name += names.get(i.hostKey.getKey()) + " - ";
-                        }
-                        if (filter.serviceKey == null) {
-                            name += names.get(i.serviceKey.getKey()) + " - ";
-                        }
-                        if (filter.releaseGroupKey == null) {
-                            name += names.get(i.releaseGroupKey.getKey()) + " - ";
-                        }
-                        name += i.instanceId;
-
-                        names.put(e.getKey().getKey(), name);
-
-                        UpenaConfig got = requestHelper.executeRequest(get,
-                                "/upenaConfig/get", UpenaConfig.class, null);
-
-                        if (got != null) {
-                            for (String pk : got.properties.keySet()) {
-                                configKeys.put(pk, pk);
-                            }
-                            configs.put(key, got);
-                        }
-
+                        getProperties(e.getKey(), e.getValue().getValue(), configs, names, filter, configKeys);
                     }
                 }
             }
-
         } catch (Exception x) {
             x.printStackTrace();
         }
+    }
 
+    boolean getProperties(InstanceKey instanceKey,
+            Instance instance,
+            Map<String, DefaultAndOverride> configs,
+            Map<String, String> names,
+            InstanceFilter filter,
+            Map<String, String> configKeys) {
+        UpenaConfig get = new UpenaConfig("default",
+                instanceKey.getKey(),
+                new HashMap<String, String>());
+
+        String key = key(get);
+        if (configs.containsKey(key)) {
+            return true;
+        }
+        String k = instance.clusterKey.getKey();
+        if (!names.containsKey(k)) {
+            Cluster cluster = get(Cluster.class, new ClusterKey(k), "cluster");
+            if (cluster != null) {
+                names.put(k, cluster.name);
+            }
+        }
+        k = instance.hostKey.getKey();
+        if (!names.containsKey(k)) {
+            Host host = get(Host.class, new HostKey(k), "host");
+            if (host != null) {
+                names.put(k, host.name);
+            }
+        }
+        k = instance.serviceKey.getKey();
+        if (!names.containsKey(k)) {
+            Service service = get(Service.class, new ServiceKey(k), "service");
+            if (service != null) {
+                names.put(k, service.name);
+            }
+        }
+        k = instance.releaseGroupKey.getKey();
+        if (!names.containsKey(k)) {
+            ReleaseGroup releaseGroup = get(ReleaseGroup.class, new ReleaseGroupKey(k), "releaseGroup");
+            if (releaseGroup != null) {
+                names.put(k, releaseGroup.name);
+            }
+        }
+        String name = "";
+        if (filter.clusterKey == null) {
+            name += names.get(instance.clusterKey.getKey()) + " - ";
+        }
+        if (filter.hostKey == null) {
+            name += names.get(instance.hostKey.getKey()) + " - ";
+        }
+        if (filter.serviceKey == null) {
+            name += names.get(instance.serviceKey.getKey()) + " - ";
+        }
+        if (filter.releaseGroupKey == null) {
+            name += names.get(instance.releaseGroupKey.getKey()) + " - ";
+        }
+        name += instance.instanceId;
+        names.put(instanceKey.getKey(), name);
+
+        UpenaConfig gotDefault = requestHelperProvider.get().executeRequest(get, "/upenaConfig/get", UpenaConfig.class, null);
+        UpenaConfig getOverride = new UpenaConfig("override",
+                instanceKey.getKey(),
+                new HashMap<String, String>());
+        UpenaConfig gotOverride = requestHelperProvider.get().executeRequest(getOverride, "/upenaConfig/get", UpenaConfig.class, null);
+
+        if (gotDefault != null && gotOverride != null) {
+            for (String pk : gotDefault.properties.keySet()) {
+                configKeys.put(pk, pk);
+            }
+            configs.put(key, new DefaultAndOverride(gotDefault, gotOverride));
+        }
+        return false;
     }
 
     void filter() {
@@ -390,169 +397,55 @@ public class JConfig extends JPanel {
 
         JPanel r = new JPanel(new SpringLayout());
         int count = 0;
-        for (String pk : allKeys.keySet()) {
+        for (final String propertyKey : allKeys.keySet()) {
 
             if (filterKeys.getText().length() > 0) {
-                if (!pk.contains(filterKeys.getText())) {
+                if (!propertyKey.contains(filterKeys.getText())) {
                     continue;
                 }
             }
 
-            JPanel aInstances = new JPanel();
-            aInstances.setLayout(new BoxLayout(aInstances, BoxLayout.Y_AXIS));
-            List<JPanel> aValues = new ArrayList<>();
-            for (UpenaConfig config : aConfigs.values()) {
-                if (config.properties.containsKey(pk)) {
-                    JPanel ev = new JPanel();
-                    ev.setOpaque(false);
-                    ev.setLayout(new BoxLayout(ev, BoxLayout.X_AXIS));
-                    String value = config.properties.get(pk);
-
+            PropertyValues aPropertyValues = new PropertyValues(propertyKey, aNames, false);
+            for (final DefaultAndOverride config : aConfigs.values()) {
+                if (config.containsKey(propertyKey)) {
+                    String value = config.value(propertyKey);
+                    String override = config.override(propertyKey);
                     if (filterValues.getText().length() > 0) {
-                        if (!value.contains(filterValues.getText())) {
+                        if (!value.contains(filterValues.getText()) && !override.contains(filterValues.getText())) {
                             continue;
                         }
                     }
-                    JLabel instanceLabel = new JLabel(idToString(config.instanceKey, aNames));
-                    ev.add(instanceLabel);
-                    JTextField editValue = new JTextField(value);
-                    editValue.setMinimumSize(new Dimension(50, 24));
-                    editValue.setPreferredSize(new Dimension(100, 24));
-                    editValue.setMaximumSize(new Dimension(600, 24));
-                    ev.add(editValue);
-
-                    final JToggleButton linked = new JToggleButton("", true);
-                    linked.setIcon(Util.icon("linked"));
-                    linked.setPressedIcon(Util.icon("unlinked"));
-                    linked.setSelectedIcon(Util.icon("linked"));
-                    linked.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            Util.invokeLater(new Runnable() {
-                                @Override
-                                public void run() {
-                                    if (linked.isSelected()) {
-                                        linked.setIcon(Util.icon("linked"));
-                                        linked.setPressedIcon(Util.icon("unlinked"));
-                                        linked.setSelectedIcon(Util.icon("linked"));
-                                    } else {
-                                        linked.setIcon(Util.icon("unlinked"));
-                                        linked.setPressedIcon(Util.icon("linked"));
-                                        linked.setSelectedIcon(Util.icon("unlinked"));
-                                    }
-                                }
-                            });
-                        }
-                    });
-                    ev.add(linked);
-
-                    JButton copy = new JButton(Util.icon("copy-left"));
-                    copy.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            Util.invokeLater(new Runnable() {
-                                @Override
-                                public void run() {
-
-                                }
-                            });
-                        }
-                    });
-                    ev.add(copy);
-
-                    aInstances.add(ev);
-                    aValues.add(ev);
+                    aPropertyValues.add(config);
                 }
             }
 
-            JPanel bInstances = new JPanel();
-            bInstances.setLayout(new BoxLayout(bInstances, BoxLayout.Y_AXIS));
-            List<JPanel> bValues = new ArrayList<>();
-            for (UpenaConfig config : bConfigs.values()) {
-                if (config.properties.containsKey(pk)) {
-                    JPanel ev = new JPanel();
-                    ev.setOpaque(false);
-                    ev.setLayout(new BoxLayout(ev, BoxLayout.X_AXIS));
-                    String value = config.properties.get(pk);
-
+            PropertyValues bPropertyValues = new PropertyValues(propertyKey, bNames, true);
+            for (final DefaultAndOverride config : bConfigs.values()) {
+                if (config.containsKey(propertyKey)) {
+                    String value = config.value(propertyKey);
+                    String override = config.override(propertyKey);
                     if (filterValues.getText().length() > 0) {
-                        if (!value.contains(filterValues.getText())) {
+                        if (!value.contains(filterValues.getText()) && !override.contains(filterValues.getText())) {
                             continue;
                         }
                     }
-
-                    JButton copy = new JButton(Util.icon("copy-right"));
-                    copy.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            Util.invokeLater(new Runnable() {
-                                @Override
-                                public void run() {
-
-                                }
-                            });
-                        }
-                    });
-                    ev.add(copy);
-
-                    final JToggleButton linked = new JToggleButton("", true);
-                    linked.setIcon(Util.icon("linked"));
-                    linked.setPressedIcon(Util.icon("unlinked"));
-                    linked.setSelectedIcon(Util.icon("linked"));
-                    linked.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            Util.invokeLater(new Runnable() {
-                                @Override
-                                public void run() {
-                                    if (linked.isSelected()) {
-                                        linked.setIcon(Util.icon("linked"));
-                                        linked.setPressedIcon(Util.icon("unlinked"));
-                                        linked.setSelectedIcon(Util.icon("linked"));
-                                    } else {
-                                        linked.setIcon(Util.icon("unlinked"));
-                                        linked.setPressedIcon(Util.icon("linked"));
-                                        linked.setSelectedIcon(Util.icon("unlinked"));
-                                    }
-                                }
-                            });
-                        }
-                    });
-                    ev.add(linked);
-
-                    JLabel instanceLabel = new JLabel(idToString(config.instanceKey, bNames));
-                    JTextField editValue = new JTextField(value);
-                    editValue.setMinimumSize(new Dimension(50, 24));
-                    editValue.setPreferredSize(new Dimension(100, 24));
-                    editValue.setMaximumSize(new Dimension(600, 24));
-                    ev.add(editValue);
-                    ev.add(instanceLabel);
-                    bInstances.add(ev);
-                    bValues.add(ev);
+                    bPropertyValues.add(config);
                 }
             }
 
-            if (!aValues.isEmpty() || !bValues.isEmpty()) {
+            if (!aPropertyValues.linkablePropertys.isEmpty() || !bPropertyValues.linkablePropertys.isEmpty()) {
 
-                aInstances.setOpaque(true);
-                bInstances.setOpaque(true);
-
-                if (count % 2 == 0) {
-                    aInstances.setBackground(aFindInstances.color.darker());
-                    bInstances.setBackground(bFindInstances.color.darker());
-                } else {
-                    aInstances.setBackground(aFindInstances.color);
-                    bInstances.setBackground(bFindInstances.color);
-                }
+                aPropertyValues.setBackground(aFindInstances.color);
+                bPropertyValues.setBackground(bFindInstances.color);
 
                 JPanel v = new JPanel();
                 v.setLayout(new BoxLayout(v, BoxLayout.X_AXIS));
-                v.add(aInstances);
-                v.add(bInstances);
+                v.add(aPropertyValues);
+                v.add(bPropertyValues);
 
                 JPanel p = new JPanel();
                 p.setLayout(new BorderLayout());
-                JLabel keyLabel = new JLabel(pk);
+                JLabel keyLabel = new JLabel(propertyKey);
                 keyLabel.setFont(new Font("system", Font.BOLD, 16));
                 p.add(keyLabel, BorderLayout.PAGE_START);
                 p.add(v, BorderLayout.CENTER);
@@ -560,7 +453,6 @@ public class JConfig extends JPanel {
                 r.add(p);
                 count++;
             }
-
         }
 
         SpringUtils.makeCompactGrid(r, count, 1, 8, 8, 8, 8);
@@ -571,6 +463,106 @@ public class JConfig extends JPanel {
 
         viewResults.getParent().revalidate();
         viewResults.getParent().repaint();
+    }
+
+    class PropertyValues extends JPanel {
+
+        private final List<LinkableProperty> linkablePropertys = new ArrayList<>();
+        private final String propertyKey;
+        private final Map<String, String> idNames;
+        private final boolean leftToRight;
+
+        public PropertyValues(String propertyKey, Map<String, String> idNames, boolean leftToRight) {
+            this.propertyKey = propertyKey;
+            this.idNames = idNames;
+            this.leftToRight = leftToRight;
+            setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+
+        }
+
+        class LinkableProperty extends JPanel {
+
+            final JToggleButton linked;
+            final DefaultAndOverride config;
+            final JTextField editValue;
+
+            LinkableProperty(final DefaultAndOverride config) {
+                this.config = config;
+                setOpaque(false);
+                setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
+
+                linked = new JToggleButton("", true);
+                linked.setIcon(Util.icon("linked"));
+                linked.setPressedIcon(Util.icon("unlinked"));
+                linked.setSelectedIcon(Util.icon("linked"));
+                linked.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        Util.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (linked.isSelected()) {
+                                    linked.setIcon(Util.icon("linked"));
+                                    linked.setPressedIcon(Util.icon("unlinked"));
+                                    linked.setSelectedIcon(Util.icon("linked"));
+                                } else {
+                                    linked.setIcon(Util.icon("unlinked"));
+                                    linked.setPressedIcon(Util.icon("linked"));
+                                    linked.setSelectedIcon(Util.icon("unlinked"));
+                                }
+                            }
+                        });
+                    }
+                });
+
+                JLabel instanceLabel = new JLabel(idToString(config.instanceKey(), idNames));
+
+                String override = config.override(propertyKey);
+
+                editValue = new JTextField(override);
+                editValue.setMinimumSize(new Dimension(50, 24));
+                editValue.setPreferredSize(new Dimension(100, 24));
+                editValue.setMaximumSize(new Dimension(600, 24));
+                editValue.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        if (linked.isSelected()) {
+                            for (LinkableProperty linkableProperty : linkablePropertys) {
+                                if (linkableProperty.linked.isSelected()) {
+                                    linkableProperty.editValue.setText(editValue.getText());
+                                    linkableProperty.config.set(propertyKey, editValue.getText());
+                                }
+                            }
+                        } else {
+                            config.set(propertyKey, editValue.getText());
+                        }
+                    }
+                });
+
+                String value = config.value(propertyKey);
+                JLabel defaultValue = new JLabel(value);
+                defaultValue.setForeground(Color.gray);
+
+                if (leftToRight) {
+                    add(linked);
+                    add(defaultValue);
+                    add(editValue);
+                    add(instanceLabel);
+
+                } else {
+                    add(instanceLabel);
+                    add(editValue);
+                    add(defaultValue);
+                    add(linked);
+                }
+            }
+        }
+
+        public void add(DefaultAndOverride config) {
+            LinkableProperty linkableProperty = new LinkableProperty(config);
+            add(linkableProperty);
+            linkablePropertys.add(linkableProperty);
+        }
     }
 
     String key(UpenaConfig config) {
@@ -587,8 +579,43 @@ public class JConfig extends JPanel {
     }
 
     public <K, V> V get(final Class<V> valueClass, final K key, String context) {
-        V v = requestHelper.executeRequest(key, "/upena/" + context + "/get", valueClass, null);
+        V v = requestHelperProvider.get().executeRequest(key, "/upena/" + context + "/get", valueClass, null);
         System.out.println(v);
         return v;
+    }
+
+    static class DefaultAndOverride {
+
+        final UpenaConfig config;
+        final UpenaConfig override;
+        final Map<String, String> changes = new ConcurrentHashMap<>();
+
+        public DefaultAndOverride(UpenaConfig config, UpenaConfig override) {
+            this.config = config;
+            this.override = override;
+        }
+
+        String instanceKey() {
+            return config.instanceKey;
+        }
+
+        boolean containsKey(String key) {
+            if (config.properties.containsKey(key)) {
+                return true;
+            }
+            return override.properties.containsKey(key);
+        }
+
+        String value(String key) {
+            return config.properties.get(key);
+        }
+
+        String override(String key) {
+            return override.properties.get(key);
+        }
+
+        void set(String key, String value) {
+            changes.put(key, value);
+        }
     }
 }

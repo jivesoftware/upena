@@ -31,14 +31,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-/*
- * $Revision$
- * $Date$
- *
- * Copyright (C) 1999-$year$ Jive Software. All rights reserved.
- *
- * This software is the proprietary information of Jive Software. Use is subject to license terms.
- */
 public class UbaService {
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
@@ -104,7 +96,6 @@ public class UbaService {
                     newPlayers.add(nanny);
                 } else {
                     LOG.debug("Existing nanny:" + nannyKey);
-
                     currentNanny.setInstanceDescriptor(instanceDescriptor);
                     expectedPlayer.add(uba.instanceDescriptorKey(currentNanny.getInstanceDescriptor()));
                 }
@@ -114,10 +105,10 @@ public class UbaService {
             unexpectedPlayerKeys.removeAll(expectedPlayer);
             if (!unexpectedPlayerKeys.isEmpty()) {
                 for (String unexpectedPlayerKey : unexpectedPlayerKeys) {
-                    Nanny player = nannies.get(unexpectedPlayerKey);
-                    LOG.info("Destroying player:" + player);
-                    player.destroy();
-                    player.stop();
+                    Nanny nanny = nannies.get(unexpectedPlayerKey);
+                    LOG.info("Destroying player:" + nanny);
+                    nanny.destroy();
+                    nanny.stop();
                     nannies.remove(unexpectedPlayerKey);
                 }
             }
@@ -150,22 +141,5 @@ public class UbaService {
             report.nannyReports.add(nanny.report());
         }
         return report;
-    }
-
-    public boolean upload(List<String> instanceKeys, String version, byte[] deployableFileBytes, String extension) throws Exception {
-
-        int wrote = 0;
-        for (Nanny nanny : rollCall().values()) {
-            InstanceDescriptor descriptor = nanny.getInstanceDescriptor();
-            if (descriptor != null) {
-                for (String instanceKey : instanceKeys) {
-                    if (descriptor.instanceKey.equals(instanceKey)) {
-                        nanny.writeArtifact(version, deployableFileBytes, extension);
-                        wrote++;
-                    }
-                }
-            }
-        }
-        return wrote > 0;
     }
 }

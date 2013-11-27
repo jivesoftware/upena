@@ -11,16 +11,10 @@
     <groupId>com.jivesoftware.os.upena.hello.routing.bird</groupId>
     <artifactId>hello-routing-bird-deployable</artifactId>
     <properties>
-        <module.type>deployable</module.type>
+        <java.main>com.jivesoftware.os.upena.hello.routing.bird.deployable.Main</java.main>
         <assembly.home>${project.basedir}</assembly.home>
     </properties>
     <dependencies>
-        <dependency>
-            <groupId>com.jivesoftware.os.upena</groupId>
-            <artifactId>uba-config-extractor</artifactId>
-            <version>unspecified</version>
-            <type>jar</type>
-        </dependency>
         <dependency>
             <groupId>com.jivesoftware.os.jive.utils</groupId>
             <artifactId>server-http-jetty-jersey</artifactId>
@@ -63,12 +57,6 @@
         <dependency>
             <groupId>com.jivesoftware.os.upena</groupId>
             <artifactId>tenant-routing-http-client</artifactId>
-            <version>unspecified</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>com.jivesoftware.os.upena</groupId>
-            <artifactId>tenant-routing-http-server-endpoints</artifactId>
             <version>unspecified</version>
             <type>jar</type>
         </dependency>

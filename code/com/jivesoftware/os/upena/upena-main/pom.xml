@@ -15,6 +15,10 @@
     </properties>
     <dependencies>
         <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.jivesoftware.os.jive.utils</groupId>
             <artifactId>merlin-config</artifactId>
         </dependency>
@@ -41,10 +45,6 @@
             <artifactId>logger</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-        </dependency>
-        <dependency>
             <groupId>com.jivesoftware.os.jive.utils</groupId>
             <artifactId>base</artifactId>
         </dependency>
@@ -58,6 +58,12 @@
             <groupId>com.jivesoftware.os.upena</groupId>
             <artifactId>uba-config-extractor</artifactId>
             <version>unspecified</version>
+        </dependency>
+        <dependency>
+            <groupId>com.jivesoftware.os.upena</groupId>
+            <artifactId>tenant-routing-http-server-endpoints</artifactId>
+            <version>unspecified</version>
+            <type>jar</type>
         </dependency>
     </dependencies>
     <name>upena-main</name>

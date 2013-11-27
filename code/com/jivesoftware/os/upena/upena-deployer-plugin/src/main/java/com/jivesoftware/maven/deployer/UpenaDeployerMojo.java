@@ -95,7 +95,7 @@ public class UpenaDeployerMojo extends AbstractMojo {
 
     @Override
     public void execute()
-        throws MojoExecutionException, MojoFailureException {
+            throws MojoExecutionException, MojoFailureException {
 
         Repository repository;
         try {
@@ -169,11 +169,11 @@ public class UpenaDeployerMojo extends AbstractMojo {
             }
 
             ReleaseGroupFilter filter = new ReleaseGroupFilter(filterName,
-                filterEmail,
-                null,
-                "",
-                0,
-                Integer.MAX_VALUE);
+                    filterEmail,
+                    null,
+                    "",
+                    0,
+                    Integer.MAX_VALUE);
             ReleaseGroupFilter.Results results = requestHelper.executeRequest(filter, "/upena/releaseGroup/find", ReleaseGroupFilter.Results.class, null);
             if (results != null && !results.isEmpty()) {
                 Map.Entry<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> firstEntry = results.firstEntry();
@@ -183,9 +183,9 @@ public class UpenaDeployerMojo extends AbstractMojo {
                 getLog().info("------------------------------------------------------------------------");
                 getLog().info("No releaseGroup with name:" + name + ". Automatically adding new releaseGroup.");
                 releaseGroupKey = requestHelper.executeRequest(new ReleaseGroup(name,
-                    email,
-                    version,
-                    ""), "/upena/releaseGroup/add", ReleaseGroupKey.class, null);
+                        email,
+                        version,
+                        ""), "/upena/releaseGroup/add", ReleaseGroupKey.class, null);
             }
         } catch (Exception x) {
             throw new MojoFailureException("failed to establish releaseGroup:" + name + " <" + email + ">", x);
@@ -203,7 +203,7 @@ public class UpenaDeployerMojo extends AbstractMojo {
                 getLog().info("------------------------------------------------------------------------");
                 getLog().info("No service named:" + serviceName + ". Automatically adding new service.");
                 serviceKey = requestHelper.executeRequest(new Service(serviceName, ""),
-                    "/upena/service/add", ServiceKey.class, null);
+                        "/upena/service/add", ServiceKey.class, null);
             }
         } catch (Exception x) {
             throw new MojoFailureException("failed to establish service:" + serviceName, x);
@@ -223,7 +223,7 @@ public class UpenaDeployerMojo extends AbstractMojo {
                 Map<ServiceKey, ReleaseGroupKey> defaultReleaseGroups = new HashMap<>();
                 defaultReleaseGroups.put(serviceKey, releaseGroupKey);
                 clusterKey = requestHelper.executeRequest(new Cluster(clusterName, "", defaultReleaseGroups),
-                    "/upena/cluster/add", ClusterKey.class, null);
+                        "/upena/cluster/add", ClusterKey.class, null);
             }
         } catch (Exception x) {
             throw new MojoFailureException("failed to establish cluster:" + clusterName, x);
@@ -263,8 +263,8 @@ public class UpenaDeployerMojo extends AbstractMojo {
                         HostKey hostKey = new HostKey(firstEntry.getKey());
 
                         InstanceKey instanceKey = requestHelper.executeRequest(
-                            new Instance(clusterKey, hostKey, serviceKey, releaseGroupKey, Integer.parseInt(instanceNumber), true, false),
-                            "/upena/instance/add", InstanceKey.class, null);
+                                new Instance(clusterKey, hostKey, serviceKey, releaseGroupKey, Integer.parseInt(instanceNumber), true, false),
+                                "/upena/instance/add", InstanceKey.class, null);
 
                         Instance instance = requestHelper.executeRequest(instanceKey, "/upena/instance/get", Instance.class, null);
                         if (instance != null) {
@@ -278,25 +278,25 @@ public class UpenaDeployerMojo extends AbstractMojo {
                         getLog().info("There are no hosts assosicated with cluster:" + clusterKey + ".");
                         throw new MojoFailureException("No host available to deploy to.");
                     }
-                } catch (Exception x) {
+                } catch (NumberFormatException | MojoFailureException x) {
                     throw new MojoFailureException("failed to establish service:" + serviceName, x);
                 }
 
             }
-        } catch (Exception x) {
+        } catch (MojoFailureException x) {
             throw new MojoFailureException("failed to establish service:" + serviceName, x);
         }
 
-        getLog().info("------------------------------------------------------------------------");
-        getLog().info("Beginning the upload. This may take a bit please be patient.");
-        long time = System.currentTimeMillis();
-        deployPlanner.upload();
-        getLog().info("------------------------------------------------------------------------");
-        getLog().info("Upload SUCCESSFUL. Elapse:" + (System.currentTimeMillis() - time));
+        //getLog().info("------------------------------------------------------------------------");
+        //getLog().info("Beginning the upload. This may take a bit please be patient.");
+        //long time = System.currentTimeMillis();
+        //deployPlanner.upload();
+        //getLog().info("------------------------------------------------------------------------");
+        //getLog().info("Upload SUCCESSFUL. Elapse:" + (System.currentTimeMillis() - time));
 
         getLog().info("------------------------------------------------------------------------");
         getLog().info("Beginning the deploy.");
-        time = System.currentTimeMillis();
+        long time = System.currentTimeMillis();
         deployPlanner.deploy(serviceName, requestHelper, version);
 
         getLog().info("------------------------------------------------------------------------");
@@ -347,7 +347,7 @@ public class UpenaDeployerMojo extends AbstractMojo {
 
             String name = artifact.getName();
             String extension = "";
-            for (String ext : new String[]{ ".tgz", ".tar.gz", "jar", "zip" }) {
+            for (String ext : new String[]{".tgz", ".tar.gz", "jar", "zip"}) {
                 if (name.endsWith(ext)) {
                     extension = ext;
                     break;
@@ -419,12 +419,12 @@ public class UpenaDeployerMojo extends AbstractMojo {
                 ReleaseGroup rg = cacheReleaseGroups.get(instance.releaseGroupKey.getKey());
                 if (rg == null) {
                     ReleaseGroup update = new ReleaseGroup(releaseGroup.name,
-                        releaseGroup.email,
-                        version,
-                        "Created by deployer plugin. " + new Date());
+                            releaseGroup.email,
+                            mavenProject.getGroupId() + ":" + mavenProject.getArtifactId() + ":" + version,
+                            "Created by deployer plugin. " + new Date());
 
                     ReleaseGroupKey releaseGroupKey = requestHelper
-                        .executeRequest(update, "/upena/releaseGroup/update?key=" + instance.releaseGroupKey.getKey(), ReleaseGroupKey.class, null);
+                            .executeRequest(update, "/upena/releaseGroup/update?key=" + instance.releaseGroupKey.getKey(), ReleaseGroupKey.class, null);
 
                     if (releaseGroupKey == null) {
                         throw new MojoFailureException("Failed to update releaseGroupKey:" + e.getKey());
@@ -436,7 +436,7 @@ public class UpenaDeployerMojo extends AbstractMojo {
                 }
 
                 getLog().info(" Instance: " + serviceName + "." + instance.instanceId + " will be availiable shortly "
-                    + "on host:" + host.hostName + " port:" + instance.ports.get("main").port);
+                        + "on host:" + host.hostName + " port:" + instance.ports.get("main").port);
             }
             getLog().info("------------------------------------------------------------------------");
 

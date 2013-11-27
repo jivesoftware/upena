@@ -15,11 +15,13 @@
  */
 package com.jivesoftware.os.upena.main;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.jivesoftware.os.jive.utils.http.client.HttpClient;
 import com.jivesoftware.os.jive.utils.http.client.HttpClientConfig;
 import com.jivesoftware.os.jive.utils.http.client.HttpClientConfiguration;
+import com.jivesoftware.os.jive.utils.http.client.HttpClientException;
 import com.jivesoftware.os.jive.utils.http.client.HttpClientFactoryProvider;
 import com.jivesoftware.os.jive.utils.http.client.HttpResponse;
 import com.jivesoftware.os.jive.utils.logger.MetricLogger;
@@ -28,6 +30,7 @@ import com.jivesoftware.os.upena.routing.shared.ConnectionDescriptorsProvider;
 import com.jivesoftware.os.upena.routing.shared.ConnectionDescriptorsRequest;
 import com.jivesoftware.os.upena.routing.shared.ConnectionDescriptorsResponse;
 import com.jivesoftware.os.upena.routing.shared.TenantRoutingProvider;
+import java.io.IOException;
 import java.util.Arrays;
 
 public class TenantRoutingBirdBuilder {
@@ -65,7 +68,7 @@ public class TenantRoutingBirdBuilder {
                 String postEntity;
                 try {
                     postEntity = mapper.writeValueAsString(connectionsRequest);
-                } catch (Exception e) {
+                } catch (JsonProcessingException e) {
                     LOG.error("Error serializing request parameters object to a string.  Object "
                             + "was " + connectionsRequest + " " + e.getMessage());
                     return null;
@@ -75,7 +78,7 @@ public class TenantRoutingBirdBuilder {
                 String path = "/upena/request/connections";
                 try {
                     response = httpClient.postJson(path, postEntity);
-                } catch (Exception e) {
+                } catch (HttpClientException e) {
                     LOG.error("Error posting query request to server.  The entity posted "
                             + "was \"" + postEntity + "\" and the endpoint posted to was \"" + path + "\". " + e.getMessage());
                     return null;
@@ -88,7 +91,7 @@ public class TenantRoutingBirdBuilder {
                         ConnectionDescriptorsResponse connectionDescriptorsResponse = mapper.readValue(responseBody, ConnectionDescriptorsResponse.class);
                         LOG.info("Request:" + connectionsRequest + "\nConnectionDescriptors:" + connectionDescriptorsResponse);
                         return connectionDescriptorsResponse;
-                    } catch (Exception x) {
+                    } catch (IOException x) {
                         LOG.error("Failed to deserialize response:" + new String(responseBody) + " " + x.getMessage());
                         return null;
                     }

@@ -43,6 +43,10 @@ public class InstancePath {
         return new File(path(path, -1), "bin/" + scriptName);
     }
 
+    File lib() {
+        return new File(path(path, -1), "lib/");
+    }
+
     File serviceRoot() {
         return path(path, -1);
     }

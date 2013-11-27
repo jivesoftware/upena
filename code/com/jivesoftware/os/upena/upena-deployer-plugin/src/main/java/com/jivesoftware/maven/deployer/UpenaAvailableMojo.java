@@ -86,7 +86,6 @@ public class UpenaAvailableMojo extends AbstractMojo {
     public void execute()
             throws MojoExecutionException, MojoFailureException {
 
-        long time = System.currentTimeMillis();
         Repository repository;
         try {
 

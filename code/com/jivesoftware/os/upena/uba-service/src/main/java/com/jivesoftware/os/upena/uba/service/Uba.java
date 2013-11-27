@@ -20,6 +20,9 @@ import com.jivesoftware.os.upena.routing.shared.InstanceDescriptor;
 import java.io.File;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class Uba {
 
@@ -28,6 +31,7 @@ public class Uba {
     final int upenaPort;
     private final ObjectMapper mapper;
     private final UbaTree ubaTree;
+    private final DeployableScriptInvoker invokeScript;
 
     public Uba(String host, String upenaHost, int upenaPort, ObjectMapper mapper, UbaTree ubaTree) {
         this.host = host;
@@ -35,6 +39,14 @@ public class Uba {
         this.upenaPort = upenaPort;
         this.mapper = mapper;
         this.ubaTree = ubaTree;
+        this.invokeScript = new DeployableScriptInvoker(Executors.newCachedThreadPool(new ThreadFactory() {
+            private final AtomicLong count = new AtomicLong();
+            @Override
+            public Thread newThread(Runnable r) {
+                long id = count.incrementAndGet();
+                return new Thread(r, "Script onvoker thread-"+id);
+            }
+        }));
     }
 
     public Map<InstanceDescriptor, InstancePath> getOnDiskInstances() {
@@ -68,7 +80,8 @@ public class Uba {
             new NameAndKey(instanceDescriptor.releaseGroupName, instanceDescriptor.releaseGroupKey),
             new NameAndKey(Integer.toString(instanceDescriptor.instanceName), instanceDescriptor.instanceKey)
         });
-        return new Nanny(mapper, instanceDescriptor, instancePath);
+
+        return new Nanny(instanceDescriptor, instancePath, new DeployableValidator(), new DeployableFoundation(mapper), new DeployLog(), invokeScript);
     }
 
     private InstanceDescriptor instanceDescriptor(InstancePath instancePath) {

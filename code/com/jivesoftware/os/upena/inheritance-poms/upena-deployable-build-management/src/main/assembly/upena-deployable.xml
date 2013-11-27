@@ -1,5 +1,12 @@
 <component xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/component/1.1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
            xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/component/1.1.2 http://maven.apache.org/xsd/component-1.1.2.xsd">
+    <files>
+        <file>
+          <source>target/build.properties</source>
+          <outputDirectory>${project.name}/lib</outputDirectory>
+          <filtered>true</filtered>
+        </file>
+    </files>
     <fileSets>
         <fileSet>
             <directory>${config.home}/src/main/deployable</directory>
@@ -11,7 +18,7 @@
             <outputDirectory>${project.name}/dist</outputDirectory>
             <directoryMode>755</directoryMode>
         </fileSet>
-        <fileSet>
+<!--        <fileSet>
             <directory>${config.home}/target/classes</directory>
             <outputDirectory>${project.name}/resources</outputDirectory>
             <excludes>
@@ -25,10 +32,10 @@
             <directory>${project.basedir}/src/main/home</directory>
             <filtered>false</filtered>
             <fileMode>755</fileMode>
-        </fileSet>
+        </fileSet>-->
     </fileSets>
     <dependencySets>
-        <dependencySet>
+<!--        <dependencySet>
             <outputDirectory>${project.name}/lib</outputDirectory>
             <useProjectArtifact>true</useProjectArtifact>
             <unpack>false</unpack>
@@ -37,7 +44,7 @@
                 <exclude>com.jivesoftware.os.upena:upena-scripts:tar.gz:bin</exclude>
             </excludes>
             <directoryMode>755</directoryMode>
-        </dependencySet>
+        </dependencySet>-->
         <dependencySet>
             <outputDirectory>${project.name}/</outputDirectory>
             <unpack>true</unpack>
