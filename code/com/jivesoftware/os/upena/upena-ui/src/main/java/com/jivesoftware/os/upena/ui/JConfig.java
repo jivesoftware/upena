@@ -15,7 +15,6 @@
  */
 package com.jivesoftware.os.upena.ui;
 
-import com.jivesoftware.os.amza.shared.TimestampedValue;
 import com.jivesoftware.os.upena.config.shared.UpenaConfig;
 import com.jivesoftware.os.upena.shared.Cluster;
 import com.jivesoftware.os.upena.shared.ClusterKey;
@@ -28,6 +27,7 @@ import com.jivesoftware.os.upena.shared.ReleaseGroup;
 import com.jivesoftware.os.upena.shared.ReleaseGroupKey;
 import com.jivesoftware.os.upena.shared.Service;
 import com.jivesoftware.os.upena.shared.ServiceKey;
+import com.jivesoftware.os.upena.shared.TimestampedValue;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;

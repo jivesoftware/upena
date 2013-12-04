@@ -15,10 +15,10 @@
  */
 package com.jivesoftware.os.upena.ui;
 
-import com.jivesoftware.os.amza.shared.TimestampedValue;
 import com.jivesoftware.os.upena.shared.ReleaseGroup;
 import com.jivesoftware.os.upena.shared.ReleaseGroupFilter;
 import com.jivesoftware.os.upena.shared.ReleaseGroupKey;
+import com.jivesoftware.os.upena.shared.TimestampedValue;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentSkipListMap;

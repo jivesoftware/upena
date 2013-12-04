@@ -15,15 +15,18 @@
  */
 package com.jivesoftware.os.upena.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jivesoftware.os.amza.service.AmzaService;
+import com.jivesoftware.os.amza.shared.BinaryTimestampedValue;
 import com.jivesoftware.os.amza.shared.TableDelta;
+import com.jivesoftware.os.amza.shared.TableIndexKey;
 import com.jivesoftware.os.amza.shared.TableName;
 import com.jivesoftware.os.amza.shared.TableStateChanges;
-import com.jivesoftware.os.amza.shared.TimestampedValue;
 import com.jivesoftware.os.jive.utils.logger.MetricLogger;
 import com.jivesoftware.os.jive.utils.logger.MetricLoggerFactory;
 import com.jivesoftware.os.upena.routing.shared.InstanceChanged;
 import com.jivesoftware.os.upena.routing.shared.TenantChanged;
+import com.jivesoftware.os.upena.shared.BasicTimestampedValue;
 import com.jivesoftware.os.upena.shared.Cluster;
 import com.jivesoftware.os.upena.shared.ClusterKey;
 import com.jivesoftware.os.upena.shared.Host;
@@ -38,6 +41,7 @@ import com.jivesoftware.os.upena.shared.ServiceKey;
 import com.jivesoftware.os.upena.shared.Tenant;
 import com.jivesoftware.os.upena.shared.TenantFilter;
 import com.jivesoftware.os.upena.shared.TenantKey;
+import com.jivesoftware.os.upena.shared.TimestampedValue;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -54,14 +58,12 @@ public class UpenaStore {
     private final InstanceChanges instanceRemoved;
     private final TenantChanges tenantChanges;
 
-    public final TableName<ClusterKey, Cluster> clusterStoreKey = new TableName<>("master", "clusters", ClusterKey.class, null, null, Cluster.class);
-    public final TableName<HostKey, Host> hostStoreKey = new TableName<>("master", "hosts", HostKey.class, null, null, Host.class);
-    public final TableName<ServiceKey, Service> serviceStoreKey = new TableName<>("master", "services", ServiceKey.class, null, null, Service.class);
-    public final TableName<ReleaseGroupKey, ReleaseGroup> releaseGroupStoreKey = new TableName<>("master",
-            "releaseGroups", ReleaseGroupKey.class, null, null, ReleaseGroup.class);
-    public final TableName<InstanceKey, Instance> instanceStoreKey = new TableName<>("master",
-            "intances", InstanceKey.class, null, null, Instance.class);
-    public final TableName<TenantKey, Tenant> tenantStoreKey = new TableName<>("master", "tenants", TenantKey.class, null, null, Tenant.class);
+    public final TableName clusterStoreKey = new TableName("master", "clusters", null, null);
+    public final TableName hostStoreKey = new TableName("master", "hosts", null, null);
+    public final TableName serviceStoreKey = new TableName("master", "services", null, null);
+    public final TableName releaseGroupStoreKey = new TableName("master", "releaseGroups", null, null);
+    public final TableName instanceStoreKey = new TableName("master", "intances", null, null);
+    public final TableName tenantStoreKey = new TableName("master", "tenants", null, null);
 
     public final UpenaTable<ClusterKey, Cluster> clusters;
     public final UpenaTable<HostKey, Host> hosts;
@@ -79,16 +81,18 @@ public class UpenaStore {
         this.instanceRemoved = instanceRemoved;
         this.tenantChanges = tenantChanges;
 
-        clusters = new UpenaTable<>(amzaService.getTable(clusterStoreKey), new ClusterKeyProvider(), null);
-        hosts = new UpenaTable<>(amzaService.getTable(hostStoreKey), new HostKeyProvider(), null);
-        services = new UpenaTable<>(amzaService.getTable(serviceStoreKey), new ServiceKeyProvider(), null);
-        releaseGroups = new UpenaTable<>(amzaService.getTable(releaseGroupStoreKey), new ReleaseGroupKeyProvider(), null);
-        instances = new UpenaTable<>(amzaService.getTable(instanceStoreKey), new InstanceKeyProvider(), new InstanceValidator());
-        tenants = new UpenaTable<>(amzaService.getTable(tenantStoreKey), new TenantKeyProvider(), null);
+        clusters = new UpenaTable<>(amzaService.getTable(clusterStoreKey), ClusterKey.class, Cluster.class, new ClusterKeyProvider(), null);
+        hosts = new UpenaTable<>(amzaService.getTable(hostStoreKey), HostKey.class, Host.class, new HostKeyProvider(), null);
+        services = new UpenaTable<>(amzaService.getTable(serviceStoreKey), ServiceKey.class, Service.class, new ServiceKeyProvider(), null);
+        releaseGroups = new UpenaTable<>(amzaService.getTable(releaseGroupStoreKey),
+                ReleaseGroupKey.class, ReleaseGroup.class, new ReleaseGroupKeyProvider(), null);
+        instances = new UpenaTable<>(amzaService.getTable(instanceStoreKey),
+                InstanceKey.class, Instance.class, new InstanceKeyProvider(), new InstanceValidator());
+        tenants = new UpenaTable<>(amzaService.getTable(tenantStoreKey), TenantKey.class, Tenant.class, new TenantKeyProvider(), null);
     }
 
     public void attachWatchers() throws Exception {
-        amzaService.watch(clusterStoreKey, new Changes<>(
+        amzaService.watch(clusterStoreKey, new Changes<>(ClusterKey.class, Cluster.class,
                 new KeyValueChange<ClusterKey, Cluster>() {
                     @Override
                     public void change(ClusterKey key, TimestampedValue<Cluster> value) throws Exception {
@@ -111,7 +115,7 @@ public class UpenaStore {
                         }
                     }
                 }));
-        amzaService.watch(hostStoreKey, new Changes<>(new KeyValueChange<HostKey, Host>() {
+        amzaService.watch(hostStoreKey, new Changes<>(HostKey.class, Host.class, new KeyValueChange<HostKey, Host>() {
             @Override
             public void change(HostKey key, TimestampedValue<Host> value) throws Exception {
                 InstanceFilter impactedFilter = new InstanceFilter(null, key, null, null, null, 0, Integer.MAX_VALUE);
@@ -133,7 +137,7 @@ public class UpenaStore {
                 }
             }
         }));
-        amzaService.watch(serviceStoreKey, new Changes<>(new KeyValueChange<ServiceKey, Service>() {
+        amzaService.watch(serviceStoreKey, new Changes<>(ServiceKey.class, Service.class, new KeyValueChange<ServiceKey, Service>() {
             @Override
             public void change(ServiceKey key, TimestampedValue<Service> value) throws Exception {
                 InstanceFilter impactedFilter = new InstanceFilter(null, null, key, null, null, 0, Integer.MAX_VALUE);
@@ -155,7 +159,7 @@ public class UpenaStore {
                 }
             }
         }));
-        amzaService.watch(releaseGroupStoreKey, new Changes<>(new KeyValueChange<ReleaseGroupKey, ReleaseGroup>() {
+        amzaService.watch(releaseGroupStoreKey, new Changes<>(ReleaseGroupKey.class, ReleaseGroup.class, new KeyValueChange<ReleaseGroupKey, ReleaseGroup>() {
             @Override
             public void change(ReleaseGroupKey key, TimestampedValue<ReleaseGroup> value) throws Exception {
                 InstanceFilter impactedFilter = new InstanceFilter(null, null, null, key, null, 0, Integer.MAX_VALUE);
@@ -185,7 +189,7 @@ public class UpenaStore {
 
             }
         }));
-        amzaService.watch(instanceStoreKey, new Changes<>(new KeyValueChange<InstanceKey, Instance>() {
+        amzaService.watch(instanceStoreKey, new Changes<>(InstanceKey.class, Instance.class, new KeyValueChange<InstanceKey, Instance>() {
             @Override
             public void change(InstanceKey key, TimestampedValue<Instance> value) throws Exception {
                 List<InstanceChanged> changes = new ArrayList<>();
@@ -202,7 +206,7 @@ public class UpenaStore {
             }
         }));
 
-        amzaService.watch(tenantStoreKey, new Changes<>(new KeyValueChange<TenantKey, Tenant>() {
+        amzaService.watch(tenantStoreKey, new Changes<>(TenantKey.class, Tenant.class, new KeyValueChange<TenantKey, Tenant>() {
             @Override
             public void change(TenantKey key, TimestampedValue<Tenant> value) throws Exception {
                 List<TenantChanged> changes = new ArrayList<>();
@@ -220,31 +224,41 @@ public class UpenaStore {
 
     }
 
-    static class Changes<K, V> implements TableStateChanges<K, V> {
+    private static final ObjectMapper mapper = new ObjectMapper();
 
+    static class Changes<K, V> implements TableStateChanges {
+
+        private final Class<K> keyClass;
+        private final Class<V> valueClass;
         private final KeyValueChange<K, V> adds;
         private final KeyValueChange<K, V> removes;
 
-        public Changes(KeyValueChange<K, V> adds, KeyValueChange<K, V> removes) {
+        public Changes(Class<K> keyClass, Class<V> valueClass, KeyValueChange<K, V> adds, KeyValueChange<K, V> removes) {
+            this.keyClass = keyClass;
+            this.valueClass = valueClass;
             this.adds = adds;
             this.removes = removes;
         }
 
         @Override
-        public void changes(TableName<K, V> mapName, TableDelta<K, V> changes) throws Exception {
-            NavigableMap<K, TimestampedValue<V>> appliedRows = changes.getApply();
-            for (Entry<K, TimestampedValue<V>> entry : appliedRows.entrySet()) {
-                K key = entry.getKey();
-                TimestampedValue<V> value = entry.getValue();
-                if (value.getTombstoned() && removes != null) {
-                    Collection<TimestampedValue<V>> got = changes.getClobbered().get(key);
+        public void changes(TableName mapName, TableDelta changes) throws Exception {
+            NavigableMap<TableIndexKey, BinaryTimestampedValue> appliedRows = changes.getApply();
+            for (Entry<TableIndexKey, BinaryTimestampedValue> entry : appliedRows.entrySet()) {
+                TableIndexKey rawKey = entry.getKey();
+                BinaryTimestampedValue rawValue = entry.getValue();
+                if (entry.getValue().getTombstoned() && removes != null) {
+                    Collection<BinaryTimestampedValue> got = changes.getClobbered().get(rawKey);
                     if (got != null) {
-                        for (TimestampedValue<V> g : got) {
-                            removes.change(key, g);
+                        for (BinaryTimestampedValue g : got) {
+                            K k = mapper.readValue(rawKey.getKey(), keyClass);
+                            V v = mapper.readValue(g.getValue(), valueClass);
+                            removes.change(k, new BasicTimestampedValue<>(v, g.getTimestamp(), g.getTombstoned()));
                         }
                     }
                 } else if (adds != null) {
-                    adds.change(key, value);
+                    K k = mapper.readValue(rawKey.getKey(), keyClass);
+                    V v = mapper.readValue(rawValue.getValue(), valueClass);
+                    adds.change(k, new BasicTimestampedValue<>(v, rawValue.getTimestamp(), rawValue.getTombstoned()));
                 }
             }
         }

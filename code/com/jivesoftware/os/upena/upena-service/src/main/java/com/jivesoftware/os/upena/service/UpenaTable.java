@@ -15,11 +15,16 @@
  */
 package com.jivesoftware.os.upena.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jivesoftware.os.amza.service.AmzaTable;
-import com.jivesoftware.os.amza.shared.KeyValueFilter;
-import com.jivesoftware.os.amza.shared.TimestampedValue;
+import com.jivesoftware.os.amza.shared.BinaryTimestampedValue;
+import com.jivesoftware.os.amza.shared.EntryStream;
+import com.jivesoftware.os.amza.shared.TableIndexKey;
+import com.jivesoftware.os.upena.shared.BasicTimestampedValue;
 import com.jivesoftware.os.upena.shared.Key;
+import com.jivesoftware.os.upena.shared.KeyValueFilter;
 import com.jivesoftware.os.upena.shared.Stored;
+import com.jivesoftware.os.upena.shared.TimestampedValue;
 import java.util.concurrent.ConcurrentNavigableMap;
 
 public class UpenaTable<K extends Key, V extends Stored> {
@@ -34,12 +39,22 @@ public class UpenaTable<K extends Key, V extends Stored> {
         VV valiadate(UpenaTable<KK, VV> table, KK key, VV value) throws Exception;
     }
 
-    private final AmzaTable<K, V> store;
+    private static final ObjectMapper mapper = new ObjectMapper();
+
+    private final AmzaTable store;
+    private final Class<K> keyClass;
+    private final Class<V> valueClass;
     private final UpenaKeyProvider<K, V> keyProvider;
     private final UpenaValueValidator<K, V> valueValidator;
 
-    public UpenaTable(AmzaTable<K, V> store, UpenaKeyProvider<K, V> nodeKeyProvider, UpenaValueValidator<K, V> valueValidator) {
+    public UpenaTable(AmzaTable store,
+            Class<K> keyClass,
+            Class<V> valueClass,
+            UpenaKeyProvider<K, V> nodeKeyProvider,
+            UpenaValueValidator<K, V> valueValidator) {
         this.store = store;
+        this.keyClass = keyClass;
+        this.valueClass = valueClass;
         this.keyProvider = nodeKeyProvider;
         this.valueValidator = valueValidator;
     }
@@ -49,11 +64,33 @@ public class UpenaTable<K extends Key, V extends Stored> {
     }
 
     public V get(K key) throws Exception {
-        return store.get(key);
+        byte[] rawKey = mapper.writeValueAsBytes(key);
+        byte[] got = store.get(new TableIndexKey(rawKey));
+        if (got == null) {
+            return null;
+        }
+        return mapper.readValue(got, valueClass);
     }
 
-    ConcurrentNavigableMap<K, TimestampedValue<V>> find(KeyValueFilter<K, V> filter) throws Exception {
-        return store.filter(filter);
+    ConcurrentNavigableMap<K, TimestampedValue<V>> find(final KeyValueFilter<K, V> filter) throws Exception {
+
+        final ConcurrentNavigableMap<K, TimestampedValue<V>> results = filter.createCollector();
+        store.scan(new EntryStream<Exception>() {
+
+            @Override
+            public boolean stream(TableIndexKey key, BinaryTimestampedValue value) throws Exception {
+                if (!value.getTombstoned()) {
+                    K k = mapper.readValue(key.getKey(), keyClass);
+                    V v = mapper.readValue(value.getValue(), valueClass);
+
+                    if (filter.filter(k, v)) {
+                        results.put(k, new BasicTimestampedValue(v, value.getTimestamp(), value.getTombstoned()));
+                    }
+                }
+                return true;
+            }
+        });
+        return results;
     }
 
     synchronized public K update(K key, V value) throws Exception {
@@ -63,10 +100,15 @@ public class UpenaTable<K extends Key, V extends Stored> {
         if (valueValidator != null) {
             value = valueValidator.valiadate(this, key, value);
         }
-        return store.set(key, value);
+        byte[] rawKey = mapper.writeValueAsBytes(key);
+        byte[] rawValue = mapper.writeValueAsBytes(value);
+        TableIndexKey set = store.set(new TableIndexKey(rawKey), rawValue);
+        K gotKey = mapper.readValue(set.getKey(), keyClass);
+        return gotKey;
     }
 
     synchronized public boolean remove(K key) throws Exception {
-        return store.remove(key);
+        byte[] rawKey = mapper.writeValueAsBytes(key);
+        return store.remove(new TableIndexKey(rawKey));
     }
 }

@@ -25,16 +25,19 @@ import com.jivesoftware.os.amza.service.discovery.AmzaDiscovery;
 import com.jivesoftware.os.amza.shared.AmzaInstance;
 import com.jivesoftware.os.amza.shared.RingHost;
 import com.jivesoftware.os.amza.shared.TableDelta;
+import com.jivesoftware.os.amza.shared.TableIndex;
+import com.jivesoftware.os.amza.shared.TableIndexProvider;
 import com.jivesoftware.os.amza.shared.TableName;
 import com.jivesoftware.os.amza.shared.TableStateChanges;
 import com.jivesoftware.os.amza.shared.TableStorage;
 import com.jivesoftware.os.amza.shared.TableStorageProvider;
 import com.jivesoftware.os.amza.storage.FileBackedTableStorage;
-import com.jivesoftware.os.amza.storage.RowMarshaller;
-import com.jivesoftware.os.amza.storage.RowTableFile;
-import com.jivesoftware.os.amza.storage.json.StringRowMarshaller;
-import com.jivesoftware.os.amza.storage.json.StringRowReader;
-import com.jivesoftware.os.amza.storage.json.StringRowWriter;
+import com.jivesoftware.os.amza.storage.RowTable;
+import com.jivesoftware.os.amza.storage.binary.BinaryRowMarshaller;
+import com.jivesoftware.os.amza.storage.binary.BinaryRowReader;
+import com.jivesoftware.os.amza.storage.binary.BinaryRowWriter;
+import com.jivesoftware.os.amza.storage.chunks.Filer;
+import com.jivesoftware.os.amza.storage.index.MapDBTableIndex;
 import com.jivesoftware.os.amza.transport.http.replication.HttpChangeSetSender;
 import com.jivesoftware.os.amza.transport.http.replication.HttpChangeSetTaker;
 import com.jivesoftware.os.amza.transport.http.replication.endpoints.AmzaReplicationRestEndpoints;
@@ -61,6 +64,7 @@ import com.jivesoftware.os.upena.shared.ServiceKey;
 import com.jivesoftware.os.upena.uba.service.UbaService;
 import com.jivesoftware.os.upena.uba.service.UbaServiceInitializer;
 import com.jivesoftware.os.upena.uba.service.endpoints.UbaServiceRestEndpoints;
+import de.ruedigermoeller.serialization.FSTConfiguration;
 import java.io.File;
 import java.util.HashMap;
 import java.util.List;
@@ -92,31 +96,46 @@ public class Main {
 
         TableStorageProvider tableStorageProvider = new TableStorageProvider() {
             @Override
-            public <K, V> TableStorage<K, V> createTableStorage(File workingDirectory, String tableDomain, TableName<K, V> tableName) throws Exception {
+            public TableStorage createTableStorage(File workingDirectory,
+                    String tableDomain,
+                    TableName tableName) throws Exception {
                 File directory = new File(workingDirectory, tableDomain);
                 directory.mkdirs();
                 File file = new File(directory, tableName.getTableName() + ".kvt");
 
-                StringRowReader reader = new StringRowReader(file);
-                StringRowWriter writer = new StringRowWriter(file);
+                Filer filer = Filer.open(file, "rw");
+                BinaryRowReader reader = new BinaryRowReader(filer);
+                BinaryRowWriter writer = new BinaryRowWriter(filer);
+                BinaryRowMarshaller rowMarshaller = new BinaryRowMarshaller();
+                TableIndexProvider tableIndexProvider = new TableIndexProvider() {
 
-                RowMarshaller<K, V, String> rowMarshaller = new StringRowMarshaller<>(mapper, tableName);
-                RowTableFile<K, V, String> rowTableFile = new RowTableFile<>(orderIdProvider, rowMarshaller, reader, writer);
-                return new FileBackedTableStorage<>(rowTableFile);
+                    @Override
+                    public TableIndex createTableIndex(TableName tableName) {
+                        return new MapDBTableIndex(tableName.getTableName());
+                    }
+                };
+                RowTable<byte[]> rowTableFile = new RowTable<>(tableName,
+                        orderIdProvider,
+                        tableIndexProvider,
+                        rowMarshaller,
+                        reader,
+                        writer);
+                return new FileBackedTableStorage(rowTableFile);
             }
         };
 
         AmzaServiceConfig amzaServiceConfig = new AmzaServiceInitializer.AmzaServiceConfig();
         AmzaService amzaService = new AmzaServiceInitializer().initialize(amzaServiceConfig,
                 orderIdProvider,
+                new com.jivesoftware.os.amza.storage.FstMarshaller(FSTConfiguration.getDefaultConfiguration()),
                 tableStorageProvider,
                 tableStorageProvider,
                 tableStorageProvider,
                 new HttpChangeSetSender(),
-                new HttpChangeSetTaker(), new TableStateChanges<Object, Object>() {
+                new HttpChangeSetTaker(), new TableStateChanges() {
 
                     @Override
-                    public void changes(TableName<Object, Object> partitionName, TableDelta<Object, Object> changes) throws Exception {
+                    public void changes(TableName partitionName, TableDelta changes) throws Exception {
                         //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
                     }
                 });

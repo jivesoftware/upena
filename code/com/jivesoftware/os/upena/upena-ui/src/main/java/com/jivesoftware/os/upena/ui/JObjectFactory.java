@@ -15,7 +15,7 @@
  */
 package com.jivesoftware.os.upena.ui;
 
-import com.jivesoftware.os.amza.shared.KeyValueFilter;
+import com.jivesoftware.os.upena.shared.KeyValueFilter;
 import com.jivesoftware.os.upena.shared.Cluster;
 import com.jivesoftware.os.upena.shared.ClusterFilter;
 import com.jivesoftware.os.upena.shared.ClusterKey;

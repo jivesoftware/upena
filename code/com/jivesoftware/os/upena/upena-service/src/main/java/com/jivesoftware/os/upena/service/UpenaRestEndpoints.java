@@ -15,7 +15,6 @@
  */
 package com.jivesoftware.os.upena.service;
 
-import com.jivesoftware.os.amza.shared.TimestampedValue;
 import com.jivesoftware.os.jive.utils.jaxrs.util.ResponseHelper;
 import com.jivesoftware.os.jive.utils.logger.MetricLogger;
 import com.jivesoftware.os.jive.utils.logger.MetricLoggerFactory;
@@ -41,6 +40,7 @@ import com.jivesoftware.os.upena.shared.ServiceKey;
 import com.jivesoftware.os.upena.shared.Tenant;
 import com.jivesoftware.os.upena.shared.TenantFilter;
 import com.jivesoftware.os.upena.shared.TenantKey;
+import com.jivesoftware.os.upena.shared.TimestampedValue;
 import java.util.Map;
 import java.util.concurrent.ConcurrentNavigableMap;
 import javax.ws.rs.Consumes;

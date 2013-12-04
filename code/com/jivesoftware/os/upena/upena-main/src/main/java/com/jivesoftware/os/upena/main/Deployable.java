@@ -106,7 +106,6 @@ public class Deployable {
                         }
                     } catch (Exception x) {
                         x.printStackTrace();
-
                     }
                 }
             };
@@ -116,6 +115,14 @@ public class Deployable {
                 config.getAnnouceEveryNMills(),
                 statusReportCallback);
         return broadcaster;
+    }
+
+    public ServiceHandle buildMetricPublisher() {
+        return null;
+    }
+
+    public ServiceHandle buildLogPublisher() {
+        return null;
     }
 
     public TenantRoutingProvider getTenantRoutingProvider() {

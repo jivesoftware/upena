@@ -16,7 +16,6 @@
 package com.jivesoftware.maven.deployer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jivesoftware.os.amza.shared.TimestampedValue;
 import com.jivesoftware.os.jive.utils.http.client.HttpClient;
 import com.jivesoftware.os.jive.utils.http.client.HttpClientConfig;
 import com.jivesoftware.os.jive.utils.http.client.HttpClientConfiguration;
@@ -39,6 +38,7 @@ import com.jivesoftware.os.upena.shared.ReleaseGroupKey;
 import com.jivesoftware.os.upena.shared.Service;
 import com.jivesoftware.os.upena.shared.ServiceFilter;
 import com.jivesoftware.os.upena.shared.ServiceKey;
+import com.jivesoftware.os.upena.shared.TimestampedValue;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -293,7 +293,6 @@ public class UpenaDeployerMojo extends AbstractMojo {
         //deployPlanner.upload();
         //getLog().info("------------------------------------------------------------------------");
         //getLog().info("Upload SUCCESSFUL. Elapse:" + (System.currentTimeMillis() - time));
-
         getLog().info("------------------------------------------------------------------------");
         getLog().info("Beginning the deploy.");
         long time = System.currentTimeMillis();

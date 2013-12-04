@@ -15,10 +15,10 @@
  */
 package com.jivesoftware.os.upena.ui;
 
-import com.jivesoftware.os.amza.shared.TimestampedValue;
 import com.jivesoftware.os.upena.shared.Service;
 import com.jivesoftware.os.upena.shared.ServiceFilter;
 import com.jivesoftware.os.upena.shared.ServiceKey;
+import com.jivesoftware.os.upena.shared.TimestampedValue;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentSkipListMap;

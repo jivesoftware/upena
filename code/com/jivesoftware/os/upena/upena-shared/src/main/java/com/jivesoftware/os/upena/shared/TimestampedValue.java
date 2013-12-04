@@ -13,11 +13,22 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.jivesoftware.os.upena.service;
+package com.jivesoftware.os.upena.shared;
 
-import com.jivesoftware.os.upena.shared.TimestampedValue;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-public interface KeyValueChange<K, V> {
+@JsonTypeInfo (
+    use = JsonTypeInfo.Id.NAME,
+    include = JsonTypeInfo.As.PROPERTY,
+    property = "objectType")
+@JsonSubTypes ({
+    @JsonSubTypes.Type (value = BasicTimestampedValue.class, name = "basicTimestampedValue") })
+public interface TimestampedValue<V> {
 
-    void change(K key, TimestampedValue<V> is) throws Exception;
+    long getTimestamp();
+
+    boolean getTombstoned();
+
+    V getValue();
 }

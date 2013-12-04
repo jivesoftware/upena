@@ -19,6 +19,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jivesoftware.os.amza.service.AmzaService;
 import com.jivesoftware.os.amza.service.AmzaTable;
+import com.jivesoftware.os.amza.shared.TableIndexKey;
 import com.jivesoftware.os.amza.shared.TableName;
 import java.util.HashMap;
 import java.util.List;
@@ -38,53 +39,54 @@ public class UpenaConfigStore {
         return "config/" + instanceKey + "/" + context;
     }
 
-    synchronized private AmzaTable<String, byte[]> getPartition() throws Exception {
+    synchronized private AmzaTable getPartition() throws Exception {
 
-        TableName<String, byte[]> tableName = new TableName<>("master",
-                "config",
-                String.class, null, null, byte[].class);
+        TableName tableName = new TableName("master", "config", null, null);
         return amzaService.getTable(tableName);
     }
 
     synchronized public void remove(String instanceKey, String context) throws Exception {
-        AmzaTable<String, byte[]> partition = getPartition();
+        AmzaTable partition = getPartition();
         String key = createTableName(instanceKey, context);
-        partition.remove(key);
+        partition.remove(new TableIndexKey(key.getBytes("utf-8")));
     }
 
     public void set(String instanceKey, String context, Map<String, String> properties) throws Exception {
-        AmzaTable<String, byte[]> partition = getPartition();
+        AmzaTable partition = getPartition();
         String key = createTableName(instanceKey, context);
-        byte[] rawProperties = partition.get(key);
+        TableIndexKey tableIndexKey = new TableIndexKey(key.getBytes("utf-8"));
+        byte[] rawProperties = partition.get(tableIndexKey);
         if (rawProperties == null) {
-            partition.set(key, mapper.writeValueAsBytes(properties));
+            partition.set(tableIndexKey, mapper.writeValueAsBytes(properties));
         } else {
             Map<String, String> current = mapper.readValue(rawProperties, new TypeReference<HashMap<String, String>>() {
             });
             current.putAll(properties);
-            partition.set(key, mapper.writeValueAsBytes(current));
+            partition.set(tableIndexKey, mapper.writeValueAsBytes(current));
         }
     }
 
     public void remove(String instanceKey, String context, Set<String> keys) throws Exception {
-        AmzaTable<String, byte[]> partition = getPartition();
+        AmzaTable partition = getPartition();
         String key = createTableName(instanceKey, context);
-        byte[] rawProperties = partition.get(key);
+        TableIndexKey tableIndexKey = new TableIndexKey(key.getBytes("utf-8"));
+        byte[] rawProperties = partition.get(tableIndexKey);
         if (rawProperties != null) {
             Map<String, String> current = mapper.readValue(rawProperties, new TypeReference<HashMap<String, String>>() {
             });
             for (String k : keys) {
                 current.remove(k);
             }
-            partition.set(key, mapper.writeValueAsBytes(current));
+            partition.set(tableIndexKey, mapper.writeValueAsBytes(current));
         }
     }
 
     public Map<String, String> get(String instanceKey, String context, List<String> keys) throws Exception {
         final Map<String, String> results = new HashMap<>();
-        AmzaTable<String, byte[]> partition = getPartition();
+        AmzaTable partition = getPartition();
         String key = createTableName(instanceKey, context);
-        byte[] rawProperties = partition.get(key);
+        TableIndexKey tableIndexKey = new TableIndexKey(key.getBytes("utf-8"));
+        byte[] rawProperties = partition.get(tableIndexKey);
         if (rawProperties != null) {
             Map<String, String> current = mapper.readValue(rawProperties, new TypeReference<HashMap<String, String>>() {
             });

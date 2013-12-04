@@ -15,7 +15,6 @@
  */
 package com.jivesoftware.os.upena.service;
 
-import com.jivesoftware.os.amza.shared.TimestampedValue;
 import com.jivesoftware.os.upena.routing.shared.ConnectionDescriptor;
 import com.jivesoftware.os.upena.routing.shared.ConnectionDescriptorsRequest;
 import com.jivesoftware.os.upena.routing.shared.ConnectionDescriptorsResponse;
@@ -37,6 +36,7 @@ import com.jivesoftware.os.upena.shared.ServiceFilter;
 import com.jivesoftware.os.upena.shared.ServiceKey;
 import com.jivesoftware.os.upena.shared.Tenant;
 import com.jivesoftware.os.upena.shared.TenantKey;
+import com.jivesoftware.os.upena.shared.TimestampedValue;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;

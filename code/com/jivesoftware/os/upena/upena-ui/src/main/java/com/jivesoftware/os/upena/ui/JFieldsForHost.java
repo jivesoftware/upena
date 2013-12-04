@@ -15,12 +15,12 @@
  */
 package com.jivesoftware.os.upena.ui;
 
-import com.jivesoftware.os.amza.shared.TimestampedValue;
 import com.jivesoftware.os.upena.shared.Cluster;
 import com.jivesoftware.os.upena.shared.ClusterKey;
 import com.jivesoftware.os.upena.shared.Host;
 import com.jivesoftware.os.upena.shared.HostFilter;
 import com.jivesoftware.os.upena.shared.HostKey;
+import com.jivesoftware.os.upena.shared.TimestampedValue;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentSkipListMap;

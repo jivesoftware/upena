@@ -15,12 +15,12 @@
  */
 package com.jivesoftware.os.upena.service;
 
-import com.jivesoftware.os.amza.shared.TimestampedValue;
 import com.jivesoftware.os.upena.service.UpenaTable.UpenaValueValidator;
 import com.jivesoftware.os.upena.shared.HostKey;
 import com.jivesoftware.os.upena.shared.Instance;
 import com.jivesoftware.os.upena.shared.InstanceFilter;
 import com.jivesoftware.os.upena.shared.InstanceKey;
+import com.jivesoftware.os.upena.shared.TimestampedValue;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;

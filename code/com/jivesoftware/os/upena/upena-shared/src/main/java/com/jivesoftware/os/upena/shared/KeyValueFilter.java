@@ -13,11 +13,15 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.jivesoftware.os.upena.service;
+package com.jivesoftware.os.upena.shared;
 
-import com.jivesoftware.os.upena.shared.TimestampedValue;
+import java.util.concurrent.ConcurrentNavigableMap;
 
-public interface KeyValueChange<K, V> {
+public interface KeyValueFilter<K, V> {
 
-    void change(K key, TimestampedValue<V> is) throws Exception;
+    ConcurrentNavigableMap<K, TimestampedValue<V>> createCollector();
+
+    boolean filter(K key, V value);
+
+    void reset();
 }

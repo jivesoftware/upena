@@ -131,6 +131,11 @@
             <artifactId>upena-config</artifactId>
             <version>unspecified</version>
         </dependency>
+        <dependency>
+            <groupId>de.ruedigermoeller</groupId>
+            <artifactId>fst</artifactId>
+            <version>1.28</version>
+        </dependency>
     </dependencies>
     <name>upena-deployable</name>
 </project>

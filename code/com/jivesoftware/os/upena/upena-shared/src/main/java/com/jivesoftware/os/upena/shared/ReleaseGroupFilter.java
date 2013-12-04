@@ -17,8 +17,6 @@ package com.jivesoftware.os.upena.shared;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.jivesoftware.os.amza.shared.KeyValueFilter;
-import com.jivesoftware.os.amza.shared.TimestampedValue;
 import java.io.Serializable;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
