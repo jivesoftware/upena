@@ -6,6 +6,12 @@
     <artifactId>upena</artifactId>
     <version>unspecified</version>
     <packaging>pom</packaging>
+    <parent>
+        <groupId>com.jivesoftware.os.upena.inheritance.poms</groupId>
+        <artifactId>global-repo-management</artifactId>
+        <version>unspecified</version>
+        <relativePath>inheritance-poms/global-repo-management/pom.xml</relativePath>
+    </parent>
     <modules>
         <module>hello-routing-bird</module>
         <module>upena-ui</module>
@@ -26,6 +32,6 @@
         <module>upena-config-shared</module>
         <module>inheritance-poms</module>
         <module>tenant-routing-http-client</module>
-        <module>server-http-jetty-jersey</module>
+        <module>tenant-routing-http-server-endpoints</module>
     </modules>
 </project>
