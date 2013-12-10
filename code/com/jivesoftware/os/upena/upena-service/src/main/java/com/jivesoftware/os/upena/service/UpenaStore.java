@@ -17,11 +17,11 @@ package com.jivesoftware.os.upena.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jivesoftware.os.amza.service.AmzaService;
-import com.jivesoftware.os.amza.shared.BinaryTimestampedValue;
-import com.jivesoftware.os.amza.shared.TableDelta;
-import com.jivesoftware.os.amza.shared.TableIndexKey;
+import com.jivesoftware.os.amza.shared.RowChanges;
+import com.jivesoftware.os.amza.shared.RowIndexKey;
+import com.jivesoftware.os.amza.shared.RowIndexValue;
+import com.jivesoftware.os.amza.shared.RowsChanged;
 import com.jivesoftware.os.amza.shared.TableName;
-import com.jivesoftware.os.amza.shared.TableStateChanges;
 import com.jivesoftware.os.jive.utils.logger.MetricLogger;
 import com.jivesoftware.os.jive.utils.logger.MetricLoggerFactory;
 import com.jivesoftware.os.upena.routing.shared.InstanceChanged;
@@ -226,7 +226,7 @@ public class UpenaStore {
 
     private static final ObjectMapper mapper = new ObjectMapper();
 
-    static class Changes<K, V> implements TableStateChanges {
+    static class Changes<K, V> implements RowChanges {
 
         private final Class<K> keyClass;
         private final Class<V> valueClass;
@@ -241,15 +241,15 @@ public class UpenaStore {
         }
 
         @Override
-        public void changes(TableName mapName, TableDelta changes) throws Exception {
-            NavigableMap<TableIndexKey, BinaryTimestampedValue> appliedRows = changes.getApply();
-            for (Entry<TableIndexKey, BinaryTimestampedValue> entry : appliedRows.entrySet()) {
-                TableIndexKey rawKey = entry.getKey();
-                BinaryTimestampedValue rawValue = entry.getValue();
+        public void changes(RowsChanged changes) throws Exception {
+            NavigableMap<RowIndexKey, RowIndexValue> appliedRows = changes.getApply();
+            for (Entry<RowIndexKey, RowIndexValue> entry : appliedRows.entrySet()) {
+                RowIndexKey rawKey = entry.getKey();
+                RowIndexValue rawValue = entry.getValue();
                 if (entry.getValue().getTombstoned() && removes != null) {
-                    Collection<BinaryTimestampedValue> got = changes.getClobbered().get(rawKey);
+                    Collection<RowIndexValue> got = changes.getClobbered().get(rawKey);
                     if (got != null) {
-                        for (BinaryTimestampedValue g : got) {
+                        for (RowIndexValue g : got) {
                             K k = mapper.readValue(rawKey.getKey(), keyClass);
                             V v = mapper.readValue(g.getValue(), valueClass);
                             removes.change(k, new BasicTimestampedValue<>(v, g.getTimestamp(), g.getTombstoned()));

@@ -19,7 +19,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jivesoftware.os.amza.service.AmzaService;
 import com.jivesoftware.os.amza.service.AmzaTable;
-import com.jivesoftware.os.amza.shared.TableIndexKey;
+import com.jivesoftware.os.amza.shared.RowIndexKey;
 import com.jivesoftware.os.amza.shared.TableName;
 import java.util.HashMap;
 import java.util.List;
@@ -48,13 +48,13 @@ public class UpenaConfigStore {
     synchronized public void remove(String instanceKey, String context) throws Exception {
         AmzaTable partition = getPartition();
         String key = createTableName(instanceKey, context);
-        partition.remove(new TableIndexKey(key.getBytes("utf-8")));
+        partition.remove(new RowIndexKey(key.getBytes("utf-8")));
     }
 
     public void set(String instanceKey, String context, Map<String, String> properties) throws Exception {
         AmzaTable partition = getPartition();
         String key = createTableName(instanceKey, context);
-        TableIndexKey tableIndexKey = new TableIndexKey(key.getBytes("utf-8"));
+        RowIndexKey tableIndexKey = new RowIndexKey(key.getBytes("utf-8"));
         byte[] rawProperties = partition.get(tableIndexKey);
         if (rawProperties == null) {
             partition.set(tableIndexKey, mapper.writeValueAsBytes(properties));
@@ -69,7 +69,7 @@ public class UpenaConfigStore {
     public void remove(String instanceKey, String context, Set<String> keys) throws Exception {
         AmzaTable partition = getPartition();
         String key = createTableName(instanceKey, context);
-        TableIndexKey tableIndexKey = new TableIndexKey(key.getBytes("utf-8"));
+        RowIndexKey tableIndexKey = new RowIndexKey(key.getBytes("utf-8"));
         byte[] rawProperties = partition.get(tableIndexKey);
         if (rawProperties != null) {
             Map<String, String> current = mapper.readValue(rawProperties, new TypeReference<HashMap<String, String>>() {
@@ -85,7 +85,7 @@ public class UpenaConfigStore {
         final Map<String, String> results = new HashMap<>();
         AmzaTable partition = getPartition();
         String key = createTableName(instanceKey, context);
-        TableIndexKey tableIndexKey = new TableIndexKey(key.getBytes("utf-8"));
+        RowIndexKey tableIndexKey = new RowIndexKey(key.getBytes("utf-8"));
         byte[] rawProperties = partition.get(tableIndexKey);
         if (rawProperties != null) {
             Map<String, String> current = mapper.readValue(rawProperties, new TypeReference<HashMap<String, String>>() {

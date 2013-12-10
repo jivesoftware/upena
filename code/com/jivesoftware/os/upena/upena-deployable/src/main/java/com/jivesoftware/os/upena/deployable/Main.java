@@ -23,23 +23,25 @@ import com.jivesoftware.os.amza.service.AmzaServiceInitializer;
 import com.jivesoftware.os.amza.service.AmzaServiceInitializer.AmzaServiceConfig;
 import com.jivesoftware.os.amza.service.discovery.AmzaDiscovery;
 import com.jivesoftware.os.amza.shared.AmzaInstance;
+import com.jivesoftware.os.amza.shared.Flusher;
+import com.jivesoftware.os.amza.shared.MemoryRowsIndex;
 import com.jivesoftware.os.amza.shared.RingHost;
-import com.jivesoftware.os.amza.shared.TableDelta;
-import com.jivesoftware.os.amza.shared.TableIndex;
-import com.jivesoftware.os.amza.shared.TableIndexProvider;
+import com.jivesoftware.os.amza.shared.RowChanges;
+import com.jivesoftware.os.amza.shared.RowIndexKey;
+import com.jivesoftware.os.amza.shared.RowIndexValue;
+import com.jivesoftware.os.amza.shared.RowsChanged;
+import com.jivesoftware.os.amza.shared.RowsIndex;
+import com.jivesoftware.os.amza.shared.RowsIndexProvider;
+import com.jivesoftware.os.amza.shared.RowsStorage;
+import com.jivesoftware.os.amza.shared.RowsStorageProvider;
 import com.jivesoftware.os.amza.shared.TableName;
-import com.jivesoftware.os.amza.shared.TableStateChanges;
-import com.jivesoftware.os.amza.shared.TableStorage;
-import com.jivesoftware.os.amza.shared.TableStorageProvider;
-import com.jivesoftware.os.amza.storage.FileBackedTableStorage;
 import com.jivesoftware.os.amza.storage.RowTable;
 import com.jivesoftware.os.amza.storage.binary.BinaryRowMarshaller;
 import com.jivesoftware.os.amza.storage.binary.BinaryRowReader;
 import com.jivesoftware.os.amza.storage.binary.BinaryRowWriter;
-import com.jivesoftware.os.amza.storage.chunks.Filer;
-import com.jivesoftware.os.amza.storage.index.MapDBTableIndex;
-import com.jivesoftware.os.amza.transport.http.replication.HttpChangeSetSender;
-import com.jivesoftware.os.amza.transport.http.replication.HttpChangeSetTaker;
+import com.jivesoftware.os.amza.storage.filer.Filer;
+import com.jivesoftware.os.amza.transport.http.replication.HttpUpdatesSender;
+import com.jivesoftware.os.amza.transport.http.replication.HttpUpdatesTaker;
 import com.jivesoftware.os.amza.transport.http.replication.endpoints.AmzaReplicationRestEndpoints;
 import com.jivesoftware.os.jive.utils.base.service.ServiceHandle;
 import com.jivesoftware.os.jive.utils.ordered.id.OrderIdProvider;
@@ -72,6 +74,9 @@ import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import org.mapdb.BTreeMap;
+import org.mapdb.DB;
+import org.mapdb.DBMaker;
 
 public class Main {
 
@@ -94,33 +99,43 @@ public class Main {
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         mapper.configure(SerializationFeature.INDENT_OUTPUT, false);
 
-        TableStorageProvider tableStorageProvider = new TableStorageProvider() {
+        RowsStorageProvider tableStorageProvider = new RowsStorageProvider() {
             @Override
-            public TableStorage createTableStorage(File workingDirectory,
+            public RowsStorage createRowsStorage(File workingDirectory,
                     String tableDomain,
                     TableName tableName) throws Exception {
                 File directory = new File(workingDirectory, tableDomain);
                 directory.mkdirs();
                 File file = new File(directory, tableName.getTableName() + ".kvt");
 
-                Filer filer = Filer.open(file, "rw");
+                Filer filer = new Filer(file.getAbsolutePath(), "rw");
                 BinaryRowReader reader = new BinaryRowReader(filer);
                 BinaryRowWriter writer = new BinaryRowWriter(filer);
                 BinaryRowMarshaller rowMarshaller = new BinaryRowMarshaller();
-                TableIndexProvider tableIndexProvider = new TableIndexProvider() {
+                RowsIndexProvider tableIndexProvider = new RowsIndexProvider() {
 
                     @Override
-                    public TableIndex createTableIndex(TableName tableName) {
-                        return new MapDBTableIndex(tableName.getTableName());
+                    public RowsIndex createRowsIndex(TableName tableName) throws Exception {
+                        final DB db = DBMaker.newDirectMemoryDB()
+                            .closeOnJvmShutdown()
+                            .make();
+                        BTreeMap<RowIndexKey, RowIndexValue> treeMap = db.getTreeMap(tableName.getTableName());
+                        return new MemoryRowsIndex(treeMap, new Flusher() {
+
+                            @Override
+                            public void flush() {
+                                db.commit();
+                            }
+                        });
                     }
                 };
-                RowTable<byte[]> rowTableFile = new RowTable<>(tableName,
+                RowTable rowTableFile = new RowTable(tableName,
                         orderIdProvider,
                         tableIndexProvider,
                         rowMarshaller,
                         reader,
                         writer);
-                return new FileBackedTableStorage(rowTableFile);
+                return rowTableFile;
             }
         };
 
@@ -131,11 +146,11 @@ public class Main {
                 tableStorageProvider,
                 tableStorageProvider,
                 tableStorageProvider,
-                new HttpChangeSetSender(),
-                new HttpChangeSetTaker(), new TableStateChanges() {
+                new HttpUpdatesSender(),
+                new HttpUpdatesTaker(), new RowChanges() {
 
                     @Override
-                    public void changes(TableName partitionName, TableDelta changes) throws Exception {
+                    public void changes(RowsChanged changes) throws Exception {
                         //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
                     }
                 });

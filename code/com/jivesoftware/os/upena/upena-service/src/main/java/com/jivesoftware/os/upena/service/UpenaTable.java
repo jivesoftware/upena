@@ -17,9 +17,9 @@ package com.jivesoftware.os.upena.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jivesoftware.os.amza.service.AmzaTable;
-import com.jivesoftware.os.amza.shared.BinaryTimestampedValue;
-import com.jivesoftware.os.amza.shared.EntryStream;
-import com.jivesoftware.os.amza.shared.TableIndexKey;
+import com.jivesoftware.os.amza.shared.RowIndexKey;
+import com.jivesoftware.os.amza.shared.RowIndexValue;
+import com.jivesoftware.os.amza.shared.RowScan;
 import com.jivesoftware.os.upena.shared.BasicTimestampedValue;
 import com.jivesoftware.os.upena.shared.Key;
 import com.jivesoftware.os.upena.shared.KeyValueFilter;
@@ -65,7 +65,7 @@ public class UpenaTable<K extends Key, V extends Stored> {
 
     public V get(K key) throws Exception {
         byte[] rawKey = mapper.writeValueAsBytes(key);
-        byte[] got = store.get(new TableIndexKey(rawKey));
+        byte[] got = store.get(new RowIndexKey(rawKey));
         if (got == null) {
             return null;
         }
@@ -75,10 +75,10 @@ public class UpenaTable<K extends Key, V extends Stored> {
     ConcurrentNavigableMap<K, TimestampedValue<V>> find(final KeyValueFilter<K, V> filter) throws Exception {
 
         final ConcurrentNavigableMap<K, TimestampedValue<V>> results = filter.createCollector();
-        store.scan(new EntryStream<Exception>() {
+        store.scan(new RowScan<Exception>() {
 
             @Override
-            public boolean stream(TableIndexKey key, BinaryTimestampedValue value) throws Exception {
+            public boolean row(long transactionId, RowIndexKey key, RowIndexValue value) throws Exception {
                 if (!value.getTombstoned()) {
                     K k = mapper.readValue(key.getKey(), keyClass);
                     V v = mapper.readValue(value.getValue(), valueClass);
@@ -102,13 +102,13 @@ public class UpenaTable<K extends Key, V extends Stored> {
         }
         byte[] rawKey = mapper.writeValueAsBytes(key);
         byte[] rawValue = mapper.writeValueAsBytes(value);
-        TableIndexKey set = store.set(new TableIndexKey(rawKey), rawValue);
+        RowIndexKey set = store.set(new RowIndexKey(rawKey), rawValue);
         K gotKey = mapper.readValue(set.getKey(), keyClass);
         return gotKey;
     }
 
     synchronized public boolean remove(K key) throws Exception {
         byte[] rawKey = mapper.writeValueAsBytes(key);
-        return store.remove(new TableIndexKey(rawKey));
+        return store.remove(new RowIndexKey(rawKey));
     }
 }
