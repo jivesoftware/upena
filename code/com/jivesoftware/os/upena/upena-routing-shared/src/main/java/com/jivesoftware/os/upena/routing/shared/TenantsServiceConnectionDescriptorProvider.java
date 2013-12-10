@@ -19,10 +19,7 @@ import com.jivesoftware.os.jive.utils.logger.MetricLogger;
 import com.jivesoftware.os.jive.utils.logger.MetricLoggerFactory;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class TenantsServiceConnectionDescriptorProvider<T> {
@@ -85,29 +82,10 @@ public class TenantsServiceConnectionDescriptorProvider<T> {
             } else {
                 userId = connectionsResponse.getUserId();
                 connections = new ConnectionDescriptors(System.currentTimeMillis(), connectionsResponse.getConnections());
-                cleanupConnections(new HashSet(connectionsResponse.getValidUserIds()));
             }
             tenantToUserId.put(tenantId, userId);
             userIdsConnectionDescriptors.put(userId, connections);
         }
         return connections;
-    }
-
-    private void cleanupConnections(HashSet<String> validUserIds) {
-        Set<T> removedTenants = new HashSet<>();
-        Set<String> removedUsers = new HashSet<>();
-        for (Entry<T, String> e : tenantToUserId.entrySet()) {
-            if (!validUserIds.contains(e.getValue())) {
-                removedTenants.add(e.getKey());
-                removedUsers.add(e.getValue());
-            }
-        }
-        for (T removedTenant : removedTenants) {
-            tenantToUserId.remove(removedTenant);
-        }
-
-        for (String removedUser : removedUsers) {
-            userIdsConnectionDescriptors.remove(removedUser);
-        }
     }
 }

@@ -35,7 +35,7 @@ public class TenantRoutingProviderTest {
     public void testGetConnections() throws Exception {
 
         ConnectionDescriptorsRequest request = new ConnectionDescriptorsRequest("tenant", "1234", "serviceA", "port1");
-        ConnectionDescriptorsResponse response = new ConnectionDescriptorsResponse(0, null, null, null, null);
+        ConnectionDescriptorsResponse response = new ConnectionDescriptorsResponse(0, null, null, null);
         Mockito.when(connectionDescriptorsProvider.requestConnections(Mockito.eq(request))).thenReturn(response);
 
         TenantsServiceConnectionDescriptorProvider connections = provider.getConnections("invalid", null);
@@ -59,7 +59,7 @@ public class TenantRoutingProviderTest {
         Assert.assertTrue(routingReport.serviceReport.isEmpty());
 
         ConnectionDescriptorsRequest request = new ConnectionDescriptorsRequest("tenant", "1234", "serviceA", "port1");
-        ConnectionDescriptorsResponse response = new ConnectionDescriptorsResponse(0, null, null, null, null);
+        ConnectionDescriptorsResponse response = new ConnectionDescriptorsResponse(0, null, null, null);
         Mockito.when(connectionDescriptorsProvider.requestConnections(Mockito.eq(request))).thenReturn(response);
 
         TenantsServiceConnectionDescriptorProvider connections = provider.getConnections("serviceA", "port1");

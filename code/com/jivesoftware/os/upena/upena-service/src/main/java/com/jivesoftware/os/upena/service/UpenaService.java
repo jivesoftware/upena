@@ -40,11 +40,9 @@ import com.jivesoftware.os.upena.shared.TimestampedValue;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.concurrent.ConcurrentNavigableMap;
 
 public class UpenaService {
@@ -140,10 +138,8 @@ public class UpenaService {
             }
         }
 
-        Set<String> validReleaseGroupKeys = getValidReleaseGroupKeys(instance.clusterKey, wantToConnectToServiceKey);
-
         messages.add("Success");
-        return new ConnectionDescriptorsResponse(1, messages, ownerReleaseGroupKey.getKey(), connections, validReleaseGroupKeys);
+        return new ConnectionDescriptorsResponse(1, messages, ownerReleaseGroupKey.getKey(), connections);
     }
 
     ConnectionDescriptorsResponse ensureInstanceIsValid(InstanceKey instanceKey, Instance instance) throws Exception {
@@ -174,18 +170,7 @@ public class UpenaService {
 
     private ConnectionDescriptorsResponse failedConnectionResponse(String... message) {
         return new ConnectionDescriptorsResponse(-1,
-                Arrays.asList(message), null, null, null);
-    }
-
-    Set<String> getValidReleaseGroupKeys(ClusterKey clusterKey, ServiceKey serviceKey) throws Exception {
-        Set<String> validReleaseGroupIds = new HashSet<>();
-        InstanceFilter filter = new InstanceFilter(clusterKey, null, serviceKey, null, null, 0, Integer.MAX_VALUE);
-        ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> got = upenaStore.instances.find(filter);
-        for (Entry<InstanceKey, TimestampedValue<Instance>> entry : got.entrySet()) {
-            Instance value = entry.getValue().getValue();
-            validReleaseGroupIds.add(value.releaseGroupKey.getKey());
-        }
-        return validReleaseGroupIds;
+                Arrays.asList(message), null, null);
     }
 
     public InstanceDescriptorsResponse instanceDescriptors(InstanceDescriptorsRequest instanceDescriptorsRequest) throws Exception {

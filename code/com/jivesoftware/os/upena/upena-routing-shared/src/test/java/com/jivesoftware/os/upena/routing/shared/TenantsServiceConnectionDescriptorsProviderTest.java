@@ -17,10 +17,8 @@ package com.jivesoftware.os.upena.routing.shared;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -42,23 +40,19 @@ public class TenantsServiceConnectionDescriptorsProviderTest {
     @BeforeMethod
     public void setUpMethod() throws Exception {
         MockitoAnnotations.initMocks(this);
-        ConnectionDescriptorsRequest connectionDescriptorsRequest =
-                new ConnectionDescriptorsRequest(tenantId, instanceId, serviceId, port);
+        ConnectionDescriptorsRequest connectionDescriptorsRequest = new ConnectionDescriptorsRequest(tenantId, instanceId, serviceId, port);
 
-        descriptor = new ConnectionDescriptor("localhost", 7776,  Collections.EMPTY_MAP);
-
-        Set<String> userIds = new HashSet<>();
-        userIds.add(userId);
+        descriptor = new ConnectionDescriptor("localhost", 7776, Collections.EMPTY_MAP);
 
         Mockito.when(connectionDescriptorsProvider.requestConnections(Mockito.eq(connectionDescriptorsRequest))).
                 thenReturn(new ConnectionDescriptorsResponse(200, Collections.<String>emptyList(),
-                userId, Arrays.asList(descriptor), userIds));
+                                userId, Arrays.asList(descriptor)));
     }
 
     @Test
     public void testGetConnections() {
-        TenantsServiceConnectionDescriptorProvider<String> tenantsServiceConnectionPoolProvider =
-                new TenantsServiceConnectionDescriptorProvider<>(instanceId, connectionDescriptorsProvider, serviceId, port);
+        TenantsServiceConnectionDescriptorProvider<String> tenantsServiceConnectionPoolProvider = new TenantsServiceConnectionDescriptorProvider<>(
+                instanceId, connectionDescriptorsProvider, serviceId, port);
         tenantsServiceConnectionPoolProvider.getConnections(tenantId);
         ConnectionDescriptors connections = tenantsServiceConnectionPoolProvider.getConnections(tenantId);
 
@@ -87,8 +81,8 @@ public class TenantsServiceConnectionDescriptorsProviderTest {
 
     @Test
     public void testRoutingReport() {
-        TenantsServiceConnectionDescriptorProvider<String> tenantsServiceConnectionPoolProvider =
-                new TenantsServiceConnectionDescriptorProvider<>(instanceId, connectionDescriptorsProvider, serviceId, port);
+        TenantsServiceConnectionDescriptorProvider<String> tenantsServiceConnectionPoolProvider = new TenantsServiceConnectionDescriptorProvider<>(
+                instanceId, connectionDescriptorsProvider, serviceId, port);
         tenantsServiceConnectionPoolProvider.getConnections(tenantId);
         ConnectionDescriptors connections = tenantsServiceConnectionPoolProvider.getConnections(tenantId);
 

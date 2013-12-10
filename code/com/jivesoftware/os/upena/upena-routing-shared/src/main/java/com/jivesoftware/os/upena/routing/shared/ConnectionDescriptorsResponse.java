@@ -19,7 +19,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 public class ConnectionDescriptorsResponse {
 
@@ -27,19 +26,16 @@ public class ConnectionDescriptorsResponse {
     private final List<String> messages;
     private final String userId;
     private final List<ConnectionDescriptor> connections;
-    private final Set<String> validUserIds;
 
     @JsonCreator
     public ConnectionDescriptorsResponse(@JsonProperty("returnCode") int returnCode,
             @JsonProperty("messages") List<String> messages,
             @JsonProperty("userId") String userId,
-            @JsonProperty("connections") List<ConnectionDescriptor> connections,
-            @JsonProperty("validUserIds") Set<String> validUserIds) {
+            @JsonProperty("connections") List<ConnectionDescriptor> connections) {
         this.returnCode = returnCode;
         this.messages = messages;
         this.userId = userId;
         this.connections = connections;
-        this.validUserIds = validUserIds;
     }
 
     public int getReturnCode() {
@@ -58,10 +54,6 @@ public class ConnectionDescriptorsResponse {
         return connections;
     }
 
-    public Set<String> getValidUserIds() {
-        return validUserIds;
-    }
-
     @Override
     public String toString() {
         return "ConnectionDescriptorsResponse{"
@@ -69,7 +61,6 @@ public class ConnectionDescriptorsResponse {
                 + ", messages=" + messages
                 + ", userId=" + userId
                 + ", connections=" + connections
-                + ", validUserIds=" + validUserIds
                 + '}';
     }
 
@@ -80,7 +71,6 @@ public class ConnectionDescriptorsResponse {
         hash = 89 * hash + Objects.hashCode(this.messages);
         hash = 89 * hash + Objects.hashCode(this.userId);
         hash = 89 * hash + Objects.hashCode(this.connections);
-        hash = 89 * hash + Objects.hashCode(this.validUserIds);
         return hash;
     }
 
@@ -103,9 +93,6 @@ public class ConnectionDescriptorsResponse {
             return false;
         }
         if (!Objects.equals(this.connections, other.connections)) {
-            return false;
-        }
-        if (!Objects.equals(this.validUserIds, other.validUserIds)) {
             return false;
         }
         return true;
