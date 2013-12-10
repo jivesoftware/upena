@@ -6,12 +6,12 @@
     <parent>
         <groupId>com.jivesoftware.os.upena.inheritance.poms</groupId>
         <artifactId>maven-plugins-build-management</artifactId>
-        <version>unspecified</version>
+        <version>0.1</version>
         <relativePath>../inheritance-poms/maven-plugins-build-management/pom.xml</relativePath>
     </parent>
     <groupId>com.jivesoftware.os.upena</groupId>
     <artifactId>upena-deployer-plugin</artifactId>
-    <version>unspecified</version>
+    <version>0.1</version>
     <packaging>maven-plugin</packaging>
     <dependencies>
         <dependency>
@@ -51,17 +51,17 @@
         <dependency>
             <groupId>com.jivesoftware.os.upena</groupId>
             <artifactId>upena-shared</artifactId>
-            <version>unspecified</version>
+            <version>0.1</version>
         </dependency>
         <dependency>
             <groupId>com.jivesoftware.os.upena</groupId>
             <artifactId>uba-shared</artifactId>
-            <version>unspecified</version>
+            <version>0.1</version>
         </dependency>
         <dependency>
             <groupId>com.jivesoftware.os.amza</groupId>
             <artifactId>amza-shared</artifactId>
-            <version>unspecified</version>
+            <version>0.1</version>
         </dependency>
     </dependencies>
     <name>upena-deployer-plugin</name>

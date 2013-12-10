@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.jivesoftware.os.upena.inheritance.poms</groupId>
         <artifactId>upena-deployable-version-management</artifactId>
-        <version>unspecified</version>
+        <version>0.1</version>
         <relativePath>../upena-deployable-version-management/pom.xml</relativePath>
     </parent>
     <artifactId>upena-deployable-build-management</artifactId>
@@ -14,7 +14,7 @@
         <dependency>
             <groupId>com.jivesoftware.os.upena</groupId>
             <artifactId>upena-scripts</artifactId>
-            <version>unspecified</version>
+            <version>0.1</version>
             <type>tar.gz</type>
             <classifier>bin</classifier>
             <scope>runtime</scope>
@@ -35,7 +35,7 @@
                     <plugin>
                         <groupId>com.jivesoftware.jive.symphony</groupId>
                         <artifactId>upena-deployer-plugin</artifactId>
-                        <version>unspecified</version>
+                        <version>0.1</version>
                         <executions>
                             <execution>
                                 <phase>validate</phase>
@@ -55,7 +55,7 @@
                     <plugin>
                         <groupId>com.jivesoftware.jive.symphony</groupId>
                         <artifactId>upena-deployer-plugin</artifactId>
-                        <version>unspecified</version>
+                        <version>0.1</version>
                         <executions>
                             <execution>
                                 <phase>validate</phase>
@@ -139,7 +139,7 @@
                     <plugin>
                         <groupId>com.jivesoftware.jive.build.configuration.maven.plugins</groupId>
                         <artifactId>git-release-notes-plugin</artifactId>
-                        <version>unspecified</version>
+                        <version>0.1</version>
                         <executions>
                             <execution>
                                 <phase>compile</phase>
@@ -204,7 +204,7 @@
                     <plugin>
                         <groupId>com.jivesoftware.os.upena</groupId>
                         <artifactId>upena-deployer-plugin</artifactId>
-                        <version>unspecified</version>
+                        <version>0.1</version>
                         <executions>
                             <execution>
                                 <phase>install</phase>
