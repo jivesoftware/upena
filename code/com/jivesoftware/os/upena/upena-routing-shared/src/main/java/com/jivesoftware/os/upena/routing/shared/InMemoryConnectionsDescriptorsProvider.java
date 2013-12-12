@@ -42,6 +42,10 @@ public class InMemoryConnectionsDescriptorsProvider implements ConnectionDescrip
         routings.put(key, connectionDescriptor);
     }
 
+    public ConnectionDescriptor get(String tenantId, String instanceId, String connectToServiceNamed, String portName) {
+        return routings.get(key(tenantId, instanceId, connectToServiceNamed, portName));
+    }
+
     public void clear(String tenantId, String instanceId, String connectToServiceNamed, String portName) {
         routings.remove(key(tenantId, instanceId, connectToServiceNamed, portName));
     }
@@ -59,11 +63,14 @@ public class InMemoryConnectionsDescriptorsProvider implements ConnectionDescrip
         routingKeys.add(key);
         ConnectionDescriptor connectionDescriptor = routings.get(key);
         List<ConnectionDescriptor> connectionDescriptors = new ArrayList<>();
-        String releaseGroup = "*";
+        String releaseGroup;
         if (connectionDescriptor == null) {
-            connectionDescriptors.addAll(defaultConnectionDescriptor);
-            releaseGroup = "manual";
+            releaseGroup = "default";
+            if (defaultConnectionDescriptor != null) {
+                connectionDescriptors.addAll(defaultConnectionDescriptor);
+            }
         } else {
+            releaseGroup = "overriden";
             connectionDescriptors.add(connectionDescriptor);
         }
         return new ConnectionDescriptorsResponse(1, Arrays.asList("Success"), releaseGroup, connectionDescriptors);
