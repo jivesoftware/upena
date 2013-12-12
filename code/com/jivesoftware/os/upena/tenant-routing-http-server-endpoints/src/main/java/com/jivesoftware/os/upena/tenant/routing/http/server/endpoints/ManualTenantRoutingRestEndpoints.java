@@ -16,8 +16,6 @@
 package com.jivesoftware.os.upena.tenant.routing.http.server.endpoints;
 
 import com.jivesoftware.os.jive.utils.jaxrs.util.ResponseHelper;
-import com.jivesoftware.os.jive.utils.logger.MetricLogger;
-import com.jivesoftware.os.jive.utils.logger.MetricLoggerFactory;
 import com.jivesoftware.os.upena.routing.shared.ConnectionDescriptor;
 import com.jivesoftware.os.upena.routing.shared.InMemoryConnectionsDescriptorsProvider;
 import java.util.HashMap;
@@ -30,7 +28,6 @@ import javax.ws.rs.core.Response;
 @Path("/manual/tenant/routing")
 public class ManualTenantRoutingRestEndpoints {
 
-    private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
     private final InMemoryConnectionsDescriptorsProvider connectionsDescriptorsProvider;
 
     public ManualTenantRoutingRestEndpoints(@Context InMemoryConnectionsDescriptorsProvider connectionsDescriptorsProvider) {
@@ -56,12 +53,21 @@ public class ManualTenantRoutingRestEndpoints {
             @QueryParam("host") String host,
             @QueryParam("port") int port) {
 
-        ConnectionDescriptor connectionDescriptor = new ConnectionDescriptor(portName, port, new HashMap<String, String>());
+        ConnectionDescriptor connectionDescriptor = new ConnectionDescriptor(host, port, new HashMap<String, String>());
         connectionsDescriptorsProvider.set(tenantId, instanceId, connectToServiceNamed, portName, connectionDescriptor);
         return ResponseHelper.INSTANCE.jsonResponse("Set: tenantId=" + tenantId
                 + "&instanceId=" + instanceId
                 + "&connectToServiceNamed=" + connectToServiceNamed
-                + "&=portName" + portName + "->" + connectionDescriptor);
+                + "&portName=" + portName + "->" + connectionDescriptor);
+    }
+
+    @GET
+    @Path("/get")
+    public Response get(@QueryParam("tenantId") String tenantId,
+            @QueryParam("instanceId") String instanceId,
+            @QueryParam("connectToServiceNamed") String connectToServiceNamed,
+            @QueryParam("portName") String portName) {
+        return ResponseHelper.INSTANCE.jsonResponse(connectionsDescriptorsProvider.get(tenantId, instanceId, connectToServiceNamed, portName));
     }
 
     @GET
