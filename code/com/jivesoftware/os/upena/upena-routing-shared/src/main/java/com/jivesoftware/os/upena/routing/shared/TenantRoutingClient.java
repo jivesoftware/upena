@@ -47,6 +47,9 @@ public class TenantRoutingClient<T, C> {
                 }
             }
             C client = clientConnectionsFactory.createClient(connections);
+            if (client == null) {
+                throw new IllegalStateException("clientConnectionsFactory:" + clientConnectionsFactory + " should not return a null client but did!");
+            }
             timestampedClient = new TimestampedClient(System.currentTimeMillis(), client);
             tenantsHttpClient.put(tenant, timestampedClient);
         }

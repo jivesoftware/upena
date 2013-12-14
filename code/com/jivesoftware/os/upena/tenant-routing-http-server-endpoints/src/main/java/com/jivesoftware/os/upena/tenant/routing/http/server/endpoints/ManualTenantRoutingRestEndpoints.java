@@ -16,8 +16,11 @@
 package com.jivesoftware.os.upena.tenant.routing.http.server.endpoints;
 
 import com.jivesoftware.os.jive.utils.jaxrs.util.ResponseHelper;
+import com.jivesoftware.os.jive.utils.logger.MetricLogger;
+import com.jivesoftware.os.jive.utils.logger.MetricLoggerFactory;
 import com.jivesoftware.os.upena.routing.shared.ConnectionDescriptor;
 import com.jivesoftware.os.upena.routing.shared.InMemoryConnectionsDescriptorsProvider;
+import java.util.Collection;
 import java.util.HashMap;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -27,6 +30,8 @@ import javax.ws.rs.core.Response;
 
 @Path("/manual/tenant/routing")
 public class ManualTenantRoutingRestEndpoints {
+
+    private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
     private final InMemoryConnectionsDescriptorsProvider connectionsDescriptorsProvider;
 
@@ -40,8 +45,19 @@ public class ManualTenantRoutingRestEndpoints {
             @QueryParam("instanceId") String instanceId,
             @QueryParam("connectToServiceNamed") String connectToServiceNamed,
             @QueryParam("portName") String portName) {
-        connectionsDescriptorsProvider.clear(tenantId, instanceId, connectToServiceNamed, portName);
-        return ResponseHelper.INSTANCE.jsonResponse("Cleared");
+        try {
+            LOG.info("clearing "
+                    + "tenantId:" + tenantId + " instanceId:" + instanceId + " connectToServiceNamed:" + connectToServiceNamed + " portName:" + portName);
+            connectionsDescriptorsProvider.clear(tenantId, instanceId, connectToServiceNamed, portName);
+            LOG.info("cleared "
+                    + "tenantId:" + tenantId + " instanceId:" + instanceId + " connectToServiceNamed:" + connectToServiceNamed + " portName:" + portName);
+            return ResponseHelper.INSTANCE.jsonResponse("Cleared");
+        } catch (Exception x) {
+            LOG.info("Encountered the following error clearing "
+                    + "tenantId:" + tenantId + " instanceId:" + instanceId + " connectToServiceNamed:" + connectToServiceNamed + " portName:" + portName, x);
+            return ResponseHelper.INSTANCE.errorResponse("Encountered the following error clearing "
+                    + "tenantId:" + tenantId + " instanceId:" + instanceId + " connectToServiceNamed:" + connectToServiceNamed + " portName:" + portName, x);
+        }
     }
 
     @GET
@@ -53,12 +69,23 @@ public class ManualTenantRoutingRestEndpoints {
             @QueryParam("host") String host,
             @QueryParam("port") int port) {
 
-        ConnectionDescriptor connectionDescriptor = new ConnectionDescriptor(host, port, new HashMap<String, String>());
-        connectionsDescriptorsProvider.set(tenantId, instanceId, connectToServiceNamed, portName, connectionDescriptor);
-        return ResponseHelper.INSTANCE.jsonResponse("Set: tenantId=" + tenantId
-                + "&instanceId=" + instanceId
-                + "&connectToServiceNamed=" + connectToServiceNamed
-                + "&portName=" + portName + "->" + connectionDescriptor);
+        try {
+            LOG.info("setting "
+                    + "tenantId:" + tenantId + " instanceId:" + instanceId + " connectToServiceNamed:" + connectToServiceNamed + " portName:" + portName);
+            ConnectionDescriptor connectionDescriptor = new ConnectionDescriptor(host, port, new HashMap<String, String>());
+            connectionsDescriptorsProvider.set(tenantId, instanceId, connectToServiceNamed, portName, connectionDescriptor);
+            LOG.info("set"
+                    + "tenantId:" + tenantId + " instanceId:" + instanceId + " connectToServiceNamed:" + connectToServiceNamed + " portName:" + portName);
+            return ResponseHelper.INSTANCE.jsonResponse("Set: tenantId=" + tenantId
+                    + "&instanceId=" + instanceId
+                    + "&connectToServiceNamed=" + connectToServiceNamed
+                    + "&portName=" + portName + "->" + connectionDescriptor);
+        } catch (Exception x) {
+            LOG.info("Encountered the following error setting "
+                    + "tenantId:" + tenantId + " instanceId:" + instanceId + " connectToServiceNamed:" + connectToServiceNamed + " portName:" + portName, x);
+            return ResponseHelper.INSTANCE.errorResponse("Encountered the following error setting "
+                    + "tenantId:" + tenantId + " instanceId:" + instanceId + " connectToServiceNamed:" + connectToServiceNamed + " portName:" + portName, x);
+        }
     }
 
     @GET
@@ -67,12 +94,34 @@ public class ManualTenantRoutingRestEndpoints {
             @QueryParam("instanceId") String instanceId,
             @QueryParam("connectToServiceNamed") String connectToServiceNamed,
             @QueryParam("portName") String portName) {
-        return ResponseHelper.INSTANCE.jsonResponse(connectionsDescriptorsProvider.get(tenantId, instanceId, connectToServiceNamed, portName));
+        try {
+
+            LOG.info("getting "
+                    + "tenantId:" + tenantId + " instanceId:" + instanceId + " connectToServiceNamed:" + connectToServiceNamed + " portName:" + portName);
+            ConnectionDescriptor connectionDescriptor = connectionsDescriptorsProvider.get(tenantId, instanceId, connectToServiceNamed, portName);
+            LOG.info("got"
+                    + "tenantId:" + tenantId + " instanceId:" + instanceId + " connectToServiceNamed:" + connectToServiceNamed + " portName:" + portName);
+            return ResponseHelper.INSTANCE.jsonResponse(connectionDescriptor);
+        } catch (Exception x) {
+            LOG.info("Encountered the following error getting "
+                    + "tenantId:" + tenantId + " instanceId:" + instanceId + " connectToServiceNamed:" + connectToServiceNamed + " portName:" + portName, x);
+            return ResponseHelper.INSTANCE.errorResponse("Encountered the following error getting "
+                    + "tenantId:" + tenantId + " instanceId:" + instanceId + " connectToServiceNamed:" + connectToServiceNamed + " portName:" + portName, x);
+        }
+
     }
 
     @GET
     @Path("/keys")
     public Response getKeys() {
-        return ResponseHelper.INSTANCE.jsonResponse(connectionsDescriptorsProvider.getRequestedRoutingKeys());
+        try {
+            LOG.info("getting requestedRoutingKeys");
+            Collection<String> requestedRoutingKeys = connectionsDescriptorsProvider.getRequestedRoutingKeys();
+            LOG.info("got requestedRoutingKeys");
+            return ResponseHelper.INSTANCE.jsonResponse(requestedRoutingKeys);
+        } catch (Exception x) {
+            LOG.info("Encountered the following error getting requestedRoutingKeys", x);
+            return ResponseHelper.INSTANCE.errorResponse("Encountered the following error getting requestedRoutingKeys", x);
+        }
     }
 }

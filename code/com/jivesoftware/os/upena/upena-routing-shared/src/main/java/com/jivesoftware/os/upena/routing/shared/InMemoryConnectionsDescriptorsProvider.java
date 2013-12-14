@@ -15,6 +15,8 @@
  */
 package com.jivesoftware.os.upena.routing.shared;
 
+import com.jivesoftware.os.jive.utils.logger.MetricLogger;
+import com.jivesoftware.os.jive.utils.logger.MetricLoggerFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -25,6 +27,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class InMemoryConnectionsDescriptorsProvider implements ConnectionDescriptorsProvider {
 
+    private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
+
     private final List<ConnectionDescriptor> defaultConnectionDescriptor;
     private final Set<String> routingKeys = new HashSet<>();
     private final ConcurrentHashMap<String, ConnectionDescriptor> routings = new ConcurrentHashMap<>();
@@ -34,11 +38,12 @@ public class InMemoryConnectionsDescriptorsProvider implements ConnectionDescrip
     }
 
     private String key(String tenantId, String instanceId, String connectToServiceNamed, String portName) {
-        return "tenantId=" + tenantId + "&instanceid=" + instanceId + "&connectToServiceNamed=" + connectToServiceNamed + "&portName=" + portName;
+        return "tenantId=" + tenantId + "&instanceId=" + instanceId + "&connectToServiceNamed=" + connectToServiceNamed + "&portName=" + portName;
     }
 
     public void set(String tenantId, String instanceId, String connectToServiceNamed, String portName, ConnectionDescriptor connectionDescriptor) {
         String key = key(tenantId, instanceId, connectToServiceNamed, portName);
+        LOG.info("Setting routing override for " + key + " to be " + connectionDescriptor);
         routings.put(key, connectionDescriptor);
     }
 
@@ -47,7 +52,9 @@ public class InMemoryConnectionsDescriptorsProvider implements ConnectionDescrip
     }
 
     public void clear(String tenantId, String instanceId, String connectToServiceNamed, String portName) {
-        routings.remove(key(tenantId, instanceId, connectToServiceNamed, portName));
+        String key = key(tenantId, instanceId, connectToServiceNamed, portName);
+        LOG.info("Clearing routing override for " + key);
+        routings.remove(key);
     }
 
     public Collection<String> getRequestedRoutingKeys() {
@@ -65,14 +72,17 @@ public class InMemoryConnectionsDescriptorsProvider implements ConnectionDescrip
         List<ConnectionDescriptor> connectionDescriptors = new ArrayList<>();
         String releaseGroup;
         if (connectionDescriptor == null) {
+            LOG.info("current there is NOT a manual override for " + key);
             releaseGroup = "default";
             if (defaultConnectionDescriptor != null) {
                 connectionDescriptors.addAll(defaultConnectionDescriptor);
             }
         } else {
+            LOG.info("overriding routing for" + connectionsRequest + " to be " + connectionDescriptor);
             releaseGroup = "overriden";
             connectionDescriptors.add(connectionDescriptor);
         }
-        return new ConnectionDescriptorsResponse(1, Arrays.asList("Success"), releaseGroup, connectionDescriptors);
+        ConnectionDescriptorsResponse response = new ConnectionDescriptorsResponse(1, Arrays.asList("Success"), releaseGroup, connectionDescriptors);
+        return response;
     }
 }

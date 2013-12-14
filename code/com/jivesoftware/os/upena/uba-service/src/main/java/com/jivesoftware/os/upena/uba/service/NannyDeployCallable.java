@@ -97,10 +97,12 @@ class NannyDeployCallable implements Callable<Boolean> {
             RepositorySystem system = RepositoryProvider.newRepositorySystem();
             RepositorySystemSession session = RepositoryProvider.newRepositorySystemSession(system);
             List<RemoteRepository> remoteRepos = RepositoryProvider.newRepositories(system, session);
+
             Artifact artifact = new DefaultArtifact(groupId, artifactId, "tar.gz", version);
             ArtifactRequest artifactRequest = new ArtifactRequest();
             artifactRequest.setArtifact(artifact);
             artifactRequest.setRepositories(remoteRepos);
+
             ArtifactResult artifactResult = system.resolveArtifact(session, artifactRequest);
             artifact = artifactResult.getArtifact();
             System.out.println(artifact + " resolved to  " + artifact.getFile());
@@ -116,6 +118,7 @@ class NannyDeployCallable implements Callable<Boolean> {
             artifactRequest.setRepositories(remoteRepos);
             artifactResult = system.resolveArtifact(session, artifactRequest);
             artifact = artifactResult.getArtifact();
+
             deployLog.log("Deployed " + artifact.getFile() + " to " + libDir, null);
             FileUtils.copyFileToDirectory(artifact.getFile(), libDir, true);
             CollectRequest collectRequest = new CollectRequest();

@@ -2,13 +2,14 @@
 
 APP_ROOT=$(cd $(dirname $0)/..; pwd);
 CLASSPATH=`grep classpath $APP_ROOT/lib/build.properties | sed -e 's/.*=//g' | sed 's/\\\\//g'`
+DEPLOYABLE_ARTIFACT=`grep deployable.artifact $APP_ROOT/lib/build.properties | sed -e 's/.*=//g'`
 CONFIG_HOST=`grep InstanceConfig_default_routesHost $APP_ROOT/config/instance.properties | sed -e 's/.*=//g'`
 CONFIG_PORT=`grep InstanceConfig_default_routesPort $APP_ROOT/config/instance.properties | sed -e 's/.*=//g'`
 INSTANCE_KEY=`grep InstanceConfig_default_instanceKey $APP_ROOT/config/instance.properties | sed -e 's/.*=//g'`
 
 echo "Generating default config...."
 cd $APP_ROOT && $JAVA_HOME/bin/java \
-  -cp :${CLASSPATH} \
+  -cp ${DEPLOYABLE_ARTIFACT}:${CLASSPATH} \
   com.jivesoftware.os.upena.uba.config.extractor.ConfigExtractor ${CONFIG_HOST} ${CONFIG_PORT} ${INSTANCE_KEY}
 echo "Generated default config."
 exit 0;

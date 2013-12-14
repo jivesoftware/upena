@@ -43,9 +43,7 @@ import org.merlin.config.BindInterfaceToConfiguration;
 import org.merlin.config.Config;
 import org.merlin.config.MapBackConfiguration;
 import org.reflections.Reflections;
-import org.reflections.scanners.MethodAnnotationsScanner;
 import org.reflections.scanners.SubTypesScanner;
-import org.reflections.scanners.TypeAnnotationsScanner;
 import org.reflections.scanners.TypesScanner;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
@@ -57,7 +55,7 @@ public class ConfigExtractor {
         try {
             Reflections reflections = new Reflections(new ConfigurationBuilder()
                     .setUrls(ClasspathHelper.forPackage("com.jivesoftware")) // GRRR
-                    .setScanners(new SubTypesScanner(), new TypesScanner(), new MethodAnnotationsScanner(), new TypeAnnotationsScanner()));
+                    .setScanners(new SubTypesScanner(), new TypesScanner()));
             Set<Class<? extends Config>> subTypesOf = reflections.getSubTypesOf(Config.class);
             File configDir = new File("./config");
             configDir.mkdirs();
@@ -145,6 +143,12 @@ public class ConfigExtractor {
     public void writeDefaultsToFile(File outputFile) throws IOException {
         List<String> lines = new ArrayList<>();
         for (Class c : configClasses) {
+            if (!c.isInterface()) {
+                System.out.println("WARNING: class " + c + " somehow made it into the list of config classes. It is being skipped.");
+                continue;
+            } else {
+                System.out.println("Building defaults for class:" + c.getName());
+            }
             String classPrefix = propertyPrefix.propertyPrefix(c);
             Map<String, String> expected = new HashMap<>();
             Config config = new BindInterfaceToConfiguration<>(new MapBackConfiguration(expected), c).bind();
@@ -154,7 +158,7 @@ public class ConfigExtractor {
                 String value = entry.getValue();
                 String property = classPrefix + key + "=" + value;
                 lines.add(property);
-                System.out.println(property);
+                System.out.println("\t"+property);
             }
         }
         FileUtils.writeLines(outputFile, "utf-8", lines, "\n", false);
