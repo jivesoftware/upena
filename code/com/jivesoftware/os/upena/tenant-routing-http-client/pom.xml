@@ -36,7 +36,7 @@
         <dependency>
             <groupId>com.jivesoftware.os.upena</groupId>
             <artifactId>upena-routing-shared</artifactId>
-            <version>0.2</version>
+            <version>0.3</version>
             <type>jar</type>
         </dependency>
     </dependencies>
