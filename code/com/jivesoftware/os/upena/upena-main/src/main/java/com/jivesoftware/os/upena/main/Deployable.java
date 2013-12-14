@@ -22,6 +22,7 @@ import com.jivesoftware.os.jive.utils.http.client.HttpClientConfig;
 import com.jivesoftware.os.jive.utils.http.client.HttpClientConfiguration;
 import com.jivesoftware.os.jive.utils.http.client.HttpClientException;
 import com.jivesoftware.os.jive.utils.http.client.HttpClientFactoryProvider;
+import com.jivesoftware.os.server.http.health.check.HealthCheck;
 import com.jivesoftware.os.server.http.jetty.jersey.endpoints.configuration.MainProperties;
 import com.jivesoftware.os.server.http.jetty.jersey.endpoints.configuration.MainPropertiesEndpoints;
 import com.jivesoftware.os.server.http.jetty.jersey.server.InitializeRestfulServer;
@@ -32,6 +33,7 @@ import com.jivesoftware.os.upena.reporter.service.StatusReportBroadcaster;
 import com.jivesoftware.os.upena.reporter.service.StatusReportBroadcaster.StatusReportCallback;
 import com.jivesoftware.os.upena.reporter.service.StatusReportConfig;
 import com.jivesoftware.os.upena.reporter.shared.StatusReport;
+import com.jivesoftware.os.upena.routing.shared.ConnectionDescriptorsProvider;
 import com.jivesoftware.os.upena.routing.shared.TenantRoutingProvider;
 import com.jivesoftware.os.upena.tenant.routing.http.server.endpoints.TenantRoutingRestEndpoints;
 import com.jivesoftware.os.upena.uba.config.extractor.ConfigBinder;
@@ -54,13 +56,20 @@ public class Deployable {
     private final AtomicBoolean serverStarted = new AtomicBoolean(false);
 
     public Deployable(String[] args) throws IOException {
+        this(args, null);
+    }
+
+    public Deployable(String[] args, ConnectionDescriptorsProvider connectionsDescriptorProvider) throws IOException {
+
         configBinder = new ConfigBinder(args);
         InstanceConfig instanceConfig = configBinder.bind(InstanceConfig.class);
+        if (connectionsDescriptorProvider == null) {
+            TenantRoutingBirdProviderBuilder tenantRoutingBirdBuilder = new TenantRoutingBirdProviderBuilder(instanceConfig.getRoutesHost(),
+                    instanceConfig.getRoutesPort());
+            connectionsDescriptorProvider = tenantRoutingBirdBuilder.build();
+        }
 
-        TenantRoutingBirdBuilder tenantRoutingBirdBuilder = new TenantRoutingBirdBuilder(instanceConfig.getRoutesHost(),
-                instanceConfig.getRoutesPort());
-        tenantRoutingBirdBuilder.setInstanceId(instanceConfig.getInstanceKey());
-        tenantRoutingProvider = tenantRoutingBirdBuilder.build();
+        tenantRoutingProvider = new TenantRoutingProvider(instanceConfig.getInstanceKey(), connectionsDescriptorProvider);
 
         String applicationName = "manage " + instanceConfig.getServiceName() + " " + instanceConfig.getClusterName();
         restfulManageServer = new RestfulManageServer(instanceConfig.getManagePort(),
@@ -82,7 +91,7 @@ public class Deployable {
 
     public ServiceHandle buildStatusReporter(StatusReportCallback statusReportCallback) {
         StatusReportConfig config = configBinder.bind(StatusReportConfig.class);
-        Map<String,String> rawInstanceProperties = new HashMap<>();
+        Map<String, String> rawInstanceProperties = new HashMap<>();
         InstanceConfig instanceConfig = configBinder.bind(InstanceConfig.class, rawInstanceProperties);
         if (statusReportCallback == null) {
             final ObjectMapper mapper = new ObjectMapper();
@@ -147,6 +156,13 @@ public class Deployable {
         restfulManageServer.addInjectable(clazz, injectable);
     }
 
+    public void addHealthCheck(HealthCheck... healthCheck) {
+        if (manageServerStarted.get()) {
+            throw new IllegalStateException("Cannot add injectables after the manage server has been started.");
+        }
+        restfulManageServer.addHealthCheck(healthCheck);
+    }
+
     public ServiceHandle buildManageServer() throws Exception {
         if (manageServerStarted.compareAndSet(false, true)) {
             long time = System.currentTimeMillis();
@@ -184,14 +200,14 @@ public class Deployable {
         if (serverStarted.get()) {
             throw new IllegalStateException("Cannot add endpoints after the server has been started.");
         }
-        restfulManageServer.addEndpoint(clazz);
+        jerseyEndpoints.addEndpoint(clazz);
     }
 
     public void addInjectables(Class clazz, Object injectable) {
         if (serverStarted.get()) {
             throw new IllegalStateException("Cannot add injectables after the server has been started.");
         }
-        restfulManageServer.addInjectable(clazz, injectable);
+        jerseyEndpoints.addInjectable(clazz, injectable);
     }
 
     public void addResource(Resource resource) {

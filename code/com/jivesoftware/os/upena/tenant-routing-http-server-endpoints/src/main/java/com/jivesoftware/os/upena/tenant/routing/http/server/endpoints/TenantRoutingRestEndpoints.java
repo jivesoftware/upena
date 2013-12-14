@@ -19,6 +19,7 @@ import com.jivesoftware.os.jive.utils.jaxrs.util.ResponseHelper;
 import com.jivesoftware.os.jive.utils.logger.MetricLogger;
 import com.jivesoftware.os.jive.utils.logger.MetricLoggerFactory;
 import com.jivesoftware.os.upena.routing.shared.TenantRoutingProvider;
+import com.jivesoftware.os.upena.routing.shared.TenantsRoutingReport;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
@@ -29,6 +30,7 @@ import javax.ws.rs.core.Response;
 public class TenantRoutingRestEndpoints {
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
+
     private final TenantRoutingProvider routingProvider;
 
     public TenantRoutingRestEndpoints(@Context TenantRoutingProvider tenantRoutingConnectionPoolProvider) {
@@ -38,14 +40,29 @@ public class TenantRoutingRestEndpoints {
     @GET
     @Path("/report")
     public Response report() {
-        return ResponseHelper.INSTANCE.jsonResponse(routingProvider.getRoutingReport());
+        try {
+            LOG.info("get report");
+            TenantsRoutingReport routingReport = routingProvider.getRoutingReport();
+            LOG.info("got report");
+            return ResponseHelper.INSTANCE.jsonResponse(routingReport);
+        } catch (Exception x) {
+            LOG.error("Encountered the following error getting a routing report.", x);
+            return ResponseHelper.INSTANCE.errorResponse("Encountered the following error getting a routing report.", x);
+        }
     }
 
     @GET
     @Path("/invaliateAll")
     public Response invalidateAll() {
-        routingProvider.invalidateAll();
-        return ResponseHelper.INSTANCE.jsonResponse("InvalidatdAll");
+        try {
+            LOG.info("invalidating all");
+            routingProvider.invalidateAll();
+            LOG.info("invalidated all");
+            return ResponseHelper.INSTANCE.jsonResponse("InvalidatdAll");
+        } catch (Exception x) {
+            LOG.error("Encountered the following error invalidating all.", x);
+            return ResponseHelper.INSTANCE.errorResponse("Encountered the following error invalidating all.", x);
+        }
     }
 
     @GET
@@ -54,8 +71,16 @@ public class TenantRoutingRestEndpoints {
             @QueryParam("connectToServiceId") String connectToServiceId,
             @QueryParam("portName") String portName,
             @QueryParam("tenantId") String tenantId) {
-
-        routingProvider.invalidateTenant(connectToServiceId, portName, tenantId);
-        return ResponseHelper.INSTANCE.jsonResponse("Invalidated connectToServiceId:" + connectToServiceId + " for tenantId:" + tenantId);
+        try {
+            LOG.info("invalidating connectToServiceId:" + connectToServiceId + " portName:" + portName + " tenantId:" + tenantId);
+            routingProvider.invalidateTenant(connectToServiceId, portName, tenantId);
+            LOG.info("invalidated connectToServiceId:" + connectToServiceId + " portName:" + portName + " tenantId:" + tenantId);
+            return ResponseHelper.INSTANCE.jsonResponse("Invalidated connectToServiceId:" + connectToServiceId + " for tenantId:" + tenantId);
+        } catch (Exception x) {
+            LOG.error("Encountered the following error invalidating connectToServiceId:" + connectToServiceId
+                    + " portName:" + portName + " tenantId:" + tenantId, x);
+            return ResponseHelper.INSTANCE.errorResponse("Encountered the following error invalidating connectToServiceId:" + connectToServiceId
+                    + " portName:" + portName + " tenantId:" + tenantId, x);
+        }
     }
 }

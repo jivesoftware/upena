@@ -35,6 +35,8 @@ import com.jivesoftware.os.amza.shared.RowsIndexProvider;
 import com.jivesoftware.os.amza.shared.RowsStorage;
 import com.jivesoftware.os.amza.shared.RowsStorageProvider;
 import com.jivesoftware.os.amza.shared.TableName;
+import com.jivesoftware.os.amza.shared.UpdatesSender;
+import com.jivesoftware.os.amza.shared.UpdatesTaker;
 import com.jivesoftware.os.amza.storage.RowTable;
 import com.jivesoftware.os.amza.storage.binary.BinaryRowMarshaller;
 import com.jivesoftware.os.amza.storage.binary.BinaryRowReader;
@@ -88,23 +90,26 @@ public class Main {
 
         String hostname = args[0];
         int port = Integer.parseInt(System.getProperty("amza.port", "1175"));
-        String multicastGroup = System.getProperty("amza.multicast.group", "225.4.5.6");
-        int multicastPort = Integer.parseInt(System.getProperty("amza.multicast.port", "1123"));
+        String multicastGroup = System.getProperty("amza.discovery.group", "225.4.5.6");
+        int multicastPort = Integer.parseInt(System.getProperty("amza.discovery.port", "1123"));
         String clusterName = (args.length > 1 ? args[1] : null);
 
-        RingHost ringHost = new RingHost(hostname, port);
+
+        RingHost ringHost = new RingHost(hostname, port); // TODO include rackId
         final OrderIdProvider orderIdProvider = new OrderIdProviderImpl(new Random().nextInt(512)); // todo need a better way to create writter id.
 
         final ObjectMapper mapper = new ObjectMapper();
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         mapper.configure(SerializationFeature.INDENT_OUTPUT, false);
 
-        RowsStorageProvider tableStorageProvider = new RowsStorageProvider() {
+        final AmzaServiceConfig amzaServiceConfig = new AmzaServiceConfig();
+
+        RowsStorageProvider rowsStorageProvider = new RowsStorageProvider() {
             @Override
             public RowsStorage createRowsStorage(File workingDirectory,
                     String tableDomain,
                     TableName tableName) throws Exception {
-                File directory = new File(workingDirectory, tableDomain);
+                final File directory = new File(workingDirectory, tableDomain);
                 directory.mkdirs();
                 File file = new File(directory, tableName.getTableName() + ".kvt");
 
@@ -112,6 +117,8 @@ public class Main {
                 BinaryRowReader reader = new BinaryRowReader(filer);
                 BinaryRowWriter writer = new BinaryRowWriter(filer);
                 BinaryRowMarshaller rowMarshaller = new BinaryRowMarshaller();
+
+
                 RowsIndexProvider tableIndexProvider = new RowsIndexProvider() {
 
                     @Override
@@ -129,29 +136,30 @@ public class Main {
                         });
                     }
                 };
-                RowTable rowTableFile = new RowTable(tableName,
+
+                return new RowTable(tableName,
                         orderIdProvider,
                         tableIndexProvider,
                         rowMarshaller,
                         reader,
                         writer);
-                return rowTableFile;
             }
         };
 
-        AmzaServiceConfig amzaServiceConfig = new AmzaServiceInitializer.AmzaServiceConfig();
+        UpdatesSender changeSetSender = new HttpUpdatesSender();
+        UpdatesTaker tableTaker = new HttpUpdatesTaker();
+
         AmzaService amzaService = new AmzaServiceInitializer().initialize(amzaServiceConfig,
                 orderIdProvider,
                 new com.jivesoftware.os.amza.storage.FstMarshaller(FSTConfiguration.getDefaultConfiguration()),
-                tableStorageProvider,
-                tableStorageProvider,
-                tableStorageProvider,
-                new HttpUpdatesSender(),
-                new HttpUpdatesTaker(), new RowChanges() {
-
+                rowsStorageProvider,
+                rowsStorageProvider,
+                rowsStorageProvider,
+                changeSetSender,
+                tableTaker,
+                new RowChanges() {
                     @Override
                     public void changes(RowsChanged changes) throws Exception {
-                        //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
                     }
                 });
 
@@ -208,6 +216,10 @@ public class Main {
 
         UpenaService upenaService = new UpenaService(upenaStore);
 
+        System.out.println("-----------------------------------------------------------------------");
+        System.out.println("|      Upena Service Online");
+        System.out.println("-----------------------------------------------------------------------");
+
         String workingDir = System.getProperty("user.dir");
         Host host = new Host(ringHost.getHost(), ringHost.getHost(), ringHost.getPort(), workingDir, null);
         HostKey hostKey = upenaStore.hosts.toKey(host);
@@ -223,11 +235,6 @@ public class Main {
             host = new Host(ringHost.getHost(), ringHost.getHost(), ringHost.getPort(), workingDir, clusterKey);
             upenaStore.hosts.update(null, host);
         }
-
-        System.out.println("-----------------------------------------------------------------------");
-        System.out.println("|      Upena Service Online");
-        System.out.println("-----------------------------------------------------------------------");
-
 
         final UbaService conductorService = new UbaServiceInitializer().initialize(hostKey.getKey(),
                 workingDir,
@@ -269,7 +276,6 @@ public class Main {
             System.out.println("|      Uba Service Online");
             System.out.println("-----------------------------------------------------------------------");
         }
-
         conductor.set(conductorService);
 
         if (clusterName != null) {

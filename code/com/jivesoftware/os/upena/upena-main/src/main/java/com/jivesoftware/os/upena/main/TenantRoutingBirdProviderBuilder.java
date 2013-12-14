@@ -29,29 +29,22 @@ import com.jivesoftware.os.jive.utils.logger.MetricLoggerFactory;
 import com.jivesoftware.os.upena.routing.shared.ConnectionDescriptorsProvider;
 import com.jivesoftware.os.upena.routing.shared.ConnectionDescriptorsRequest;
 import com.jivesoftware.os.upena.routing.shared.ConnectionDescriptorsResponse;
-import com.jivesoftware.os.upena.routing.shared.TenantRoutingProvider;
 import java.io.IOException;
 import java.util.Arrays;
 
-public class TenantRoutingBirdBuilder {
+public class TenantRoutingBirdProviderBuilder {
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
     private final String routesHost;
     private final int routesPort;
-    private String instanceId;
 
-    public TenantRoutingBirdBuilder(String routesHost, int routesPort) {
+    public TenantRoutingBirdProviderBuilder(String routesHost, int routesPort) {
         this.routesHost = routesHost;
         this.routesPort = routesPort;
     }
 
-    public TenantRoutingBirdBuilder setInstanceId(String instanceId) {
-        this.instanceId = instanceId;
-        return this;
-    }
-
-    public TenantRoutingProvider build() {
+    public ConnectionDescriptorsProvider build() {
 
         HttpClientConfig httpClientConfig = HttpClientConfig.newBuilder().build();
         final HttpClient httpClient = new HttpClientFactoryProvider()
@@ -99,6 +92,6 @@ public class TenantRoutingBirdBuilder {
                 return null;
             }
         };
-        return new TenantRoutingProvider(instanceId, connectionsProvider);
+        return connectionsProvider;
     }
 }
