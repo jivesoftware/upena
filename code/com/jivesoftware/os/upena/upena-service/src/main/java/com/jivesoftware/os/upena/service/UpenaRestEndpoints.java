@@ -508,16 +508,17 @@ public class UpenaRestEndpoints {
         try {
             LOG.info("Attempting to map tenant to release: tenantId:" + tenantId + " releaseId:" + releaseId);
             ConcurrentNavigableMap<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> foundReleaseGroups = upenaStore.releaseGroups
-                    .find(new ReleaseGroupFilter(releaseId, null, null, null, 0, 1000));
+                    .find(new ReleaseGroupFilter(releaseId, null, null, null, null, 0, 1000));
             Map.Entry<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> firstReleaseGroup = foundReleaseGroups.firstEntry();
 
-            ConcurrentNavigableMap<TenantKey, TimestampedValue<Tenant>> foundTenants = upenaStore.tenants.find(new TenantFilter(tenantId, null, null, 0, 1000));
+            TenantFilter tenantFilter =  new TenantFilter(tenantId, null, null, null, 0, 1000);
+            ConcurrentNavigableMap<TenantKey, TimestampedValue<Tenant>> foundTenants = upenaStore.tenants.find(tenantFilter);
             Map.Entry<TenantKey, TimestampedValue<Tenant>> firstTenant = foundTenants.firstEntry();
             Tenant t = firstTenant.getValue().getValue();
             if (releaseId == null || releaseId.length() == 0) {
-                upenaStore.tenants.update(new TenantKey(tenantId), new Tenant(t.tenantId, t.description, new ReleaseGroupKey("")));
+                upenaStore.tenants.update(new TenantKey(tenantId), new Tenant(t.tenantId, t.description, new ReleaseGroupKey(""), null));
             } else {
-                upenaStore.tenants.update(new TenantKey(tenantId), new Tenant(t.tenantId, t.description, firstReleaseGroup.getKey()));
+                upenaStore.tenants.update(new TenantKey(tenantId), new Tenant(t.tenantId, t.description, firstReleaseGroup.getKey(), null));
             }
 
             LOG.info("Mapped tenant to release: tenantId:" + tenantId + " releaseId:" + releaseId);

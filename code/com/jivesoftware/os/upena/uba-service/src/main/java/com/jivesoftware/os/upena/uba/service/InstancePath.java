@@ -76,7 +76,8 @@ public class InstancePath {
                 properties.get(instancePrefix + "releaseGroupName").toString(),
                 properties.get(instancePrefix + "instanceKey").toString(),
                 Integer.parseInt(properties.get(instancePrefix + "instanceName").toString()),
-                properties.get(instancePrefix + "version").toString());
+                properties.get(instancePrefix + "version").toString(),
+                properties.get(instancePrefix + "repository").toString());
 
         for (Object key : properties.keySet()) {
             String portKey = key.toString();
@@ -106,6 +107,7 @@ public class InstancePath {
         properties.add(instancePrefix + "instanceKey=" + id.instanceKey);
         properties.add(instancePrefix + "instanceName=" + id.instanceName);
         properties.add(instancePrefix + "version=" + id.versionName);
+        properties.add(instancePrefix + "repository=" + id.repository);
 
         for (Entry<String, InstanceDescriptor.InstanceDescriptorPort> port : id.ports.entrySet()) {
             properties.add(instancePrefix + port.getKey() + "Port=" + port.getValue().port);

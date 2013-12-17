@@ -190,7 +190,8 @@ public class UpenaAvailableMojo extends AbstractMojo {
             ReleaseGroupFilter filter = new ReleaseGroupFilter(filterName,
                     filterEmail,
                     null,
-                    "",
+                    null,
+                    null,
                     0,
                     Integer.MAX_VALUE);
             ReleaseGroupFilter.Results results = requestHelper.executeRequest(filter, "/upena/releaseGroup/find", ReleaseGroupFilter.Results.class, null);

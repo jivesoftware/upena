@@ -36,12 +36,12 @@ public class ConnectionDescriptorsResponseTest {
         List<ConnectionDescriptor> connections = new ArrayList<>();
         connections.add(new ConnectionDescriptor("host", 1, properties));
         ConnectionDescriptorsResponse a = new ConnectionDescriptorsResponse(1, Arrays.asList("message"), "user",
-                connections);
+                connections, null, null);
 
         Assert.assertEquals(a.getConnections(), connections);
         Assert.assertEquals(a.getMessages(), Arrays.asList("message"));
         Assert.assertEquals(a.getReturnCode(), 1);
-        Assert.assertEquals(a.getUserId(), "user");
+        Assert.assertEquals(a.getReleaseGroup(), "user");
 
         String asString = mapper.writeValueAsString(a);
         ConnectionDescriptorsResponse b = mapper.readValue(asString, ConnectionDescriptorsResponse.class);
@@ -49,7 +49,7 @@ public class ConnectionDescriptorsResponseTest {
         Assert.assertEquals(a.getConnections(), b.getConnections());
         Assert.assertEquals(a.getMessages(), b.getMessages());
         Assert.assertEquals(a.getReturnCode(), b.getReturnCode());
-        Assert.assertEquals(a.getUserId(), b.getUserId());
+        Assert.assertEquals(a.getReleaseGroup(), b.getReleaseGroup());
 
         Assert.assertEquals(a, b);
         Assert.assertEquals(a.hashCode(), b.hashCode());

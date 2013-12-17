@@ -35,6 +35,7 @@ public class JFieldsTenant implements JObjectFields<TenantKey, Tenant, TenantFil
     JEditField tenantId;
     JEditField description;
     JEditRef releaseGroupKey;
+    JEditRef alternateReleaseGroupKey;
 
     public JFieldsTenant(JObjectFactory factory, String k, Tenant tenant) {
         this.factory = factory;
@@ -50,6 +51,10 @@ public class JFieldsTenant implements JObjectFields<TenantKey, Tenant, TenantFil
         releaseGroupKey = new JEditRef(factory, "releaseGroupKey", ReleaseGroup.class,
                 (tenant != null) ? (tenant.releaseGroupKey != null) ? tenant.releaseGroupKey.getKey() : "" : "");
         fields.put("releaseGroupKey", releaseGroupKey);
+
+        alternateReleaseGroupKey = new JEditRef(factory, "alternateReleaseGroupKey", ReleaseGroup.class,
+                (tenant != null) ? (tenant.alternateReleaseGroupKey != null) ? tenant.alternateReleaseGroupKey.getKey() : "" : "");
+        fields.put("alternateReleaseGroupKey", alternateReleaseGroupKey);
 
         tenantKey = new JEditKeyField("key", (k != null) ? k : "");
         fields.put("key", tenantKey);
@@ -70,7 +75,8 @@ public class JFieldsTenant implements JObjectFields<TenantKey, Tenant, TenantFil
     public Tenant fieldsToObject() {
         return new Tenant(tenantId.getValue(),
                 description.getValue(),
-                new ReleaseGroupKey(releaseGroupKey.getValue()));
+                new ReleaseGroupKey(releaseGroupKey.getValue()),
+                new ReleaseGroupKey(alternateReleaseGroupKey.getValue()));
     }
 
     @Override
@@ -87,7 +93,8 @@ public class JFieldsTenant implements JObjectFields<TenantKey, Tenant, TenantFil
     public TenantFilter fieldsToFilter() {
         TenantFilter filter = new TenantFilter(tenantId.getValue(),
                 description.getValue(),
-                FilterUtils.nullIfEmpty(new ReleaseGroupKey(releaseGroupKey.getValue())), 0, 100);
+                FilterUtils.nullIfEmpty(new ReleaseGroupKey(releaseGroupKey.getValue())),
+                FilterUtils.nullIfEmpty(new ReleaseGroupKey(alternateReleaseGroupKey.getValue())), 0, 100);
         return filter;
     }
 
@@ -97,6 +104,7 @@ public class JFieldsTenant implements JObjectFields<TenantKey, Tenant, TenantFil
         tenantId.setValue(v.tenantId);
         description.setValue(v.description);
         releaseGroupKey.setValue(v.releaseGroupKey.getKey());
+        alternateReleaseGroupKey.setValue(v.alternateReleaseGroupKey.getKey());
     }
 
     @Override
@@ -104,6 +112,7 @@ public class JFieldsTenant implements JObjectFields<TenantKey, Tenant, TenantFil
         tenantId.setValue(v.tenantId);
         description.setValue(v.description);
         releaseGroupKey.setValue(v.releaseGroupKey.getKey());
+        alternateReleaseGroupKey.setValue(v.alternateReleaseGroupKey.getKey());
     }
 
     @Override

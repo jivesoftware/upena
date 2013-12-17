@@ -63,9 +63,9 @@ public class TenantsServiceConnectionDescriptorProvider<T> {
             return new ConnectionDescriptors(System.currentTimeMillis(), Collections.<ConnectionDescriptor>emptyList());
         }
         ConnectionDescriptors connections;
-        String userId = tenantToUserId.get(tenantId);
-        if (userId != null) {
-            connections = userIdsConnectionDescriptors.get(userId);
+        String releaseGroup = tenantToUserId.get(tenantId);
+        if (releaseGroup != null) {
+            connections = userIdsConnectionDescriptors.get(releaseGroup);
             if (connections == null) {
                 connections = new ConnectionDescriptors(System.currentTimeMillis(), Collections.<ConnectionDescriptor>emptyList());
             }
@@ -73,18 +73,18 @@ public class TenantsServiceConnectionDescriptorProvider<T> {
             ConnectionDescriptorsResponse connectionsResponse = connectionsProvider.requestConnections(new ConnectionDescriptorsRequest(
                     tenantId.toString(), instanceId, connectToServiceNamed, portName));
             if (connectionsResponse == null) {
-                userId = "unknown";
+                releaseGroup = "unknown";
                 connections = new ConnectionDescriptors(System.currentTimeMillis(), Collections.<ConnectionDescriptor>emptyList());
             } else if (connectionsResponse.getReturnCode() < 0) {
-                userId = "unknown";
+                releaseGroup = "unknown";
                 LOG.warn(Arrays.deepToString(connectionsResponse.getMessages().toArray()));
                 connections = new ConnectionDescriptors(System.currentTimeMillis(), Collections.<ConnectionDescriptor>emptyList());
             } else {
-                userId = connectionsResponse.getUserId();
+                releaseGroup = connectionsResponse.getReleaseGroup();
                 connections = new ConnectionDescriptors(System.currentTimeMillis(), connectionsResponse.getConnections());
             }
-            tenantToUserId.put(tenantId, userId);
-            userIdsConnectionDescriptors.put(userId, connections);
+            tenantToUserId.put(tenantId, releaseGroup);
+            userIdsConnectionDescriptors.put(releaseGroup, connections);
         }
         return connections;
     }

@@ -24,18 +24,24 @@ public class ConnectionDescriptorsResponse {
 
     private final int returnCode;
     private final List<String> messages;
-    private final String userId;
+    private final String releaseGroup;
     private final List<ConnectionDescriptor> connections;
+    private final String alternatReleaseGroup;
+    private final List<ConnectionDescriptor> alternateConnections;
 
     @JsonCreator
     public ConnectionDescriptorsResponse(@JsonProperty("returnCode") int returnCode,
             @JsonProperty("messages") List<String> messages,
-            @JsonProperty("userId") String userId,
-            @JsonProperty("connections") List<ConnectionDescriptor> connections) {
+            @JsonProperty("releaseGroup") String releaseGroup,
+            @JsonProperty("connections") List<ConnectionDescriptor> connections,
+            @JsonProperty("alternatReleaseGroup") String alternatReleaseGroup,
+            @JsonProperty("alternateConnections") List<ConnectionDescriptor> alternateConnections) {
         this.returnCode = returnCode;
         this.messages = messages;
-        this.userId = userId;
+        this.releaseGroup = releaseGroup;
         this.connections = connections;
+        this.alternatReleaseGroup = alternatReleaseGroup;
+        this.alternateConnections = alternateConnections;
     }
 
     public int getReturnCode() {
@@ -46,8 +52,8 @@ public class ConnectionDescriptorsResponse {
         return messages;
     }
 
-    public String getUserId() {
-        return userId;
+    public String getReleaseGroup() {
+        return releaseGroup;
     }
 
     public List<ConnectionDescriptor> getConnections() {
@@ -59,18 +65,22 @@ public class ConnectionDescriptorsResponse {
         return "ConnectionDescriptorsResponse{"
                 + "returnCode=" + returnCode
                 + ", messages=" + messages
-                + ", userId=" + userId
+                + ", releaseGroup=" + releaseGroup
                 + ", connections=" + connections
+                + ", alternatReleaseGroup=" + alternatReleaseGroup
+                + ", alternateConnections=" + alternateConnections
                 + '}';
     }
 
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 89 * hash + this.returnCode;
-        hash = 89 * hash + Objects.hashCode(this.messages);
-        hash = 89 * hash + Objects.hashCode(this.userId);
-        hash = 89 * hash + Objects.hashCode(this.connections);
+        hash = 29 * hash + this.returnCode;
+        hash = 29 * hash + Objects.hashCode(this.messages);
+        hash = 29 * hash + Objects.hashCode(this.releaseGroup);
+        hash = 29 * hash + Objects.hashCode(this.connections);
+        hash = 29 * hash + Objects.hashCode(this.alternatReleaseGroup);
+        hash = 29 * hash + Objects.hashCode(this.alternateConnections);
         return hash;
     }
 
@@ -89,12 +99,19 @@ public class ConnectionDescriptorsResponse {
         if (!Objects.equals(this.messages, other.messages)) {
             return false;
         }
-        if (!Objects.equals(this.userId, other.userId)) {
+        if (!Objects.equals(this.releaseGroup, other.releaseGroup)) {
             return false;
         }
         if (!Objects.equals(this.connections, other.connections)) {
             return false;
         }
+        if (!Objects.equals(this.alternatReleaseGroup, other.alternatReleaseGroup)) {
+            return false;
+        }
+        if (!Objects.equals(this.alternateConnections, other.alternateConnections)) {
+            return false;
+        }
         return true;
     }
+
 }

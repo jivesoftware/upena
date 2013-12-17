@@ -26,6 +26,7 @@ public class ReleaseGroupFilter implements KeyValueFilter<ReleaseGroupKey, Relea
     public final String name;
     public final String email;
     public final String version;
+    public final String repository;
     public final String description;
     public final int start;
     public final int count;
@@ -35,12 +36,14 @@ public class ReleaseGroupFilter implements KeyValueFilter<ReleaseGroupKey, Relea
     public ReleaseGroupFilter(@JsonProperty("name") String name,
             @JsonProperty("email") String email,
             @JsonProperty("version") String version,
+            @JsonProperty("repository") String repository,
             @JsonProperty("description") String description,
             @JsonProperty("start") int start,
             @JsonProperty("count") int count) {
         this.name = name;
         this.email = email;
         this.version = version;
+        this.repository = repository;
         this.description = description;
         this.start = start;
         this.count = count;
@@ -52,6 +55,7 @@ public class ReleaseGroupFilter implements KeyValueFilter<ReleaseGroupKey, Relea
                 + "name=" + name
                 + ", email=" + email
                 + ", version=" + version
+                + ", repository=" + repository
                 + ", description=" + description
                 + ", start=" + start
                 + ", count=" + count
@@ -81,6 +85,11 @@ public class ReleaseGroupFilter implements KeyValueFilter<ReleaseGroupKey, Relea
         }
         if (version != null && value.version != null) {
             if (!value.version.contains(version)) {
+                return false;
+            }
+        }
+        if (repository != null && value.repository != null) {
+            if (!value.repository.contains(repository)) {
                 return false;
             }
         }

@@ -26,6 +26,7 @@ public class TenantFilter implements KeyValueFilter<TenantKey, Tenant>, Serializ
     public final String tenantId;
     public final String description;
     public final ReleaseGroupKey releaseGroupKey;
+    public final ReleaseGroupKey alternateReleaseGroupKey;
     public final int start;
     public final int count;
     public int hit;
@@ -34,11 +35,13 @@ public class TenantFilter implements KeyValueFilter<TenantKey, Tenant>, Serializ
     public TenantFilter(@JsonProperty("tenantId") String tenantId,
             @JsonProperty("description") String description,
             @JsonProperty("releaseGroupKey") ReleaseGroupKey releaseGroupKey,
+            @JsonProperty("alternateReleaseGroupKey") ReleaseGroupKey alternateReleaseGroupKey,
             @JsonProperty("start") int start,
             @JsonProperty("count") int count) {
         this.tenantId = tenantId;
         this.description = description;
         this.releaseGroupKey = releaseGroupKey;
+        this.alternateReleaseGroupKey = alternateReleaseGroupKey;
         this.start = start;
         this.count = count;
     }
@@ -49,6 +52,7 @@ public class TenantFilter implements KeyValueFilter<TenantKey, Tenant>, Serializ
                 + "tenantId=" + tenantId
                 + ", description=" + description
                 + ", releaseGroupKey=" + releaseGroupKey
+                + ", alternateReleaseGroupKey=" + alternateReleaseGroupKey
                 + ", start=" + start
                 + ", count=" + count
                 + '}';
@@ -76,6 +80,11 @@ public class TenantFilter implements KeyValueFilter<TenantKey, Tenant>, Serializ
         }
         if (releaseGroupKey != null && value.releaseGroupKey != null) {
             if (!value.releaseGroupKey.equals(releaseGroupKey)) {
+                return false;
+            }
+        }
+        if (alternateReleaseGroupKey != null && value.alternateReleaseGroupKey != null) {
+            if (!value.alternateReleaseGroupKey.equals(alternateReleaseGroupKey)) {
                 return false;
             }
         }

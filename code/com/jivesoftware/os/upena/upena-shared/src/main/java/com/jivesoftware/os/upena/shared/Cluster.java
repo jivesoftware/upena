@@ -26,19 +26,27 @@ public class Cluster implements Stored<Cluster>, Serializable {
     public final String name;
     public final String description;
     public final Map<ServiceKey, ReleaseGroupKey> defaultReleaseGroups;
+    public final Map<ServiceKey, ReleaseGroupKey> defaultAlternateReleaseGroups;
 
     @JsonCreator
     public Cluster(@JsonProperty("name") String name,
             @JsonProperty("description") String description,
-            @JsonProperty("defaultReleaseGroups") Map<ServiceKey, ReleaseGroupKey> defaultReleaseGroups) {
+            @JsonProperty("defaultReleaseGroups") Map<ServiceKey, ReleaseGroupKey> defaultReleaseGroups,
+            @JsonProperty("defaultAlternateReleaseGroups") Map<ServiceKey, ReleaseGroupKey> defaultAlternateReleaseGroups) {
         this.name = name;
         this.description = description;
         this.defaultReleaseGroups = defaultReleaseGroups;
+        this.defaultAlternateReleaseGroups = defaultAlternateReleaseGroups;
     }
 
     @Override
     public String toString() {
-        return "Cluster{" + "name=" + name + ", description=" + description + ", owner=" + defaultReleaseGroups + '}';
+        return "Cluster{"
+                + "name=" + name
+                + ", description=" + description
+                + ", defaultReleaseGroups=" + defaultReleaseGroups
+                + ", defaultAlternateReleaseGroups=" + defaultAlternateReleaseGroups
+                + '}';
     }
 
     @Override

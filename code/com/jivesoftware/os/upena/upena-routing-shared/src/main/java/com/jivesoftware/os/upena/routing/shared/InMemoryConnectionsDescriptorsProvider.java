@@ -82,7 +82,8 @@ public class InMemoryConnectionsDescriptorsProvider implements ConnectionDescrip
             releaseGroup = "overriden";
             connectionDescriptors.add(connectionDescriptor);
         }
-        ConnectionDescriptorsResponse response = new ConnectionDescriptorsResponse(1, Arrays.asList("Success"), releaseGroup, connectionDescriptors);
+        ConnectionDescriptorsResponse response = new ConnectionDescriptorsResponse(1, Arrays.asList("Success"),
+                releaseGroup, connectionDescriptors, null, null);
         return response;
     }
 }

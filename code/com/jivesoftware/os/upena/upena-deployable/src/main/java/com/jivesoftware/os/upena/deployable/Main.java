@@ -226,7 +226,8 @@ public class Main {
         Host gotHost = upenaStore.hosts.get(hostKey);
         if (gotHost == null) {
             HashMap<ServiceKey, ReleaseGroupKey> defaultReleaseGroups = new HashMap<>();
-            Cluster cluster = new Cluster("adhoc", "default adhoc cluster", defaultReleaseGroups);
+            HashMap<ServiceKey, ReleaseGroupKey> defaultAlternateReleaseGroups = new HashMap<>();
+            Cluster cluster = new Cluster("adhoc", "default adhoc cluster", defaultReleaseGroups, defaultAlternateReleaseGroups);
             ClusterKey clusterKey = upenaStore.clusters.toKey(cluster);
             Cluster gotCluster = upenaStore.clusters.get(clusterKey);
             if (gotCluster == null) {

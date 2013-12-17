@@ -24,14 +24,17 @@ public class Tenant implements Stored<Tenant>, Serializable {
     public final String tenantId;
     public final String description;
     public final ReleaseGroupKey releaseGroupKey;
+    public final ReleaseGroupKey alternateReleaseGroupKey;
 
     @JsonCreator
     public Tenant(@JsonProperty("tenantId") String tenantId,
             @JsonProperty("description") String description,
-            @JsonProperty("releaseGroupKey") ReleaseGroupKey userKey) {
+            @JsonProperty("releaseGroupKey") ReleaseGroupKey releaseGroupKey,
+            @JsonProperty("alternateReleaseGroupKey") ReleaseGroupKey alternateReleaseGroupKey) {
         this.tenantId = tenantId;
         this.description = description;
-        this.releaseGroupKey = userKey;
+        this.releaseGroupKey = releaseGroupKey;
+        this.alternateReleaseGroupKey = alternateReleaseGroupKey;
     }
 
     @Override
@@ -40,6 +43,7 @@ public class Tenant implements Stored<Tenant>, Serializable {
                 + "tenantId=" + tenantId
                 + ", description=" + description
                 + ", releaseGroupKey=" + releaseGroupKey
+                + ", alternateReleaseGroupKey=" + alternateReleaseGroupKey
                 + '}';
     }
 
