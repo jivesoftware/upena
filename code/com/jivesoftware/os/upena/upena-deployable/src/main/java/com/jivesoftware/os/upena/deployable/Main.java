@@ -46,6 +46,7 @@ import com.jivesoftware.os.amza.transport.http.replication.HttpUpdatesSender;
 import com.jivesoftware.os.amza.transport.http.replication.HttpUpdatesTaker;
 import com.jivesoftware.os.amza.transport.http.replication.endpoints.AmzaReplicationRestEndpoints;
 import com.jivesoftware.os.jive.utils.base.service.ServiceHandle;
+import com.jivesoftware.os.jive.utils.ordered.id.ConstantWriterIdProvider;
 import com.jivesoftware.os.jive.utils.ordered.id.OrderIdProvider;
 import com.jivesoftware.os.jive.utils.ordered.id.OrderIdProviderImpl;
 import com.jivesoftware.os.server.http.jetty.jersey.server.InitializeRestfulServer;
@@ -96,7 +97,8 @@ public class Main {
 
 
         RingHost ringHost = new RingHost(hostname, port); // TODO include rackId
-        final OrderIdProvider orderIdProvider = new OrderIdProviderImpl(new Random().nextInt(512)); // todo need a better way to create writter id.
+        // todo need a better way to create writter id.
+        final OrderIdProvider orderIdProvider = new OrderIdProviderImpl(new ConstantWriterIdProvider(new Random().nextInt(512)));
 
         final ObjectMapper mapper = new ObjectMapper();
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -226,7 +228,8 @@ public class Main {
         Host gotHost = upenaStore.hosts.get(hostKey);
         if (gotHost == null) {
             HashMap<ServiceKey, ReleaseGroupKey> defaultReleaseGroups = new HashMap<>();
-            Cluster cluster = new Cluster("adhoc", "default adhoc cluster", defaultReleaseGroups);
+            HashMap<ServiceKey, ReleaseGroupKey> defaultAlternateReleaseGroups = new HashMap<>();
+            Cluster cluster = new Cluster("adhoc", "default adhoc cluster", defaultReleaseGroups, defaultAlternateReleaseGroups);
             ClusterKey clusterKey = upenaStore.clusters.toKey(cluster);
             Cluster gotCluster = upenaStore.clusters.get(clusterKey);
             if (gotCluster == null) {

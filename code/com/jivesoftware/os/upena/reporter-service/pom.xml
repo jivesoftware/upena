@@ -31,7 +31,6 @@
         <dependency>
             <groupId>com.jivesoftware.os.jive.utils</groupId>
             <artifactId>merlin-config</artifactId>
-            <type>jar</type>
         </dependency>
         <dependency>
             <groupId>com.jivesoftware.os.jive.utils</groupId>

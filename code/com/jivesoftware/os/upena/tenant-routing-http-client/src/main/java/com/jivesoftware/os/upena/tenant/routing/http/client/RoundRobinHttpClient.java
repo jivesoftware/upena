@@ -18,9 +18,11 @@ package com.jivesoftware.os.upena.tenant.routing.http.client;
 import com.jivesoftware.os.jive.utils.http.client.HttpClient;
 import com.jivesoftware.os.jive.utils.http.client.HttpClientException;
 import com.jivesoftware.os.jive.utils.http.client.HttpResponse;
+import com.jivesoftware.os.jive.utils.http.client.HttpStreamResponse;
 import com.jivesoftware.os.jive.utils.logger.MetricLogger;
 import com.jivesoftware.os.jive.utils.logger.MetricLoggerFactory;
 import java.io.IOException;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -47,7 +49,7 @@ public class RoundRobinHttpClient implements HttpClient {
         }
     }
 
-    private HttpResponse roundRobin(HttpCall httpCall) throws HttpClientException {
+    private <R> R roundRobin(HttpCall<R> httpCall) throws HttpClientException {
         long now = System.currentTimeMillis();
         int start = lastClientUsed.get() % clients.length;
         int ci = (start + 1) % clients.length;
@@ -80,7 +82,7 @@ public class RoundRobinHttpClient implements HttpClient {
 
     @Override
     public HttpResponse get(final String path) throws HttpClientException {
-        return roundRobin(new HttpCall() {
+        return roundRobin(new HttpCall<HttpResponse>() {
             @Override
             public HttpResponse call(HttpClient client) throws HttpClientException {
                 return client.get(path);
@@ -90,7 +92,7 @@ public class RoundRobinHttpClient implements HttpClient {
 
     @Override
     public HttpResponse postJson(final String path, final String postJsonBody) throws HttpClientException {
-        return roundRobin(new HttpCall() {
+        return roundRobin(new HttpCall<HttpResponse>() {
             @Override
             public HttpResponse call(HttpClient client) throws HttpClientException {
                 return client.postJson(path, postJsonBody);
@@ -100,7 +102,7 @@ public class RoundRobinHttpClient implements HttpClient {
 
     @Override
     public HttpResponse postBytes(final String path, final byte[] postBytes) throws HttpClientException {
-        return roundRobin(new HttpCall() {
+        return roundRobin(new HttpCall<HttpResponse>() {
             @Override
             public HttpResponse call(HttpClient client) throws HttpClientException {
                 return client.postBytes(path, postBytes);
@@ -110,7 +112,7 @@ public class RoundRobinHttpClient implements HttpClient {
 
     @Override
     public HttpResponse get(final String path, final int socketTimeoutMillis) throws HttpClientException {
-        return roundRobin(new HttpCall() {
+        return roundRobin(new HttpCall<HttpResponse>() {
             @Override
             public HttpResponse call(HttpClient client) throws HttpClientException {
                 return client.get(path, socketTimeoutMillis);
@@ -120,7 +122,7 @@ public class RoundRobinHttpClient implements HttpClient {
 
     @Override
     public HttpResponse postJson(final String path, final String postJsonBody, final int socketTimeoutMillis) throws HttpClientException {
-        return roundRobin(new HttpCall() {
+        return roundRobin(new HttpCall<HttpResponse>() {
             @Override
             public HttpResponse call(HttpClient client) throws HttpClientException {
                 return client.postJson(path, postJsonBody, socketTimeoutMillis);
@@ -130,10 +132,70 @@ public class RoundRobinHttpClient implements HttpClient {
 
     @Override
     public HttpResponse postBytes(final String path, final byte[] postBytes, final int socketTimeoutMillis) throws HttpClientException {
-        return roundRobin(new HttpCall() {
+        return roundRobin(new HttpCall<HttpResponse>() {
             @Override
             public HttpResponse call(HttpClient client) throws HttpClientException {
                 return client.postBytes(path, postBytes, socketTimeoutMillis);
+            }
+        });
+    }
+
+    @Override
+    public HttpResponse get(final String path, final Map<String, String> map) throws HttpClientException {
+        return roundRobin(new HttpCall<HttpResponse>() {
+            @Override
+            public HttpResponse call(HttpClient client) throws HttpClientException {
+                return client.get(path, map);
+            }
+        });
+    }
+
+    @Override
+    public HttpStreamResponse getStream(final String path) throws HttpClientException {
+        return roundRobin(new HttpCall<HttpStreamResponse>() {
+            @Override
+            public HttpStreamResponse call(HttpClient client) throws HttpClientException {
+                return client.getStream(path);
+            }
+        });
+    }
+
+    @Override
+    public HttpResponse get(final String string, final Map<String, String> map, final int i) throws HttpClientException {
+        return roundRobin(new HttpCall<HttpResponse>() {
+            @Override
+            public HttpResponse call(HttpClient client) throws HttpClientException {
+                return client.get(string, map, i);
+            }
+        });
+    }
+
+    @Override
+    public HttpStreamResponse getStream(final String string, final int i) throws HttpClientException {
+        return roundRobin(new HttpCall<HttpStreamResponse>() {
+            @Override
+            public HttpStreamResponse call(HttpClient client) throws HttpClientException {
+                return client.getStream(string, i);
+            }
+        });
+    }
+
+    @Override
+    public HttpResponse postJson(final String string, final String string1, final Map<String, String> map) throws HttpClientException {
+        return roundRobin(new HttpCall<HttpResponse>() {
+            @Override
+            public HttpResponse call(HttpClient client) throws HttpClientException {
+                return client.postJson(string, string1, map);
+            }
+        });
+    }
+
+    @Override
+    public HttpResponse postJson(final String string, final String string1, final Map<String, String> map, final int i) throws HttpClientException {
+        return roundRobin(new HttpCall<HttpResponse>() {
+            @Override
+            public HttpResponse call(HttpClient client) throws HttpClientException {
+                return client.postJson(string, string1, map, i);
             }
         });
     }

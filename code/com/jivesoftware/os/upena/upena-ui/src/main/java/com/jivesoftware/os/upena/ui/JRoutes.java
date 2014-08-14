@@ -190,8 +190,8 @@ public class JRoutes extends JPanel {
             int count = 0;
 
             if (connectionDescriptorsResponse.getConnections() != null) {
-                for (ConnectionDescriptor e : connectionDescriptorsResponse.getConnections()) {
-                    viewResults.add(new JLabel("Route:" + e.getHost() + ":" + e.getPort() + " " + e.getProperties()));
+                for (ConnectionDescriptor cd : connectionDescriptorsResponse.getConnections()) {
+                    viewResults.add(new JLabel("Route: " + cd.getHost() + ":" + cd.getPort() + " " + cd.getProperties()));
                     count++;
                 }
             }

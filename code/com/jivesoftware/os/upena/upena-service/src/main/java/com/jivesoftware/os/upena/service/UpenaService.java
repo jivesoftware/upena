@@ -57,92 +57,6 @@ public class UpenaService {
 
         InstanceKey instanceKey = new InstanceKey(connectionsRequest.getInstanceId());
         Instance instance = upenaStore.instances.get(instanceKey);
-        ConnectionDescriptorsResponse invalidIfNotNull = ensureInstanceIsValid(instanceKey, instance);
-        if (invalidIfNotNull != null) {
-            return invalidIfNotNull;
-        }
-
-        Tenant tenant = null;
-        if (connectionsRequest.getTenantId() != null && !connectionsRequest.getTenantId().equals("*") && connectionsRequest.getTenantId().length() > 0) {
-            TenantKey tenantkey = new TenantKey(connectionsRequest.getTenantId());
-            tenant = upenaStore.tenants.get(tenantkey);
-            if (tenant == null) {
-                return failedConnectionResponse("Undeclared tenant for tenantkey:" + tenantkey);
-            }
-        }
-
-        String connectToServiceNamed = connectionsRequest.getConnectToServiceNamed();
-        ServiceFilter serviceFilter = new ServiceFilter(connectToServiceNamed, null, 0, Integer.MAX_VALUE);
-        ConcurrentNavigableMap<ServiceKey, TimestampedValue<Service>> gotServices = upenaStore.services.find(serviceFilter);
-        if (gotServices.isEmpty()) {
-            return failedConnectionResponse("Undeclared service connectToServiceNamed:" + connectToServiceNamed);
-        }
-        if (gotServices.size() > 1) {
-            return failedConnectionResponse("More that one service decalred for connectToServiceNamed:" + connectToServiceNamed);
-        }
-        ServiceKey wantToConnectToServiceKey = new ServiceKey(gotServices.firstKey().getKey());
-
-        ReleaseGroupKey ownerReleaseGroupKey = null;
-        ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> got = null;
-        if (tenant != null
-                && tenant.releaseGroupKey != null
-                && tenant.releaseGroupKey.getKey() != null
-                && tenant.releaseGroupKey.getKey().length() > 0) {
-            ownerReleaseGroupKey = tenant.releaseGroupKey; // Use the release group assigned to the tenant.
-            InstanceFilter explicityReleaseGroupFilter = new InstanceFilter(instance.clusterKey,
-                    null, wantToConnectToServiceKey, ownerReleaseGroupKey, null, 0, Integer.MAX_VALUE);
-            got = upenaStore.instances.find(explicityReleaseGroupFilter);
-        }
-
-        if (got == null || got.isEmpty()) {
-            Cluster cluster = upenaStore.clusters.get(instance.clusterKey);
-            if (cluster == null) {
-                // garbage instance. should be removed?
-                return failedConnectionResponse("Undeclared cluster for clusterKey:" + cluster);
-            }
-            ownerReleaseGroupKey = cluster.defaultReleaseGroups.get(wantToConnectToServiceKey); // Use instance assigned to the instances cluster.
-            if (ownerReleaseGroupKey == null) {
-                return failedConnectionResponse("Cluster:" + cluster + " doesen't have a release group declared for "
-                        + "serviceKey:" + wantToConnectToServiceKey + " .");
-            }
-            ReleaseGroup releaseGroup = upenaStore.releaseGroups.get(ownerReleaseGroupKey);
-            if (releaseGroup == null) {
-                return failedConnectionResponse("Cluster:" + cluster + " releaseGroup:" + ownerReleaseGroupKey + " is undeclared.");
-            }
-            InstanceFilter explicityReleaseGroupFilter = new InstanceFilter(instance.clusterKey,
-                    null, wantToConnectToServiceKey, ownerReleaseGroupKey, null, 0, Integer.MAX_VALUE);
-            got = upenaStore.instances.find(explicityReleaseGroupFilter);
-        }
-
-        if (got == null || got.isEmpty()) {
-            return failedConnectionResponse("No declared instance for: " + connectionsRequest);
-        }
-
-        List<String> messages = new ArrayList<>();
-        List<ConnectionDescriptor> connections = new ArrayList<>();
-        for (Entry<InstanceKey, TimestampedValue<Instance>> entry : got.entrySet()) {
-            Instance value = entry.getValue().getValue();
-
-            Host host = upenaStore.hosts.get(value.hostKey);
-            if (host == null) {
-                // garbage instance. should be removed?
-            } else {
-                Port port = value.ports.get(connectionsRequest.getPortName());
-                if (port == null) {
-                    messages.add("instanceKey:" + entry.getKey() + " doesn't have a port declared for '" + connectionsRequest.getPortName() + "'");
-                } else {
-                    Map<String, String> properties = new HashMap<>();
-                    properties.putAll(port.properties);
-                    connections.add(new ConnectionDescriptor(host.hostName, port.port, properties));
-                }
-            }
-        }
-
-        messages.add("Success");
-        return new ConnectionDescriptorsResponse(1, messages, ownerReleaseGroupKey.getKey(), connections);
-    }
-
-    ConnectionDescriptorsResponse ensureInstanceIsValid(InstanceKey instanceKey, Instance instance) throws Exception {
         if (instance == null) {
             return failedConnectionResponse("Undeclared instance for instanceKey:" + instanceKey);
         }
@@ -165,12 +79,127 @@ public class UpenaService {
         if (releaseGroup == null) {
             return failedConnectionResponse("Instance has been decommisioned releaseGroupKey:" + instance.releaseGroupKey + " no longer exists.");
         }
+
+        Tenant tenant = null;
+        if (connectionsRequest.getTenantId() != null && !connectionsRequest.getTenantId().equals("*") && connectionsRequest.getTenantId().length() > 0) {
+            TenantKey tenantkey = new TenantKey(connectionsRequest.getTenantId());
+            tenant = upenaStore.tenants.get(tenantkey);
+            if (tenant == null) {
+                return failedConnectionResponse("Undeclared tenant for tenantkey:" + tenantkey);
+            }
+        }
+
+        String connectToServiceNamed = connectionsRequest.getConnectToServiceNamed();
+        ServiceFilter serviceFilter = new ServiceFilter(connectToServiceNamed, null, 0, Integer.MAX_VALUE);
+        ConcurrentNavigableMap<ServiceKey, TimestampedValue<Service>> gotServices = upenaStore.services.find(serviceFilter);
+        if (gotServices.isEmpty()) {
+            return failedConnectionResponse("Undeclared service connectToServiceNamed:" + connectToServiceNamed);
+        }
+        if (gotServices.size() > 1) {
+            return failedConnectionResponse("More that one service declared for connectToServiceNamed:" + connectToServiceNamed);
+        }
+
+        ServiceKey wantToConnectToServiceKey = new ServiceKey(gotServices.firstKey().getKey());
+
+        ReleaseGroupKey primaryReleaseGroupKey = null;
+        List<ConnectionDescriptor> primaryConnections = null;
+
+        ReleaseGroupKey alternateReleaseGroupKey = null;
+        List<ConnectionDescriptor> alternateConnections = null;
+
+        List<String> messages = new ArrayList<>();
+        if (tenant != null) {
+            ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> got = findInstances(messages, instance.clusterKey, tenant.releaseGroupKey, wantToConnectToServiceKey);
+            if (got == null || got.isEmpty()) {
+                primaryReleaseGroupKey = cluster.defaultReleaseGroups.get(wantToConnectToServiceKey); // Use instance assigned to the instances cluster.
+                if (primaryReleaseGroupKey == null) {
+                    return failedConnectionResponse("Cluster:" + cluster + " doesen't have a release group declared for "
+                            + "serviceKey:" + wantToConnectToServiceKey + " .");
+                }
+                got = findInstances(messages, instance.clusterKey, primaryReleaseGroupKey, wantToConnectToServiceKey);
+                if (got != null && !got.isEmpty()) {
+                    primaryReleaseGroupKey = tenant.releaseGroupKey;
+                    primaryConnections = buildConnextions(messages, got, connectionsRequest.getPortName());
+
+                    got = findInstances(messages, instance.clusterKey, tenant.alternateReleaseGroupKey, wantToConnectToServiceKey);
+                    if (got != null || !got.isEmpty()) {
+                        alternateReleaseGroupKey = cluster.defaultAlternateReleaseGroups.get(wantToConnectToServiceKey);
+                        alternateConnections = buildConnextions(messages, got, connectionsRequest.getPortName());
+                    }
+                }
+
+            } else {
+                primaryReleaseGroupKey = tenant.releaseGroupKey;
+                primaryConnections = buildConnextions(messages, got, connectionsRequest.getPortName());
+
+                got = findInstances(messages, instance.clusterKey, tenant.alternateReleaseGroupKey, wantToConnectToServiceKey);
+                if (got != null || !got.isEmpty()) {
+                    alternateReleaseGroupKey = tenant.releaseGroupKey;
+                    alternateConnections = buildConnextions(messages, got, connectionsRequest.getPortName());
+                }
+            }
+        }
+        if (primaryConnections == null || primaryConnections.isEmpty()) {
+            return failedConnectionResponse("No declared instance for: " + connectionsRequest);
+        }
+
+        messages.add("Success");
+        return new ConnectionDescriptorsResponse(1, messages,
+                (primaryReleaseGroupKey == null) ? null : primaryReleaseGroupKey.getKey(), primaryConnections,
+                (alternateReleaseGroupKey == null) ? null : alternateReleaseGroupKey.getKey(), alternateConnections);
+    }
+
+    ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> findInstances(List<String> messages,
+            ClusterKey clusterKey,
+            ReleaseGroupKey releaseGroupKey,
+            ServiceKey wantToConnectToServiceKey) throws Exception {
+        if (releaseGroupKey != null) {
+            messages.add("Provided null releaseGroupKey so give null back.");
+            return null;
+        }
+
+        ReleaseGroup releaseGroup = upenaStore.releaseGroups.get(releaseGroupKey);
+        if (releaseGroup == null) {
+            messages.add("Warning releaseGroup:" + releaseGroupKey + " is undeclared.");
+            return null;
+        }
+
+        if (releaseGroupKey != null
+                && releaseGroupKey.getKey() != null
+                && releaseGroupKey.getKey().length() > 0) {
+            InstanceFilter explicityReleaseGroupFilter = new InstanceFilter(clusterKey,
+                    null, wantToConnectToServiceKey, releaseGroupKey, null, 0, Integer.MAX_VALUE);
+            return upenaStore.instances.find(explicityReleaseGroupFilter);
+        }
         return null;
+    }
+
+    List<ConnectionDescriptor> buildConnextions(List<String> messages,
+            ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> instances, String portName) throws Exception {
+        List<ConnectionDescriptor> connections = new ArrayList<>();
+        for (Entry<InstanceKey, TimestampedValue<Instance>> entry : instances.entrySet()) {
+            Instance value = entry.getValue().getValue();
+
+            Host host = upenaStore.hosts.get(value.hostKey);
+            if (host == null) {
+                // garbage instance. should be removed?
+            } else {
+                Port port = value.ports.get(portName);
+                if (port == null) {
+                    messages.add("instanceKey:" + entry.getKey() + " doesn't have a port declared for '" + portName + "'");
+                } else {
+                    Map<String, String> properties = new HashMap<>();
+                    properties.putAll(port.properties);
+                    connections.add(new ConnectionDescriptor(host.hostName, port.port, properties));
+                }
+            }
+        }
+        return connections;
     }
 
     private ConnectionDescriptorsResponse failedConnectionResponse(String... message) {
         return new ConnectionDescriptorsResponse(-1,
-                Arrays.asList(message), null, null);
+                Arrays.asList(message), null, null, null, null);
     }
 
     public InstanceDescriptorsResponse instanceDescriptors(InstanceDescriptorsRequest instanceDescriptorsRequest) throws Exception {
@@ -221,7 +250,8 @@ public class UpenaService {
                     releaseGroupName,
                     instanceKey.getKey(),
                     instance.instanceId,
-                    releaseGroup.version);
+                    releaseGroup.version,
+                    releaseGroup.repository);
 
             for (Entry<String, Instance.Port> p : instance.ports.entrySet()) {
                 instanceDescriptor.ports.put(p.getKey(), new InstanceDescriptor.InstanceDescriptorPort(p.getValue().port));

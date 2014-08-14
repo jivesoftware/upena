@@ -181,7 +181,7 @@ public class UpenaStore {
                     instances.remove(e.getKey());
                 }
 
-                TenantFilter impactedTenantsFilter = new TenantFilter(null, null, key, 0, Integer.MAX_VALUE);
+                TenantFilter impactedTenantsFilter = new TenantFilter(null, null, key, null, 0, Integer.MAX_VALUE);
                 ConcurrentNavigableMap<TenantKey, TimestampedValue<Tenant>> gotTenants = tenants.find(impactedTenantsFilter);
                 for (Entry<TenantKey, TimestampedValue<Tenant>> tenant : gotTenants.entrySet()) {
                     //updateTenant(new TenantKey(tenant.getKey()), null); TODO copy orphaned tenant

@@ -32,6 +32,7 @@ public class InstanceDescriptor {
     public final String instanceKey;
     public final int instanceName;
     public final String versionName;
+    public final String repository;
     public final Map<String, InstanceDescriptorPort> ports = new ConcurrentHashMap<>();
     // TODO add enable and locked
 
@@ -44,7 +45,8 @@ public class InstanceDescriptor {
             @JsonProperty(value = "releaseGroupName") String releaseGroupName,
             @JsonProperty(value = "instanceKey") String instanceKey,
             @JsonProperty(value = "instanceName") int instanceName,
-            @JsonProperty(value = "versionName") String versionName) {
+            @JsonProperty(value = "versionName") String versionName,
+            @JsonProperty(value = "repository") String repository) {
         this.clusterKey = clusterKey;
         this.clusterName = clusterName.replaceAll("[^a-zA-Z0-9-_\\.]", "_");
         this.serviceKey = serviceKey;
@@ -54,6 +56,7 @@ public class InstanceDescriptor {
         this.instanceKey = instanceKey;
         this.instanceName = instanceName;
         this.versionName = versionName;
+        this.repository = repository;
     }
 
     public static class InstanceDescriptorPort {
@@ -106,6 +109,7 @@ public class InstanceDescriptor {
                 + ", instanceKey=" + instanceKey
                 + ", instanceName=" + instanceName
                 + ", versionName=" + versionName
+                + ", repository=" + repository
                 + ", ports=" + ports
                 + '}';
     }
@@ -122,6 +126,7 @@ public class InstanceDescriptor {
         hash = 73 * hash + Objects.hashCode(this.instanceKey);
         hash = 73 * hash + this.instanceName;
         hash = 73 * hash + Objects.hashCode(this.versionName);
+        hash = 73 * hash + Objects.hashCode(this.repository);
         hash = 73 * hash + Objects.hashCode(this.ports);
         return hash;
     }
@@ -160,6 +165,9 @@ public class InstanceDescriptor {
             return false;
         }
         if (!Objects.equals(this.versionName, other.versionName)) {
+            return false;
+        }
+        if (!Objects.equals(this.repository, other.repository)) {
             return false;
         }
         if (!Objects.equals(this.ports, other.ports)) {

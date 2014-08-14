@@ -36,7 +36,7 @@ public class InMemoryConnectionsDescriptorsProviderTest {
         Assert.assertNotNull(response);
         Assert.assertNotNull(response.getConnections());
         Assert.assertTrue(response.getConnections().isEmpty());
-        Assert.assertEquals(response.getUserId(), "default");
+        Assert.assertEquals(response.getReleaseGroup(), "default");
 
         ConnectionDescriptor a = new ConnectionDescriptor("a", 1, new HashMap<String, String>());
         connectionDescriptorsProvider.set("tenantId", "instanceId", "connectToServiceNamed", "portName", a);
@@ -48,7 +48,7 @@ public class InMemoryConnectionsDescriptorsProviderTest {
         Assert.assertNotNull(response.getConnections());
         Assert.assertTrue(response.getConnections().size() == 1);
         Assert.assertEquals(response.getConnections().get(0), a);
-        Assert.assertEquals(response.getUserId(), "overriden");
+        Assert.assertEquals(response.getReleaseGroup(), "overriden");
 
         connectionDescriptorsProvider.clear("tenantId", "instanceId", "connectToServiceNamed", "portName");
 

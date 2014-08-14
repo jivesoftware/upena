@@ -24,12 +24,6 @@
             <artifactId>testng</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>com.jivesoftware.os.amza</groupId>
-            <artifactId>amza-shared</artifactId>
-            <version>0.1</version>
-            <type>jar</type>
-        </dependency>
     </dependencies>
     <name>upena-shared</name>
 </project>

@@ -83,12 +83,10 @@
         <dependency>
             <groupId>com.jivesoftware.os.amza</groupId>
             <artifactId>amza-service</artifactId>
-            <version>0.1</version>
         </dependency>
         <dependency>
             <groupId>com.jivesoftware.os.amza</groupId>
             <artifactId>amza-shared</artifactId>
-            <version>0.1</version>
         </dependency>
         <dependency>
             <groupId>com.jivesoftware.os.upena</groupId>
@@ -124,12 +122,10 @@
         <dependency>
             <groupId>com.jivesoftware.os.amza</groupId>
             <artifactId>amza-storage</artifactId>
-            <version>0.1</version>
         </dependency>
         <dependency>
             <groupId>com.jivesoftware.os.amza</groupId>
             <artifactId>amza-transport</artifactId>
-            <version>0.1</version>
         </dependency>
         <dependency>
             <groupId>com.jivesoftware.os.upena</groupId>

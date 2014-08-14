@@ -49,6 +49,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.io.FileUtils;
+import org.apache.maven.artifact.repository.MavenArtifactRepository;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -171,7 +172,8 @@ public class UpenaDeployerMojo extends AbstractMojo {
             ReleaseGroupFilter filter = new ReleaseGroupFilter(filterName,
                     filterEmail,
                     null,
-                    "",
+                    null,
+                    null,
                     0,
                     Integer.MAX_VALUE);
             ReleaseGroupFilter.Results results = requestHelper.executeRequest(filter, "/upena/releaseGroup/find", ReleaseGroupFilter.Results.class, null);
@@ -182,9 +184,11 @@ public class UpenaDeployerMojo extends AbstractMojo {
             } else {
                 getLog().info("------------------------------------------------------------------------");
                 getLog().info("No releaseGroup with name:" + name + ". Automatically adding new releaseGroup.");
+
                 releaseGroupKey = requestHelper.executeRequest(new ReleaseGroup(name,
                         email,
                         version,
+                        getRepoUrl(),
                         ""), "/upena/releaseGroup/add", ReleaseGroupKey.class, null);
             }
         } catch (Exception x) {
@@ -222,7 +226,8 @@ public class UpenaDeployerMojo extends AbstractMojo {
                 getLog().info("No cluster named:" + clusterName + ". Automatically adding new cluster.");
                 Map<ServiceKey, ReleaseGroupKey> defaultReleaseGroups = new HashMap<>();
                 defaultReleaseGroups.put(serviceKey, releaseGroupKey);
-                clusterKey = requestHelper.executeRequest(new Cluster(clusterName, "", defaultReleaseGroups),
+                Map<ServiceKey, ReleaseGroupKey> defaultAlternateReleaseGroups = new HashMap<>();
+                clusterKey = requestHelper.executeRequest(new Cluster(clusterName, "", defaultReleaseGroups, defaultAlternateReleaseGroups),
                         "/upena/cluster/add", ClusterKey.class, null);
             }
         } catch (Exception x) {
@@ -301,6 +306,26 @@ public class UpenaDeployerMojo extends AbstractMojo {
         getLog().info("------------------------------------------------------------------------");
         getLog().info("Deploy was SUCCESSFUL. Elapse:" + (System.currentTimeMillis() - time));
 
+    }
+
+    public String getRepoUrl() {
+        String repoUrl = null;
+        for (Object l : mavenProject.getRemoteArtifactRepositories()) {
+            MavenArtifactRepository r = (MavenArtifactRepository) l;
+            String url = r.getUrl();
+            if (repoUrl == null) {
+                repoUrl = url;
+                getLog().info("Found repoUrl=" + repoUrl);
+            } else {
+                getLog().warn("More than one remote artifact repository found. Please Fix.");
+                getLog().warn("Using " + repoUrl + " ignoring " + url);
+            }
+        }
+        if (repoUrl == null) {
+            getLog().warn("There was no remote repository found. Please Fix.");
+            return "unspecified";
+        }
+        return repoUrl;
     }
 
     public static class InstanceResults extends java.util.concurrent.ConcurrentSkipListMap<String, TimestampedValue<Instance>> {
@@ -420,6 +445,7 @@ public class UpenaDeployerMojo extends AbstractMojo {
                     ReleaseGroup update = new ReleaseGroup(releaseGroup.name,
                             releaseGroup.email,
                             mavenProject.getGroupId() + ":" + mavenProject.getArtifactId() + ":" + version,
+                            getRepoUrl(),
                             "Created by deployer plugin. " + new Date());
 
                     ReleaseGroupKey releaseGroupKey = requestHelper

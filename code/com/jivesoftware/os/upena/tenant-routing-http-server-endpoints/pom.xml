@@ -22,7 +22,6 @@
         <dependency>
             <groupId>com.jivesoftware.os.jive.utils</groupId>
             <artifactId>jaxrs-util</artifactId>
-            <type>jar</type>
         </dependency>
         <dependency>
             <groupId>com.jivesoftware.os.jive.utils</groupId>
@@ -32,7 +31,6 @@
             <groupId>com.jivesoftware.os.upena</groupId>
             <artifactId>upena-routing-shared</artifactId>
             <version>0.3</version>
-            <type>jar</type>
         </dependency>
         <dependency>
             <groupId>org.testng</groupId>

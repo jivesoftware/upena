@@ -54,10 +54,16 @@ public class RepositoryProvider {
         return session;
     }
 
-    public static List<RemoteRepository> newRepositories(RepositorySystem system, RepositorySystemSession session) {
+    public static List<RemoteRepository> newRepositories(RepositorySystem system,
+            RepositorySystemSession session, String... repoUrls) {
 
         List<RemoteRepository> repos = new ArrayList<>();
         repos.add(newCentralRepository());
+        if (repoUrls != null) {
+            for(String repoUrl:repoUrls) {
+                repos.add(new RemoteRepository.Builder("", "", repoUrl).build());
+            }
+        }
         return repos;
     }
 

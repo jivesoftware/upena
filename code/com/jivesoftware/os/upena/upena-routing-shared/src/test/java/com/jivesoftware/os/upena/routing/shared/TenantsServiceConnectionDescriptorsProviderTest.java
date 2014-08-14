@@ -46,7 +46,7 @@ public class TenantsServiceConnectionDescriptorsProviderTest {
 
         Mockito.when(connectionDescriptorsProvider.requestConnections(Mockito.eq(connectionDescriptorsRequest))).
                 thenReturn(new ConnectionDescriptorsResponse(200, Collections.<String>emptyList(),
-                                userId, Arrays.asList(descriptor)));
+                                userId, Arrays.asList(descriptor), null, null));
     }
 
     @Test

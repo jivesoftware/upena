@@ -135,20 +135,6 @@
                             </execution>
                         </executions>
                     </plugin>
-                    <!--Packs git information into the artifact jars in a format deployable understands.-->
-                    <plugin>
-                        <groupId>com.jivesoftware.jive.build.configuration.maven.plugins</groupId>
-                        <artifactId>git-release-notes-plugin</artifactId>
-                        <version>0.1</version>
-                        <executions>
-                            <execution>
-                                <phase>compile</phase>
-                                <goals>
-                                    <goal>git-release-notes</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-assembly-plugin</artifactId>
