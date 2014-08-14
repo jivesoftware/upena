@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.jivesoftware.os.upena.inheritance.poms</groupId>
         <artifactId>shared-lib-build-management</artifactId>
-        <version>0.3</version>
+        <version>0.4-SNAPSHOT</version>
         <relativePath>../inheritance-poms/shared-lib-build-management/pom.xml</relativePath>
     </parent>
     <groupId>com.jivesoftware.os.upena</groupId>
@@ -17,7 +17,7 @@
         <dependency>
             <groupId>com.jivesoftware.os.upena</groupId>
             <artifactId>reporter-shared</artifactId>
-            <version>0.3</version>
+            <version>0.4-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -55,24 +55,24 @@
         <dependency>
             <groupId>com.jivesoftware.os.upena</groupId>
             <artifactId>upena-routing-shared</artifactId>
-            <version>0.3</version>
+            <version>0.4-SNAPSHOT</version>
             <type>jar</type>
         </dependency>
         <dependency>
             <groupId>com.jivesoftware.os.upena</groupId>
             <artifactId>uba-config-extractor</artifactId>
-            <version>0.3</version>
+            <version>0.4-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.jivesoftware.os.upena</groupId>
             <artifactId>tenant-routing-http-server-endpoints</artifactId>
-            <version>0.3</version>
+            <version>0.4-SNAPSHOT</version>
             <type>jar</type>
         </dependency>
         <dependency>
             <groupId>com.jivesoftware.os.upena</groupId>
             <artifactId>reporter-service</artifactId>
-            <version>0.3</version>
+            <version>0.4-SNAPSHOT</version>
             <type>jar</type>
         </dependency>
     </dependencies>
