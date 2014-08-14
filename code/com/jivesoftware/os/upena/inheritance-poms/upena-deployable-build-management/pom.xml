@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.jivesoftware.os.upena.inheritance.poms</groupId>
         <artifactId>upena-deployable-version-management</artifactId>
-        <version>unspecified</version>
+        <version>0.1-SNAPSHOT</version>
         <relativePath>../upena-deployable-version-management/pom.xml</relativePath>
     </parent>
     <artifactId>upena-deployable-build-management</artifactId>
@@ -14,7 +14,7 @@
         <dependency>
             <groupId>com.jivesoftware.os.upena</groupId>
             <artifactId>upena-scripts</artifactId>
-            <version>unspecified</version>
+            <version>0.1-SNAPSHOT</version>
             <type>tar.gz</type>
             <classifier>bin</classifier>
             <scope>runtime</scope>
@@ -35,7 +35,7 @@
                     <plugin>
                         <groupId>com.jivesoftware.jive.symphony</groupId>
                         <artifactId>upena-deployer-plugin</artifactId>
-                        <version>unspecified</version>
+                        <version>0.1-SNAPSHOT</version>
                         <executions>
                             <execution>
                                 <phase>validate</phase>
@@ -55,7 +55,7 @@
                     <plugin>
                         <groupId>com.jivesoftware.jive.symphony</groupId>
                         <artifactId>upena-deployer-plugin</artifactId>
-                        <version>unspecified</version>
+                        <version>0.1-SNAPSHOT</version>
                         <executions>
                             <execution>
                                 <phase>validate</phase>
@@ -135,20 +135,6 @@
                             </execution>
                         </executions>
                     </plugin>
-                    <!--Packs git information into the artifact jars in a format deployable understands.-->
-                    <plugin>
-                        <groupId>com.jivesoftware.jive.build.configuration.maven.plugins</groupId>
-                        <artifactId>git-release-notes-plugin</artifactId>
-                        <version>unspecified</version>
-                        <executions>
-                            <execution>
-                                <phase>compile</phase>
-                                <goals>
-                                    <goal>git-release-notes</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-assembly-plugin</artifactId>
@@ -204,7 +190,7 @@
                     <plugin>
                         <groupId>com.jivesoftware.os.upena</groupId>
                         <artifactId>upena-deployer-plugin</artifactId>
-                        <version>unspecified</version>
+                        <version>0.1-SNAPSHOT</version>
                         <executions>
                             <execution>
                                 <phase>install</phase>
