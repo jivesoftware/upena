@@ -57,10 +57,10 @@ public interface InstanceConfig extends Config {
     @Default("unspecified")
     String getVersion();
 
-    @IntDefault(-1)
+    @IntDefault(10000)
     Integer getMainPort();
 
-    @IntDefault(-1)
+    @IntDefault(10001)
     Integer getManagePort();
 
 }

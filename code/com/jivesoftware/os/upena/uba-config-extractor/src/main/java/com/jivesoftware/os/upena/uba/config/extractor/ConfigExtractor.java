@@ -158,7 +158,7 @@ public class ConfigExtractor {
                 String value = entry.getValue();
                 String property = classPrefix + key + "=" + value;
                 lines.add(property);
-                System.out.println("\t"+property);
+                System.out.println("\t" + property);
             }
         }
         FileUtils.writeLines(outputFile, "utf-8", lines, "\n", false);

@@ -80,12 +80,17 @@ public class ConfigBinder {
         Set<String> requiredKeys = required.keySet();
         requiredKeys.removeAll(available.keySet());
         if (!requiredKeys.isEmpty()) {
-            throw new IllegalStateException("The provided properties lacks the following properties: " + requiredKeys);
-        }
+            System.err.println("WARNING: The provided properties lacks the following properties: " + requiredKeys);
+            System.err.println("WARNING: Populated config for " + configInterface + " with defaults.");
+            T t = BindInterfaceToConfiguration.bindDefault(configInterface);
+            bound.put(configInterface, t);
+            return t;
+        } else {
 
-        T t = new BindInterfaceToConfiguration<>(new MapBackConfiguration(available), configInterface)
-                .bind();
-        bound.put(configInterface, t);
-        return t;
+            T t = new BindInterfaceToConfiguration<>(new MapBackConfiguration(available), configInterface)
+                    .bind();
+            bound.put(configInterface, t);
+            return t;
+        }
     }
 }
