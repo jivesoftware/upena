@@ -66,7 +66,7 @@ public class InstancePath {
         upenaHost = properties.get(instancePrefix + "routesHost").toString();
         upenaPort = Integer.parseInt(properties.get(instancePrefix + "routesPort").toString());
 
-        System.out.println("readInstanceDescriptor:"+properties);
+        System.out.println("readInstanceDescriptor:" + properties);
 
         InstanceDescriptor id = new InstanceDescriptor(properties.get(instancePrefix + "clusterKey").toString(),
                 properties.get(instancePrefix + "clusterName").toString(),

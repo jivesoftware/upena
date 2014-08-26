@@ -152,7 +152,7 @@ public class UpenaDeployerMojo extends AbstractMojo {
         } catch (IOException | RevisionSyntaxException x) {
             throw new MojoFailureException("failed to establish repo info.", x);
         }
-        String version = sha + "-" + System.currentTimeMillis();
+        String version = mavenProject.getVersion();
 
         HttpClientConfig httpClientConfig = HttpClientConfig.newBuilder().build();
         HttpClientFactory httpClientFactory = new HttpClientFactoryProvider().createHttpClientFactory(Arrays.<HttpClientConfiguration>asList(httpClientConfig));
@@ -323,7 +323,7 @@ public class UpenaDeployerMojo extends AbstractMojo {
         }
         if (repoUrl == null) {
             getLog().warn("There was no remote repository found. Please Fix.");
-            return "unspecified";
+            return "unspecifiedRepoUrl";
         }
         return repoUrl;
     }

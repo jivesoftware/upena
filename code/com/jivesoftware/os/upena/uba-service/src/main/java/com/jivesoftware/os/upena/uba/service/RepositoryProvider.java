@@ -60,7 +60,7 @@ public class RepositoryProvider {
         List<RemoteRepository> repos = new ArrayList<>();
         repos.add(newCentralRepository());
         if (repoUrls != null) {
-            for(String repoUrl:repoUrls) {
+            for (String repoUrl : repoUrls) {
                 repos.add(new RemoteRepository.Builder("", "", repoUrl).build());
             }
         }

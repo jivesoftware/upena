@@ -38,10 +38,11 @@ public class Uba {
         this.ubaTree = ubaTree;
         this.invokeScript = new DeployableScriptInvoker(Executors.newCachedThreadPool(new ThreadFactory() {
             private final AtomicLong count = new AtomicLong();
+
             @Override
             public Thread newThread(Runnable r) {
                 long id = count.incrementAndGet();
-                return new Thread(r, "Script onvoker thread-"+id);
+                return new Thread(r, "Script onvoker thread-" + id);
             }
         }));
     }

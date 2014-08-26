@@ -35,7 +35,7 @@
                     <plugin>
                         <groupId>com.jivesoftware.jive.symphony</groupId>
                         <artifactId>upena-deployer-plugin</artifactId>
-                        <version>0.3</version>
+                        <version>0.5-SNAPSHOT</version>
                         <executions>
                             <execution>
                                 <phase>validate</phase>
@@ -55,7 +55,7 @@
                     <plugin>
                         <groupId>com.jivesoftware.jive.symphony</groupId>
                         <artifactId>upena-deployer-plugin</artifactId>
-                        <version>0.3</version>
+                        <version>0.5-SNAPSHOT</version>
                         <executions>
                             <execution>
                                 <phase>validate</phase>

@@ -15,6 +15,8 @@
  */
 package com.jivesoftware.os.upena.deployable;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -71,6 +73,7 @@ import com.jivesoftware.os.upena.uba.service.UbaServiceInitializer;
 import com.jivesoftware.os.upena.uba.service.endpoints.UbaServiceRestEndpoints;
 import de.ruedigermoeller.serialization.FSTConfiguration;
 import java.io.File;
+import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
@@ -80,6 +83,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.mapdb.BTreeMap;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
+import org.slf4j.LoggerFactory;
 
 public class Main {
 
@@ -89,12 +93,17 @@ public class Main {
 
     public void run(String[] args) throws Exception {
 
-        String hostname = args[0];
+        Logger LOGGER = (Logger) LoggerFactory.getLogger("com.jivesoftware.os.jive.utils.http.client.ApacheHttpClient31BackedHttpClient");
+        LOGGER.setLevel(Level.WARN);
+
+        String hostname = InetAddress.getLocalHost().getHostName();
+        if (args != null && args.length > 0) {
+            hostname = args[0];
+        }
         int port = Integer.parseInt(System.getProperty("amza.port", "1175"));
         String multicastGroup = System.getProperty("amza.discovery.group", "225.4.5.6");
         int multicastPort = Integer.parseInt(System.getProperty("amza.discovery.port", "1123"));
         String clusterName = (args.length > 1 ? args[1] : null);
-
 
         RingHost ringHost = new RingHost(hostname, port); // TODO include rackId
         // todo need a better way to create writter id.
@@ -120,14 +129,13 @@ public class Main {
                 BinaryRowWriter writer = new BinaryRowWriter(filer);
                 BinaryRowMarshaller rowMarshaller = new BinaryRowMarshaller();
 
-
                 RowsIndexProvider tableIndexProvider = new RowsIndexProvider() {
 
                     @Override
                     public RowsIndex createRowsIndex(TableName tableName) throws Exception {
                         final DB db = DBMaker.newDirectMemoryDB()
-                            .closeOnJvmShutdown()
-                            .make();
+                                .closeOnJvmShutdown()
+                                .make();
                         BTreeMap<RowIndexKey, RowIndexValue> treeMap = db.getTreeMap(tableName.getTableName());
                         return new MemoryRowsIndex(treeMap, new Flusher() {
 

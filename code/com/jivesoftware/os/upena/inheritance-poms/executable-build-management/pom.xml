@@ -10,7 +10,6 @@
     </parent>
     <artifactId>executable-build-management</artifactId>
     <packaging>pom</packaging>
-
     <properties>
         <main.class></main.class>
     </properties>

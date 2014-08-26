@@ -88,12 +88,12 @@ class NannyDeployCallable implements Callable<Boolean> {
             FileUtils.deleteDirectory(libDir);
             libDir.mkdirs();
             System.out.println("------------------------------------------------------------");
-            System.out.println(" Deploying:" + id.versionName);
+            System.out.println(" Deploying:" + id);
             System.out.println("------------------------------------------------------------");
             String[] versionParts = id.versionName.split(":");
             String groupId = versionParts[0];
             String artifactId = versionParts[1];
-            String version = "unspecified";
+            String version = versionParts[2];
             RepositorySystem system = RepositoryProvider.newRepositorySystem();
             RepositorySystemSession session = RepositoryProvider.newRepositorySystemSession(system);
             List<RemoteRepository> remoteRepos = RepositoryProvider.newRepositories(system, session, id.repository);
