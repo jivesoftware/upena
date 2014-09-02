@@ -105,6 +105,7 @@ public class JFieldsForReleaseGroup implements JObjectFields<ReleaseGroupKey, Re
         name.setValue(v.name);
         email.setValue(v.email);
         version.setValue(v.version);
+        repository.setValue(v.repository);
         description.setValue(v.description);
     }
 

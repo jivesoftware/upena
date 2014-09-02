@@ -49,9 +49,9 @@ class NannyDeployCallable implements Callable<Boolean> {
     private final DeployableScriptInvoker invokeScript;
 
     public NannyDeployCallable(String host, String upenaHost, int upenaPort,
-            InstanceDescriptor id, InstancePath instancePath,
-            DeployLog deployLog, DeployableValidator deployableValidator,
-            DeployableScriptInvoker invokeScript) {
+        InstanceDescriptor id, InstancePath instancePath,
+        DeployLog deployLog, DeployableValidator deployableValidator,
+        DeployableScriptInvoker invokeScript) {
         this.host = host;
         this.upenaHost = upenaHost;
         this.upenaPort = upenaPort;
@@ -76,37 +76,59 @@ class NannyDeployCallable implements Callable<Boolean> {
                 return false;
             }
             return true;
-        } catch (Exception x) {
+        } catch (IOException x) {
             deployLog.log("nanny failed.", x);
             return false;
         }
     }
 
     private boolean deploy() {
+        File libDir;
         try {
-            File libDir = instancePath.lib();
+            libDir = instancePath.lib();
             FileUtils.deleteDirectory(libDir);
             libDir.mkdirs();
-            System.out.println("------------------------------------------------------------");
-            System.out.println(" Deploying:" + id);
-            System.out.println("------------------------------------------------------------");
-            String[] versionParts = id.versionName.split(":");
-            String groupId = versionParts[0];
-            String artifactId = versionParts[1];
-            String version = versionParts[2];
-            RepositorySystem system = RepositoryProvider.newRepositorySystem();
-            RepositorySystemSession session = RepositoryProvider.newRepositorySystemSession(system);
-            List<RemoteRepository> remoteRepos = RepositoryProvider.newRepositories(system, session, id.repository);
+        } catch (IOException x) {
+            deployLog.log("failed to cleanup lib dir.", x);
+            return false;
+        }
 
-            Artifact artifact = new DefaultArtifact(groupId, artifactId, "tar.gz", version);
-            ArtifactRequest artifactRequest = new ArtifactRequest();
-            artifactRequest.setArtifact(artifact);
-            artifactRequest.setRepositories(remoteRepos);
+        RepositorySystem system = RepositoryProvider.newRepositorySystem();
+        RepositorySystemSession session = RepositoryProvider.newRepositorySystemSession(system);
+        String[] repos = id.repository.split(",");
+        List<RemoteRepository> remoteRepos = RepositoryProvider.newRepositories(system, session,repos);
 
-            ArtifactResult artifactResult = system.resolveArtifact(session, artifactRequest);
+        System.out.println("------------------------------------------------------------");
+        System.out.println(" Resolving:" + id);
+        System.out.println("------------------------------------------------------------");
+        String[] versionParts = id.versionName.split(":");
+        String groupId = versionParts[0];
+        String artifactId = versionParts[1];
+        String version = versionParts[2];
+
+        Artifact artifact = new DefaultArtifact(groupId, artifactId, "tar.gz", version);
+        ArtifactRequest artifactRequest = new ArtifactRequest();
+        artifactRequest.setArtifact(artifact);
+        artifactRequest.setRepositories(remoteRepos);
+
+        ArtifactResult artifactResult;
+        try {
+            System.out.println("Resolving " + artifact);
+            artifactResult = system.resolveArtifact(session, artifactRequest);
+            System.out.println("artifactResult=" + artifactResult);
             artifact = artifactResult.getArtifact();
             System.out.println(artifact + " resolved to  " + artifact.getFile());
+
+        } catch (ArtifactResolutionException x) {
+            deployLog.log("failed to resolve artifact:", x);
+            return false;
+        }
+
+        try {
             File tarGzip = instancePath.artifactFile(".tar.gz");
+            System.out.println("------------------------------------------------------------");
+            System.out.println(" Upacking:" + tarGzip);
+            System.out.println("------------------------------------------------------------");
             FileUtils.copyFile(artifact.getFile(), tarGzip, true);
             deployLog.log("Deployed " + tarGzip, null);
             if (!explodeArtifact(tarGzip)) {
@@ -123,11 +145,20 @@ class NannyDeployCallable implements Callable<Boolean> {
             FileUtils.copyFileToDirectory(artifact.getFile(), libDir, true);
             CollectRequest collectRequest = new CollectRequest();
             collectRequest.setRoot(new Dependency(artifact, ""));
-            collectRequest.setRepositories(RepositoryProvider.newRepositories(system, session, id.repository));
+            collectRequest.setRepositories(remoteRepos);
             CollectResult collectResult = system.collectDependencies(session, collectRequest);
             DeployArtifactDependencies deployArtifactDependencies = new DeployArtifactDependencies(deployLog, system, session, remoteRepos, libDir);
             collectResult.getRoot().accept(deployArtifactDependencies);
-            return deployArtifactDependencies.successfulDeploy();
+            boolean successfulDeploy = deployArtifactDependencies.successfulDeploy();
+            System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+            System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+            System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+            System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+            System.out.println("~~~~~~~~~~~~~~~~~~~"+successfulDeploy+"~~~~~~~~~~~~~~~~~~~~~~");
+            System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+            System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+            System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+            return successfulDeploy;
         } catch (IOException | ArtifactResolutionException | DependencyCollectionException x) {
             deployLog.log("failed to deploy artifact:", x);
             return false;

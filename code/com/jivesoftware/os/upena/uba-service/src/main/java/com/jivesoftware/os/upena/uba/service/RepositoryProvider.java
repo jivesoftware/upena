@@ -61,7 +61,7 @@ public class RepositoryProvider {
         repos.add(newCentralRepository());
         if (repoUrls != null) {
             for (String repoUrl : repoUrls) {
-                repos.add(new RemoteRepository.Builder("", "", repoUrl).build());
+                repos.add(new RemoteRepository.Builder("internal", "default", repoUrl).build());
             }
         }
         return repos;
