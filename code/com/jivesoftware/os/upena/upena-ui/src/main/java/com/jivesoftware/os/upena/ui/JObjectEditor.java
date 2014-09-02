@@ -15,8 +15,8 @@
  */
 package com.jivesoftware.os.upena.ui;
 
-import com.jivesoftware.os.upena.shared.KeyValueFilter;
 import com.jivesoftware.os.upena.shared.Key;
+import com.jivesoftware.os.upena.shared.KeyValueFilter;
 import com.jivesoftware.os.upena.shared.Stored;
 import java.awt.BorderLayout;
 import java.awt.GridBagConstraints;
@@ -59,7 +59,6 @@ public class JObjectEditor<K extends Key, V extends Stored, F extends KeyValueFi
         this.executor = executor;
         this.picked = picked;
 
-
         JPanel inputMenu = new JPanel(new SpringLayout());
 
         if (mode == CREATE) {
@@ -71,7 +70,6 @@ public class JObjectEditor<K extends Key, V extends Stored, F extends KeyValueFi
                     if (closeOnChange) {
                         ((JFrame) getTopLevelAncestor()).dispose();
                     }
-
 
                 }
             });
@@ -96,9 +94,7 @@ public class JObjectEditor<K extends Key, V extends Stored, F extends KeyValueFi
             inputMenu.add(update);
         }
 
-
         SpringUtils.makeCompactGrid(inputMenu, 1, 1, 6, 6, 6, 6);
-
 
         JPanel inputView = inputView();
         JScrollPane scrollInput = new JScrollPane(inputView,
@@ -106,8 +102,6 @@ public class JObjectEditor<K extends Key, V extends Stored, F extends KeyValueFi
                 JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
         //scrollInput.setMinimumSize(new Dimension(800, 1));
-
-
         JPanel input = new JPanel(new BorderLayout(16, 16));
         input.add(scrollInput, BorderLayout.CENTER);
         input.add(inputMenu, BorderLayout.SOUTH);
@@ -116,7 +110,6 @@ public class JObjectEditor<K extends Key, V extends Stored, F extends KeyValueFi
 
         setLayout(new BorderLayout());
         add(input, BorderLayout.CENTER);
-
 
     }
 

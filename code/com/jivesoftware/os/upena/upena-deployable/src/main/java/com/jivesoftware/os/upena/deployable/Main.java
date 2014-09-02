@@ -15,8 +15,6 @@
  */
 package com.jivesoftware.os.upena.deployable;
 
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -83,18 +81,38 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.mapdb.BTreeMap;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
-import org.slf4j.LoggerFactory;
 
 public class Main {
 
     public static void main(String[] args) throws Exception {
-        new Main().run(args);
+        if (args.length == 0) {
+            System.out.println("Usage:");
+            System.out.println("");
+            System.out.println("    java -jar upena.jar <hostName>                   (manual cluster discovery)");
+            System.out.println("");
+            System.out.println(" or ");
+            System.out.println("");
+            System.out.println("    java -jar upena.jar <hostName> <clusterName>     (automatic cluster discovery)");
+            System.out.println("");
+            System.out.println("Overridable properties:");
+            System.out.println("");
+            System.out.println("    -Damza.port=1175");
+            System.out.println("         (change the port upena uses to interact with other upena nodes.) ");
+            System.out.println("");
+            System.out.println("     Only applicable if you have specified a <clusterName>.");
+            System.out.println("          -Damza.discovery.group=225.4.5.6");
+            System.out.println("          -Damza.discovery.port=1123");
+            System.out.println("");
+            System.out.println("Example:");
+            System.out.println("java -jar upena.jar " + InetAddress.getLocalHost().getHostName() + " dev");
+            System.out.println("");
+
+        } else {
+            new Main().run(args);
+        }
     }
 
     public void run(String[] args) throws Exception {
-
-        Logger LOGGER = (Logger) LoggerFactory.getLogger("com.jivesoftware.os.jive.utils.http.client.ApacheHttpClient31BackedHttpClient");
-        LOGGER.setLevel(Level.WARN);
 
         String hostname = InetAddress.getLocalHost().getHostName();
         if (args != null && args.length > 0) {

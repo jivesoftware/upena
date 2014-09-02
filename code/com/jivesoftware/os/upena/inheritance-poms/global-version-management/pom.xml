@@ -12,7 +12,7 @@
     <packaging>pom</packaging>
     <properties>
         <jive.utils.version>0.32</jive.utils.version>
-        <amza.version>0.5</amza.version>
+        <amza.version>0.6-SNAPSHOT</amza.version>
     </properties>
     <dependencyManagement>
         <dependencies>

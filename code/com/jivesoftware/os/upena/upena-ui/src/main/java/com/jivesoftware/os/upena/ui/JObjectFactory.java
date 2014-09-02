@@ -15,7 +15,6 @@
  */
 package com.jivesoftware.os.upena.ui;
 
-import com.jivesoftware.os.upena.shared.KeyValueFilter;
 import com.jivesoftware.os.upena.shared.Cluster;
 import com.jivesoftware.os.upena.shared.ClusterFilter;
 import com.jivesoftware.os.upena.shared.ClusterKey;
@@ -26,6 +25,7 @@ import com.jivesoftware.os.upena.shared.Instance;
 import com.jivesoftware.os.upena.shared.InstanceFilter;
 import com.jivesoftware.os.upena.shared.InstanceKey;
 import com.jivesoftware.os.upena.shared.Key;
+import com.jivesoftware.os.upena.shared.KeyValueFilter;
 import com.jivesoftware.os.upena.shared.ReleaseGroup;
 import com.jivesoftware.os.upena.shared.ReleaseGroupFilter;
 import com.jivesoftware.os.upena.shared.ReleaseGroupKey;
@@ -104,7 +104,6 @@ public class JObjectFactory {
                 return new JObject<>(fields, vExecutor, hasPopup, picked);
             }
         });
-
 
     }
 

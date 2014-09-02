@@ -20,7 +20,10 @@ import javax.swing.JPanel;
 
 public class JUpena extends javax.swing.JFrame {
 
-    public JUpena() {
+    private final String defaultHost;
+
+    public JUpena(String defaultHost) {
+        this.defaultHost = defaultHost;
         initComponents();
     }
 
@@ -30,7 +33,7 @@ public class JUpena extends javax.swing.JFrame {
 
         JPanel v = new JPanel(new BorderLayout(1, 1));
 
-        RequestHelperProvider helperProvider = new RequestHelperProvider();
+        RequestHelperProvider helperProvider = new RequestHelperProvider(defaultHost);
         v.add(helperProvider, BorderLayout.NORTH);
 
         JUpenaServices upena = new JUpenaServices(helperProvider, new JObjectFactory(helperProvider));

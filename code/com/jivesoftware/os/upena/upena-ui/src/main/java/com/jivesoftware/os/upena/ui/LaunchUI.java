@@ -51,7 +51,11 @@ public class LaunchUI {
             java.util.logging.Logger.getLogger(JUpenaServices.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
 
-        final JUpena upena = new JUpena();
+        String defaultHost = "localhost";
+        if (args != null && args.length > 0) {
+            defaultHost = args[0];
+        }
+        final JUpena upena = new JUpena(defaultHost);
         ImageIcon icon = Util.icon("cluster");
         if (icon != null) {
             upena.setIconImage(icon.getImage());

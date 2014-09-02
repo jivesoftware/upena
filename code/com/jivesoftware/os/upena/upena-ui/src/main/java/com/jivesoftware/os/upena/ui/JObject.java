@@ -16,8 +16,8 @@
 package com.jivesoftware.os.upena.ui;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jivesoftware.os.upena.shared.KeyValueFilter;
 import com.jivesoftware.os.upena.shared.Key;
+import com.jivesoftware.os.upena.shared.KeyValueFilter;
 import com.jivesoftware.os.upena.shared.Stored;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -82,11 +82,11 @@ public class JObject<K extends Key, V extends Stored, F extends KeyValueFilter<K
                     public void run() {
                         JObjectEditor editor = new JObjectEditor(JObjectEditor.CREATE, true,
                                 new JPanel(), objectFields.copy(), executor, new IPicked<K, V>() {
-                            @Override
-                            public void picked(K key, V v) {
-                                find(null);
-                            }
-                        });
+                                    @Override
+                                    public void picked(K key, V v) {
+                                        find(null);
+                                    }
+                                });
 
                         JFrame f = new JFrame();
                         f.setTitle("New " + objectFields.valueClass().getSimpleName());
@@ -116,7 +116,6 @@ public class JObject<K extends Key, V extends Stored, F extends KeyValueFilter<K
             }
         });
         menu.add(filter);
-
 
         query = new JTextField("", 50);
         query.addActionListener(new ActionListener() {
@@ -169,11 +168,9 @@ public class JObject<K extends Key, V extends Stored, F extends KeyValueFilter<K
         menu.setMaximumSize(new Dimension(1600, 36));
         SpringUtils.makeCompactGrid(menu, 1, 5, 6, 6, 6, 6);
 
-
         JScrollPane scrollResult = new JScrollPane(viewResults);
         scrollResult.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
         scrollResult.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-
 
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         add(menu);
