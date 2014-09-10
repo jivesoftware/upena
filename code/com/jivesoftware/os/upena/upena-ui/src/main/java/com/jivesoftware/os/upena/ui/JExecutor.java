@@ -17,6 +17,7 @@ package com.jivesoftware.os.upena.ui;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.jivesoftware.os.upena.shared.Instance;
 import com.jivesoftware.os.upena.shared.Key;
 import com.jivesoftware.os.upena.shared.KeyValueFilter;
 import com.jivesoftware.os.upena.shared.Stored;
@@ -24,6 +25,7 @@ import com.jivesoftware.os.upena.shared.TimestampedValue;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -35,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
@@ -61,17 +64,42 @@ public class JExecutor<K extends Key, V extends Stored, F extends KeyValueFilter
     }
 
     public JComponent toListItem(final JPanel results,
-            final K k,
-            final V v,
-            final JObjectFields<K, V, F> objectFields,
-            final Color background,
-            final boolean hasPopup,
-            final IPicked<K, V> picked) {
+        final K k,
+        final V v,
+        final JObjectFields<K, V, F> objectFields,
+        final Color background,
+        final boolean hasPopup,
+        final IPicked<K, V> picked) {
 
         final JObjectFields<K, V, F> copy = objectFields.copy();
         copy.update(k, v);
 
         final JPopupMenu menu = new JPopupMenu();
+        if (v instanceof Instance) {
+
+
+
+            JMenuItem menuItem = new JMenuItem("Tools");
+            menuItem.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+//                    final Instance instance = (Instance)v;
+//
+//                    new InstanceDescriptor(instance.clusterKey.getKey(), , context, context, context, context, context, instanceName, context, context)
+//
+//                    JFrame f = new JFrame();
+//                    f.setTitle("Editing " + copy.shortName(v));
+//                    f.add(new JNannyReport(instance, null, context));
+//                    f.setPreferredSize(new Dimension(1000, 600));
+//                    f.pack();
+//                    f.setLocationRelativeTo(null);
+//                    f.setVisible(true);
+                }
+            });
+            menu.add(menuItem);
+            menu.addSeparator();
+        }
+
         JMenuItem menuItem = new JMenuItem("Filter");
         menuItem.addActionListener(new ActionListener() {
             @Override
@@ -100,7 +128,6 @@ public class JExecutor<K extends Key, V extends Stored, F extends KeyValueFilter
                         f.pack();
                         f.setLocationRelativeTo(null);
                         f.setVisible(true);
-
 
                     }
                 });
@@ -186,6 +213,8 @@ public class JExecutor<K extends Key, V extends Stored, F extends KeyValueFilter
         }
         return null;
     }
+
+
 
     public BufferedImage createImage(JComponent c) {
 
@@ -277,7 +306,6 @@ public class JExecutor<K extends Key, V extends Stored, F extends KeyValueFilter
             }
         });
 
-
     }
 
     public void find(final F filter, final JObjectFields<K, V, F> objectFields, final boolean hasPopup, final JPanel viewResults, final IPicked<K, V> picked) {
@@ -287,7 +315,7 @@ public class JExecutor<K extends Key, V extends Stored, F extends KeyValueFilter
             public void run() {
                 try {
                     ConcurrentSkipListMap<String, TimestampedValue<V>> results = requestHelperProvider.get().executeRequest(filter,
-                            "/upena/" + context + "/find", objectFields.responseClass(), null);
+                        "/upena/" + context + "/find", objectFields.responseClass(), null);
                     if (results != null) {
                         viewResults.removeAll();
 

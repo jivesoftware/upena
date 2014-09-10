@@ -22,6 +22,7 @@ import java.io.File;
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
+import java.lang.management.RuntimeMXBean;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -50,7 +51,9 @@ public class StatusReportBroadcaster implements ServiceHandle {
     private final long annouceEveryNMills;
     private final StatusReportCallback statusReportCallback;
 
-    public StatusReportBroadcaster(Map<String,String> instance, long annouceEveryNMills, StatusReportCallback statusReportCallback) {
+    public StatusReportBroadcaster(Map<String,String> instance,
+        long annouceEveryNMills,
+        StatusReportCallback statusReportCallback) {
         this.instance = instance;
         this.annouceEveryNMills = annouceEveryNMills;
         this.statusReportCallback = statusReportCallback;
@@ -62,12 +65,14 @@ public class StatusReportBroadcaster implements ServiceHandle {
         ArrayList<String> hostnames = new ArrayList<>();
         scanNics(ipAddrs, hostnames);
 
+        RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
+
         StatusReport statusReport = new StatusReport(
                 uuid,
                 new File("." + File.separator).getAbsolutePath(),
-                ManagementFactory.getRuntimeMXBean().getVmName(),
-                ManagementFactory.getRuntimeMXBean().getVmVendor(),
-                ManagementFactory.getRuntimeMXBean().getVmVersion(),
+                runtimeMXBean.getVmName(),
+                runtimeMXBean.getVmVendor(),
+                runtimeMXBean.getVmVersion(),
                 hostnames,
                 ipAddrs,
                 instance,

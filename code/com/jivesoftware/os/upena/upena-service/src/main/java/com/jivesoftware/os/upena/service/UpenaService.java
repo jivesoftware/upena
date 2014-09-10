@@ -90,7 +90,7 @@ public class UpenaService {
         }
 
         String connectToServiceNamed = connectionsRequest.getConnectToServiceNamed();
-        ServiceFilter serviceFilter = new ServiceFilter(connectToServiceNamed, null, 0, Integer.MAX_VALUE);
+        ServiceFilter serviceFilter = new ServiceFilter(connectToServiceNamed, null, null, 0, Integer.MAX_VALUE);
         ConcurrentNavigableMap<ServiceKey, TimestampedValue<Service>> gotServices = upenaStore.services.find(serviceFilter);
         if (gotServices.isEmpty()) {
             return failedConnectionResponse("Undeclared service connectToServiceNamed:" + connectToServiceNamed);
@@ -251,7 +251,7 @@ public class UpenaService {
                     instanceKey.getKey(),
                     instance.instanceId,
                     releaseGroup.version,
-                    releaseGroup.repository);
+                    service.repository);
 
             for (Entry<String, Instance.Port> p : instance.ports.entrySet()) {
                 instanceDescriptor.ports.put(p.getKey(), new InstanceDescriptor.InstanceDescriptorPort(p.getValue().port));

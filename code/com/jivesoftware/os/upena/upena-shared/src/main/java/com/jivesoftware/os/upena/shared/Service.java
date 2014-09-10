@@ -22,21 +22,25 @@ import java.io.Serializable;
 public class Service implements Stored<Service>, Serializable {
 
     public final String name;
+    public final String repository;
     public final String description;
 
     @JsonCreator
-    public Service(@JsonProperty("name") String name,
-            @JsonProperty("description") String description) {
+    public Service(@JsonProperty ("name") String name,
+        @JsonProperty ("description") String description,
+        @JsonProperty ("repository") String repository) {
         this.name = name;
+        this.repository = repository;
         this.description = description;
     }
 
     @Override
     public String toString() {
         return "Service{"
-                + "name=" + name
-                + ", description=" + description
-                + '}';
+            + "name=" + name
+            + ", description=" + description
+            + ", repository=" + repository
+            + '}';
     }
 
     @Override

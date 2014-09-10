@@ -25,19 +25,16 @@ public class ReleaseGroup implements Stored<ReleaseGroup>, Serializable {
     public final String name;
     public final String email;
     public final String version;
-    public final String repository;
     public final String description;
 
     @JsonCreator
     public ReleaseGroup(@JsonProperty("name") String name,
             @JsonProperty("email") String email,
             @JsonProperty("version") String version,
-            @JsonProperty("repository") String repository,
             @JsonProperty("description") String description) {
         this.name = name;
         this.email = email;
         this.version = version;
-        this.repository = repository;
         this.description = description;
     }
 
@@ -47,7 +44,6 @@ public class ReleaseGroup implements Stored<ReleaseGroup>, Serializable {
                 + "name=" + name
                 + ", email=" + email
                 + ", version=" + version
-                + ", repository=" + repository
                 + ", description=" + description
                 + '}';
     }
@@ -58,7 +54,6 @@ public class ReleaseGroup implements Stored<ReleaseGroup>, Serializable {
         hash = 89 * hash + Objects.hashCode(this.name);
         hash = 89 * hash + Objects.hashCode(this.email);
         hash = 89 * hash + Objects.hashCode(this.version);
-        hash = 89 * hash + Objects.hashCode(this.repository);
         hash = 89 * hash + Objects.hashCode(this.description);
         return hash;
     }
@@ -79,9 +74,6 @@ public class ReleaseGroup implements Stored<ReleaseGroup>, Serializable {
             return false;
         }
         if (!Objects.equals(this.version, other.version)) {
-            return false;
-        }
-        if (!Objects.equals(this.repository, other.repository)) {
             return false;
         }
         if (!Objects.equals(this.description, other.description)) {

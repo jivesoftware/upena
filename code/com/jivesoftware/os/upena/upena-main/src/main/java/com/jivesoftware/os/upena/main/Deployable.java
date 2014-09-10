@@ -106,7 +106,6 @@ public class Deployable {
                 public void annouce(StatusReport statusReport) throws Exception {
                     try {
                         String postEntity = mapper.writeValueAsString(statusReport);
-
                         String path = "/upena/request/connections";
                         try {
                             httpClient.postJson(path, postEntity);

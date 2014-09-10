@@ -31,6 +31,7 @@ public class JFieldsForService implements JObjectFields<ServiceKey, Service, Ser
     JEditKeyField serviceKey;
     JEditField name;
     JEditField description;
+    JEditField repository;
 
     public JFieldsForService(String k, Service v) {
         this.key = k;
@@ -41,6 +42,9 @@ public class JFieldsForService implements JObjectFields<ServiceKey, Service, Ser
 
         description = new JEditField("description", (v != null) ? v.description : "");
         fields.put("description", description);
+
+        repository = new JEditField("repository", (v != null) ? v.repository : "");
+        fields.put("repository", repository);
 
         serviceKey = new JEditKeyField("key", (k != null) ? k : "");
         fields.put("key", serviceKey);
@@ -60,6 +64,7 @@ public class JFieldsForService implements JObjectFields<ServiceKey, Service, Ser
     @Override
     public Service fieldsToObject() {
         return new Service(name.getValue(),
+            repository.getValue(),
                 description.getValue());
     }
 
@@ -76,7 +81,7 @@ public class JFieldsForService implements JObjectFields<ServiceKey, Service, Ser
     @Override
     public ServiceFilter fieldsToFilter() {
         ServiceFilter filter = new ServiceFilter(name.getValue(),
-                description.getValue(), 0, 100);
+                description.getValue(), repository.getValue(), 0, 100);
         return filter;
     }
 
@@ -85,12 +90,15 @@ public class JFieldsForService implements JObjectFields<ServiceKey, Service, Ser
         serviceKey.setValue(key.getKey());
         name.setValue(v.name);
         description.setValue(v.description);
+        repository.setValue(v.repository);
+
     }
 
     @Override
     public void updateFilter(ServiceKey key, Service v) {
         name.setValue(v.name);
         description.setValue(v.description);
+        repository.setValue(v.repository);
     }
 
     @Override

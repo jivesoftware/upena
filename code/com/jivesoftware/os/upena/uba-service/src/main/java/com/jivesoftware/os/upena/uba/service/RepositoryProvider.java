@@ -11,6 +11,7 @@ import org.eclipse.aether.connector.basic.BasicRepositoryConnectorFactory;
 import org.eclipse.aether.impl.DefaultServiceLocator;
 import org.eclipse.aether.repository.LocalRepository;
 import org.eclipse.aether.repository.RemoteRepository;
+import org.eclipse.aether.repository.RepositoryPolicy;
 import org.eclipse.aether.spi.connector.RepositoryConnectorFactory;
 import org.eclipse.aether.spi.connector.transport.TransporterFactory;
 import org.eclipse.aether.transport.file.FileTransporterFactory;
@@ -61,7 +62,17 @@ public class RepositoryProvider {
         repos.add(newCentralRepository());
         if (repoUrls != null) {
             for (String repoUrl : repoUrls) {
-                repos.add(new RemoteRepository.Builder("internal", "default", repoUrl).build());
+
+                if (repoUrl.contains("snapshot")) {
+                    RemoteRepository remoteRepository = new RemoteRepository.Builder("snapshot", "default", repoUrl)
+                        .setSnapshotPolicy(new RepositoryPolicy(true, RepositoryPolicy.UPDATE_POLICY_ALWAYS, RepositoryPolicy.CHECKSUM_POLICY_WARN))
+                        .setContentType(repoUrl)
+                        .build();
+                    repos.add(remoteRepository);
+
+                } else {
+                   repos.add(new RemoteRepository.Builder("internal", "default", repoUrl).build());
+                }
             }
         }
         return repos;
