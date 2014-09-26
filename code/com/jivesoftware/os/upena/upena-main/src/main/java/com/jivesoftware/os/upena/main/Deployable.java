@@ -15,13 +15,7 @@
  */
 package com.jivesoftware.os.upena.main;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jivesoftware.os.jive.utils.base.service.ServiceHandle;
-import com.jivesoftware.os.jive.utils.http.client.HttpClient;
-import com.jivesoftware.os.jive.utils.http.client.HttpClientConfig;
-import com.jivesoftware.os.jive.utils.http.client.HttpClientConfiguration;
-import com.jivesoftware.os.jive.utils.http.client.HttpClientException;
-import com.jivesoftware.os.jive.utils.http.client.HttpClientFactoryProvider;
 import com.jivesoftware.os.server.http.health.check.HealthCheck;
 import com.jivesoftware.os.server.http.jetty.jersey.endpoints.configuration.MainProperties;
 import com.jivesoftware.os.server.http.jetty.jersey.endpoints.configuration.MainPropertiesEndpoints;
@@ -32,15 +26,12 @@ import com.jivesoftware.os.server.http.jetty.jersey.server.util.Resource;
 import com.jivesoftware.os.upena.reporter.service.StatusReportBroadcaster;
 import com.jivesoftware.os.upena.reporter.service.StatusReportBroadcaster.StatusReportCallback;
 import com.jivesoftware.os.upena.reporter.service.StatusReportConfig;
-import com.jivesoftware.os.upena.reporter.shared.StatusReport;
 import com.jivesoftware.os.upena.routing.shared.ConnectionDescriptorsProvider;
 import com.jivesoftware.os.upena.routing.shared.TenantRoutingProvider;
 import com.jivesoftware.os.upena.tenant.routing.http.server.endpoints.TenantRoutingRestEndpoints;
 import com.jivesoftware.os.upena.uba.config.extractor.ConfigBinder;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.merlin.config.Config;
 
@@ -65,7 +56,7 @@ public class Deployable {
         InstanceConfig instanceConfig = configBinder.bind(InstanceConfig.class);
         if (connectionsDescriptorProvider == null) {
             TenantRoutingBirdProviderBuilder tenantRoutingBirdBuilder = new TenantRoutingBirdProviderBuilder(instanceConfig.getRoutesHost(),
-                    instanceConfig.getRoutesPort());
+                instanceConfig.getRoutesPort());
             connectionsDescriptorProvider = tenantRoutingBirdBuilder.build();
         }
 
@@ -73,9 +64,9 @@ public class Deployable {
 
         String applicationName = "manage " + instanceConfig.getServiceName() + " " + instanceConfig.getClusterName();
         restfulManageServer = new RestfulManageServer(instanceConfig.getManagePort(),
-                applicationName,
-                128,
-                10000);
+            applicationName,
+            128,
+            10000);
 
         restfulManageServer.addEndpoint(TenantRoutingRestEndpoints.class);
         restfulManageServer.addInjectable(TenantRoutingProvider.class, tenantRoutingProvider);
@@ -84,45 +75,26 @@ public class Deployable {
 
         jerseyEndpoints = new JerseyEndpoints();
         restfulServer = new InitializeRestfulServer(instanceConfig.getMainPort(),
-                applicationName,
-                128,
-                10000);
+            applicationName,
+            128,
+            10000);
     }
 
+    /**
+     Needs to be called before buildManageServer().
+     @param statusReportCallback
+     @return
+     */
     public ServiceHandle buildStatusReporter(StatusReportCallback statusReportCallback) {
+
         StatusReportConfig config = configBinder.bind(StatusReportConfig.class);
-        Map<String, String> rawInstanceProperties = new HashMap<>();
-        InstanceConfig instanceConfig = configBinder.bind(InstanceConfig.class, rawInstanceProperties);
-        if (statusReportCallback == null) {
-            final ObjectMapper mapper = new ObjectMapper();
 
-            HttpClientConfig httpClientConfig = HttpClientConfig.newBuilder().build();
-            final HttpClient httpClient = new HttpClientFactoryProvider()
-                    .createHttpClientFactory(Arrays.<HttpClientConfiguration>asList(httpClientConfig))
-                    .createClient(instanceConfig.getRoutesHost(), instanceConfig.getRoutesPort());
+        StatusReportBroadcaster broadcaster = new StatusReportBroadcaster(
+            config.getAnnouceEveryNMills(),
+            statusReportCallback);
 
-            statusReportCallback = new StatusReportCallback() {
-                @Override
-                public void annouce(StatusReport statusReport) throws Exception {
-                    try {
-                        String postEntity = mapper.writeValueAsString(statusReport);
-
-                        String path = "/upena/request/connections";
-                        try {
-                            httpClient.postJson(path, postEntity);
-                        } catch (HttpClientException e) {
-                            e.printStackTrace();
-                        }
-                    } catch (Exception x) {
-                        x.printStackTrace();
-                    }
-                }
-            };
-        }
-
-        StatusReportBroadcaster broadcaster = new StatusReportBroadcaster(rawInstanceProperties,
-                config.getAnnouceEveryNMills(),
-                statusReportCallback);
+        restfulManageServer.addEndpoint(StatusReportEndpoints.class);
+        restfulManageServer.addInjectable(StatusReportBroadcaster.class, broadcaster);
         return broadcaster;
     }
 
@@ -258,7 +230,7 @@ public class Deployable {
         System.out.println(pad("|", "          Manage PORT:" + instanceConfig.getManagePort(), "|", ' ', 100));
         System.out.println(pad("|", "", "|", ' ', 100));
         System.out.println(pad("|", "        curl " + instanceConfig.getHost()
-                + ":" + instanceConfig.getManagePort() + "/manage/help", "|", ' ', 100));
+            + ":" + instanceConfig.getManagePort() + "/manage/help", "|", ' ', 100));
         System.out.println(pad("|", "", "|", ' ', 100));
         System.out.println(pad("-", "", "-", '-', 100));
     }

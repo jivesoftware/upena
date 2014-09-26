@@ -21,14 +21,17 @@ import com.jivesoftware.os.upena.reporter.shared.StatusReport;
 import java.io.File;
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
+import java.lang.management.MemoryUsage;
 import java.lang.management.OperatingSystemMXBean;
+import java.lang.management.RuntimeMXBean;
+import java.lang.management.ThreadMXBean;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -46,14 +49,17 @@ public class StatusReportBroadcaster implements ServiceHandle {
     private ScheduledExecutorService newScheduledThreadPool;
     private final int startupTimestampInSeconds = (int) TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis());
     private final String uuid = UUID.randomUUID().toString();
-    private final Map<String,String> instance;
     private final long annouceEveryNMills;
     private final StatusReportCallback statusReportCallback;
+    private StatusReport statusReport;
 
-    public StatusReportBroadcaster(Map<String,String> instance, long annouceEveryNMills, StatusReportCallback statusReportCallback) {
-        this.instance = instance;
+    public StatusReportBroadcaster(long annouceEveryNMills, StatusReportCallback statusReportCallback) {
         this.annouceEveryNMills = annouceEveryNMills;
         this.statusReportCallback = statusReportCallback;
+    }
+
+    public StatusReport get() {
+        return statusReport;
     }
 
     @Override
@@ -62,29 +68,28 @@ public class StatusReportBroadcaster implements ServiceHandle {
         ArrayList<String> hostnames = new ArrayList<>();
         scanNics(ipAddrs, hostnames);
 
-        StatusReport statusReport = new StatusReport(
-                uuid,
-                new File("." + File.separator).getAbsolutePath(),
-                ManagementFactory.getRuntimeMXBean().getVmName(),
-                ManagementFactory.getRuntimeMXBean().getVmVendor(),
-                ManagementFactory.getRuntimeMXBean().getVmVersion(),
-                hostnames,
-                ipAddrs,
-                instance,
-                (int) TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()),
-                startupTimestampInSeconds,
-                0.0f,
-                0.0f,
-                LoggerSummary.INSTANCE.errors,
-                LoggerSummary.INSTANCE_EXTERNAL_INTERACTIONS.errors);
+        statusReport = new StatusReport(
+            uuid,
+            new File("." + File.separator).getAbsolutePath(),
+            ManagementFactory.getRuntimeMXBean().getVmName(),
+            ManagementFactory.getRuntimeMXBean().getVmVendor(),
+            ManagementFactory.getRuntimeMXBean().getVmVersion(),
+            hostnames,
+            ipAddrs,
+            (int) TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()),
+            startupTimestampInSeconds,
+            0.0f,
+            0.0f,
+            LoggerSummary.INSTANCE.errors,
+            LoggerSummary.INSTANCE_EXTERNAL_INTERACTIONS.errors);
 
         newScheduledThreadPool = Executors.newScheduledThreadPool(1);
         if (annouceEveryNMills > 0) {
             newScheduledThreadPool.scheduleWithFixedDelay(
-                    new StatusReportTask(statusReport, statusReportCallback),
-                    0,
-                    annouceEveryNMills,
-                    TimeUnit.MILLISECONDS);
+                new StatusReportTask(statusReport, statusReportCallback),
+                0,
+                annouceEveryNMills,
+                TimeUnit.MILLISECONDS);
         }
     }
 
@@ -104,17 +109,25 @@ public class StatusReportBroadcaster implements ServiceHandle {
 
         private final List<GarbageCollectorMXBean> garbageCollectors;
         private final OperatingSystemMXBean osBean;
+        private final RuntimeMXBean runtimeMXBean;
+        private final MemoryMXBean memoryMXBean;
+        private final ThreadMXBean threadMXBean;
+
         long lastGCTotalTime;
         private final StatusReportCallback statusReportCallback;
         private final StatusReport statusReport;
 
         public StatusReportTask(StatusReport statusReport,
-                StatusReportCallback statusReportCallback) {
+            StatusReportCallback statusReportCallback) {
             this.statusReportCallback = statusReportCallback;
             this.statusReport = statusReport;
 
             garbageCollectors = ManagementFactory.getGarbageCollectorMXBeans();
             osBean = ManagementFactory.getOperatingSystemMXBean();
+            runtimeMXBean = ManagementFactory.getRuntimeMXBean();
+            memoryMXBean = ManagementFactory.getMemoryMXBean();
+            threadMXBean = ManagementFactory.getThreadMXBean();
+
         }
 
         @Override
@@ -133,7 +146,11 @@ public class StatusReportBroadcaster implements ServiceHandle {
                 statusReport.internalErrors = LoggerSummary.INSTANCE.errors;
                 statusReport.interactionErrors = LoggerSummary.INSTANCE_EXTERNAL_INTERACTIONS.errors;
 
-                statusReportCallback.annouce(statusReport);
+                MemoryUsage heapMemoryUsage = memoryMXBean.getHeapMemoryUsage();
+
+                if (statusReportCallback != null) {
+                    statusReportCallback.annouce(statusReport);
+                }
 
             } catch (Exception x) {
                 // We use system err to break recursion created by calling LOG.*
@@ -152,8 +169,8 @@ public class StatusReportBroadcaster implements ServiceHandle {
             while (ina != null && ina.hasMoreElements()) {
                 InetAddress a = ina.nextElement();
                 if (a.isAnyLocalAddress()
-                        || a.isLoopbackAddress()
-                        || a.isLinkLocalAddress()) {
+                    || a.isLoopbackAddress()
+                    || a.isLinkLocalAddress()) {
                     continue;
                 }
                 ipAddrs.add(a.getHostAddress());

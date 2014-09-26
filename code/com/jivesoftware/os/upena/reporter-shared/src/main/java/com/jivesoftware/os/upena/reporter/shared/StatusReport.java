@@ -30,11 +30,11 @@ public class StatusReport {
     public String jvmVersion;
     public List<String> jvmHostnames;
     public List<String> jvmIpAddrs;
-    public Map<String, String> instance;
     public int timestampInSeconds;
     public int startupTimestampInSeconds;
     public float load;
     public float percentageOfCPUTimeInGC;
+
     public long internalErrors = 0;
     public long interactionErrors = 0;
 
@@ -48,7 +48,6 @@ public class StatusReport {
             String jvmVersion,
             List<String> jvmHostnames,
             List<String> jvmIpAddrs,
-            Map<String, String> instance,
             int timestampInSeconds,
             int startupTimestampInSeconds,
             float load,
@@ -63,7 +62,6 @@ public class StatusReport {
         this.jvmVersion = jvmVersion;
         this.jvmHostnames = jvmHostnames;
         this.jvmIpAddrs = jvmIpAddrs;
-        this.instance = instance;
         this.timestampInSeconds = timestampInSeconds;
         this.startupTimestampInSeconds = startupTimestampInSeconds;
         this.load = load;

@@ -280,6 +280,35 @@ public class JExecutor<K extends Key, V extends Stored, F extends KeyValueFilter
 
     }
 
+    public List<V> find(final F filter, final Class<? extends ConcurrentSkipListMap<String, TimestampedValue<V>>> responseClass) {
+
+        List<V> found = new ArrayList<>();
+        try {
+            ConcurrentSkipListMap<String, TimestampedValue<V>> results = requestHelperProvider.get().executeRequest(filter,
+                "/upena/" + context + "/find", responseClass, null);
+            if (results != null) {
+
+                int count = 0;
+                for (final Map.Entry<String, TimestampedValue<V>> e : results.entrySet()) {
+                    if (!e.getValue().getTombstoned()) {
+                        Color color = Color.white;
+                        if (count % 2 == 0) {
+                            color = Color.lightGray;
+                        }
+                        V value = e.getValue().getValue();
+                        found.add(value);
+                    }
+
+                }
+
+            }
+
+        } catch (Exception x) {
+            x.printStackTrace();
+        }
+        return found;
+    }
+
     public void find(final F filter, final JObjectFields<K, V, F> objectFields, final boolean hasPopup, final JPanel viewResults, final IPicked<K, V> picked) {
 
         thread.execute(new Runnable() {

@@ -144,13 +144,6 @@ public class ActiveStatusReports {
             return true;
         }
 
-        for (String key : current.instance.keySet()) {
-            String currentValue = current.instance.get(key);
-            String nextValue = next.instance.get(key);
-            if (currentValue != null && !currentValue.equals(nextValue)) {
-                return true;
-            }
-        }
         return false;
     }
 }
