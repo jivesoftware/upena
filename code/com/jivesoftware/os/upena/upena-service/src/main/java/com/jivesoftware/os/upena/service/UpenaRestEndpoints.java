@@ -508,7 +508,7 @@ public class UpenaRestEndpoints {
         try {
             LOG.info("Attempting to map tenant to release: tenantId:" + tenantId + " releaseId:" + releaseId);
             ConcurrentNavigableMap<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> foundReleaseGroups = upenaStore.releaseGroups
-                    .find(new ReleaseGroupFilter(releaseId, null, null, null, 0, 1000));
+                    .find(new ReleaseGroupFilter(releaseId, null, null, null, null, 0, 1000));
             Map.Entry<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> firstReleaseGroup = foundReleaseGroups.firstEntry();
 
             TenantFilter tenantFilter =  new TenantFilter(tenantId, null, null, null, 0, 1000);

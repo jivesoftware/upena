@@ -21,7 +21,6 @@ import com.jivesoftware.os.upena.shared.Instance;
 import com.jivesoftware.os.upena.shared.Key;
 import com.jivesoftware.os.upena.shared.ReleaseGroup;
 import com.jivesoftware.os.upena.shared.Service;
-import com.jivesoftware.os.upena.shared.Stored;
 import com.jivesoftware.os.upena.shared.Tenant;
 import java.awt.BorderLayout;
 import java.awt.Color;

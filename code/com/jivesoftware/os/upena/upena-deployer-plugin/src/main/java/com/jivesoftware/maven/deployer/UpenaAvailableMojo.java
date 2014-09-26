@@ -191,6 +191,7 @@ public class UpenaAvailableMojo extends AbstractMojo {
                     filterEmail,
                     null,
                     null,
+                    null,
                     0,
                     Integer.MAX_VALUE);
             ReleaseGroupFilter.Results results = requestHelper.executeRequest(filter, "/upena/releaseGroup/find", ReleaseGroupFilter.Results.class, null);
@@ -225,7 +226,7 @@ public class UpenaAvailableMojo extends AbstractMojo {
 
     protected ServiceKey locateServiceKey(String serviceName, RequestHelper requestHelper) throws MojoFailureException {
         try {
-            ServiceFilter filter = new ServiceFilter(serviceName, null, null, 0, Integer.MAX_VALUE);
+            ServiceFilter filter = new ServiceFilter(serviceName, null, 0, Integer.MAX_VALUE);
             ServiceFilter.Results results = requestHelper.executeRequest(filter, "/upena/service/find", ServiceFilter.Results.class, null);
             if (results != null && !results.isEmpty()) {
                 Map.Entry<ServiceKey, TimestampedValue<Service>> firstEntry = results.firstEntry();

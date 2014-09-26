@@ -25,7 +25,6 @@ public class ServiceFilter implements KeyValueFilter<ServiceKey, Service>, Seria
 
     public final String name;
     public final String description;
-    public final String repository;
     public final int start;
     public final int count;
     public int hit;
@@ -33,21 +32,18 @@ public class ServiceFilter implements KeyValueFilter<ServiceKey, Service>, Seria
     @JsonCreator
     public ServiceFilter(@JsonProperty("name") String name,
             @JsonProperty("description") String description,
-            @JsonProperty("repository") String repository,
             @JsonProperty("start") int start,
             @JsonProperty("count") int count) {
         this.name = name;
         this.description = description;
-        this.repository = repository;
         this.start = start;
         this.count = count;
     }
 
     @Override
     public String toString() {
-        return "ServiceFilter{" + "name=" + name + ", description=" + description + ", repository=" + repository + ", start=" + start + ", count=" + count + ", hit=" + hit + '}';
+        return "ServiceFilter{" + "name=" + name + ", description=" + description + ", start=" + start + ", count=" + count + ", hit=" + hit + '}';
     }
-
 
     @Override
     public ConcurrentNavigableMap<ServiceKey, TimestampedValue<Service>> createCollector() {
@@ -66,11 +62,6 @@ public class ServiceFilter implements KeyValueFilter<ServiceKey, Service>, Seria
         }
         if (description != null && value.description != null) {
             if (!value.description.contains(description)) {
-                return false;
-            }
-        }
-        if (repository != null && value.repository != null) {
-            if (!value.repository.contains(repository)) {
                 return false;
             }
         }

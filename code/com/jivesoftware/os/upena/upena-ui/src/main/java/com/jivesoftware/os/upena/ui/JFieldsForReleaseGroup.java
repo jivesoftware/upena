@@ -33,6 +33,7 @@ public class JFieldsForReleaseGroup implements JObjectFields<ReleaseGroupKey, Re
     JEditField name;
     JEditField email;
     JEditField version;
+    JEditField repository;
     JEditField description;
 
     public JFieldsForReleaseGroup(String k, ReleaseGroup v) {
@@ -47,6 +48,9 @@ public class JFieldsForReleaseGroup implements JObjectFields<ReleaseGroupKey, Re
 
         version = new JEditField("version", (v != null) ? v.version : "");
         fields.put("version", version);
+
+        repository = new JEditField("repository", (v != null) ? v.repository : "");
+        fields.put("repository", repository);
 
         description = new JEditField("description", (v != null) ? v.description : "");
         fields.put("description", description);
@@ -71,6 +75,7 @@ public class JFieldsForReleaseGroup implements JObjectFields<ReleaseGroupKey, Re
         return new ReleaseGroup(name.getValue(),
                 email.getValue(),
                 version.getValue(),
+                repository.getValue(),
                 description.getValue());
     }
 
@@ -89,6 +94,7 @@ public class JFieldsForReleaseGroup implements JObjectFields<ReleaseGroupKey, Re
         ReleaseGroupFilter filter = new ReleaseGroupFilter(name.getValue(),
                 email.getValue(),
                 version.getValue(),
+                repository.getValue(),
                 description.getValue(), 0, 100);
         return filter;
     }
@@ -99,6 +105,7 @@ public class JFieldsForReleaseGroup implements JObjectFields<ReleaseGroupKey, Re
         name.setValue(v.name);
         email.setValue(v.email);
         version.setValue(v.version);
+        repository.setValue(v.repository);
         description.setValue(v.description);
     }
 

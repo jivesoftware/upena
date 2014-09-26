@@ -173,6 +173,7 @@ public class UpenaDeployerMojo extends AbstractMojo {
                     filterEmail,
                     null,
                     null,
+                    null,
                     0,
                     Integer.MAX_VALUE);
             ReleaseGroupFilter.Results results = requestHelper.executeRequest(filter, "/upena/releaseGroup/find", ReleaseGroupFilter.Results.class, null);
@@ -196,7 +197,7 @@ public class UpenaDeployerMojo extends AbstractMojo {
 
         ServiceKey serviceKey = null;
         try {
-            ServiceFilter filter = new ServiceFilter(serviceName, null, null, 0, Integer.MAX_VALUE);
+            ServiceFilter filter = new ServiceFilter(serviceName, null, 0, Integer.MAX_VALUE);
             ServiceFilter.Results results = requestHelper.executeRequest(filter, "/upena/service/find", ServiceFilter.Results.class, null);
             if (results != null && !results.isEmpty()) {
                 Map.Entry<ServiceKey, TimestampedValue<Service>> firstEntry = results.firstEntry();
@@ -205,7 +206,7 @@ public class UpenaDeployerMojo extends AbstractMojo {
             } else {
                 getLog().info("------------------------------------------------------------------------");
                 getLog().info("No service named:" + serviceName + ". Automatically adding new service.");
-                serviceKey = requestHelper.executeRequest(new Service(serviceName, "", ""),
+                serviceKey = requestHelper.executeRequest(new Service(serviceName, ""),
                         "/upena/service/add", ServiceKey.class, null);
             }
         } catch (Exception x) {

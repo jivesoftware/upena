@@ -105,8 +105,8 @@ public class JCluster extends JPanel {
         panel.add(menu, BorderLayout.NORTH);
 
         JScrollPane scrollRoutes = new JScrollPane(viewResults,
-            JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-            JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         panel.add(scrollRoutes, BorderLayout.CENTER);
         panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
@@ -120,13 +120,13 @@ public class JCluster extends JPanel {
 
         viewResults.removeAll();
         visibleInstanceDescriptors.clear();
-
         try {
             String reportString = Curl.create().curl("http://" + host.hostName + ":" + host.port + "/uba/report");
             if (reportString != null) {
                 UbaReport ubaReport = new ObjectMapper().readValue(reportString, UbaReport.class);
                 for (NannyReport report : ubaReport.nannyReports) {
-                    JNannyReport jid = new JNannyReport(host, report, requestHelperProvider.editUserName.getText());
+
+                    JNannyReport jid = new JNannyReport(report);
                     viewResults.add(jid);
                     visibleInstanceDescriptors.add(jid);
                 }
@@ -142,17 +142,228 @@ public class JCluster extends JPanel {
         viewResults.getParent().repaint();
     }
 
-    static class Action implements ActionListener {
+    class JNannyReport extends JPanel {
 
-        private final Runnable runnable;
+        private final NannyReport nannyReport;
+        private final JTextArea tail;
 
-        public Action(Runnable runnable) {
-            this.runnable = runnable;
+        public JNannyReport(final NannyReport nannyReport) {
+            this.nannyReport = nannyReport;
+            final InstanceDescriptor id = nannyReport.instanceDescriptor;
+
+            setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+
+            JPanel name = new JPanel();
+            name.setLayout(new BoxLayout(name, BoxLayout.X_AXIS));
+
+            name.add(new JLabel(id.clusterName));
+            name.add(Box.createHorizontalStrut(10));
+            name.add(new JLabel(id.serviceName));
+            name.add(Box.createHorizontalStrut(10));
+            name.add(new JLabel("" + id.instanceName));
+            name.add(Box.createHorizontalStrut(10));
+            name.add(new JLabel(id.releaseGroupName));
+            name.add(Box.createHorizontalStrut(10));
+            for (Entry<String, InstanceDescriptorPort> p : id.ports.entrySet()) {
+                name.add(new JLabel(p.getKey() + "=" + p.getValue().port));
+                name.add(Box.createHorizontalStrut(10));
+            }
+
+            JPanel buttons = new JPanel();
+            buttons.setLayout(new BoxLayout(buttons, BoxLayout.X_AXIS));
+            JButton button = new JButton("Manage");
+            button.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    Util.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                openWebpage(new URI("http://" + host.hostName + ":" + id.ports.get("manage").port + "/manage/help"));
+                            } catch (URISyntaxException ex) {
+                                ex.printStackTrace();
+                            }
+                        }
+                    });
+                }
+            });
+
+            buttons.add(button);
+
+            button = new JButton("Properties");
+            button.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    Util.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                status("/manage/configuration/properties");
+                            } catch (IOException ex) {
+                                ex.printStackTrace();
+                            }
+                        }
+                    });
+                }
+            });
+
+            buttons.add(button);
+
+            button = new JButton("Status");
+            button.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    Util.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                status("/manage/status");
+                            } catch (IOException ex) {
+                                ex.printStackTrace();
+                            }
+                        }
+                    });
+                }
+            });
+
+            buttons.add(button);
+
+            button = new JButton("Ping");
+            button.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    Util.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                status("/manage/ping");
+                            } catch (IOException ex) {
+                                ex.printStackTrace();
+                            }
+                        }
+                    });
+                }
+            });
+
+            buttons.add(button);
+
+            button = new JButton("Tail");
+            button.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    Util.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                status("/manage/tail");
+                            } catch (IOException ex) {
+                                ex.printStackTrace();
+                            }
+                        }
+                    });
+                }
+            });
+
+            buttons.add(button);
+
+            button = new JButton("Routes");
+            button.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    Util.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                status("/manage/tenant/routing/report");
+                            } catch (IOException ex) {
+                                ex.printStackTrace();
+                            }
+                        }
+                    });
+                }
+            });
+
+            buttons.add(button);
+
+            button = new JButton("Purge Routes");
+            button.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    Util.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                status("/manage/tenant/routing/invaliateAll");
+                            } catch (IOException ex) {
+                                ex.printStackTrace();
+                            }
+                        }
+                    });
+                }
+            });
+
+            buttons.add(button);
+
+            button = new JButton("Shutdown");
+            button.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    Util.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                status("/manage/shutdown?userName=" + requestHelperProvider.editUserName.getText());
+                            } catch (IOException ex) {
+                                ex.printStackTrace();
+                            }
+                        }
+                    });
+                }
+            });
+
+            buttons.add(button);
+
+            tail = new JTextArea();
+            JScrollPane scrollTail = new JScrollPane(tail,
+                    JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                    JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+            scrollTail.setPreferredSize(new Dimension(-1, 400));
+
+            for (String m : nannyReport.messages) {
+                tail.append(m + "\n");
+            }
+
+            add(name);
+            add(buttons);
+            add(scrollTail);
         }
 
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            Util.invokeLater(runnable);
+        private void status(String manageEndpoint) throws IOException {
+            String url = "http://" + host.hostName + ":" + nannyReport.instanceDescriptor.ports.get("manage").port + manageEndpoint;
+            try {
+                String curl = Curl.create().curl(url);
+                tail.setText(curl);
+            } catch (Exception x) {
+                tail.setText("failed to call " + url + " " + new Date());
+                x.printStackTrace();
+            }
+            tail.revalidate();
+            revalidate();
+            Container parent = getParent();
+            if (parent != null) {
+                revalidate();
+            }
+        }
+    }
+
+    public static void openWebpage(URI uri) {
+        Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
+        if (desktop != null && desktop.isSupported(Desktop.Action.BROWSE)) {
+            try {
+                desktop.browse(uri);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 }
