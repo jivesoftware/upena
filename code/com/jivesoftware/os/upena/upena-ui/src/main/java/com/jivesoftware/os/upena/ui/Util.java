@@ -42,6 +42,11 @@ public class Util {
         }
         return new ImageIcon(imgURL);
     }
+
+    public static ImageIcon resize(ImageIcon icon, int w, int h) {
+        return new ImageIcon(((icon).getImage()).getScaledInstance(w, h, java.awt.Image.SCALE_SMOOTH));
+    }
+
     public static final Executor executor = Executors.newCachedThreadPool();
 
     public static void invokeLater(Runnable runnable) {

@@ -17,7 +17,7 @@ package com.jivesoftware.os.upena.ui;
 
 import javax.swing.JComponent;
 
-public interface JField {
+public interface JField<V> {
 
     JComponent getEditor(int w, IPicked picked);
 
@@ -30,4 +30,10 @@ public interface JField {
     String name();
 
     boolean isFilterable();
+
+    Object getViewValue();
+
+    V getValue();
+
+    void setValue(V value);
 }

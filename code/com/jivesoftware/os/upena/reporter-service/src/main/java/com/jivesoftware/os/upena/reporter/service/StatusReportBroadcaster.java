@@ -79,6 +79,7 @@ public class StatusReportBroadcaster implements ServiceHandle {
             (int) TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()),
             startupTimestampInSeconds,
             0.0f,
+            0.0d,
             0.0f,
             LoggerSummary.INSTANCE.errors,
             LoggerSummary.INSTANCE_EXTERNAL_INTERACTIONS.errors);
@@ -142,11 +143,12 @@ public class StatusReportBroadcaster implements ServiceHandle {
                 statusReport.percentageOfCPUTimeInGC = ((float) (totalTimeInGC - lastGCTotalTime) / (float) lastGCTotalTime);
                 lastGCTotalTime = totalTimeInGC;
                 statusReport.timestampInSeconds = (int) TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis());
+                MemoryUsage memoryUsage = memoryMXBean.getHeapMemoryUsage();
+                statusReport.memoryLoad = (double)(memoryUsage.getUsed())/(double)(memoryUsage.getCommitted());
                 statusReport.load = (float) osBean.getSystemLoadAverage();
                 statusReport.internalErrors = LoggerSummary.INSTANCE.errors;
                 statusReport.interactionErrors = LoggerSummary.INSTANCE_EXTERNAL_INTERACTIONS.errors;
 
-                MemoryUsage heapMemoryUsage = memoryMXBean.getHeapMemoryUsage();
 
                 if (statusReportCallback != null) {
                     statusReportCallback.annouce(statusReport);

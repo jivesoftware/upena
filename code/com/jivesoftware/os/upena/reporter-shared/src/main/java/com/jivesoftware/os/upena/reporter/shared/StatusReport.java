@@ -16,7 +16,6 @@
 package com.jivesoftware.os.upena.reporter.shared;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * Deliberately not final and not a formal bean because its expected that jackson will be used to map to and from json.
@@ -33,6 +32,7 @@ public class StatusReport {
     public int timestampInSeconds;
     public int startupTimestampInSeconds;
     public float load;
+    public double memoryLoad;
     public float percentageOfCPUTimeInGC;
 
     public long internalErrors = 0;
@@ -42,18 +42,19 @@ public class StatusReport {
     }
 
     public StatusReport(String jvmUID,
-            String jvmHome,
-            String jvmName,
-            String jvmVender,
-            String jvmVersion,
-            List<String> jvmHostnames,
-            List<String> jvmIpAddrs,
-            int timestampInSeconds,
-            int startupTimestampInSeconds,
-            float load,
-            float percentageOfCPUTimeInGC,
-            long internalErrors,
-            long interactionErrors) {
+        String jvmHome,
+        String jvmName,
+        String jvmVender,
+        String jvmVersion,
+        List<String> jvmHostnames,
+        List<String> jvmIpAddrs,
+        int timestampInSeconds,
+        int startupTimestampInSeconds,
+        float load,
+        double memoryLoad,
+        float percentageOfCPUTimeInGC,
+        long internalErrors,
+        long interactionErrors) {
 
         this.jvmUID = jvmUID;
         this.jvmHome = jvmHome;
@@ -65,6 +66,7 @@ public class StatusReport {
         this.timestampInSeconds = timestampInSeconds;
         this.startupTimestampInSeconds = startupTimestampInSeconds;
         this.load = load;
+        this.memoryLoad = memoryLoad;
         this.percentageOfCPUTimeInGC = percentageOfCPUTimeInGC;
         this.internalErrors = internalErrors;
         this.interactionErrors = interactionErrors;

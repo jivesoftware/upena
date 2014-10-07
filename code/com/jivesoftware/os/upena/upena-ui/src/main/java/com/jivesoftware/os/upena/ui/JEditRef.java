@@ -30,7 +30,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-public class JEditRef implements JField {
+public class JEditRef implements JField<String> {
 
     public JObjectFactory factory;
     public String name;
@@ -100,8 +100,14 @@ public class JEditRef implements JField {
         return viewField;
     }
 
+    @Override
     public String getValue() {
         return ref;
+    }
+
+    @Override
+    public String getViewValue() {
+        return viewValue;
     }
 
     @Override
@@ -109,6 +115,7 @@ public class JEditRef implements JField {
         setValue("");
     }
 
+    @Override
     public void setValue(String value) {
         ref = value;
         if (value == null || value.length() == 0) {

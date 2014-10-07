@@ -22,7 +22,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 
-class JEditField implements JField {
+class JEditField implements JField<String> {
 
     public String name;
     public String field;
@@ -65,8 +65,16 @@ class JEditField implements JField {
         return viewer;
     }
 
+    @Override
     public String getValue() {
-        field = editField.getText();
+        if (editField != null) {
+            field = editField.getText();
+        }
+        return field;
+    }
+
+    @Override
+    public String getViewValue() {
         return field;
     }
 
@@ -75,6 +83,7 @@ class JEditField implements JField {
         setValue("");
     }
 
+    @Override
     public void setValue(String value) {
         field = value;
         if (editField != null) {

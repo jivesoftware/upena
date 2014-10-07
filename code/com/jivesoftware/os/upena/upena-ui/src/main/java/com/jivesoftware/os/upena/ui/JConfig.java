@@ -71,8 +71,8 @@ public class JConfig extends JPanel {
     Map<String, String> bConfigKeys = new ConcurrentSkipListMap<>();
     Map<String, DefaultAndOverride> bConfigs = new ConcurrentSkipListMap<>();
 
-    JConfigFindInstances aFindInstances;
-    JConfigFindInstances bFindInstances;
+    JFilterInstances aFindInstances;
+    JFilterInstances bFindInstances;
 
     JTextField filterKeys;
     JTextField filterValues;
@@ -88,8 +88,8 @@ public class JConfig extends JPanel {
                 refresh();
             }
         };
-        aFindInstances = new JConfigFindInstances(factory, new Color(255, 245, 240), changed);
-        bFindInstances = new JConfigFindInstances(factory, new Color(245, 240, 255), changed);
+        aFindInstances = new JFilterInstances(factory, new Color(255, 245, 240), changed);
+        bFindInstances = new JFilterInstances(factory, new Color(245, 240, 255), changed);
         initComponents();
     }
 
@@ -294,7 +294,7 @@ public class JConfig extends JPanel {
 
     }
 
-    void refresh(JConfigFindInstances find,
+    void refresh(JFilterInstances find,
             Map<String, String> configKeys,
             Map<String, DefaultAndOverride> configs,
             Map<String, String> names) {

@@ -31,7 +31,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SpringLayout;
 
-class JEditReleaseGroupsField implements JField {
+class JEditReleaseGroupsField implements JField<Map<ServiceKey, ReleaseGroupKey>> {
 
     JObjectFactory factory;
     public String name;
@@ -163,9 +163,20 @@ class JEditReleaseGroupsField implements JField {
         setValue(empty);
     }
 
+    @Override
     public void setValue(Map<ServiceKey, ReleaseGroupKey> value) {
         field = value;
         rebuild();
+    }
+
+    @Override
+    public Map<ServiceKey, ReleaseGroupKey> getValue() {
+        return field;
+    }
+
+    @Override
+    public String getViewValue() {
+        return field.toString();
     }
 
     @Override

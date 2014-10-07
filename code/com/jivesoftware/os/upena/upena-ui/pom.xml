@@ -25,7 +25,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>com.jivesoftware.os.upena.ui.LaunchUI</mainClass>
+                            <mainClass>com.jivesoftware.os.upena.ui.Upena</mainClass>
                         </manifest>
                     </archive>
                     <appendAssemblyId>false</appendAssemblyId>
@@ -88,6 +88,11 @@
             <artifactId>upena-config-shared</artifactId>
             <version>0.8-SNAPSHOT</version>
             <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>14.0.1</version>
         </dependency>
     </dependencies>
     <name>upena-ui</name>

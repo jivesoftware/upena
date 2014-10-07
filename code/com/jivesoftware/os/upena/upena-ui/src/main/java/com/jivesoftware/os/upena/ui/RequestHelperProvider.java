@@ -28,7 +28,7 @@ public class RequestHelperProvider extends JPanel {
 
     public RequestHelperProvider(String host) {
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-        final ImageIcon background = Util.icon("cluster");
+        final ImageIcon background = Util.resize(Util.icon("cluster"), 48, 48);
         JLabel banner = new JLabel(background);
         banner.setMinimumSize(new Dimension(72, 48));
         banner.setSize(new Dimension(72, 48));
@@ -69,7 +69,7 @@ public class RequestHelperProvider extends JPanel {
 
         HttpClientConfig httpClientConfig = HttpClientConfig.newBuilder().build();
         HttpClientFactory httpClientFactory = new HttpClientFactoryProvider()
-                .createHttpClientFactory(Arrays.<HttpClientConfiguration>asList(httpClientConfig));
+            .createHttpClientFactory(Arrays.<HttpClientConfiguration>asList(httpClientConfig));
         HttpClient httpClient = httpClientFactory.createClient(editHost.getText(), Integer.parseInt(editPort.getText()));
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);

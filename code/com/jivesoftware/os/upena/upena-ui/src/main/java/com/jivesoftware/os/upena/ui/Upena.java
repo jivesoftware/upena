@@ -15,7 +15,10 @@
  */
 package com.jivesoftware.os.upena.ui;
 
+import com.apple.eawt.Application;
 import java.awt.Color;
+import java.awt.Image;
+import java.awt.PopupMenu;
 import java.io.IOException;
 import javax.swing.ImageIcon;
 import javax.swing.UIManager;
@@ -25,9 +28,10 @@ import org.apache.log4j.Logger;
 /**
  *
  */
-public class LaunchUI {
+public class Upena {
 
     public static void main(String[] args) throws IOException {
+        args = new String[]{ "soa-prime-data6.phx1.jivehosted.com" };
         Logger.getRootLogger().setLevel(Level.OFF);
 
         System.setProperty("apple.laf.useScreenMenuBar", "true");
@@ -58,7 +62,13 @@ public class LaunchUI {
         final JUpena upena = new JUpena(defaultHost);
         ImageIcon icon = Util.icon("cluster");
         if (icon != null) {
-            upena.setIconImage(icon.getImage());
+            upena.setIconImage(icon.getImage().getScaledInstance(48, 48, Image.SCALE_SMOOTH));
+
+            Application application = Application.getApplication();
+            application.setDockIconImage(icon.getImage());
+            application.setDockIconBadge("Upena");
+            application.setDockMenu(new PopupMenu("Upena"));
+
         }
 
         Util.invokeLater(new Runnable() {

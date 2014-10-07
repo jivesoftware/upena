@@ -24,7 +24,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 
-public class JEditKeyField implements JField {
+public class JEditKeyField implements JField<String> {
 
     public String name;
     public String field;
@@ -68,7 +68,13 @@ public class JEditKeyField implements JField {
         return new JLabel(field);
     }
 
+    @Override
     public String getValue() {
+        return field;
+    }
+
+    @Override
+    public String getViewValue() {
         return field;
     }
 
@@ -77,6 +83,7 @@ public class JEditKeyField implements JField {
         setValue("");
     }
 
+    @Override
     public void setValue(String value) {
         field = value;
         if (editField != null) {

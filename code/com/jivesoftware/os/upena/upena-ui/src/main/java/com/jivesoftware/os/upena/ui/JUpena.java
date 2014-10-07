@@ -40,8 +40,6 @@ public class JUpena extends javax.swing.JFrame {
         v.add(upena, BorderLayout.CENTER);
 
         add(v);
-        //setPreferredSize(new Dimension(800, 300));
-        //setMaximumSize(new Dimension(400, 300));
         pack();
     }
 

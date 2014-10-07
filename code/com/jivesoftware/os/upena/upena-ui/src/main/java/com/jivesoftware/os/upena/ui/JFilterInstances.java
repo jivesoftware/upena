@@ -28,7 +28,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SpringLayout;
 
-public class JConfigFindInstances extends JPanel {
+public class JFilterInstances extends JPanel {
     Color color;
     JEditRef clusterId;
     JEditRef hostId;
@@ -36,7 +36,7 @@ public class JConfigFindInstances extends JPanel {
     JEditRef releaseGroupId;
     JTextField instanceId;
 
-    public JConfigFindInstances(JObjectFactory factory, Color color, final Runnable changed) {
+    public JFilterInstances(JObjectFactory factory, Color color, final Runnable changed) {
         this.color = color;
         setLayout(new SpringLayout());
         clusterId = new JEditRef(factory, "cluster", Cluster.class, "");

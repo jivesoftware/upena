@@ -28,7 +28,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SpringLayout;
 
-class JEditPortsField implements JField {
+class JEditPortsField implements JField<Map<String, Instance.Port>> {
 
     JObjectFactory factory;
     public String name;
@@ -92,7 +92,6 @@ class JEditPortsField implements JField {
                 count++;
             }
 
-
             final JTextField portName = new JTextField("");
             editField.add(portName);
             final JTextField portNumber = new JTextField("");
@@ -140,6 +139,16 @@ class JEditPortsField implements JField {
         setValue(empty);
     }
 
+    @Override
+    public Map<String, Instance.Port> getValue() {
+        return field;
+    }
+
+    @Override
+    public String getViewValue() {
+        return field.toString();
+    }
+    @Override
     public void setValue(Map<String, Instance.Port> value) {
         field = value;
         rebuild();

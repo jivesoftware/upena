@@ -31,16 +31,23 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 import javax.swing.SpringLayout;
 import javax.swing.border.SoftBevelBorder;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 public class JObject<K extends Key, V extends Stored, F extends KeyValueFilter<K, V>>
-        extends JPanel {
+    extends JPanel {
 
+    final JObjectFieldsTableModel<K, V, F> model;
+    final JTable table;
     final JPanel viewResults;
     final JObjectFields<K, V, F> objectFields;
     final JExecutor<K, V, F> executor;
@@ -51,10 +58,10 @@ public class JObject<K extends Key, V extends Stored, F extends KeyValueFilter<K
     final boolean hasPopup;
 
     public JObject(
-            final JObjectFields<K, V, F> objectFields,
-            final JExecutor<K, V, F> executor,
-            final boolean hasPopup,
-            final IPicked<K, V> picked) {
+        final JObjectFields<K, V, F> objectFields,
+        final JExecutor<K, V, F> executor,
+        final boolean hasPopup,
+        final IPicked<K, V> picked) {
 
         this.viewResults = new JPanel(new SpringLayout());;
         this.objectFields = objectFields;
@@ -67,8 +74,8 @@ public class JObject<K extends Key, V extends Stored, F extends KeyValueFilter<K
 
         JPanel inputView = inputView();
         JScrollPane scrollInput = new JScrollPane(inputView,
-                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+            JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+            JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         filterMenu.add(scrollInput);
 
         JPanel menu = new JPanel(new SpringLayout());
@@ -81,12 +88,12 @@ public class JObject<K extends Key, V extends Stored, F extends KeyValueFilter<K
                     @Override
                     public void run() {
                         JObjectEditor editor = new JObjectEditor(JObjectEditor.CREATE, true,
-                                new JPanel(), objectFields.copy(), executor, new IPicked<K, V>() {
-                                    @Override
-                                    public void picked(K key, V v) {
-                                        find(null);
-                                    }
-                                });
+                            new JPanel(), objectFields.copy(), executor, new IPicked<K, V>() {
+                                @Override
+                                public void picked(K key, V v) {
+                                    find(null);
+                                }
+                            });
 
                         JFrame f = new JFrame();
                         f.setTitle("New " + objectFields.valueClass().getSimpleName());
@@ -168,7 +175,30 @@ public class JObject<K extends Key, V extends Stored, F extends KeyValueFilter<K
         menu.setMaximumSize(new Dimension(1600, 36));
         SpringUtils.makeCompactGrid(menu, 1, 5, 6, 6, 6, 6);
 
-        JScrollPane scrollResult = new JScrollPane(viewResults);
+        final JPopupMenu tableMenu = buildMenu();
+        model = new JObjectFieldsTableModel<>(objectFields);
+        table = new JTable(model);
+        table.getTableHeader().setReorderingAllowed(true);
+        table.setFillsViewportHeight(true);
+        table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        table.getSelectionModel().addListSelectionListener(
+            new ListSelectionListener() {
+                @Override
+                public void valueChanged(ListSelectionEvent e) {
+                    if (hasPopup) {
+                        tableMenu.show(table, 0, 0);
+                    } else {
+
+                        for (int row : table.getSelectedRows()) {
+                            K k = (K) model.table.get(String.valueOf(row), "key");
+                            V v = (V) model.table.get(String.valueOf(row), "value");
+                            picked.picked(k, v);
+                        }
+                    }
+                }
+            });
+
+        JScrollPane scrollResult = new JScrollPane(table);
         scrollResult.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
         scrollResult.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 
@@ -176,6 +206,108 @@ public class JObject<K extends Key, V extends Stored, F extends KeyValueFilter<K
         add(menu);
         add(scrollResult);
 
+    }
+
+    JPopupMenu buildMenu() {
+        final JPopupMenu menu = new JPopupMenu();
+        JMenuItem menuItem = new JMenuItem("Filter");
+        menuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                for (int row : table.getSelectedRows()) {
+                    K k = (K) model.table.get(String.valueOf(row), "key");
+                    V v = (V) model.table.get(String.valueOf(row), "value");
+
+                    objectFields.updateFilter(k, v);
+                    if (picked != null) {
+                        picked.picked(k, v);
+                    }
+                }
+            }
+        });
+        menu.add(menuItem);
+        menuItem = new JMenuItem("Edit");
+        menu.add(menuItem);
+        menuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                for (int row : table.getSelectedRows()) {
+                    final K k = (K) model.table.get(String.valueOf(row), "key");
+                    final V v = (V) model.table.get(String.valueOf(row), "value");
+                    final JObjectFields<K, V, F> copy = objectFields.copy();
+                    copy.update(k, v);
+
+                    Util.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            JObjectEditor editor = new JObjectEditor(JObjectEditor.UPDATE, true, new JPanel(), copy, executor, picked);
+
+                            JFrame f = new JFrame();
+                            f.setTitle("Editing " + copy.shortName(v));
+                            f.add(editor);
+                            f.setPreferredSize(new Dimension(1000, 600));
+                            f.pack();
+                            f.setLocationRelativeTo(null);
+                            f.setVisible(true);
+
+                        }
+                    });
+                }
+            }
+        });
+        menu.addSeparator();
+        menuItem = new JMenuItem("Copy");
+        menu.add(menuItem);
+        menuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                for (int row : table.getSelectedRows()) {
+                    final K k = (K) model.table.get(String.valueOf(row), "key");
+                    final V v = (V) model.table.get(String.valueOf(row), "value");
+                    final JObjectFields<K, V, F> copy = objectFields.copy();
+                    copy.update(k, v);
+                    Util.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            JObjectEditor editor = new JObjectEditor(JObjectEditor.CREATE, true, new JPanel(), copy, executor, picked);
+
+                            JFrame f = new JFrame();
+                            f.setTitle("Copying " + copy.shortName(v));
+                            f.add(editor);
+                            f.setPreferredSize(new Dimension(1000, 600));
+                            f.pack();
+                            f.setLocationRelativeTo(null);
+                            f.setVisible(true);
+                        }
+                    });
+                }
+            }
+        });
+        menu.addSeparator();
+        menuItem = new JMenuItem("Remove");
+        menu.add(menuItem);
+        menuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (picked != null) {
+                    for (int row : table.getSelectedRows()) {
+                        final K k = (K) model.table.get(String.valueOf(row), "key");
+                        final V v = (V) model.table.get(String.valueOf(row), "value");
+                        final JObjectFields<K, V, F> copy = objectFields.copy();
+                        copy.update(k, v);
+                        Util.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                executor.remove(copy, new JPanel());
+                            }
+                        });
+                    }
+                    picked.picked(null, null);
+                }
+            }
+        });
+
+        return menu;
     }
 
     public void clear() {
@@ -196,11 +328,12 @@ public class JObject<K extends Key, V extends Stored, F extends KeyValueFilter<K
                     filterString = x.getMessage();
                 }
                 query.setText(filterString);
-                viewResults.getParent().revalidate();
-                viewResults.getParent().repaint();
+                query.getParent().revalidate();
+                query.getParent().repaint();
 
                 final F find = f;
-                executor.find(find, objectFields, hasPopup, viewResults, new IPicked<K, V>() {
+
+                executor.find(find, model, hasPopup, new IPicked<K, V>() {
                     @Override
                     public void picked(K key, V v) {
                         find(find);
@@ -215,7 +348,7 @@ public class JObject<K extends Key, V extends Stored, F extends KeyValueFilter<K
     }
 
     public void get(K key, IPicked<K, V> picked) {
-        executor.get(objectFields.valueClass(), key, viewResults, picked);
+        executor.get(objectFields.valueClass(), key, picked);
     }
 
     public JPanel inputView() {

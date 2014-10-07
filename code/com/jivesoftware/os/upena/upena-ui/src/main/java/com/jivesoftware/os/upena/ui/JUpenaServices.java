@@ -26,7 +26,9 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import javax.swing.JPanel;
+import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -53,18 +55,23 @@ public class JUpenaServices extends JPanel {
         tabbedPane.add("Releases", factory.create(ReleaseGroup.class, true, null));
         tabbedPane.add("Hosts", factory.create(Host.class, true, null));
         tabbedPane.add("Services", factory.create(Service.class, true, null));
+
+        JConfig config = new JConfig(requestHelperProvider, factory);
+        tabbedPane.add("Config", config);
+
+        tabbedPane.add(new JSeparator(SwingConstants.VERTICAL));
+
         tabbedPane.add("Tenants", factory.create(Tenant.class, true, null));
 
         JRoutes routes = new JRoutes(requestHelperProvider, factory);
         tabbedPane.add("Routes", routes);
 
-        JConfig config = new JConfig(requestHelperProvider, factory);
-        tabbedPane.add("Config", config);
+        tabbedPane.add(new JSeparator(SwingConstants.VERTICAL));
 
         JAmza amza = new JAmza(requestHelperProvider);
         tabbedPane.add("Admin", amza);
 
-        tabbedPane.setPreferredSize(new Dimension(800, 250));
+        tabbedPane.setPreferredSize(new Dimension(800, 800));
 
         tabbedPane.addChangeListener(new ChangeListener() {
             @Override
@@ -93,8 +100,8 @@ public class JUpenaServices extends JPanel {
 
         setLayout(new BorderLayout());
         add(m, BorderLayout.CENTER);
-        setSize(1024, 768);
-        setPreferredSize(new Dimension(1024, 768));
+//        setSize(1024, 768);
+//        setPreferredSize(new Dimension(1024, 768));
 
         Util.invokeLater(new Runnable() {
             @Override

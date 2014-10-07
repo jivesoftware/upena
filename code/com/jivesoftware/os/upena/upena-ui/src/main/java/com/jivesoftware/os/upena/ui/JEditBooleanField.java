@@ -22,7 +22,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JToggleButton;
 
-class JEditBooleanField implements JField {
+class JEditBooleanField implements JField<String> {
 
     public String name;
     public String field;
@@ -66,10 +66,18 @@ class JEditBooleanField implements JField {
         return viewer;
     }
 
+    @Override
     public String getValue() {
         return field;
     }
 
+    @Override
+    public String getViewValue() {
+        return field;
+    }
+
+
+    @Override
     public void setValue(String value) {
         field = value;
         if (toggle != null) {

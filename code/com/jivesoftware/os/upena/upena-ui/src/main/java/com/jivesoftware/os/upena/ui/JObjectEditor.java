@@ -114,7 +114,7 @@ public class JObjectEditor<K extends Key, V extends Stored, F extends KeyValueFi
     }
 
     public void get(K key, final JPanel viewResults, IPicked<K, V> picked) {
-        executor.get(objectFields.valueClass(), key, viewResults, picked);
+        executor.get(objectFields.valueClass(), key, picked);
     }
 
     public JPanel inputView() {

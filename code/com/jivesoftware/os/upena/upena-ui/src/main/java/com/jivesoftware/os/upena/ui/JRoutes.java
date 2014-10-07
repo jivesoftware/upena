@@ -161,7 +161,7 @@ public class JRoutes extends JPanel {
         final MutableObject serviceName = new MutableObject("");
         JExecutor<ServiceKey, Service, ServiceFilter> vExecutor = new JExecutor<>(requestHelperProvider, "service");
         final CountDownLatch latch = new CountDownLatch(1);
-        vExecutor.get(Service.class, new ServiceKey(connectToServiceNamed.getValue()), new JPanel(), new IPicked<ServiceKey, Service>() {
+        vExecutor.get(Service.class, new ServiceKey(connectToServiceNamed.getValue()),new IPicked<ServiceKey, Service>() {
             @Override
             public void picked(ServiceKey key, Service v) {
                 if (v != null) {

@@ -16,6 +16,8 @@
 package com.jivesoftware.os.upena.ui;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Table;
+import com.google.common.collect.TreeBasedTable;
 import com.jivesoftware.os.jive.utils.shell.utils.Curl;
 import com.jivesoftware.os.uba.shared.NannyReport;
 import com.jivesoftware.os.uba.shared.UbaReport;
@@ -36,34 +38,34 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentSkipListMap;
 import javax.swing.AbstractAction;
+import javax.swing.AbstractCellEditor;
 import javax.swing.ActionMap;
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.DefaultListModel;
-import javax.swing.Icon;
 import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JList;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
-import javax.swing.UIManager;
+import javax.swing.ListSelectionModel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Highlighter;
@@ -73,8 +75,8 @@ public class JCluster extends JPanel implements DocumentListener {
     RequestHelperProvider requestHelperProvider;
     JObjectFactory factory;
 
-    DefaultListModel<HostAndNannyReport> listModel = new DefaultListModel<>();
-    JList<HostAndNannyReport> jList = new JList<>(listModel);
+
+    JTable jTable;
     JTextArea tail;
     Highlighter hilit;
     Highlighter.HighlightPainter painter;
@@ -153,7 +155,118 @@ public class JCluster extends JPanel implements DocumentListener {
         }
     }
 
+    class StatusTable extends AbstractTableModel {
+
+        Table<String, String, Object> table = TreeBasedTable.create();
+        String[] columnNames = new String[]{
+            "status", //0
+            "load",//1
+            "host",//2
+            "cluster",//3
+            "service",//4
+            "version",//5
+            "instance",//6,
+            "uptime",//7
+            "errors",//8
+            "latency",//9
+            "heap%",//10
+            "gc%",//11
+            "main",//12
+            "manage",//13
+            "jmx",//14
+            "debug"//15
+        };
+
+        public void set(StatusReport statuReport, int row) {
+            setValueAt(statuReport.load, row, 1);
+            setValueAt(elapse(statuReport.timestampInSeconds - statuReport.startupTimestampInSeconds), row, 7);
+            setValueAt(statuReport.interactionErrors + statuReport.internalErrors, row, 8);
+            setValueAt("?", row, 9);
+            setValueAt("?", row, 10);
+            setValueAt((int)((statuReport.percentageOfCPUTimeInGC) * 1000) / 10f, row, 11);
+        }
+
+        public void set(HostAndNannyReport hostAndNannyReport, int row) {
+            setValueAt(hostAndNannyReport, row, 0);
+            setValueAt("?", row, 1);
+            setValueAt(hostAndNannyReport.host.hostName, row, 2);
+            setValueAt(hostAndNannyReport.nannyReport.instanceDescriptor.clusterName, row, 3);
+            setValueAt(hostAndNannyReport.nannyReport.instanceDescriptor.serviceName, row, 4);
+            setValueAt(hostAndNannyReport.nannyReport.instanceDescriptor.versionName, row, 5);
+            setValueAt(hostAndNannyReport.nannyReport.instanceDescriptor.instanceName, row, 6);
+            setValueAt("?", row, 7);
+            setValueAt("?", row, 8);
+            setValueAt("?", row, 9);
+            setValueAt("?", row, 10);
+            setValueAt("?", row, 11);
+            setValueAt(hostAndNannyReport.nannyReport.instanceDescriptor.ports.get("main").port, row, 12);
+            setValueAt(hostAndNannyReport.nannyReport.instanceDescriptor.ports.get("manage").port, row, 13);
+            setValueAt(hostAndNannyReport.nannyReport.instanceDescriptor.ports.get("jmx").port, row, 14);
+            setValueAt(hostAndNannyReport.nannyReport.instanceDescriptor.ports.get("debug").port, row, 15);
+        }
+
+        public String elapse(long elapseInSeconds) {
+            String format = String.format("%%0%dd", 2);
+            String seconds = String.format(format, elapseInSeconds % 60);
+            String minutes = String.format(format, (elapseInSeconds % 3600) / 60);
+            String hours = String.format(format, elapseInSeconds / 3600);
+            String time = hours + ":" + minutes + ":" + seconds;
+            return time;
+        }
+
+        @Override
+        public Class<?> getColumnClass(int columnIndex) {
+            if (columnIndex == 0) {
+                return HostAndNannyReport.class;
+            }
+            return String.class;
+        }
+
+        @Override
+        public String getColumnName(int col) {
+            return columnNames[col];
+        }
+
+        @Override
+        public int getRowCount() {
+            return table.rowKeySet().size();
+        }
+
+        @Override
+        public int getColumnCount() {
+            return columnNames.length;
+        }
+
+        @Override
+        public Object getValueAt(int row, int col) {
+            return table.get(String.valueOf(row), String.valueOf(col));
+        }
+
+        @Override
+        public boolean isCellEditable(int row, int col) {
+            if (col == 0) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public void setValueAt(Object value, int row, int col) {
+            table.put(String.valueOf(row), String.valueOf(col), value);
+            fireTableCellUpdated(row, col);
+        }
+
+        void clear() {
+            table.clear();
+            fireTableStructureChanged();
+        }
+
+    }
+
+    StatusTable statusTable = new StatusTable();
+
     private void initComponents() {
+
         entry = new JTextField();
         entry.getDocument().addDocumentListener(this);
         InputMap im = entry.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
@@ -171,23 +284,46 @@ public class JCluster extends JPanel implements DocumentListener {
                 while (true) {
                     try {
                         //List<HostAndNannyReport> selectedValuesList = listModel.elements());
-                        Enumeration<HostAndNannyReport> elements = listModel.elements();
-                        while (elements.hasMoreElements()) {
-                            HostAndNannyReport hostAndNannyReport = elements.nextElement();
-                            String url = "http://" + hostAndNannyReport.host.hostName
-                                + ":" + hostAndNannyReport.nannyReport.instanceDescriptor.ports.get("manage").port + "/manage/ping";
-                            try {
-                                String curl = Curl.create().curl(url);
-                                if ("ping".equals(curl)) {
-                                    if (!hostAndNannyReport.online) {
-                                        hostAndNannyReport.online = true;
-                                        jList.updateUI();
+                        int rowCount = statusTable.getRowCount();
+                        for (int row = 0; row < rowCount; row++) {
+
+                            HostAndNannyReport hostAndNannyReport = (HostAndNannyReport) statusTable.getValueAt(row, 0);
+                            if (hostAndNannyReport != null) {
+                                String url = "http://" + hostAndNannyReport.host.hostName
+                                    + ":" + hostAndNannyReport.nannyReport.instanceDescriptor.ports.get("manage").port + "/manage/ping";
+                                try {
+                                    String curl = Curl.create().curl(url);
+                                    if ("ping".equals(curl)) {
+                                        if (!hostAndNannyReport.online) {
+                                            hostAndNannyReport.checked = true;
+                                            hostAndNannyReport.online = true;
+                                            statusTable.fireTableCellUpdated(row, 0);
+
+                                        }
+                                        try {
+                                            String statuUrl = "http://" + hostAndNannyReport.host.hostName
+                                                + ":" + hostAndNannyReport.nannyReport.instanceDescriptor.ports.get("manage").port + "/manage/announcement/json";
+
+                                            String statusJson = Curl.create().curl(statuUrl);
+                                            if (statusJson != null) {
+                                                StatusReport readValue = new ObjectMapper().readValue(statusJson, StatusReport.class);
+                                                statusTable.set(readValue, row);
+                                            }
+                                        } catch (Exception x) {
+                                            x.printStackTrace();
+                                        }
+                                    } else {
+                                        if (!hostAndNannyReport.checked) {
+                                            hostAndNannyReport.checked = true;
+                                            statusTable.fireTableCellUpdated(row, 0);
+                                        }
                                     }
-                                }
-                            } catch (Exception x) {
-                                if (hostAndNannyReport.online) {
-                                    hostAndNannyReport.online = false;
-                                    jList.updateUI();
+                                } catch (Exception x) {
+                                    if (hostAndNannyReport.online) {
+                                        hostAndNannyReport.checked = true;
+                                        hostAndNannyReport.online = false;
+                                        statusTable.fireTableCellUpdated(row, 0);
+                                    }
                                 }
                             }
                         }
@@ -202,18 +338,17 @@ public class JCluster extends JPanel implements DocumentListener {
         };
         nag.start();
 
-        JPanel buttons = new JPanel();
-        buttons.setLayout(new BoxLayout(buttons, BoxLayout.X_AXIS));
+        final JPopupMenu buttons = new JPopupMenu();
 
-        JButton button = new JButton("Manage");
+        JMenuItem button = new JMenuItem("Manage");
         button.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 Util.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        List<HostAndNannyReport> selectedValuesList = jList.getSelectedValuesList();
-                        for (HostAndNannyReport hostAndNannyReport : selectedValuesList) {
+                        for (int row : jTable.getSelectedRows()) {
+                            HostAndNannyReport hostAndNannyReport = (HostAndNannyReport) jTable.getModel().getValueAt(row, 0);
                             try {
                                 openWebpage(new URI(
                                     "http://" + hostAndNannyReport.host.hostName
@@ -221,6 +356,7 @@ public class JCluster extends JPanel implements DocumentListener {
                             } catch (URISyntaxException ex) {
                                 ex.printStackTrace();
                             }
+
                         }
 
                     }
@@ -230,7 +366,7 @@ public class JCluster extends JPanel implements DocumentListener {
 
         buttons.add(button);
 
-        button = new JButton("Properties");
+        button = new JMenuItem("Properties");
         button.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -238,8 +374,8 @@ public class JCluster extends JPanel implements DocumentListener {
                     @Override
                     public void run() {
                         tail.setText("");
-                        List<HostAndNannyReport> selectedValuesList = jList.getSelectedValuesList();
-                        for (HostAndNannyReport hostAndNannyReport : selectedValuesList) {
+                        for (int row : jTable.getSelectedRows()) {
+                            HostAndNannyReport hostAndNannyReport = (HostAndNannyReport) jTable.getModel().getValueAt(row, 0);
                             tail.append("" + hostAndNannyReport.nannyReport.instanceDescriptor.toString() + " :{\n");
                             try {
                                 status(hostAndNannyReport, "/manage/configuration/properties");
@@ -255,7 +391,7 @@ public class JCluster extends JPanel implements DocumentListener {
 
         buttons.add(button);
 
-        button = new JButton("Upena Report");
+        button = new JMenuItem("Upena Report");
         button.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -263,8 +399,8 @@ public class JCluster extends JPanel implements DocumentListener {
                     @Override
                     public void run() {
                         tail.setText("");
-                        List<HostAndNannyReport> selectedValuesList = jList.getSelectedValuesList();
-                        for (HostAndNannyReport hostAndNannyReport : selectedValuesList) {
+                        for (int row : jTable.getSelectedRows()) {
+                            HostAndNannyReport hostAndNannyReport = (HostAndNannyReport) jTable.getModel().getValueAt(row, 0);
                             tail.append("" + hostAndNannyReport.nannyReport.instanceDescriptor.toString() + " :{\n");
 
                             for (String m : hostAndNannyReport.nannyReport.messages) {
@@ -279,7 +415,7 @@ public class JCluster extends JPanel implements DocumentListener {
 
         buttons.add(button);
 
-        button = new JButton("Errors");
+        button = new JMenuItem("Errors");
         button.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -287,8 +423,8 @@ public class JCluster extends JPanel implements DocumentListener {
                     @Override
                     public void run() {
                         tail.setText("");
-                        List<HostAndNannyReport> selectedValuesList = jList.getSelectedValuesList();
-                        for (HostAndNannyReport hostAndNannyReport : selectedValuesList) {
+                        for (int row : jTable.getSelectedRows()) {
+                            HostAndNannyReport hostAndNannyReport = (HostAndNannyReport) jTable.getModel().getValueAt(row, 0);
                             tail.append("" + hostAndNannyReport.nannyReport.instanceDescriptor.toString() + " :{\n");
                             try {
                                 status(hostAndNannyReport, "/manage/errors ");
@@ -303,7 +439,7 @@ public class JCluster extends JPanel implements DocumentListener {
         });
         buttons.add(button);
 
-        button = new JButton("Thread Dump");
+        button = new JMenuItem("Thread Dump");
         button.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -311,8 +447,8 @@ public class JCluster extends JPanel implements DocumentListener {
                     @Override
                     public void run() {
                         tail.setText("");
-                        List<HostAndNannyReport> selectedValuesList = jList.getSelectedValuesList();
-                        for (HostAndNannyReport hostAndNannyReport : selectedValuesList) {
+                        for (int row : jTable.getSelectedRows()) {
+                            HostAndNannyReport hostAndNannyReport = (HostAndNannyReport) jTable.getModel().getValueAt(row, 0);
                             tail.append("" + hostAndNannyReport.nannyReport.instanceDescriptor.toString() + " :{\n");
                             try {
                                 status(hostAndNannyReport, "/manage/threadDump ");
@@ -328,7 +464,7 @@ public class JCluster extends JPanel implements DocumentListener {
         });
         buttons.add(button);
 
-        button = new JButton("Counters");
+        button = new JMenuItem("Counters");
         button.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -336,8 +472,8 @@ public class JCluster extends JPanel implements DocumentListener {
                     @Override
                     public void run() {
                         tail.setText("");
-                        List<HostAndNannyReport> selectedValuesList = jList.getSelectedValuesList();
-                        for (HostAndNannyReport hostAndNannyReport : selectedValuesList) {
+                        for (int row : jTable.getSelectedRows()) {
+                            HostAndNannyReport hostAndNannyReport = (HostAndNannyReport) jTable.getModel().getValueAt(row, 0);
                             tail.append("" + hostAndNannyReport.nannyReport.instanceDescriptor.toString() + " :{\n");
                             try {
                                 status(hostAndNannyReport, "/manage/logging/metric/listCounters?logger=ALL ");
@@ -352,7 +488,7 @@ public class JCluster extends JPanel implements DocumentListener {
         });
         buttons.add(button);
 
-        button = new JButton("Timers");
+        button = new JMenuItem("Timers");
         button.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -360,8 +496,8 @@ public class JCluster extends JPanel implements DocumentListener {
                     @Override
                     public void run() {
                         tail.setText("");
-                        List<HostAndNannyReport> selectedValuesList = jList.getSelectedValuesList();
-                        for (HostAndNannyReport hostAndNannyReport : selectedValuesList) {
+                        for (int row : jTable.getSelectedRows()) {
+                            HostAndNannyReport hostAndNannyReport = (HostAndNannyReport) jTable.getModel().getValueAt(row, 0);
                             tail.append("" + hostAndNannyReport.nannyReport.instanceDescriptor.toString() + " :{\n");
                             try {
                                 status(hostAndNannyReport, "/manage/logging/metric/listTimers?logger=ALL ");
@@ -376,7 +512,7 @@ public class JCluster extends JPanel implements DocumentListener {
         });
         buttons.add(button);
 
-        button = new JButton("Status");
+        button = new JMenuItem("Status");
         button.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -384,8 +520,8 @@ public class JCluster extends JPanel implements DocumentListener {
                     @Override
                     public void run() {
                         tail.setText("");
-                        List<HostAndNannyReport> selectedValuesList = jList.getSelectedValuesList();
-                        for (HostAndNannyReport hostAndNannyReport : selectedValuesList) {
+                        for (int row : jTable.getSelectedRows()) {
+                            HostAndNannyReport hostAndNannyReport = (HostAndNannyReport) jTable.getModel().getValueAt(row, 0);
                             tail.append("" + hostAndNannyReport.nannyReport.instanceDescriptor.toString() + " :{\n");
                             try {
                                 status(hostAndNannyReport, "/manage/status");
@@ -401,7 +537,7 @@ public class JCluster extends JPanel implements DocumentListener {
 
         buttons.add(button);
 
-        button = new JButton("Ping");
+        button = new JMenuItem("Ping");
         button.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -409,8 +545,8 @@ public class JCluster extends JPanel implements DocumentListener {
                     @Override
                     public void run() {
                         tail.setText("");
-                        List<HostAndNannyReport> selectedValuesList = jList.getSelectedValuesList();
-                        for (HostAndNannyReport hostAndNannyReport : selectedValuesList) {
+                        for (int row : jTable.getSelectedRows()) {
+                            HostAndNannyReport hostAndNannyReport = (HostAndNannyReport) jTable.getModel().getValueAt(row, 0);
                             tail.append("" + hostAndNannyReport.nannyReport.instanceDescriptor.toString() + " :{\n");
                             try {
                                 status(hostAndNannyReport, "/manage/ping");
@@ -426,7 +562,7 @@ public class JCluster extends JPanel implements DocumentListener {
 
         buttons.add(button);
 
-        button = new JButton("Tail");
+        button = new JMenuItem("Tail");
         button.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -434,8 +570,8 @@ public class JCluster extends JPanel implements DocumentListener {
                     @Override
                     public void run() {
                         tail.setText("");
-                        List<HostAndNannyReport> selectedValuesList = jList.getSelectedValuesList();
-                        for (HostAndNannyReport hostAndNannyReport : selectedValuesList) {
+                        for (int row : jTable.getSelectedRows()) {
+                            HostAndNannyReport hostAndNannyReport = (HostAndNannyReport) jTable.getModel().getValueAt(row, 0);
                             tail.append("" + hostAndNannyReport.nannyReport.instanceDescriptor.toString() + " :{\n");
                             try {
                                 status(hostAndNannyReport, "/manage/tail");
@@ -451,7 +587,7 @@ public class JCluster extends JPanel implements DocumentListener {
 
         buttons.add(button);
 
-        button = new JButton("Routes");
+        button = new JMenuItem("Routes");
         button.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -459,8 +595,8 @@ public class JCluster extends JPanel implements DocumentListener {
                     @Override
                     public void run() {
                         tail.setText("");
-                        List<HostAndNannyReport> selectedValuesList = jList.getSelectedValuesList();
-                        for (HostAndNannyReport hostAndNannyReport : selectedValuesList) {
+                        for (int row : jTable.getSelectedRows()) {
+                            HostAndNannyReport hostAndNannyReport = (HostAndNannyReport) jTable.getModel().getValueAt(row, 0);
                             tail.append("" + hostAndNannyReport.nannyReport.instanceDescriptor.toString() + " :{\n");
                             try {
                                 status(hostAndNannyReport, "/manage/tenant/routing/report");
@@ -476,7 +612,7 @@ public class JCluster extends JPanel implements DocumentListener {
 
         buttons.add(button);
 
-        button = new JButton("Purge Routes");
+        button = new JMenuItem("Purge Routes");
         button.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -484,8 +620,8 @@ public class JCluster extends JPanel implements DocumentListener {
                     @Override
                     public void run() {
                         tail.setText("");
-                        List<HostAndNannyReport> selectedValuesList = jList.getSelectedValuesList();
-                        for (HostAndNannyReport hostAndNannyReport : selectedValuesList) {
+                        for (int row : jTable.getSelectedRows()) {
+                            HostAndNannyReport hostAndNannyReport = (HostAndNannyReport) jTable.getModel().getValueAt(row, 0);
                             tail.append("" + hostAndNannyReport.nannyReport.instanceDescriptor.toString() + " :{\n");
                             try {
                                 status(hostAndNannyReport, "/manage/tenant/routing/invaliateAll");
@@ -502,7 +638,7 @@ public class JCluster extends JPanel implements DocumentListener {
 
         buttons.add(button);
 
-        button = new JButton("Shutdown");
+        button = new JMenuItem("Shutdown");
         button.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -510,8 +646,8 @@ public class JCluster extends JPanel implements DocumentListener {
                     @Override
                     public void run() {
                         tail.setText("");
-                        List<HostAndNannyReport> selectedValuesList = jList.getSelectedValuesList();
-                        for (HostAndNannyReport hostAndNannyReport : selectedValuesList) {
+                        for (int row : jTable.getSelectedRows()) {
+                            HostAndNannyReport hostAndNannyReport = (HostAndNannyReport) jTable.getModel().getValueAt(row, 0);
                             tail.append("" + hostAndNannyReport.nannyReport.instanceDescriptor.toString() + " :{\n");
                             try {
                                 status(hostAndNannyReport, "/manage/shutdown?userName=" + requestHelperProvider.editUserName.getText());
@@ -527,8 +663,8 @@ public class JCluster extends JPanel implements DocumentListener {
 
         buttons.add(button);
 
-        JButton refresh = new JButton(Util.icon("refresh"));
-        refresh.addActionListener(new ActionListener() {
+        button = new JMenuItem("Refresh");
+        button.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 Util.invokeLater(new Runnable() {
@@ -540,17 +676,7 @@ public class JCluster extends JPanel implements DocumentListener {
             }
         });
 
-        buttons.add(refresh);
-
-        JPanel panel = new JPanel();
-        panel.setLayout(new BorderLayout(10, 10));
-        panel.add(buttons, BorderLayout.NORTH);
-
-        panel.add(jList, BorderLayout.CENTER);
-        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-
-        setLayout(new BorderLayout());
-        add(panel, BorderLayout.CENTER);
+        buttons.add(button);
 
         tail = new JTextArea();
 
@@ -576,10 +702,46 @@ public class JCluster extends JPanel implements DocumentListener {
         searchable.add(scrollTail, BorderLayout.CENTER);
         searchable.add(status, BorderLayout.SOUTH);
 
-        add(searchable, BorderLayout.SOUTH);
+        jTable = new JTable(statusTable);
+        jTable.getTableHeader().setReorderingAllowed(true);
+        jTable.setFillsViewportHeight(true);
+        jTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        jTable.getSelectionModel().addListSelectionListener(
+            new ListSelectionListener() {
+                @Override
+                public void valueChanged(ListSelectionEvent e) {
 
-        setPreferredSize(new Dimension(900, 600));
+                    buttons.show(jTable, 0, 0);
+                }
+            });
 
+        jTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        jTable.getColumnModel().getColumn(0).setPreferredWidth(27);
+        jTable.getColumnModel().getColumn(0).setMaxWidth(27);
+        jTable.getColumnModel().getColumn(0).setMinWidth(27);
+
+        StatuCell statusCell = new StatuCell();
+        jTable.setDefaultEditor(HostAndNannyReport.class, statusCell);
+        jTable.setDefaultRenderer(HostAndNannyReport.class, statusCell);
+
+        //jTable.setAutoCreateRowSorter(true);
+        JScrollPane scrollJList = new JScrollPane(jTable);
+        scrollJList.setPreferredSize(new Dimension(800, 400));
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new BorderLayout(10, 10));
+        //panel.add(filterInstances, BorderLayout.NORTH);
+        panel.add(scrollJList, BorderLayout.CENTER);
+
+        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
+            panel, searchable);
+        splitPane.setOneTouchExpandable(true);
+        splitPane.setDividerLocation(400);
+
+        setLayout(new BorderLayout());
+        add(splitPane, BorderLayout.CENTER);
+
+        //setPreferredSize(new Dimension(900, 600));
         Util.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -615,42 +777,108 @@ public class JCluster extends JPanel implements DocumentListener {
         HostFilter hostFilter = new HostFilter(null, null, null, null, null, 0, 1000);
         JExecutor<HostKey, Host, HostFilter> vExecutor = new JExecutor<>(requestHelperProvider, "host");
         List<Host> found = vExecutor.find(hostFilter, Results.class);
-        listModel.clear();
+        statusTable.clear();
 
+        int row = 0;
         for (Host host : found) {
-
+            System.out.println("host:" + host);
             //viewResults.add(new JLabel("Host:" + host.hostName));
             try {
                 String reportString = Curl.create().curl("http://" + host.hostName + ":" + host.port + "/uba/report");
                 if (reportString != null) {
+
                     UbaReport ubaReport = new ObjectMapper().readValue(reportString, UbaReport.class);
                     for (NannyReport report : ubaReport.nannyReports) {
 
-                        // We need to keep track of the selections
-                        // and make the selection state available to the renderer.
                         final InstanceDescriptor id = report.instanceDescriptor;
-                        listModel.addElement(new HostAndNannyReport(host, report));
+//                        System.out.println("id=" + id);
+//                        if (filterInstances.clusterId.getValue() != null && !id.clusterKey.equals(filterInstances.clusterId.getValue())) {
+//                            System.out.println("????" + filterInstances.clusterId.getValue());
+//                            break;
+//                        }
+//
+//                        if (filterInstances.serviceId.getValue() != null && !id.serviceKey.equals(filterInstances.serviceId.getValue())) {
+//                            System.out.println("????" + filterInstances.serviceId.getValue());
+//                            break;
+//                        }
+                        //listModel.addElement(new HostAndNannyReport(host, report));
+                        HostAndNannyReport hostAndNannyReport = new HostAndNannyReport(host, report);
+                        statusTable.set(hostAndNannyReport, row);
+                        row++;
 
-//                        JNannyReport jid = new JNannyReport(host, report);
-//                        viewResults.add(jid);
-//                        visibleInstanceDescriptors.add(jid);
                     }
-                } else {
-                    //viewResults.add(new JLabel("No results"));
-                    //viewResults.revalidate();
                 }
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
         }
+        statusTable.fireTableStructureChanged();
+        jTable.doLayout();
+        jTable.getParent().revalidate();
+        jTable.getParent().repaint();
+    }
 
-        jList.getParent().revalidate();
-        jList.getParent().repaint();
+
+    public class StatuCell extends AbstractCellEditor implements TableCellEditor, ActionListener, TableCellRenderer {
+
+        JButton button;
+        Object value;
+        protected static final String EDIT = "edit";
+
+        public StatuCell() {
+            setOpaque(true); //MUST do this for background to show up.
+            button = new JButton();
+            button.setActionCommand(EDIT);
+            button.addActionListener(this);
+            button.setBorderPainted(false);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (EDIT.equals(e.getActionCommand())) {
+                fireEditingStopped(); //Make the renderer reappear.
+            }
+        }
+
+        @Override
+        public Object getCellEditorValue() {
+            return value;
+        }
+
+        @Override
+        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+            this.value = value;
+            HostAndNannyReport report = (HostAndNannyReport) value;
+            int size = 18;
+            if (report.online) {
+                button.setIcon(Util.resize(Util.icon("online"), size, size));
+            } else if (report.checked) {
+                button.setIcon(Util.resize(Util.icon("offline"), size, size));
+            } else {
+                button.setIcon(Util.resize(Util.icon("unknown"), size, size));
+            }
+            return button;
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            HostAndNannyReport report = (HostAndNannyReport) value;
+            int size = 18;
+            if (report.online) {
+                button.setIcon(Util.resize(Util.icon("online"), size, size));
+            } else if (report.checked) {
+                button.setIcon(Util.resize(Util.icon("offline"), size, size));
+            } else {
+                button.setIcon(Util.resize(Util.icon("unknown"), size, size));
+            }
+            return button;
+        }
     }
 
     class HostAndNannyReport {
 
         boolean online = false;
+        boolean checked = false;
         final Host host;
         final NannyReport nannyReport;
 
@@ -662,7 +890,7 @@ public class JCluster extends JPanel implements DocumentListener {
         @Override
         public String toString() {
             final InstanceDescriptor id = nannyReport.instanceDescriptor;
-            String string = online ? " ONLINE " : "UNKNOWN ";
+            String string = "";
             string += host.hostName + " ";
             string += id.clusterName + " " + id.serviceName + " " + id.instanceName + " " + id.releaseGroupName;;
             for (Entry<String, InstanceDescriptorPort> p : id.ports.entrySet()) {
@@ -683,69 +911,26 @@ public class JCluster extends JPanel implements DocumentListener {
         }
     }
 
-    class SelectionManager implements ListSelectionListener {
+    static public class StatusReport {
 
-        List<Object> selectedItems = new ArrayList<Object>();
-        List<Object> nonSelectables = new ArrayList<Object>();
+        public String jvmUID;
+        public String jvmHome;
+        public String jvmName;
+        public String jvmVender;
+        public String jvmVersion;
+        public List<String> jvmHostnames;
+        public List<String> jvmIpAddrs;
+        public int timestampInSeconds;
+        public int startupTimestampInSeconds;
+        public float load;
+        public float percentageOfCPUTimeInGC;
 
-        public void valueChanged(ListSelectionEvent e) {
-            if (!e.getValueIsAdjusting()) {
-                Object value = ((JList) e.getSource()).getSelectedValue();
-                // Toggle the selection state for value.
-                if (selectedItems.contains(value)) {
-                    selectedItems.remove(value);
-                } else if (!nonSelectables.contains(value)) {
-                    selectedItems.add(value);
-                }
-            }
+        public long internalErrors = 0;
+        public long interactionErrors = 0;
+
+        public StatusReport() {
         }
 
-        public void setNonSelectables(Object... args) {
-            for (int j = 0; j < args.length; j++) {
-                nonSelectables.add(args[j]);
-            }
-        }
-
-        public boolean isSelected(Object value) {
-            return selectedItems.contains(value);
-        }
     }
 
-    /** Implementation copied from source code. */
-    class MultiRenderer extends DefaultListCellRenderer {
-
-        SelectionManager selectionManager;
-
-        public MultiRenderer(SelectionManager sm) {
-            selectionManager = sm;
-        }
-
-        public Component getListCellRendererComponent(JList list,
-            Object value,
-            int index,
-            boolean isSelected,
-            boolean cellHasFocus) {
-            setComponentOrientation(list.getComponentOrientation());
-            if (selectionManager.isSelected(value)) {
-                setBackground(list.getSelectionBackground());
-                setForeground(list.getSelectionForeground());
-            } else {
-                setBackground(list.getBackground());
-                setForeground(list.getForeground());
-            }
-
-            if (value instanceof Icon) {
-                setIcon((Icon) value);
-                setText("");
-            } else {
-                setIcon(null);
-                setText((value == null) ? "" : value.toString());
-            }
-            setEnabled(list.isEnabled());
-            setFont(list.getFont());
-            setBorder((cellHasFocus) ? UIManager.getBorder("List.focusCellHighlightBorder")
-                : noFocusBorder);
-            return this;
-        }
-    }
 }
