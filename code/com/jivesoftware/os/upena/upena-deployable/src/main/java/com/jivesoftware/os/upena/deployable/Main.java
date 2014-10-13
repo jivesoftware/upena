@@ -18,10 +18,13 @@ package com.jivesoftware.os.upena.deployable;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.google.common.base.Optional;
 import com.jivesoftware.os.amza.service.AmzaService;
 import com.jivesoftware.os.amza.service.AmzaServiceInitializer;
 import com.jivesoftware.os.amza.service.AmzaServiceInitializer.AmzaServiceConfig;
 import com.jivesoftware.os.amza.service.discovery.AmzaDiscovery;
+import com.jivesoftware.os.amza.service.storage.replication.SendFailureListener;
+import com.jivesoftware.os.amza.service.storage.replication.TakeFailureListener;
 import com.jivesoftware.os.amza.shared.AmzaInstance;
 import com.jivesoftware.os.amza.shared.Flusher;
 import com.jivesoftware.os.amza.shared.MemoryRowsIndex;
@@ -185,6 +188,8 @@ public class Main {
                 rowsStorageProvider,
                 changeSetSender,
                 tableTaker,
+                Optional.<SendFailureListener>absent(),
+                Optional.<TakeFailureListener>absent(),
                 new RowChanges() {
                     @Override
                     public void changes(RowsChanged changes) throws Exception {

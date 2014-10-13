@@ -15,6 +15,10 @@
  */
 package com.jivesoftware.os.upena.ui;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.jivesoftware.os.upena.shared.Cluster;
 import com.jivesoftware.os.upena.shared.ClusterFilter;
 import com.jivesoftware.os.upena.shared.ClusterKey;
@@ -38,10 +42,13 @@ import com.jivesoftware.os.upena.shared.TenantFilter;
 import com.jivesoftware.os.upena.shared.TenantKey;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class JObjectFactory {
 
     private final Map<Class, Creator<? extends Key, ?, ? extends KeyValueFilter<?, ?>>> factory = new HashMap<>();
+    private final Map<Class, LoadingCache<String, Object>> caches = new HashMap<>();
 
     public JObjectFactory(final RequestHelperProvider requestHelperProvider) {
 
@@ -107,12 +114,42 @@ public class JObjectFactory {
 
     }
 
+    LoadingCache<String, Object> getCache(final Class _class) {
+        final JObject vobjects = create(_class, false, null);
+
+        LoadingCache<String, Object> cache = caches.get(_class);
+        if (cache == null) {
+
+            cache = CacheBuilder.newBuilder()
+                .maximumSize(10000)
+                .expireAfterWrite(10, TimeUnit.SECONDS)
+                .build(new CacheLoader<String, Object>() {
+                    @Override
+                    public Object load(final String key) {
+
+                        final AtomicReference<Object> value = new AtomicReference<Object>();
+                        vobjects.get(vobjects.objectFields.key(key), new IPicked() {
+                            @Override
+                            public void picked(Object key, Stored v) {
+                                if (v != null) {
+                                    value.set(v);
+
+                                }
+                            }
+                        });
+                        return value.get();
+                    }
+                });
+        }
+        return cache;
+    }
+
     JObject<? extends Key, ?, ?> create(Class _class, boolean hasPopup, IPicked picked) {
         Creator<? extends Key, ?, ?> got = factory.get(_class);
         return got.create(hasPopup, picked);
     }
 
-    static interface Creator<K extends Key, V extends Stored, F extends KeyValueFilter<K, V>> {
+    static interface Creator<K extends Key, V extends Stored, F extends KeyValueFilter<K, V>>  {
 
         JObject<K, V, F> create(boolean hasPopup, IPicked<K, V> picked);
     }

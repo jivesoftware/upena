@@ -587,6 +587,79 @@ public class JCluster extends JPanel implements DocumentListener {
 
         buttons.add(button);
 
+        button = new JMenuItem("Force GC");
+        button.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Util.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        tail.setText("");
+                        for (int row : jTable.getSelectedRows()) {
+                            HostAndNannyReport hostAndNannyReport = (HostAndNannyReport) jTable.getModel().getValueAt(row, 0);
+                            tail.append("" + hostAndNannyReport.nannyReport.instanceDescriptor.toString() + " :{\n");
+                            try {
+                                status(hostAndNannyReport, "/manage/forceGC");
+                            } catch (IOException ex) {
+                                ex.printStackTrace();
+                            }
+                            tail.append("\n}\n\n");
+                        }
+                    }
+                });
+            }
+        });
+        buttons.add(button);
+
+        button = new JMenuItem("Reset Errors");
+        button.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Util.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        tail.setText("");
+                        for (int row : jTable.getSelectedRows()) {
+                            HostAndNannyReport hostAndNannyReport = (HostAndNannyReport) jTable.getModel().getValueAt(row, 0);
+                            tail.append("" + hostAndNannyReport.nannyReport.instanceDescriptor.toString() + " :{\n");
+                            try {
+                                status(hostAndNannyReport, "/manage/resetErrors");
+                            } catch (IOException ex) {
+                                ex.printStackTrace();
+                            }
+                            tail.append("\n}\n\n");
+                        }
+                    }
+                });
+            }
+        });
+        buttons.add(button);
+
+        button = new JMenuItem("Reset Interaction Errors");
+        button.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Util.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        tail.setText("");
+                        for (int row : jTable.getSelectedRows()) {
+                            HostAndNannyReport hostAndNannyReport = (HostAndNannyReport) jTable.getModel().getValueAt(row, 0);
+                            tail.append("" + hostAndNannyReport.nannyReport.instanceDescriptor.toString() + " :{\n");
+                            try {
+                                status(hostAndNannyReport, "/manage/resetInteractionErrors");
+                            } catch (IOException ex) {
+                                ex.printStackTrace();
+                            }
+                            tail.append("\n}\n\n");
+                        }
+                    }
+                });
+            }
+        });
+
+        buttons.add(button);
+
         button = new JMenuItem("Routes");
         button.addActionListener(new ActionListener() {
             @Override

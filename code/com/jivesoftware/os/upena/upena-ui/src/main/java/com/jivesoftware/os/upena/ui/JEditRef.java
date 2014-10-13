@@ -15,6 +15,7 @@
  */
 package com.jivesoftware.os.upena.ui;
 
+import com.google.common.cache.LoadingCache;
 import com.jivesoftware.os.upena.shared.Key;
 import com.jivesoftware.os.upena.shared.Stored;
 import java.awt.BorderLayout;
@@ -22,6 +23,7 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -129,32 +131,35 @@ public class JEditRef implements JField<String> {
                 viewField.revalidate();
             }
         } else {
-            final JObject vobjects = factory.create(valueClass, false, null);
-            vobjects.get(vobjects.objectFields.key(value), new IPicked() {
-                @Override
-                public void picked(Object key, Stored v) {
-                    if (v != null) {
-                        String shortName = vobjects.objectFields.shortName(v);
-                        viewValue = shortName;
-                        if (editField != null) {
-                            editField.setText(shortName);
-                            editField.revalidate();
-                            Container parent = editField.getParent();
-                            if (parent != null) {
-                                parent.revalidate();
-                            }
+            try {
+                JObject vobjects = factory.create(valueClass, false, null);
+                LoadingCache<String, Object> cache = factory.getCache(valueClass);
+                Stored v = (Stored)cache.get(value);
+                if (v != null) {
+
+                    String shortName = vobjects.objectFields.shortName(v);
+                    viewValue = shortName;
+                    if (editField != null) {
+                        editField.setText(shortName);
+                        editField.revalidate();
+                        Container parent = editField.getParent();
+                        if (parent != null) {
+                            parent.revalidate();
                         }
-                        if (viewField != null) {
-                            viewField.setText(viewValue);
-                            viewField.revalidate();
-                            Container parent = viewField.getParent();
-                            if (parent != null) {
-                                parent.revalidate();
-                            }
+                    }
+                    if (viewField != null) {
+                        viewField.setText(viewValue);
+                        viewField.revalidate();
+                        Container parent = viewField.getParent();
+                        if (parent != null) {
+                            parent.revalidate();
                         }
                     }
                 }
-            });
+
+            } catch (ExecutionException ex) {
+                ex.printStackTrace();
+            }
         }
     }
 

@@ -24,6 +24,7 @@ import com.jivesoftware.os.upena.main.Deployable;
 import com.jivesoftware.os.upena.routing.shared.TenantsServiceConnectionDescriptorProvider;
 import com.jivesoftware.os.upena.tenant.routing.http.client.TenantRoutingHttpClient;
 import com.jivesoftware.os.upena.tenant.routing.http.client.TenantRoutingHttpClientInitializer;
+import java.io.File;
 
 public class Main {
 
@@ -45,7 +46,7 @@ public class Main {
         deployable.addEndpoints(HelloRoutingBirdServiceRestEndpoints.class);
         deployable.addInjectables(HelloRoutingBirdService.class, helloRoutingBirdService);
 
-        Resource resource = new Resource().setDirectoryListingAllowed(true);
+        Resource resource = new Resource(new File(System.getProperty("user.dir"))).setDirectoryListingAllowed(true);
         deployable.addResource(resource);
         deployable.buildServer().start();
 
