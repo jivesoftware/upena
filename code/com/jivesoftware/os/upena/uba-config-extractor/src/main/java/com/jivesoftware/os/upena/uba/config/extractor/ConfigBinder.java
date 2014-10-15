@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import org.merlin.config.BindInterfaceToConfiguration;
 import org.merlin.config.Config;
 import org.merlin.config.MapBackConfiguration;
@@ -32,7 +31,6 @@ public class ConfigBinder {
 
     private final Properties properties;
     private final PropertyPrefix propertyPrefix;
-    private final Map<Class, Config> bound = new ConcurrentHashMap<>();
 
     public ConfigBinder(String[] args) throws IOException {
         this.propertyPrefix = new PropertyPrefix();
@@ -59,13 +57,9 @@ public class ConfigBinder {
     }
 
     public <T extends Config> T bind(Class<T> configInterface, Map<String, String> backingStorage) {
-        Config config = bound.get(configInterface);
-        if (config != null) {
-            return (T) config;
-        }
 
         Map<String, String> required = new HashMap<>();
-        config = new BindInterfaceToConfiguration<>(new MapBackConfiguration(required), configInterface)
+        Config config = new BindInterfaceToConfiguration<>(new MapBackConfiguration(required), configInterface)
                 .bind();
         config.applyDefaults();
 
@@ -83,13 +77,11 @@ public class ConfigBinder {
             System.err.println("WARNING: The provided properties lacks the following properties: " + requiredKeys);
             System.err.println("WARNING: Populated config for " + configInterface + " with defaults.");
             T t = BindInterfaceToConfiguration.bindDefault(configInterface);
-            bound.put(configInterface, t);
             return t;
         } else {
 
             T t = new BindInterfaceToConfiguration<>(new MapBackConfiguration(available), configInterface)
                     .bind();
-            bound.put(configInterface, t);
             return t;
         }
     }

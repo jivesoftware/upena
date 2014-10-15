@@ -15,31 +15,23 @@
  */
 package com.jivesoftware.os.upena.main;
 
-import com.jivesoftware.os.server.http.health.check.FatalHealthCheckResponse;
-import com.jivesoftware.os.server.http.health.check.HealthCheck;
-import com.jivesoftware.os.server.http.health.check.HealthCheckResponse;
-import com.jivesoftware.os.server.http.health.check.HealthCheckResponseImpl;
+import com.jivesoftware.os.jive.utils.health.HealthCheck;
+import com.jivesoftware.os.jive.utils.health.HealthCheckResponse;
+import com.jivesoftware.os.jive.utils.health.HealthCheckResponseImpl;
 
 public class ComponentHealthCheck implements HealthCheck {
 
     private final String name;
-    private boolean healthy = false;
     private String message = "health hasn't been established.";
-    private final boolean fatal;
+    private double health = HealthCheckResponse.UNKNOWN;
 
     public ComponentHealthCheck(String name) {
         this.name = name;
-        this.fatal = false;
-    }
-
-    public ComponentHealthCheck(String name, boolean fatal) {
-        this.name = name;
-        this.fatal = fatal;
     }
 
     @Override
     public HealthCheckResponse checkHealth() {
-        return fatal ? new FatalHealthCheckResponse(name, healthy, message) : new HealthCheckResponseImpl(name, healthy, message);
+        return new HealthCheckResponseImpl(name, health, message, System.currentTimeMillis());
     }
 
     public void setMessage(String messsage) {
@@ -47,12 +39,12 @@ public class ComponentHealthCheck implements HealthCheck {
     }
 
     void setHealthy(String messsage) {
-        healthy = true;
+        health = HealthCheckResponse.HEALTHY;
         this.message = messsage;
     }
 
     void setUnhealthy(String message, Throwable cause) {
-        healthy = false;
+        health = HealthCheckResponse.SICK;;
         StringBuilder sb = new StringBuilder();
         sb.append(message).append("\n");
         if (cause != null) {

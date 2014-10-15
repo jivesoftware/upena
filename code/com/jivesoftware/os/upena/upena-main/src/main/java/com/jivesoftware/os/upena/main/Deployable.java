@@ -16,7 +16,7 @@
 package com.jivesoftware.os.upena.main;
 
 import com.jivesoftware.os.jive.utils.base.service.ServiceHandle;
-import com.jivesoftware.os.server.http.health.check.HealthCheck;
+import com.jivesoftware.os.jive.utils.health.HealthCheck;
 import com.jivesoftware.os.server.http.jetty.jersey.endpoints.configuration.MainProperties;
 import com.jivesoftware.os.server.http.jetty.jersey.endpoints.configuration.MainPropertiesEndpoints;
 import com.jivesoftware.os.server.http.jetty.jersey.server.InitializeRestfulServer;
@@ -129,9 +129,6 @@ public class Deployable {
     }
 
     public void addHealthCheck(HealthCheck... healthCheck) {
-        if (manageServerStarted.get()) {
-            throw new IllegalStateException("Cannot add injectables after the manage server has been started.");
-        }
         restfulManageServer.addHealthCheck(healthCheck);
     }
 
@@ -140,7 +137,7 @@ public class Deployable {
             long time = System.currentTimeMillis();
             InstanceConfig instanceConfig = configBinder.bind(InstanceConfig.class);
             String applicationName = "manage " + instanceConfig.getServiceName() + " " + instanceConfig.getClusterName();
-            ComponentHealthCheck healthCheck = new ComponentHealthCheck("'" + applicationName + "'service initialization", true);
+            ComponentHealthCheck healthCheck = new ComponentHealthCheck("'" + applicationName + "'service initialization");
             restfulManageServer.addHealthCheck(healthCheck);
             try {
                 restfulManageServer.initialize();
@@ -190,7 +187,7 @@ public class Deployable {
         if (serverStarted.compareAndSet(false, true)) {
             InstanceConfig instanceConfig = configBinder.bind(InstanceConfig.class);
             String applicationName = instanceConfig.getServiceName() + " " + instanceConfig.getClusterName();
-            ComponentHealthCheck healthCheck = new ComponentHealthCheck("'" + applicationName + "' service initialization", true);
+            ComponentHealthCheck healthCheck = new ComponentHealthCheck("'" + applicationName + "' service initialization");
             restfulManageServer.addHealthCheck(healthCheck);
             try {
                 restfulServer.addContextHandler("/", jerseyEndpoints);

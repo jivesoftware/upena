@@ -17,6 +17,7 @@ package com.jivesoftware.os.upena.main;
 
 import org.merlin.config.Config;
 import org.merlin.config.defaults.IntDefault;
+import org.merlin.config.defaults.StringDefault;
 
 public interface JavaStartupConfig extends Config {
 
@@ -25,5 +26,8 @@ public interface JavaStartupConfig extends Config {
 
     @IntDefault(64)
     public Integer getXms();
+
+    @StringDefault("")
+    public String getFlags();
 
 }
