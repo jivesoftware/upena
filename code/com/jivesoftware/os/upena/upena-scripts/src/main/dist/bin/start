@@ -8,16 +8,16 @@ LOG_PATH=${APP_ROOT}/var/log
 SERVICE_NAME=$(basename $APP_ROOT);
 
 
-CLASSPATH=`grep classpath $APP_ROOT/lib/build.properties | sed -e 's/.*=//g' | sed 's/\\\\//g'`
-DEPLOYABLE_ARTIFACT=`grep deployable.artifact $APP_ROOT/lib/build.properties | sed -e 's/.*=//g'`
-JAVA_MAIN=`grep "java.main" $APP_ROOT/lib/build.properties | sed -e 's/.*=//g'`
+CLASSPATH=`grep classpath $APP_ROOT/lib/build.properties | sed -e 's/[^=]*=//' | sed 's/\\\\//g'`
+DEPLOYABLE_ARTIFACT=`grep deployable.artifact $APP_ROOT/lib/build.properties | sed -e 's/[^=]*=//'`
+JAVA_MAIN=`grep "java.main" $APP_ROOT/lib/build.properties | sed -e 's/[^=]*=//'`
 
-JMX_PORT=`grep InstanceConfig_default_jmxPort $APP_ROOT/config/instance.properties | sed -e 's/.*=//g'`
-DEBUG_PORT=`grep InstanceConfig_default_debugPort $APP_ROOT/config/instance.properties | sed -e 's/.*=//g'`
+JMX_PORT=`grep InstanceConfig_default_jmxPort $APP_ROOT/config/instance.properties | sed -e 's/[^=]*=//'`
+DEBUG_PORT=`grep InstanceConfig_default_debugPort $APP_ROOT/config/instance.properties | sed -e 's/[^=]*=//'`
 
-JAVA_XMX=`grep JavaStartupConfig_default_xmx $APP_ROOT/config/config.properties | sed -e 's/.*=//g'`
-JAVA_XMS=`grep JavaStartupConfig_default_xms $APP_ROOT/config/config.properties | sed -e 's/.*=//g'`
-JAVA_FLAGS=`grep JavaStartupConfig_default_flags $APP_ROOT/config/config.properties | sed -e 's/.*=//g' | tr -d '\\'`
+JAVA_XMX=`grep JavaStartupConfig_default_xmx $APP_ROOT/config/config.properties | sed -e 's/[^=]*=//'`
+JAVA_XMS=`grep JavaStartupConfig_default_xms $APP_ROOT/config/config.properties | sed -e 's/[^=]*=//'`
+JAVA_FLAGS=`grep JavaStartupConfig_default_flags $APP_ROOT/config/config.properties | sed -e 's/[^=]*=//' | tr -d '\\'`
 
 
 # is the service already running?
@@ -46,8 +46,8 @@ cd $APP_ROOT && nohup $JAVA_HOME/bin/java \
   ${JAVA_FLAGS} \
   -Xms${JAVA_XMS}m \
   -Xmx${JAVA_XMX}m \
-  -server -ea -XX:+HeapDumpOnOutOfMemoryError \
-  -XX:+DisableExplicitGC -XX:+PrintTenuringDistribution -XX:+PrintGCDetails -XX:+PrintGCDateStamps \
+  -server -ea \
+  -XX:+PrintGCDetails -XX:+PrintGCDateStamps \
   -Xloggc:${LOG_PATH}/gc${DATE_SUFFIX}.log -XX:OnOutOfMemoryError="kill -9 %p" \
   -Dcom.sun.management.jmxremote.port=${JMX_PORT} -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false \
   -Dlog4j.configuration=${LOG4J} -Dlog.dir=${LOG_PATH} -Dlog.name=service.log \
