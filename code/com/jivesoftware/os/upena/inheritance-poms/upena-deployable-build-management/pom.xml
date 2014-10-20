@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.jivesoftware.os.upena.inheritance.poms</groupId>
         <artifactId>upena-deployable-version-management</artifactId>
-        <version>0.13</version>
+        <version>0.14-SNAPSHOT</version>
         <relativePath>../upena-deployable-version-management/pom.xml</relativePath>
     </parent>
     <artifactId>upena-deployable-build-management</artifactId>
@@ -14,7 +14,7 @@
         <dependency>
             <groupId>com.jivesoftware.os.upena</groupId>
             <artifactId>upena-scripts</artifactId>
-            <version>0.13</version>
+            <version>0.14-SNAPSHOT</version>
             <type>tar.gz</type>
             <classifier>bin</classifier>
             <scope>runtime</scope>
@@ -190,7 +190,7 @@
                     <plugin>
                         <groupId>com.jivesoftware.os.upena</groupId>
                         <artifactId>upena-deployer-plugin</artifactId>
-                        <version>0.13</version>
+                        <version>0.14-SNAPSHOT</version>
                         <executions>
                             <execution>
                                 <phase>install</phase>
