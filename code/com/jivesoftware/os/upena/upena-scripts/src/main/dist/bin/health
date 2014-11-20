@@ -1,8 +1,7 @@
 #!/bin/bash
 
 APP_ROOT=$(cd $(dirname $0)/..; pwd);
-HOST=`grep InstanceConfig_default_routesHost $APP_ROOT/config/instance.properties | sed -e 's/.*=//g'`
-PORT=`grep InstanceConfig_default_routesPort $APP_ROOT/config/instance.properties | sed -e 's/.*=//g'`
+PORT=`grep InstanceConfig_default_managePort $APP_ROOT/config/instance.properties | sed -e 's/[^=]*=//'`
 
-cd $APP_ROOT && curl http://${CONFIG_HOST}:${CONFIG_PORT}/manage/status
+cd $APP_ROOT && curl localhost:${PORT}/manage/status
 exit 0;
