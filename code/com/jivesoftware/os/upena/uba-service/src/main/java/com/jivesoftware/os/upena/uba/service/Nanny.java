@@ -77,6 +77,10 @@ public class Nanny {
         instanceDescriptor.set(id);
     }
 
+    public DeployLog getDeployLog() {
+        return deployLog;
+    }
+
     public NannyReport report() {
         return new NannyReport(deployLog.getState(), instanceDescriptor.get(), deployLog.copyLog());
     }

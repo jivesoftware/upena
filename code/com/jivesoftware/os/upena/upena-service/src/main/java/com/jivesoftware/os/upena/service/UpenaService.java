@@ -109,7 +109,8 @@ public class UpenaService {
 
         List<String> messages = new ArrayList<>();
         if (tenant != null) {
-            ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> got = findInstances(messages, instance.clusterKey, tenant.releaseGroupKey, wantToConnectToServiceKey);
+            ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> got = findInstances(messages,
+                instance.clusterKey, tenant.releaseGroupKey, wantToConnectToServiceKey);
             if (got == null || got.isEmpty()) {
                 primaryReleaseGroupKey = cluster.defaultReleaseGroups.get(wantToConnectToServiceKey); // Use instance assigned to the instances cluster.
                 if (primaryReleaseGroupKey == null) {

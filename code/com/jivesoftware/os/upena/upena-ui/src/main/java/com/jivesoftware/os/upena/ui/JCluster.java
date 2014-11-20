@@ -18,7 +18,6 @@ package com.jivesoftware.os.upena.ui;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Table;
 import com.google.common.collect.TreeBasedTable;
-import com.jivesoftware.os.jive.utils.shell.utils.Curl;
 import com.jivesoftware.os.uba.shared.NannyReport;
 import com.jivesoftware.os.uba.shared.UbaReport;
 import com.jivesoftware.os.upena.routing.shared.InstanceDescriptor;
@@ -291,7 +290,7 @@ public class JCluster extends JPanel implements DocumentListener {
                                 String url = "http://" + hostAndNannyReport.host.hostName
                                         + ":" + hostAndNannyReport.nannyReport.instanceDescriptor.ports.get("manage").port + "/manage/ping";
                                 try {
-                                    String curl = Curl.create().curl(url);
+                                    String curl = Curl.create(1000, 1000).curl(url);
                                     if ("ping".equals(curl)) {
                                         if (!hostAndNannyReport.online) {
                                             hostAndNannyReport.checked = true;
@@ -303,7 +302,7 @@ public class JCluster extends JPanel implements DocumentListener {
                                             String statuUrl = "http://" + hostAndNannyReport.host.hostName
                                                     + ":" + hostAndNannyReport.nannyReport.instanceDescriptor.ports.get("manage").port + "/manage/announcement/json";
 
-                                            String statusJson = Curl.create().curl(statuUrl);
+                                            String statusJson = Curl.create(1000, 1000).curl(statuUrl);
                                             if (statusJson != null) {
                                                 StatusReport readValue = new ObjectMapper().readValue(statusJson, StatusReport.class);
                                                 statusTable.set(readValue, row);
@@ -610,6 +609,30 @@ public class JCluster extends JPanel implements DocumentListener {
         });
         buttons.add(button);
 
+        button = new JMenuItem("Recent Errors");
+        button.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Util.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        tail.setText("");
+                        for (int row : jTable.getSelectedRows()) {
+                            HostAndNannyReport hostAndNannyReport = (HostAndNannyReport) jTable.getModel().getValueAt(row, 0);
+                            tail.append("" + hostAndNannyReport.nannyReport.instanceDescriptor.toString() + " :{\n");
+                            try {
+                                status(hostAndNannyReport, "/manage/recentErrors");
+                            } catch (IOException ex) {
+                                ex.printStackTrace();
+                            }
+                            tail.append("\n}\n\n");
+                        }
+                    }
+                });
+            }
+        });
+        buttons.add(button);
+
         button = new JMenuItem("Reset Errors");
         button.addActionListener(new ActionListener() {
             @Override
@@ -826,7 +849,7 @@ public class JCluster extends JPanel implements DocumentListener {
         String url = "http://" + hostAndNannyReport.host.hostName
                 + ":" + hostAndNannyReport.nannyReport.instanceDescriptor.ports.get("manage").port + manageEndpoint;
         try {
-            String curl = Curl.create().curl(url);
+            String curl = Curl.create(15000, 15000).curl(url);
             tail.append(curl);
         } catch (Exception x) {
             tail.setText("failed to call " + url + " " + new Date());
@@ -856,7 +879,7 @@ public class JCluster extends JPanel implements DocumentListener {
             System.out.println("host:" + host);
             //viewResults.add(new JLabel("Host:" + host.hostName));
             try {
-                String reportString = Curl.create().curl("http://" + host.hostName + ":" + host.port + "/uba/report");
+                String reportString = Curl.create(15000, 15000).curl("http://" + host.hostName + ":" + host.port + "/uba/report");
                 if (reportString != null) {
 
                     UbaReport ubaReport = new ObjectMapper().readValue(reportString, UbaReport.class);

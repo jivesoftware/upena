@@ -63,19 +63,14 @@ import com.jivesoftware.os.upena.service.TenantChanges;
 import com.jivesoftware.os.upena.service.UpenaRestEndpoints;
 import com.jivesoftware.os.upena.service.UpenaService;
 import com.jivesoftware.os.upena.service.UpenaStore;
-import com.jivesoftware.os.upena.shared.Cluster;
-import com.jivesoftware.os.upena.shared.ClusterKey;
 import com.jivesoftware.os.upena.shared.Host;
 import com.jivesoftware.os.upena.shared.HostKey;
-import com.jivesoftware.os.upena.shared.ReleaseGroupKey;
-import com.jivesoftware.os.upena.shared.ServiceKey;
 import com.jivesoftware.os.upena.uba.service.UbaService;
 import com.jivesoftware.os.upena.uba.service.UbaServiceInitializer;
 import com.jivesoftware.os.upena.uba.service.endpoints.UbaServiceRestEndpoints;
 import de.ruedigermoeller.serialization.FSTConfiguration;
 import java.io.File;
 import java.net.InetAddress;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.Executors;
@@ -87,31 +82,37 @@ import org.mapdb.DBMaker;
 
 public class Main {
 
-    public static void main(String[] args) throws Exception {
-        if (args.length == 0) {
-            System.out.println("Usage:");
-            System.out.println("");
-            System.out.println("    java -jar upena.jar <hostName>                   (manual cluster discovery)");
-            System.out.println("");
-            System.out.println(" or ");
-            System.out.println("");
-            System.out.println("    java -jar upena.jar <hostName> <clusterName>     (automatic cluster discovery)");
-            System.out.println("");
-            System.out.println("Overridable properties:");
-            System.out.println("");
-            System.out.println("    -Damza.port=1175");
-            System.out.println("         (change the port upena uses to interact with other upena nodes.) ");
-            System.out.println("");
-            System.out.println("     Only applicable if you have specified a <clusterName>.");
-            System.out.println("          -Damza.discovery.group=225.4.5.6");
-            System.out.println("          -Damza.discovery.port=1123");
-            System.out.println("");
-            System.out.println("Example:");
-            System.out.println("java -jar upena.jar " + InetAddress.getLocalHost().getHostName() + " dev");
-            System.out.println("");
+    public static void main(String[] args) {
+        try {
+            if (args.length == 0) {
+                System.out.println("Usage:");
+                System.out.println("");
+                System.out.println("    java -jar upena.jar <hostName>                   (manual cluster discovery)");
+                System.out.println("");
+                System.out.println(" or ");
+                System.out.println("");
+                System.out.println("    java -jar upena.jar <hostName> <clusterName>     (automatic cluster discovery)");
+                System.out.println("");
+                System.out.println("Overridable properties:");
+                System.out.println("");
+                System.out.println("    -Damza.port=1175");
+                System.out.println("         (change the port upena uses to interact with other upena nodes.) ");
+                System.out.println("");
+                System.out.println("     Only applicable if you have specified a <clusterName>.");
+                System.out.println("          -Damza.discovery.group=225.4.5.6");
+                System.out.println("          -Damza.discovery.port=1123");
+                System.out.println("");
+                System.out.println("Example:");
+                System.out.println("java -jar upena.jar " + InetAddress.getLocalHost().getHostName() + " dev");
+                System.out.println("");
+                System.exit(1);
 
-        } else {
-            new Main().run(args);
+            } else {
+                new Main().run(args);
+            }
+        } catch (Exception x) {
+            x.printStackTrace();
+            System.exit(1);
         }
     }
 
@@ -131,6 +132,7 @@ public class Main {
         final OrderIdProvider orderIdProvider = new OrderIdProviderImpl(new ConstantWriterIdProvider(new Random().nextInt(512)));
 
         final ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         mapper.configure(SerializationFeature.INDENT_OUTPUT, false);
 
@@ -139,8 +141,8 @@ public class Main {
         RowsStorageProvider rowsStorageProvider = new RowsStorageProvider() {
             @Override
             public RowsStorage createRowsStorage(File workingDirectory,
-                    String tableDomain,
-                    TableName tableName) throws Exception {
+                String tableDomain,
+                TableName tableName) throws Exception {
                 final File directory = new File(workingDirectory, tableDomain);
                 directory.mkdirs();
                 File file = new File(directory, tableName.getTableName() + ".kvt");
@@ -155,8 +157,8 @@ public class Main {
                     @Override
                     public RowsIndex createRowsIndex(TableName tableName) throws Exception {
                         final DB db = DBMaker.newDirectMemoryDB()
-                                .closeOnJvmShutdown()
-                                .make();
+                            .closeOnJvmShutdown()
+                            .make();
                         BTreeMap<RowIndexKey, RowIndexValue> treeMap = db.getTreeMap(tableName.getTableName());
                         return new MemoryRowsIndex(treeMap, new Flusher() {
 
@@ -169,11 +171,11 @@ public class Main {
                 };
 
                 return new RowTable(tableName,
-                        orderIdProvider,
-                        tableIndexProvider,
-                        rowMarshaller,
-                        reader,
-                        writer);
+                    orderIdProvider,
+                    tableIndexProvider,
+                    rowMarshaller,
+                    reader,
+                    writer);
             }
         };
 
@@ -181,25 +183,25 @@ public class Main {
         UpdatesTaker tableTaker = new HttpUpdatesTaker();
 
         AmzaService amzaService = new AmzaServiceInitializer().initialize(amzaServiceConfig,
-                orderIdProvider,
-                new com.jivesoftware.os.amza.storage.FstMarshaller(FSTConfiguration.getDefaultConfiguration()),
-                rowsStorageProvider,
-                rowsStorageProvider,
-                rowsStorageProvider,
-                changeSetSender,
-                tableTaker,
-                Optional.<SendFailureListener>absent(),
-                Optional.<TakeFailureListener>absent(),
-                new RowChanges() {
-                    @Override
-                    public void changes(RowsChanged changes) throws Exception {
-                    }
-                });
+            orderIdProvider,
+            new com.jivesoftware.os.amza.storage.FstMarshaller(FSTConfiguration.getDefaultConfiguration()),
+            rowsStorageProvider,
+            rowsStorageProvider,
+            rowsStorageProvider,
+            changeSetSender,
+            tableTaker,
+            Optional.<SendFailureListener>absent(),
+            Optional.<TakeFailureListener>absent(),
+            new RowChanges() {
+                @Override
+                public void changes(RowsChanged changes) throws Exception {
+                }
+            });
 
         amzaService.start(ringHost, amzaServiceConfig.resendReplicasIntervalInMillis,
-                amzaServiceConfig.applyReplicasIntervalInMillis,
-                amzaServiceConfig.takeFromNeighborsIntervalInMillis,
-                amzaServiceConfig.compactTombstoneIfOlderThanNMillis);
+            amzaServiceConfig.applyReplicasIntervalInMillis,
+            amzaServiceConfig.takeFromNeighborsIntervalInMillis,
+            amzaServiceConfig.compactTombstoneIfOlderThanNMillis);
 
         System.out.println("-----------------------------------------------------------------------");
         System.out.println("|      Amza Service Online");
@@ -258,33 +260,34 @@ public class Main {
         HostKey hostKey = upenaStore.hosts.toKey(host);
         Host gotHost = upenaStore.hosts.get(hostKey);
         if (gotHost == null) {
-            HashMap<ServiceKey, ReleaseGroupKey> defaultReleaseGroups = new HashMap<>();
-            HashMap<ServiceKey, ReleaseGroupKey> defaultAlternateReleaseGroups = new HashMap<>();
-            Cluster cluster = new Cluster("adhoc", "default adhoc cluster", defaultReleaseGroups, defaultAlternateReleaseGroups);
-            ClusterKey clusterKey = upenaStore.clusters.toKey(cluster);
-            Cluster gotCluster = upenaStore.clusters.get(clusterKey);
-            if (gotCluster == null) {
-                upenaStore.clusters.update(clusterKey, cluster);
-            }
-            host = new Host(ringHost.getHost(), ringHost.getHost(), ringHost.getPort(), workingDir, clusterKey);
+//            HashMap<ServiceKey, ReleaseGroupKey> defaultReleaseGroups = new HashMap<>();
+//            HashMap<ServiceKey, ReleaseGroupKey> defaultAlternateReleaseGroups = new HashMap<>();
+//            Cluster cluster = new Cluster("adhoc", "default adhoc cluster", defaultReleaseGroups, defaultAlternateReleaseGroups);
+//            ClusterKey clusterKey = upenaStore.clusters.toKey(cluster);
+//            Cluster gotCluster = upenaStore.clusters.get(clusterKey);
+//            if (gotCluster == null) {
+//                upenaStore.clusters.update(clusterKey, cluster);
+//            }
+            host = new Host(ringHost.getHost(), ringHost.getHost(), ringHost.getPort(), workingDir, null);
             upenaStore.hosts.update(null, host);
         }
 
         final UbaService conductorService = new UbaServiceInitializer().initialize(hostKey.getKey(),
-                workingDir,
-                ringHost.getHost(),
-                ringHost.getPort());
+            workingDir,
+            ringHost.getHost(),
+            ringHost.getPort());
 
         JerseyEndpoints jerseyEndpoints = new JerseyEndpoints()
-                .addEndpoint(UpenaRestEndpoints.class)
-                .addInjectable(upenaService)
-                .addInjectable(upenaStore)
-                .addEndpoint(UpenaConfigRestEndpoints.class)
-                .addInjectable(upenaConfigStore)
-                .addEndpoint(UbaServiceRestEndpoints.class)
-                .addInjectable(conductorService)
-                .addEndpoint(AmzaReplicationRestEndpoints.class)
-                .addInjectable(AmzaInstance.class, amzaService);
+            .addEndpoint(UpenaRestEndpoints.class)
+            .addInjectable(upenaService)
+            .addInjectable(upenaStore)
+            .addEndpoint(UpenaConfigRestEndpoints.class)
+            .addInjectable(upenaConfigStore)
+            .addEndpoint(UbaServiceRestEndpoints.class)
+            .addInjectable(conductorService)
+            .addEndpoint(AmzaReplicationRestEndpoints.class)
+            .addInjectable(AmzaInstance.class, amzaService)
+            .addEndpoint(UpenaHealthEndpoints.class);
 
         InitializeRestfulServer initializeRestfulServer = new InitializeRestfulServer(port, "UpenaNode", 128, 10000);
         initializeRestfulServer.addContextHandler("/", jerseyEndpoints);

@@ -96,7 +96,7 @@ class NannyDeployCallable implements Callable<Boolean> {
         RepositorySystem system = RepositoryProvider.newRepositorySystem();
         RepositorySystemSession session = RepositoryProvider.newRepositorySystemSession(system);
         String[] repos = id.repository.split(",");
-        List<RemoteRepository> remoteRepos = RepositoryProvider.newRepositories(system, session,repos);
+        List<RemoteRepository> remoteRepos = RepositoryProvider.newRepositories(system, session, repos);
 
         System.out.println("------------------------------------------------------------");
         System.out.println(" Resolving:" + id);
@@ -154,7 +154,7 @@ class NannyDeployCallable implements Callable<Boolean> {
             System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
             System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
             System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-            System.out.println("~~~~~~~~~~~~~~~~~~~"+successfulDeploy+"~~~~~~~~~~~~~~~~~~~~~~");
+            System.out.println("~~~~~~~~~~~~~~~~~~~" + successfulDeploy + "~~~~~~~~~~~~~~~~~~~~~~");
             System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
             System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
             System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");

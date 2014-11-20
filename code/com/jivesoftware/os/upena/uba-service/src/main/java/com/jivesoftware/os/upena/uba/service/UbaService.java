@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
@@ -47,6 +48,10 @@ public class UbaService {
         this.upenaClient = upenaClient;
         this.uba = uba;
         this.hostKey = hostKey;
+    }
+
+    public Iterable<Entry<String, Nanny>> iterateNannies() {
+        return nannies.entrySet();
     }
 
     public void instanceChanged(List<InstanceChanged> instanceChanges) throws Exception {

@@ -2,6 +2,7 @@ package com.jivesoftware.os.upena.ui;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.jivesoftware.os.jive.utils.http.client.HttpClient;
 import com.jivesoftware.os.jive.utils.http.client.HttpClientConfig;
 import com.jivesoftware.os.jive.utils.http.client.HttpClientConfiguration;
@@ -72,6 +73,7 @@ public class RequestHelperProvider extends JPanel {
             .createHttpClientFactory(Arrays.<HttpClientConfiguration>asList(httpClientConfig));
         HttpClient httpClient = httpClientFactory.createClient(editHost.getText(), Integer.parseInt(editPort.getText()));
         ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         return new RequestHelper(httpClient, mapper);
     }
