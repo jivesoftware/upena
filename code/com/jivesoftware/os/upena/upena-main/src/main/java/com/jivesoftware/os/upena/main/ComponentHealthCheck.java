@@ -23,7 +23,7 @@ public class ComponentHealthCheck implements HealthCheck {
 
     private final String name;
     private String message = "health hasn't been established.";
-    private double health = HealthCheckResponse.UNKNOWN;
+    private double health = 0.0d;
 
     public ComponentHealthCheck(String name) {
         this.name = name;
@@ -39,7 +39,7 @@ public class ComponentHealthCheck implements HealthCheck {
     }
 
     void setHealthy(String messsage) {
-        health = HealthCheckResponse.HEALTHY;
+        health = HealthCheckResponse.UNKNOWN; // Uck. This makes the health check invisible if check is healthy.
         this.message = messsage;
     }
 
