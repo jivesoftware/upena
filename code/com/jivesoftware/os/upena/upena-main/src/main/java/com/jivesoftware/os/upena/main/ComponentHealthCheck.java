@@ -44,7 +44,7 @@ public class ComponentHealthCheck implements HealthCheck {
     }
 
     void setUnhealthy(String message, Throwable cause) {
-        health = HealthCheckResponse.SICK;;
+        health = 0.0d;
         StringBuilder sb = new StringBuilder();
         sb.append(message).append("\n");
         if (cause != null) {
