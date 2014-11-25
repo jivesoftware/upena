@@ -35,6 +35,7 @@ public class Nanny {
     private final InstancePath instancePath;
     private final DeployableValidator deployableValidator;
     private final DeployLog deployLog;
+    private final HealthLog healthLog;
     private final DeployableScriptInvoker invokeScript;
     private final AtomicBoolean redeploy;
     private final AtomicBoolean destroyed;
@@ -43,14 +44,16 @@ public class Nanny {
     private final ThreadPoolExecutor threadPoolExecutor;
 
     public Nanny(InstanceDescriptor instanceDescriptor,
-            InstancePath instancePath,
-            DeployableValidator deployableValidator,
-            DeployLog deployLog,
-            DeployableScriptInvoker invokeScript) {
+        InstancePath instancePath,
+        DeployableValidator deployableValidator,
+        DeployLog deployLog,
+        HealthLog healthLog,
+        DeployableScriptInvoker invokeScript) {
         this.instanceDescriptor = new AtomicReference<>(instanceDescriptor);
         this.instancePath = instancePath;
         this.deployableValidator = deployableValidator;
         this.deployLog = deployLog;
+        this.healthLog = healthLog;
         this.invokeScript = invokeScript;
         linkedBlockingQueue = new LinkedBlockingQueue<>(10);
         threadPoolExecutor = new ThreadPoolExecutor(1, 1, 1000, TimeUnit.MILLISECONDS, linkedBlockingQueue);
@@ -81,13 +84,17 @@ public class Nanny {
         return deployLog;
     }
 
+    public HealthLog getHealthLog() {
+        return healthLog;
+    }
+
     public NannyReport report() {
         return new NannyReport(deployLog.getState(), instanceDescriptor.get(), deployLog.copyLog());
     }
 
     synchronized public String nanny(String host, String upenaHost, int upenaPort) {
         if (destroyed.get()) {
-            deployLog.log("Nanny tried to check a service that has been destroyed. " + this, null);
+            deployLog.log("Nanny", "tried to check a service that has been destroyed. " + this, null);
             return deployLog.getState();
         }
         if (linkedBlockingQueue.size() == 0) {
@@ -113,13 +120,15 @@ public class Nanny {
                 }
 
                 NannyStatusCallable nannyTask = new NannyStatusCallable(
-                        instanceDescriptor.get(), instancePath,
-                        deployLog,
-                        invokeScript);
+                    instanceDescriptor.get(),
+                    instancePath,
+                    deployLog,
+                    healthLog,
+                    invokeScript);
                 threadPoolExecutor.submit(nannyTask);
 
             } catch (InterruptedException | ExecutionException x) {
-                deployLog.log("Nanny is already running. " + this, x);
+                deployLog.log("Nanny", " is already running. " + this, x);
             }
             return deployLog.getState();
         } else {

@@ -68,16 +68,16 @@ class NannyDeployCallable implements Callable<Boolean> {
             if (deploy()) {
                 instancePath.writeInstanceDescriptor(host, upenaHost, upenaPort, id);
                 if (!invokeScript.invoke(deployLog, instancePath, "init")) {
-                    deployLog.log("nanny failed to init service.", null);
+                    deployLog.log("Nanny", "failed to init service.", null);
                     return false;
                 }
             } else {
-                deployLog.log("nanny failed to deploy artifact.", null);
+                deployLog.log("Nanny", "failed to deploy artifact.", null);
                 return false;
             }
             return true;
         } catch (IOException x) {
-            deployLog.log("nanny failed.", x);
+            deployLog.log("Nanny", "failed.", x);
             return false;
         }
     }
@@ -89,7 +89,7 @@ class NannyDeployCallable implements Callable<Boolean> {
             FileUtils.deleteDirectory(libDir);
             libDir.mkdirs();
         } catch (IOException x) {
-            deployLog.log("failed to cleanup lib dir.", x);
+            deployLog.log("Nanny", "failed to cleanup lib dir.", x);
             return false;
         }
 
@@ -120,7 +120,7 @@ class NannyDeployCallable implements Callable<Boolean> {
             System.out.println(artifact + " resolved to  " + artifact.getFile());
 
         } catch (ArtifactResolutionException x) {
-            deployLog.log("failed to resolve artifact:", x);
+            deployLog.log("Nanny", "failed to resolve artifact:", x);
             return false;
         }
 
@@ -130,7 +130,7 @@ class NannyDeployCallable implements Callable<Boolean> {
             System.out.println(" Upacking:" + tarGzip);
             System.out.println("------------------------------------------------------------");
             FileUtils.copyFile(artifact.getFile(), tarGzip, true);
-            deployLog.log("Deployed " + tarGzip, null);
+            deployLog.log("Nanny", "deployed " + tarGzip, null);
             if (!explodeArtifact(tarGzip)) {
                 return false;
             }
@@ -141,7 +141,7 @@ class NannyDeployCallable implements Callable<Boolean> {
             artifactResult = system.resolveArtifact(session, artifactRequest);
             artifact = artifactResult.getArtifact();
 
-            deployLog.log("Deployed " + artifact.getFile() + " to " + libDir, null);
+            deployLog.log("Nanny", "deployed " + artifact.getFile() + " to " + libDir, null);
             FileUtils.copyFileToDirectory(artifact.getFile(), libDir, true);
             CollectRequest collectRequest = new CollectRequest();
             collectRequest.setRoot(new Dependency(artifact, ""));
@@ -150,17 +150,10 @@ class NannyDeployCallable implements Callable<Boolean> {
             DeployArtifactDependencies deployArtifactDependencies = new DeployArtifactDependencies(deployLog, system, session, remoteRepos, libDir);
             collectResult.getRoot().accept(deployArtifactDependencies);
             boolean successfulDeploy = deployArtifactDependencies.successfulDeploy();
-            System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-            System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-            System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-            System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-            System.out.println("~~~~~~~~~~~~~~~~~~~" + successfulDeploy + "~~~~~~~~~~~~~~~~~~~~~~");
-            System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-            System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-            System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+            deployLog.log("Nanny", "SUCCESS " + successfulDeploy, null);
             return successfulDeploy;
         } catch (IOException | ArtifactResolutionException | DependencyCollectionException x) {
-            deployLog.log("failed to deploy artifact:", x);
+            deployLog.log("Nanny", "failed to deploy artifact:", x);
             return false;
         }
     }
@@ -171,7 +164,7 @@ class NannyDeployCallable implements Callable<Boolean> {
             if (tarGzip.exists()) {
                 Unzip.unGzip(true, serviceRoot, "artifact.tar", tarGzip, true);
             } else {
-                deployLog.log("There is NO " + tarGzip + " so there is nothing we can do.", null);
+                deployLog.log("Nanny", "there is NO " + tarGzip + " so there is nothing we can do.", null);
                 return false;
             }
             File tar = new File(serviceRoot, "artifact.tar");
@@ -180,15 +173,15 @@ class NannyDeployCallable implements Callable<Boolean> {
                 if (deployableValidator.validateDeployable(instancePath)) {
                     return true;
                 } else {
-                    deployLog.log("Deployable is invalid.", null);
+                    deployLog.log("Nanny", "deployable is invalid.", null);
                     return false;
                 }
             } else {
-                deployLog.log("There is NO " + tar + " so there is nothing we can do.", null);
+                deployLog.log("Nanny", "there is NO " + tar + " so there is nothing we can do.", null);
                 return false;
             }
         } catch (IOException | ArchiveException x) {
-            deployLog.log("Encountered the following issues trying to explode artifact " + this, x);
+            deployLog.log("Nanny", "encountered the following issues trying to explode artifact " + this, x);
             return false;
         }
     }

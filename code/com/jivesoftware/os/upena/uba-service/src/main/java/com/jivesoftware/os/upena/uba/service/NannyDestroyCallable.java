@@ -24,7 +24,7 @@ class NannyDestroyCallable implements Callable<Boolean> {
         try {
             return destroy();
         } catch (Exception x) {
-            deployLog.log("nanny failed.", x);
+            deployLog.log("Nanny for " + instancePath.toHumanReadableName(), "failed to destroy.", x);
             return false;
         }
     }
@@ -38,11 +38,12 @@ class NannyDestroyCallable implements Callable<Boolean> {
                     while (checks < 10) {
                         // todo expose to config or to instance
                         if (!invokeScript.invoke(deployLog, instancePath, "status")) {
-                            deployLog.log("OFFLINE Service:" + instancePath.toHumanReadableName(), null);
+                            deployLog.log("Service:" + instancePath.toHumanReadableName(), "OFFLINE", null);
                             break;
                         } else {
                             checks++;
-                            deployLog.log("Waiting for Service:" + instancePath.toHumanReadableName() + " to start for " + checks + " time.", null);
+                            deployLog.log("Service:" + instancePath.toHumanReadableName(),
+                                "Waiting for service to start for " + checks + " time.", null);
                             Thread.sleep(1000); // todo expose to config or to instance
                         }
                     }

@@ -15,10 +15,40 @@
  */
 package com.jivesoftware.os.upena.uba.service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  *
  * @author jonathan.colt
  */
-public class HealthLog {
+public class HealthLog implements CommandLog {
+
+    private final CommandLog delegateLog;
+    private final ArrayList<String> log = new ArrayList<>();
+
+    public HealthLog(CommandLog delegateLog) {
+        this.delegateLog = delegateLog;
+    }
+
+    @Override
+    synchronized public void log(String context, String message, Throwable t) {
+        delegateLog.log(context, message, t);
+    }
+
+    @Override
+    synchronized public void captured(String context, String message, Throwable t) {
+        log.add(message);
+    }
+
+    @Override
+    synchronized public void clear() {
+        log.clear();
+    }
+
+    @Override
+    synchronized public List<String> copyLog() {
+        return new ArrayList<>(log);
+    }
 
 }

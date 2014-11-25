@@ -287,7 +287,8 @@ public class Main {
             .addInjectable(conductorService)
             .addEndpoint(AmzaReplicationRestEndpoints.class)
             .addInjectable(AmzaInstance.class, amzaService)
-            .addEndpoint(UpenaHealthEndpoints.class);
+            .addEndpoint(UpenaHealthEndpoints.class)
+            .addInjectable(RingHost.class, ringHost);
 
         InitializeRestfulServer initializeRestfulServer = new InitializeRestfulServer(port, "UpenaNode", 128, 10000);
         initializeRestfulServer.addContextHandler("/", jerseyEndpoints);
@@ -308,7 +309,7 @@ public class Main {
                         ex.printStackTrace(); // HACK
                     }
                 }
-            }, 1, 1, TimeUnit.MINUTES);
+            }, 15, 15, TimeUnit.SECONDS);
             System.out.println("-----------------------------------------------------------------------");
             System.out.println("|      Uba Service Online");
             System.out.println("-----------------------------------------------------------------------");

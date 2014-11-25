@@ -26,15 +26,21 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import org.apache.commons.collections.buffer.CircularFifoBuffer;
 
-public class DeployLog {
+public class DeployLog implements CommandLog {
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
     private final AtomicReference<String> state = new AtomicReference<>("idle");
     private final CircularFifoBuffer messages = new CircularFifoBuffer(1000);
 
-    synchronized public void log(String message, Throwable t) {
+    @Override
+    synchronized public void captured(String context, String message, Throwable t) {
+        log(context, message, t);
+    }
+
+    @Override
+    synchronized public void log(String context, String message, Throwable t) {
         if (t != null) {
-            LOG.warn(message, t);
+            LOG.warn(context + " " + message, t);
             messages.add(message);
             Writer result = new StringWriter();
             PrintWriter printWriter = new PrintWriter(result);
@@ -42,12 +48,13 @@ public class DeployLog {
             messages.add(result.toString());
             state.set(message + " " + result.toString());
         } else {
-            LOG.info(message);
+            LOG.info(context + " " + message);
             messages.add(message);
             state.set(message);
         }
     }
 
+    @Override
     synchronized public void clear() {
         state.set("Log cleared");
         messages.clear();
@@ -57,6 +64,7 @@ public class DeployLog {
         return state.get();
     }
 
+    @Override
     synchronized public List<String> copyLog() {
         List<String> log = new ArrayList<>();
         for (Iterator it = messages.iterator(); it.hasNext();) {

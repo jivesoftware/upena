@@ -31,7 +31,7 @@ public class ComponentHealthCheck implements HealthCheck {
 
     @Override
     public HealthCheckResponse checkHealth() {
-        return new HealthCheckResponseImpl(name, health, message, System.currentTimeMillis());
+        return new HealthCheckResponseImpl(name, health, message, "", "", System.currentTimeMillis());
     }
 
     public void setMessage(String messsage) {

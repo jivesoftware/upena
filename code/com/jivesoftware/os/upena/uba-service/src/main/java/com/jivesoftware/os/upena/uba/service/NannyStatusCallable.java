@@ -23,16 +23,19 @@ class NannyStatusCallable implements Callable<Boolean> {
     private final InstanceDescriptor id;
     private final InstancePath instancePath;
     private final DeployLog deployLog;
+    private final HealthLog healthLog;
     private final DeployableScriptInvoker invokeScript;
 
     public NannyStatusCallable(InstanceDescriptor id,
         InstancePath instancePath,
         DeployLog deployLog,
+        HealthLog healthLog,
         DeployableScriptInvoker invokeScript) {
 
         this.id = id;
         this.instancePath = instancePath;
         this.deployLog = deployLog;
+        this.healthLog = healthLog;
         this.invokeScript = invokeScript;
     }
 
@@ -40,40 +43,41 @@ class NannyStatusCallable implements Callable<Boolean> {
     public Boolean call() throws Exception {
         try {
             if (invokeScript.invoke(deployLog, instancePath, "status")) {
-                deployLog.log("ONLINE Service:" + instancePath.toHumanReadableName(), null);
+                deployLog.log("Service:" + instancePath.toHumanReadableName() + " 'status'", "ONLINE", null);
 
-                if (!invokeScript.invoke(deployLog, instancePath, "health")) {
-                    deployLog.log("nanny failed while calling 'bin/health' Service:" + instancePath.toHumanReadableName(), null);
+                if (!invokeScript.invoke(healthLog, instancePath, "health")) {
+                    deployLog.log("Service:" + instancePath.toHumanReadableName() + " 'health'", "nanny health command failed", null);
                 }
                 return true;
             }
-            if (!invokeScript.invoke(deployLog, instancePath, "config")) {
-                deployLog.log("nanny failed while calling 'bin/config' Service:" + instancePath.toHumanReadableName(), null);
+            if (!invokeScript.invoke(healthLog, instancePath, "config")) {
+                deployLog.log("Service:" + instancePath.toHumanReadableName() + " 'config'", "nanny health command failed", null);
                 return false;
             }
             if (!invokeScript.invoke(deployLog, instancePath, "start")) {
-                deployLog.log("nanny failed while calling 'bin/start' Service:" + instancePath.toHumanReadableName(), null);
+                deployLog.log("Service:" + instancePath.toHumanReadableName() + " 'start'", "nanny failed while start.", null);
                 return false;
             }
             int checks = 0;
             while (checks < 10) {
                 // todo expose to config or to instance
                 if (invokeScript.invoke(deployLog, instancePath, "status")) {
-                    deployLog.log("ONLINE Service:" + instancePath.toHumanReadableName(), null);
+                    deployLog.log("Service:" + instancePath.toHumanReadableName() + " 'status'", "ONLINE", null);
                     if (!invokeScript.invoke(deployLog, instancePath, "health")) {
-                        deployLog.log("nanny failed while calling 'bin/health' Service:" + instancePath.toHumanReadableName(), null);
+                        deployLog.log("Service:" + instancePath.toHumanReadableName() + " 'health'" , "nanny health command failed", null);
                     }
                     break;
                 } else {
                     checks++;
-                    deployLog.log("Waiting for Service:" + instancePath.toHumanReadableName() + " to start for " + checks + " time.", null);
+                    deployLog.log("Service:" + instancePath.toHumanReadableName() + " 'status'",
+                        "Waiting for Service:" + instancePath.toHumanReadableName() + " to start for " + checks + " time.", null);
                     Thread.sleep(1000); // todo expose to config or to instance
                 }
             }
             return true;
 
         } catch (InterruptedException x) {
-            deployLog.log("nanny failed.", x);
+            deployLog.log("Nanny", "status failed.", x);
             return false;
         }
     }

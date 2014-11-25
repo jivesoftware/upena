@@ -83,7 +83,9 @@ public class Uba {
             new NameAndKey(Integer.toString(instanceDescriptor.instanceName), instanceDescriptor.instanceKey)
         });
 
-        return new Nanny(instanceDescriptor, instancePath, new DeployableValidator(), new DeployLog(), invokeScript);
+        DeployLog deployLog = new DeployLog();
+        HealthLog healthLog = new HealthLog(deployLog);
+        return new Nanny(instanceDescriptor, instancePath, new DeployableValidator(), new DeployLog(), healthLog, invokeScript);
     }
 
 }

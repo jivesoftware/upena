@@ -51,16 +51,16 @@ public class DeployArtifactDependencies implements DependencyVisitor {
         try {
             artifactResult = system.resolveArtifact(session, artifactRequest);
         } catch (ArtifactResolutionException ex) {
-            deployLog.log("Failed to resolve " + artifact, ex);
+            deployLog.log("Deloyer", "failed to resolve " + artifact, ex);
             deployed.set(false);
         }
         if (artifactResult != null) {
             artifact = artifactResult.getArtifact();
             try {
                 FileUtils.copyFileToDirectory(artifact.getFile(), libDir, true);
-                deployLog.log("Deployed " + artifact.getFile() + " to " + libDir, null);
+                deployLog.log("Deployer", "deployed " + artifact.getFile() + " to " + libDir, null);
             } catch (IOException ex) {
-                deployLog.log("Failed to deploy " + artifact.getFile() + " to " + libDir, ex);
+                deployLog.log("Deployer", "failed to deploy " + artifact.getFile() + " to " + libDir, ex);
                 deployed.set(false);
             }
         }

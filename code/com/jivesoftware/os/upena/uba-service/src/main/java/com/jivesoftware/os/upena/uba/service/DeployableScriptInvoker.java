@@ -39,15 +39,16 @@ public class DeployableScriptInvoker {
         return scriptFile.exists();
     }
 
-    public Boolean invoke(final DeployLog deployLog, final InstancePath instancePath, final String script) {
+    public Boolean invoke(final CommandLog commandLog, final InstancePath instancePath, final String script) {
+        final String context = "Service:" + instancePath.toHumanReadableName() + " bin/" + script;
         try {
-            deployLog.log("Service:" + instancePath.toHumanReadableName() + " bin/" + script, null);
+            commandLog.log(context, "", null);
             File scriptFile = instancePath.script(script);
             String[] command = new String[]{scriptFile.getAbsolutePath()};
             ShellOut.ShellOutput shellOutput = new ShellOut.ShellOutput() {
                 @Override
                 public void line(String line) {
-                    deployLog.log("Service:" + instancePath.toHumanReadableName() + " bin/" + script + " " + line, null);
+                    commandLog.captured(context, line, null);
                 }
 
                 @Override
@@ -64,7 +65,7 @@ public class DeployableScriptInvoker {
             });
             return future.get() == 0;
         } catch (InterruptedException | ExecutionException x) {
-            deployLog.log("Encountered when running script: " + script, x);
+                 commandLog.log(context, "Encountered exception.", x);
             return false;
         }
     }
