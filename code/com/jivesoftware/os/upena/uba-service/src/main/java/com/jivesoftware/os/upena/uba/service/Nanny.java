@@ -89,59 +89,62 @@ public class Nanny {
     }
 
     public NannyReport report() {
-        return new NannyReport(deployLog.getState(), instanceDescriptor.get(), deployLog.copyLog());
+        return new NannyReport(deployLog.getState(), instanceDescriptor.get(), deployLog.commitedLog());
     }
 
     synchronized public String nanny(String host, String upenaHost, int upenaPort) {
-        if (destroyed.get()) {
-            deployLog.log("Nanny", "tried to check a service that has been destroyed. " + this, null);
-            return deployLog.getState();
-        }
-        if (linkedBlockingQueue.size() == 0) {
-            try {
-                deployLog.clear();
-                if (redeploy.get()) {
-                    NannyDestroyCallable destroyTask = new NannyDestroyCallable(
+        try {
+            if (destroyed.get()) {
+                deployLog.log("Nanny", "tried to check a service that has been destroyed. " + this, null);
+                return deployLog.getState();
+            }
+            if (linkedBlockingQueue.size() == 0) {
+                try {
+                    if (redeploy.get()) {
+                        NannyDestroyCallable destroyTask = new NannyDestroyCallable(
                             instancePath,
                             deployLog,
                             invokeScript);
-                    Future<Boolean> detroyedFuture = threadPoolExecutor.submit(destroyTask);
-                    if (detroyedFuture.get()) {
+                        Future<Boolean> detroyedFuture = threadPoolExecutor.submit(destroyTask);
+                        if (detroyedFuture.get()) {
 
-                        NannyDeployCallable deployTask = new NannyDeployCallable(host, upenaHost, upenaPort,
+                            NannyDeployCallable deployTask = new NannyDeployCallable(host, upenaHost, upenaPort,
                                 instanceDescriptor.get(), instancePath,
                                 deployLog, deployableValidator,
                                 invokeScript);
-                        Future<Boolean> deployedFuture = threadPoolExecutor.submit(deployTask);
-                        if (deployedFuture.get()) {
-                            redeploy.set(false);
+                            Future<Boolean> deployedFuture = threadPoolExecutor.submit(deployTask);
+                            if (deployedFuture.get()) {
+                                redeploy.set(false);
+                            }
                         }
                     }
+
+                    NannyStatusCallable nannyTask = new NannyStatusCallable(
+                        instanceDescriptor.get(),
+                        instancePath,
+                        deployLog,
+                        healthLog,
+                        invokeScript);
+                    threadPoolExecutor.submit(nannyTask);
+
+                } catch (InterruptedException | ExecutionException x) {
+                    deployLog.log("Nanny", " is already running. " + this, x);
                 }
-
-                NannyStatusCallable nannyTask = new NannyStatusCallable(
-                    instanceDescriptor.get(),
-                    instancePath,
-                    deployLog,
-                    healthLog,
-                    invokeScript);
-                threadPoolExecutor.submit(nannyTask);
-
-            } catch (InterruptedException | ExecutionException x) {
-                deployLog.log("Nanny", " is already running. " + this, x);
+                return deployLog.getState();
+            } else {
+                return deployLog.getState();
             }
-            return deployLog.getState();
-        } else {
-            return deployLog.getState();
+        } finally {
+            deployLog.commit();
         }
     }
 
     synchronized Boolean destroy() throws InterruptedException, ExecutionException {
         destroyed.set(true);
         NannyDestroyCallable nannyTask = new NannyDestroyCallable(
-                instancePath,
-                deployLog,
-                invokeScript);
+            instancePath,
+            deployLog,
+            invokeScript);
         Future<Boolean> waitForDestory = threadPoolExecutor.submit(nannyTask);
         return waitForDestory.get();
 
@@ -174,8 +177,8 @@ public class Nanny {
     @Override
     public String toString() {
         return "Nanny{"
-                + "instancePath=" + instancePath
-                + ", instanceDescriptor=" + instanceDescriptor
-                + '}';
+            + "instancePath=" + instancePath
+            + ", instanceDescriptor=" + instanceDescriptor
+            + '}';
     }
 }

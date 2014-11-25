@@ -26,6 +26,7 @@ public class HealthLog implements CommandLog {
 
     private final CommandLog delegateLog;
     private final ArrayList<String> log = new ArrayList<>();
+    private final ArrayList<String> commited = new ArrayList<>();
 
     public HealthLog(CommandLog delegateLog) {
         this.delegateLog = delegateLog;
@@ -42,13 +43,15 @@ public class HealthLog implements CommandLog {
     }
 
     @Override
-    synchronized public void clear() {
+    synchronized public void commit() {
+        commited.clear();
+        commited.addAll(log);
         log.clear();
     }
 
     @Override
-    synchronized public List<String> copyLog() {
-        return new ArrayList<>(log);
+    synchronized public List<String> commitedLog() {
+        return new ArrayList<>(commited);
     }
 
 }

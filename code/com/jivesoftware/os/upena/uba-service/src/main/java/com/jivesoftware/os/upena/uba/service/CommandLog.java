@@ -11,7 +11,7 @@ public interface CommandLog {
 
     void captured(String context, String message, Throwable t);
 
-    void clear();
+    void commit();
 
-    List<String> copyLog();
+    List<String> commitedLog();
 }

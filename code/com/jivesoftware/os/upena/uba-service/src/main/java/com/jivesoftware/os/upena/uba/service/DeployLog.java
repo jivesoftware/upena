@@ -31,6 +31,7 @@ public class DeployLog implements CommandLog {
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
     private final AtomicReference<String> state = new AtomicReference<>("idle");
     private final CircularFifoBuffer messages = new CircularFifoBuffer(1000);
+    private final ArrayList<String> commitedLog = new ArrayList<>();
 
     @Override
     synchronized public void captured(String context, String message, Throwable t) {
@@ -55,8 +56,15 @@ public class DeployLog implements CommandLog {
     }
 
     @Override
-    synchronized public void clear() {
+    synchronized public void commit() {
         state.set("Log cleared");
+        commitedLog.clear();
+        for (Iterator it = messages.iterator(); it.hasNext();) {
+            Object object = it.next();
+            if (object != null) {
+                commitedLog.add(object.toString());
+            }
+        }
         messages.clear();
     }
 
@@ -65,15 +73,8 @@ public class DeployLog implements CommandLog {
     }
 
     @Override
-    synchronized public List<String> copyLog() {
-        List<String> log = new ArrayList<>();
-        for (Iterator it = messages.iterator(); it.hasNext();) {
-            Object object = it.next();
-            if (object != null) {
-                log.add(object.toString());
-            }
-        }
-        return log;
+    synchronized public List<String> commitedLog() {
+        return new ArrayList<>(commitedLog);
     }
 
 }

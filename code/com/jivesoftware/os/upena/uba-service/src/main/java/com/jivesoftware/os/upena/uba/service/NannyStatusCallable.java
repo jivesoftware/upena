@@ -44,10 +44,10 @@ class NannyStatusCallable implements Callable<Boolean> {
         try {
             if (invokeScript.invoke(deployLog, instancePath, "status")) {
                 deployLog.log("Service:" + instancePath.toHumanReadableName() + " 'status'", "ONLINE", null);
-                healthLog.clear();
                 if (!invokeScript.invoke(healthLog, instancePath, "health")) {
                     deployLog.log("Service:" + instancePath.toHumanReadableName() + " 'health'", "nanny health command failed", null);
                 }
+                healthLog.commit();
                 return true;
             }
             if (!invokeScript.invoke(deployLog, instancePath, "config")) {
@@ -63,10 +63,10 @@ class NannyStatusCallable implements Callable<Boolean> {
                 // todo expose to config or to instance
                 if (invokeScript.invoke(deployLog, instancePath, "status")) {
                     deployLog.log("Service:" + instancePath.toHumanReadableName() + " 'status'", "ONLINE", null);
-                    healthLog.clear();
                     if (!invokeScript.invoke(healthLog, instancePath, "health")) {
                         deployLog.log("Service:" + instancePath.toHumanReadableName() + " 'health'" , "nanny health command failed", null);
                     }
+                    healthLog.commit();
                     break;
                 } else {
                     checks++;
@@ -79,6 +79,7 @@ class NannyStatusCallable implements Callable<Boolean> {
 
         } catch (InterruptedException x) {
             deployLog.log("Nanny", "status failed.", x);
+            healthLog.commit();
             return false;
         }
     }

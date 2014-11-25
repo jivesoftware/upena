@@ -214,8 +214,8 @@ public class UpenaHealthEndpoints {
         for (Entry<String, Nanny> nanny : ubaService.iterateNannies()) {
             Nanny n = nanny.getValue();
             InstanceDescriptor id = n.getInstanceDescriptor();
-            List<String> log = n.getDeployLog().copyLog();
-            List<String> copyLog = n.getHealthLog().copyLog();
+            List<String> log = n.getDeployLog().commitedLog();
+            List<String> copyLog = n.getHealthLog().commitedLog();
             ServiceHealth serviceHealth = null;
             try {
                 serviceHealth = new ObjectMapper().readValue(Joiner.on("").join(copyLog), ServiceHealth.class);
@@ -225,7 +225,8 @@ public class UpenaHealthEndpoints {
                 nodeHealth.health = 0.0d;
                 log.add("Failed to parse serviceHealth" + x.getMessage());
             }
-            nodeHealth.nannyHealths.add(new NannyHealth(id, log, serviceHealth));
+            NannyHealth nannyHealth = new NannyHealth(id, log, serviceHealth);
+            nodeHealth.nannyHealths.add(nannyHealth);
 
         }
         return nodeHealth;
