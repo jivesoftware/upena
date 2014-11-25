@@ -87,10 +87,9 @@ public class UpenaHealthEndpoints {
             canvas.html();
             canvas.body();
 
-
             ClusterHealth clusterHealth = buildClusterHealth(uriInfo);
-            canvas.div().option(colorStyle("background-color", clusterHealth.health))
-                .content("Cluster:" + clusterHealth.health)._div();
+            canvas.div(colorStyle("background-color", clusterHealth.health))
+                .content("Cluster:" + clusterHealth.health);
 
             canvas.ol();
 
@@ -112,8 +111,8 @@ public class UpenaHealthEndpoints {
 
     private void addNodeHealth(HtmlCanvas canvas, NodeHealth nodeHealth) throws Exception {
 
-        canvas.div().option(colorStyle("background-color", nodeHealth.health))
-            .content(nodeHealth.host + ":" + nodeHealth.port + " " + nodeHealth.health)._div();
+        canvas.div(colorStyle("background-color", nodeHealth.health))
+            .content(nodeHealth.host + ":" + nodeHealth.port + " " + nodeHealth.health);
         canvas.ol();
         for (NannyHealth nannyHealth : nodeHealth.nannyHealths) {
             canvas.li();
@@ -125,26 +124,30 @@ public class UpenaHealthEndpoints {
 
     private void addNannyHealth(HtmlCanvas canvas, NodeHealth nodeHealth, NannyHealth nannyHealth) throws Exception {
         InstanceDescriptor id = nannyHealth.instanceDescriptor;
-        canvas.div().option(colorStyle("background-color", nannyHealth.serviceHealth.health))
-            .a(HtmlAttributesFactory.href("http://" + nodeHealth.host + ":" + nannyHealth.instanceDescriptor.ports.get("manage") + "/manage/ui"))
-            .content(id.clusterName + " " + id.serviceName + " " + id.instanceName + " " + id.releaseGroupName + " " + id.ports)
-            ._div();
+        ServiceHealth serviceHealth = nannyHealth.serviceHealth;
+
+        canvas.div(colorStyle("background-color", (serviceHealth == null) ? 0.0d : serviceHealth.health))
+            //.a(HtmlAttributesFactory.href("http://" + nodeHealth.host + ":" + nannyHealth.instanceDescriptor.ports.get("manage") + "/manage/ui"))
+            .content(id.clusterName + " " + id.serviceName + " " + id.instanceName + " " + id.releaseGroupName + " " + id.ports);
+            //._a()
+        //._div();
         canvas.pre().content(Joiner.on("\n").join(nannyHealth.log));
 
-        canvas.ol();
+        if (serviceHealth != null) {
+            canvas.ol();
 
-        for (Health health : nannyHealth.serviceHealth.healthChecks) {
-            canvas.li();
-            addHealthCheck(canvas, health);
-            canvas._li();
+            for (Health health : serviceHealth.healthChecks) {
+                canvas.li();
+                addHealthCheck(canvas, health);
+                canvas._li();
+            }
+            canvas._ol();
         }
-        canvas._ol();
     }
 
     private void addHealthCheck(HtmlCanvas canvas, Health health) throws Exception {
-        canvas.div().option(colorStyle("background-color", health.health))
-            .content(health.health + " " + health.status + " " + health.name + " " + health.description + " " + health.resolution + " " + health.timestamp)
-            ._div();
+        canvas.div(colorStyle("background-color", health.health))
+            .content(health.health + " " + health.status + " " + health.name + " " + health.description + " " + health.resolution + " " + health.timestamp);
     }
 
     HtmlAttributes colorStyle(String key, double health) {
@@ -152,7 +155,8 @@ public class UpenaHealthEndpoints {
     }
 
     String getHEXTrafficlightColor(double value) {
-        return Integer.toHexString(Color.HSBtoRGB((float) value / 3f, 1f, 1f) & 0xffffff);
+        String s = Integer.toHexString(Color.HSBtoRGB((float) value / 3f, 1f, 1f) & 0xffffff);
+        return "000000".substring(s.length()) + s;
     }
 
     @GET
@@ -181,7 +185,7 @@ public class UpenaHealthEndpoints {
 
     private ClusterHealth buildClusterHealth(UriInfo uriInfo) throws Exception {
         ClusterHealth clusterHealth = new ClusterHealth();
-        for (RingHost ringHost : amzaInstance.getRing("master")) {
+        for (RingHost ringHost : amzaInstance.getRing("MASTER")) {
             try {
                 RequestHelper requestHelper = buildRequestHelper(ringHost.getHost(), ringHost.getPort());
                 String path = Joiner.on("/").join(uriInfo.getPathSegments().subList(0, uriInfo.getPathSegments().size() - 1));
@@ -217,7 +221,7 @@ public class UpenaHealthEndpoints {
                 serviceHealth = new ObjectMapper().readValue(Joiner.on("").join(copyLog), ServiceHealth.class);
                 nodeHealth.health = Math.min(nodeHealth.health, serviceHealth.health);
             } catch (Exception x) {
-                LOG.warn("Failed parsing service health for " + id, x);
+                LOG.warn("Failed parsing service health for " + id + " " + Joiner.on("").join(copyLog), x);
                 nodeHealth.health = 0.0d;
                 log.add("Failed to parse serviceHealth" + x.getMessage());
             }
@@ -240,6 +244,9 @@ public class UpenaHealthEndpoints {
         public int port;
         public List<NannyHealth> nannyHealths = new ArrayList<>();
 
+        public NodeHealth() {
+        }
+
         public NodeHealth(String host, int port) {
             this.host = host;
             this.port = port;
@@ -252,6 +259,9 @@ public class UpenaHealthEndpoints {
         public InstanceDescriptor instanceDescriptor;
         public List<String> log;
         public ServiceHealth serviceHealth;
+
+        public NannyHealth() {
+        }
 
         public NannyHealth(InstanceDescriptor instanceDescriptor, List<String> log, ServiceHealth serviceHealth) {
             this.instanceDescriptor = instanceDescriptor;
