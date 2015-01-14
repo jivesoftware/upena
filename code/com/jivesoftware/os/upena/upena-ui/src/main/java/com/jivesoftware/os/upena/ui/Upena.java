@@ -29,7 +29,7 @@ import org.apache.log4j.Logger;
 public class Upena {
 
     public static void main(String[] args) throws IOException {
-        args = new String[]{ "soa-prime-data6.phx1.jivehosted.com" };
+        //args = new String[]{ "soa-prime-data6.phx1.jivehosted.com" };
         Logger.getRootLogger().setLevel(Level.OFF);
 
         System.setProperty("apple.laf.useScreenMenuBar", "true");

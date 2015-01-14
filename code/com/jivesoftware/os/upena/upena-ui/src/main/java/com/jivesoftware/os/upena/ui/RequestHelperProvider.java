@@ -51,7 +51,7 @@ public class RequestHelperProvider extends JPanel {
         add(Box.createRigidArea(new Dimension(10, 0)));
 
         add(new JLabel("user:"));
-        editUserName = new JTextField("annoymous", 120);
+        editUserName = new JTextField("anonymous", 120);
         editUserName.setMaximumSize(new Dimension(120, 24));
         add(editUserName);
         add(Box.createRigidArea(new Dimension(10, 0)));
