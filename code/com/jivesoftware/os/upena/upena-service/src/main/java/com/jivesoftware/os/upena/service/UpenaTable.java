@@ -72,7 +72,7 @@ public class UpenaTable<K extends Key, V extends Stored> {
         return mapper.readValue(got, valueClass);
     }
 
-    ConcurrentNavigableMap<K, TimestampedValue<V>> find(final KeyValueFilter<K, V> filter) throws Exception {
+    public ConcurrentNavigableMap<K, TimestampedValue<V>> find(final KeyValueFilter<K, V> filter) throws Exception {
 
         final ConcurrentNavigableMap<K, TimestampedValue<V>> results = filter.createCollector();
         store.scan(new RowScan<Exception>() {

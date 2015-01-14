@@ -70,14 +70,14 @@ public class Nanny {
         if (got != null && !got.equals(id)) {
             redeploy.set(true);
             LOG.info("Instance changed from " + got + " to " + id);
-        }
-        if (!instancePath.script("status").exists()) {
+        } else if (!instancePath.script("status").exists()) {
             redeploy.set(true);
         }
         if (!redeploy.get()) {
             LOG.info("Service:" + instancePath.toHumanReadableName() + " has NOT changed.");
+        } else {
+            instanceDescriptor.set(id);
         }
-        instanceDescriptor.set(id);
     }
 
     public DeployLog getDeployLog() {
@@ -105,16 +105,21 @@ public class Nanny {
                             instancePath,
                             deployLog,
                             invokeScript);
+                        deployLog.log("Nanny", "destroying in preperation to redeploy. " + this, null);
                         Future<Boolean> detroyedFuture = threadPoolExecutor.submit(destroyTask);
                         if (detroyedFuture.get()) {
 
                             NannyDeployCallable deployTask = new NannyDeployCallable(host, upenaHost, upenaPort,
-                                instanceDescriptor.get(), instancePath,
-                                deployLog, deployableValidator,
+                                instanceDescriptor.get(),
+                                instancePath,
+                                deployLog,
+                                deployableValidator,
                                 invokeScript);
+                            deployLog.log("Nanny", "redeploying. " + this, null);
                             Future<Boolean> deployedFuture = threadPoolExecutor.submit(deployTask);
                             if (deployedFuture.get()) {
                                 redeploy.set(false);
+                                deployLog.log("Nanny", " successfully redeployed. " + this, null);
                             }
                         }
                     }

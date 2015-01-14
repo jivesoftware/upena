@@ -65,8 +65,8 @@ class NannyDeployCallable implements Callable<Boolean> {
     @Override
     public Boolean call() throws Exception {
         try {
+            instancePath.writeInstanceDescriptor(host, upenaHost, upenaPort, id);
             if (deploy()) {
-                instancePath.writeInstanceDescriptor(host, upenaHost, upenaPort, id);
                 if (!invokeScript.invoke(deployLog, instancePath, "init")) {
                     deployLog.log("Nanny", "failed to init service.", null);
                     return false;

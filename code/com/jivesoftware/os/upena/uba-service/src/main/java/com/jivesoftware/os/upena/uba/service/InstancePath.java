@@ -15,6 +15,8 @@
  */
 package com.jivesoftware.os.upena.uba.service;
 
+import com.jivesoftware.os.jive.utils.logger.MetricLogger;
+import com.jivesoftware.os.jive.utils.logger.MetricLoggerFactory;
 import com.jivesoftware.os.upena.routing.shared.InstanceDescriptor;
 import java.io.File;
 import java.io.FileInputStream;
@@ -28,6 +30,8 @@ import java.util.Properties;
 import org.apache.commons.io.FileUtils;
 
 public class InstancePath {
+
+    private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
     private final File root;
     private final NameAndKey[] path;
@@ -86,6 +90,7 @@ public class InstancePath {
                 id.ports.put(portName, new InstanceDescriptor.InstanceDescriptorPort(Integer.parseInt(properties.getProperty(key.toString()))));
             }
         }
+        LOG.info("Read instance descriptor:" + id + " from:" + instanceProperties());
         return id;
     }
 
