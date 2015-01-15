@@ -11,8 +11,8 @@
     <artifactId>global-version-management</artifactId>
     <packaging>pom</packaging>
     <properties>
-        <jive.utils.version>0.60</jive.utils.version>
-        <amza.version>0.8</amza.version>
+        <jive.utils.version>0.61</jive.utils.version>
+        <amza.version>0.11</amza.version>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -108,17 +108,6 @@
                 <version>${jive.utils.version}</version>
             </dependency>
             <dependency>
-                <groupId>oauth.signpost</groupId>
-                <artifactId>signpost-core</artifactId>
-                <version>1.2.1.1</version>
-                <scope>compile</scope>
-            </dependency>
-            <dependency>
-                <groupId>oauth.signpost</groupId>
-                <artifactId>signpost-commonshttp3</artifactId>
-                <version>1.2.1.1</version>
-            </dependency>
-            <dependency>
                 <groupId>com.jivesoftware.os.jive.utils</groupId>
                 <artifactId>logger</artifactId>
                 <version>${jive.utils.version}</version>
@@ -140,30 +129,6 @@
                 <groupId>org.testng</groupId>
                 <artifactId>testng</artifactId>
                 <version>6.8.1</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.powermock</groupId>
-                <artifactId>powermock-api-mockito</artifactId>
-                <version>1.5</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.powermock</groupId>
-                <artifactId>powermock-core</artifactId>
-                <version>1.5</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.powermock</groupId>
-                <artifactId>powermock-module-testng</artifactId>
-                <version>1.5</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.powermock</groupId>
-                <artifactId>powermock-module-testng-common</artifactId>
-                <version>1.5</version>
             </dependency>
 
             <dependency>

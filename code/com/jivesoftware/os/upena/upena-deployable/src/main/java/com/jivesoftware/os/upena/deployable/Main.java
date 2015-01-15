@@ -72,13 +72,12 @@ import de.ruedigermoeller.serialization.FSTConfiguration;
 import java.io.File;
 import java.net.InetAddress;
 import java.util.List;
+import java.util.NavigableMap;
 import java.util.Random;
+import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-import org.mapdb.BTreeMap;
-import org.mapdb.DB;
-import org.mapdb.DBMaker;
 
 public class Main {
 
@@ -156,15 +155,11 @@ public class Main {
 
                     @Override
                     public RowsIndex createRowsIndex(TableName tableName) throws Exception {
-                        final DB db = DBMaker.newDirectMemoryDB()
-                            .closeOnJvmShutdown()
-                            .make();
-                        BTreeMap<RowIndexKey, RowIndexValue> treeMap = db.getTreeMap(tableName.getTableName());
-                        return new MemoryRowsIndex(treeMap, new Flusher() {
+                        NavigableMap<RowIndexKey, RowIndexValue> navigableMap = new ConcurrentSkipListMap<>();
+                        return new MemoryRowsIndex(navigableMap, new Flusher() {
 
                             @Override
                             public void flush() {
-                                db.commit();
                             }
                         });
                     }

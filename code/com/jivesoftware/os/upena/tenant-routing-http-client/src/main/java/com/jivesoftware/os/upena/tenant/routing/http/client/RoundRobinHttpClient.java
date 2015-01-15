@@ -199,4 +199,64 @@ public class RoundRobinHttpClient implements HttpClient {
             }
         });
     }
+
+    @Override
+    public HttpResponse delete(String string) throws HttpClientException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public HttpResponse delete(String string, Map<String, String> map) throws HttpClientException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public HttpStreamResponse deleteStream(String string) throws HttpClientException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public HttpResponse delete(String string, int i) throws HttpClientException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public HttpResponse delete(String string, Map<String, String> map, int i) throws HttpClientException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public HttpStreamResponse deleteStream(String string, int i) throws HttpClientException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public HttpResponse putJson(String string, String string1) throws HttpClientException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public HttpResponse putJson(String string, String string1, Map<String, String> map) throws HttpClientException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public HttpResponse putJson(String string, String string1, int i) throws HttpClientException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public HttpResponse putJson(String string, String string1, Map<String, String> map, int i) throws HttpClientException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public HttpResponse putBytes(String string, byte[] bytes) throws HttpClientException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public HttpResponse putBytes(String string, byte[] bytes, int i) throws HttpClientException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }
