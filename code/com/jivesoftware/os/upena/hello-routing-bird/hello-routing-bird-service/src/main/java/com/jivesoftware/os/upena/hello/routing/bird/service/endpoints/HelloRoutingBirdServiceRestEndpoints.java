@@ -16,8 +16,8 @@
 package com.jivesoftware.os.upena.hello.routing.bird.service.endpoints;
 
 import com.jivesoftware.os.jive.utils.jaxrs.util.ResponseHelper;
-import com.jivesoftware.os.jive.utils.logger.MetricLogger;
-import com.jivesoftware.os.jive.utils.logger.MetricLoggerFactory;
+import com.jivesoftware.os.mlogger.core.MetricLogger;
+import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.hello.routing.bird.service.HelloRoutingBirdService;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;

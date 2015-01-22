@@ -16,8 +16,8 @@
 package com.jivesoftware.os.upena.service;
 
 import com.jivesoftware.os.jive.utils.jaxrs.util.ResponseHelper;
-import com.jivesoftware.os.jive.utils.logger.MetricLogger;
-import com.jivesoftware.os.jive.utils.logger.MetricLoggerFactory;
+import com.jivesoftware.os.mlogger.core.MetricLogger;
+import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.routing.shared.ConnectionDescriptorsRequest;
 import com.jivesoftware.os.upena.routing.shared.ConnectionDescriptorsResponse;
 import com.jivesoftware.os.upena.routing.shared.InstanceDescriptorsRequest;

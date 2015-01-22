@@ -16,8 +16,8 @@
 package com.jivesoftware.os.upena.deployable;
 
 import com.jivesoftware.os.jive.utils.jaxrs.util.ResponseHelper;
-import com.jivesoftware.os.jive.utils.logger.MetricLogger;
-import com.jivesoftware.os.jive.utils.logger.MetricLoggerFactory;
+import com.jivesoftware.os.mlogger.core.MetricLogger;
+import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import java.io.File;
 import javax.inject.Singleton;
 import javax.ws.rs.Consumes;

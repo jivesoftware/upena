@@ -17,8 +17,8 @@ package com.jivesoftware.os.upena.hello.routing.bird.service;
 
 import com.jivesoftware.os.jive.utils.http.client.HttpClientException;
 import com.jivesoftware.os.jive.utils.http.client.HttpResponse;
-import com.jivesoftware.os.jive.utils.logger.MetricLogger;
-import com.jivesoftware.os.jive.utils.logger.MetricLoggerFactory;
+import com.jivesoftware.os.mlogger.core.MetricLogger;
+import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.tenant.routing.http.client.TenantRoutingHttpClient;
 
 /*

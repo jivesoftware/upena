@@ -11,7 +11,8 @@
     <artifactId>global-version-management</artifactId>
     <packaging>pom</packaging>
     <properties>
-        <jive.utils.version>0.61</jive.utils.version>
+        <mlogger-version>0.4</mlogger-version>
+        <jive.utils.version>0.63</jive.utils.version>
         <amza.version>0.11</amza.version>
     </properties>
     <dependencyManagement>
@@ -108,9 +109,9 @@
                 <version>${jive.utils.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.jivesoftware.os.jive.utils</groupId>
-                <artifactId>logger</artifactId>
-                <version>${jive.utils.version}</version>
+                <groupId>com.jivesoftware.os.mlogger</groupId>
+                <artifactId>core</artifactId>
+                <version>${mlogger-version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>

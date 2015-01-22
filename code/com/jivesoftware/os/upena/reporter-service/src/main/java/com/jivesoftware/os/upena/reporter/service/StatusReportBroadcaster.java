@@ -16,7 +16,7 @@
 package com.jivesoftware.os.upena.reporter.service;
 
 import com.jivesoftware.os.jive.utils.base.service.ServiceHandle;
-import com.jivesoftware.os.jive.utils.logger.LoggerSummary;
+import com.jivesoftware.os.mlogger.core.LoggerSummary;
 import com.jivesoftware.os.upena.reporter.shared.StatusReport;
 import java.io.File;
 import java.lang.management.GarbageCollectorMXBean;

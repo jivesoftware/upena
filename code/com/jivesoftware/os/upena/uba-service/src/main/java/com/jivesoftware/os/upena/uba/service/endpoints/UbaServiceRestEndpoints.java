@@ -16,8 +16,8 @@
 package com.jivesoftware.os.upena.uba.service.endpoints;
 
 import com.jivesoftware.os.jive.utils.jaxrs.util.ResponseHelper;
-import com.jivesoftware.os.jive.utils.logger.MetricLogger;
-import com.jivesoftware.os.jive.utils.logger.MetricLoggerFactory;
+import com.jivesoftware.os.mlogger.core.MetricLogger;
+import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.uba.shared.DeployableUpload;
 import com.jivesoftware.os.upena.uba.service.UbaService;
 import javax.ws.rs.Consumes;
