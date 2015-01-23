@@ -38,6 +38,10 @@ class NannyStatusCallable implements Callable<Boolean> {
         this.healthLog = healthLog;
         this.invokeScript = invokeScript;
     }
+    
+    boolean callable() {
+        return invokeScript.exists(instancePath, "status");
+    }
 
     @Override
     public Boolean call() throws Exception {

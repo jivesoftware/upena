@@ -83,13 +83,27 @@ class NannyDeployCallable implements Callable<Boolean> {
     }
 
     private boolean deploy() {
-        File libDir;
+        File libDir = null;
         try {
             libDir = instancePath.lib();
+            System.out.println("Clearing:" + libDir);
             FileUtils.deleteDirectory(libDir);
+            System.out.println("Creating if absent:" + libDir);
             libDir.mkdirs();
         } catch (IOException x) {
-            deployLog.log("Nanny", "failed to cleanup lib dir.", x);
+            deployLog.log("Nanny", "failed to cleanup '" + libDir + "'.", x);
+            return false;
+        }
+
+        File pluginlibDir = null;
+        try {
+            pluginlibDir = instancePath.pluginLib();
+            System.out.println("Clearing:" + pluginlibDir);
+            FileUtils.deleteDirectory(pluginlibDir);
+            System.out.println("Creating if absent:" + pluginlibDir);
+            pluginlibDir.mkdirs();
+        } catch (IOException x) {
+            deployLog.log("Nanny", "failed to cleanup '" + pluginlibDir + "'.", x);
             return false;
         }
 
@@ -101,21 +115,52 @@ class NannyDeployCallable implements Callable<Boolean> {
         System.out.println("------------------------------------------------------------");
         System.out.println(" Resolving:" + id);
         System.out.println("------------------------------------------------------------");
-        String[] versionParts = id.versionName.split(":");
+        String[] deployablecoordinates = id.versionName.trim().split(",");
+        boolean successfulDeploy = deploy(deployablecoordinates[0], remoteRepos, system, session, libDir);
+        if (successfulDeploy) {
+            if (deployablecoordinates.length > 1) {
+                System.out.println("------------------------------------------------------------");
+                System.out.println(" Deploying plugins:" + (deployablecoordinates.length - 1));
+                System.out.println("------------------------------------------------------------");
+
+                for (int i = 1; i < deployablecoordinates.length; i++) {
+                    System.out.println("------------------------------------------------------------");
+                    System.out.println(" Deploying plugin:" + deployablecoordinates[i]);
+                    System.out.println("------------------------------------------------------------");
+                    successfulDeploy |= deploy(deployablecoordinates[i], remoteRepos, system, session, pluginlibDir);
+                }
+
+                System.out.println("------------------------------------------------------------");
+                System.out.println(" Deployed all plugins? " + successfulDeploy);
+                System.out.println("------------------------------------------------------------");
+            }
+        }
+        return successfulDeploy;
+    }
+
+    private boolean deploy(String deployablecoordinate, List<RemoteRepository> remoteRepos, RepositorySystem system, RepositorySystemSession session,
+        File dir) {
+        String[] versionParts = deployablecoordinate.trim().split(":");
+        if (versionParts.length != 4) {
+            System.out.println("deployable coordinates must be of the following form: groupId:artifactId:packaging:version");
+            return false;
+        }
         String groupId = versionParts[0];
         String artifactId = versionParts[1];
-        String version = versionParts[2];
+        String packaging = versionParts[2];
+        String version = versionParts[3];
 
-        Artifact artifact = new DefaultArtifact(groupId, artifactId, "tar.gz", version);
+        Artifact artifact = new DefaultArtifact(groupId, artifactId, packaging, version);
         ArtifactRequest artifactRequest = new ArtifactRequest();
         artifactRequest.setArtifact(artifact);
         artifactRequest.setRepositories(remoteRepos);
 
         ArtifactResult artifactResult;
         try {
-            System.out.println("Resolving " + artifact);
+            System.out.println("------------------------------------------------------------");
+            System.out.println(" Resolving: " + deployablecoordinate);
+            System.out.println("------------------------------------------------------------");
             artifactResult = system.resolveArtifact(session, artifactRequest);
-            System.out.println("artifactResult=" + artifactResult);
             artifact = artifactResult.getArtifact();
             System.out.println(artifact + " resolved to  " + artifact.getFile());
 
@@ -125,14 +170,17 @@ class NannyDeployCallable implements Callable<Boolean> {
         }
 
         try {
-            File tarGzip = instancePath.artifactFile(".tar.gz");
-            System.out.println("------------------------------------------------------------");
-            System.out.println(" Upacking:" + tarGzip);
-            System.out.println("------------------------------------------------------------");
-            FileUtils.copyFile(artifact.getFile(), tarGzip, true);
-            deployLog.log("Nanny", "deployed " + tarGzip, null);
-            if (!explodeArtifact(tarGzip)) {
-                return false;
+
+            if (packaging.equals("tar.gz") || packaging.equals("tgz")) {
+                File tarGzip = instancePath.artifactFile("." + packaging);
+                System.out.println("------------------------------------------------------------");
+                System.out.println(" Upacking:" + tarGzip);
+                System.out.println("------------------------------------------------------------");
+                FileUtils.copyFile(artifact.getFile(), tarGzip, true);
+                deployLog.log("Nanny", "deployed " + tarGzip, null);
+                if (!explodeArtifact(tarGzip)) {
+                    return false;
+                }
             }
             artifact = new DefaultArtifact(groupId + ":" + artifactId + ":" + version);
             artifactRequest = new ArtifactRequest();
@@ -141,13 +189,13 @@ class NannyDeployCallable implements Callable<Boolean> {
             artifactResult = system.resolveArtifact(session, artifactRequest);
             artifact = artifactResult.getArtifact();
 
-            deployLog.log("Nanny", "deployed " + artifact.getFile() + " to " + libDir, null);
-            FileUtils.copyFileToDirectory(artifact.getFile(), libDir, true);
+            deployLog.log("Nanny", "deployed " + artifact.getFile() + " to " + dir, null);
+            FileUtils.copyFileToDirectory(artifact.getFile(), dir, true);
             CollectRequest collectRequest = new CollectRequest();
             collectRequest.setRoot(new Dependency(artifact, ""));
             collectRequest.setRepositories(remoteRepos);
             CollectResult collectResult = system.collectDependencies(session, collectRequest);
-            DeployArtifactDependencies deployArtifactDependencies = new DeployArtifactDependencies(deployLog, system, session, remoteRepos, libDir);
+            DeployArtifactDependencies deployArtifactDependencies = new DeployArtifactDependencies(deployLog, system, session, remoteRepos, dir);
             collectResult.getRoot().accept(deployArtifactDependencies);
             boolean successfulDeploy = deployArtifactDependencies.successfulDeploy();
             deployLog.log("Nanny", "SUCCESS " + successfulDeploy, null);

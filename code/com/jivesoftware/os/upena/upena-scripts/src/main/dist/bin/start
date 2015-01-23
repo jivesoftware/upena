@@ -31,8 +31,22 @@ echo "starting serviceNamed="$SERVICE_NAME
 
 DATE_SUFFIX="-$(/bin/date +%Y-%m-%d_%H%M%S)"
 
+function build_plugin_classpath() {
+    CP=""
+    for JAR in $APP_ROOT/plugin-lib/*.*;
+    do
+      if [ "${CP}x" != "x" ]; then
+        CP="${CP}:"
+      fi
+      CP="${CP}${JAR}"
+    done
+    echo $CP
+}
+
+PLUGIN_CLASSPATH=$(build_plugin_classpath);
+
 # start java process
-echo "java.classpath="${CLASSPATH}
+echo "java.classpath="${CLASSPATH}:${PLUGIN_CLASSPATH}
 echo "java.artifact="${DEPLOYABLE_ARTIFACT}
 echo "java.main="${JAVA_MAIN}
 echo "java.xmx="${JAVA_XMX}
@@ -42,7 +56,7 @@ echo "java.flags="${JAVA_FLAGS}
 
 cd $APP_ROOT && nohup $JAVA_HOME/bin/java \
   -DserviceName=${SERVICE_NAME} \
-  -cp ${DEPLOYABLE_ARTIFACT}:${CLASSPATH} \
+  -cp ${DEPLOYABLE_ARTIFACT}:${CLASSPATH}:${PLUGIN_CLASSPATH} \
   ${JAVA_FLAGS} \
   -Xms${JAVA_XMS}m \
   -Xmx${JAVA_XMX}m \

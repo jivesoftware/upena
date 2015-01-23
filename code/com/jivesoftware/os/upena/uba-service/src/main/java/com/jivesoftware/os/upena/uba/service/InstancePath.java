@@ -35,9 +35,6 @@ public class InstancePath {
 
     private final File root;
     private final NameAndKey[] path;
-    private String host;
-    private String upenaHost;
-    private int upenaPort;
 
     public InstancePath(File root, NameAndKey[] path) {
         this.root = root;
@@ -66,22 +63,19 @@ public class InstancePath {
     InstanceDescriptor readInstanceDescriptor() throws FileNotFoundException, IOException {
         Properties properties = new Properties();
         properties.load(new FileInputStream(instanceProperties()));
-        host = properties.get(instancePrefix + "host").toString();
-        upenaHost = properties.get(instancePrefix + "routesHost").toString();
-        upenaPort = Integer.parseInt(properties.get(instancePrefix + "routesPort").toString());
 
         System.out.println("readInstanceDescriptor:" + properties);
 
         InstanceDescriptor id = new InstanceDescriptor(properties.get(instancePrefix + "clusterKey").toString(),
-                properties.get(instancePrefix + "clusterName").toString(),
-                properties.get(instancePrefix + "serviceKey").toString(),
-                properties.get(instancePrefix + "serviceName").toString(),
-                properties.get(instancePrefix + "releaseGroupKey").toString(),
-                properties.get(instancePrefix + "releaseGroupName").toString(),
-                properties.get(instancePrefix + "instanceKey").toString(),
-                Integer.parseInt(properties.get(instancePrefix + "instanceName").toString()),
-                properties.get(instancePrefix + "version").toString(),
-                properties.get(instancePrefix + "repository").toString());
+            properties.get(instancePrefix + "clusterName").toString(),
+            properties.get(instancePrefix + "serviceKey").toString(),
+            properties.get(instancePrefix + "serviceName").toString(),
+            properties.get(instancePrefix + "releaseGroupKey").toString(),
+            properties.get(instancePrefix + "releaseGroupName").toString(),
+            properties.get(instancePrefix + "instanceKey").toString(),
+            Integer.parseInt(properties.get(instancePrefix + "instanceName").toString()),
+            properties.get(instancePrefix + "version").toString(),
+            properties.get(instancePrefix + "repository").toString());
 
         for (Object key : properties.keySet()) {
             String portKey = key.toString();
@@ -95,9 +89,6 @@ public class InstancePath {
     }
 
     void writeInstanceDescriptor(String host, String upenaHost, int upenaPort, InstanceDescriptor id) throws IOException {
-        this.host = host;
-        this.upenaHost = upenaHost;
-        this.upenaPort = upenaPort;
         List<String> properties = new ArrayList<>();
         properties.add(instancePrefix + "host=" + host);
         properties.add(instancePrefix + "routesHost=" + upenaHost);
@@ -127,6 +118,10 @@ public class InstancePath {
 
     File lib() {
         return new File(path(path, -1), "lib/");
+    }
+
+    File pluginLib() {
+        return new File(path(path, -1), "plugin-lib/");
     }
 
     File serviceRoot() {
