@@ -27,7 +27,7 @@ public class RequestHelperProvider extends JPanel {
     final JTextField editUserName;
     final JPasswordField editPassword;
 
-    public RequestHelperProvider(String host) {
+    public RequestHelperProvider(String lable, String host) {
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
         final ImageIcon background = Util.resize(Util.icon("cluster"), 48, 48);
         JLabel banner = new JLabel(background);
@@ -37,8 +37,7 @@ public class RequestHelperProvider extends JPanel {
         banner.setMaximumSize(new Dimension(72, 48));
         add(banner);
         add(Box.createRigidArea(new Dimension(10, 0)));
-
-        add(new JLabel("host:"));
+        add(new JLabel(lable+" host:"));
         editHost = new JTextField(host, 120);
         editHost.setMaximumSize(new Dimension(120, 24));
         add(editHost);

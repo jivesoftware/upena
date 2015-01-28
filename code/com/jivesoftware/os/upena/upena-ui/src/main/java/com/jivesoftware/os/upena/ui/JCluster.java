@@ -288,7 +288,7 @@ public class JCluster extends JPanel implements DocumentListener {
                             HostAndNannyReport hostAndNannyReport = (HostAndNannyReport) statusTable.getValueAt(row, 0);
                             if (hostAndNannyReport != null) {
                                 String url = "http://" + hostAndNannyReport.host.hostName
-                                        + ":" + hostAndNannyReport.nannyReport.instanceDescriptor.ports.get("manage").port + "/manage/ping";
+                                    + ":" + hostAndNannyReport.nannyReport.instanceDescriptor.ports.get("manage").port + "/manage/ping";
                                 try {
                                     String curl = Curl.create(1000, 1000).curl(url);
                                     if ("ping".equals(curl)) {
@@ -300,7 +300,7 @@ public class JCluster extends JPanel implements DocumentListener {
                                         }
                                         try {
                                             String statuUrl = "http://" + hostAndNannyReport.host.hostName
-                                                    + ":" + hostAndNannyReport.nannyReport.instanceDescriptor.ports.get("manage").port + "/manage/announcement/json";
+                                                + ":" + hostAndNannyReport.nannyReport.instanceDescriptor.ports.get("manage").port + "/manage/announcement/json";
 
                                             String statusJson = Curl.create(1000, 1000).curl(statuUrl);
                                             if (statusJson != null) {
@@ -349,8 +349,8 @@ public class JCluster extends JPanel implements DocumentListener {
                             HostAndNannyReport hostAndNannyReport = (HostAndNannyReport) jTable.getModel().getValueAt(row, 0);
                             try {
                                 openWebpage(new URI(
-                                        "http://" + hostAndNannyReport.host.hostName
-                                        + ":" + hostAndNannyReport.nannyReport.instanceDescriptor.ports.get("manage").port + "/manage/help"));
+                                    "http://" + hostAndNannyReport.host.hostName
+                                    + ":" + hostAndNannyReport.nannyReport.instanceDescriptor.ports.get("manage").port + "/manage/help"));
                             } catch (URISyntaxException ex) {
                                 ex.printStackTrace();
                             }
@@ -780,8 +780,8 @@ public class JCluster extends JPanel implements DocumentListener {
         tail.setHighlighter(hilit);
 
         JScrollPane scrollTail = new JScrollPane(tail,
-                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+            JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+            JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         scrollTail.setPreferredSize(new Dimension(-1, 400));
 
         status = new JLabel();
@@ -802,13 +802,13 @@ public class JCluster extends JPanel implements DocumentListener {
         jTable.setFillsViewportHeight(true);
         jTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         jTable.getSelectionModel().addListSelectionListener(
-                new ListSelectionListener() {
-                    @Override
-                    public void valueChanged(ListSelectionEvent e) {
+            new ListSelectionListener() {
+                @Override
+                public void valueChanged(ListSelectionEvent e) {
 
-                        buttons.show(jTable, 0, 0);
-                    }
-                });
+                    buttons.show(jTable, 0, 0);
+                }
+            });
 
         jTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         jTable.getColumnModel().getColumn(0).setPreferredWidth(27);
@@ -829,7 +829,7 @@ public class JCluster extends JPanel implements DocumentListener {
         panel.add(scrollJList, BorderLayout.CENTER);
 
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
-                panel, searchable);
+            panel, searchable);
         splitPane.setOneTouchExpandable(true);
         splitPane.setDividerLocation(400);
 
@@ -847,7 +847,7 @@ public class JCluster extends JPanel implements DocumentListener {
 
     private void status(HostAndNannyReport hostAndNannyReport, String manageEndpoint) throws IOException {
         String url = "http://" + hostAndNannyReport.host.hostName
-                + ":" + hostAndNannyReport.nannyReport.instanceDescriptor.ports.get("manage").port + manageEndpoint;
+            + ":" + hostAndNannyReport.nannyReport.instanceDescriptor.ports.get("manage").port + manageEndpoint;
         try {
             String curl = Curl.create(15000, 15000).curl(url);
             tail.append(curl);

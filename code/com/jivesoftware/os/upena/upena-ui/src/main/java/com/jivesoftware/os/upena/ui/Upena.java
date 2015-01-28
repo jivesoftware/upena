@@ -17,6 +17,7 @@ package com.jivesoftware.os.upena.ui;
 
 import java.awt.Color;
 import java.awt.Image;
+import java.awt.PopupMenu;
 import java.io.IOException;
 import javax.swing.ImageIcon;
 import javax.swing.UIManager;
@@ -62,11 +63,12 @@ public class Upena {
         if (icon != null) {
             upena.setIconImage(icon.getImage().getScaledInstance(48, 48, Image.SCALE_SMOOTH));
             
-            
-//            Application application = Application.getApplication();
-//            application.setDockIconImage(icon.getImage());
-//            application.setDockIconBadge("Upena");
-//            application.setDockMenu(new PopupMenu("Upena"));
+            if (System.getProperty("mrj.version") != null) {
+                com.apple.eawt.Application application = com.apple.eawt.Application.getApplication();
+                application.setDockIconImage(icon.getImage());
+                application.setDockIconBadge("Upena");
+                application.setDockMenu(new PopupMenu("Upena"));
+            }
 
         }
 

@@ -31,12 +31,16 @@ public class JUpena extends javax.swing.JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Upena - (hawaiian 'net' pron. OohPenAh)");
 
+        JPanel helpers = new JPanel(new BorderLayout(1, 1));
+        RequestHelperProvider helperProviderA = new RequestHelperProvider("A", defaultHost);
+        helpers.add(helperProviderA, BorderLayout.NORTH);
+        RequestHelperProvider helperProviderB = new RequestHelperProvider("B", defaultHost);
+        helpers.add(helperProviderB, BorderLayout.SOUTH);
+
         JPanel v = new JPanel(new BorderLayout(1, 1));
+        v.add(helpers, BorderLayout.NORTH);
 
-        RequestHelperProvider helperProvider = new RequestHelperProvider(defaultHost);
-        v.add(helperProvider, BorderLayout.NORTH);
-
-        JUpenaServices upena = new JUpenaServices(helperProvider, new JObjectFactory(helperProvider));
+        JUpenaServices upena = new JUpenaServices(helperProviderA, helperProviderB, new JObjectFactory(helperProviderA));
         v.add(upena, BorderLayout.CENTER);
 
         add(v);

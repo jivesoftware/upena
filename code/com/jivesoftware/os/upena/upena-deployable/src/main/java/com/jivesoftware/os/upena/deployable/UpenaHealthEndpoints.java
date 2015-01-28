@@ -121,6 +121,7 @@ public class UpenaHealthEndpoints {
     void addHeader(UriInfo uriInfo, int minus, HtmlCanvas h) throws IOException {
         List<PathSegment> segments = uriInfo.getPathSegments();
         String rootPath = Joiner.on("/").join(segments.subList(0, segments.size() + minus));
+        h.button(HtmlAttributesFactory.onClick("location.href='" + rootPath + "'")).content("Upena");
         h.button(HtmlAttributesFactory.onClick("location.href='" + rootPath + "health'")).content("Health");
         h.button(HtmlAttributesFactory.onClick("location.href='" + rootPath + "instances'")).content("Instances");
         h.button(HtmlAttributesFactory.onClick("location.href='" + rootPath + "clusters'")).content("Clusters");
@@ -471,6 +472,10 @@ public class UpenaHealthEndpoints {
         try {
             final HtmlCanvas h = new HtmlCanvas();
             h.html();
+            h.head();
+            h.style().content(mouseOverPopupCSS());
+            h._head();
+
             h.body(bodyStyle);
             addHeader(uriInfo, -1, h);
             h.h1().content("Health");
@@ -548,10 +553,9 @@ public class UpenaHealthEndpoints {
             h.br();
 
             h.div()
-                .div(colorStyle("background-color", clusterHealth.health))
-                .content(String.valueOf(clusterHealth.health))
-                .h1()
-                .content("Cluster")
+                .div(colorStyle("background-color", clusterHealth.health, 0.75f))
+                .h1().content(String.valueOf(clusterHealth.health) + " Cluster")
+                .content("")
                 .content("");
 
             h.ol(HtmlAttributesFactory.style("list-style-type:none;"));
@@ -563,6 +567,7 @@ public class UpenaHealthEndpoints {
             }
             h._ol();
             addFooter(h);
+            h.div(HtmlAttributesFactory.style("height:800px;")).content("");
             h._body();
             h._html();
 
@@ -573,52 +578,66 @@ public class UpenaHealthEndpoints {
     }
     private final HtmlAttributes bodyStyle = HtmlAttributesFactory
         .style("background:#ffffff "
-            //            + "url(http://www.wallchan.com/images/sandbox/1305883948-water-wave-wallpaper.jpg) no-repeat center center fixed;"
+            //+ " url(https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcRBSPtpipy4TvLkaIjPujg_D6zhk4m8-_1HTnQQCj77KUSzoUrk) no-repeat center center fixed;"
             + "  -webkit-background-size: cover;"
             + "  -moz-background-size: cover;"
             + "  -o-background-size: cover;"
-            + "  background-size: cover;");
+            + "  background-size: cover;"
+            + " color: black;");
+
+    private final String shadow = "-moz-box-shadow:    3px 3px 5px 6px #ccc;"
+        + "  -webkit-box-shadow: 3px 3px 5px 6px #ccc;"
+        + "  box-shadow:         3px 3px 5px 6px #ccc;";
+
+    private final String innerShadow = "-moz-box-shadow:    inset 0 0 10px #000000;"
+        + "   -webkit-box-shadow: inset 0 0 10px #000000;"
+        + "   box-shadow:         inset 0 0 10px #000000;";
 
     private void addNodeHealth(HtmlCanvas canvas, NodeHealth nodeHealth) throws Exception {
 
         canvas.div()
-            .div(colorStyle("background-color", nodeHealth.health))
-            .content(String.valueOf(nodeHealth.health))
+            .div(colorStyle("background-color", nodeHealth.health, 0.75f))
+            .content(String.valueOf(nodeHealth.health) + " " + nodeHealth.host + ":" + nodeHealth.port)
             .h2()
-            .content(nodeHealth.host + ":" + nodeHealth.port)
+            .content("")
             .content("");
 
         canvas.ol(HtmlAttributesFactory.style("list-style-type:none;"));
-        for (NannyHealth nannyHealth : nodeHealth.nannyHealths) {
+        if (nodeHealth.nannyHealths.isEmpty()) {
             canvas.li();
-            addNannyHealth(canvas, nodeHealth, nannyHealth);
+            canvas.div().content("no services");
             canvas._li();
+        } else {
+            for (NannyHealth nannyHealth : nodeHealth.nannyHealths) {
+                canvas.li();
+                addNannyHealth(canvas, nodeHealth, nannyHealth);
+                canvas._li();
+            }
         }
         canvas._ol();
+    }
+
+    private String mouseOverPopupCSS() {
+        return "span.dropt {border-bottom: thin dotted; }\n"
+            + "span.dropt:hover {text-decoration: none; background: #ffffff; z-index: 6; }\n"
+            + "span.dropt span {position: absolute; left: -9999px;\n"
+            + "  margin: 20px 0 0 0px; padding: 3px 3px 3px 3px;\n"
+            + "  border-style:solid; border-color:black; border-width:1px; z-index: 6;}\n"
+            + "span.dropt:hover span {left: 2%; background: #ffffff;} \n"
+            + "span.dropt span {position: absolute; left: -9999px;\n"
+            + "  margin: 4px 0 0 0px; padding: 3px 3px 3px 3px; \n"
+            + "  border-style:solid; border-color:black; border-width:1px;}\n"
+            + "span.dropt:hover span {margin: 20px 0 0 170px; background: #ffffff; z-index:6;} ";
     }
 
     private void addNannyHealth(HtmlCanvas canvas, NodeHealth nodeHealth, NannyHealth nannyHealth) throws Exception {
         InstanceDescriptor id = nannyHealth.instanceDescriptor;
         ServiceHealth serviceHealth = nannyHealth.serviceHealth;
 
-        canvas.div()
-            .div(colorStyle("background-color", (serviceHealth == null) ? 0.0d : serviceHealth.health))
-            .content(String.valueOf((serviceHealth == null) ? 0.0d : serviceHealth.health))
-            .h3()
-            .a(HtmlAttributesFactory.href("http://" + nodeHealth.host + ":" + nannyHealth.instanceDescriptor.ports.get("manage").port + "/manage/ui"))
-            .content(id.clusterName + " " + id.serviceName + " " + id.instanceName + " " + id.versionName)
-            ._h3()
-            .content("");
-        //
-
-        StringBuilder sb = new StringBuilder();
-        for (Entry<String, InstanceDescriptor.InstanceDescriptorPort> port : id.ports.entrySet()) {
-            sb.append(port.getKey()).append("=").append(port.getValue().port).append(" ");
-        }
-
-        canvas.ol(HtmlAttributesFactory.style("list-style-type:none;"));
-        canvas.pre().content(sb.toString());
-        canvas.pre().content(Joiner.on("\n").join(nannyHealth.log));
+        canvas.div();
+        canvas.div(colorStyle("background-color", (serviceHealth == null) ? 0.0d : serviceHealth.health, 0.75f));
+        canvas.span(HtmlAttributesFactory.class_("dropt"));
+        canvas.span(HtmlAttributesFactory.style("width:800px;"));
 
         if (serviceHealth != null) {
 
@@ -635,7 +654,7 @@ public class UpenaHealthEndpoints {
             for (Health health : serviceHealth.healthChecks) {
                 if (-Double.MAX_VALUE != health.health) {
                     canvas.tr();
-                    canvas.td(colorStyle("background-color", health.health)).content(String.valueOf(health.health));
+                    canvas.td(colorStyle("background-color", health.health, 0.0f)).content(String.valueOf(health.health));
                     canvas.td(border).content(String.valueOf(health.name));
                     canvas.td(border).content(String.valueOf(health.status));
                     canvas.td(border).content(String.valueOf(health.description));
@@ -645,18 +664,46 @@ public class UpenaHealthEndpoints {
                     if (health.checkIntervalMillis > 0) {
                         ageHealth = 1d - (ageInMillis / health.checkIntervalMillis);
                     }
-                    canvas.td(colorStyle("background-color", ageHealth)).content(String.valueOf(ageInMillis));
+                    canvas.td(colorStyle("background-color", ageHealth, 0.0f)).content(String.valueOf(ageInMillis));
                     canvas._tr();
                 }
             }
             canvas._table();
 
         }
-        canvas._ol();
+
+        canvas.content("");
+        canvas.content(String.valueOf((serviceHealth == null) ? 0.0d : serviceHealth.health) + " " + id.serviceName + " " + id.instanceName);
+        canvas.content("");
+        canvas.h3();
+        canvas.a(HtmlAttributesFactory.href("http://" + nodeHealth.host + ":" + nannyHealth.instanceDescriptor.ports.get("manage").port + "/manage/ui"));
+        canvas.table(HtmlAttributesFactory.style("background-color:gray; padding: 8px;margin: 8px;" + roundBorder + " " + shadow
+            + " .hover { background-color: #eee; } "));
+        canvas.tr();
+        canvas.td().content(id.clusterName);
+        canvas.td().content(id.serviceName);
+        canvas.td().content(id.instanceName);
+        canvas.td().content(id.versionName);
+        canvas._tr();
+        canvas.tr();
+        for (Entry<String, InstanceDescriptor.InstanceDescriptorPort> port : id.ports.entrySet()) {
+            canvas.td().content(port.getKey() + "=" + port.getValue().port);
+        }
+        canvas._tr();
+        for (String log : nannyHealth.log) {
+            canvas.tr();
+            canvas.td().pre().content(log)._td();
+            canvas._tr();
+        }
+        canvas._table();
+        canvas._a();
+        canvas._h3();
+        canvas.content("");
     }
 
-    HtmlAttributes colorStyle(String key, double health) {
-        return HtmlAttributesFactory.style(key + ":#" + getHEXTrafficlightColor(health, 1.0F) + ";float: left;padding: 8px;margin: 8px;" + roundBorder);
+    HtmlAttributes colorStyle(String key, double health, float alpha) {
+        return HtmlAttributesFactory.style(key + ":#" + getHEXTrafficlightColor(health, 1.0F) + ";padding: 8px;margin: 8px;" + roundBorder
+            + " " + shadow); //+ " opacity:" + alpha + "; filter:alpha(opacity=" + (100 * alpha) + ");");
     }
 
     String getHEXTrafficlightColor(double value, float sat) {

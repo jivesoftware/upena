@@ -34,11 +34,15 @@ import javax.swing.event.ChangeListener;
 
 public class JUpenaServices extends JPanel {
 
-    RequestHelperProvider requestHelperProvider;
+    RequestHelperProvider requestHelperProviderA;
+    RequestHelperProvider requestHelperProviderB;
     JObjectFactory factory;
 
-    public JUpenaServices(RequestHelperProvider requestHelperProvider, JObjectFactory factory) {
-        this.requestHelperProvider = requestHelperProvider;
+    public JUpenaServices(RequestHelperProvider requestHelperProviderA,
+        RequestHelperProvider requestHelperProviderB,
+        JObjectFactory factory) {
+        this.requestHelperProviderA = requestHelperProviderA;
+        this.requestHelperProviderB = requestHelperProviderB;
         this.factory = factory;
         initComponents();
     }
@@ -46,7 +50,7 @@ public class JUpenaServices extends JPanel {
     private void initComponents() {
 
         JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.SCROLL_TAB_LAYOUT);
-        JCluster cluster = new JCluster(requestHelperProvider, factory);
+        JCluster cluster = new JCluster(requestHelperProviderA, factory);
         tabbedPane.add("Status", cluster);
 
         final JObject<? extends Key, ?, ?> instances = factory.create(Instance.class, true, null);
@@ -56,19 +60,19 @@ public class JUpenaServices extends JPanel {
         tabbedPane.add("Hosts", factory.create(Host.class, true, null));
         tabbedPane.add("Services", factory.create(Service.class, true, null));
 
-        JConfig config = new JConfig(requestHelperProvider, factory);
+        JConfig config = new JConfig(requestHelperProviderA, requestHelperProviderB, factory);
         tabbedPane.add("Config", config);
 
         tabbedPane.add(new JSeparator(SwingConstants.VERTICAL));
 
         tabbedPane.add("Tenants", factory.create(Tenant.class, true, null));
 
-        JRoutes routes = new JRoutes(requestHelperProvider, factory);
+        JRoutes routes = new JRoutes(requestHelperProviderA, factory);
         tabbedPane.add("Routes", routes);
 
         tabbedPane.add(new JSeparator(SwingConstants.VERTICAL));
 
-        JAmza amza = new JAmza(requestHelperProvider);
+        JAmza amza = new JAmza(requestHelperProviderA);
         tabbedPane.add("Admin", amza);
 
         tabbedPane.setPreferredSize(new Dimension(800, 800));

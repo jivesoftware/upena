@@ -58,7 +58,8 @@ import javax.swing.border.SoftBevelBorder;
 
 public class JConfig extends JPanel {
 
-    RequestHelperProvider requestHelperProvider;
+    RequestHelperProvider requestHelperProviderA;
+    RequestHelperProvider requestHelperProviderB;
     JObjectFactory factory;
     JPanel viewResults;
 
@@ -78,8 +79,11 @@ public class JConfig extends JPanel {
     JTextField filterValues;
     JToggleButton hideDefaults;
 
-    public JConfig(RequestHelperProvider requestHelperProvider, JObjectFactory factory) {
-        this.requestHelperProvider = requestHelperProvider;
+    public JConfig(RequestHelperProvider requestHelperProviderA,
+        RequestHelperProvider requestHelperProviderB,
+        JObjectFactory factory) {
+        this.requestHelperProviderA = requestHelperProviderA;
+        this.requestHelperProviderB = requestHelperProviderB;
         this.factory = factory;
         Runnable changed = new Runnable() {
 
@@ -260,7 +264,7 @@ public class JConfig extends JPanel {
                         }
                     }
                     if (update) {
-                        UpenaConfig gotUpdated = requestHelperProvider.get().executeRequest(dao.override, "/upenaConfig/set", UpenaConfig.class, null);
+                        UpenaConfig gotUpdated = requestHelperProviderA.get().executeRequest(dao.override, "/upenaConfig/set", UpenaConfig.class, null);
                         System.out.println("Updated:" + gotUpdated);
                     }
                     boolean remove = false;
@@ -275,7 +279,7 @@ public class JConfig extends JPanel {
                         }
                     }
                     if (remove) {
-                        UpenaConfig gotRemoved = requestHelperProvider.get().executeRequest(dao.override, "/upenaConfig/remove", UpenaConfig.class, null);
+                        UpenaConfig gotRemoved = requestHelperProviderA.get().executeRequest(dao.override, "/upenaConfig/remove", UpenaConfig.class, null);
                         System.out.println("Removed:" + gotRemoved);
                     }
                 }
@@ -288,8 +292,8 @@ public class JConfig extends JPanel {
     public void refresh() {
         aNames.clear();
         bNames.clear();
-        refresh(aFindInstances, aConfigKeys, aConfigs, aNames);
-        refresh(bFindInstances, bConfigKeys, bConfigs, bNames);
+        refresh(aFindInstances, aConfigKeys, aConfigs, aNames, requestHelperProviderA);
+        refresh(bFindInstances, bConfigKeys, bConfigs, bNames, requestHelperProviderB);
         filter();
 
     }
@@ -297,7 +301,8 @@ public class JConfig extends JPanel {
     void refresh(JFilterInstances find,
             Map<String, String> configKeys,
             Map<String, DefaultAndOverride> configs,
-            Map<String, String> names) {
+            Map<String, String> names,
+            RequestHelperProvider helperProvider) {
 
         try {
             configs.clear();
@@ -318,13 +323,13 @@ public class JConfig extends JPanel {
                 return;
             }
 
-            ConcurrentSkipListMap<InstanceKey, TimestampedValue<Instance>> results = requestHelperProvider.get().executeRequest(filter,
+            ConcurrentSkipListMap<InstanceKey, TimestampedValue<Instance>> results = helperProvider.get().executeRequest(filter,
                     "/upena/instance/find", InstanceFilter.Results.class, null);
             if (results != null) {
 
                 for (Map.Entry<InstanceKey, TimestampedValue<Instance>> e : results.entrySet()) {
                     if (!e.getValue().getTombstoned()) {
-                        getProperties(e.getKey(), e.getValue().getValue(), configs, names, filter, configKeys);
+                        getProperties(e.getKey(), e.getValue().getValue(), configs, names, filter, configKeys, helperProvider);
                     }
                 }
             }
@@ -338,7 +343,8 @@ public class JConfig extends JPanel {
             Map<String, DefaultAndOverride> configs,
             Map<String, String> names,
             InstanceFilter filter,
-            Map<String, String> configKeys) {
+            Map<String, String> configKeys,
+            RequestHelperProvider helperProvider) {
         UpenaConfig get = new UpenaConfig("default",
                 instanceKey.getKey(),
                 new HashMap<String, String>());
@@ -349,28 +355,28 @@ public class JConfig extends JPanel {
         }
         String k = instance.clusterKey.getKey();
         if (!names.containsKey(k)) {
-            Cluster cluster = get(Cluster.class, new ClusterKey(k), "cluster");
+            Cluster cluster = get(helperProvider, Cluster.class, new ClusterKey(k), "cluster");
             if (cluster != null) {
                 names.put(k, cluster.name);
             }
         }
         k = instance.hostKey.getKey();
         if (!names.containsKey(k)) {
-            Host host = get(Host.class, new HostKey(k), "host");
+            Host host = get(helperProvider, Host.class, new HostKey(k), "host");
             if (host != null) {
                 names.put(k, host.name);
             }
         }
         k = instance.serviceKey.getKey();
         if (!names.containsKey(k)) {
-            Service service = get(Service.class, new ServiceKey(k), "service");
+            Service service = get(helperProvider, Service.class, new ServiceKey(k), "service");
             if (service != null) {
                 names.put(k, service.name);
             }
         }
         k = instance.releaseGroupKey.getKey();
         if (!names.containsKey(k)) {
-            ReleaseGroup releaseGroup = get(ReleaseGroup.class, new ReleaseGroupKey(k), "releaseGroup");
+            ReleaseGroup releaseGroup = get(helperProvider, ReleaseGroup.class, new ReleaseGroupKey(k), "releaseGroup");
             if (releaseGroup != null) {
                 names.put(k, releaseGroup.name);
             }
@@ -391,11 +397,11 @@ public class JConfig extends JPanel {
         name += instance.instanceId;
         names.put(instanceKey.getKey(), name);
 
-        UpenaConfig gotDefault = requestHelperProvider.get().executeRequest(get, "/upenaConfig/get", UpenaConfig.class, null);
+        UpenaConfig gotDefault = helperProvider.get().executeRequest(get, "/upenaConfig/get", UpenaConfig.class, null);
         UpenaConfig getOverride = new UpenaConfig("override",
                 instanceKey.getKey(),
                 new HashMap<String, String>());
-        UpenaConfig gotOverride = requestHelperProvider.get().executeRequest(getOverride, "/upenaConfig/get", UpenaConfig.class, null);
+        UpenaConfig gotOverride = helperProvider.get().executeRequest(getOverride, "/upenaConfig/get", UpenaConfig.class, null);
 
         if (gotDefault != null && gotOverride != null) {
             for (String pk : gotDefault.properties.keySet()) {
@@ -619,8 +625,8 @@ public class JConfig extends JPanel {
         return name;
     }
 
-    public <K, V> V get(final Class<V> valueClass, final K key, String context) {
-        V v = requestHelperProvider.get().executeRequest(key, "/upena/" + context + "/get", valueClass, null);
+    public <K, V> V get(RequestHelperProvider helperProvider, final Class<V> valueClass, final K key, String context) {
+        V v = helperProvider.get().executeRequest(key, "/upena/" + context + "/get", valueClass, null);
         System.out.println(v);
         return v;
     }
