@@ -38,7 +38,7 @@ class NannyStatusCallable implements Callable<Boolean> {
         this.healthLog = healthLog;
         this.invokeScript = invokeScript;
     }
-    
+
     boolean callable() {
         return invokeScript.exists(instancePath, "status");
     }
@@ -68,7 +68,7 @@ class NannyStatusCallable implements Callable<Boolean> {
                 if (invokeScript.invoke(deployLog, instancePath, "status")) {
                     deployLog.log("Service:" + instancePath.toHumanReadableName() + " 'status'", "ONLINE", null);
                     if (!invokeScript.invoke(healthLog, instancePath, "health")) {
-                        deployLog.log("Service:" + instancePath.toHumanReadableName() + " 'health'" , "nanny health command failed", null);
+                        deployLog.log("Service:" + instancePath.toHumanReadableName() + " 'health'", "nanny health command failed", null);
                     }
                     healthLog.commit();
                     break;
