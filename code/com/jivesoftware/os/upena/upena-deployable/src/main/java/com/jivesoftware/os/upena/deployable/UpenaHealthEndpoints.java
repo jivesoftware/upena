@@ -857,14 +857,16 @@ public class UpenaHealthEndpoints {
 
     private ClusterHealth buildClusterHealth(UriInfo uriInfo) throws Exception {
         ClusterHealth clusterHealth = new ClusterHealth();
-        for (RingHost ringHost : new RingHost[]{
+        /*for (RingHost ringHost : new RingHost[]{
             new RingHost("soa-prime-data5.phx1.jivehosted.com", 1175),
             new RingHost("soa-prime-data6.phx1.jivehosted.com", 1175),
             new RingHost("soa-prime-data7.phx1.jivehosted.com", 1175),
             new RingHost("soa-prime-data8.phx1.jivehosted.com", 1175),
             new RingHost("soa-prime-data9.phx1.jivehosted.com", 1175),
             new RingHost("soa-prime-data10.phx1.jivehosted.com", 1175)
-        }) { //amzaInstance.getRing("MASTER")) {
+        }) { //amzaInstance.getRing("MASTER")) {*/
+
+        for (RingHost ringHost : amzaInstance.getRing("MASTER")) {
             try {
                 RequestHelper requestHelper = buildRequestHelper(ringHost.getHost(), ringHost.getPort());
                 String path = Joiner.on("/").join(uriInfo.getPathSegments().subList(0, uriInfo.getPathSegments().size()));
