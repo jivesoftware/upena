@@ -39,6 +39,10 @@ public class DeployableScriptInvoker {
         return scriptFile.exists();
     }
 
+    public String scriptPath( InstancePath instancePath, String script) {
+        return instancePath.toHumanReadableName() + " bin/" + script;
+    }
+
     public Boolean invoke(final CommandLog commandLog, final InstancePath instancePath, final String script) {
         final String context = "Service:" + instancePath.toHumanReadableName() + " bin/" + script;
         try {

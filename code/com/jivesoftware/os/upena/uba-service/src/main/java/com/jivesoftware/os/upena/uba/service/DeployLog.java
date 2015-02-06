@@ -55,6 +55,17 @@ public class DeployLog implements CommandLog {
         }
     }
 
+    List<String> peek() {
+        ArrayList peek = new ArrayList<>();
+        for (Iterator it = messages.iterator(); it.hasNext();) {
+            Object object = it.next();
+            if (object != null) {
+                peek.add(object.toString());
+            }
+        }
+        return peek;
+    }
+
     @Override
     synchronized public void commit() {
         state.set("Log cleared");

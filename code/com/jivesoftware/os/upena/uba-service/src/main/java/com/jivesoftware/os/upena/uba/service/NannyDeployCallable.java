@@ -15,6 +15,7 @@
  */
 package com.jivesoftware.os.upena.uba.service;
 
+import com.google.common.base.Joiner;
 import com.jivesoftware.os.jive.utils.shell.utils.Untar;
 import com.jivesoftware.os.jive.utils.shell.utils.Unzip;
 import com.jivesoftware.os.upena.routing.shared.InstanceDescriptor;
@@ -45,12 +46,15 @@ class NannyDeployCallable implements Callable<Boolean> {
     private final InstanceDescriptor id;
     private final InstancePath instancePath;
     private final DeployLog deployLog;
+    private final HealthLog healthLog;
     private final DeployableValidator deployableValidator;
     private final DeployableScriptInvoker invokeScript;
 
     public NannyDeployCallable(String host, String upenaHost, int upenaPort,
         InstanceDescriptor id, InstancePath instancePath,
-        DeployLog deployLog, DeployableValidator deployableValidator,
+        DeployLog deployLog,
+        HealthLog healthLog,
+        DeployableValidator deployableValidator,
         DeployableScriptInvoker invokeScript) {
         this.host = host;
         this.upenaHost = upenaHost;
@@ -58,6 +62,7 @@ class NannyDeployCallable implements Callable<Boolean> {
         this.id = id;
         this.instancePath = instancePath;
         this.deployLog = deployLog;
+        this.healthLog = healthLog;
         this.deployableValidator = deployableValidator;
         this.invokeScript = invokeScript;
     }
@@ -69,15 +74,19 @@ class NannyDeployCallable implements Callable<Boolean> {
             if (deploy()) {
                 if (!invokeScript.invoke(deployLog, instancePath, "init")) {
                     deployLog.log("Nanny", "failed to init service.", null);
+                    healthLog.forecedHealthState("Service startup", "Failed to while calling init:" + Joiner.on("\n").join(deployLog.peek()), "Check logs.");
                     return false;
                 }
             } else {
                 deployLog.log("Nanny", "failed to deploy artifact.", null);
+                healthLog.forecedHealthState("Service startup", "Failed to deploy:" + Joiner.on("\n").join(deployLog.peek()), "Check logs.");
                 return false;
             }
+            healthLog.forecedHealthState("Service deployed", "Service will be consider unhealthy until first health check is successful.", "");
             return true;
         } catch (IOException x) {
             deployLog.log("Nanny", "failed.", x);
+            healthLog.forecedHealthState("Service startup", "Nanny failed." + Joiner.on("\n").join(deployLog.peek()), "Check logs.");
             return false;
         }
     }

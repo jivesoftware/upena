@@ -104,6 +104,7 @@ public class Nanny {
                         NannyDestroyCallable destroyTask = new NannyDestroyCallable(
                             instancePath,
                             deployLog,
+                            healthLog,
                             invokeScript);
                         deployLog.log("Nanny", "destroying in preperation to redeploy. " + this, null);
                         Future<Boolean> detroyedFuture = threadPoolExecutor.submit(destroyTask);
@@ -113,6 +114,7 @@ public class Nanny {
                                 instanceDescriptor.get(),
                                 instancePath,
                                 deployLog,
+                                healthLog,
                                 deployableValidator,
                                 invokeScript);
                             deployLog.log("Nanny", "redeploying. " + this, null);
@@ -153,6 +155,7 @@ public class Nanny {
         NannyDestroyCallable nannyTask = new NannyDestroyCallable(
             instancePath,
             deployLog,
+            healthLog,
             invokeScript);
         Future<Boolean> waitForDestory = threadPoolExecutor.submit(nannyTask);
         return waitForDestory.get();

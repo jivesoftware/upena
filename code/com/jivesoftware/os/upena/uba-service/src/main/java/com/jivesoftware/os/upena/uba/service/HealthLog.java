@@ -54,4 +54,19 @@ public class HealthLog implements CommandLog {
         return new ArrayList<>(commited);
     }
 
+    public void forecedHealthState(String name, String description, String resolution) {
+        commit();
+        log("FailedHealth", "{\n"
+            + "\"health\" : \"0.0\",\n"
+            + "\"healthChecks\" : [ {\n"
+            + "\"name\" : \"" + name + "\",\n"
+            + "\"health\" : \"0.0\",\n"
+            + "\"status\" : \" unhealthy\",\n"
+            + "\"description\" : \"" + description + "\",\n"
+            + "\"resolution\" : \"" + resolution + "\",\n"
+            + "\"timestamp\" : \"" + System.currentTimeMillis() + "\"\n"
+            + "\"checkIntervalMillis\" : \"" + 5000 + "\"\n"
+            + "  } ] }\n", null);
+        commit();
+    }
 }

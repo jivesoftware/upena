@@ -50,28 +50,45 @@ class NannyStatusCallable implements Callable<Boolean> {
                 deployLog.log("Service:" + instancePath.toHumanReadableName() + " 'status'", "ONLINE", null);
                 if (!invokeScript.invoke(healthLog, instancePath, "health")) {
                     deployLog.log("Service:" + instancePath.toHumanReadableName() + " 'health'", "nanny health command failed", null);
+                    healthLog.forecedHealthState("Service health",
+                        "Service is failing to report health", "Look at logs or health script:" + invokeScript.scriptPath(instancePath, "health"));
+                    return true;
                 }
                 healthLog.commit();
                 return true;
             }
+            healthLog.forecedHealthState("Service Startup",
+                "Service is attempting to start. Phase: configuring...", "Be patient");
             if (!invokeScript.invoke(deployLog, instancePath, "config")) {
                 deployLog.log("Service:" + instancePath.toHumanReadableName() + " 'config'", "nanny health command failed", null);
+                healthLog.forecedHealthState("Service Config",
+                    "Service is failing to generate config", "Look at config script:" + invokeScript.scriptPath(instancePath, "config"));
                 return false;
             }
+            healthLog.forecedHealthState("Service Startup",
+                "Service is attempting to start. Phase: start...", "Be patient");
             if (!invokeScript.invoke(deployLog, instancePath, "start")) {
                 deployLog.log("Service:" + instancePath.toHumanReadableName() + " 'start'", "nanny failed while start.", null);
+                healthLog.forecedHealthState("Service Start",
+                    "Service is failing to generate config", "Look at config script:" + invokeScript.scriptPath(instancePath, "config"));
                 return false;
             }
-            int checks = 0;
+            int checks = 1;
             while (checks < 10) {
                 // todo expose to config or to instance
+                healthLog.forecedHealthState("Service Startup",
+                    "Service is being verifyed as onine to start. Phase: verify...", "Be patient");
                 if (invokeScript.invoke(deployLog, instancePath, "status")) {
                     deployLog.log("Service:" + instancePath.toHumanReadableName() + " 'status'", "ONLINE", null);
                     if (!invokeScript.invoke(healthLog, instancePath, "health")) {
                         deployLog.log("Service:" + instancePath.toHumanReadableName() + " 'health'", "nanny health command failed", null);
+                        healthLog.forecedHealthState("Service health",
+                            "Service is failing to report health", "Look at logs or health script:" + invokeScript.scriptPath(instancePath, "health"));
+
+                    } else {
+                        healthLog.commit();
+                        break;
                     }
-                    healthLog.commit();
-                    break;
                 } else {
                     checks++;
                     deployLog.log("Service:" + instancePath.toHumanReadableName() + " 'status'",
@@ -83,8 +100,11 @@ class NannyStatusCallable implements Callable<Boolean> {
 
         } catch (InterruptedException x) {
             deployLog.log("Nanny", "status failed.", x);
-            healthLog.commit();
+            healthLog.forecedHealthState("Nanny Interrupted",
+                "The nanny service was interruptd", x.toString());
             return false;
         }
     }
+
+    
 }

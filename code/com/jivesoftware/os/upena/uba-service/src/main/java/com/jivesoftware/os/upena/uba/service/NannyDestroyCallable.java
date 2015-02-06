@@ -9,13 +9,16 @@ class NannyDestroyCallable implements Callable<Boolean> {
 
     private final InstancePath instancePath;
     private final DeployLog deployLog;
+    private final HealthLog healthLog;
     private final DeployableScriptInvoker invokeScript;
 
     public NannyDestroyCallable(InstancePath instancePath,
-            DeployLog deployLog,
-            DeployableScriptInvoker invokeScript) {
+        DeployLog deployLog,
+        HealthLog healthLog,
+        DeployableScriptInvoker invokeScript) {
         this.instancePath = instancePath;
         this.deployLog = deployLog;
+        this.healthLog = healthLog;
         this.invokeScript = invokeScript;
     }
 
@@ -43,7 +46,8 @@ class NannyDestroyCallable implements Callable<Boolean> {
                         } else {
                             checks++;
                             deployLog.log("Service:" + instancePath.toHumanReadableName(),
-                                "Waiting for service to start for " + checks + " time.", null);
+                                "Waiting for service to die for " + checks + " time.", null);
+                            healthLog.forecedHealthState("Service health", "Service is refusing to be killed for the " + checks + " time.", "");
                             Thread.sleep(1000); // todo expose to config or to instance
                         }
                     }
@@ -55,6 +59,8 @@ class NannyDestroyCallable implements Callable<Boolean> {
             FileUtils.deleteQuietly(serviceRoot);
             deleteFolderIfEmpty(serviceRoot.getParentFile());
         }
+        healthLog.commit();
+        healthLog.commit(); // Clear out all health
         return true;
     }
 

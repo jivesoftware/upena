@@ -52,6 +52,7 @@ import com.jivesoftware.os.upena.uba.service.Nanny;
 import com.jivesoftware.os.upena.uba.service.UbaService;
 import java.awt.Color;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -145,6 +146,13 @@ public class UpenaHealthEndpoints {
         h.footer();
         h.button(HtmlAttributesFactory.onClick("location.href='https://github.com/jivesoftware/upena'")).content("About Upena");
         h._footer();
+    }
+
+    private static final DecimalFormat df2 = new DecimalFormat("#.##");
+
+    String d2f(double val) {
+
+        return df2.format(val);
     }
 
     HtmlAttributes border = HtmlAttributesFactory.style("border: 1px solid  gray; margin: 8px; padding: 4px; " + innerShadow + " " + shadow);
@@ -570,7 +578,7 @@ public class UpenaHealthEndpoints {
             clusterHeatMap(h, clusterHealth);
 
             h.content("");
-            h.content(String.valueOf(clusterHealth.health));
+            h.content(d2f(clusterHealth.health));
             h.content("");
 
             h._td();
@@ -635,7 +643,7 @@ public class UpenaHealthEndpoints {
                             h.tr();
                             h.td();
                             InstanceDescriptor id = nannyHealth.instanceDescriptor;
-                            String title = "(" + nannyHealth.serviceHealth.health + ") for "
+                            String title = "(" + d2f(nannyHealth.serviceHealth.health) + ") for "
                                 + id.clusterName + " " + id.serviceName + " " + id.instanceName + " " + id.versionName;
 
                             h.div(HtmlAttributesFactory.style("text-align:center;vertical-align:middle;").title(title))
@@ -650,7 +658,7 @@ public class UpenaHealthEndpoints {
                                 h.tr();
                                 h.td();
                                 InstanceDescriptor id = nannyHealth.instanceDescriptor;
-                                String title = "(" + health.health + ") " + health.name + " for "
+                                String title = "(" + d2f(health.health) + ") " + health.name + " for "
                                     + id.clusterName + " " + id.serviceName + " " + id.instanceName + " " + id.versionName;
 
                                 h.div(HtmlAttributesFactory.style("text-align:center;vertical-align:middle;").title(title))
@@ -686,7 +694,7 @@ public class UpenaHealthEndpoints {
         h.table();
         h.tr();
         h.td();
-        h.div(colorStyle("background-color", nodeHealth.health, 0.75f)).content(String.valueOf(nodeHealth.health));
+        h.div(colorStyle("background-color", nodeHealth.health, 0.75f)).content(d2f(nodeHealth.health));
         h._td();
         h.td();
         h.div().content(nodeHealth.host + ":" + nodeHealth.port);
@@ -799,7 +807,7 @@ public class UpenaHealthEndpoints {
         }
 
         h.content("");
-        h.content(String.valueOf((serviceHealth == null) ? 0.0d : serviceHealth.health));
+        h.content(d2f((serviceHealth == null) ? 0.0d : serviceHealth.health));
         h.content("");
 
         h._td();
@@ -858,13 +866,13 @@ public class UpenaHealthEndpoints {
     private ClusterHealth buildClusterHealth(UriInfo uriInfo) throws Exception {
         ClusterHealth clusterHealth = new ClusterHealth();
         /*for (RingHost ringHost : new RingHost[]{
-            new RingHost("soa-prime-data5.phx1.jivehosted.com", 1175),
-            new RingHost("soa-prime-data6.phx1.jivehosted.com", 1175),
-            new RingHost("soa-prime-data7.phx1.jivehosted.com", 1175),
-            new RingHost("soa-prime-data8.phx1.jivehosted.com", 1175),
-            new RingHost("soa-prime-data9.phx1.jivehosted.com", 1175),
-            new RingHost("soa-prime-data10.phx1.jivehosted.com", 1175)
-        }) { //amzaInstance.getRing("MASTER")) {*/
+         new RingHost("soa-prime-data5.phx1.jivehosted.com", 1175),
+         new RingHost("soa-prime-data6.phx1.jivehosted.com", 1175),
+         new RingHost("soa-prime-data7.phx1.jivehosted.com", 1175),
+         new RingHost("soa-prime-data8.phx1.jivehosted.com", 1175),
+         new RingHost("soa-prime-data9.phx1.jivehosted.com", 1175),
+         new RingHost("soa-prime-data10.phx1.jivehosted.com", 1175)
+         }) { //amzaInstance.getRing("MASTER")) {*/
 
         for (RingHost ringHost : amzaInstance.getRing("MASTER")) {
             try {
@@ -905,12 +913,18 @@ public class UpenaHealthEndpoints {
             try {
                 ObjectMapper mapper = new ObjectMapper();
                 mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-                serviceHealth = mapper.readValue(Joiner.on("").join(copyLog), ServiceHealth.class);
-                nodeHealth.health = Math.min(nodeHealth.health, serviceHealth.health);
+                if (!copyLog.isEmpty()) {
+                    serviceHealth = mapper.readValue(Joiner.on("").join(copyLog), ServiceHealth.class);
+                    nodeHealth.health = Math.min(nodeHealth.health, serviceHealth.health);
+                }
             } catch (Exception x) {
                 LOG.warn("Failed parsing service health for " + id + " " + Joiner.on("").join(copyLog), x);
                 nodeHealth.health = 0.0d;
                 log.add("Failed to parse serviceHealth" + x.getMessage());
+            }
+            if (serviceHealth == null) {
+                serviceHealth = new ServiceHealth();
+                serviceHealth.health = -1;
             }
             NannyHealth nannyHealth = new NannyHealth(id, log, serviceHealth);
             nodeHealth.nannyHealths.add(nannyHealth);
