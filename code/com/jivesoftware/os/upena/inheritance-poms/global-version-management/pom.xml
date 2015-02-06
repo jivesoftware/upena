@@ -11,9 +11,9 @@
     <artifactId>global-version-management</artifactId>
     <packaging>pom</packaging>
     <properties>
-        <mlogger-version>0.6</mlogger-version>
-        <jive.utils.version>0.64</jive.utils.version>
-        <amza.version>0.11</amza.version>
+        <mlogger-version>0.7</mlogger-version>
+        <jive.utils.version>0.67</jive.utils.version>
+        <amza.version>0.12</amza.version>
     </properties>
     <dependencyManagement>
         <dependencies>
