@@ -301,7 +301,7 @@ public class Main {
             new ManagePlugin("Config",
                 "/Config",
                 ConfigPluginEndpoints.class,
-                new ConfigPluginRegion("soy.page.configPluginRegion", renderer, amzaService, upenaStore, upenaService, ubaService, ringHost)),
+                new ConfigPluginRegion("soy.page.configPluginRegion", renderer, amzaService, upenaStore, upenaService, ubaService, ringHost, upenaConfigStore)),
             new ManagePlugin("Clusters",
                 "/clusters",
                 ClustersPluginEndpoints.class,
