@@ -19,6 +19,9 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.base.Optional;
+import com.google.common.collect.Lists;
+import com.google.template.soy.SoyFileSet;
+import com.google.template.soy.tofu.SoyTofu;
 import com.jivesoftware.os.amza.service.AmzaService;
 import com.jivesoftware.os.amza.service.AmzaServiceInitializer;
 import com.jivesoftware.os.amza.service.AmzaServiceInitializer.AmzaServiceConfig;
@@ -48,14 +51,36 @@ import com.jivesoftware.os.amza.storage.filer.Filer;
 import com.jivesoftware.os.amza.transport.http.replication.HttpUpdatesSender;
 import com.jivesoftware.os.amza.transport.http.replication.HttpUpdatesTaker;
 import com.jivesoftware.os.amza.transport.http.replication.endpoints.AmzaReplicationRestEndpoints;
-import com.jivesoftware.os.jive.utils.base.service.ServiceHandle;
 import com.jivesoftware.os.jive.utils.ordered.id.ConstantWriterIdProvider;
 import com.jivesoftware.os.jive.utils.ordered.id.OrderIdProvider;
 import com.jivesoftware.os.jive.utils.ordered.id.OrderIdProviderImpl;
-import com.jivesoftware.os.server.http.jetty.jersey.server.InitializeRestfulServer;
-import com.jivesoftware.os.server.http.jetty.jersey.server.JerseyEndpoints;
 import com.jivesoftware.os.upena.config.UpenaConfigRestEndpoints;
 import com.jivesoftware.os.upena.config.UpenaConfigStore;
+import com.jivesoftware.os.upena.deployable.endpoints.ClustersPluginEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.ConfigPluginEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.HostsPluginEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.InstancesPluginEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.ReleasesPluginEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.ServicesPluginEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.StatusPluginEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.UpenaRingPluginEndpoints;
+import com.jivesoftware.os.upena.deployable.region.ClustersPluginRegion;
+import com.jivesoftware.os.upena.deployable.region.ConfigPluginRegion;
+import com.jivesoftware.os.upena.deployable.region.HeaderRegion;
+import com.jivesoftware.os.upena.deployable.region.HomeRegion;
+import com.jivesoftware.os.upena.deployable.region.HostsPluginRegion;
+import com.jivesoftware.os.upena.deployable.region.InstancesPluginRegion;
+import com.jivesoftware.os.upena.deployable.region.ManagePlugin;
+import com.jivesoftware.os.upena.deployable.region.ReleasesPluginRegion;
+import com.jivesoftware.os.upena.deployable.region.ServicesPluginRegion;
+import com.jivesoftware.os.upena.deployable.region.StatusPluginRegion;
+import com.jivesoftware.os.upena.deployable.region.UpenaRingPluginRegion;
+import com.jivesoftware.os.upena.deployable.server.InitializeRestfulServer;
+import com.jivesoftware.os.upena.deployable.server.JerseyEndpoints;
+import com.jivesoftware.os.upena.deployable.server.RestfulServer;
+import com.jivesoftware.os.upena.deployable.soy.SoyDataUtils;
+import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
+import com.jivesoftware.os.upena.deployable.soy.SoyService;
 import com.jivesoftware.os.upena.routing.shared.InstanceChanged;
 import com.jivesoftware.os.upena.routing.shared.TenantChanged;
 import com.jivesoftware.os.upena.service.InstanceChanges;
@@ -137,42 +162,7 @@ public class Main {
 
         final AmzaServiceConfig amzaServiceConfig = new AmzaServiceConfig();
 
-        RowsStorageProvider rowsStorageProvider = new RowsStorageProvider() {
-            @Override
-            public RowsStorage createRowsStorage(File workingDirectory,
-                String tableDomain,
-                TableName tableName) throws Exception {
-                final File directory = new File(workingDirectory, tableDomain);
-                directory.mkdirs();
-                File file = new File(directory, tableName.getTableName() + ".kvt");
-
-                Filer filer = new Filer(file.getAbsolutePath(), "rw");
-                BinaryRowReader reader = new BinaryRowReader(filer);
-                BinaryRowWriter writer = new BinaryRowWriter(filer);
-                BinaryRowMarshaller rowMarshaller = new BinaryRowMarshaller();
-
-                RowsIndexProvider tableIndexProvider = new RowsIndexProvider() {
-
-                    @Override
-                    public RowsIndex createRowsIndex(TableName tableName) throws Exception {
-                        NavigableMap<RowIndexKey, RowIndexValue> navigableMap = new ConcurrentSkipListMap<>();
-                        return new MemoryRowsIndex(navigableMap, new Flusher() {
-
-                            @Override
-                            public void flush() {
-                            }
-                        });
-                    }
-                };
-
-                return new RowTable(tableName,
-                    orderIdProvider,
-                    tableIndexProvider,
-                    rowMarshaller,
-                    reader,
-                    writer);
-            }
-        };
+        RowsStorageProvider rowsStorageProvider = rowsStorageProvider(orderIdProvider);
 
         UpdatesSender changeSetSender = new HttpUpdatesSender();
         UpdatesTaker tableTaker = new HttpUpdatesTaker();
@@ -255,19 +245,11 @@ public class Main {
         HostKey hostKey = upenaStore.hosts.toKey(host);
         Host gotHost = upenaStore.hosts.get(hostKey);
         if (gotHost == null) {
-//            HashMap<ServiceKey, ReleaseGroupKey> defaultReleaseGroups = new HashMap<>();
-//            HashMap<ServiceKey, ReleaseGroupKey> defaultAlternateReleaseGroups = new HashMap<>();
-//            Cluster cluster = new Cluster("adhoc", "default adhoc cluster", defaultReleaseGroups, defaultAlternateReleaseGroups);
-//            ClusterKey clusterKey = upenaStore.clusters.toKey(cluster);
-//            Cluster gotCluster = upenaStore.clusters.get(clusterKey);
-//            if (gotCluster == null) {
-//                upenaStore.clusters.update(clusterKey, cluster);
-//            }
             host = new Host(ringHost.getHost(), ringHost.getHost(), ringHost.getPort(), workingDir, null);
             upenaStore.hosts.update(null, host);
         }
 
-        final UbaService conductorService = new UbaServiceInitializer().initialize(hostKey.getKey(),
+        final UbaService ubaService = new UbaServiceInitializer().initialize(hostKey.getKey(),
             workingDir,
             ringHost.getHost(),
             ringHost.getPort());
@@ -279,27 +261,93 @@ public class Main {
             .addEndpoint(UpenaConfigRestEndpoints.class)
             .addInjectable(upenaConfigStore)
             .addEndpoint(UbaServiceRestEndpoints.class)
-            .addInjectable(conductorService)
+            .addInjectable(ubaService)
             .addEndpoint(AmzaReplicationRestEndpoints.class)
             .addInjectable(AmzaInstance.class, amzaService)
-            .addEndpoint(UpenaHealthEndpoints.class)
+            .addEndpoint(UpenaEndpoints.class)
             .addInjectable(RingHost.class, ringHost);
 
+        SoyFileSet.Builder soyFileSetBuilder = new SoyFileSet.Builder();
+
+        System.out.println("Add....");
+
+        soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/chrome.soy"), "chome.soy");
+        soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/homeRegion.soy"), "home.soy");
+        soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/statusPluginRegion.soy"), "status.soy");
+        soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/instancesPluginRegion.soy"), "instances.soy");
+        soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/clustersPluginRegion.soy"), "clusters.soy");
+        soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/hostsPluginRegion.soy"), "hosts.soy");
+        soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/servicesPluginRegion.soy"), "services.soy");
+        soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/releasesPluginRegion.soy"), "releases.soy");
+        soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/upenaRingPluginRegion.soy"), "upenaRing.soy");
+        soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/configPluginRegion.soy"), "config.soy");
+
+        System.out.println("Build....");
+        SoyFileSet sfs = soyFileSetBuilder.build();
+        System.out.println("Compile....");
+        SoyTofu tofu = sfs.compileToTofu();
+        SoyRenderer renderer = new SoyRenderer(tofu, new SoyDataUtils());
+        SoyService soyService = new SoyService(renderer, new HeaderRegion("soy.chrome.headerRegion", renderer),
+            new HomeRegion("soy.page.homeRegion", renderer));
+
+        List<ManagePlugin> plugins = Lists.newArrayList(new ManagePlugin("Status",
+            "/status",
+            StatusPluginEndpoints.class,
+            new StatusPluginRegion("soy.page.statusPluginRegion", renderer, amzaService, upenaStore, upenaService, ubaService, ringHost)),
+            new ManagePlugin("Instances",
+                "/instances",
+                InstancesPluginEndpoints.class,
+                new InstancesPluginRegion("soy.page.instancesPluginRegion", renderer, amzaService, upenaStore, upenaService, ubaService, ringHost)),
+            new ManagePlugin("Config",
+                "/Config",
+                ConfigPluginEndpoints.class,
+                new ConfigPluginRegion("soy.page.configPluginRegion", renderer, amzaService, upenaStore, upenaService, ubaService, ringHost)),
+            new ManagePlugin("Clusters",
+                "/clusters",
+                ClustersPluginEndpoints.class,
+                new ClustersPluginRegion("soy.page.clustersPluginRegion", renderer, amzaService, upenaStore, upenaService, ubaService, ringHost)),
+            new ManagePlugin("Hosts",
+                "/hosts",
+                HostsPluginEndpoints.class,
+                new HostsPluginRegion("soy.page.hostsPluginRegion", renderer, amzaService, upenaStore, upenaService, ubaService, ringHost)),
+            new ManagePlugin("Services",
+                "/services",
+                ServicesPluginEndpoints.class,
+                new ServicesPluginRegion("soy.page.servicesPluginRegion", renderer, amzaService, upenaStore, upenaService, ubaService, ringHost)),
+            new ManagePlugin("Releases",
+                "/releases",
+                ReleasesPluginEndpoints.class,
+                new ReleasesPluginRegion("soy.page.releasesPluginRegion", renderer, amzaService, upenaStore, upenaService, ubaService, ringHost)),
+            new ManagePlugin("Upena Ring",
+                "/ring",
+                UpenaRingPluginEndpoints.class,
+                new UpenaRingPluginRegion("soy.page.upenaRingPluginRegion", renderer, amzaService, upenaStore, upenaService, ubaService, ringHost)));
+
+        jerseyEndpoints.addInjectable(SoyService.class, soyService);
+
+        for (ManagePlugin plugin : plugins) {
+            soyService.registerPlugin(plugin);
+            jerseyEndpoints.addEndpoint(plugin.endpointsClass);
+            jerseyEndpoints.addInjectable(plugin.region.getClass(), plugin.region);
+        }
+
         InitializeRestfulServer initializeRestfulServer = new InitializeRestfulServer(port, "UpenaNode", 128, 10000);
+        initializeRestfulServer.addClasspathResource("/");
         initializeRestfulServer.addContextHandler("/", jerseyEndpoints);
-        ServiceHandle serviceHandle = initializeRestfulServer.build();
-        serviceHandle.start();
+
+        RestfulServer restfulServer = initializeRestfulServer.build();
+        restfulServer.start();
 
         System.out.println("-----------------------------------------------------------------------");
         System.out.println("|      Jetty Service Online");
         System.out.println("-----------------------------------------------------------------------");
 
-        if (conductorService != null) {
+        if (ubaService != null) {
             Executors.newScheduledThreadPool(1).scheduleWithFixedDelay(new Runnable() {
                 @Override
                 public void run() {
                     try {
-                        conductorService.nanny();
+                        ubaService.nanny();
                     } catch (Exception ex) {
                         ex.printStackTrace(); // HACK
                     }
@@ -309,7 +357,7 @@ public class Main {
             System.out.println("|      Uba Service Online");
             System.out.println("-----------------------------------------------------------------------");
         }
-        conductor.set(conductorService);
+        conductor.set(ubaService);
 
         if (clusterName != null) {
             AmzaDiscovery amzaDiscovery = new AmzaDiscovery(amzaService, ringHost, clusterName, multicastGroup, multicastPort);
@@ -322,5 +370,45 @@ public class Main {
             System.out.println("|     Amze Service is in manual Discovery mode.  No cluster name was specified");
             System.out.println("-----------------------------------------------------------------------");
         }
+    }
+
+    private RowsStorageProvider rowsStorageProvider(final OrderIdProvider orderIdProvider) {
+        RowsStorageProvider rowsStorageProvider = new RowsStorageProvider() {
+            @Override
+            public RowsStorage createRowsStorage(File workingDirectory,
+                String tableDomain,
+                TableName tableName) throws Exception {
+                final File directory = new File(workingDirectory, tableDomain);
+                directory.mkdirs();
+                File file = new File(directory, tableName.getTableName() + ".kvt");
+
+                Filer filer = new Filer(file.getAbsolutePath(), "rw");
+                BinaryRowReader reader = new BinaryRowReader(filer);
+                BinaryRowWriter writer = new BinaryRowWriter(filer);
+                BinaryRowMarshaller rowMarshaller = new BinaryRowMarshaller();
+
+                RowsIndexProvider tableIndexProvider = new RowsIndexProvider() {
+
+                    @Override
+                    public RowsIndex createRowsIndex(TableName tableName) throws Exception {
+                        NavigableMap<RowIndexKey, RowIndexValue> navigableMap = new ConcurrentSkipListMap<>();
+                        return new MemoryRowsIndex(navigableMap, new Flusher() {
+
+                            @Override
+                            public void flush() {
+                            }
+                        });
+                    }
+                };
+
+                return new RowTable(tableName,
+                    orderIdProvider,
+                    tableIndexProvider,
+                    rowMarshaller,
+                    reader,
+                    writer);
+            }
+        };
+        return rowsStorageProvider;
     }
 }

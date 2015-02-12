@@ -1,0 +1,84 @@
+{namespace soy.page}
+
+/**
+ * Upena Status plugin page
+ * 
+ * @param? hosts
+ */
+{template .hostsPluginRegion}
+    {if $hosts}
+        <div class="panel panel-default">
+            <div class="panel-heading">Hosts</div>
+                <div class="panel-body">
+                    <table class="table table-condensed">
+                        <thead>
+                            <tr>
+                                <th>Host</th>
+                                <th>Port</th>
+                                <th>Dir</th>
+                                <th>Name</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <form id="add-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                                data-jive-ui="jive/ui/typeahead/request_typeahead" method="get" name="addHost">
+                                <tr>
+                                    <td>
+                                        <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                        placeholder="Host" value="" name="host" id="hostPicker">
+                                    </td>
+                                    <td>
+                                        <input type="text" autocomplete="off" role="combobox" style="width:80px; padding-left:10px;"
+                                        placeholder="Port" value="" name="port" id="portPicker">
+                                    </td>
+                                    <td>
+                                        <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                        placeholder="WorkingDirectory" value="" name="workingDirectory" id="workingDirectoryPicker">
+                                    </td>
+                                    <td>
+                                        <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                        placeholder="Name" value="" name="name" id="namePicker">
+                                    </td>
+                                    <td>
+                                        <input type="submit" name="filter" value="Filter"/>
+                                        <input type="submit" name="action" value="Add"/>
+                                    <td>
+                                </tr>
+                            </form>
+
+                            {foreach $h in $hosts}
+                                <form id="edit-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                                    data-jive-ui="jive/ui/typeahead/request_typeahead" method="get" name="editHost">
+                                    <tr>    
+                                        <td>
+                                            <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                            placeholder="Host" value="{$h.host}" name="host" id="hostPicker">
+                                        </td>
+                                        <td>
+                                            <input type="text" autocomplete="off" role="combobox" style="width:80px; padding-left:10px;"
+                                            placeholder="Port" value="{$h.port}" name="port" id="portPicker">
+                                        </td>
+                                        <td>
+                                            <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                            placeholder="WorkingDirectory" value="{$h.workingDirectory}" name="workingDirectory" id="workingDirectoryPicker">
+                                        </td>
+                                        <td>
+                                            <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                            placeholder="Name" value="{$h.name}" name="name" id="namePicker">
+                                        </td>
+                                        <td>
+                                            <input type="hidden" name="key" value="{$h.key}">
+                                            <input type="submit" name="action" value="Update"/>
+                                            <input type="submit" name="action" value="Remove"/>
+                                        <td>
+                                    </tr>
+                                </form>
+                            {/foreach}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    {/if}
+{/template}

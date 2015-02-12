@@ -1,0 +1,93 @@
+{namespace soy.page}
+
+/**
+ * Upena Status plugin page
+ * 
+ * @param? releases
+ */
+{template .releasesPluginRegion}
+    {if $releases}
+        <div class="panel panel-default">
+            <div class="panel-heading">Releases</div>
+                <div class="panel-body">
+                    <table class="table table-condensed">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Description</th>
+                                <th>Version</th>
+                                <th>Repository</th>
+                                <th>Email</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <form id="add-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                                data-jive-ui="jive/ui/typeahead/request_typeahead" method="get" name="addHost">
+                                <tr>
+                                    <td>
+                                        <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                        placeholder="Name" value="" name="name" id="namePicker">
+                                    </td>
+                                    <td>
+                                        <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                        placeholder="Description" value="" name="description" id="descriptionPicker">
+                                    </td>
+                                    <td>
+                                        <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                        placeholder="Version" value="" name="version" id="descriptionPicker">
+                                    </td>
+                                    <td>
+                                        <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                        placeholder="Repository" value="" name="repository" id="descriptionPicker">
+                                    </td>
+                                    <td>
+                                        <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                        placeholder="Email" value="" name="email" id="descriptionPicker">
+                                    </td>
+                                    <td>
+                                        <input type="submit" name="filter" value="Filter"/>
+                                        <input type="submit" name="action" value="Add"/>
+                                    <td>
+                                </tr>
+                            </form>
+
+                            {foreach $r in $releases}
+                                <form id="edit-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                                    data-jive-ui="jive/ui/typeahead/request_typeahead" method="get" name="editHost">
+                                    <tr>    
+                                        <td>
+                                            <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                            placeholder="Name" value="{$r.name}" name="name" id="namePicker">
+                                        </td>
+                                        <td>
+                                            <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                            placeholder="Description" value="{$r.description}" name="description" id="descriptionPicker">
+                                        </td>
+                                        <td>
+                                            <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                            placeholder="Version" value="{$r.version}" name="version" id="descriptionPicker">
+                                        </td>
+                                        <td>
+                                            <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                            placeholder="Repository" value="{$r.repository}" name="repository" id="descriptionPicker">
+                                        </td>
+                                        <td>
+                                            <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                            placeholder="Email" value="{$r.email}" name="email" id="descriptionPicker">
+                                        </td>
+                                        <td>
+                                            <input type="hidden" name="key" value="{$r.key}">
+                                            <input type="submit" name="action" value="Update"/>
+                                            <input type="submit" name="action" value="Remove"/>
+                                        <td>
+                                    </tr>
+                                </form>
+                            {/foreach}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    {/if}
+{/template}

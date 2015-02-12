@@ -1,0 +1,55 @@
+/*
+ * Don't add custom CSS unless you absolutely have to...  usually in response to shared JavaScript components
+ * which rely on jive.css...
+ */
+
+/* Tenant/user picker: eliminate list item numbering */
+li.j-listitem {
+    list-style: none;
+}
+
+/* theme */
+body {
+    background-image: url(/static/img/bkg.png);
+}
+
+/* Used by event stream */
+div.pad {
+    padding: 3px;
+}
+
+/* Used by event stream and view inspection to allow for links in JSON dumps */
+div.pre-ish {
+    font-family:courier, "courier new", monospace;
+    font-size:1em;
+    background-color: #f5f5f5;
+    color:#000;
+    white-space: pre-wrap;
+    border-radius: 4px;
+}
+
+div.container {
+    width: 100% !important;
+}
+
+
+
+span.dropt:hover {
+    text-decoration: none; background: #ffffff; z-index: 6;
+}
+span.dropt span {
+    position: absolute; left: -9999px;
+    margin: 20px 0 0 0px; padding: 3px 3px 3px 3px;
+    border-style:solid; border-color:black; border-width:1px; z-index: 6;
+}
+span.dropt:hover span {
+    left: 2%; background: #ffffff;
+}
+span.dropt span {
+    position: absolute; left: -9999px;
+    margin: 4px 0 0 0px; padding: 3px 3px 3px 3px;
+    border-style:solid; border-color:black; border-width:1px;
+}
+span.dropt:hover span {
+    margin: 20px 0 0 0px; background: #ffffff; z-index:6;
+}

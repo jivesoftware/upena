@@ -1,0 +1,18 @@
+{namespace soy.page}
+
+/**
+ * Upena Status plugin page
+ * 
+ * @param? upenaStatus
+ */
+{template .statusPluginRegion}
+    {if $upenaStatus}
+        <div class="panel panel-default">
+            <div class="panel-heading">Status</div>
+                <div class="panel-body">
+                    {$upenaStatus|noAutoescape}
+                </div>
+            </div>
+        </div>
+    {/if}
+{/template}

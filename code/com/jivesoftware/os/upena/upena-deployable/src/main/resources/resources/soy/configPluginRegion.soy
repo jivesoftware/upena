@@ -1,0 +1,39 @@
+{namespace soy.page}
+
+/**
+ * Upena Ring plugin page
+ * 
+ * @param? ring
+ */
+{template .configPluginRegion}
+    {if $ring}
+        <div class="panel panel-default">
+            <div class="panel-heading">Instances</div>
+                <div class="panel-body">
+                    <table class="table table-condensed">
+                        <thead>
+                            <tr>
+                                <th>Id</th>
+                                <th>Name</th>
+                                <th>Host</th>
+                                <th>Service</th>
+                                <th>Release</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {foreach $r in $ring}
+                                <tr>
+                                    <td>{$r.id}</td>
+                                    <td>{$r.name}</td>
+                                    <td>{$r.host}</td>
+                                    <td>{$r.service}</td>
+                                    <td>{$r.release}</td>
+                                </tr>
+                            {/foreach}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    {/if}
+{/template}

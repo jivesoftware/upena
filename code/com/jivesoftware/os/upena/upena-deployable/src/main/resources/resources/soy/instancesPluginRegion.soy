@@ -1,0 +1,94 @@
+{namespace soy.page}
+
+/**
+ * Upena Status plugin page
+ * 
+ * @param? instances
+ */
+{template .instancesPluginRegion}
+    {if $instances}
+        <div class="panel panel-default">
+            <div class="panel-heading">Instances</div>
+                <div class="panel-body">
+                    <table class="table table-condensed">
+
+                        <thead>
+                            <tr>
+                                <th>Cluster</th>
+                                <th>Host</th>
+                                <th>Service</th>
+                                <th>Id</th>
+                                <th>Release</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <form id="add-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                                data-jive-ui="jive/ui/typeahead/request_typeahead" method="get" name="addHost">
+                                <tr>
+                                    <td>
+                                        <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                        placeholder="Cluster" value="" name="cluster" id="namePicker">
+                                    </td>
+                                    <td>
+                                        <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                        placeholder="Host value="" name="host" id="descriptionPicker">
+                                    </td>
+                                    <td>
+                                        <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                        placeholder="Service" value="" name="service" id="descriptionPicker">
+                                    </td>
+                                    <td>
+                                        <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                        placeholder="Id" value="" name="id" id="descriptionPicker">
+                                    </td>
+                                    <td>
+                                        <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                        placeholder="Release" value="" name="release" id="descriptionPicker">
+                                    </td>
+                                    <td>
+                                        <input type="submit" name="filter" value="Filter"/>
+                                        <input type="submit" name="action" value="Add"/>
+                                    <td>
+                                </tr>
+                            </form>
+
+                            {foreach $i in $instances}
+                                <form id="edit-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                                    data-jive-ui="jive/ui/typeahead/request_typeahead" method="get" name="editHost">
+                                    <tr>    
+                                        <td>
+                                            <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                            placeholder="Cluster" value="{$i.cluster}" name="cluster" id="namePicker">
+                                        </td>
+                                        <td>
+                                            <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                            placeholder="Host value="{$i.host}" name="host" id="descriptionPicker">
+                                        </td>
+                                        <td>
+                                            <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                            placeholder="Service" value="{$i.service}" name="service" id="descriptionPicker">
+                                        </td>
+                                        <td>
+                                            <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                            placeholder="Id" value="{$i.id}" name="id" id="descriptionPicker">
+                                        </td>
+                                        <td>
+                                            <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                            placeholder="Release" value="{$i.release}" name="release" id="descriptionPicker">
+                                        </td>
+                                        <td>
+                                            <input type="hidden" name="key" value="{$i.key}">
+                                            <input type="submit" name="action" value="Update"/>
+                                            <input type="submit" name="action" value="Remove"/>
+                                        <td>
+                                    </tr>
+                                </form>
+                            {/foreach}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    {/if}
+{/template}
