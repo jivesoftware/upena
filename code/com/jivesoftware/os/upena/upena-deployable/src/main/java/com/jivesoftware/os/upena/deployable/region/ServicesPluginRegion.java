@@ -1,5 +1,6 @@
 package com.jivesoftware.os.upena.deployable.region;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.collect.Maps;
 import com.jivesoftware.os.amza.shared.AmzaInstance;
@@ -53,11 +54,16 @@ public class ServicesPluginRegion implements PageRegion<Optional<ServicesPluginR
 
     public static class ServicesPluginRegionInput {
 
-        final String foo;
+        final String key;
+        final String name;
+        final String description;
+        final String action;
 
-        public ServicesPluginRegionInput(String foo) {
-
-            this.foo = foo;
+        public ServicesPluginRegionInput(String key, String name, String description, String action) {
+            this.key = key;
+            this.name = name;
+            this.description = description;
+            this.action = action;
         }
 
     }
@@ -70,8 +76,59 @@ public class ServicesPluginRegion implements PageRegion<Optional<ServicesPluginR
             if (optionalInput.isPresent()) {
                 ServicesPluginRegionInput input = optionalInput.get();
 
-                List<Map<String, String>> rows = new ArrayList<>();
+                 Map<String, String> filters = new HashMap<>();
+                filters.put("name", input.name);
+                filters.put("description", input.description);
+                data.put("filters", filters);
+
                 ServiceFilter filter = new ServiceFilter(null, null, 0, 10000);
+                if (input.action != null) {
+                    if (input.action.equals("filter")) {
+                        filter = new ServiceFilter(
+                            input.name.isEmpty() ? null : input.name,
+                            input.description.isEmpty() ? null : input.description,
+                            0, 10000);
+                        data.put("message", "Filtering: name.contains '" + input.name + "' description.contains '" + input.description + "'");
+                    } else if (input.action.equals("add")) {
+                        filters.clear();
+                        try {
+                            upenaStore.services.update(null, new Service(input.name, input.description));
+
+                            data.put("message", "Created Service:" + input.name);
+                        } catch (Exception x) {
+                            String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
+                            data.put("message", "Error while trying to add Service:" + input.name + "\n" + trace);
+                        }
+                    } else if (input.action.equals("update")) {
+                        filters.clear();
+                        try {
+                            Service service = upenaStore.services.get(new ServiceKey(input.key));
+                            if (service == null) {
+                                data.put("message", "Couldn't update no existent Service. Someone else likely just removed it since your last refresh.");
+                            } else {
+                                upenaStore.services.update(new ServiceKey(input.key), new Service(input.name, input.description));
+                                data.put("message", "Service Cluster:" + input.name);
+                            }
+
+                        } catch (Exception x) {
+                            String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
+                            data.put("message", "Error while trying to add Service:" + input.name + "\n" + trace);
+                        }
+                    } else if (input.action.equals("remove")) {
+                        if (input.key.isEmpty()) {
+                            data.put("message", "Failed to remove Service:" + input.name);
+                        } else {
+                            try {
+                                upenaStore.services.remove(new ServiceKey(input.key));
+                            } catch (Exception x) {
+                                String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
+                                data.put("message", "Error while trying to remove Service:" + input.name + "\n" + trace);
+                            }
+                        }
+                    }
+                }
+
+                List<Map<String, String>> rows = new ArrayList<>();
                 Map<ServiceKey, TimestampedValue<Service>> found = upenaStore.services.find(filter);
                 for (Map.Entry<ServiceKey, TimestampedValue<Service>> entrySet : found.entrySet()) {
 

@@ -1,5 +1,6 @@
 package com.jivesoftware.os.upena.deployable.region;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.collect.Maps;
 import com.jivesoftware.os.amza.shared.AmzaInstance;
@@ -53,11 +54,22 @@ public class ReleasesPluginRegion implements PageRegion<Optional<ReleasesPluginR
 
     public static class ReleasesPluginRegionInput {
 
-        final String foo;
+        final String key;
+        final String name;
+        final String description;
+        final String version;
+        final String repository;
+        final String email;
+        final String action;
 
-        public ReleasesPluginRegionInput(String foo) {
-
-            this.foo = foo;
+        public ReleasesPluginRegionInput(String key, String name, String description, String version, String repository, String email, String action) {
+            this.key = key;
+            this.name = name;
+            this.description = description;
+            this.version = version;
+            this.repository = repository;
+            this.email = email;
+            this.action = action;
         }
 
     }
@@ -70,8 +82,80 @@ public class ReleasesPluginRegion implements PageRegion<Optional<ReleasesPluginR
             if (optionalInput.isPresent()) {
                 ReleasesPluginRegionInput input = optionalInput.get();
 
-                List<Map<String, String>> rows = new ArrayList<>();
+                Map<String, String> filters = new HashMap<>();
+                filters.put("name", input.name);
+                filters.put("email", input.email);
+                filters.put("repository", input.repository);
+                filters.put("version", input.version);
+                filters.put("description", input.description);
+                data.put("filters", filters);
+
                 ReleaseGroupFilter filter = new ReleaseGroupFilter(null, null, null, null, null, 0, 10000);
+                if (input.action != null) {
+                    if (input.action.equals("filter")) {
+                        filter = new ReleaseGroupFilter(
+                            input.name.isEmpty() ? null : input.name,
+                            input.description.isEmpty() ? null : input.description,
+                            input.version.isEmpty() ? null : input.version,
+                            input.repository.isEmpty() ? null : input.repository,
+                            input.email.isEmpty() ? null : input.email,
+                            0, 10000);
+                        data.put("message", "Filtering: "
+                            + "name.contains '" + input.name + "' "
+                            + "description.contains '" + input.description + "' "
+                            + "version.contains '" + input.version + "' "
+                            + "repository.contains '" + input.repository + "'"
+                            + "email.contains '" + input.email + "'"
+                        );
+                    } else if (input.action.equals("add")) {
+                        filters.clear();
+                        try {
+                            upenaStore.releaseGroups.update(null, new ReleaseGroup(input.name,
+                                input.email,
+                                input.version,
+                                input.repository,
+                                input.description
+                            ));
+
+                            data.put("message", "Created Release:" + input.name);
+                        } catch (Exception x) {
+                            String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
+                            data.put("message", "Error while trying to add Release:" + input.name + "\n" + trace);
+                        }
+                    } else if (input.action.equals("update")) {
+                        filters.clear();
+                        try {
+                            ReleaseGroup release = upenaStore.releaseGroups.get(new ReleaseGroupKey(input.key));
+                            if (release == null) {
+                                data.put("message", "Couldn't update no existent cluster. Someone else likely just removed it since your last refresh.");
+                            } else {
+                                upenaStore.releaseGroups.update(new ReleaseGroupKey(input.key), new ReleaseGroup(input.name,
+                                    input.email,
+                                    input.version,
+                                    input.repository,
+                                    input.description));
+                                data.put("message", "Updated Release:" + input.name);
+                            }
+
+                        } catch (Exception x) {
+                            String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
+                            data.put("message", "Error while trying to add Release:" + input.name + "\n" + trace);
+                        }
+                    } else if (input.action.equals("remove")) {
+                        if (input.key.isEmpty()) {
+                            data.put("message", "Failed to remove Release:" + input.name);
+                        } else {
+                            try {
+                                upenaStore.releaseGroups.remove(new ReleaseGroupKey(input.key));
+                            } catch (Exception x) {
+                                String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
+                                data.put("message", "Error while trying to remove Release:" + input.name + "\n" + trace);
+                            }
+                        }
+                    }
+                }
+
+                List<Map<String, String>> rows = new ArrayList<>();
                 Map<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> found = upenaStore.releaseGroups.find(filter);
                 for (Map.Entry<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> entrySet : found.entrySet()) {
                     ReleaseGroupKey key = entrySet.getKey();
@@ -81,10 +165,10 @@ public class ReleasesPluginRegion implements PageRegion<Optional<ReleasesPluginR
                     Map<String, String> row = new HashMap<>();
                     row.put("key", key.getKey());
                     row.put("name", value.name);
-                    row.put("description", value.description);
-                    row.put("version", value.version);
-                    row.put("repository", value.repository);
                     row.put("email", value.email);
+                    row.put("repository", value.repository);
+                    row.put("version", value.version);
+                    row.put("description", value.description);
 
                     rows.add(row);
                 }

@@ -107,7 +107,7 @@ public class RestfulServer {
 
     public void addClasspathReasource(String path) throws Exception {
 
-        Resource newResource = Resource.newResource(this.getClass().getResource("/resources").toURI());
+        Resource newResource = Resource.newResource(this.getClass().getResource(path).toURI());
         ResourceHandler resourceHandler = new ResourceHandler();
         resourceHandler.setBaseResource(newResource);
         ContextHandler ctx = new ContextHandler("/");

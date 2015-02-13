@@ -5,7 +5,7 @@ import com.jivesoftware.os.upena.deployable.region.InstancesPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.InstancesPluginRegion.InstancesPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
 import javax.inject.Singleton;
-import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
@@ -27,7 +27,7 @@ public class InstancesPluginEndpoints {
         this.pluginRegion = pluginRegion;
     }
 
-    @GET
+    @POST
     @Path("/")
     @Produces(MediaType.TEXT_HTML)
     public Response query() {

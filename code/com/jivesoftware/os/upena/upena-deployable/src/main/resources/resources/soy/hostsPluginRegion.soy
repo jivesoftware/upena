@@ -1,8 +1,8 @@
 {namespace soy.page}
 
 /**
- * Upena Status plugin page
- * 
+ * @param? message
+ * @param? filters
  * @param? hosts
  */
 {template .hostsPluginRegion}
@@ -10,6 +10,11 @@
         <div class="panel panel-default">
             <div class="panel-heading">Hosts</div>
                 <div class="panel-body">
+                    {if $message}
+                        <div class="panel-heading">
+                            <pre>{$message}</pre>
+                        </div>
+                    {/if}
                     <table class="table table-condensed">
                         <thead>
                             <tr>
@@ -22,34 +27,34 @@
                         </thead>
                         <tbody>
                             <form id="add-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
-                                data-jive-ui="jive/ui/typeahead/request_typeahead" method="get" name="addHost">
+                                data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="addHost">
                                 <tr>
                                     <td>
                                         <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                        placeholder="Host" value="" name="host" id="hostPicker">
+                                        placeholder="Host" value="{$filters.host?:''}" name="host" id="hostPicker">
                                     </td>
                                     <td>
                                         <input type="text" autocomplete="off" role="combobox" style="width:80px; padding-left:10px;"
-                                        placeholder="Port" value="" name="port" id="portPicker">
+                                        placeholder="Port" value="{$filters.port?:''}" name="port" id="portPicker">
                                     </td>
                                     <td>
                                         <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                        placeholder="WorkingDirectory" value="" name="workingDirectory" id="workingDirectoryPicker">
+                                        placeholder="WorkingDirectory" value="{$filters.workingDirectory?:''}" name="workingDirectory" id="workingDirectoryPicker">
                                     </td>
                                     <td>
                                         <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                        placeholder="Name" value="" name="name" id="namePicker">
+                                        placeholder="Name" value="{$filters.name?:''}" name="name" id="namePicker">
                                     </td>
                                     <td>
-                                        <input type="submit" name="filter" value="Filter"/>
-                                        <input type="submit" name="action" value="Add"/>
+                                        <button type="submit" name="action" value="filter">Filter</button>
+                                        <button type="submit" name="action" value="add">Add</button>
                                     <td>
                                 </tr>
                             </form>
 
                             {foreach $h in $hosts}
                                 <form id="edit-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
-                                    data-jive-ui="jive/ui/typeahead/request_typeahead" method="get" name="editHost">
+                                    data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="editHost">
                                     <tr>    
                                         <td>
                                             <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
@@ -69,8 +74,8 @@
                                         </td>
                                         <td>
                                             <input type="hidden" name="key" value="{$h.key}">
-                                            <input type="submit" name="action" value="Update"/>
-                                            <input type="submit" name="action" value="Remove"/>
+                                            <button type="submit" name="action" value="update">Update</button>
+                                            <button type="submit" name="action" value="remove">Remove</button>
                                         <td>
                                     </tr>
                                 </form>

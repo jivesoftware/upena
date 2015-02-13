@@ -82,9 +82,8 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
                 filters.put("version", "");
                 data.put("filter", filters);
 
-                
                 List<Map<String, String>> rows = new ArrayList<>();
-                
+
                 InstanceFilter filter = new InstanceFilter(null, null, null, null, null, 0, 10000);
                 Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(filter);
                 for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {
@@ -95,7 +94,6 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
                     Map<String, String> map = new HashMap<>();
                     Map<String, String> defaults = configStore.get(key.getKey(), "default", null);
                     Map<String, String> overriden = configStore.get(key.getKey(), "override", null);
-                    
 
                     rows.add(map);
                 }

@@ -332,7 +332,7 @@ public class Main {
         }
 
         InitializeRestfulServer initializeRestfulServer = new InitializeRestfulServer(port, "UpenaNode", 128, 10000);
-        initializeRestfulServer.addClasspathResource("/");
+        initializeRestfulServer.addClasspathResource("/resources");
         initializeRestfulServer.addContextHandler("/", jerseyEndpoints);
 
         RestfulServer restfulServer = initializeRestfulServer.build();
