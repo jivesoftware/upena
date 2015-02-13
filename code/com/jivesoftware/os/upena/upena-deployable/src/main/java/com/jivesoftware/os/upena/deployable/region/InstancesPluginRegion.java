@@ -53,11 +53,22 @@ public class InstancesPluginRegion implements PageRegion<Optional<InstancesPlugi
 
     public static class InstancesPluginRegionInput {
 
-        final String foo;
+        final String key;
+        final String cluster;
+        final String host;
+        final String service;
+        final String id;
+        final String release;
+        final String action;
 
-        public InstancesPluginRegionInput(String foo) {
-
-            this.foo = foo;
+        public InstancesPluginRegionInput(String key, String cluster, String host, String service, String id, String release, String action) {
+            this.key = key;
+            this.cluster = cluster;
+            this.host = host;
+            this.service = service;
+            this.id = id;
+            this.release = release;
+            this.action = action;
         }
 
     }

@@ -5,6 +5,10 @@ import com.jivesoftware.os.upena.deployable.region.InstancesPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.InstancesPluginRegion.InstancesPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
 import javax.inject.Singleton;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.FormParam;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -27,12 +31,29 @@ public class InstancesPluginEndpoints {
         this.pluginRegion = pluginRegion;
     }
 
+    @GET
+    @Path("/")
+    @Produces(MediaType.TEXT_HTML)
+    public Response instances() {
+        String rendered = soyService.renderPlugin(pluginRegion,
+            Optional.of(new InstancesPluginRegionInput("", "", "", "", "", "", "")));
+        return Response.ok(rendered).build();
+    }
+
     @POST
     @Path("/")
     @Produces(MediaType.TEXT_HTML)
-    public Response query() {
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    public Response action(@FormParam("key") @DefaultValue("") String key,
+        @FormParam("cluster") @DefaultValue("") String cluster,
+        @FormParam("host") @DefaultValue("") String host,
+        @FormParam("service") @DefaultValue("") String service,
+        @FormParam("id") @DefaultValue("") String id,
+        @FormParam("release") @DefaultValue("") String release,
+        @FormParam("action") @DefaultValue("") String action) {
         String rendered = soyService.renderPlugin(pluginRegion,
-            Optional.of(new InstancesPluginRegionInput("foo")));
+            Optional.of(new InstancesPluginRegionInput(key, cluster, host, service, id, release, action)));
         return Response.ok(rendered).build();
     }
+
 }
