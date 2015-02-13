@@ -20,7 +20,7 @@ import javax.ws.rs.core.Response;
  *
  */
 @Singleton
-@Path("/clusters")
+@Path("/ui/clusters")
 public class ClustersPluginEndpoints {
 
     private final SoyService soyService;

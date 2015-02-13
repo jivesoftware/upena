@@ -16,7 +16,7 @@ import javax.ws.rs.core.Response;
  *
  */
 @Singleton
-@Path("/status")
+@Path("/ui/status")
 public class StatusPluginEndpoints {
 
     private final SoyService soyService;

@@ -20,7 +20,7 @@ import javax.ws.rs.core.Response;
  *
  */
 @Singleton
-@Path("/hosts")
+@Path("/ui/hosts")
 public class HostsPluginEndpoints {
 
     private final SoyService soyService;

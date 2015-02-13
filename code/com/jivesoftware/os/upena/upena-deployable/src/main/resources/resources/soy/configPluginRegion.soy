@@ -31,7 +31,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
+                            <tr style="background-color:#ddd;">
                                 <td>
                                     Filter A:
                                 </td>
@@ -61,7 +61,7 @@
                                     - vs -
                                 </td>
                             </tr>
-                            <tr>
+                            <tr style="background-color:#aaa;">
                                 <td>
                                     Filter B:
                                 </td>
@@ -101,8 +101,8 @@
             <div class="panel-body">
                 <table style="display: block; width: 100%; max-width: 1200px; table-layout: fixed;">
                 {foreach $property in $properties}
-                    <tr align="left">
-                        <td class="table.shadow-property" colspan="3"><h4>{$property.property}</h4></td>
+                    <tr style="background-color:#999;" align="left">
+                        <td colspan="3"><h4>{$property.property}</h4></td>
                     </tr>
                     <tr align="left">
                         <td colspan="1" align="right">

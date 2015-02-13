@@ -20,7 +20,7 @@ import javax.ws.rs.core.Response;
  *
  */
 @Singleton
-@Path("/instances")
+@Path("/ui/instances")
 public class InstancesPluginEndpoints {
 
     private final SoyService soyService;

@@ -3,17 +3,23 @@ package com.jivesoftware.os.upena.deployable.server;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.net.URISyntaxException;
+import java.util.Collections;
 import org.eclipse.jetty.jmx.MBeanContainer;
+import org.eclipse.jetty.security.ConstraintMapping;
+import org.eclipse.jetty.security.ConstraintSecurityHandler;
+import org.eclipse.jetty.security.HashLoginService;
+import org.eclipse.jetty.security.authentication.BasicAuthenticator;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
-import org.eclipse.jetty.server.handler.DefaultHandler;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.util.BlockingArrayQueue;
 import org.eclipse.jetty.util.resource.Resource;
+import org.eclipse.jetty.util.security.Constraint;
+import org.eclipse.jetty.util.security.Password;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 
 /**
@@ -39,56 +45,34 @@ public class RestfulServer {
     private final String applicationName;
     private final ContextHandlerCollection handlers;
 
-    public RestfulServer(int port, String applicationName, int maxNumberOfThreads, int maxQueuedRequests) {
+    public RestfulServer(int port, final String applicationName, int maxNumberOfThreads, int maxQueuedRequests) {
         this.applicationName = applicationName;
         this.server = makeServer(maxNumberOfThreads, maxQueuedRequests);
-        this.handlers = new ContextHandlerCollection();
 
-//        Constraint constraint = new Constraint();
-//        constraint.setName(Constraint.__FORM_AUTH);;
-//        constraint.setRoles(new String[]{"user", "admin", "moderator"});
-//        constraint.setAuthenticate(true);
-//
-//        ConstraintMapping constraintMapping = new ConstraintMapping();
-//        constraintMapping.setConstraint(constraint);
-//        constraintMapping.setPathSpec("/*");
-//
-//        ConstraintSecurityHandler securityHandler = new ConstraintSecurityHandler();
-//        securityHandler.addConstraintMapping(constraintMapping);
-//
-//        HashLoginService loginService = new HashLoginService();
-//        loginService.putUser("username", new Password("password"), new String[]{"user"});
-//        securityHandler.setLoginService(loginService);
-//
-//        FormAuthenticator authenticator = new FormAuthenticator("/login", "/login", false);
-//        securityHandler.setAuthenticator(authenticator);
-//
-//        ServletContextHandler context = new ServletContextHandler(server, "/", ServletContextHandler.SESSIONS | ServletContextHandler.SECURITY);
-//
-//        context.addServlet(new ServletHolder(new DefaultServlet() {
-//            @Override
-//            protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-//                response.getWriter().append("hello " + request.getUserPrincipal().getName());
-//            }
-//        }), "/*");
-//
-//        context.addServlet(new ServletHolder(new DefaultServlet() {
-//            @Override
-//            protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-//                response.getWriter().append("<html><div style=\"text-align:center\"><table style=\"display: inline-table;\">"
-//                    + "<tr><td><img src=\"/static/img/icon.png\" alt=\"Fun with deployment\"><img></td></tr>"
-//                    + "<tr><td><form method='POST' action='/j_security_check'>"
-//                    + "<input type='text' name='j_username'/>"
-//                    + "<input type='password' name='j_password'/>"
-//                    + "<input type='submit' value='Login'/></form></td></tr></table></div></html>");
-//            }
-//        }), "/login");
-//        context.setSecurityHandler(securityHandler);
-//        handlers.addHandler(context);
-        handlers.addHandler(new DefaultHandler());
+        HashLoginService loginService = new HashLoginService();
+        loginService.putUser("admin", new Password("admin"), new String[]{"user", "admin"});
+        server.addBean(loginService);
+
+        ConstraintSecurityHandler security = new ConstraintSecurityHandler();
+        server.setHandler(security);
+
+        Constraint constraint = new Constraint();
+        constraint.setName("auth");
+        constraint.setAuthenticate(true);
+        constraint.setRoles(new String[]{"user", "admin"});
+
+        ConstraintMapping mapping = new ConstraintMapping();
+        mapping.setPathSpec("/ui/*");
+        mapping.setConstraint(constraint);
+
+        security.setConstraintMappings(Collections.singletonList(mapping));
+        security.setAuthenticator(new BasicAuthenticator());
+        security.setLoginService(loginService);
+
+        this.handlers = new ContextHandlerCollection();
+        security.setHandler(handlers);
 
         server.addEventListener(new MBeanContainer(ManagementFactory.getPlatformMBeanServer()));
-        server.setHandler(handlers);
         server.addConnector(makeConnector(port));
 
     }

@@ -20,7 +20,7 @@ import javax.ws.rs.core.Response;
  *
  */
 @Singleton
-@Path("/config")
+@Path("/ui/config")
 public class ConfigPluginEndpoints {
 
     private final SoyService soyService;

@@ -20,7 +20,7 @@ import javax.ws.rs.core.Response;
  *
  */
 @Singleton
-@Path("/ring")
+@Path("/ui/ring")
 public class UpenaRingPluginEndpoints {
 
     private final SoyService soyService;
