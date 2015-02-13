@@ -1,6 +1,8 @@
 package com.jivesoftware.os.upena.deployable.server;
 
+import java.io.IOException;
 import java.lang.management.ManagementFactory;
+import java.net.URISyntaxException;
 import org.eclipse.jetty.jmx.MBeanContainer;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Handler;
@@ -105,12 +107,15 @@ public class RestfulServer {
         handlers.addHandler(handler);
     }
 
-    public void addClasspathReasource(String path) throws Exception {
+    public void addClasspathResource(String path) throws Exception {
+        addResourcesDir(path, "static");
+    }
 
-        Resource newResource = Resource.newResource(this.getClass().getResource(path).toURI());
+    private void addResourcesDir(String path, String dir) throws IOException, URISyntaxException {
+        Resource newResource = Resource.newResource(this.getClass().getResource(path + "/" + dir).toURI());
         ResourceHandler resourceHandler = new ResourceHandler();
         resourceHandler.setBaseResource(newResource);
-        ContextHandler ctx = new ContextHandler("/");
+        ContextHandler ctx = new ContextHandler("/" + dir);
         ctx.setHandler(resourceHandler);
         handlers.addHandler(ctx);
     }

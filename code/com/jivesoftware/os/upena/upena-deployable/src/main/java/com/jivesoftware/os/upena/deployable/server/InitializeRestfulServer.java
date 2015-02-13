@@ -29,7 +29,7 @@ public class InitializeRestfulServer {
     }
 
     public InitializeRestfulServer addClasspathResource(String path) throws Exception {
-        server.addClasspathReasource(path);
+        server.addClasspathResource(path);
         return this;
     }
 
