@@ -49,11 +49,14 @@ public class UpenaRingPluginRegion implements PageRegion<Optional<UpenaRingPlugi
 
     public static class UpenaRingPluginRegionInput {
 
-        final String foo;
+        final String host;
+        final String port;
+        final String action;
 
-        public UpenaRingPluginRegionInput(String foo) {
-
-            this.foo = foo;
+        public UpenaRingPluginRegionInput(String host, String port, String action) {
+            this.host = host;
+            this.port = port;
+            this.action = action;
         }
 
     }
@@ -65,6 +68,12 @@ public class UpenaRingPluginRegion implements PageRegion<Optional<UpenaRingPlugi
         try {
             if (optionalInput.isPresent()) {
                 UpenaRingPluginRegionInput input = optionalInput.get();
+
+                if (input.action.equals("add")) {
+                    amzaInstance.addRingHost("master", new RingHost(input.host, Integer.parseInt(input.port)));
+                } else if (input.action.equals("remove")) {
+                    amzaInstance.removeRingHost("master", new RingHost(input.host, Integer.parseInt(input.port)));
+                }
 
                 List<Map<String, String>> rows = new ArrayList<>();
                 for (RingHost host : amzaInstance.getRing("master")) {

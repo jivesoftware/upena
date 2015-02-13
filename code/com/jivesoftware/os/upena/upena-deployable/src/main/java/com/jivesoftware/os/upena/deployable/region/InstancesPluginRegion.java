@@ -108,6 +108,7 @@ public class InstancesPluginRegion implements PageRegion<Optional<InstancesPlugi
                     map.put("key", key.getKey());
                     map.put("cluster", upenaStore.clusters.get(value.clusterKey).name);
                     map.put("host", host.hostName + ":" + host.port);
+                    map.put("host", upenaStore.hosts.get(value.hostKey).name);
                     map.put("service", upenaStore.services.get(value.serviceKey).name);
                     map.put("id", String.valueOf(value.instanceId));
                     map.put("release", upenaStore.releaseGroups.get(value.releaseGroupKey).name);

@@ -1,39 +1,165 @@
 {namespace soy.page}
 
 /**
- * Upena Ring plugin page
- * 
- * @param? ring
+ * @param? message
+ * @param? aFilters
+ * @param? bFilters
+ * @param? property
+ * @param? properties
  */
 {template .configPluginRegion}
-    {if $ring}
-        <div class="panel panel-default">
-            <div class="panel-heading">Instances</div>
-                <div class="panel-body">
+    <div class="panel panel-default">
+        <div class="panel-heading">Instance Config/s</div>
+            <div class="panel-body">
+                {if $message}
+                    <div class="panel-heading">
+                        <pre>{$message}</pre>
+                    </div>
+                {/if}
+                <form id="config" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                            data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="config">
+
                     <table class="table table-condensed">
                         <thead>
                             <tr>
-                                <th>Id</th>
-                                <th>Name</th>
+                                <th></th>
+                                <th>Cluster</th>
                                 <th>Host</th>
                                 <th>Service</th>
-                                <th>Release</th>
+                                <th>Instance</th>
+                                <th>Version</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {foreach $r in $ring}
-                                <tr>
-                                    <td>{$r.id}</td>
-                                    <td>{$r.name}</td>
-                                    <td>{$r.host}</td>
-                                    <td>{$r.service}</td>
-                                    <td>{$r.release}</td>
-                                </tr>
-                            {/foreach}
+                            <tr>
+                                <td>
+                                    Filter A:
+                                </td>
+                                <td>
+                                    <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                    placeholder="Cluster" value="{$aFilters.cluster?:''}" name="aCluster" id="namePicker">
+                                </td>
+                                <td>
+                                    <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                    placeholder="Host" value="{$aFilters.host?:''}" name="aHost" id="descriptionPicker">
+                                </td>
+                                <td>
+                                    <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                    placeholder="Service" value="{$aFilters.service?:''}" name="aService" id="descriptionPicker">
+                                </td>
+                                <td>
+                                    <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                    placeholder="Instance" value="{$aFilters.instance?:''}" name="aInstance" id="descriptionPicker">
+                                </td>
+                                <td>
+                                    <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                    placeholder="Release" value="{$aFilters.release?:''}" name="aRelease" id="descriptionPicker">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    - vs -
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    Filter B:
+                                </td>
+                                <td>
+                                    <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                    placeholder="Cluster" value="{$bFilters.cluster?:''}" name="bCluster" id="namePicker">
+                                </td>
+                                <td>
+                                    <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                    placeholder="Host" value="{$bFilters.host?:''}" name="bHost" id="descriptionPicker">
+                                </td>
+                                <td>
+                                    <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                    placeholder="Service" value="{$bFilters.service?:''}" name="bService" id="descriptionPicker">
+                                </td>
+                                <td>
+                                    <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                    placeholder="Instance" value="{$bFilters.instance?:''}" name="bInstance" id="descriptionPicker">
+                                </td>
+                                <td>
+                                    <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                    placeholder="Release" value="{$bFilters.release?:''}" name="bRelease" id="descriptionPicker">
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
-                </div>
+                    <div class="panel-heading">
+                        <div>
+                             Filter:<input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                    placeholder="property" value="{$property?:''}" name="property" id="descriptionPicker">
+                             <input type="checkbox" name="overriden">&nbsp;overridden&nbsp;
+                             <input type="submit" name="action" value="Refresh"/>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="panel-body">
+                <table style="display: block; width: 100%; max-width: 1200px; table-layout: fixed;">
+                {foreach $property in $properties}
+                    <tr align="left">
+                        <td class="table.shadow-property" colspan="3"><h4>{$property.property}</h4></td>
+                    </tr>
+                    <tr align="left">
+                        <td colspan="1" align="right">
+                            {if $property.as}
+                                <table style="display: block; width: 49%; max-width: 600px; table-layout: fixed;">
+                                    {foreach $a in $property.as}
+                                        <tr>
+                                            <td>{$a.cluster?:''}</td>
+                                            <td>{$a.host?:''}</td>
+                                            <td>{$a.service?:''}</td>
+                                            <td>{$a.instance?:''}</td>
+                                            <td>{$a.release?:''}</td>
+                                            <td>{$a.default?:''}</td>
+                                            <td>
+                                                <input type="text" style="width:200px; padding-left:10px;"
+                                                    placeholder="override" value="{$a.override?:''}" name="override" id="override">
+                                            </td>
+                                        </tr>
+                                    {/foreach}
+                                </table>
+                            {else}
+                                &nbsp
+                            {/if}
+                        </td>
+                        
+                        <td colspan="1" align="center">
+                            {if $property.bs}
+                                &nbsp<-&nbsp
+                            {else}
+                                &nbsp
+                            {/if}
+                        </td>
+                        <td colspan="1" align="left">
+                            {if $property.bs}
+                                <table style="display: block; width: 49%; max-width: 600px; table-layout: fixed;">
+                                    {foreach $b in $property.bs}
+                                        <tr>
+                                            <td>
+                                                <input type="text" style="width:200px; padding-left:10px;"
+                                                    placeholder="override" value="{$b.override?:''}" name="override" id="override">
+                                            </td>
+                                            <td>{$b.default?:''}</td>
+                                            <td>{$b.release?:''}</td>
+                                            <td>{$b.instance?:''}</td>
+                                            <td>{$b.service?:''}</td>
+                                            <td>{$b.host?:''}</td>
+                                            <td>{$b.cluster?:''}</td>
+                                        </tr>
+                                    {/foreach}
+                                </table>
+                            {else}
+                                &nbsp
+                            {/if}
+                        </td>
+                    </tr>
+                {/foreach}
             </div>
         </div>
-    {/if}
+    </div>
 {/template}

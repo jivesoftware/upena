@@ -70,12 +70,10 @@
                                             placeholder="Description" value="{$r.description}" name="description" id="descriptionPicker">
                                         </td>
                                         <td>
-                                            <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                            placeholder="Version" value="{$r.version}" name="version" id="descriptionPicker">
+                                            <textarea name="version" cols="45">{$r.version?:''}</textarea>
                                         </td>
                                         <td>
-                                            <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                            placeholder="Repository" value="{$r.repository}" name="repository" id="descriptionPicker">
+                                            <textarea name="repository" cols="45">{$r.repository?:''}</textarea>
                                         </td>
                                         <td>
                                             <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"

@@ -16,9 +16,13 @@ import com.jivesoftware.os.upena.shared.InstanceKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
 import com.jivesoftware.os.upena.uba.service.UbaService;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 /**
  *
@@ -57,13 +61,37 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
 
     public static class ConfigPluginRegionInput {
 
-        final String foo;
+        final String aCluster;
+        final String aHost;
+        final String aService;
+        final String aInstance;
+        final String aRelease;
 
-        public ConfigPluginRegionInput(String foo) {
+        final String bCluster;
+        final String bHost;
+        final String bService;
+        final String bInstance;
+        final String bRelease;
 
-            this.foo = foo;
+        final String property;
+        final String overriden;
+
+        public ConfigPluginRegionInput(String aCluster, String aHost, String aService, String aInstance, String aRelease,
+            String bCluster, String bHost, String bService, String bInstance, String bRelease,
+            String property, String overriden) {
+            this.aCluster = aCluster;
+            this.aHost = aHost;
+            this.aService = aService;
+            this.aInstance = aInstance;
+            this.aRelease = aRelease;
+            this.bCluster = bCluster;
+            this.bHost = bHost;
+            this.bService = bService;
+            this.bInstance = bInstance;
+            this.bRelease = bRelease;
+            this.property = property;
+            this.overriden = overriden;
         }
-
     }
 
     @Override
@@ -74,31 +102,65 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
             if (optionalInput.isPresent()) {
                 ConfigPluginRegionInput input = optionalInput.get();
 
-                Map<String, String> filters = new HashMap<>();
-                filters.put("cluster", "");
-                filters.put("host", "");
-                filters.put("service", "");
-                filters.put("instance", "");
-                filters.put("version", "");
-                data.put("filter", filters);
+                Map<String, String> aFilters = new HashMap<>();
+                aFilters.put("aCluster", "");
+                aFilters.put("aHost", "");
+                aFilters.put("aService", "");
+                aFilters.put("aInstance", "");
+                aFilters.put("aRelease", "");
+                data.put("aFilters", aFilters);
 
-                List<Map<String, String>> rows = new ArrayList<>();
+                Map<String, String> bFilters = new HashMap<>();
+                bFilters.put("bCluster", "");
+                bFilters.put("bHost", "");
+                bFilters.put("bService", "");
+                bFilters.put("bInstance", "");
+                bFilters.put("bRelease", "");
+                data.put("bFilters", bFilters);
 
-                InstanceFilter filter = new InstanceFilter(null, null, null, null, null, 0, 10000);
-                Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(filter);
-                for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {
-                    InstanceKey key = entrySet.getKey();
-                    TimestampedValue<Instance> timestampedValue = entrySet.getValue();
-                    Instance value = timestampedValue.getValue();
+                Map<String, String> hack = new HashMap<>();
+                hack.put("cluster", "c");
+                hack.put("host", "h");
+                hack.put("service", "s");
+                hack.put("instance", "i");
+                hack.put("override", "o");
+                hack.put("default", "d");
 
-                    Map<String, String> map = new HashMap<>();
-                    Map<String, String> defaults = configStore.get(key.getKey(), "default", null);
-                    Map<String, String> overriden = configStore.get(key.getKey(), "override", null);
+                ConcurrentSkipListMap<String, List<Map<String, String>>> as = packProperties(input.aCluster,
+                    input.aHost, input.aService, input.aInstance, input.aRelease, input.property);
 
-                    rows.add(map);
+                ConcurrentSkipListMap<String, List<Map<String, String>>> bs = packProperties(input.bCluster,
+                    input.bHost, input.bService, input.bInstance, input.bRelease, input.property);
+
+                as.put("hack1", Arrays.asList(hack));
+                as.put("hack2", Arrays.asList(hack));
+                as.put("hack4", Arrays.asList(hack));
+                bs.put("hack1", Arrays.asList(hack));
+                bs.put("hack3", Arrays.asList(hack));
+
+
+                Set<String> allProperties = Collections.newSetFromMap(new ConcurrentSkipListMap<String, Boolean>());
+                allProperties.addAll(as.keySet());
+                allProperties.addAll(bs.keySet());
+
+                List<Map<String, Object>> rows = new ArrayList<>();
+                for (String property : allProperties) {
+
+                    Map<String, Object> propertyAndOccurrences = new HashMap<>();
+                    propertyAndOccurrences.put("property", property);
+
+                    List<Map<String, String>> a = as.get(property);
+                    if (a != null) {
+                        propertyAndOccurrences.put("as", a);
+                    }
+                    List<Map<String, String>> b = bs.get(property);
+                    if (b != null) {
+                        propertyAndOccurrences.put("bs", b);
+                    }
+                    rows.add(propertyAndOccurrences);
                 }
 
-                data.put("instances", rows);
+                data.put("properties", rows);
 
             }
         } catch (Exception e) {
@@ -106,6 +168,50 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
         }
 
         return renderer.render(template, data);
+    }
+
+    private ConcurrentSkipListMap<String, List<Map<String, String>>> packProperties(String cluster,
+        String host, String service, String instance, String release, String propertyContains) throws Exception {
+
+        InstanceFilter filter = new InstanceFilter(null, null, null, null, null, 0, 10000);
+        Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(filter);
+        ConcurrentSkipListMap<String, List<Map<String, String>>> properties = new ConcurrentSkipListMap<>();
+        for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {
+            InstanceKey key = entrySet.getKey();
+            TimestampedValue<Instance> timestampedValue = entrySet.getValue();
+            Instance i = timestampedValue.getValue();
+
+            Map<String, String> defaults = configStore.get(key.getKey(), "default", null);
+            Map<String, String> overriden = configStore.get(key.getKey(), "override", null);
+
+            for (String property : defaults.keySet()) {
+                if (!propertyContains.isEmpty() && !property.contains(propertyContains)) {
+                    continue;
+                }
+                List<Map<String, String>> occurences = properties.get(property);
+                if (occurences == null) {
+                    occurences = new ArrayList<>();
+                    properties.put(property, occurences);
+                }
+                Map<String, String> occurence = new HashMap<>();
+                if (cluster.isEmpty()) {
+                    occurence.put("cluster", upenaStore.clusters.get(i.clusterKey).name);
+                }
+                if (host.isEmpty()) {
+                    occurence.put("host", upenaStore.hosts.get(i.hostKey).name);
+                }
+                if (service.isEmpty()) {
+                    occurence.put("service", upenaStore.services.get(i.serviceKey).name);
+                }
+                if (instance.isEmpty()) {
+                    occurence.put("instance", String.valueOf(i.instanceId));
+                }
+                occurence.put("override", overriden.get(property));
+                occurence.put("default", defaults.get(property));
+                occurences.add(occurence);
+            }
+        }
+        return properties;
     }
 
     @Override

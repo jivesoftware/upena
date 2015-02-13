@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 import org.rendersnake.HtmlAttributes;
 import org.rendersnake.HtmlAttributesFactory;
@@ -80,7 +81,40 @@ public class StatusPluginRegion implements PageRegion<Optional<StatusPluginRegio
             if (optionalInput.isPresent()) {
                 StatusPluginRegionInput input = optionalInput.get();
 
+                /*
+                 var barChartData = {lb}
+                 labels : ["January","February","March","April","May","June","July"],
+                 datasets : [
+                 {lb}
+                 label: "My First dataset",
+                 fillColor: "rgba(220,220,220,0.2)",
+                 strokeColor: "rgba(220,220,220,1)",
+                 pointColor: "rgba(220,220,220,1)",
+                 pointStrokeColor: "#fff",
+                 pointHighlightFill: "#fff",
+                 pointHighlightStroke: "rgba(220,220,220,1)",
+                 data: [65, 59, 80, 81, 56, 55, 40]
+                 {rb}
+                 ]
+                 {rb};
+                 */
+                Map<String, Object> waveforms = new HashMap<>();
+                waveforms.put("labels", Arrays.asList("\"January\"", "\"February\"", "\"March\"", "\"April\"", "\"May\"", "\"June\"", "\"July\""));
+
+                Map<String, Object> waveform = new HashMap<>();
+                waveform.put("label", "\"My First dataset\"");
+                waveform.put("fillColor", "\"rgba(220,220,220,0.2)\"");
+                waveform.put("strokeColor", "\"rgba(220,220,220,1)\"");
+                waveform.put("pointColor", "\"rgba(220,220,220,1)\"");
+                waveform.put("pointStrokeColor", "\"#fff\"");
+                waveform.put("pointHighlightFill", "\"#fff\"");
+                waveform.put("pointHighlightStroke", "\"rgba(220,220,220,1)\"");
+                waveform.put("data", Arrays.asList(65, 59, 80, 81, 56, 55, 40));
+
+                waveforms.put("datasets", Arrays.asList(waveform));
+
                 data.put("upenaStatus", getHtml());
+                data.put("upenaWaveforms", waveforms);
 
             }
         } catch (Exception e) {

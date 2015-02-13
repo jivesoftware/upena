@@ -32,7 +32,31 @@ div.container {
     width: 100% !important;
 }
 
+property-title {
+    -webkit-border-top-left-radius: 4px;
+    -webkit-border-top-right-radius: 8px;
+    -webkit-border-bottom-right-radius: 16px;
+    -webkit-border-bottom-left-radius: 8px;
+    -moz-border-radius-topleft: 4px;
+    -moz-border-radius-topright: 8px;
+    -moz-border-radius-bottomright: 16px;
+    -moz-border-radius-bottomleft: 8px;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 16px;
+    border-bottom-left-radius: 8px;
+    -moz-box-shadow:    2px 2px 4px 5px #ccc;
+    -webkit-box-shadow: 2px 2px 4px 5px #ccc;
+    box-shadow:         2px 2px 4px 5px #ccc;
+    background-color: #ccc
+}
 
+table.shadow-property {
+    -moz-box-shadow:    2px 2px 4px 5px #ccc;
+    -webkit-box-shadow: 2px 2px 4px 5px #ccc;
+    box-shadow:         2px 2px 4px 5px #ccc;
+    background-color: #555555;
+}
 
 span.dropt:hover {
     text-decoration: none; background: #ffffff; z-index: 6;

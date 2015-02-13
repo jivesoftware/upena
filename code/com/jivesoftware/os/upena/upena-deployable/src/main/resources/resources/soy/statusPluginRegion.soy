@@ -4,12 +4,28 @@
  * Upena Status plugin page
  * 
  * @param? upenaStatus
+ * @param? upenaWaveforms
  */
 {template .statusPluginRegion}
     {if $upenaStatus}
+        
         <div class="panel panel-default">
             <div class="panel-heading">Status</div>
                 <div class="panel-body">
+                    <div style="width: 50%">
+                        <canvas id="canvas" height="120" width="800"></canvas>
+                    </div>
+                    <script>
+                        window.onload = function(){lb}
+                            var ctx = document.getElementById("canvas").getContext("2d");
+                            window.myBar = new Chart(ctx).Radar({$upenaWaveforms|noAutoescape}, {lb}
+                                responsive : false,
+                                bezierCurve: false,
+                                datasetFill : false,
+                            {rb});
+                        {rb};
+                    </script>
+                    <br>
                     {$upenaStatus|noAutoescape}
                 </div>
             </div>

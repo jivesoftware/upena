@@ -34,7 +34,7 @@
                                         data-original-title="" title="">
                                     </td>
                                     <input type="hidden" name="action" value="add">
-                                    <td><input type="submit" value="Add"/><td>
+                                    <td><button type="submit" name="action" value="add">Add</button><td>
                                 </tr>
                             </form>
 
@@ -47,7 +47,7 @@
                                         <input type="hidden" name="action" value="remove">
                                         <td>{$r.host}</td>
                                         <td>{$r.port}</td>
-                                        <td><input type="submit" value="Remove"/><td>
+                                        <td><button type="submit" name="action" value="remove">Remove</button><td>
                                     </tr>
                                 </form>
                             {/foreach}

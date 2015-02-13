@@ -299,7 +299,7 @@ public class Main {
                 InstancesPluginEndpoints.class,
                 new InstancesPluginRegion("soy.page.instancesPluginRegion", renderer, amzaService, upenaStore, upenaService, ubaService, ringHost)),
             new ManagePlugin("Config",
-                "/Config",
+                "/config",
                 ConfigPluginEndpoints.class,
                 new ConfigPluginRegion("soy.page.configPluginRegion", renderer, amzaService, upenaStore, upenaService, ubaService, ringHost, upenaConfigStore)),
             new ManagePlugin("Clusters",
