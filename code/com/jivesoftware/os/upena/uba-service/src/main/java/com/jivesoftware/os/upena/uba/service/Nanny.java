@@ -57,7 +57,9 @@ public class Nanny {
         this.invokeScript = invokeScript;
         linkedBlockingQueue = new LinkedBlockingQueue<>(10);
         threadPoolExecutor = new ThreadPoolExecutor(1, 1, 1000, TimeUnit.MILLISECONDS, linkedBlockingQueue);
-        redeploy = new AtomicBoolean(!instancePath.script("status").exists());
+        boolean exists = instancePath.script("status").exists();
+        System.out.println("Stats script for " + instanceDescriptor + " exists ==" + exists);
+        redeploy = new AtomicBoolean(!exists);
         destroyed = new AtomicBoolean(false);
     }
 
@@ -72,6 +74,7 @@ public class Nanny {
             LOG.info("Instance changed from " + got + " to " + id);
         } else if (!instancePath.script("status").exists()) {
             redeploy.set(true);
+            LOG.info("Missing status script from " + got + " to " + id);
         }
         if (!redeploy.get()) {
             LOG.info("Service:" + instancePath.toHumanReadableName() + " has NOT changed.");
@@ -158,7 +161,21 @@ public class Nanny {
             healthLog,
             invokeScript);
         Future<Boolean> waitForDestory = threadPoolExecutor.submit(nannyTask);
-        return waitForDestory.get();
+        Boolean result = waitForDestory.get();
+        nannyTask.wipeoutFiles();
+        return result;
+
+    }
+
+    synchronized Boolean kill() throws InterruptedException, ExecutionException {
+        NannyDestroyCallable nannyTask = new NannyDestroyCallable(
+            instancePath,
+            deployLog,
+            healthLog,
+            invokeScript);
+        Future<Boolean> waitForDestory = threadPoolExecutor.submit(nannyTask);
+        Boolean result = waitForDestory.get();
+        return result;
 
     }
 

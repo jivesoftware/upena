@@ -25,7 +25,10 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.rendersnake.HtmlAttributes;
 import org.rendersnake.HtmlAttributesFactory;
 import org.rendersnake.HtmlCanvas;
@@ -64,13 +67,15 @@ public class StatusPluginRegion implements PageRegion<Optional<StatusPluginRegio
 
     public static class StatusPluginRegionInput {
 
-        final String foo;
+        final String cluster;
+        final String host;
+        final String service;
 
-        public StatusPluginRegionInput(String foo) {
-
-            this.foo = foo;
+        public StatusPluginRegionInput(String cluster, String host, String service) {
+            this.cluster = cluster;
+            this.host = host;
+            this.service = service;
         }
-
     }
 
     @Override
@@ -78,45 +83,95 @@ public class StatusPluginRegion implements PageRegion<Optional<StatusPluginRegio
         Map<String, Object> data = Maps.newHashMap();
 
         try {
-            if (optionalInput.isPresent()) {
-                StatusPluginRegionInput input = optionalInput.get();
+            StatusPluginRegionInput input = optionalInput.get();
 
-                /*
-                 var barChartData = {lb}
-                 labels : ["January","February","March","April","May","June","July"],
-                 datasets : [
-                 {lb}
-                 label: "My First dataset",
-                 fillColor: "rgba(220,220,220,0.2)",
-                 strokeColor: "rgba(220,220,220,1)",
-                 pointColor: "rgba(220,220,220,1)",
-                 pointStrokeColor: "#fff",
-                 pointHighlightFill: "#fff",
-                 pointHighlightStroke: "rgba(220,220,220,1)",
-                 data: [65, 59, 80, 81, 56, 55, 40]
-                 {rb}
-                 ]
-                 {rb};
-                 */
-                Map<String, Object> waveforms = new HashMap<>();
-                waveforms.put("labels", Arrays.asList("\"January\"", "\"February\"", "\"March\"", "\"April\"", "\"May\"", "\"June\"", "\"July\""));
+            Map<String, String> filter = new HashMap<>();
+            filter.put("cluster", input.cluster);
+            filter.put("host", input.host);
+            filter.put("service", input.service);
+            data.put("filter", filter);
 
-                Map<String, Object> waveform = new HashMap<>();
-                waveform.put("label", "\"My First dataset\"");
-                waveform.put("fillColor", "\"rgba(220,220,220,0.2)\"");
-                waveform.put("strokeColor", "\"rgba(220,220,220,1)\"");
-                waveform.put("pointColor", "\"rgba(220,220,220,1)\"");
-                waveform.put("pointStrokeColor", "\"#fff\"");
-                waveform.put("pointHighlightFill", "\"#fff\"");
-                waveform.put("pointHighlightStroke", "\"rgba(220,220,220,1)\"");
-                waveform.put("data", Arrays.asList(65, 59, 80, 81, 56, 55, 40));
+            List<Map<String, String>> health = new ArrayList<>();
 
-                waveforms.put("datasets", Arrays.asList(waveform));
+            UpenaEndpoints.ClusterHealth clusterHealth = buildClusterHealth("health");
+            ArrayList<String> lables = new ArrayList<>();
+            ArrayList<Integer> values = new ArrayList<>();
+            Set<String> onlyOnce = new HashSet<>();
 
-                data.put("upenaStatus", getHtml());
-                data.put("upenaWaveforms", waveforms);
+            Map<String, Double> minClusterHealth = new HashMap<>();
+            for (UpenaEndpoints.NodeHealth nodeHealth : clusterHealth.nodeHealths) {
+                for (UpenaEndpoints.NannyHealth nannyHealth : nodeHealth.nannyHealths) {
+                    Double got = minClusterHealth.get(nannyHealth.instanceDescriptor.clusterKey);
+                    if (got == null || got > nannyHealth.serviceHealth.health) {
+                        minClusterHealth.put(nannyHealth.instanceDescriptor.clusterKey, nannyHealth.serviceHealth.health);
+                    }
+                }
+            }
+
+            for (UpenaEndpoints.NodeHealth nodeHealth : clusterHealth.nodeHealths) {
+                for (UpenaEndpoints.NannyHealth nannyHealth : nodeHealth.nannyHealths) {
+                    boolean cshow = input.cluster.isEmpty() ? false : nannyHealth.instanceDescriptor.clusterName.contains(input.cluster);
+                    boolean hshow = input.host.isEmpty() ? false : nodeHealth.host.contains(input.host);
+                    boolean sshow = input.service.isEmpty() ? false : nannyHealth.instanceDescriptor.serviceName.contains(input.service);
+
+                    if ((!input.cluster.isEmpty() == cshow) && (!input.host.isEmpty() == hshow) && (!input.service.isEmpty() == sshow)) {
+                        if (!onlyOnce.contains(nodeHealth.host + ":" + nodeHealth.port)) {
+                            lables.add("\"" + nodeHealth.host + ":" + nodeHealth.port + "\"");
+                            values.add(Math.max(0, (int) (nodeHealth.health * 100)));
+                            onlyOnce.add(nodeHealth.host + ":" + nodeHealth.port);
+                        }
+
+                        Map<String, String> h = new HashMap<>();
+                        Double ch = minClusterHealth.get(nannyHealth.instanceDescriptor.clusterKey);
+                        h.put("cluster", "<div title=\"" + nannyHealth.instanceDescriptor.clusterName
+                            + "\" style=\"background-color:#" + getHEXTrafficlightColor(ch, 1f) + "\">"
+                            + d2f(ch) + "</div>");
+
+                        Double nh = nodeHealth.health;
+                        h.put("host", "<div title=\"" + nodeHealth.host + ":" + nodeHealth.port
+                            + "\" style=\"background-color:#" + getHEXTrafficlightColor(nh, 1f) + "\">"
+                            + d2f(nh) + "</div>");
+
+                        Double sh = nannyHealth.serviceHealth.health;
+                        h.put("service", "<div title=\"" + nannyHealth.instanceDescriptor.serviceName
+                            + "\" style=\"background-color:#" + getHEXTrafficlightColor(sh, 1f) + "\">"
+                            + d2f(sh) + "</div>");
+
+                        h.put("key", nannyHealth.instanceDescriptor.instanceKey);
+                        h.put("name", "<span class=\"glyphicon glyphicon-zoom-in\"></span>&nbsp;&nbsp;"
+                            + "<a href=\"http://" + nodeHealth.host + ":" + nannyHealth.instanceDescriptor.ports.get("manage").port + "/manage/ui\">"
+                            + nannyHealth.instanceDescriptor.serviceName + " " + nannyHealth.instanceDescriptor.instanceName + "</a>");
+
+                        HtmlCanvas hc = new HtmlCanvas();
+                        serviceHealth(hc, nannyHealth);
+                        h.put("details", hc.toHtml());
+                        health.add(h);
+
+                    }
+                }
 
             }
+            data.put("health", health);
+
+            Map<String, Object> waveforms = new HashMap<>();
+            waveforms.put("labels", lables);
+
+            Color healthColor = new Color(Color.HSBtoRGB((float) Math.max(0, clusterHealth.health) / 3f, 1f, 1f));
+
+            Map<String, Object> waveform = new HashMap<>();
+            waveform.put("label", "\"My First dataset\"");
+            waveform.put("fillColor", "\"rgba(" + healthColor.getRed() + "," + healthColor.getGreen() + "," + healthColor.getBlue() + ",0.8)\"");
+            waveform.put("strokeColor", "\"rgba(220,220,220,1)\"");
+            waveform.put("pointColor", "\"rgba(220,220,220,1)\"");
+            waveform.put("pointStrokeColor", "\"#fff\"");
+            waveform.put("pointHighlightFill", "\"#fff\"");
+            waveform.put("pointHighlightStroke", "\"rgba(220,220,220,1)\"");
+            waveform.put("data", values);
+
+            waveforms.put("datasets", Arrays.asList(waveform));
+
+            data.put("upenaWaveforms", waveforms);
+
         } catch (Exception e) {
             log.error("Unable to retrieve data", e);
         }
@@ -129,9 +184,6 @@ public class StatusPluginRegion implements PageRegion<Optional<StatusPluginRegio
         return "Upena Status";
     }
 
-    private static final String roundBorder = "-moz-border-radius: 4px;"
-        + "-webkit-border-radius: 4px;"
-        + "border-radius: 4px;";
     private static final DecimalFormat df2 = new DecimalFormat("#.##");
 
     String d2f(double val) {
@@ -156,8 +208,6 @@ public class StatusPluginRegion implements PageRegion<Optional<StatusPluginRegio
             h.div(colorStyle("background-color", clusterHealth.health, 0.75f));
             h.span(HtmlAttributesFactory.class_("dropt"));
             h.span(HtmlAttributesFactory.style("width:800px;"));
-
-            clusterHeatMap(h, clusterHealth);
 
             h.content("");
             h.content(d2f(clusterHealth.health));
@@ -217,15 +267,6 @@ public class StatusPluginRegion implements PageRegion<Optional<StatusPluginRegio
         return clusterHealth;
     }
 
-    private String coloredStopLightButton(double rank, float sat) {
-        return roundBorder + "display: block;"
-            + "  background-color: #" + getHEXTrafficlightColor(rank, sat) + ";"
-            + "  padding: 3px;"
-            + "  text-align: center;"
-            + "  color: gray;"
-            + "  border: 1px solid gray;";
-    }
-
     RequestHelper buildRequestHelper(String host, int port) {
         HttpClientConfig httpClientConfig = HttpClientConfig.newBuilder().setSocketTimeoutInMillis(10000).build();
         HttpClientFactory httpClientFactory = new HttpClientFactoryProvider()
@@ -233,78 +274,6 @@ public class StatusPluginRegion implements PageRegion<Optional<StatusPluginRegio
         HttpClient httpClient = httpClientFactory.createClient(host, port);
         RequestHelper requestHelper = new RequestHelper(httpClient, new ObjectMapper());
         return requestHelper;
-    }
-
-    private void clusterHeatMap(final HtmlCanvas h, UpenaEndpoints.ClusterHealth clusterHealth) throws IOException {
-        h.table(HtmlAttributesFactory.style(roundBorder + "text-align:center;"
-            + " border: 1px outset gray;"
-            + "background-color: #" + getHEXTrafficlightColor(clusterHealth.health, 1.0F) + ";"
-            + "padding: 5px;margin: 5px;"));
-
-        int nodeCount = 0;
-        h.tr();
-        for (UpenaEndpoints.NodeHealth nodeHealth : clusterHealth.nodeHealths) {
-            nodeCount++;
-            if (nodeCount % 7 == 0) {
-                h._tr();
-                h.tr();
-            }
-
-            h.td(HtmlAttributesFactory.style("text-align:center; border: 1px solid gray;"
-                + "background-color: #" + getHEXTrafficlightColor(nodeHealth.health, 1f) + ";"
-                + "padding: 5px;margin: 5px;"));
-            if (nodeHealth.nannyHealths.isEmpty()) {
-                h.table(HtmlAttributesFactory.style("text-align:center; border: 1px solid gray;"
-                    + "background-color: #" + getHEXTrafficlightColor(nodeHealth.health, 1f) + ";"
-                    + "padding: 5px;margin: 5px;"));
-                h._table();
-            } else {
-                for (UpenaEndpoints.NannyHealth nannyHealth : nodeHealth.nannyHealths) {
-                    if (nannyHealth.serviceHealth != null) {
-                        h.table(HtmlAttributesFactory.style("text-align:center; border: 1px solid gray;"
-                            + "background-color: #" + getHEXTrafficlightColor(nannyHealth.serviceHealth.health, 0.95f) + ";"
-                            + "padding: 5px;margin: 5px;"));
-
-                        if (nannyHealth.serviceHealth.healthChecks.isEmpty()) {
-                            h.tr();
-                            h.td();
-                            InstanceDescriptor id = nannyHealth.instanceDescriptor;
-                            String title = "(" + d2f(nannyHealth.serviceHealth.health) + ") for "
-                                + id.clusterName + " " + id.serviceName + " " + id.instanceName + " " + id.versionName;
-
-                            h.div(HtmlAttributesFactory.style("text-align:center;vertical-align:middle;").title(title))
-                                .a(HtmlAttributesFactory
-                                    .href("http://" + nodeHealth.host + ":" + nannyHealth.instanceDescriptor.ports.get("manage").port + "/manage/ui")
-                                    .style(coloredStopLightButton(nannyHealth.serviceHealth.health, 1.0F)))
-                                .content(nannyHealth.instanceDescriptor.serviceName).content("");
-                            h._td();
-                            h._tr();
-                        } else {
-                            for (UpenaEndpoints.Health health : nannyHealth.serviceHealth.healthChecks) {
-                                h.tr();
-                                h.td();
-                                InstanceDescriptor id = nannyHealth.instanceDescriptor;
-                                String title = "(" + d2f(health.health) + ") " + health.name + " for "
-                                    + id.clusterName + " " + id.serviceName + " " + id.instanceName + " " + id.versionName;
-
-                                h.div(HtmlAttributesFactory.style("text-align:center;vertical-align:middle;").title(title))
-                                    .a(HtmlAttributesFactory
-                                        .href("http://" + nodeHealth.host + ":" + nannyHealth.instanceDescriptor.ports.get("manage").port + "/manage/ui")
-                                        .style(coloredStopLightButton(health.health, 1.0F))).content(health.name).content("");
-                                h._td();
-                                h._tr();
-                            }
-                        }
-                        h._table();
-                    }
-                }
-            }
-            h._td();
-
-        }
-        h._tr();
-
-        h._table();
     }
 
     private void addNodeHealth(HtmlCanvas h, UpenaEndpoints.NodeHealth nodeHealth) throws Exception {
@@ -345,7 +314,63 @@ public class StatusPluginRegion implements PageRegion<Optional<StatusPluginRegio
         h._table();
     }
 
-    private void addNannyHealth(HtmlCanvas h, UpenaEndpoints.NodeHealth nodeHealth, UpenaEndpoints.NannyHealth nannyHealth) throws Exception {
+    public void serviceHealth(HtmlCanvas h, UpenaEndpoints.NannyHealth nannyHealth) throws IOException {
+        InstanceDescriptor id = nannyHealth.instanceDescriptor;
+        UpenaEndpoints.ServiceHealth serviceHealth = nannyHealth.serviceHealth;
+
+        h.div(HtmlAttributesFactory.style("height:800px;overflow:auto;"));
+        HtmlAttributes border = HtmlAttributesFactory.style("border: 1px solid  gray;");
+        h.table(border);
+        h.tr();
+        h.td().content(id.clusterName);
+        h.td().content(id.serviceName);
+        h.td().content(id.instanceName);
+        h.td().content(id.versionName);
+        h._tr();
+        h.tr();
+        for (Map.Entry<String, InstanceDescriptor.InstanceDescriptorPort> port : id.ports.entrySet()) {
+            h.td().content(port.getKey() + "=" + port.getValue().port);
+        }
+        h._tr();
+
+        for (String log : nannyHealth.log) {
+            h.tr();
+            h.td().pre().content(log)._td();
+            h._tr();
+        }
+        h._table();
+
+        h.table(border);
+        h.tr(HtmlAttributesFactory.style("background-color:#bbbbbb;"));
+        h.td(border).content(String.valueOf("Health"));
+        h.td(border).content(String.valueOf("Name"));
+        h.td(border).content(String.valueOf("Status"));
+        h.td(border).content(String.valueOf("Description"));
+        h.td(border).content(String.valueOf("Resolution"));
+        h.td(border).content(String.valueOf("Age in millis"));
+        h._tr();
+        for (UpenaEndpoints.Health health : serviceHealth.healthChecks) {
+            if (-Double.MAX_VALUE != health.health) {
+                h.tr();
+                h.td(colorStyle("background-color", health.health, 0.0f)).content(String.valueOf(health.health));
+                h.td(border).content(String.valueOf(health.name));
+                h.td(border).content(String.valueOf(health.status));
+                h.td(border).content(String.valueOf(health.description));
+                h.td(border).content(String.valueOf(health.resolution));
+                long ageInMillis = System.currentTimeMillis() - health.timestamp;
+                double ageHealth = 0.0d;
+                if (health.checkIntervalMillis > 0) {
+                    ageHealth = 1d - (ageInMillis / health.checkIntervalMillis);
+                }
+                h.td(colorStyle("background-color", ageHealth, 0.0f)).content(String.valueOf(ageInMillis));
+                h._tr();
+            }
+        }
+        h._table();
+        h.content("");
+    }
+
+    void addNannyHealth(HtmlCanvas h, UpenaEndpoints.NodeHealth nodeHealth, UpenaEndpoints.NannyHealth nannyHealth) throws Exception {
         InstanceDescriptor id = nannyHealth.instanceDescriptor;
         UpenaEndpoints.ServiceHealth serviceHealth = nannyHealth.serviceHealth;
 

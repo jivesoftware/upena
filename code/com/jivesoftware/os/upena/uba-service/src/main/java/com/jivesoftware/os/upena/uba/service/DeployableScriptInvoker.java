@@ -39,7 +39,7 @@ public class DeployableScriptInvoker {
         return scriptFile.exists();
     }
 
-    public String scriptPath( InstancePath instancePath, String script) {
+    public String scriptPath(InstancePath instancePath, String script) {
         return instancePath.toHumanReadableName() + " bin/" + script;
     }
 
@@ -69,7 +69,7 @@ public class DeployableScriptInvoker {
             });
             return future.get() == 0;
         } catch (InterruptedException | ExecutionException x) {
-                 commandLog.log(context, "Encountered exception.", x);
+            commandLog.log(context, "Encountered exception.", x);
             return false;
         }
     }

@@ -54,6 +54,10 @@ class NannyDestroyCallable implements Callable<Boolean> {
                 }
             }
         }
+        return true;
+    }
+
+    public void wipeoutFiles() {
         File serviceRoot = instancePath.serviceRoot();
         if (serviceRoot.exists()) {
             FileUtils.deleteQuietly(serviceRoot);
@@ -61,7 +65,6 @@ class NannyDestroyCallable implements Callable<Boolean> {
         }
         healthLog.commit();
         healthLog.commit(); // Clear out all health
-        return true;
     }
 
     private void deleteFolderIfEmpty(File folder) {

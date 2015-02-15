@@ -31,7 +31,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr style="background-color:#ddd;">
+                            <tr style="background-color:#D2E9FF;">
                                 <td>
                                     Filter A:
                                 </td>
@@ -61,7 +61,7 @@
                                     - vs -
                                 </td>
                             </tr>
-                            <tr style="background-color:#aaa;">
+                            <tr style="background-color:#E7E7EF;">
                                 <td>
                                     Filter B:
                                 </td>
@@ -86,80 +86,61 @@
                                     placeholder="Release" value="{$bFilters.release?:''}" name="bRelease" id="descriptionPicker">
                                 </td>
                             </tr>
+                            <tr stye="background-color:#FFFFE0;">
+                                <td bgcolor="#FFFFE0" colspan="6">
+                                    Filter:<input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                           placeholder="property" value="{$property?:''}" name="property" id="descriptionPicker">
+                                    <input type="checkbox" name="overriden">&nbsp;overridden&nbsp;
+                                    <input type="submit" name="action" value="Refresh"/>
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
-                    <div class="panel-heading">
-                        <div>
-                             Filter:<input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                    placeholder="property" value="{$property?:''}" name="property" id="descriptionPicker">
-                             <input type="checkbox" name="overriden">&nbsp;overridden&nbsp;
-                             <input type="submit" name="action" value="Refresh"/>
-                        </div>
-                    </div>
                 </form>
             </div>
-            <div class="panel-body">
-                <table style="display: block; width: 100%; max-width: 1200px; table-layout: fixed;">
-                {foreach $property in $properties}
-                    <tr style="background-color:#999;" align="left">
-                        <td colspan="3"><h4>{$property.property}</h4></td>
-                    </tr>
-                    <tr align="left">
-                        <td colspan="1" align="right">
-                            {if $property.as}
-                                <table style="display: block; width: 49%; max-width: 600px; table-layout: fixed;">
-                                    {foreach $a in $property.as}
-                                        <tr>
-                                            <td>{$a.cluster?:''}</td>
-                                            <td>{$a.host?:''}</td>
-                                            <td>{$a.service?:''}</td>
-                                            <td>{$a.instance?:''}</td>
-                                            <td>{$a.release?:''}</td>
-                                            <td>{$a.default?:''}</td>
-                                            <td>
-                                                <input type="text" style="width:200px; padding-left:10px;"
-                                                    placeholder="override" value="{$a.override?:''}" name="override" id="override">
-                                            </td>
-                                        </tr>
-                                    {/foreach}
-                                </table>
-                            {else}
-                                &nbsp
-                            {/if}
-                        </td>
-                        
-                        <td colspan="1" align="center">
-                            {if $property.bs}
-                                &nbsp<-&nbsp
-                            {else}
-                                &nbsp
-                            {/if}
-                        </td>
-                        <td colspan="1" align="left">
-                            {if $property.bs}
-                                <table style="display: block; width: 49%; max-width: 600px; table-layout: fixed;">
-                                    {foreach $b in $property.bs}
-                                        <tr>
-                                            <td>
-                                                <input type="text" style="width:200px; padding-left:10px;"
-                                                    placeholder="override" value="{$b.override?:''}" name="override" id="override">
-                                            </td>
-                                            <td>{$b.default?:''}</td>
-                                            <td>{$b.release?:''}</td>
-                                            <td>{$b.instance?:''}</td>
-                                            <td>{$b.service?:''}</td>
-                                            <td>{$b.host?:''}</td>
-                                            <td>{$b.cluster?:''}</td>
-                                        </tr>
-                                    {/foreach}
-                                </table>
-                            {else}
-                                &nbsp
-                            {/if}
-                        </td>
-                    </tr>
-                {/foreach}
-            </div>
+            {if $properties}
+                <div class="panel-body">
+                    <table border-spacing: 0.5rem; style="display: block; width: 100%; max-width: 1200px; table-layout: fixed;">
+                    {foreach $p in $properties}
+                        <tr style="background-color:#FFFFE0;" align="left">
+                            <td colspan="26"><h8>{$p.property}</h8></td>
+                        </tr>
+                        {foreach $h in $p.has}
+                            <tr>
+                                <td>&nbsp;&nbsp;&nbsp;</td>
+                                <td bgcolor="#D2E9FF">{$h.acluster?:''}</td>
+                                <td bgcolor="#D2E9FF">{$h.ahost?:''}</td>
+                                <td bgcolor="#D2E9FF">{$h.aservice?:''}</td>
+                                <td bgcolor="#D2E9FF">{$h.ainstance?:''}</td>
+                                <td bgcolor="#D2E9FF">{$h.adefault?:''}</td>
+                                <td bgcolor="#D2E9FF">
+                                    {if ($h.acluster != null or  $h.ahost != null or $h.aservice != null or $h.ainstance != null) and $h.aoverride != null}
+                                        <input type="text" style="width:200px; padding-left:10px;"
+                                            placeholder="override" value="{$h.aoverride?:''}" name="override" id="override">
+                                    {/if}
+                                </td>
+                                <td><div class=\"glyphicon glyphicon-link\"></div></td>
+                                <td bgcolor="#EEEEEE">
+                                    {if $h.boverride != null}
+                                        &nbsp<-&nbsp
+                                    {/if}
+                                </td>
+                                <td bgcolor="#E7E7EF">
+                                    {if $h.boverride != null}
+                                        <input type="text" style="width:200px; padding-left:10px;"
+                                            placeholder="override" value="{$h.boverride?:''}" name="override" id="override">
+                                    {/if}
+                                </td>
+                                <td bgcolor="#E7E7EF">{$h.bdefault?:''}</td>
+                                <td bgcolor="#E7E7EF">{$h.binstance?:''}</td>
+                                <td bgcolor="#E7E7EF">{$h.bservice?:''}</td>
+                                <td bgcolor="#E7E7EF">{$h.bhost?:''}</td>
+                                <td bgcolor="#E7E7EF">{$h.bcluster?:''}</td>
+                            </tr>
+                        {/foreach}
+                    {/foreach}
+                </div>
+            {/if}
         </div>
     </div>
 {/template}

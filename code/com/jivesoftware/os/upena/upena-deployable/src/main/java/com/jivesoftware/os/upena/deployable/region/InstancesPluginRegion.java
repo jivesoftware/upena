@@ -94,9 +94,19 @@ public class InstancesPluginRegion implements PageRegion<Optional<InstancesPlugi
             if (optionalInput.isPresent()) {
                 InstancesPluginRegionInput input = optionalInput.get();
 
+                InstanceFilter filter = new InstanceFilter(null, null, null, null, null, 0, 10000);
+                if (input.action.equals("restart")) {
+                    Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(filter);
+                    for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {
+                        InstanceKey key = entrySet.getKey();
+                        TimestampedValue<Instance> timestampedValue = entrySet.getValue();
+                        Instance value = timestampedValue.getValue();
+                        ubaService.restartInstance(value.hostKey.getKey(), key.getKey());
+                    }
+                }
+
                 List<Map<String, String>> rows = new ArrayList<>();
 
-                InstanceFilter filter = new InstanceFilter(null, null, null, null, null, 0, 10000);
                 Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(filter);
                 for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {
                     InstanceKey key = entrySet.getKey();

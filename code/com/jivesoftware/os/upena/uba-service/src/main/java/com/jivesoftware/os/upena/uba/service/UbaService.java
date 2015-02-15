@@ -42,9 +42,9 @@ public class UbaService {
     private final Map<String, Nanny> nannies = new ConcurrentHashMap<>();
 
     public UbaService(
-            UpenaClient upenaClient,
-            Uba uba,
-            String hostKey) {
+        UpenaClient upenaClient,
+        Uba uba,
+        String hostKey) {
         this.upenaClient = upenaClient;
         this.uba = uba;
         this.hostKey = hostKey;
@@ -64,6 +64,23 @@ public class UbaService {
         if (runNanny) {
             LOG.info("Nanny triggered by instance declaration changes.");
             nanny();
+        }
+    }
+
+    public void restartInstance(String _hostKey, String instanceKey) throws Exception {
+        if (hostKey.equals(_hostKey)) {
+            Map<InstanceDescriptor, InstancePath> onDiskInstances = uba.getOnDiskInstances();
+            for (Map.Entry<InstanceDescriptor, InstancePath> entry : onDiskInstances.entrySet()) {
+                InstanceDescriptor instanceDescriptor = entry.getKey();
+                if (instanceDescriptor.instanceKey.equals(instanceKey)) {
+                    String nanneyKey = uba.instanceDescriptorKey(instanceDescriptor);
+                    if (nannies.containsKey(nanneyKey)) {
+                        Nanny nanny = nannies.get(nanneyKey);
+                        nanny.kill();
+                        nanny.nanny(uba.host, uba.upenaHost, uba.upenaPort);
+                    }
+                }
+            }
         }
     }
 

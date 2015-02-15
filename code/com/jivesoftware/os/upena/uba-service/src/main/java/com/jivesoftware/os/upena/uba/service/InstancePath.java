@@ -80,8 +80,10 @@ public class InstancePath {
         for (Object key : properties.keySet()) {
             String portKey = key.toString();
             if (portKey.endsWith("Port")) {
-                String portName = portKey.substring(instancePrefix.length(), portKey.length() - 4);
-                id.ports.put(portName, new InstanceDescriptor.InstanceDescriptorPort(Integer.parseInt(properties.getProperty(key.toString()))));
+                if (!portKey.endsWith("routesPort")) { // ignore injected upena
+                    String portName = portKey.substring(instancePrefix.length(), portKey.length() - 4);
+                    id.ports.put(portName, new InstanceDescriptor.InstanceDescriptorPort(Integer.parseInt(properties.getProperty(key.toString()))));
+                }
             }
         }
         LOG.info("Read instance descriptor:" + id + " from:" + instanceProperties());
@@ -91,7 +93,7 @@ public class InstancePath {
     void writeInstanceDescriptor(String host, String upenaHost, int upenaPort, InstanceDescriptor id) throws IOException {
         List<String> properties = new ArrayList<>();
         properties.add(instancePrefix + "host=" + host);
-        properties.add(instancePrefix + "routesHost=" + upenaHost);
+        properties.add(instancePrefix + "routesHost=" + upenaHost); // inject upena
         properties.add(instancePrefix + "routesPort=" + upenaPort);
 
         properties.add(instancePrefix + "clusterKey=" + id.clusterKey);

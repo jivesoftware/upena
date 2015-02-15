@@ -59,7 +59,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <form id="add-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                            <form id="filter-form" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
                                 data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="addInstance">
                                 <tr style="background-color:#ddd;">
                                     <td>
@@ -132,6 +132,9 @@
                         </tbody>
                     </table>
                 </div>
+            </div>
+            <div class="panel-heading" id="upena-instances">Instances</div>
+                <button form="filter-form" type="submit" name="action" value="restart">Restart</button>
             </div>
         </div>
     {/if}

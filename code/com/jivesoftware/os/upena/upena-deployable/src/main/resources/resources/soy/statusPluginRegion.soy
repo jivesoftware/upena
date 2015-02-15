@@ -1,34 +1,80 @@
 {namespace soy.page}
 
 /**
- * Upena Status plugin page
- * 
- * @param? upenaStatus
  * @param? upenaWaveforms
+ * @param? filter
+ * @param? health
  */
 {template .statusPluginRegion}
-    {if $upenaStatus}
-        
-        <div class="panel panel-default">
-            <div class="panel-heading">Status</div>
-                <div class="panel-body">
-                    <div style="width: 50%">
-                        <canvas id="canvas" height="120" width="800"></canvas>
-                    </div>
-                    <script>
-                        window.onload = function(){lb}
-                            var ctx = document.getElementById("canvas").getContext("2d");
-                            window.myBar = new Chart(ctx).Radar({$upenaWaveforms|noAutoescape}, {lb}
-                                responsive : false,
-                                bezierCurve: false,
-                                datasetFill : false,
-                            {rb});
-                        {rb};
-                    </script>
-                    <br>
-                    {$upenaStatus|noAutoescape}
+    <div class="panel panel-default">
+        <div class="panel-heading">Status</div>
+            <div class="panel-body">
+                <div>
+                    <canvas id="canvas" height="300" width="1000"></canvas>
                 </div>
+                <script>
+                    window.onload = function(){lb}
+                        var ctx = document.getElementById("canvas").getContext("2d");
+                        window.myBar = new Chart(ctx).Radar({$upenaWaveforms|noAutoescape}, {lb}
+                            responsive : false,
+                            bezierCurve: false,
+                            datasetFill : false
+                        {rb});
+                    {rb};
+                </script>
+                
+
+
+                <form id="filter-health" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                    data-jive-ui="jive/ui/typeahead/request_typeahead" method="get" name="filter-health">
+                    <table>
+                        <tr style="background-color:#ddd;">
+                            <td>
+                                <input type="text" autocomplete="off" role="combobox" style="width:280px; padding-left:10px;"
+                                placeholder="Cluster" value="{$filter.cluster?:''}" name="cluster" id="clusterPicker">
+                            </td>
+                            <td>
+                                <input type="text" autocomplete="off" role="combobox" style="width:280px; padding-left:10px;"
+                                placeholder="Host" value="{$filter.host?:''}" name="host" id="hostPicker">
+                            </td>
+                            <td>
+                                <input type="text" autocomplete="off" role="combobox" style="width:280px; padding-left:10px;"
+                                placeholder="Service" value="{$filter.service?:''}" name="service" id="servicePicker">
+                            </td>
+                            
+                        </tr>
+                        <tr>
+                            <td colspan="3">
+                                <button type="submit" name="filter" value="filter">Filter</button>
+                            <td>
+                        </tr>
+                        {foreach $h in $health}
+                            <tr>
+                                <td>{$h.cluster|noAutoescape}</td><td>{$h.host|noAutoescape}</td><td>{$h.service|noAutoescape}</td>
+                            </tr>
+                            <tr>
+                                <td colspan="3">
+                                    <script src="/static/scripts/jquery-2.1.0.min.js">
+                                    </script>
+                                    <script>
+                                        isLarge = false; 
+                                            $(document).ready(function(){lb}
+                                              $("#{$h.key}").click(function(){lb}
+                                                    $("#{$h.key}").animate({lb}height:(isLarge ? '20px' : '100%'){rb});
+                                                    isLarge = !isLarge;    
+                                              {rb});
+                                        {rb});
+                                    </script> 
+
+                                    <div id="{$h.key}" style="background:#ccc;height:20px;width:100%;position:relative;overflow:hidden;">
+                                        {$h.name|noAutoescape}<br>{$h.details|noAutoescape}
+                                    </div>
+                                </td>
+                            </tr>
+                        {/foreach}
+                    </table>
+                </form>
             </div>
         </div>
-    {/if}
+    </div>
 {/template}

@@ -103,20 +103,22 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
                 ConfigPluginRegionInput input = optionalInput.get();
 
                 Map<String, String> aFilters = new HashMap<>();
-                aFilters.put("aCluster", "");
-                aFilters.put("aHost", "");
-                aFilters.put("aService", "");
-                aFilters.put("aInstance", "");
-                aFilters.put("aRelease", "");
+                aFilters.put("aCluster", input.aCluster);
+                aFilters.put("aHost", input.aHost);
+                aFilters.put("aService", input.aService);
+                aFilters.put("aInstance", input.aInstance);
+                aFilters.put("aRelease", input.aRelease);
                 data.put("aFilters", aFilters);
 
                 Map<String, String> bFilters = new HashMap<>();
-                bFilters.put("bCluster", "");
-                bFilters.put("bHost", "");
-                bFilters.put("bService", "");
-                bFilters.put("bInstance", "");
-                bFilters.put("bRelease", "");
+                bFilters.put("bCluster", input.bCluster);
+                bFilters.put("bHost", input.bHost);
+                bFilters.put("bService", input.bService);
+                bFilters.put("bInstance", input.bInstance);
+                bFilters.put("bRelease", input.bRelease);
                 data.put("bFilters", bFilters);
+
+                data.put("property", input.property);
 
                 Map<String, String> hack = new HashMap<>();
                 hack.put("cluster", "c");
@@ -138,25 +140,48 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
                 bs.put("hack1", Arrays.asList(hack));
                 bs.put("hack3", Arrays.asList(hack));
 
-
                 Set<String> allProperties = Collections.newSetFromMap(new ConcurrentSkipListMap<String, Boolean>());
                 allProperties.addAll(as.keySet());
                 allProperties.addAll(bs.keySet());
 
+                String[] ks = new String[]{"cluster", "host", "service", "instance", "override", "default"};
                 List<Map<String, Object>> rows = new ArrayList<>();
                 for (String property : allProperties) {
 
                     Map<String, Object> propertyAndOccurrences = new HashMap<>();
                     propertyAndOccurrences.put("property", property);
 
-                    List<Map<String, String>> a = as.get(property);
-                    if (a != null) {
-                        propertyAndOccurrences.put("as", a);
+                    List<Map<String, String>> al = as.get(property);
+                    List<Map<String, String>> bl = bs.get(property);
+
+                    List<Map<String, String>> hasProperty = new ArrayList<>();
+                    int s = Math.max((al == null) ? 0 : al.size(), (bl == null) ? 0 : bl.size());
+                    for (int i = 0; i < s; i++) {
+                        Map<String, String> has = new HashMap<>();
+                        if (al != null && i < al.size()) {
+                            Map<String, String> a = al.get(i);
+                            for (String k : ks) {
+                                has.put("a" + k, a.get(k));
+                            }
+                        } else {
+                            for (String k : ks) {
+                                has.put("a" + k, null);
+                            }
+                        }
+                        if (bl != null && i < bl.size()) {
+                            Map<String, String> b = bl.get(i);
+                            for (String k : ks) {
+                                has.put("b" + k, b.get(k));
+                            }
+                        } else {
+                            for (String k : ks) {
+                                has.put("b" + k, null);
+                            }
+                        }
+                        hasProperty.add(has);
                     }
-                    List<Map<String, String>> b = bs.get(property);
-                    if (b != null) {
-                        propertyAndOccurrences.put("bs", b);
-                    }
+                    propertyAndOccurrences.put("has", hasProperty);
+
                     rows.add(propertyAndOccurrences);
                 }
 

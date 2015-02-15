@@ -106,5 +106,4 @@ class NannyStatusCallable implements Callable<Boolean> {
         }
     }
 
-    
 }
