@@ -36,7 +36,7 @@ public class ConfigPluginEndpoints {
     @Produces(MediaType.TEXT_HTML)
     public Response services() {
         String rendered = soyService.renderPlugin(pluginRegion,
-            Optional.of(new ConfigPluginRegionInput("", "", "", "", "", "", "", "", "", "", "", "")));
+            Optional.of(new ConfigPluginRegionInput("", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "")));
         return Response.ok(rendered).build();
     }
 
@@ -44,21 +44,31 @@ public class ConfigPluginEndpoints {
     @Path("/")
     @Produces(MediaType.TEXT_HTML)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    public Response action(@FormParam("aCluster") @DefaultValue("") String aCluster,
+    public Response action(
+        @FormParam("aClusterKey") @DefaultValue("") String aClusterKey,
+        @FormParam("aCluster") @DefaultValue("") String aCluster,
+        @FormParam("aHostKey") @DefaultValue("") String aHostKey,
         @FormParam("aHost") @DefaultValue("") String aHost,
+        @FormParam("aServiceKey") @DefaultValue("") String aServiceKey,
         @FormParam("aService") @DefaultValue("") String aService,
         @FormParam("aInstance") @DefaultValue("") String aInstance,
+        @FormParam("aReleaseKey") @DefaultValue("") String aReleaseKey,
         @FormParam("aRelease") @DefaultValue("") String aRelease,
+        @FormParam("bClusterKey") @DefaultValue("") String bClusterKey,
         @FormParam("bCluster") @DefaultValue("") String bCluster,
+        @FormParam("bHostKey") @DefaultValue("") String bHostKey,
         @FormParam("bHost") @DefaultValue("") String bHost,
+        @FormParam("bServiceKey") @DefaultValue("") String bServiceKey,
         @FormParam("bService") @DefaultValue("") String bService,
         @FormParam("bInstance") @DefaultValue("") String bInstance,
+        @FormParam("bReleaseKey") @DefaultValue("") String bReleaseKey,
         @FormParam("bRelease") @DefaultValue("") String bRelease,
         @FormParam("property") @DefaultValue("") String property,
         @FormParam("overriden") @DefaultValue("") String overriden) {
         String rendered = soyService.renderPlugin(pluginRegion,
-            Optional.of(new ConfigPluginRegionInput(aCluster, aHost, aService, aInstance, aRelease,
-                    bCluster, bHost, bService, bInstance, bRelease,
+            Optional.of(new ConfigPluginRegionInput(
+                    aClusterKey, aCluster, aHostKey, aHost, aServiceKey, aService, aInstance, aReleaseKey, aRelease, bClusterKey,
+                    bCluster, bHostKey, bHost, bServiceKey, bService, bInstance, bReleaseKey, bRelease,
                     property, overriden)));
         return Response.ok(rendered).build();
     }

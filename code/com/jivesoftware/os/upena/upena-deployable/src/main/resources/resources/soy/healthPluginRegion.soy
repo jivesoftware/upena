@@ -17,21 +17,21 @@
                             <tr style="background-color:#ddd;">
                                 <td>
                                     <input type="text" autocomplete="off" role="combobox" style="width:280px; padding-left:10px;"
-                                    placeholder="Cluster" value="{$filter.cluster?:''}" name="cluster" id="clusterPicker">
+                                    placeholder="Cluster" value="{$filter.cluster?:''}" name="cluster" id="clusterPicker" class="form-control">
                                 </td>
                                 <td>
                                     <input type="text" autocomplete="off" role="combobox" style="width:280px; padding-left:10px;"
-                                    placeholder="Host" value="{$filter.host?:''}" name="host" id="hostPicker">
+                                    placeholder="Host" value="{$filter.host?:''}" name="host" id="hostPicker" class="form-control">
                                 </td>
                                 <td>
                                     <input type="text" autocomplete="off" role="combobox" style="width:280px; padding-left:10px;"
-                                    placeholder="Service" value="{$filter.service?:''}" name="service" id="servicePicker">
+                                    placeholder="Service" value="{$filter.service?:''}" name="service" id="servicePicker" class="form-control">
                                 </td>
 
                             </tr>
                             <tr>
                                 <td colspan="3">
-                                    <button type="submit" name="filter" value="filter">Filter</button>
+                                    <button type="submit" name="filter" value="filter" class="btn btn-default">Filter</button>
                                 <td>
                             </tr>
                         </table>
@@ -43,9 +43,37 @@
                             <tr>
                                 <th></th>
                                 {foreach $service in $gridServices}
-                                        <th><div class="vertical-text"><div class="vertical-text__inner">{$service}</div></div></th>
+                                    <th>
+                                        <div class="dropdown">
+                                            <button id="dLabel" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                                              class="btn btn-default">
+                                              <div class="vertical-text"><div class="vertical-text__inner">{$service.service}</div></div>
+                                            </button>
+                                            <div class="dropdown-menu" role="menu" style="min-width: 10px;">
+                                                <div class="btn-group">
+                                                    <form id="configService" method="post" action="/ui/config" name="configService"> 
+                                                        <input type="hidden" name="serviceKey" value="{$service.serviceKey}">
+                                                        <button type="submit" class="btn btn-default">
+                                                            Config
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                                <div class="btn-group">
+                                                    <form id="restartService" method="post" action="/ui/restart" name="restartService"> 
+                                                        <button type="submit" class="btn btn-default">
+                                                            Restart
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <script>
+                                            $(function(){lb}
+                                               $(".dropdown-toggle").dropdown('dLabel');
+                                               {rb}); 
+                                         </script>
+                                    </th>
                                 {/foreach}
-                                <th></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -53,58 +81,74 @@
                                 <tr>
                                     {foreach $health in $host}
                                         <td>
-                                            <div>
-                                                <span class="dropt">
-                                                    <span>
-                                                        <table>
-                                                            <tr><td>
-                                                                <button type="submit" name="filter" value="health">
-                                                                    Health
+                                            <div class="dropdown">
+                                                <button id="dLabel" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                                                    class="btn btn-default dropdown-toggle"
+                                                    style="background-image: linear-gradient(to bottom,{$health.color} 0,{$health.color} 100%);">
+                                                  {if $health.health == null}
+                                                    &nbsp;&nbsp;&nbsp;
+                                                  {else}
+                                                    {$health.health|noAutoescape}
+                                                  {/if}
+                                                </button>
+                                                <div class="dropdown-menu" role="menu" style="min-width: 10px;">
+                                                    <div class="btn-group-vertical">
+                                                    {if $health.health == null}
+                                                        <div class="btn-group">
+                                                            <form id="addService" method="post" action="/ui/instances" name="addService">
+                                                                {if $health.serviceKey}
+                                                                    <input type="hidden" name="serviceKey" value="{$health.serviceKey}">
+                                                                {/if}
+                                                                <button type="submit" class="btn btn-default">
+                                                                    Add
                                                                 </button>
-                                                            </td></tr>
-                                                            <tr><td>
-                                                                <button type="submit" name="action" value="config">
+                                                            </form>
+                                                        </div>
+                                                    {else}
+                                                        {if $health.link}
+                                                            <div class="btn-group">
+                                                                <form id="serviceHealth" method="get" action="{$health.link}" name="serviceHealth"> 
+                                                                    <button type="submit" class="btn btn-default">
+                                                                        Health
+                                                                    </button>
+                                                                </form>
+                                                            </div>
+                                                        {/if}
+                                                        <div class="btn-group">
+                                                            <form id="configService" method="post" action="/ui/config" name="configService"> 
+                                                                {if $health.serviceKey}
+                                                                    <input type="hidden" name="serviceKey" value="{$health.serviceKey}">
+                                                                {/if}
+                                                                <button type="submit" class="btn btn-default">
                                                                     Config
                                                                 </button>
-                                                            </td></tr>
-                                                            <tr><td>
-                                                                <button type="submit" name="action" value="restart">
+                                                            </form>
+                                                        </div>
+                                                        <div class="btn-group">
+                                                            <form id="restartService" method="post" action="/ui/restart" name="restartService"> 
+                                                                <button type="submit" class="btn btn-default">
                                                                     Restart
                                                                 </button>
-                                                            </td></tr>
-                                                        </table>
-                                                    </span>
-                                                    {$health|noAutoescape}
-                                                </span>
+                                                            </form>
+                                                        </div>
+                                                        <div class="btn-group">
+                                                            <form id="removeService" method="post" action="/ui/instances" name="removeService"> 
+                                                                <button type="submit" class="btn btn-default">
+                                                                    Remove
+                                                                </button>
+                                                            </form>
+                                                        </div>
+                                                    {/if}
+                                                    </div>
+                                                </div>
                                             </div>
+                                            <script>
+                                                $(function(){lb}
+                                                   $(".dropdown-toggle").dropdown('dLabel');
+                                                   {rb}); 
+                                             </script>
                                         </td>
                                     {/foreach}
-                                    <td>
-                                        <div class="dropdown">
-                                            <button id="dLabel" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                              <img src="/static/img/cogs.png"><img>
-                                              <span class="caret"></span>
-                                            </button>
-                                            <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
-                                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Action</a></li>
-                                                    <li role="presentation"><button type="submit" name="filter" value="health">
-                                                            Health
-                                                        </button></li>
-                                                    <li role="presentation"><button type="submit" name="action" value="config">
-                                                            Config
-                                                        </button></li>
-                                                    <li role="presentation"><button type="submit" name="action" value="restart">
-                                                            Restart
-                                                        </button></li>
-                                            </ul>
-                                        </div>
-                                        <script>
-                                            $(function(){lb}
-                                               $(".dropdown-toggle").dropdown('dLabel');
-                                               {rb}); 
-                                         </script>
-                                        
-                                    </td>
                                 </tr>
                             {/foreach}
                         </tbody>

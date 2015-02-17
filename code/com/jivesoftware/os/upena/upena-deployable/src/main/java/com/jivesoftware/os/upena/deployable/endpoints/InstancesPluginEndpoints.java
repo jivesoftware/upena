@@ -36,7 +36,7 @@ public class InstancesPluginEndpoints {
     @Produces(MediaType.TEXT_HTML)
     public Response instances() {
         String rendered = soyService.renderPlugin(pluginRegion,
-            Optional.of(new InstancesPluginRegionInput("", "", "", "", "", "", "")));
+            Optional.of(new InstancesPluginRegionInput("", "", "", "", "", "", "", "", "", "", "")));
         return Response.ok(rendered).build();
     }
 
@@ -45,14 +45,18 @@ public class InstancesPluginEndpoints {
     @Produces(MediaType.TEXT_HTML)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response action(@FormParam("key") @DefaultValue("") String key,
+        @FormParam("clusterKey") @DefaultValue("") String clusterKey,
         @FormParam("cluster") @DefaultValue("") String cluster,
+        @FormParam("hostKey") @DefaultValue("") String hostKey,
         @FormParam("host") @DefaultValue("") String host,
+        @FormParam("serviceKey") @DefaultValue("") String serviceKey,
         @FormParam("service") @DefaultValue("") String service,
         @FormParam("id") @DefaultValue("") String id,
+        @FormParam("releaseKey") @DefaultValue("") String releaseKey,
         @FormParam("release") @DefaultValue("") String release,
         @FormParam("action") @DefaultValue("") String action) {
         String rendered = soyService.renderPlugin(pluginRegion,
-            Optional.of(new InstancesPluginRegionInput(key, cluster, host, service, id, release, action)));
+            Optional.of(new InstancesPluginRegionInput(key, clusterKey, cluster, hostKey, host, serviceKey, service, id, releaseKey, release, action)));
         return Response.ok(rendered).build();
     }
 

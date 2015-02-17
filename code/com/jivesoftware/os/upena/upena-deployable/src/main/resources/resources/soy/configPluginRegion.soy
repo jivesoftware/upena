@@ -34,9 +34,9 @@
                             <tr stye="background-color:#FFFFE0;">
                                 <td bgcolor="#FFFFE0" colspan="6">
                                     Filter:<input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                           placeholder="property" value="{$property?:''}" name="property" id="descriptionPicker">
-                                    <input type="checkbox" name="overriden">&nbsp;overridden&nbsp;
-                                    <input type="submit" name="action" value="Refresh"/>
+                                           placeholder="property" value="{$property?:''}" name="property" id="descriptionPicker" class="form-control">
+                                    <input type="checkbox" name="overriden" class="form-control">&nbsp;overridden&nbsp;
+                                    <input type="submit" name="action" value="Refresh" class="form-control"/>
                                 </td>
                             </tr>
                             <tr>
@@ -50,23 +50,23 @@
                                 </td>
                                 <td>
                                     <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                    placeholder="Cluster" value="{$aFilters.cluster?:''}" name="aCluster" id="namePicker">
+                                    placeholder="Cluster" value="{$aFilters.cluster?:''}" name="aCluster" id="namePicker" class="form-control">
                                 </td>
                                 <td>
                                     <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                    placeholder="Host" value="{$aFilters.host?:''}" name="aHost" id="descriptionPicker">
+                                    placeholder="Host" value="{$aFilters.host?:''}" name="aHost" id="descriptionPicker" class="form-control">
                                 </td>
                                 <td>
                                     <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                    placeholder="Service" value="{$aFilters.service?:''}" name="aService" id="descriptionPicker">
+                                    placeholder="Service" value="{$aFilters.service?:''}" name="aService" id="descriptionPicker" class="form-control">
                                 </td>
                                 <td>
                                     <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                    placeholder="Instance" value="{$aFilters.instance?:''}" name="aInstance" id="descriptionPicker">
+                                    placeholder="Instance" value="{$aFilters.instance?:''}" name="aInstance" id="descriptionPicker" class="form-control">
                                 </td>
                                 <td>
                                     <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                    placeholder="Release" value="{$aFilters.release?:''}" name="aRelease" id="descriptionPicker">
+                                    placeholder="Release" value="{$aFilters.release?:''}" name="aRelease" id="descriptionPicker" class="form-control">
                                 </td>
                             </tr>
                             <tr>
@@ -80,23 +80,23 @@
                                 </td>
                                 <td>
                                     <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                    placeholder="Cluster" value="{$bFilters.cluster?:''}" name="bCluster" id="namePicker">
+                                    placeholder="Cluster" value="{$bFilters.cluster?:''}" name="bCluster" id="namePicker" class="form-control">
                                 </td>
                                 <td>
                                     <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                    placeholder="Host" value="{$bFilters.host?:''}" name="bHost" id="descriptionPicker">
+                                    placeholder="Host" value="{$bFilters.host?:''}" name="bHost" id="descriptionPicker" class="form-control">
                                 </td>
                                 <td>
                                     <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                    placeholder="Service" value="{$bFilters.service?:''}" name="bService" id="descriptionPicker">
+                                    placeholder="Service" value="{$bFilters.service?:''}" name="bService" id="descriptionPicker" class="form-control">
                                 </td>
                                 <td>
                                     <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                    placeholder="Instance" value="{$bFilters.instance?:''}" name="bInstance" id="descriptionPicker">
+                                    placeholder="Instance" value="{$bFilters.instance?:''}" name="bInstance" id="descriptionPicker" class="form-control">
                                 </td>
                                 <td>
                                     <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                    placeholder="Release" value="{$bFilters.release?:''}" name="bRelease" id="descriptionPicker">
+                                    placeholder="Release" value="{$bFilters.release?:''}" name="bRelease" id="descriptionPicker" class="form-control">
                                 </td>
                             </tr>
                         </tbody>
@@ -105,7 +105,7 @@
             </div>
             {if $properties}
                 <div class="panel-body">
-                    <table style="display: block; width: 1200px; max-width: 1200px; table-layout: fixed;">
+                    <table class="table table-bordered">
                     {foreach $p in $properties}
                         <tr style="background-color:#FFFFE0;">
                             <td colspan="26"><h8>{$p.property}</h8></td>
@@ -124,7 +124,7 @@
                                             placeholder="override" value="{$h.aoverride?:''}" name="override" id="override">
                                     {/if}
                                 </td>
-                                <td><button><span class="glyphicon glyphicon-link"></span>&nbsp;</button></td>
+                                <td><button class="btn btn-default"><span class="glyphicon glyphicon-link"></span>&nbsp;</button></td>
                                 <td bgcolor="#EEEEEE">
                                     {if $h.boverride != null}
                                         &nbsp<-&nbsp

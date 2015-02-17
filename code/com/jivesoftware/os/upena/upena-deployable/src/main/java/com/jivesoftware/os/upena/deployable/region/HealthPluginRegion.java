@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentSkipListSet;
 import org.rendersnake.HtmlAttributes;
 import org.rendersnake.HtmlAttributesFactory;
@@ -105,7 +106,7 @@ public class HealthPluginRegion implements PageRegion<Optional<HealthPluginRegio
             }
 
             ConcurrentSkipListSet<String> hosts = new ConcurrentSkipListSet<>();
-            ConcurrentSkipListSet<String> services = new ConcurrentSkipListSet<>();
+            ConcurrentSkipListSet<Service> services = new ConcurrentSkipListSet<>();
 
             for (UpenaEndpoints.NodeHealth nodeHealth : clusterHealth.nodeHealths) {
                 for (UpenaEndpoints.NannyHealth nannyHealth : nodeHealth.nannyHealths) {
@@ -117,8 +118,9 @@ public class HealthPluginRegion implements PageRegion<Optional<HealthPluginRegio
                         if (!hosts.contains(nannyHealth.instanceDescriptor.clusterName + ":" + nodeHealth.host + ":" + nodeHealth.port)) {
                             hosts.add(nannyHealth.instanceDescriptor.clusterName + ":" + nodeHealth.host + ":" + nodeHealth.port);
                         }
-                        if (!services.contains(nannyHealth.instanceDescriptor.serviceName)) {
-                            services.add(nannyHealth.instanceDescriptor.serviceName);
+                        Service service = new Service(nannyHealth.instanceDescriptor.serviceKey, nannyHealth.instanceDescriptor.serviceName);
+                        if (!services.contains(service)) {
+                            services.add(service);
                         }
 
                         Map<String, String> h = new HashMap<>();
@@ -138,9 +140,7 @@ public class HealthPluginRegion implements PageRegion<Optional<HealthPluginRegio
                             + d2f(sh) + "</div>");
 
                         h.put("key", nannyHealth.instanceDescriptor.instanceKey);
-                        h.put("name", "<span class=\"glyphicon glyphicon-zoom-in\"></span>&nbsp;&nbsp;"
-                            + "<a href=\"http://" + nodeHealth.host + ":" + nannyHealth.instanceDescriptor.ports.get("manage").port + "/manage/ui\">"
-                            + nannyHealth.instanceDescriptor.serviceName + " " + nannyHealth.instanceDescriptor.instanceName + "</a>");
+                        h.put("name", nannyHealth.instanceDescriptor.serviceName + " " + nannyHealth.instanceDescriptor.instanceName);
 
                         HtmlCanvas hc = new HtmlCanvas();
                         serviceHealth(hc, nannyHealth);
@@ -152,24 +152,29 @@ public class HealthPluginRegion implements PageRegion<Optional<HealthPluginRegio
             }
             data.put("health", health);
 
-            Map<String, Integer> serviceIndexs = new HashMap<>();
+            Map<Service, Integer> serviceIndexs = new HashMap<>();
             int serviceIndex = 0;
-            for (String service : services) {
+            for (Service service : services) {
                 serviceIndexs.put(service, serviceIndex);
                 serviceIndex++;
             }
             Map<String, Integer> hostIndexs = new HashMap<>();
             int hostIndex = 0;
 
-            List<List<String>> hostRows = new ArrayList<>();
+            List<List<Map<String, String>>> hostRows = new ArrayList<>();
             for (String host : hosts) {
                 hostIndexs.put(host, hostIndex);
                 hostIndex++;
-                List<String> hostRow = new ArrayList<>();
-
-                hostRow.add("<div style=\"background-color:#eee; height:40px;\">" + host + "</div>");
+                List<Map<String, String>> hostRow = new ArrayList<>();
+                Map<String, String> healthCell = new HashMap<>();
+                healthCell.put("color", "#eee");
+                healthCell.put("health", null);
+                hostRow.add(healthCell);
                 for (int s = 0; s < services.size(); s++) {
-                    hostRow.add("<div style=\"background-color:#eee; width:40px; height:40px;\"></div>");
+                    healthCell = new HashMap<>();
+                    healthCell.put("color", "#eee");
+                    healthCell.put("health", null);
+                    hostRow.add(healthCell);
                 }
                 hostRows.add(hostRow);
             }
@@ -184,26 +189,35 @@ public class HealthPluginRegion implements PageRegion<Optional<HealthPluginRegio
                     if ((!input.cluster.isEmpty() == cshow) && (!input.host.isEmpty() == hshow) && (!input.service.isEmpty() == sshow)) {
                         String host = nannyHealth.instanceDescriptor.clusterName + ":" + nodeHealth.host + ":" + nodeHealth.port;
                         int hi = hostIndexs.get(host);
-                        int si = serviceIndexs.get(nannyHealth.instanceDescriptor.serviceName);
+                        int si = serviceIndexs.get(new Service(nannyHealth.instanceDescriptor.serviceKey, nannyHealth.instanceDescriptor.serviceName));
 
                         float hh = (float) Math.max(0, nodeHealth.health);
-                        hostRows.get(hi).set(0,
-                            "<div style=\"background-color:#" + getHEXTrafficlightColor(hh, 1f) + "; height:40px;\">"
-                            + host
-                            + "</div>");
+                        hostRows.get(hi).get(0).put("color", "#" + getHEXTrafficlightColor(hh, 1f));
+                        hostRows.get(hi).get(0).put("hostKey", nodeHealth.host); // TODO change to hostKey
+                        hostRows.get(hi).get(0).put("health", host);
 
                         float sh = (float) Math.max(0, nannyHealth.serviceHealth.health);
-                        hostRows.get(hi).set(si + 1,
-                            "<div style=\"background-color:#" + getHEXTrafficlightColor(sh, 1f) + "; width:40px; height:40px;\">"
-                            + "<a href=\"http://" + nodeHealth.host + ":" + nannyHealth.instanceDescriptor.ports.get("manage").port + "/manage/ui\">"
-                            + d2f(sh)
-                            + "</a>"
-                            + "</div>");
+                        hostRows.get(hi).get(si + 1).put("clusterKey", nannyHealth.instanceDescriptor.clusterKey);
+                        hostRows.get(hi).get(si + 1).put("serviceKey", nannyHealth.instanceDescriptor.clusterKey);
+                        hostRows.get(hi).get(si + 1).put("instance", String.valueOf(nannyHealth.instanceDescriptor.instanceName));
+                        hostRows.get(hi).get(si + 1).put("color", "#" + getHEXTrafficlightColor(sh, 1f));
+                        hostRows.get(hi).get(si + 1).put("health", d2f(sh));
+                        hostRows.get(hi).get(si + 1).put("instanceKey", "#" + getHEXTrafficlightColor(sh, 1f));
+                        hostRows.get(hi).get(si + 1).put("link",
+                            "http://" + nodeHealth.host + ":" + nannyHealth.instanceDescriptor.ports.get("manage").port + "/manage/ui");
+
                     }
                 }
             }
 
-            data.put("gridServices", Arrays.asList(services.toArray(new String[services.size()])));
+            List<Map<String, String>> serviceData = new ArrayList<>();
+            for (Service service : services) {
+                Map<String, String> serviceCell = new HashMap<>();
+                serviceCell.put("service", service.serviceName);
+                serviceCell.put("serviceKey", service.serviceKey);
+                serviceData.add(serviceCell);
+            }
+            data.put("gridServices", serviceData);
             data.put("gridHost", hostRows);
 
         } catch (Exception e) {
@@ -211,6 +225,45 @@ public class HealthPluginRegion implements PageRegion<Optional<HealthPluginRegio
         }
 
         return renderer.render(template, data);
+    }
+
+    static class Service implements Comparable<Service> {
+
+        String serviceKey;
+        String serviceName;
+
+        public Service(String serviceKey, String serviceName) {
+            this.serviceKey = serviceKey;
+            this.serviceName = serviceName;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 47 * hash + Objects.hashCode(this.serviceKey);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final Service other = (Service) obj;
+            if (!Objects.equals(this.serviceKey, other.serviceKey)) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int compareTo(Service o) {
+            return (serviceName + ":" + serviceKey).compareTo(o.serviceName + ":" + o.serviceKey);
+        }
+
     }
 
     public Map<String, Object> waveform(String label, Color color, List<Integer> values) {

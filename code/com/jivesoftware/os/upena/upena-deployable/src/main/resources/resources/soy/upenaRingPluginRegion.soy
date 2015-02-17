@@ -25,16 +25,16 @@
                                 <tr style="background-color:#ddd;">
                                     <td>
                                         <input type="text" autocomplete="off" role="combobox" style="width:280px; padding-left:10px;"
-                                        class="j-host-autocomplete j-autocomplete-input j-ui-elem" placeholder="Host" value=""
+                                        class="form-control" placeholder="Host" value=""
                                         name="host" id="hostPicker" data-original-title="" title="">
                                     </td>
                                     <td>
                                         <input type="number" name="port" min="1" max="65536" autocomplete="off" role="combobox" style="width:280px; padding-left:10px;"
-                                        class="j-port-autocomplete j-autocomplete-input j-ui-elem" placeholder="Port" value="" id="portPicker" 
+                                        class="form-control" placeholder="Port" value="" id="portPicker" 
                                         data-original-title="" title="">
                                     </td>
                                     <input type="hidden" name="action" value="add">
-                                    <td><button type="submit" name="action" value="add">Add</button><td>
+                                    <td><button type="submit" name="action" value="add" class="btn btn-default">Add</button><td>
                                 </tr>
                             </form>
 
@@ -47,7 +47,7 @@
                                         <input type="hidden" name="action" value="remove">
                                         <td>{$r.host}</td>
                                         <td>{$r.port}</td>
-                                        <td><button type="submit" name="action" value="remove">Remove</button><td>
+                                        <td><button type="submit" name="action" value="remove" class="btn btn-default">Remove</button><td>
                                     </tr>
                                 </form>
                             {/foreach}
