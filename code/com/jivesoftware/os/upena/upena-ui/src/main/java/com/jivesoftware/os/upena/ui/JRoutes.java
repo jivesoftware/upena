@@ -146,8 +146,8 @@ public class JRoutes extends JPanel {
         routes.add(m, BorderLayout.NORTH);
 
         JScrollPane scrollRoutes = new JScrollPane(viewResults,
-                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+            JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+            JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         routes.add(scrollRoutes, BorderLayout.CENTER);
         routes.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
@@ -161,7 +161,7 @@ public class JRoutes extends JPanel {
         final MutableObject serviceName = new MutableObject("");
         JExecutor<ServiceKey, Service, ServiceFilter> vExecutor = new JExecutor<>(requestHelperProvider, "service");
         final CountDownLatch latch = new CountDownLatch(1);
-        vExecutor.get(Service.class, new ServiceKey(connectToServiceNamed.getValue()),new IPicked<ServiceKey, Service>() {
+        vExecutor.get(Service.class, new ServiceKey(connectToServiceNamed.getValue()), new IPicked<ServiceKey, Service>() {
             @Override
             public void picked(ServiceKey key, Service v) {
                 if (v != null) {
@@ -181,9 +181,9 @@ public class JRoutes extends JPanel {
         }
 
         ConnectionDescriptorsRequest connectionDescriptorsRequest = new ConnectionDescriptorsRequest(tenantId.getValue(),
-                instanceId.getValue(), serviceName.getValue().toString(), portName.getText());
+            instanceId.getValue(), serviceName.getValue().toString(), portName.getText());
         ConnectionDescriptorsResponse connectionDescriptorsResponse = requestHelperProvider.get().executeRequest(connectionDescriptorsRequest,
-                "/upena/request/connections", ConnectionDescriptorsResponse.class, null);
+            "/upena/request/connections", ConnectionDescriptorsResponse.class, null);
 
         if (connectionDescriptorsResponse != null) {
             viewResults.removeAll();

@@ -1,7 +1,7 @@
 package com.jivesoftware.os.upena.deployable.region;
 
 import com.google.common.base.Optional;
-import com.google.common.collect.Lists;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.jivesoftware.os.amza.shared.AmzaInstance;
 import com.jivesoftware.os.amza.shared.RingHost;
@@ -10,21 +10,10 @@ import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.service.UpenaService;
 import com.jivesoftware.os.upena.service.UpenaStore;
-import com.jivesoftware.os.upena.shared.Cluster;
-import com.jivesoftware.os.upena.shared.ClusterFilter;
-import com.jivesoftware.os.upena.shared.ClusterKey;
 import com.jivesoftware.os.upena.shared.Host;
-import com.jivesoftware.os.upena.shared.HostFilter;
-import com.jivesoftware.os.upena.shared.HostKey;
 import com.jivesoftware.os.upena.shared.Instance;
 import com.jivesoftware.os.upena.shared.InstanceFilter;
 import com.jivesoftware.os.upena.shared.InstanceKey;
-import com.jivesoftware.os.upena.shared.ReleaseGroup;
-import com.jivesoftware.os.upena.shared.ReleaseGroupFilter;
-import com.jivesoftware.os.upena.shared.ReleaseGroupKey;
-import com.jivesoftware.os.upena.shared.Service;
-import com.jivesoftware.os.upena.shared.ServiceFilter;
-import com.jivesoftware.os.upena.shared.ServiceKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
 import com.jivesoftware.os.upena.uba.service.UbaService;
 import java.util.ArrayList;
@@ -114,7 +103,7 @@ public class InstancesPluginRegion implements PageRegion<Optional<InstancesPlugi
                     }
                 }
 
-                List<Map<String, String>> rows = new ArrayList<>();
+                List<Map<String, Object>> rows = new ArrayList<>();
 
                 Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(filter);
                 for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {
@@ -123,52 +112,26 @@ public class InstancesPluginRegion implements PageRegion<Optional<InstancesPlugi
                     Instance value = timestampedValue.getValue();
                     Host host = upenaStore.hosts.get(value.hostKey);
 
-                    Map<String, String> map = new HashMap<>();
+                    Map<String, Object> map = new HashMap<>();
                     map.put("key", key.getKey());
-                    map.put("cluster", upenaStore.clusters.get(value.clusterKey).name);
-                    map.put("host", host.hostName + ":" + host.port);
-                    map.put("host", upenaStore.hosts.get(value.hostKey).name);
-                    map.put("service", upenaStore.services.get(value.serviceKey).name);
+                    map.put("cluster", ImmutableMap.of(
+                        "key", value.clusterKey.getKey(),
+                        "name", upenaStore.clusters.get(value.clusterKey).name));
+                    map.put("host", ImmutableMap.of(
+                        "key", value.hostKey.getKey(),
+                        "name", upenaStore.hosts.get(value.hostKey).name));
+                    map.put("service", ImmutableMap.of(
+                        "key", value.serviceKey.getKey(),
+                        "name", upenaStore.services.get(value.serviceKey).name));
                     map.put("id", String.valueOf(value.instanceId));
-                    map.put("release", upenaStore.releaseGroups.get(value.releaseGroupKey).name);
+                    map.put("release", ImmutableMap.of(
+                        "key", value.releaseGroupKey.getKey(),
+                        "name", upenaStore.releaseGroups.get(value.releaseGroupKey).name));
 
                     rows.add(map);
                 }
 
                 data.put("instances", rows);
-
-                ClusterFilter clusterFilter = new ClusterFilter(null, null, 0, 10000);
-                Map<ClusterKey, TimestampedValue<Cluster>> clustersFound = upenaStore.clusters.find(clusterFilter);
-                List<String> clusters = Lists.newArrayList();
-                for (Map.Entry<ClusterKey, TimestampedValue<Cluster>> entrySet : clustersFound.entrySet()) {
-                    clusters.add(entrySet.getValue().getValue().name);
-                }
-                data.put("clusters", clusters);
-
-                HostFilter hostsFilter = new HostFilter(null, null, null, null, null, 0, 10000);
-                Map<HostKey, TimestampedValue<Host>> hostsFound = upenaStore.hosts.find(hostsFilter);
-                List<String> hosts = Lists.newArrayList();
-                for (Map.Entry<HostKey, TimestampedValue<Host>> entrySet : hostsFound.entrySet()) {
-                    Host value = entrySet.getValue().getValue();
-                    hosts.add(value.hostName + ":" + value.port);
-                }
-                data.put("hosts", hosts);
-
-                ServiceFilter serviceFilter = new ServiceFilter(null, null, 0, 10000);
-                Map<ServiceKey, TimestampedValue<Service>> servicesFound = upenaStore.services.find(serviceFilter);
-                List<String> services = Lists.newArrayList();
-                for (Map.Entry<ServiceKey, TimestampedValue<Service>> entrySet : servicesFound.entrySet()) {
-                    services.add(entrySet.getValue().getValue().name);
-                }
-                data.put("services", services);
-
-                ReleaseGroupFilter releasesFilter = new ReleaseGroupFilter(null, null, null, null, null, 0, 10000);
-                Map<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> releasesFound = upenaStore.releaseGroups.find(releasesFilter);
-                List<String> releases = Lists.newArrayList();
-                for (Map.Entry<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> entrySet : releasesFound.entrySet()) {
-                    releases.add(entrySet.getValue().getValue().name);
-                }
-                data.put("releases", releases);
             }
         } catch (Exception e) {
             log.error("Unable to retrieve data", e);

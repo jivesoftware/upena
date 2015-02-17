@@ -156,23 +156,23 @@ public class JCluster extends JPanel implements DocumentListener {
     class StatusTable extends AbstractTableModel {
 
         Table<String, String, Object> table = TreeBasedTable.create();
-        String[] columnNames = new String[]{
+        String[] columnNames = new String[] {
             "status", //0
-            "load",//1
-            "host",//2
-            "cluster",//3
-            "service",//4
-            "version",//5
-            "instance",//6,
-            "uptime",//7
-            "errors",//8
-            "latency",//9
-            "heap%",//10
-            "gc%",//11
-            "main",//12
-            "manage",//13
-            "jmx",//14
-            "debug"//15
+            "load", //1
+            "host", //2
+            "cluster", //3
+            "service", //4
+            "version", //5
+            "instance", //6,
+            "uptime", //7
+            "errors", //8
+            "latency", //9
+            "heap%", //10
+            "gc%", //11
+            "main", //12
+            "manage", //13
+            "jmx", //14
+            "debug" //15
         };
 
         public void set(StatusReport statuReport, int row) {
@@ -300,7 +300,8 @@ public class JCluster extends JPanel implements DocumentListener {
                                         }
                                         try {
                                             String statuUrl = "http://" + hostAndNannyReport.host.hostName
-                                                + ":" + hostAndNannyReport.nannyReport.instanceDescriptor.ports.get("manage").port + "/manage/announcement/json";
+                                                + ":" + hostAndNannyReport.nannyReport.instanceDescriptor.ports.get(
+                                                "manage").port + "/manage/announcement/json";
 
                                             String statusJson = Curl.create(1000, 1000).curl(statuUrl);
                                             if (statusJson != null) {
@@ -350,7 +351,7 @@ public class JCluster extends JPanel implements DocumentListener {
                             try {
                                 openWebpage(new URI(
                                     "http://" + hostAndNannyReport.host.hostName
-                                    + ":" + hostAndNannyReport.nannyReport.instanceDescriptor.ports.get("manage").port + "/manage/help"));
+                                        + ":" + hostAndNannyReport.nannyReport.instanceDescriptor.ports.get("manage").port + "/manage/help"));
                             } catch (URISyntaxException ex) {
                                 ex.printStackTrace();
                             }
@@ -986,7 +987,8 @@ public class JCluster extends JPanel implements DocumentListener {
             final InstanceDescriptor id = nannyReport.instanceDescriptor;
             String string = "";
             string += host.hostName + " ";
-            string += id.clusterName + " " + id.serviceName + " " + id.instanceName + " " + id.releaseGroupName;;
+            string += id.clusterName + " " + id.serviceName + " " + id.instanceName + " " + id.releaseGroupName;
+            ;
             for (Entry<String, InstanceDescriptorPort> p : id.ports.entrySet()) {
                 string += " " + p.getKey() + "=" + p.getValue().port;
             }

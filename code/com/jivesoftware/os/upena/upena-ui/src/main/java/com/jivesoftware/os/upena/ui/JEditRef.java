@@ -134,7 +134,7 @@ public class JEditRef implements JField<String> {
             try {
                 JObject vobjects = factory.create(valueClass, false, null);
                 LoadingCache<String, Object> cache = factory.getCache(valueClass);
-                Stored v = (Stored)cache.get(value);
+                Stored v = (Stored) cache.get(value);
                 if (v != null) {
 
                     String shortName = vobjects.objectFields.shortName(v);

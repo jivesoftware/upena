@@ -37,7 +37,7 @@ public class RequestHelperProvider extends JPanel {
         banner.setMaximumSize(new Dimension(72, 48));
         add(banner);
         add(Box.createRigidArea(new Dimension(10, 0)));
-        add(new JLabel(lable+" host:"));
+        add(new JLabel(lable + " host:"));
         editHost = new JTextField(host, 120);
         editHost.setMaximumSize(new Dimension(120, 24));
         add(editHost);

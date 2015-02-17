@@ -46,6 +46,7 @@ public class StatusReportBroadcaster implements ServiceHandle {
 
         void annouce(StatusReport statusReport) throws Exception;
     }
+
     private ScheduledExecutorService newScheduledThreadPool;
     private final int startupTimestampInSeconds = (int) TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis());
     private final String uuid = UUID.randomUUID().toString();
@@ -144,7 +145,7 @@ public class StatusReportBroadcaster implements ServiceHandle {
                 lastGCTotalTime = totalTimeInGC;
                 statusReport.timestampInSeconds = (int) TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis());
                 MemoryUsage memoryUsage = memoryMXBean.getHeapMemoryUsage();
-                statusReport.memoryLoad = (double)(memoryUsage.getUsed())/(double)(memoryUsage.getCommitted());
+                statusReport.memoryLoad = (double) (memoryUsage.getUsed()) / (double) (memoryUsage.getCommitted());
                 statusReport.load = (float) osBean.getSystemLoadAverage();
                 statusReport.internalErrors = LoggerSummary.INSTANCE.errors;
                 statusReport.interactionErrors = LoggerSummary.INSTANCE_EXTERNAL_INTERACTIONS.errors;

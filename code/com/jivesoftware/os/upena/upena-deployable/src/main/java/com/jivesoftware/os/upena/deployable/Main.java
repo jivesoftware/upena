@@ -57,6 +57,7 @@ import com.jivesoftware.os.jive.utils.ordered.id.OrderIdProviderImpl;
 import com.jivesoftware.os.upena.config.UpenaConfigRestEndpoints;
 import com.jivesoftware.os.upena.config.UpenaConfigStore;
 import com.jivesoftware.os.upena.deployable.UpenaEndpoints.AmzaClusterName;
+import com.jivesoftware.os.upena.deployable.endpoints.AsyncLookupEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ClustersPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ConfigPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.HealthPluginEndpoints;
@@ -65,6 +66,7 @@ import com.jivesoftware.os.upena.deployable.endpoints.InstancesPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ReleasesPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ServicesPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.UpenaRingPluginEndpoints;
+import com.jivesoftware.os.upena.deployable.lookup.AsyncLookupService;
 import com.jivesoftware.os.upena.deployable.region.ClustersPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ConfigPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.HeaderRegion;
@@ -316,6 +318,8 @@ public class Main {
                 new UpenaRingPluginRegion("soy.page.upenaRingPluginRegion", renderer, amzaService, upenaStore, upenaService, ubaService, ringHost)));
 
         jerseyEndpoints.addInjectable(SoyService.class, soyService);
+        jerseyEndpoints.addEndpoint(AsyncLookupEndpoints.class);
+        jerseyEndpoints.addInjectable(AsyncLookupService.class, new AsyncLookupService(upenaStore));
 
         for (ManagePlugin plugin : plugins) {
             soyService.registerPlugin(plugin);

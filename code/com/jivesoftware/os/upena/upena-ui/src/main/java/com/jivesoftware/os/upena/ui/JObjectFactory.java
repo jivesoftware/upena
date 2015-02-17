@@ -15,7 +15,6 @@
  */
 package com.jivesoftware.os.upena.ui;
 
-import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -149,7 +148,7 @@ public class JObjectFactory {
         return got.create(hasPopup, picked);
     }
 
-    static interface Creator<K extends Key, V extends Stored, F extends KeyValueFilter<K, V>>  {
+    static interface Creator<K extends Key, V extends Stored, F extends KeyValueFilter<K, V>> {
 
         JObject<K, V, F> create(boolean hasPopup, IPicked<K, V> picked);
     }

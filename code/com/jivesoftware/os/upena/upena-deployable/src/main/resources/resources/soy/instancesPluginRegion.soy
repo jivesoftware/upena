@@ -4,45 +4,9 @@
  * Upena Instances plugin page
  * 
  * @param? instances
- * @param? clusters
- * @param? hosts
- * @param? services
- * @param? releases
  */
 {template .instancesPluginRegion}
     {if $instances}
-        <div id="upena-hs-clusters" class="upena-hover-selector" style="display:none; z-index:100; position:absolute; background-color:#fff; padding:10px; border:1px solid #ccc; border-radius:4px;">
-            {if $clusters}
-                {foreach $c in $clusters}
-                    {if not isFirst($c)}&nbsp;{/if}
-                    <a href="#" style="border-radius:2px; background-color:#999; color:#fff; padding:2px;" data-upena-selector="#upena-hs-clusters" data-upena-value="{$c}">{$c}</a>
-                {/foreach}
-            {/if}
-        </div>
-        <div id="upena-hs-hosts" class="upena-hover-selector" style="display:none; z-index:100; position:absolute; background-color:#fff; padding:10px; border:1px solid #ccc; border-radius:4px;">
-            {if $hosts}
-                {foreach $h in $hosts}
-                    {if not isFirst($h)}&nbsp;{/if}
-                    <a href="#" style="border-radius:2px; background-color:#999; color:#fff; padding:2px;" data-upena-selector="#upena-hs-hosts" data-upena-value="{$h}">{$h}</a>
-                {/foreach}
-            {/if}
-        </div>
-        <div id="upena-hs-services" class="upena-hover-selector" style="display:none; z-index:100; position:absolute; background-color:#fff; padding:10px; border:1px solid #ccc; border-radius:4px;">
-            {if $services}
-                {foreach $s in $services}
-                    {if not isFirst($s)}&nbsp;{/if}
-                    <a href="#" style="border-radius:2px; background-color:#999; color:#fff; padding:2px;" data-upena-selector="#upena-hs-services" data-upena-value="{$s}">{$s}</a>
-                {/foreach}
-            {/if}
-        </div>
-        <div id="upena-hs-releases" class="upena-hover-selector" style="display:none; z-index:100; position:absolute; background-color:#fff; padding:10px; border:1px solid #ccc; border-radius:4px;">
-            {if $releases}
-                {foreach $r in $releases}
-                    {if not isFirst($r)}&nbsp;{/if}
-                    <a href="#" style="border-radius:2px; background-color:#999; color:#fff; padding:2px;" data-upena-selector="#upena-hs-releases" data-upena-value="{$r}">{$r}</a>
-                {/foreach}
-            {/if}
-        </div>
         <div class="panel panel-default">
             <div class="panel-heading" id="upena-instances">Instances</div>
                 <div class="panel-body">
@@ -65,17 +29,17 @@
                                     <td>
                                         <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
                                             placeholder="Cluster" value="" name="cluster" id="clusterPicker"
-                                            class="upena-hs-field" data-upena-selector="#upena-hs-clusters">
+                                            class="upena-hs-field" data-upena-lookup="/ui/lookup/clusters">
                                     </td>
                                     <td>
                                         <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
                                             placeholder="Host" value="" name="host" id="hostPicker"
-                                            class="upena-hs-field" data-upena-selector="#upena-hs-hosts">
+                                            class="upena-hs-field" data-upena-lookup="/ui/lookup/hosts">
                                     </td>
                                     <td>
                                         <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
                                             placeholder="Service" value="" name="service" id="servicePicker"
-                                            class="upena-hs-field" data-upena-selector="#upena-hs-services">
+                                            class="upena-hs-field" data-upena-lookup="/ui/lookup/services">
                                     </td>
                                     <td>
                                         <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
@@ -84,7 +48,7 @@
                                     <td>
                                         <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
                                             placeholder="Release" value="" name="release" id="releasePicker"
-                                            class="upena-hs-field" data-upena-selector="#upena-hs-releases">
+                                            class="upena-hs-field" data-upena-lookup="/ui/lookup/releases">
                                     </td>
                                     <td>
                                         <input type="submit" name="filter" value="Filter"/>
@@ -99,18 +63,21 @@
                                     <tr>
                                         <td>
                                             <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                                placeholder="Cluster" value="{$i.cluster}" name="cluster"
-                                                class="upena-hs-field" data-upena-selector="#upena-hs-clusters">
+                                                placeholder="Cluster" value="{$i.cluster.name}" name="cluster" class="upena-hs-field"
+                                                data-upena-lookup="/ui/lookup/clusters" />
+                                            <input type="hidden" name="clusterKey" value="{$i.cluster.key}" />
                                         </td>
                                         <td>
                                             <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                                placeholder="Host" value="{$i.host}" name="host"
-                                                class="upena-hs-field" data-upena-selector="#upena-hs-hosts">
+                                                placeholder="Host" value="{$i.host.name}" name="host" class="upena-hs-field"
+                                                data-upena-lookup="/ui/lookup/hosts" />
+                                            <input type="hidden" name="hostKey" value="{$i.host.key}" />
                                         </td>
                                         <td>
                                             <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                                placeholder="Service" value="{$i.service}" name="service"
-                                                class="upena-hs-field" data-upena-selector="#upena-hs-services">
+                                                placeholder="Service" value="{$i.service.name}" name="service" class="upena-hs-field"
+                                                data-upena-lookup="/ui/lookup/services" />
+                                            <input type="hidden" name="serviceKey" value="{$i.service.key}" />
                                         </td>
                                         <td>
                                             <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
@@ -118,8 +85,9 @@
                                         </td>
                                         <td>
                                             <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                                placeholder="Release" value="{$i.release}" name="release"
-                                                class="upena-hs-field" data-upena-selector="#upena-hs-releases">
+                                                placeholder="Release" value="{$i.release.name}" name="release" class="upena-hs-field"
+                                                data-upena-lookup="/ui/lookup/releases" />
+                                            <input type="hidden" name="releaseKey" value="{$i.release.key}" />
                                         </td>
                                         <td>
                                             <input type="hidden" name="key" value="{$i.key}">

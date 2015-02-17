@@ -61,7 +61,7 @@ public class Upena {
         ImageIcon icon = Util.icon("cluster");
         if (icon != null) {
             upena.setIconImage(icon.getImage().getScaledInstance(48, 48, Image.SCALE_SMOOTH));
-            
+
 //            if (System.getProperty("mrj.version") != null) {
 //                com.apple.eawt.Application application = com.apple.eawt.Application.getApplication();
 //                application.setDockIconImage(icon.getImage());
