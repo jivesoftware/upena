@@ -25,10 +25,9 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.concurrent.ConcurrentSkipListSet;
 import org.rendersnake.HtmlAttributes;
 import org.rendersnake.HtmlAttributesFactory;
 import org.rendersnake.HtmlCanvas;
@@ -36,8 +35,8 @@ import org.rendersnake.HtmlCanvas;
 /**
  *
  */
-// soy.page.statusPluginRegion
-public class StatusPluginRegion implements PageRegion<Optional<StatusPluginRegion.StatusPluginRegionInput>> {
+// soy.page.healthPluginRegion
+public class HealthPluginRegion implements PageRegion<Optional<HealthPluginRegion.HealthPluginRegionInput>> {
 
     private static final MetricLogger log = MetricLoggerFactory.getLogger();
 
@@ -49,7 +48,7 @@ public class StatusPluginRegion implements PageRegion<Optional<StatusPluginRegio
     private final UbaService ubaService;
     private final RingHost ringHost;
 
-    public StatusPluginRegion(String template,
+    public HealthPluginRegion(String template,
         SoyRenderer renderer,
         AmzaInstance amzaInstance,
         UpenaStore upenaStore,
@@ -65,13 +64,13 @@ public class StatusPluginRegion implements PageRegion<Optional<StatusPluginRegio
         this.ringHost = ringHost;
     }
 
-    public static class StatusPluginRegionInput {
+    public static class HealthPluginRegionInput {
 
         final String cluster;
         final String host;
         final String service;
 
-        public StatusPluginRegionInput(String cluster, String host, String service) {
+        public HealthPluginRegionInput(String cluster, String host, String service) {
             this.cluster = cluster;
             this.host = host;
             this.service = service;
@@ -79,11 +78,11 @@ public class StatusPluginRegion implements PageRegion<Optional<StatusPluginRegio
     }
 
     @Override
-    public String render(Optional<StatusPluginRegionInput> optionalInput) {
+    public String render(Optional<HealthPluginRegionInput> optionalInput) {
         Map<String, Object> data = Maps.newHashMap();
 
         try {
-            StatusPluginRegionInput input = optionalInput.get();
+            HealthPluginRegionInput input = optionalInput.get();
 
             Map<String, String> filter = new HashMap<>();
             filter.put("cluster", input.cluster);
@@ -94,9 +93,6 @@ public class StatusPluginRegion implements PageRegion<Optional<StatusPluginRegio
             List<Map<String, String>> health = new ArrayList<>();
 
             UpenaEndpoints.ClusterHealth clusterHealth = buildClusterHealth("health");
-            ArrayList<String> lables = new ArrayList<>();
-            ArrayList<Integer> values = new ArrayList<>();
-            Set<String> onlyOnce = new HashSet<>();
 
             Map<String, Double> minClusterHealth = new HashMap<>();
             for (UpenaEndpoints.NodeHealth nodeHealth : clusterHealth.nodeHealths) {
@@ -108,6 +104,9 @@ public class StatusPluginRegion implements PageRegion<Optional<StatusPluginRegio
                 }
             }
 
+            ConcurrentSkipListSet<String> hosts = new ConcurrentSkipListSet<>();
+            ConcurrentSkipListSet<String> services = new ConcurrentSkipListSet<>();
+
             for (UpenaEndpoints.NodeHealth nodeHealth : clusterHealth.nodeHealths) {
                 for (UpenaEndpoints.NannyHealth nannyHealth : nodeHealth.nannyHealths) {
                     boolean cshow = input.cluster.isEmpty() ? false : nannyHealth.instanceDescriptor.clusterName.contains(input.cluster);
@@ -115,10 +114,11 @@ public class StatusPluginRegion implements PageRegion<Optional<StatusPluginRegio
                     boolean sshow = input.service.isEmpty() ? false : nannyHealth.instanceDescriptor.serviceName.contains(input.service);
 
                     if ((!input.cluster.isEmpty() == cshow) && (!input.host.isEmpty() == hshow) && (!input.service.isEmpty() == sshow)) {
-                        if (!onlyOnce.contains(nodeHealth.host + ":" + nodeHealth.port)) {
-                            lables.add("\"" + nodeHealth.host + ":" + nodeHealth.port + "\"");
-                            values.add(Math.max(0, (int) (nodeHealth.health * 100)));
-                            onlyOnce.add(nodeHealth.host + ":" + nodeHealth.port);
+                        if (!hosts.contains(nannyHealth.instanceDescriptor.clusterName + ":" + nodeHealth.host + ":" + nodeHealth.port)) {
+                            hosts.add(nannyHealth.instanceDescriptor.clusterName + ":" + nodeHealth.host + ":" + nodeHealth.port);
+                        }
+                        if (!services.contains(nannyHealth.instanceDescriptor.serviceName)) {
+                            services.add(nannyHealth.instanceDescriptor.serviceName);
                         }
 
                         Map<String, String> h = new HashMap<>();
@@ -149,28 +149,62 @@ public class StatusPluginRegion implements PageRegion<Optional<StatusPluginRegio
 
                     }
                 }
-
             }
             data.put("health", health);
 
-            Map<String, Object> waveforms = new HashMap<>();
-            waveforms.put("labels", lables);
+            Map<String, Integer> serviceIndexs = new HashMap<>();
+            int serviceIndex = 0;
+            for (String service : services) {
+                serviceIndexs.put(service, serviceIndex);
+                serviceIndex++;
+            }
+            Map<String, Integer> hostIndexs = new HashMap<>();
+            int hostIndex = 0;
 
-            Color healthColor = new Color(Color.HSBtoRGB((float) Math.max(0, clusterHealth.health) / 3f, 1f, 1f));
+            List<List<String>> hostRows = new ArrayList<>();
+            for (String host : hosts) {
+                hostIndexs.put(host, hostIndex);
+                hostIndex++;
+                List<String> hostRow = new ArrayList<>();
 
-            Map<String, Object> waveform = new HashMap<>();
-            waveform.put("label", "\"My First dataset\"");
-            waveform.put("fillColor", "\"rgba(" + healthColor.getRed() + "," + healthColor.getGreen() + "," + healthColor.getBlue() + ",0.8)\"");
-            waveform.put("strokeColor", "\"rgba(220,220,220,1)\"");
-            waveform.put("pointColor", "\"rgba(220,220,220,1)\"");
-            waveform.put("pointStrokeColor", "\"#fff\"");
-            waveform.put("pointHighlightFill", "\"#fff\"");
-            waveform.put("pointHighlightStroke", "\"rgba(220,220,220,1)\"");
-            waveform.put("data", values);
+                hostRow.add("<div style=\"background-color:#eee; height:40px;\">" + host + "</div>");
+                for (int s = 0; s < services.size(); s++) {
+                    hostRow.add("<div style=\"background-color:#eee; width:40px; height:40px;\"></div>");
+                }
+                hostRows.add(hostRow);
+            }
 
-            waveforms.put("datasets", Arrays.asList(waveform));
+            for (UpenaEndpoints.NodeHealth nodeHealth : clusterHealth.nodeHealths) {
 
-            data.put("upenaWaveforms", waveforms);
+                for (UpenaEndpoints.NannyHealth nannyHealth : nodeHealth.nannyHealths) {
+                    boolean cshow = input.cluster.isEmpty() ? false : nannyHealth.instanceDescriptor.clusterName.contains(input.cluster);
+                    boolean hshow = input.host.isEmpty() ? false : nodeHealth.host.contains(input.host);
+                    boolean sshow = input.service.isEmpty() ? false : nannyHealth.instanceDescriptor.serviceName.contains(input.service);
+
+                    if ((!input.cluster.isEmpty() == cshow) && (!input.host.isEmpty() == hshow) && (!input.service.isEmpty() == sshow)) {
+                        String host = nannyHealth.instanceDescriptor.clusterName + ":" + nodeHealth.host + ":" + nodeHealth.port;
+                        int hi = hostIndexs.get(host);
+                        int si = serviceIndexs.get(nannyHealth.instanceDescriptor.serviceName);
+
+                        float hh = (float) Math.max(0, nodeHealth.health);
+                        hostRows.get(hi).set(0,
+                            "<div style=\"background-color:#" + getHEXTrafficlightColor(hh, 1f) + "; height:40px;\">"
+                            + host
+                            + "</div>");
+
+                        float sh = (float) Math.max(0, nannyHealth.serviceHealth.health);
+                        hostRows.get(hi).set(si + 1,
+                            "<div style=\"background-color:#" + getHEXTrafficlightColor(sh, 1f) + "; width:40px; height:40px;\">"
+                            + "<a href=\"http://" + nodeHealth.host + ":" + nannyHealth.instanceDescriptor.ports.get("manage").port + "/manage/ui\">"
+                            + d2f(sh)
+                            + "</a>"
+                            + "</div>");
+                    }
+                }
+            }
+
+            data.put("gridServices", Arrays.asList(services.toArray(new String[services.size()])));
+            data.put("gridHost", hostRows);
 
         } catch (Exception e) {
             log.error("Unable to retrieve data", e);
@@ -179,16 +213,30 @@ public class StatusPluginRegion implements PageRegion<Optional<StatusPluginRegio
         return renderer.render(template, data);
     }
 
+    public Map<String, Object> waveform(String label, Color color, List<Integer> values) {
+        Map<String, Object> waveform = new HashMap<>();
+        waveform.put("label", "\"" + label + "\"");
+        waveform.put("fillColor", "\"rgba(" + color.getRed() + "," + color.getGreen() + "," + color.getBlue() + ",0.2)\"");
+        waveform.put("strokeColor", "\"rgba(" + color.getRed() + "," + color.getGreen() + "," + color.getBlue() + ",1)\"");
+        waveform.put("pointColor", "\"rgba(" + color.getRed() + "," + color.getGreen() + "," + color.getBlue() + ",1)\"");
+        waveform.put("pointStrokeColor", "\"rgba(" + color.getRed() + "," + color.getGreen() + "," + color.getBlue() + ",1)\"");
+        waveform.put("pointHighlightFill", "\"rgba(" + color.getRed() + "," + color.getGreen() + "," + color.getBlue() + ",1)\"");
+        waveform.put("pointHighlightStroke", "\"rgba(" + color.getRed() + "," + color.getGreen() + "," + color.getBlue() + ",1)\"");
+        waveform.put("data", values);
+        return waveform;
+    }
+
     @Override
     public String getTitle() {
-        return "Upena Status";
+        return "Health";
     }
 
     private static final DecimalFormat df2 = new DecimalFormat("#.##");
 
     String d2f(double val) {
 
-        return df2.format(val);
+        return String.valueOf((int) (val * 100));
+        //return df2.format(val);
     }
 
     private final String shadow = "-moz-box-shadow:    2px 2px 4px 5px #ccc;"

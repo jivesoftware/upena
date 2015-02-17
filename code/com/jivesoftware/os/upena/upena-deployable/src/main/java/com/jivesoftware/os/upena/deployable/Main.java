@@ -56,24 +56,25 @@ import com.jivesoftware.os.jive.utils.ordered.id.OrderIdProvider;
 import com.jivesoftware.os.jive.utils.ordered.id.OrderIdProviderImpl;
 import com.jivesoftware.os.upena.config.UpenaConfigRestEndpoints;
 import com.jivesoftware.os.upena.config.UpenaConfigStore;
+import com.jivesoftware.os.upena.deployable.UpenaEndpoints.AmzaClusterName;
 import com.jivesoftware.os.upena.deployable.endpoints.ClustersPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ConfigPluginEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.HealthPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.HostsPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.InstancesPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ReleasesPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ServicesPluginEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.StatusPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.UpenaRingPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.region.ClustersPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ConfigPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.HeaderRegion;
+import com.jivesoftware.os.upena.deployable.region.HealthPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.HomeRegion;
 import com.jivesoftware.os.upena.deployable.region.HostsPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.InstancesPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ManagePlugin;
 import com.jivesoftware.os.upena.deployable.region.ReleasesPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ServicesPluginRegion;
-import com.jivesoftware.os.upena.deployable.region.StatusPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.UpenaRingPluginRegion;
 import com.jivesoftware.os.upena.deployable.server.InitializeRestfulServer;
 import com.jivesoftware.os.upena.deployable.server.JerseyEndpoints;
@@ -273,7 +274,7 @@ public class Main {
 
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/chrome.soy"), "chome.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/homeRegion.soy"), "home.soy");
-        soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/statusPluginRegion.soy"), "status.soy");
+        soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/healthPluginRegion.soy"), "health.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/instancesPluginRegion.soy"), "instances.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/clustersPluginRegion.soy"), "clusters.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/hostsPluginRegion.soy"), "hosts.soy");
@@ -282,45 +283,35 @@ public class Main {
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/upenaRingPluginRegion.soy"), "upenaRing.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/configPluginRegion.soy"), "config.soy");
 
-        System.out.println("Build....");
         SoyFileSet sfs = soyFileSetBuilder.build();
-        System.out.println("Compile....");
         SoyTofu tofu = sfs.compileToTofu();
         SoyRenderer renderer = new SoyRenderer(tofu, new SoyDataUtils());
         SoyService soyService = new SoyService(renderer, new HeaderRegion("soy.chrome.headerRegion", renderer),
             new HomeRegion("soy.page.homeRegion", renderer));
 
         List<ManagePlugin> plugins = Lists.newArrayList(
-            new ManagePlugin("Status",
-                "/ui/status",
-                StatusPluginEndpoints.class,
-                new StatusPluginRegion("soy.page.statusPluginRegion", renderer, amzaService, upenaStore, upenaService, ubaService, ringHost)),
-            new ManagePlugin("Instances",
-                "/ui/instances",
+            new ManagePlugin("fire", "Health", "/ui/health",
+                HealthPluginEndpoints.class,
+                new HealthPluginRegion("soy.page.healthPluginRegion", renderer, amzaService, upenaStore, upenaService, ubaService, ringHost)),
+            new ManagePlugin("pencil", "Instances", "/ui/instances",
                 InstancesPluginEndpoints.class,
                 new InstancesPluginRegion("soy.page.instancesPluginRegion", renderer, amzaService, upenaStore, upenaService, ubaService, ringHost)),
-            new ManagePlugin("Config",
-                "/ui/config",
+            new ManagePlugin("cog", "Config", "/ui/config",
                 ConfigPluginEndpoints.class,
                 new ConfigPluginRegion("soy.page.configPluginRegion", renderer, amzaService, upenaStore, upenaService, ubaService, ringHost, upenaConfigStore)),
-            new ManagePlugin("Clusters",
-                "/ui/clusters",
+            new ManagePlugin("cloud", "Clusters", "/ui/clusters",
                 ClustersPluginEndpoints.class,
                 new ClustersPluginRegion("soy.page.clustersPluginRegion", renderer, amzaService, upenaStore, upenaService, ubaService, ringHost)),
-            new ManagePlugin("Hosts",
-                "/ui/hosts",
+            new ManagePlugin("hdd", "Hosts", "/ui/hosts",
                 HostsPluginEndpoints.class,
                 new HostsPluginRegion("soy.page.hostsPluginRegion", renderer, amzaService, upenaStore, upenaService, ubaService, ringHost)),
-            new ManagePlugin("Services",
-                "/ui/services",
+            new ManagePlugin("flag", "Services", "/ui/services",
                 ServicesPluginEndpoints.class,
                 new ServicesPluginRegion("soy.page.servicesPluginRegion", renderer, amzaService, upenaStore, upenaService, ubaService, ringHost)),
-            new ManagePlugin("Releases",
-                "/ui/releases",
+            new ManagePlugin("send", "Releases", "/ui/releases",
                 ReleasesPluginEndpoints.class,
                 new ReleasesPluginRegion("soy.page.releasesPluginRegion", renderer, amzaService, upenaStore, upenaService, ubaService, ringHost)),
-            new ManagePlugin("Upena Ring",
-                "/ui/ring",
+            new ManagePlugin("leaf", "Upena Ring", "/ui/ring",
                 UpenaRingPluginEndpoints.class,
                 new UpenaRingPluginRegion("soy.page.upenaRingPluginRegion", renderer, amzaService, upenaStore, upenaService, ubaService, ringHost)));
 
@@ -331,6 +322,8 @@ public class Main {
             jerseyEndpoints.addEndpoint(plugin.endpointsClass);
             jerseyEndpoints.addInjectable(plugin.region.getClass(), plugin.region);
         }
+        jerseyEndpoints.addEndpoint(UpenaPropegatorEndpoints.class);
+        jerseyEndpoints.addInjectable(AmzaClusterName.class, new AmzaClusterName((clusterName == null) ? "maunal" : clusterName));
 
         InitializeRestfulServer initializeRestfulServer = new InitializeRestfulServer(port, "UpenaNode", 128, 10000);
         initializeRestfulServer.addClasspathResource("/resources");

@@ -60,6 +60,18 @@ public class UpenaEndpoints {
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
+    private final AmzaClusterName amzaClusterName;
+
+    public static class AmzaClusterName {
+
+        private final String name;
+
+        public AmzaClusterName(String name) {
+            this.name = name;
+        }
+
+    }
+
     private final AmzaInstance amzaInstance;
     private final UpenaStore upenaStore;
     private final UpenaService upenaService;
@@ -67,12 +79,14 @@ public class UpenaEndpoints {
     private final RingHost ringHost;
     private final SoyService soyService;
 
-    public UpenaEndpoints(@Context AmzaInstance amzaInstance,
+    public UpenaEndpoints(@Context AmzaClusterName amzaClusterName,
+        @Context AmzaInstance amzaInstance,
         @Context UpenaStore upenaStore,
         @Context UpenaService upenaService,
         @Context UbaService ubaService,
         @Context RingHost ringHost,
         @Context SoyService soyService) {
+        this.amzaClusterName = amzaClusterName;
         this.amzaInstance = amzaInstance;
         this.upenaStore = upenaStore;
         this.upenaService = upenaService;
@@ -84,8 +98,8 @@ public class UpenaEndpoints {
     @GET
     @Path("/")
     @Produces(MediaType.TEXT_HTML)
-    public Response get() {
-        String rendered = soyService.render();
+    public Response get(@Context UriInfo uriInfo) {
+        String rendered = soyService.render(uriInfo.getAbsolutePath() + "propegator/download", amzaClusterName.name);
         return Response.ok(rendered).build();
     }
 
@@ -95,7 +109,7 @@ public class UpenaEndpoints {
     public Response getInstances(@Context UriInfo uriInfo) {
         try {
             /*
-            h.table(border);
+             h.table(border);
              h.tr(HtmlAttributesFactory.style("background-color:#bbbbbb;"));
              h.td(border).content(String.valueOf("Key"));
              h.td(border).content(String.valueOf("Id"));

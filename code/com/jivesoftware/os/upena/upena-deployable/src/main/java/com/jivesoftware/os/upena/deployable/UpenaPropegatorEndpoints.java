@@ -19,28 +19,65 @@ import com.jivesoftware.os.jive.utils.jaxrs.util.ResponseHelper;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import javax.inject.Singleton;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
 
 /**
  *
  * @author jonathan.colt
  */
 @Singleton
-@Path("/upena/propegator")
+@Path("/propegator")
 public class UpenaPropegatorEndpoints {
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
     @GET
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    @Path("/download")
+    public StreamingOutput pull() throws Exception {
+        return new StreamingOutput() {
+            @Override
+            public void write(OutputStream os) throws IOException, WebApplicationException {
+                try {
+                    File f = new File(System.getProperty("user.dir"), "upena.jar");
+
+                    try {
+                        byte[] buf = new byte[8192];
+                        InputStream is = new FileInputStream(f);
+                        int c = 0;
+                        while ((c = is.read(buf, 0, buf.length)) > 0) {
+                            os.write(buf, 0, c);
+                            os.flush();
+                        }
+                        os.close();
+                        is.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                } catch (Exception e) {
+                    throw new WebApplicationException(e);
+                }
+            }
+        };
+    }
+
+    @GET
     @Consumes("application/json")
     @Path("/deploy")
-    public Response getInstanceConfig(@QueryParam("clusterName") String clusterName,
+    public Response push(@QueryParam("clusterName") String clusterName,
         @QueryParam("scpUser") String scpUser,
         @QueryParam("scpHost") String scpHost,
         @QueryParam("scpHome") String scpHome) {

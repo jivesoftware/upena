@@ -1,10 +1,10 @@
 package com.jivesoftware.os.upena.deployable.region;
 
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
-import java.util.Collections;
+import java.util.Map;
 
 // soy.chrome.headerRegion
-public class HeaderRegion implements Region<Void> {
+public class HeaderRegion implements Region<Map<String, ?>> {
 
     private final String template;
     private final SoyRenderer renderer;
@@ -15,7 +15,7 @@ public class HeaderRegion implements Region<Void> {
     }
 
     @Override
-    public String render(Void input) {
-        return renderer.render(template, Collections.<String, Object>emptyMap());
+    public String render(Map<String, ?> input) {
+        return renderer.render(template, input);
     }
 }

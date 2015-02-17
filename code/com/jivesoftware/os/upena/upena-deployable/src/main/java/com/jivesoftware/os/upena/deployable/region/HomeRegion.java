@@ -12,6 +12,7 @@ import com.jivesoftware.os.jive.utils.http.client.rest.RequestHelper;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.deployable.UpenaEndpoints;
+import com.jivesoftware.os.upena.deployable.region.HomeRegion.HomeInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.routing.shared.InstanceDescriptor;
 import java.awt.Color;
@@ -27,7 +28,7 @@ import org.rendersnake.HtmlCanvas;
 /**
  *
  */
-public class HomeRegion implements PageRegion<Void> {
+public class HomeRegion implements PageRegion<HomeInput> {
 
     private static final MetricLogger log = MetricLoggerFactory.getLogger();
 
@@ -39,9 +40,25 @@ public class HomeRegion implements PageRegion<Void> {
         this.renderer = renderer;
     }
 
+    public static class HomeInput {
+
+        final String wgetURL;
+        final String upenaClusterName;
+
+        public HomeInput(String wgetURL, String upenaClusterName) {
+            this.wgetURL = wgetURL;
+            this.upenaClusterName = upenaClusterName;
+        }
+
+
+    }
+
     @Override
-    public String render(Void input) {
+    public String render(HomeInput input) {
         Map<String, Object> data = Maps.newHashMap();
+        data.put("wgetURL", input.wgetURL);
+        data.put("upenaClusterName", input.upenaClusterName);
+
         return renderer.render(template, data);
 
     }

@@ -1,8 +1,8 @@
 package com.jivesoftware.os.upena.deployable.endpoints;
 
 import com.google.common.base.Optional;
-import com.jivesoftware.os.upena.deployable.region.StatusPluginRegion;
-import com.jivesoftware.os.upena.deployable.region.StatusPluginRegion.StatusPluginRegionInput;
+import com.jivesoftware.os.upena.deployable.region.HealthPluginRegion;
+import com.jivesoftware.os.upena.deployable.region.HealthPluginRegion.HealthPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
 import javax.inject.Singleton;
 import javax.ws.rs.DefaultValue;
@@ -18,13 +18,13 @@ import javax.ws.rs.core.Response;
  *
  */
 @Singleton
-@Path("/ui/status")
-public class StatusPluginEndpoints {
+@Path("/ui/health")
+public class HealthPluginEndpoints {
 
     private final SoyService soyService;
-    private final StatusPluginRegion pluginRegion;
+    private final HealthPluginRegion pluginRegion;
 
-    public StatusPluginEndpoints(@Context SoyService soyService, @Context StatusPluginRegion pluginRegion) {
+    public HealthPluginEndpoints(@Context SoyService soyService, @Context HealthPluginRegion pluginRegion) {
         this.soyService = soyService;
         this.pluginRegion = pluginRegion;
     }
@@ -36,7 +36,7 @@ public class StatusPluginEndpoints {
         @QueryParam("host") @DefaultValue("") String host,
         @QueryParam("service") @DefaultValue("") String service) {
         String rendered = soyService.renderPlugin(pluginRegion,
-            Optional.of(new StatusPluginRegionInput(cluster, host, service)));
+            Optional.of(new HealthPluginRegionInput(cluster, host, service)));
         return Response.ok(rendered).build();
     }
 

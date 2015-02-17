@@ -1,8 +1,21 @@
 {namespace soy.page}
 
 /**
+* @param wgetURL
+* @param upenaClusterName
 */
 {template .homeRegion}
-     <div>
+    <div style="height:480px;">
+    </div>
+    <div class="panel panel-default">
+        <div class="panel-heading">About</div>
+            <div class="panel-body">
+                <pre>
+                    Expand this cluster by running the following on a new node:<br><br>
+                    wget -O upena.jar {$wgetURL} <br>
+                    nohup java -jar upena.jar `hostname` {$upenaClusterName} &
+                </pre>
+            </div>
+        </div>
     </div>
 {/template}

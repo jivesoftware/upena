@@ -31,6 +31,19 @@
                             </tr>
                         </thead>
                         <tbody>
+                            <tr stye="background-color:#FFFFE0;">
+                                <td bgcolor="#FFFFE0" colspan="6">
+                                    Filter:<input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                           placeholder="property" value="{$property?:''}" name="property" id="descriptionPicker">
+                                    <input type="checkbox" name="overriden">&nbsp;overridden&nbsp;
+                                    <input type="submit" name="action" value="Refresh"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    - in -
+                                </td>
+                            </tr>
                             <tr style="background-color:#D2E9FF;">
                                 <td>
                                     Filter A:
@@ -86,40 +99,32 @@
                                     placeholder="Release" value="{$bFilters.release?:''}" name="bRelease" id="descriptionPicker">
                                 </td>
                             </tr>
-                            <tr stye="background-color:#FFFFE0;">
-                                <td bgcolor="#FFFFE0" colspan="6">
-                                    Filter:<input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                           placeholder="property" value="{$property?:''}" name="property" id="descriptionPicker">
-                                    <input type="checkbox" name="overriden">&nbsp;overridden&nbsp;
-                                    <input type="submit" name="action" value="Refresh"/>
-                                </td>
-                            </tr>
                         </tbody>
                     </table>
                 </form>
             </div>
             {if $properties}
                 <div class="panel-body">
-                    <table border-spacing: 0.5rem; style="display: block; width: 100%; max-width: 1200px; table-layout: fixed;">
+                    <table style="display: block; width: 1200px; max-width: 1200px; table-layout: fixed;">
                     {foreach $p in $properties}
-                        <tr style="background-color:#FFFFE0;" align="left">
+                        <tr style="background-color:#FFFFE0;">
                             <td colspan="26"><h8>{$p.property}</h8></td>
                         </tr>
                         {foreach $h in $p.has}
                             <tr>
                                 <td>&nbsp;&nbsp;&nbsp;</td>
-                                <td bgcolor="#D2E9FF">{$h.acluster?:''}</td>
-                                <td bgcolor="#D2E9FF">{$h.ahost?:''}</td>
-                                <td bgcolor="#D2E9FF">{$h.aservice?:''}</td>
-                                <td bgcolor="#D2E9FF">{$h.ainstance?:''}</td>
-                                <td bgcolor="#D2E9FF">{$h.adefault?:''}</td>
+                                <td bgcolor="#8299AF"><div style="max-width: 100px; word-wrap:break-word;">{$h.acluster?:''}</div></td>
+                                <td bgcolor="#92A9BF"><div style="max-width: 100px; word-wrap:break-word;">{$h.ahost?:''}</div></td>
+                                <td bgcolor="#A2B9CF"><div style="max-width: 100px; word-wrap:break-word;">{$h.aservice?:''}</div></td>
+                                <td bgcolor="#B2C9DF"><div style="max-width: 100px; word-wrap:break-word;">{$h.ainstance?:''}</div></td>
+                                <td bgcolor="#C2D9EF"><div style="max-width: 100px; word-wrap:break-word;">{$h.adefault?:''}</div></td>
                                 <td bgcolor="#D2E9FF">
-                                    {if ($h.acluster != null or  $h.ahost != null or $h.aservice != null or $h.ainstance != null) and $h.aoverride != null}
+                                    {if ($h.acluster != null or $h.ahost != null or $h.aservice != null or $h.ainstance != null)}
                                         <input type="text" style="width:200px; padding-left:10px;"
                                             placeholder="override" value="{$h.aoverride?:''}" name="override" id="override">
                                     {/if}
                                 </td>
-                                <td><div class=\"glyphicon glyphicon-link\"></div></td>
+                                <td><button><span class="glyphicon glyphicon-link"></span>&nbsp;</button></td>
                                 <td bgcolor="#EEEEEE">
                                     {if $h.boverride != null}
                                         &nbsp<-&nbsp
@@ -131,11 +136,11 @@
                                             placeholder="override" value="{$h.boverride?:''}" name="override" id="override">
                                     {/if}
                                 </td>
-                                <td bgcolor="#E7E7EF">{$h.bdefault?:''}</td>
-                                <td bgcolor="#E7E7EF">{$h.binstance?:''}</td>
-                                <td bgcolor="#E7E7EF">{$h.bservice?:''}</td>
-                                <td bgcolor="#E7E7EF">{$h.bhost?:''}</td>
-                                <td bgcolor="#E7E7EF">{$h.bcluster?:''}</td>
+                                <td bgcolor="#D7D7DF"><div style="max-width: 100px; word-wrap:break-word;">{$h.bdefault?:''}</div></td>
+                                <td bgcolor="#C7C7CF"><div style="max-width: 100px; word-wrap:break-word;">{$h.binstance?:''}</div></td>
+                                <td bgcolor="#B7B7BF"><div style="max-width: 100px; word-wrap:break-word;">{$h.bservice?:''}</div></td>
+                                <td bgcolor="#A7A7AF"><div style="max-width: 100px; word-wrap:break-word;">{$h.bhost?:''}</div></td>
+                                <td bgcolor="#97979F"><div style="max-width: 100px; word-wrap:break-word;">{$h.bcluster?:''}</div></td>
                             </tr>
                         {/foreach}
                     {/foreach}
