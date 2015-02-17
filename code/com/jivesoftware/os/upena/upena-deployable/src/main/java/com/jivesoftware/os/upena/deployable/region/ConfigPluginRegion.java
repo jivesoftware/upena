@@ -127,19 +127,27 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
                 ConfigPluginRegionInput input = optionalInput.get();
 
                 Map<String, String> aFilters = new HashMap<>();
-                aFilters.put("aCluster", input.aCluster);
-                aFilters.put("aHost", input.aHost);
-                aFilters.put("aService", input.aService);
-                aFilters.put("aInstance", input.aInstance);
-                aFilters.put("aRelease", input.aRelease);
+                aFilters.put("clusterKey", input.aClusterKey);
+                aFilters.put("cluster", input.aCluster);
+                aFilters.put("hostKey", input.aHostKey);
+                aFilters.put("host", input.aHost);
+                aFilters.put("serviceKey", input.aServiceKey);
+                aFilters.put("service", input.aService);
+                aFilters.put("instance", input.aInstance);
+                aFilters.put("releaseKey", input.aReleaseKey);
+                aFilters.put("release", input.aRelease);
                 data.put("aFilters", aFilters);
 
                 Map<String, String> bFilters = new HashMap<>();
-                bFilters.put("bCluster", input.bCluster);
-                bFilters.put("bHost", input.bHost);
-                bFilters.put("bService", input.bService);
-                bFilters.put("bInstance", input.bInstance);
-                bFilters.put("bRelease", input.bRelease);
+                bFilters.put("clusterKey", input.bClusterKey);
+                bFilters.put("cluster", input.bCluster);
+                bFilters.put("hostKey", input.bHostKey);
+                bFilters.put("host", input.bHost);
+                bFilters.put("serviceKey", input.bServiceKey);
+                bFilters.put("service", input.bService);
+                bFilters.put("instance", input.bInstance);
+                bFilters.put("releaseKey", input.bReleaseKey);
+                bFilters.put("release", input.bRelease);
                 data.put("bFilters", bFilters);
 
                 data.put("property", input.property);
@@ -256,8 +264,11 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
                         properties.put(property, occurences);
                     }
                     Map<String, String> occurence = new HashMap<>();
+                    occurence.put("clusterKey", i.clusterKey.getKey());
                     occurence.put("cluster", upenaStore.clusters.get(i.clusterKey).name);
+                    occurence.put("hostKey", i.hostKey.getKey());
                     occurence.put("host", upenaStore.hosts.get(i.hostKey).name);
+                    occurence.put("serviceKey", i.serviceKey.getKey());
                     occurence.put("service", upenaStore.services.get(i.serviceKey).name);
                     occurence.put("instance", String.valueOf(i.instanceId));
                     occurence.put("override", overriden.get(property));

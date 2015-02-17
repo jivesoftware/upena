@@ -50,23 +50,31 @@
                                 </td>
                                 <td>
                                     <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                    placeholder="Cluster" value="{$aFilters.cluster?:''}" name="aCluster" id="namePicker" class="form-control">
+                                        placeholder="Cluster" value="{$aFilters.cluster?:''}" name="aCluster" class="form-control upena-hs-field"
+                                        data-upena-lookup="/ui/lookup/clusters">
+                                    <input type="hidden" name="aClusterKey" value="{$aFilters.clusterKey}" />
                                 </td>
                                 <td>
                                     <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                    placeholder="Host" value="{$aFilters.host?:''}" name="aHost" id="descriptionPicker" class="form-control">
+                                        placeholder="Host" value="{$aFilters.host?:''}" name="aHost" class="form-control upena-hs-field"
+                                        data-upena-lookup="/ui/lookup/hosts">
+                                    <input type="hidden" name="aHostKey" value="{$aFilters.hostKey}" />
                                 </td>
                                 <td>
                                     <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                    placeholder="Service" value="{$aFilters.service?:''}" name="aService" id="descriptionPicker" class="form-control">
+                                        placeholder="Service" value="{$aFilters.service?:''}" name="aService" class="form-control upena-hs-field"
+                                        data-upena-lookup="/ui/lookup/services">
+                                    <input type="hidden" name="aServiceKey" value="{$aFilters.serviceKey}" />
                                 </td>
                                 <td>
                                     <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                    placeholder="Instance" value="{$aFilters.instance?:''}" name="aInstance" id="descriptionPicker" class="form-control">
+                                        placeholder="Instance" value="{$aFilters.instance?:''}" name="aInstance" class="form-control">
                                 </td>
                                 <td>
                                     <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                    placeholder="Release" value="{$aFilters.release?:''}" name="aRelease" id="descriptionPicker" class="form-control">
+                                        placeholder="Release" value="{$aFilters.release?:''}" name="aRelease" class="form-control upena-hs-field"
+                                        data-upena-lookup="/ui/lookup/releases">
+                                    <input type="hidden" name="aReleaseKey" value="{$aFilters.releaseKey}" />
                                 </td>
                             </tr>
                             <tr>
@@ -80,23 +88,31 @@
                                 </td>
                                 <td>
                                     <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                    placeholder="Cluster" value="{$bFilters.cluster?:''}" name="bCluster" id="namePicker" class="form-control">
+                                        placeholder="Cluster" value="{$bFilters.cluster?:''}" name="bCluster" class="form-control upena-hs-field"
+                                        data-upena-lookup="/ui/lookup/clusters">
+                                    <input type="hidden" name="bClusterKey" value="{$bFilters.clusterKey}" />
                                 </td>
                                 <td>
                                     <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                    placeholder="Host" value="{$bFilters.host?:''}" name="bHost" id="descriptionPicker" class="form-control">
+                                        placeholder="Host" value="{$bFilters.host?:''}" name="bHost" class="form-control upena-hs-field"
+                                        data-upena-lookup="/ui/lookup/hosts">
+                                    <input type="hidden" name="bHostKey" value="{$bFilters.hostKey}" />
                                 </td>
                                 <td>
                                     <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                    placeholder="Service" value="{$bFilters.service?:''}" name="bService" id="descriptionPicker" class="form-control">
+                                        placeholder="Service" value="{$bFilters.service?:''}" name="bService" class="form-control upena-hs-field"
+                                        data-upena-lookup="/ui/lookup/services">
+                                    <input type="hidden" name="bServiceKey" value="{$bFilters.serviceKey}" />
                                 </td>
                                 <td>
                                     <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                    placeholder="Instance" value="{$bFilters.instance?:''}" name="bInstance" id="descriptionPicker" class="form-control">
+                                        placeholder="Instance" value="{$bFilters.instance?:''}" name="bInstance" class="form-control">
                                 </td>
                                 <td>
                                     <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                    placeholder="Release" value="{$bFilters.release?:''}" name="bRelease" id="descriptionPicker" class="form-control">
+                                        placeholder="Release" value="{$bFilters.release?:''}" name="bRelease" class="form-control upena-hs-field"
+                                        data-upena-lookup="/ui/lookup/releases">
+                                    <input type="hidden" name="bReleaseKey" value="{$bFilters.releaseKey}" />
                                 </td>
                             </tr>
                         </tbody>
@@ -127,7 +143,7 @@
                                 <td><button class="btn btn-default"><span class="glyphicon glyphicon-link"></span>&nbsp;</button></td>
                                 <td bgcolor="#EEEEEE">
                                     {if $h.boverride != null}
-                                        &nbsp<-&nbsp
+                                        &nbsp;&lt;-&nbsp;
                                     {/if}
                                 </td>
                                 <td bgcolor="#E7E7EF">
