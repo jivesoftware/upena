@@ -34,14 +34,7 @@ import java.io.OutputStream;
  *
  * @author jonathan.colt
  */
-public class UpenaPropegator {
-
-//    public static void main(String[] args) throws Exception {
-//        UpenaPropegator upenaPropegator = new UpenaPropegator("./target/upena.jar",
-//            "dev", "~/.ssh/id_rsa", "jive", "host", "/usr/local/jive/upena");
-//        upenaPropegator.propegate();
-//        System.exit(0);
-//    }
+public class UpenaPropagator {
 
     private final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
@@ -52,7 +45,7 @@ public class UpenaPropegator {
     private final String scpHost;
     private final String scpHome;
 
-    public UpenaPropegator(String pathToUpenaJar,
+    public UpenaPropagator(String pathToUpenaJar,
         String clusterName,
         String pathToSSHKey,
         String scpUser,
@@ -72,7 +65,7 @@ public class UpenaPropegator {
         this.scpHome = scpHome;
     }
 
-    public void propegate() throws Exception {
+    public void propagate() throws Exception {
         JSch jsch = new JSch();
 
         //File local = new File(basedir, "target" + File.separator + mavenProject.getArtifactId() + "-" + mavenProject.getVersion() + ".tar.gz");

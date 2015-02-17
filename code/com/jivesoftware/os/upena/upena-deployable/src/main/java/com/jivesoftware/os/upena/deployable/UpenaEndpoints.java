@@ -99,7 +99,7 @@ public class UpenaEndpoints {
     @Path("/")
     @Produces(MediaType.TEXT_HTML)
     public Response get(@Context UriInfo uriInfo) {
-        String rendered = soyService.render(uriInfo.getAbsolutePath() + "propegator/download", amzaClusterName.name);
+        String rendered = soyService.render(uriInfo.getAbsolutePath() + "propagator/download", amzaClusterName.name);
         return Response.ok(rendered).build();
     }
 

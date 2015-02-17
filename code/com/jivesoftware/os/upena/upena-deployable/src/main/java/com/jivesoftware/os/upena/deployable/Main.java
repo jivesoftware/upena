@@ -322,7 +322,7 @@ public class Main {
             jerseyEndpoints.addEndpoint(plugin.endpointsClass);
             jerseyEndpoints.addInjectable(plugin.region.getClass(), plugin.region);
         }
-        jerseyEndpoints.addEndpoint(UpenaPropegatorEndpoints.class);
+        jerseyEndpoints.addEndpoint(UpenaPropagatorEndpoints.class);
         jerseyEndpoints.addInjectable(AmzaClusterName.class, new AmzaClusterName((clusterName == null) ? "maunal" : clusterName));
 
         InitializeRestfulServer initializeRestfulServer = new InitializeRestfulServer(port, "UpenaNode", 128, 10000);
@@ -361,7 +361,7 @@ public class Main {
             System.out.println("-----------------------------------------------------------------------");
         } else {
             System.out.println("-----------------------------------------------------------------------");
-            System.out.println("|     Amze Service is in manual Discovery mode.  No cluster name was specified");
+            System.out.println("|     Amza Service is in manual Discovery mode.  No cluster name was specified");
             System.out.println("-----------------------------------------------------------------------");
         }
     }

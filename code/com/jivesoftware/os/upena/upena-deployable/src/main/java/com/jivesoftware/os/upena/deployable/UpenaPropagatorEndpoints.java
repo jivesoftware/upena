@@ -39,8 +39,8 @@ import javax.ws.rs.core.StreamingOutput;
  * @author jonathan.colt
  */
 @Singleton
-@Path("/propegator")
-public class UpenaPropegatorEndpoints {
+@Path("/propagator")
+public class UpenaPropagatorEndpoints {
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
@@ -83,15 +83,15 @@ public class UpenaPropegatorEndpoints {
         @QueryParam("scpHome") String scpHome) {
         try {
             File pathToUpenaJar = new File(System.getProperty("user.dir"), "upena.jar");
-            UpenaPropegator propegator = new UpenaPropegator(pathToUpenaJar.getAbsolutePath(),
+            UpenaPropagator propagator = new UpenaPropagator(pathToUpenaJar.getAbsolutePath(),
                 clusterName,
                 "~/.ssh/id_rsa",
                 scpUser,
                 scpHost,
                 scpHome
             );
-            propegator.propegate();
-            return Response.ok("Propegated upena to: " + scpHost + ":" + scpHome, MediaType.TEXT_PLAIN).build();
+            propagator.propagate();
+            return Response.ok("Propagated upena to: " + scpHost + ":" + scpHome, MediaType.TEXT_PLAIN).build();
         } catch (Exception x) {
             LOG.warn("Failed to deploy upena to: " + scpHost + ":" + scpHome, x);
             return ResponseHelper.INSTANCE.errorResponse("Failed to deploy upena to:" + scpHost + ":" + scpHome, x);
