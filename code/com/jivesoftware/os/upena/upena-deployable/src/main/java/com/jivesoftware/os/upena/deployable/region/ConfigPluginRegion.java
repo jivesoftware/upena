@@ -79,19 +79,26 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
             if (instance != null) {
                 Map<String, String> defaults = configStore.get(instanceKey, "default", null);
                 Map<String, String> overridden = configStore.get(instanceKey, "override", null);
+                boolean modified = false;
                 for (Map.Entry<String, Map<String, String>> propEntry : propertyMap.entrySet()) {
                     if (propEntry.getValue().containsKey(instanceKey)) {
                         String property = propEntry.getKey();
                         String value = propEntry.getValue().get(instanceKey);
                         if (value == null || value.isEmpty() || value.equals(defaults.get(property))) {
                             overridden.remove(property);
+                            modified = true;
                             log.info("Reverting to default for property:" + property + " for instance:" + instanceKey);
                         } else {
                             overridden.put(property, value);
+                            modified = true;
                             log.info("Setting property:" + property + "=" + value + " for instance:" + instanceKey);
                         }
                     }
                 }
+                if (modified) {
+                    configStore.set(instanceKey, "override", overridden);
+                }
+
             } else {
                 log.warn("Faied to load instance for key:" + instanceKey + " when trying to modify properties.");
             }
