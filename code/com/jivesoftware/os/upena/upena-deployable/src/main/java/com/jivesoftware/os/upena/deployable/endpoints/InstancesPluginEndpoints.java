@@ -51,12 +51,12 @@ public class InstancesPluginEndpoints {
         @FormParam("host") @DefaultValue("") String host,
         @FormParam("serviceKey") @DefaultValue("") String serviceKey,
         @FormParam("service") @DefaultValue("") String service,
-        @FormParam("id") @DefaultValue("") String id,
+        @FormParam("instanceId") @DefaultValue("") String instanceId,
         @FormParam("releaseKey") @DefaultValue("") String releaseKey,
         @FormParam("release") @DefaultValue("") String release,
         @FormParam("action") @DefaultValue("") String action) {
         String rendered = soyService.renderPlugin(pluginRegion,
-            Optional.of(new InstancesPluginRegionInput(key, clusterKey, cluster, hostKey, host, serviceKey, service, id, releaseKey, release, action)));
+            Optional.of(new InstancesPluginRegionInput(key, clusterKey, cluster, hostKey, host, serviceKey, service, instanceId, releaseKey, release, action)));
         return Response.ok(rendered).build();
     }
 

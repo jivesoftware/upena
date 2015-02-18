@@ -70,13 +70,13 @@ public class InstancesPluginRegion implements PageRegion<Optional<InstancesPlugi
         final String host;
         final String serviceKey;
         final String service;
-        final String id;
+        final String instanceId;
         final String releaseKey;
         final String release;
         final String action;
 
         public InstancesPluginRegionInput(String key, String clusterKey, String cluster, String hostKey, String host, String serviceKey, String service,
-            String id, String releaseKey, String release, String action) {
+            String instanceId, String releaseKey, String release, String action) {
             this.key = key;
             this.clusterKey = clusterKey;
             this.cluster = cluster;
@@ -84,7 +84,7 @@ public class InstancesPluginRegion implements PageRegion<Optional<InstancesPlugi
             this.host = host;
             this.serviceKey = serviceKey;
             this.service = service;
-            this.id = id;
+            this.instanceId = instanceId;
             this.releaseKey = releaseKey;
             this.release = release;
             this.action = action;
@@ -106,7 +106,7 @@ public class InstancesPluginRegion implements PageRegion<Optional<InstancesPlugi
                 filters.put("host", input.host);
                 filters.put("serviceKey", input.serviceKey);
                 filters.put("service", input.service);
-                filters.put("instance", input.id);
+                filters.put("instanceId", input.instanceId);
                 filters.put("releaseKey", input.releaseKey);
                 filters.put("release", input.release);
                 data.put("filters", filters);
@@ -116,7 +116,7 @@ public class InstancesPluginRegion implements PageRegion<Optional<InstancesPlugi
                     input.hostKey.isEmpty() ? null : new HostKey(input.hostKey),
                     input.serviceKey.isEmpty() ? null : new ServiceKey(input.serviceKey),
                     input.releaseKey.isEmpty() ? null : new ReleaseGroupKey(input.releaseKey),
-                    input.id.isEmpty() ? null : Integer.parseInt(input.id),
+                    input.instanceId.isEmpty() ? null : Integer.parseInt(input.instanceId),
                     0, 10000);
 
                 if (input.action != null) {
@@ -127,7 +127,7 @@ public class InstancesPluginRegion implements PageRegion<Optional<InstancesPlugi
                             + "host.equals '" + input.host + "' "
                             + "service.equals '" + input.service + "' "
                             + "release.equals '" + input.release + "'"
-                            + "id.equals '" + input.id + "'"
+                            + "id.equals '" + input.instanceId + "'"
                         );
                     } else if (input.action.equals("add")) {
                         filters.clear();
@@ -160,7 +160,7 @@ public class InstancesPluginRegion implements PageRegion<Optional<InstancesPlugi
                                     new HostKey(input.hostKey),
                                     new ServiceKey(input.serviceKey),
                                     new ReleaseGroupKey(input.releaseKey),
-                                    Integer.parseInt(input.id),
+                                    Integer.parseInt(input.instanceId),
                                     true, false
                                 ));
 
@@ -182,7 +182,7 @@ public class InstancesPluginRegion implements PageRegion<Optional<InstancesPlugi
                                     new HostKey(input.hostKey),
                                     new ServiceKey(input.serviceKey),
                                     new ReleaseGroupKey(input.releaseKey),
-                                    Integer.parseInt(input.id),
+                                    Integer.parseInt(input.instanceId),
                                     true, false));
                                 data.put("message", "Updated Instance:" + input.key);
                             }
@@ -244,7 +244,7 @@ public class InstancesPluginRegion implements PageRegion<Optional<InstancesPlugi
                     map.put("service", ImmutableMap.of(
                         "key", value.serviceKey.getKey(),
                         "name", upenaStore.services.get(value.serviceKey).name));
-                    map.put("id", String.valueOf(value.instanceId));
+                    map.put("instanceId", String.valueOf(value.instanceId));
                     map.put("release", ImmutableMap.of(
                         "key", value.releaseGroupKey.getKey(),
                         "name", upenaStore.releaseGroups.get(value.releaseGroupKey).name));

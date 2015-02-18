@@ -20,7 +20,6 @@ import com.jivesoftware.os.upena.shared.ServiceKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
 import com.jivesoftware.os.upena.uba.service.UbaService;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -194,18 +193,7 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
 
                 data.put("property", input.property);
 
-                Map<String, String> hack1 = new HashMap<>();
-                hack1.put("cluster", "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc");
-                hack1.put("host", "hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh");
-                hack1.put("service", "ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss");
-                hack1.put("instance", "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii");
-                hack1.put("override", "oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo");
-                hack1.put("default", "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd");
-                Map<String, String> hack2 = new HashMap<>(hack1);
-                Map<String, String> hack3 = new HashMap<>(hack1);
-                hack1.put("instanceKey", "ik1");
-                hack2.put("instanceKey", "ik2");
-                hack3.put("instanceKey", "ik3");
+               
 
                 ConcurrentSkipListMap<String, List<Map<String, String>>> as = packProperties(input.aClusterKey,
                     input.aHostKey, input.aServiceKey, input.aInstance, input.aReleaseKey, input.property);
@@ -213,11 +201,6 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
                 ConcurrentSkipListMap<String, List<Map<String, String>>> bs = packProperties(input.bClusterKey,
                     input.bHostKey, input.bServiceKey, input.bInstance, input.bReleaseKey, input.property);
 
-                as.put("hackA", Arrays.asList(hack1, hack2, hack3));
-                as.put("hackB", Arrays.asList(hack1, hack2, hack3));
-                as.put("hackD", Arrays.asList(hack1, hack2, hack3));
-                bs.put("hackA", Arrays.asList(hack1, hack2, hack3));
-                bs.put("hackC", Arrays.asList(hack1, hack2, hack3));
 
                 Set<String> allProperties = Collections.newSetFromMap(new ConcurrentSkipListMap<String, Boolean>());
                 allProperties.addAll(as.keySet());
