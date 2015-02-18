@@ -102,7 +102,7 @@ public class JConfig extends JPanel {
         viewResults = new JPanel(new BorderLayout());
 
         JPanel filter = new JPanel(new SpringLayout());
-        hideDefaults = new JToggleButton("Overriden", false);
+        hideDefaults = new JToggleButton("Overridden", false);
         hideDefaults.addActionListener(new ActionListener() {
 
             @Override

@@ -79,7 +79,7 @@ public class InMemoryConnectionsDescriptorsProvider implements ConnectionDescrip
             }
         } else {
             LOG.info("overriding routing for" + connectionsRequest + " to be " + connectionDescriptor);
-            releaseGroup = "overriden";
+            releaseGroup = "overridden";
             connectionDescriptors.add(connectionDescriptor);
         }
         ConnectionDescriptorsResponse response = new ConnectionDescriptorsResponse(1, Arrays.asList("Success"),

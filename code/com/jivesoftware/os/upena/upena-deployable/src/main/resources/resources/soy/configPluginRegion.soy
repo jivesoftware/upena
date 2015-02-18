@@ -8,8 +8,14 @@
  * @param? properties
  */
 {template .configPluginRegion}
+    <div id="upena-cfg-pending">
+        <div class="upena-cfg-pending-container">
+            Uncommitted changes for <span id="pending-count">0</span> properties
+            <button id="pending-save" style="margin-left:20px;">Save changes</button>
+        </div>
+    </div>
     <div class="panel panel-default">
-        <div class="panel-heading">Instance Config/s</div>
+        <div class="panel-heading" id="upena-cfg">Instance Config/s</div>
             <div class="panel-body">
                 {if $message}
                     <div class="panel-heading">
@@ -17,7 +23,7 @@
                     </div>
                 {/if}
                 <form id="config" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
-                            data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="config">
+                    data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="config">
 
                     <table class="table table-condensed">
                         <thead>
@@ -35,7 +41,7 @@
                                 <td bgcolor="#FFFFE0" colspan="6">
                                     Filter:<input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
                                            placeholder="property" value="{$property?:''}" name="property" id="descriptionPicker" class="form-control">
-                                    <input type="checkbox" name="overriden" class="form-control">&nbsp;overridden&nbsp;
+                                    <input type="checkbox" name="overridden" class="form-control">&nbsp;overridden&nbsp;
                                     <input type="submit" name="action" value="Refresh" class="form-control"/>
                                 </td>
                             </tr>
@@ -137,19 +143,32 @@
                                 <td bgcolor="#D2E9FF">
                                     {if ($h.acluster != null or $h.ahost != null or $h.aservice != null or $h.ainstance != null)}
                                         <input type="text" style="width:200px; padding-left:10px;"
-                                            placeholder="override" value="{$h.aoverride?:''}" name="override" id="override">
+                                            placeholder="override" value="{$h.aoverride?:''}" name="override" class="upena-cfg-field-a"
+                                            data-upena-cfg-prop="{$p.property}" data-upena-cfg-link="{$p.property}:{index($h)}"
+                                            data-upena-cfg-instance-key="{$h.ainstanceKey?:''}" data-upena-cfg-override="{$h.aoverride?:''}"
+                                            data-upena-cfg-cluster="{$h.acluster?:''}" data-upena-cfg-host="{$h.ahost?:''}"
+                                            data-upena-cfg-service="{$h.aservice?:''}" data-upena-cfg-instance="{$h.ainstance?:''}">
                                     {/if}
                                 </td>
-                                <td><button class="btn btn-default"><span class="glyphicon glyphicon-link"></span>&nbsp;</button></td>
+                                <td>
+                                    <button class="btn btn-default upena-cfg-link" data-upena-cfg-prop="{$p.property}" data-upena-cfg-link="{$p.property}:{index($h)}">
+                                        <span class="glyphicon glyphicon-link"></span>
+                                        &nbsp;
+                                    </button>
+                                </td>
                                 <td bgcolor="#EEEEEE">
                                     {if $h.boverride != null}
-                                        &nbsp;&lt;-&nbsp;
+                                        <button class="btn btn-default upena-cfg-copy" data-upena-cfg-prop="{$p.property}" data-upena-cfg-copy="{$p.property}:{index($h)}">
+                                            <span class="glyphicon glyphicon-backward"></span>
+                                            &nbsp;
+                                        </button>
                                     {/if}
                                 </td>
                                 <td bgcolor="#E7E7EF">
                                     {if $h.boverride != null}
                                         <input type="text" style="width:200px; padding-left:10px;"
-                                            placeholder="override" value="{$h.boverride?:''}" name="override" id="override">
+                                            placeholder="override" value="{$h.boverride?:''}" name="override" class="upena-cfg-field-b"
+                                            data-upena-cfg-prop="{$p.property}" data-upena-cfg-copy="{$p.property}:{index($h)}">
                                     {/if}
                                 </td>
                                 <td bgcolor="#D7D7DF"><div style="max-width: 100px; word-wrap:break-word;">{$h.bdefault?:''}</div></td>

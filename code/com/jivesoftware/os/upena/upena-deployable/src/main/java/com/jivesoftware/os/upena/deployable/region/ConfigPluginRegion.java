@@ -86,14 +86,14 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
         final String bRelease;
 
         final String property;
-        final String overriden;
+        final String overridden;
 
         public ConfigPluginRegionInput(
             String aClusterKey, String aCluster, String aHostKey, String aHost, String aServiceKey, String aService, String aInstance,
             String aReleaseKey, String aRelease,
             String bClusterKey, String bCluster, String bHostKey, String bHost, String bServiceKey, String bService,
             String bInstance, String bReleaseKey, String bRelease,
-            String property, String overriden) {
+            String property, String overridden) {
             this.aClusterKey = aClusterKey;
             this.aCluster = aCluster;
             this.aHostKey = aHostKey;
@@ -113,7 +113,7 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
             this.bReleaseKey = bReleaseKey;
             this.bRelease = bRelease;
             this.property = property;
-            this.overriden = overriden;
+            this.overridden = overridden;
         }
 
     }
@@ -152,13 +152,18 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
 
                 data.put("property", input.property);
 
-                Map<String, String> hack = new HashMap<>();
-                hack.put("cluster", "ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc");
-                hack.put("host", "hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh");
-                hack.put("service", "sssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss");
-                hack.put("instance", "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii");
-                hack.put("override", "oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo");
-                hack.put("default", "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd");
+                Map<String, String> hack1 = new HashMap<>();
+                hack1.put("cluster", "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc");
+                hack1.put("host", "hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh");
+                hack1.put("service", "ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss");
+                hack1.put("instance", "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii");
+                hack1.put("override", "oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo");
+                hack1.put("default", "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd");
+                Map<String, String> hack2 = new HashMap<>(hack1);
+                Map<String, String> hack3 = new HashMap<>(hack1);
+                hack1.put("instanceKey", "ik1");
+                hack2.put("instanceKey", "ik2");
+                hack3.put("instanceKey", "ik3");
 
                 ConcurrentSkipListMap<String, List<Map<String, String>>> as = packProperties(input.aClusterKey,
                     input.aHostKey, input.aServiceKey, input.aInstance, input.aReleaseKey, input.property);
@@ -166,17 +171,17 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
                 ConcurrentSkipListMap<String, List<Map<String, String>>> bs = packProperties(input.bClusterKey,
                     input.bHostKey, input.bServiceKey, input.bInstance, input.bReleaseKey, input.property);
 
-                as.put("hack1", Arrays.asList(hack));
-                as.put("hack2", Arrays.asList(hack));
-                as.put("hack4", Arrays.asList(hack));
-                bs.put("hack1", Arrays.asList(hack));
-                bs.put("hack3", Arrays.asList(hack));
+                as.put("hackA", Arrays.asList(hack1, hack2, hack3));
+                as.put("hackB", Arrays.asList(hack1, hack2, hack3));
+                as.put("hackD", Arrays.asList(hack1, hack2, hack3));
+                bs.put("hackA", Arrays.asList(hack1, hack2, hack3));
+                bs.put("hackC", Arrays.asList(hack1, hack2, hack3));
 
                 Set<String> allProperties = Collections.newSetFromMap(new ConcurrentSkipListMap<String, Boolean>());
                 allProperties.addAll(as.keySet());
                 allProperties.addAll(bs.keySet());
 
-                String[] ks = new String[]{"cluster", "host", "service", "instance", "override", "default"};
+                String[] ks = new String[] { "instanceKey", "cluster", "host", "service", "instance", "override", "default" };
                 List<Map<String, Object>> rows = new ArrayList<>();
                 for (String property : allProperties) {
 
@@ -190,6 +195,7 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
                     int s = Math.max((al == null) ? 0 : al.size(), (bl == null) ? 0 : bl.size());
                     for (int i = 0; i < s; i++) {
                         Map<String, String> has = new HashMap<>();
+
                         if (al != null && i < al.size()) {
                             Map<String, String> a = al.get(i);
                             for (String k : ks) {
@@ -252,7 +258,7 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
                 Instance i = timestampedValue.getValue();
 
                 Map<String, String> defaults = configStore.get(key.getKey(), "default", null);
-                Map<String, String> overriden = configStore.get(key.getKey(), "override", null);
+                Map<String, String> overridden = configStore.get(key.getKey(), "override", null);
 
                 for (String property : defaults.keySet()) {
                     if (!propertyContains.isEmpty() && !property.contains(propertyContains)) {
@@ -264,6 +270,7 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
                         properties.put(property, occurences);
                     }
                     Map<String, String> occurence = new HashMap<>();
+                    occurence.put("instanceKey", key.getKey());
                     occurence.put("clusterKey", i.clusterKey.getKey());
                     occurence.put("cluster", upenaStore.clusters.get(i.clusterKey).name);
                     occurence.put("hostKey", i.hostKey.getKey());
@@ -271,7 +278,7 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
                     occurence.put("serviceKey", i.serviceKey.getKey());
                     occurence.put("service", upenaStore.services.get(i.serviceKey).name);
                     occurence.put("instance", String.valueOf(i.instanceId));
-                    occurence.put("override", overriden.get(property));
+                    occurence.put("override", overridden.get(property));
                     occurence.put("default", defaults.get(property));
                     occurences.add(occurence);
                 }

@@ -275,504 +275,10 @@ public class JCluster extends JPanel implements DocumentListener {
         JPanel menu = new JPanel();
         menu.setLayout(new BorderLayout(10, 10));
 
-        Thread nag = new Thread() {
-
-            @Override
-            public void run() {
-                while (true) {
-                    try {
-                        //List<HostAndNannyReport> selectedValuesList = listModel.elements());
-                        int rowCount = statusTable.getRowCount();
-                        for (int row = 0; row < rowCount; row++) {
-
-                            HostAndNannyReport hostAndNannyReport = (HostAndNannyReport) statusTable.getValueAt(row, 0);
-                            if (hostAndNannyReport != null) {
-                                String url = "http://" + hostAndNannyReport.host.hostName
-                                    + ":" + hostAndNannyReport.nannyReport.instanceDescriptor.ports.get("manage").port + "/manage/ping";
-                                try {
-                                    String curl = Curl.create(1000, 1000).curl(url);
-                                    if ("ping".equals(curl)) {
-                                        if (!hostAndNannyReport.online) {
-                                            hostAndNannyReport.checked = true;
-                                            hostAndNannyReport.online = true;
-                                            statusTable.fireTableCellUpdated(row, 0);
-
-                                        }
-                                        try {
-                                            String statuUrl = "http://" + hostAndNannyReport.host.hostName
-                                                + ":" + hostAndNannyReport.nannyReport.instanceDescriptor.ports.get(
-                                                "manage").port + "/manage/announcement/json";
-
-                                            String statusJson = Curl.create(1000, 1000).curl(statuUrl);
-                                            if (statusJson != null) {
-                                                StatusReport readValue = new ObjectMapper().readValue(statusJson, StatusReport.class);
-                                                statusTable.set(readValue, row);
-                                            }
-                                        } catch (Exception x) {
-                                            x.printStackTrace();
-                                        }
-                                    } else {
-                                        if (!hostAndNannyReport.checked) {
-                                            hostAndNannyReport.checked = true;
-                                            statusTable.fireTableCellUpdated(row, 0);
-                                        }
-                                    }
-                                } catch (Exception x) {
-                                    if (hostAndNannyReport.online) {
-                                        hostAndNannyReport.checked = true;
-                                        hostAndNannyReport.online = false;
-                                        statusTable.fireTableCellUpdated(row, 0);
-                                    }
-                                }
-                            }
-                        }
-                        Thread.sleep(1000);
-
-                    } catch (Exception x) {
-                        x.printStackTrace();
-                    }
-                }
-            }
-
-        };
+        Thread nag = nagThread();
         nag.start();
 
-        final JPopupMenu buttons = new JPopupMenu();
-
-        JMenuItem button = new JMenuItem("Manage");
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Util.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        for (int row : jTable.getSelectedRows()) {
-                            HostAndNannyReport hostAndNannyReport = (HostAndNannyReport) jTable.getModel().getValueAt(row, 0);
-                            try {
-                                openWebpage(new URI(
-                                    "http://" + hostAndNannyReport.host.hostName
-                                        + ":" + hostAndNannyReport.nannyReport.instanceDescriptor.ports.get("manage").port + "/manage/help"));
-                            } catch (URISyntaxException ex) {
-                                ex.printStackTrace();
-                            }
-
-                        }
-
-                    }
-                });
-            }
-        });
-
-        buttons.add(button);
-
-        button = new JMenuItem("Properties");
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Util.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        tail.setText("");
-                        for (int row : jTable.getSelectedRows()) {
-                            HostAndNannyReport hostAndNannyReport = (HostAndNannyReport) jTable.getModel().getValueAt(row, 0);
-                            tail.append("" + hostAndNannyReport.nannyReport.instanceDescriptor.toString() + " :{\n");
-                            try {
-                                status(hostAndNannyReport, "/manage/configuration/properties");
-                                tail.append("\n}\n\n");
-                            } catch (IOException ex) {
-                                ex.printStackTrace();
-                            }
-                        }
-                    }
-                });
-            }
-        });
-
-        buttons.add(button);
-
-        button = new JMenuItem("Upena Report");
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Util.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        tail.setText("");
-                        for (int row : jTable.getSelectedRows()) {
-                            HostAndNannyReport hostAndNannyReport = (HostAndNannyReport) jTable.getModel().getValueAt(row, 0);
-                            tail.append("" + hostAndNannyReport.nannyReport.instanceDescriptor.toString() + " :{\n");
-
-                            for (String m : hostAndNannyReport.nannyReport.messages) {
-                                tail.append(m + "\n");
-                            }
-                            tail.append("\n}\n\n");
-                        }
-                    }
-                });
-            }
-        });
-
-        buttons.add(button);
-
-        button = new JMenuItem("Errors");
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Util.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        tail.setText("");
-                        for (int row : jTable.getSelectedRows()) {
-                            HostAndNannyReport hostAndNannyReport = (HostAndNannyReport) jTable.getModel().getValueAt(row, 0);
-                            tail.append("" + hostAndNannyReport.nannyReport.instanceDescriptor.toString() + " :{\n");
-                            try {
-                                status(hostAndNannyReport, "/manage/errors ");
-                            } catch (IOException ex) {
-                                ex.printStackTrace();
-                            }
-                            tail.append("\n}\n\n");
-                        }
-                    }
-                });
-            }
-        });
-        buttons.add(button);
-
-        button = new JMenuItem("Thread Dump");
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Util.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        tail.setText("");
-                        for (int row : jTable.getSelectedRows()) {
-                            HostAndNannyReport hostAndNannyReport = (HostAndNannyReport) jTable.getModel().getValueAt(row, 0);
-                            tail.append("" + hostAndNannyReport.nannyReport.instanceDescriptor.toString() + " :{\n");
-                            try {
-                                status(hostAndNannyReport, "/manage/threadDump ");
-
-                            } catch (IOException ex) {
-                                ex.printStackTrace();
-                            }
-                            tail.append("\n}\n\n");
-                        }
-                    }
-                });
-            }
-        });
-        buttons.add(button);
-
-        button = new JMenuItem("Counters");
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Util.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        tail.setText("");
-                        for (int row : jTable.getSelectedRows()) {
-                            HostAndNannyReport hostAndNannyReport = (HostAndNannyReport) jTable.getModel().getValueAt(row, 0);
-                            tail.append("" + hostAndNannyReport.nannyReport.instanceDescriptor.toString() + " :{\n");
-                            try {
-                                status(hostAndNannyReport, "/manage/logging/metric/listCounters?logger=ALL ");
-                            } catch (IOException ex) {
-                                ex.printStackTrace();
-                            }
-                            tail.append("\n}\n\n");
-                        }
-                    }
-                });
-            }
-        });
-        buttons.add(button);
-
-        button = new JMenuItem("Timers");
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Util.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        tail.setText("");
-                        for (int row : jTable.getSelectedRows()) {
-                            HostAndNannyReport hostAndNannyReport = (HostAndNannyReport) jTable.getModel().getValueAt(row, 0);
-                            tail.append("" + hostAndNannyReport.nannyReport.instanceDescriptor.toString() + " :{\n");
-                            try {
-                                status(hostAndNannyReport, "/manage/logging/metric/listTimers?logger=ALL ");
-                            } catch (IOException ex) {
-                                ex.printStackTrace();
-                            }
-                            tail.append("\n}\n\n");
-                        }
-                    }
-                });
-            }
-        });
-        buttons.add(button);
-
-        button = new JMenuItem("Status");
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Util.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        tail.setText("");
-                        for (int row : jTable.getSelectedRows()) {
-                            HostAndNannyReport hostAndNannyReport = (HostAndNannyReport) jTable.getModel().getValueAt(row, 0);
-                            tail.append("" + hostAndNannyReport.nannyReport.instanceDescriptor.toString() + " :{\n");
-                            try {
-                                status(hostAndNannyReport, "/manage/status");
-                            } catch (IOException ex) {
-                                ex.printStackTrace();
-                            }
-                            tail.append("\n}\n\n");
-                        }
-                    }
-                });
-            }
-        });
-
-        buttons.add(button);
-
-        button = new JMenuItem("Ping");
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Util.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        tail.setText("");
-                        for (int row : jTable.getSelectedRows()) {
-                            HostAndNannyReport hostAndNannyReport = (HostAndNannyReport) jTable.getModel().getValueAt(row, 0);
-                            tail.append("" + hostAndNannyReport.nannyReport.instanceDescriptor.toString() + " :{\n");
-                            try {
-                                status(hostAndNannyReport, "/manage/ping");
-                            } catch (IOException ex) {
-                                ex.printStackTrace();
-                            }
-                            tail.append("\n}\n\n");
-                        }
-                    }
-                });
-            }
-        });
-
-        buttons.add(button);
-
-        button = new JMenuItem("Tail");
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Util.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        tail.setText("");
-                        for (int row : jTable.getSelectedRows()) {
-                            HostAndNannyReport hostAndNannyReport = (HostAndNannyReport) jTable.getModel().getValueAt(row, 0);
-                            tail.append("" + hostAndNannyReport.nannyReport.instanceDescriptor.toString() + " :{\n");
-                            try {
-                                status(hostAndNannyReport, "/manage/tail");
-                            } catch (IOException ex) {
-                                ex.printStackTrace();
-                            }
-                            tail.append("\n}\n\n");
-                        }
-                    }
-                });
-            }
-        });
-
-        buttons.add(button);
-
-        button = new JMenuItem("Force GC");
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Util.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        tail.setText("");
-                        for (int row : jTable.getSelectedRows()) {
-                            HostAndNannyReport hostAndNannyReport = (HostAndNannyReport) jTable.getModel().getValueAt(row, 0);
-                            tail.append("" + hostAndNannyReport.nannyReport.instanceDescriptor.toString() + " :{\n");
-                            try {
-                                status(hostAndNannyReport, "/manage/forceGC");
-                            } catch (IOException ex) {
-                                ex.printStackTrace();
-                            }
-                            tail.append("\n}\n\n");
-                        }
-                    }
-                });
-            }
-        });
-        buttons.add(button);
-
-        button = new JMenuItem("Recent Errors");
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Util.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        tail.setText("");
-                        for (int row : jTable.getSelectedRows()) {
-                            HostAndNannyReport hostAndNannyReport = (HostAndNannyReport) jTable.getModel().getValueAt(row, 0);
-                            tail.append("" + hostAndNannyReport.nannyReport.instanceDescriptor.toString() + " :{\n");
-                            try {
-                                status(hostAndNannyReport, "/manage/recentErrors");
-                            } catch (IOException ex) {
-                                ex.printStackTrace();
-                            }
-                            tail.append("\n}\n\n");
-                        }
-                    }
-                });
-            }
-        });
-        buttons.add(button);
-
-        button = new JMenuItem("Reset Errors");
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Util.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        tail.setText("");
-                        for (int row : jTable.getSelectedRows()) {
-                            HostAndNannyReport hostAndNannyReport = (HostAndNannyReport) jTable.getModel().getValueAt(row, 0);
-                            tail.append("" + hostAndNannyReport.nannyReport.instanceDescriptor.toString() + " :{\n");
-                            try {
-                                status(hostAndNannyReport, "/manage/resetErrors");
-                            } catch (IOException ex) {
-                                ex.printStackTrace();
-                            }
-                            tail.append("\n}\n\n");
-                        }
-                    }
-                });
-            }
-        });
-        buttons.add(button);
-
-        button = new JMenuItem("Reset Interaction Errors");
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Util.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        tail.setText("");
-                        for (int row : jTable.getSelectedRows()) {
-                            HostAndNannyReport hostAndNannyReport = (HostAndNannyReport) jTable.getModel().getValueAt(row, 0);
-                            tail.append("" + hostAndNannyReport.nannyReport.instanceDescriptor.toString() + " :{\n");
-                            try {
-                                status(hostAndNannyReport, "/manage/resetInteractionErrors");
-                            } catch (IOException ex) {
-                                ex.printStackTrace();
-                            }
-                            tail.append("\n}\n\n");
-                        }
-                    }
-                });
-            }
-        });
-
-        buttons.add(button);
-
-        button = new JMenuItem("Routes");
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Util.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        tail.setText("");
-                        for (int row : jTable.getSelectedRows()) {
-                            HostAndNannyReport hostAndNannyReport = (HostAndNannyReport) jTable.getModel().getValueAt(row, 0);
-                            tail.append("" + hostAndNannyReport.nannyReport.instanceDescriptor.toString() + " :{\n");
-                            try {
-                                status(hostAndNannyReport, "/manage/tenant/routing/report");
-                            } catch (IOException ex) {
-                                ex.printStackTrace();
-                            }
-                            tail.append("\n}\n\n");
-                        }
-                    }
-                });
-            }
-        });
-
-        buttons.add(button);
-
-        button = new JMenuItem("Purge Routes");
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Util.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        tail.setText("");
-                        for (int row : jTable.getSelectedRows()) {
-                            HostAndNannyReport hostAndNannyReport = (HostAndNannyReport) jTable.getModel().getValueAt(row, 0);
-                            tail.append("" + hostAndNannyReport.nannyReport.instanceDescriptor.toString() + " :{\n");
-                            try {
-                                status(hostAndNannyReport, "/manage/tenant/routing/invaliateAll");
-
-                            } catch (IOException ex) {
-                                ex.printStackTrace();
-                            }
-                            tail.append("\n}\n\n");
-                        }
-                    }
-                });
-            }
-        });
-
-        buttons.add(button);
-
-        button = new JMenuItem("Shutdown");
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Util.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        tail.setText("");
-                        for (int row : jTable.getSelectedRows()) {
-                            HostAndNannyReport hostAndNannyReport = (HostAndNannyReport) jTable.getModel().getValueAt(row, 0);
-                            tail.append("" + hostAndNannyReport.nannyReport.instanceDescriptor.toString() + " :{\n");
-                            try {
-                                status(hostAndNannyReport, "/manage/shutdown?userName=" + requestHelperProvider.editUserName.getText());
-                            } catch (IOException ex) {
-                                ex.printStackTrace();
-                            }
-                            tail.append("\n}\n\n");
-                        }
-                    }
-                });
-            }
-        });
-
-        buttons.add(button);
-
-        button = new JMenuItem("Refresh");
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Util.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        refresh();
-                    }
-                });
-            }
-        });
-
-        buttons.add(button);
+        final JPopupMenu buttons = buildButtonMenu();
 
         tail = new JTextArea();
 
@@ -844,6 +350,157 @@ public class JCluster extends JPanel implements DocumentListener {
                 refresh();
             }
         });
+    }
+
+    private JPopupMenu buildButtonMenu() {
+        final JPopupMenu buttons = new JPopupMenu();
+
+        JMenuItem button = new JMenuItem("Manage");
+        button.addActionListener(new ManageActionListener());
+
+        buttons.add(button);
+
+        button = new JMenuItem("Properties");
+        button.addActionListener(new PropertiesActionListener());
+
+        buttons.add(button);
+
+        button = new JMenuItem("Upena Report");
+        button.addActionListener(new UpenaReportActionListener());
+
+        buttons.add(button);
+
+        button = new JMenuItem("Errors");
+        button.addActionListener(new ErrorsActionListener());
+        buttons.add(button);
+
+        button = new JMenuItem("Thread Dump");
+        button.addActionListener(new ThreadDumpActionListener());
+        buttons.add(button);
+
+        button = new JMenuItem("Counters");
+        button.addActionListener(new CountersActionListener());
+        buttons.add(button);
+
+        button = new JMenuItem("Timers");
+        button.addActionListener(new TimersActionListener());
+        buttons.add(button);
+
+        button = new JMenuItem("Status");
+        button.addActionListener(new StatusActionListener());
+
+        buttons.add(button);
+
+        button = new JMenuItem("Ping");
+        button.addActionListener(new PingActionListener());
+
+        buttons.add(button);
+
+        button = new JMenuItem("Tail");
+        button.addActionListener(new TailActionListener());
+
+        buttons.add(button);
+
+        button = new JMenuItem("Force GC");
+        button.addActionListener(new ForceGCActionListener());
+        buttons.add(button);
+
+        button = new JMenuItem("Recent Errors");
+        button.addActionListener(new RecentErrorsActionListener());
+        buttons.add(button);
+
+        button = new JMenuItem("Reset Errors");
+        button.addActionListener(new ResetErrorsActionListener());
+        buttons.add(button);
+
+        button = new JMenuItem("Reset Interaction Errors");
+        button.addActionListener(new ResetInteractionErrorsActionListener());
+
+        buttons.add(button);
+
+        button = new JMenuItem("Routes");
+        button.addActionListener(new RoutesActionListener());
+
+        buttons.add(button);
+
+        button = new JMenuItem("Purge Routes");
+        button.addActionListener(new PurgeRoutesActionListener());
+
+        buttons.add(button);
+
+        button = new JMenuItem("Shutdown");
+        button.addActionListener(new ShutdownActionListener());
+
+        buttons.add(button);
+
+        button = new JMenuItem("Refresh");
+        button.addActionListener(new RefreshActionListener());
+
+        buttons.add(button);
+        return buttons;
+    }
+
+    private Thread nagThread() {
+        return new Thread() {
+
+            @Override
+            public void run() {
+                while (true) {
+                    try {
+                        //List<HostAndNannyReport> selectedValuesList = listModel.elements());
+                        int rowCount = statusTable.getRowCount();
+                        for (int row = 0; row < rowCount; row++) {
+
+                            HostAndNannyReport hostAndNannyReport = (HostAndNannyReport) statusTable.getValueAt(row, 0);
+                            if (hostAndNannyReport != null) {
+                                String url = "http://" + hostAndNannyReport.host.hostName
+                                    + ":" + hostAndNannyReport.nannyReport.instanceDescriptor.ports.get("manage").port + "/manage/ping";
+                                try {
+                                    String curl = Curl.create(1000, 1000).curl(url);
+                                    if ("ping".equals(curl)) {
+                                        if (!hostAndNannyReport.online) {
+                                            hostAndNannyReport.checked = true;
+                                            hostAndNannyReport.online = true;
+                                            statusTable.fireTableCellUpdated(row, 0);
+
+                                        }
+                                        try {
+                                            String statuUrl = "http://" + hostAndNannyReport.host.hostName
+                                                + ":" + hostAndNannyReport.nannyReport.instanceDescriptor.ports.get(
+                                                "manage").port + "/manage/announcement/json";
+
+                                            String statusJson = Curl.create(1000, 1000).curl(statuUrl);
+                                            if (statusJson != null) {
+                                                StatusReport readValue = new ObjectMapper().readValue(statusJson, StatusReport.class);
+                                                statusTable.set(readValue, row);
+                                            }
+                                        } catch (Exception x) {
+                                            x.printStackTrace();
+                                        }
+                                    } else {
+                                        if (!hostAndNannyReport.checked) {
+                                            hostAndNannyReport.checked = true;
+                                            statusTable.fireTableCellUpdated(row, 0);
+                                        }
+                                    }
+                                } catch (Exception x) {
+                                    if (hostAndNannyReport.online) {
+                                        hostAndNannyReport.checked = true;
+                                        hostAndNannyReport.online = false;
+                                        statusTable.fireTableCellUpdated(row, 0);
+                                    }
+                                }
+                            }
+                        }
+                        Thread.sleep(1000);
+
+                    } catch (Exception x) {
+                        x.printStackTrace();
+                    }
+                }
+            }
+
+        };
     }
 
     private void status(HostAndNannyReport hostAndNannyReport, String manageEndpoint) throws IOException {
@@ -1030,4 +687,391 @@ public class JCluster extends JPanel implements DocumentListener {
 
     }
 
+    private class RefreshActionListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            Util.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    refresh();
+                }
+            });
+        }
+    }
+
+    private class ShutdownActionListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            Util.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    tail.setText("");
+                    for (int row : jTable.getSelectedRows()) {
+                        HostAndNannyReport hostAndNannyReport = (HostAndNannyReport) jTable.getModel().getValueAt(row, 0);
+                        tail.append("" + hostAndNannyReport.nannyReport.instanceDescriptor.toString() + " :{\n");
+                        try {
+                            status(hostAndNannyReport, "/manage/shutdown?userName=" + requestHelperProvider.editUserName.getText());
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
+                        }
+                        tail.append("\n}\n\n");
+                    }
+                }
+            });
+        }
+    }
+
+    private class PurgeRoutesActionListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            Util.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    tail.setText("");
+                    for (int row : jTable.getSelectedRows()) {
+                        HostAndNannyReport hostAndNannyReport = (HostAndNannyReport) jTable.getModel().getValueAt(row, 0);
+                        tail.append("" + hostAndNannyReport.nannyReport.instanceDescriptor.toString() + " :{\n");
+                        try {
+                            status(hostAndNannyReport, "/manage/tenant/routing/invaliateAll");
+
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
+                        }
+                        tail.append("\n}\n\n");
+                    }
+                }
+            });
+        }
+    }
+
+    private class RoutesActionListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            Util.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    tail.setText("");
+                    for (int row : jTable.getSelectedRows()) {
+                        HostAndNannyReport hostAndNannyReport = (HostAndNannyReport) jTable.getModel().getValueAt(row, 0);
+                        tail.append("" + hostAndNannyReport.nannyReport.instanceDescriptor.toString() + " :{\n");
+                        try {
+                            status(hostAndNannyReport, "/manage/tenant/routing/report");
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
+                        }
+                        tail.append("\n}\n\n");
+                    }
+                }
+            });
+        }
+    }
+
+    private class ResetInteractionErrorsActionListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            Util.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    tail.setText("");
+                    for (int row : jTable.getSelectedRows()) {
+                        HostAndNannyReport hostAndNannyReport = (HostAndNannyReport) jTable.getModel().getValueAt(row, 0);
+                        tail.append("" + hostAndNannyReport.nannyReport.instanceDescriptor.toString() + " :{\n");
+                        try {
+                            status(hostAndNannyReport, "/manage/resetInteractionErrors");
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
+                        }
+                        tail.append("\n}\n\n");
+                    }
+                }
+            });
+        }
+    }
+
+    private class ResetErrorsActionListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            Util.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    tail.setText("");
+                    for (int row : jTable.getSelectedRows()) {
+                        HostAndNannyReport hostAndNannyReport = (HostAndNannyReport) jTable.getModel().getValueAt(row, 0);
+                        tail.append("" + hostAndNannyReport.nannyReport.instanceDescriptor.toString() + " :{\n");
+                        try {
+                            status(hostAndNannyReport, "/manage/resetErrors");
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
+                        }
+                        tail.append("\n}\n\n");
+                    }
+                }
+            });
+        }
+    }
+
+    private class RecentErrorsActionListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            Util.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    tail.setText("");
+                    for (int row : jTable.getSelectedRows()) {
+                        HostAndNannyReport hostAndNannyReport = (HostAndNannyReport) jTable.getModel().getValueAt(row, 0);
+                        tail.append("" + hostAndNannyReport.nannyReport.instanceDescriptor.toString() + " :{\n");
+                        try {
+                            status(hostAndNannyReport, "/manage/recentErrors");
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
+                        }
+                        tail.append("\n}\n\n");
+                    }
+                }
+            });
+        }
+    }
+
+    private class ForceGCActionListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            Util.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    tail.setText("");
+                    for (int row : jTable.getSelectedRows()) {
+                        HostAndNannyReport hostAndNannyReport = (HostAndNannyReport) jTable.getModel().getValueAt(row, 0);
+                        tail.append("" + hostAndNannyReport.nannyReport.instanceDescriptor.toString() + " :{\n");
+                        try {
+                            status(hostAndNannyReport, "/manage/forceGC");
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
+                        }
+                        tail.append("\n}\n\n");
+                    }
+                }
+            });
+        }
+    }
+
+    private class TailActionListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            Util.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    tail.setText("");
+                    for (int row : jTable.getSelectedRows()) {
+                        HostAndNannyReport hostAndNannyReport = (HostAndNannyReport) jTable.getModel().getValueAt(row, 0);
+                        tail.append("" + hostAndNannyReport.nannyReport.instanceDescriptor.toString() + " :{\n");
+                        try {
+                            status(hostAndNannyReport, "/manage/tail");
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
+                        }
+                        tail.append("\n}\n\n");
+                    }
+                }
+            });
+        }
+    }
+
+    private class PingActionListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            Util.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    tail.setText("");
+                    for (int row : jTable.getSelectedRows()) {
+                        HostAndNannyReport hostAndNannyReport = (HostAndNannyReport) jTable.getModel().getValueAt(row, 0);
+                        tail.append("" + hostAndNannyReport.nannyReport.instanceDescriptor.toString() + " :{\n");
+                        try {
+                            status(hostAndNannyReport, "/manage/ping");
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
+                        }
+                        tail.append("\n}\n\n");
+                    }
+                }
+            });
+        }
+    }
+
+    private class StatusActionListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            Util.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    tail.setText("");
+                    for (int row : jTable.getSelectedRows()) {
+                        HostAndNannyReport hostAndNannyReport = (HostAndNannyReport) jTable.getModel().getValueAt(row, 0);
+                        tail.append("" + hostAndNannyReport.nannyReport.instanceDescriptor.toString() + " :{\n");
+                        try {
+                            status(hostAndNannyReport, "/manage/status");
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
+                        }
+                        tail.append("\n}\n\n");
+                    }
+                }
+            });
+        }
+    }
+
+    private class TimersActionListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            Util.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    tail.setText("");
+                    for (int row : jTable.getSelectedRows()) {
+                        HostAndNannyReport hostAndNannyReport = (HostAndNannyReport) jTable.getModel().getValueAt(row, 0);
+                        tail.append("" + hostAndNannyReport.nannyReport.instanceDescriptor.toString() + " :{\n");
+                        try {
+                            status(hostAndNannyReport, "/manage/logging/metric/listTimers?logger=ALL ");
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
+                        }
+                        tail.append("\n}\n\n");
+                    }
+                }
+            });
+        }
+    }
+
+    private class CountersActionListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            Util.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    tail.setText("");
+                    for (int row : jTable.getSelectedRows()) {
+                        HostAndNannyReport hostAndNannyReport = (HostAndNannyReport) jTable.getModel().getValueAt(row, 0);
+                        tail.append("" + hostAndNannyReport.nannyReport.instanceDescriptor.toString() + " :{\n");
+                        try {
+                            status(hostAndNannyReport, "/manage/logging/metric/listCounters?logger=ALL ");
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
+                        }
+                        tail.append("\n}\n\n");
+                    }
+                }
+            });
+        }
+    }
+
+    private class ThreadDumpActionListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            Util.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    tail.setText("");
+                    for (int row : jTable.getSelectedRows()) {
+                        HostAndNannyReport hostAndNannyReport = (HostAndNannyReport) jTable.getModel().getValueAt(row, 0);
+                        tail.append("" + hostAndNannyReport.nannyReport.instanceDescriptor.toString() + " :{\n");
+                        try {
+                            status(hostAndNannyReport, "/manage/threadDump ");
+
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
+                        }
+                        tail.append("\n}\n\n");
+                    }
+                }
+            });
+        }
+    }
+
+    private class ErrorsActionListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            Util.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    tail.setText("");
+                    for (int row : jTable.getSelectedRows()) {
+                        HostAndNannyReport hostAndNannyReport = (HostAndNannyReport) jTable.getModel().getValueAt(row, 0);
+                        tail.append("" + hostAndNannyReport.nannyReport.instanceDescriptor.toString() + " :{\n");
+                        try {
+                            status(hostAndNannyReport, "/manage/errors ");
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
+                        }
+                        tail.append("\n}\n\n");
+                    }
+                }
+            });
+        }
+    }
+
+    private class UpenaReportActionListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            Util.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    tail.setText("");
+                    for (int row : jTable.getSelectedRows()) {
+                        HostAndNannyReport hostAndNannyReport = (HostAndNannyReport) jTable.getModel().getValueAt(row, 0);
+                        tail.append("" + hostAndNannyReport.nannyReport.instanceDescriptor.toString() + " :{\n");
+
+                        for (String m : hostAndNannyReport.nannyReport.messages) {
+                            tail.append(m + "\n");
+                        }
+                        tail.append("\n}\n\n");
+                    }
+                }
+            });
+        }
+    }
+
+    private class PropertiesActionListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            Util.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    tail.setText("");
+                    for (int row : jTable.getSelectedRows()) {
+                        HostAndNannyReport hostAndNannyReport = (HostAndNannyReport) jTable.getModel().getValueAt(row, 0);
+                        tail.append("" + hostAndNannyReport.nannyReport.instanceDescriptor.toString() + " :{\n");
+                        try {
+                            status(hostAndNannyReport, "/manage/configuration/properties");
+                            tail.append("\n}\n\n");
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    private class ManageActionListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            Util.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    for (int row : jTable.getSelectedRows()) {
+                        HostAndNannyReport hostAndNannyReport = (HostAndNannyReport) jTable.getModel().getValueAt(row, 0);
+                        try {
+                            openWebpage(new URI(
+                                "http://" + hostAndNannyReport.host.hostName
+                                    + ":" + hostAndNannyReport.nannyReport.instanceDescriptor.ports.get("manage").port + "/manage/help"));
+                        } catch (URISyntaxException ex) {
+                            ex.printStackTrace();
+                        }
+
+                    }
+
+                }
+            });
+        }
+    }
 }

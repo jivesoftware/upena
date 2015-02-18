@@ -48,7 +48,7 @@ public class InMemoryConnectionsDescriptorsProviderTest {
         Assert.assertNotNull(response.getConnections());
         Assert.assertTrue(response.getConnections().size() == 1);
         Assert.assertEquals(response.getConnections().get(0), a);
-        Assert.assertEquals(response.getReleaseGroup(), "overriden");
+        Assert.assertEquals(response.getReleaseGroup(), "overridden");
 
         connectionDescriptorsProvider.clear("tenantId", "instanceId", "connectToServiceNamed", "portName");
 

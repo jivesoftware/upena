@@ -139,8 +139,8 @@ upena.hs = {
     },
 
     link: function ($selector) {
-        $selector.find('a').each(function (i, a) {
-            var $a = $(a);
+        $selector.find('a').each(function (i) {
+            var $a = $(this);
             var key = $a.data('upenaKey');
             var name = $a.data('upenaName');
             $a.click(function () {
@@ -152,8 +152,105 @@ upena.hs = {
 };
 
 upena.instances = {
+    init: function () {
+    }
+};
+
+upena.cfg = {
+    pending: {},
+
+    save: function () {
+        var updates = [];
+        $.each(upena.cfg.pending, function (prop) {
+            $.each(upena.cfg.pending[prop], function (instanceKey) {
+                var value = upena.cfg.pending[prop][instanceKey] || "(default)";
+                updates.push(instanceKey, ': ', prop, ' -> ', value, '\n');
+            });
+        });
+        if (confirm(updates.join(''))) {
+            $.ajax("/ui/config/modify", {
+                data: JSON.stringify({ 'updates': upena.cfg.pending }),
+                method: "post",
+                contentType: "application/json",
+                success: function () {
+                    upena.cfg.pending = {};
+                    upena.cfg.refreshPending();
+                },
+                error: function () {
+                    alert('Save failed!');
+                }
+            });
+        }
+    },
 
     init: function () {
+        $('#pending-save').click(upena.cfg.save);
+
+        $('button.upena-cfg-link').each(function (i) {
+            var $button = $(this);
+            var link = $button.data('upenaCfgLink');
+            var prop = $button.data('upenaCfgProp');
+
+            $button.click(function () {
+                var value = $('input[type=text][data-upena-cfg-link="' + link + '"]').val();
+                $('input[type=text][data-upena-cfg-prop="' + prop + '"].upena-cfg-field-a').each(function () {
+                    $(this).val(value);
+                    upena.cfg.checkInput($(this));
+                });
+            });
+        });
+
+        $('button.upena-cfg-copy').each(function (i) {
+            var $button = $(this);
+            var copy = $button.data('upenaCfgCopy');
+            var prop = $button.data('upenaCfgProp');
+
+            $button.click(function () {
+                var value = $('input[type=text][data-upena-cfg-copy="' + copy + '"]').val();
+                $('input[type=text][data-upena-cfg-prop="' + prop + '"].upena-cfg-field-a').each(function () {
+                    $(this).val(value);
+                    upena.cfg.checkInput($(this));
+                });
+            });
+        });
+
+        $('input[type=text].upena-cfg-field-a').on('input', function () {
+            upena.cfg.checkInput($(this));
+        });
+    },
+
+    checkInput: function ($input) {
+        var instanceKey = $input.data('upenaCfgInstanceKey');
+        var prop = $input.data('upenaCfgProp');
+        var override = $input.data('upenaCfgOverride');
+        var value = $input.val();
+        var modified = (override != value);
+        if (!upena.cfg.pending[prop]) {
+            upena.cfg.pending[prop] = {};
+        }
+        if (modified) {
+            upena.cfg.pending[prop][instanceKey] = value;
+        } else {
+            delete upena.cfg.pending[prop][instanceKey];
+        }
+        upena.cfg.refreshPending();
+    },
+
+    refreshPending: function () {
+        var $fixed = $('#upena-cfg-pending');
+        var $pending = $('#pending-count');
+        var changes = 0;
+        $.each(upena.cfg.pending, function (prop) {
+            $.each(upena.cfg.pending[prop], function (instanceKey) {
+                changes++;
+            });
+        });
+        $pending.text(changes);
+        if (changes > 0) {
+            $fixed.show();
+        } else {
+            $fixed.hide();
+        }
     }
 };
 
@@ -163,5 +260,8 @@ $(document).ready(function () {
     }
     if ($('#upena-instances').length) {
         upena.instances.init();
+    }
+    if ($('#upena-cfg').length) {
+        upena.cfg.init();
     }
 });

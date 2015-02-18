@@ -4,6 +4,7 @@ import com.google.common.base.Optional;
 import com.jivesoftware.os.upena.deployable.region.ConfigPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ConfigPluginRegion.ConfigPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
+import java.util.Map;
 import javax.inject.Singleton;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
@@ -64,13 +65,39 @@ public class ConfigPluginEndpoints {
         @FormParam("bReleaseKey") @DefaultValue("") String bReleaseKey,
         @FormParam("bRelease") @DefaultValue("") String bRelease,
         @FormParam("property") @DefaultValue("") String property,
-        @FormParam("overriden") @DefaultValue("") String overriden) {
+        @FormParam("overridden") @DefaultValue("") String overridden) {
         String rendered = soyService.renderPlugin(pluginRegion,
             Optional.of(new ConfigPluginRegionInput(
                     aClusterKey, aCluster, aHostKey, aHost, aServiceKey, aService, aInstance, aReleaseKey, aRelease, bClusterKey,
                     bCluster, bHostKey, bHost, bServiceKey, bService, bInstance, bReleaseKey, bRelease,
-                    property, overriden)));
+                    property, overridden)));
         return Response.ok(rendered).build();
+    }
+
+    @POST
+    @Path("/modify")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response modifyConfigs(ModifyRequest modifyRequest) {
+        Map<String, Map<String, String>> propertyMap = modifyRequest.getUpdates();
+        for (Map.Entry<String, Map<String, String>> propEntry : propertyMap.entrySet()) {
+            for (Map.Entry<String, String> keyEntry : propEntry.getValue().entrySet()) {
+                System.out.println(String.format("%s: %s -> %s", keyEntry.getKey(), propEntry.getKey(), keyEntry.getValue()));
+            }
+        }
+        return Response.ok().build();
+    }
+
+    public static class ModifyRequest {
+
+        private Map<String, Map<String, String>> updates;
+
+        public Map<String, Map<String, String>> getUpdates() {
+            return updates;
+        }
+
+        public void setUpdates(Map<String, Map<String, String>> updates) {
+            this.updates = updates;
+        }
     }
 
 }
