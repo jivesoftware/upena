@@ -98,9 +98,11 @@ public class HealthPluginRegion implements PageRegion<Optional<HealthPluginRegio
             Map<String, Double> minClusterHealth = new HashMap<>();
             for (UpenaEndpoints.NodeHealth nodeHealth : clusterHealth.nodeHealths) {
                 for (UpenaEndpoints.NannyHealth nannyHealth : nodeHealth.nannyHealths) {
-                    Double got = minClusterHealth.get(nannyHealth.instanceDescriptor.clusterKey);
-                    if (got == null || got > nannyHealth.serviceHealth.health) {
-                        minClusterHealth.put(nannyHealth.instanceDescriptor.clusterKey, nannyHealth.serviceHealth.health);
+                    if (nannyHealth.serviceHealth != null) {
+                        Double got = minClusterHealth.get(nannyHealth.instanceDescriptor.clusterKey);
+                        if (got == null || got > nannyHealth.serviceHealth.health) {
+                            minClusterHealth.put(nannyHealth.instanceDescriptor.clusterKey, nannyHealth.serviceHealth.health);
+                        }
                     }
                 }
             }
@@ -349,7 +351,7 @@ public class HealthPluginRegion implements PageRegion<Optional<HealthPluginRegio
 //            new RingHost("soa-prime-data10.phx1.jivehosted.com", 1175)
 //        }) {
 
-          for (RingHost ringHost : amzaInstance.getRing("MASTER")) {
+        for (RingHost ringHost : amzaInstance.getRing("MASTER")) {
             try {
                 RequestHelper requestHelper = buildRequestHelper(ringHost.getHost(), ringHost.getPort());
                 UpenaEndpoints.NodeHealth nodeHealth = requestHelper.executeGetRequest("/" + path + "/instance", UpenaEndpoints.NodeHealth.class,
