@@ -340,16 +340,16 @@ public class HealthPluginRegion implements PageRegion<Optional<HealthPluginRegio
 
     private UpenaEndpoints.ClusterHealth buildClusterHealth(String path) throws Exception {
         UpenaEndpoints.ClusterHealth clusterHealth = new UpenaEndpoints.ClusterHealth();
-        for (RingHost ringHost : new RingHost[]{
-            new RingHost("soa-prime-data5.phx1.jivehosted.com", 1175),
-            new RingHost("soa-prime-data6.phx1.jivehosted.com", 1175),
-            new RingHost("soa-prime-data7.phx1.jivehosted.com", 1175),
-            new RingHost("soa-prime-data8.phx1.jivehosted.com", 1175),
-            new RingHost("soa-prime-data9.phx1.jivehosted.com", 1175),
-            new RingHost("soa-prime-data10.phx1.jivehosted.com", 1175)
-        }) {
+//        for (RingHost ringHost : new RingHost[]{
+//            new RingHost("soa-prime-data5.phx1.jivehosted.com", 1175),
+//            new RingHost("soa-prime-data6.phx1.jivehosted.com", 1175),
+//            new RingHost("soa-prime-data7.phx1.jivehosted.com", 1175),
+//            new RingHost("soa-prime-data8.phx1.jivehosted.com", 1175),
+//            new RingHost("soa-prime-data9.phx1.jivehosted.com", 1175),
+//            new RingHost("soa-prime-data10.phx1.jivehosted.com", 1175)
+//        }) {
 
-            //for (RingHost ringHost : amzaInstance.getRing("MASTER")) {
+          for (RingHost ringHost : amzaInstance.getRing("MASTER")) {
             try {
                 RequestHelper requestHelper = buildRequestHelper(ringHost.getHost(), ringHost.getPort());
                 UpenaEndpoints.NodeHealth nodeHealth = requestHelper.executeGetRequest("/" + path + "/instance", UpenaEndpoints.NodeHealth.class,

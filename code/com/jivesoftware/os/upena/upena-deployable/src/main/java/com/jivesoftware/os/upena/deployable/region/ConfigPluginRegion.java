@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -61,6 +62,40 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
         this.ubaService = ubaService;
         this.ringHost = ringHost;
         this.configStore = configStore;
+    }
+
+    public void modified(Map<String, Map<String, String>> propertyMap) throws Exception {
+
+        Set<String> instanceKeys = new HashSet<>();
+        for (Map.Entry<String, Map<String, String>> propEntry : propertyMap.entrySet()) {
+            for (Map.Entry<String, String> instanceKeyEntry : propEntry.getValue().entrySet()) {
+                instanceKeys.add(instanceKeyEntry.getKey());
+                System.out.println(String.format("%s: %s -> %s", instanceKeyEntry.getKey(), propEntry.getKey(), instanceKeyEntry.getValue()));
+            }
+        }
+
+        for (String instanceKey : instanceKeys) {
+            Instance instance = upenaStore.instances.get(new InstanceKey(instanceKey));
+            if (instance != null) {
+                Map<String, String> defaults = configStore.get(instanceKey, "default", null);
+                Map<String, String> overridden = configStore.get(instanceKey, "override", null);
+                for (Map.Entry<String, Map<String, String>> propEntry : propertyMap.entrySet()) {
+                    if (propEntry.getValue().containsKey(instanceKey)) {
+                        String property = propEntry.getKey();
+                        String value = propEntry.getValue().get(instanceKey);
+                        if (value == null || value.isEmpty() || value.equals(defaults.get(property))) {
+                            overridden.remove(property);
+                            log.info("Reverting to default for property:" + property + " for instance:" + instanceKey);
+                        } else {
+                            overridden.put(property, value);
+                            log.info("Setting property:" + property + "=" + value + " for instance:" + instanceKey);
+                        }
+                    }
+                }
+            } else {
+                log.warn("Faied to load instance for key:" + instanceKey + " when trying to modify properties.");
+            }
+        }
     }
 
     public static class ConfigPluginRegionInput {
@@ -181,7 +216,7 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
                 allProperties.addAll(as.keySet());
                 allProperties.addAll(bs.keySet());
 
-                String[] ks = new String[] { "instanceKey", "cluster", "host", "service", "instance", "override", "default" };
+                String[] ks = new String[]{"instanceKey", "cluster", "host", "service", "instance", "override", "default"};
                 List<Map<String, Object>> rows = new ArrayList<>();
                 for (String property : allProperties) {
 

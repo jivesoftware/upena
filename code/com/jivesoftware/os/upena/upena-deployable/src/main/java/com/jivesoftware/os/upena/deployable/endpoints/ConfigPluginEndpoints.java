@@ -1,6 +1,8 @@
 package com.jivesoftware.os.upena.deployable.endpoints;
 
 import com.google.common.base.Optional;
+import com.jivesoftware.os.mlogger.core.MetricLogger;
+import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.deployable.region.ConfigPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ConfigPluginRegion.ConfigPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
@@ -23,6 +25,8 @@ import javax.ws.rs.core.Response;
 @Singleton
 @Path("/ui/config")
 public class ConfigPluginEndpoints {
+
+    private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
     private final SoyService soyService;
     private final ConfigPluginRegion pluginRegion;
@@ -79,12 +83,13 @@ public class ConfigPluginEndpoints {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response modifyConfigs(ModifyRequest modifyRequest) {
         Map<String, Map<String, String>> propertyMap = modifyRequest.getUpdates();
-        for (Map.Entry<String, Map<String, String>> propEntry : propertyMap.entrySet()) {
-            for (Map.Entry<String, String> keyEntry : propEntry.getValue().entrySet()) {
-                System.out.println(String.format("%s: %s -> %s", keyEntry.getKey(), propEntry.getKey(), keyEntry.getValue()));
-            }
+        try {
+            pluginRegion.modified(propertyMap);
+            return Response.ok().build();
+        } catch (Exception x) {
+            LOG.error("Failed while setting properties:" + propertyMap);
+            return Response.serverError().build();
         }
-        return Response.ok().build();
     }
 
     public static class ModifyRequest {
