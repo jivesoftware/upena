@@ -136,7 +136,10 @@ public class HealthPluginRegion implements PageRegion<Optional<HealthPluginRegio
                             + "\" style=\"background-color:#" + getHEXTrafficlightColor(nh, 1f) + "\">"
                             + d2f(nh) + "</div>");
 
-                        Double sh = nannyHealth.serviceHealth.health;
+                        Double sh = 0d;
+                        if (nannyHealth.serviceHealth != null) {
+                            sh = nannyHealth.serviceHealth.health;
+                        }
                         h.put("service", "<div title=\"" + nannyHealth.instanceDescriptor.serviceName
                             + "\" style=\"background-color:#" + getHEXTrafficlightColor(sh, 1f) + "\">"
                             + d2f(sh) + "</div>");
@@ -198,7 +201,11 @@ public class HealthPluginRegion implements PageRegion<Optional<HealthPluginRegio
                         hostRows.get(hi).get(0).put("hostKey", nodeHealth.host); // TODO change to hostKey
                         hostRows.get(hi).get(0).put("health", host);
 
-                        float sh = (float) Math.max(0, nannyHealth.serviceHealth.health);
+                        double h = 0d;
+                        if (nannyHealth.serviceHealth != null) {
+                            h = nannyHealth.serviceHealth.health;
+                        }
+                        float sh = (float) Math.max(0, h);
                         hostRows.get(hi).get(si + 1).put("clusterKey", nannyHealth.instanceDescriptor.clusterKey);
                         hostRows.get(hi).get(si + 1).put("serviceKey", nannyHealth.instanceDescriptor.clusterKey);
                         hostRows.get(hi).get(si + 1).put("instance", String.valueOf(nannyHealth.instanceDescriptor.instanceName));
@@ -452,21 +459,24 @@ public class HealthPluginRegion implements PageRegion<Optional<HealthPluginRegio
         h.td(border).content(String.valueOf("Resolution"));
         h.td(border).content(String.valueOf("Age in millis"));
         h._tr();
-        for (UpenaEndpoints.Health health : serviceHealth.healthChecks) {
-            if (-Double.MAX_VALUE != health.health) {
-                h.tr();
-                h.td(colorStyle("background-color", health.health, 0.0f)).content(String.valueOf(health.health));
-                h.td(border).content(String.valueOf(health.name));
-                h.td(border).content(String.valueOf(health.status));
-                h.td(border).content(String.valueOf(health.description));
-                h.td(border).content(String.valueOf(health.resolution));
-                long ageInMillis = System.currentTimeMillis() - health.timestamp;
-                double ageHealth = 0.0d;
-                if (health.checkIntervalMillis > 0) {
-                    ageHealth = 1d - (ageInMillis / health.checkIntervalMillis);
+
+        if (serviceHealth != null) {
+            for (UpenaEndpoints.Health health : serviceHealth.healthChecks) {
+                if (-Double.MAX_VALUE != health.health) {
+                    h.tr();
+                    h.td(colorStyle("background-color", health.health, 0.0f)).content(String.valueOf(health.health));
+                    h.td(border).content(String.valueOf(health.name));
+                    h.td(border).content(String.valueOf(health.status));
+                    h.td(border).content(String.valueOf(health.description));
+                    h.td(border).content(String.valueOf(health.resolution));
+                    long ageInMillis = System.currentTimeMillis() - health.timestamp;
+                    double ageHealth = 0.0d;
+                    if (health.checkIntervalMillis > 0) {
+                        ageHealth = 1d - (ageInMillis / health.checkIntervalMillis);
+                    }
+                    h.td(colorStyle("background-color", ageHealth, 0.0f)).content(String.valueOf(ageInMillis));
+                    h._tr();
                 }
-                h.td(colorStyle("background-color", ageHealth, 0.0f)).content(String.valueOf(ageInMillis));
-                h._tr();
             }
         }
         h._table();
