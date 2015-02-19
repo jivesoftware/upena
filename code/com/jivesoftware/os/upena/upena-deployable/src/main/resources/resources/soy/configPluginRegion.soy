@@ -18,125 +18,130 @@
     </div>
     <div class="panel panel-default">
         <div class="panel-heading" id="upena-cfg">Instance Config/s</div>
-            <div class="panel-body">
-                {if $message}
-                    <div class="panel-heading">
-                        <pre>{$message}</pre>
-                    </div>
-                {/if}
-                <form id="config" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
-                    data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="config">
+        <div class="panel-body">
+            {if $message}
+                <div class="panel-heading">
+                    <pre>{$message}</pre>
+                </div>
+            {/if}
+            <form id="config" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="config">
 
-                    <table class="table table-condensed">
-                        <thead>
-                            <tr>
-                                <th></th>
-                                <th>Cluster</th>
-                                <th>Host</th>
-                                <th>Service</th>
-                                <th>Instance</th>
-                                <th>Version</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr stye="background-color:#FFFFE0;">
-                                <td bgcolor="#FFFFE0" colspan="6">
-                                    Filter Property:<input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                           placeholder="property" value="{$property?:''}" name="property" id="descriptionPicker" class="form-control">
-                                </td>
-                                <td bgcolor="#FFFFE0" colspan="6">
-                                    <input class="form-control" type="checkbox" name="overridden" {if $overridden}checked="checked"{/if}>
-                                    <span>overridden</span>
-                                </td>
-                                <td bgcolor="#FFFFE0" colspan="6">
-                                    Filter Value:<input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                           placeholder="value" value="{$value?:''}" name="value" class="form-control">
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    - in -
-                                </td>
-                            </tr>
-                            <tr style="background-color:#D2E9FF;">
-                                <td>
-                                    Filter A:
-                                </td>
-                                <td>
-                                    <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                        placeholder="Cluster" value="{$aFilters.cluster?:''}" name="aCluster" class="form-control upena-hs-field"
-                                        data-upena-lookup="/ui/lookup/clusters">
-                                    <input type="hidden" name="aClusterKey" value="{$aFilters.clusterKey}" />
-                                </td>
-                                <td>
-                                    <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                        placeholder="Host" value="{$aFilters.host?:''}" name="aHost" class="form-control upena-hs-field"
-                                        data-upena-lookup="/ui/lookup/hosts">
-                                    <input type="hidden" name="aHostKey" value="{$aFilters.hostKey}" />
-                                </td>
-                                <td>
-                                    <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                        placeholder="Service" value="{$aFilters.service?:''}" name="aService" class="form-control upena-hs-field"
-                                        data-upena-lookup="/ui/lookup/services">
-                                    <input type="hidden" name="aServiceKey" value="{$aFilters.serviceKey}" />
-                                </td>
-                                <td>
-                                    <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                        placeholder="Instance" value="{$aFilters.instance?:''}" name="aInstance" class="form-control">
-                                </td>
-                                <td>
-                                    <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                        placeholder="Release" value="{$aFilters.release?:''}" name="aRelease" class="form-control upena-hs-field"
-                                        data-upena-lookup="/ui/lookup/releases">
-                                    <input type="hidden" name="aReleaseKey" value="{$aFilters.releaseKey}" />
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    - vs -
-                                </td>
-                            </tr>
-                            <tr style="background-color:#E7E7EF;">
-                                <td>
-                                    Filter B:
-                                </td>
-                                <td>
-                                    <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                        placeholder="Cluster" value="{$bFilters.cluster?:''}" name="bCluster" class="form-control upena-hs-field"
-                                        data-upena-lookup="/ui/lookup/clusters">
-                                    <input type="hidden" name="bClusterKey" value="{$bFilters.clusterKey}" />
-                                </td>
-                                <td>
-                                    <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                        placeholder="Host" value="{$bFilters.host?:''}" name="bHost" class="form-control upena-hs-field"
-                                        data-upena-lookup="/ui/lookup/hosts">
-                                    <input type="hidden" name="bHostKey" value="{$bFilters.hostKey}" />
-                                </td>
-                                <td>
-                                    <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                        placeholder="Service" value="{$bFilters.service?:''}" name="bService" class="form-control upena-hs-field"
-                                        data-upena-lookup="/ui/lookup/services">
-                                    <input type="hidden" name="bServiceKey" value="{$bFilters.serviceKey}" />
-                                </td>
-                                <td>
-                                    <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                        placeholder="Instance" value="{$bFilters.instance?:''}" name="bInstance" class="form-control">
-                                </td>
-                                <td>
-                                    <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                        placeholder="Release" value="{$bFilters.release?:''}" name="bRelease" class="form-control upena-hs-field"
-                                        data-upena-lookup="/ui/lookup/releases">
-                                    <input type="hidden" name="bReleaseKey" value="{$bFilters.releaseKey}" />
-                                </td>
-                            </tr>
-                            <tr>
+                <table class="table table-condensed">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>Cluster</th>
+                            <th>Host</th>
+                            <th>Service</th>
+                            <th>Instance</th>
+                            <th>Version</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr stye="background-color:#FFFFE0;">
+                            <td bgcolor="#FFFFE0" colspans="2"> 
+                                Filter Property:<input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                       placeholder="property" value="{$property?:''}" name="property" id="descriptionPicker" class="form-control">
+                            </td>
+                            <td bgcolor="#FFFFE0" colspans="2">
+                                Filter Value:<input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                       placeholder="value" value="{$value?:''}" name="value" class="form-control">
+                            </td>
+                            <td bgcolor="#FFFFE0" colspans="2">
+                                <input class="form-control" type="checkbox" name="overridden" {if $overridden}checked="checked"{/if}>
+                                <span>overridden</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspans="6">
+                                - in -
+                            </td>
+                        </tr>
+                        <tr style="background-color:#D2E9FF;">
+                            <td>
+                                Filter A:
+                            </td>
+                            <td>
+                                <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                    placeholder="Cluster" value="{$aFilters.cluster?:''}" name="aCluster" class="form-control upena-hs-field"
+                                    data-upena-lookup="/ui/lookup/clusters">
+                                <input type="hidden" name="aClusterKey" value="{$aFilters.clusterKey}" />
+                            </td>
+                            <td>
+                                <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                    placeholder="Host" value="{$aFilters.host?:''}" name="aHost" class="form-control upena-hs-field"
+                                    data-upena-lookup="/ui/lookup/hosts">
+                                <input type="hidden" name="aHostKey" value="{$aFilters.hostKey}" />
+                            </td>
+                            <td>
+                                <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                    placeholder="Service" value="{$aFilters.service?:''}" name="aService" class="form-control upena-hs-field"
+                                    data-upena-lookup="/ui/lookup/services">
+                                <input type="hidden" name="aServiceKey" value="{$aFilters.serviceKey}" />
+                            </td>
+                            <td>
+                                <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                    placeholder="Instance" value="{$aFilters.instance?:''}" name="aInstance" class="form-control">
+                            </td>
+                            <td>
+                                <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                    placeholder="Release" value="{$aFilters.release?:''}" name="aRelease" class="form-control upena-hs-field"
+                                    data-upena-lookup="/ui/lookup/releases">
+                                <input type="hidden" name="aReleaseKey" value="{$aFilters.releaseKey}" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspans="6">
+                                - vs -
+                            </td>
+                        </tr>
+                        <tr style="background-color:#E7E7EF;">
+                            <td>
+                                Filter B:
+                            </td>
+                            <td>
+                                <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                    placeholder="Cluster" value="{$bFilters.cluster?:''}" name="bCluster" class="form-control upena-hs-field"
+                                    data-upena-lookup="/ui/lookup/clusters">
+                                <input type="hidden" name="bClusterKey" value="{$bFilters.clusterKey}" />
+                            </td>
+                            <td>
+                                <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                    placeholder="Host" value="{$bFilters.host?:''}" name="bHost" class="form-control upena-hs-field"
+                                    data-upena-lookup="/ui/lookup/hosts">
+                                <input type="hidden" name="bHostKey" value="{$bFilters.hostKey}" />
+                            </td>
+                            <td>
+                                <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                    placeholder="Service" value="{$bFilters.service?:''}" name="bService" class="form-control upena-hs-field"
+                                    data-upena-lookup="/ui/lookup/services">
+                                <input type="hidden" name="bServiceKey" value="{$bFilters.serviceKey}" />
+                            </td>
+                            <td>
+                                <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                    placeholder="Instance" value="{$bFilters.instance?:''}" name="bInstance" class="form-control">
+                            </td>
+                            <td>
+                                <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                    placeholder="Release" value="{$bFilters.release?:''}" name="bRelease" class="form-control upena-hs-field"
+                                    data-upena-lookup="/ui/lookup/releases">
+                                <input type="hidden" name="bReleaseKey" value="{$bFilters.releaseKey}" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspans="6">
                                 <input type="submit" name="action" value="Refresh" class="form-control"/>
-                            </tr>
-                        </tbody>
-                    </table>
-                </form>
-            </div>
-            {if $properties}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </form>
+        </div>
+    </div>
+        {if $properties}
+            <div class="panel panel-default">
+                <div class="panel-heading" id="upena-cfg">Instance Config/s</div>
                 <div class="panel-body">
                     <table class="table table-bordered">
                     {foreach $p in $properties}
@@ -191,7 +196,7 @@
                         {/foreach}
                     {/foreach}
                 </div>
-            {/if}
-        </div>
-    </div>
+            </div>
+        {/if}
+        
 {/template}
