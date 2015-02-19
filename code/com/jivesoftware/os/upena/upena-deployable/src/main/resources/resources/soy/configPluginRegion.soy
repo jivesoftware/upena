@@ -4,7 +4,9 @@
  * @param? message
  * @param? aFilters
  * @param? bFilters
+ * @param? overridden
  * @param? property
+ * @param? value
  * @param? properties
  */
 {template .configPluginRegion}
@@ -39,10 +41,16 @@
                         <tbody>
                             <tr stye="background-color:#FFFFE0;">
                                 <td bgcolor="#FFFFE0" colspan="6">
-                                    Filter:<input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                    Filter Property:<input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
                                            placeholder="property" value="{$property?:''}" name="property" id="descriptionPicker" class="form-control">
-                                    <input type="checkbox" name="overridden" class="form-control">&nbsp;overridden&nbsp;
-                                    <input type="submit" name="action" value="Refresh" class="form-control"/>
+                                </td>
+                                <td bgcolor="#FFFFE0" colspan="6">
+                                    <input class="form-control" type="checkbox" name="overridden" {if $overridden}checked="checked"{/if}>
+                                    <span>overridden</span>
+                                </td>
+                                <td bgcolor="#FFFFE0" colspan="6">
+                                    Filter Value:<input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                           placeholder="value" value="{$value?:''}" name="value" class="form-control">
                                 </td>
                             </tr>
                             <tr>
@@ -120,6 +128,9 @@
                                         data-upena-lookup="/ui/lookup/releases">
                                     <input type="hidden" name="bReleaseKey" value="{$bFilters.releaseKey}" />
                                 </td>
+                            </tr>
+                            <tr>
+                                <input type="submit" name="action" value="Refresh" class="form-control"/>
                             </tr>
                         </tbody>
                     </table>

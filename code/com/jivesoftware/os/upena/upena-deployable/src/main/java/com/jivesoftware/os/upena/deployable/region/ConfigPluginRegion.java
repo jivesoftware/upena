@@ -25,7 +25,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 /**
@@ -127,6 +129,7 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
         final String bRelease;
 
         final String property;
+        final String value;
         final String overridden;
 
         public ConfigPluginRegionInput(
@@ -134,7 +137,7 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
             String aReleaseKey, String aRelease,
             String bClusterKey, String bCluster, String bHostKey, String bHost, String bServiceKey, String bService,
             String bInstance, String bReleaseKey, String bRelease,
-            String property, String overridden) {
+            String property, String value, String overridden) {
             this.aClusterKey = aClusterKey;
             this.aCluster = aCluster;
             this.aHostKey = aHostKey;
@@ -154,6 +157,7 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
             this.bReleaseKey = bReleaseKey;
             this.bRelease = bRelease;
             this.property = property;
+            this.value = value;
             this.overridden = overridden;
         }
 
@@ -192,15 +196,14 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
                 data.put("bFilters", bFilters);
 
                 data.put("property", input.property);
-
-               
+                data.put("value", input.value);
+                data.put("overridden", input.overridden);
 
                 ConcurrentSkipListMap<String, List<Map<String, String>>> as = packProperties(input.aClusterKey,
-                    input.aHostKey, input.aServiceKey, input.aInstance, input.aReleaseKey, input.property);
+                    input.aHostKey, input.aServiceKey, input.aInstance, input.aReleaseKey, input.property, input.value, input.overridden);
 
                 ConcurrentSkipListMap<String, List<Map<String, String>>> bs = packProperties(input.bClusterKey,
-                    input.bHostKey, input.bServiceKey, input.bInstance, input.bReleaseKey, input.property);
-
+                    input.bHostKey, input.bServiceKey, input.bInstance, input.bReleaseKey, input.property, input.value, input.overridden);
 
                 Set<String> allProperties = Collections.newSetFromMap(new ConcurrentSkipListMap<String, Boolean>());
                 allProperties.addAll(as.keySet());
@@ -259,7 +262,10 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
     }
 
     private ConcurrentSkipListMap<String, List<Map<String, String>>> packProperties(String clusterKey,
-        String hostKey, String serviceKey, String instance, String releaseKey, String propertyContains) throws Exception {
+        String hostKey, String serviceKey, String instance, String releaseKey, String propertyContains,
+        String valueContains, String overridden) throws Exception {
+
+        boolean isOverridden = Boolean.parseBoolean(overridden);
 
         ConcurrentSkipListMap<String, List<Map<String, String>>> properties = new ConcurrentSkipListMap<>();
         InstanceFilter filter = new InstanceFilter(
@@ -282,17 +288,36 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
                 TimestampedValue<Instance> timestampedValue = entrySet.getValue();
                 Instance i = timestampedValue.getValue();
 
-                Map<String, String> defaults = configStore.get(key.getKey(), "default", null);
-                Map<String, String> overridden = configStore.get(key.getKey(), "override", null);
+                Map<String, String> defaultMaps = configStore.get(key.getKey(), "default", null);
+                Map<String, String> overriddenMap = configStore.get(key.getKey(), "override", null);
 
-                for (String property : defaults.keySet()) {
+                for (String property : defaultMaps.keySet()) {
                     if (!propertyContains.isEmpty() && !property.contains(propertyContains)) {
                         continue;
                     }
+
                     List<Map<String, String>> occurences = properties.get(property);
                     if (occurences == null) {
                         occurences = new ArrayList<>();
-                        properties.put(property, occurences);
+                        if (!valueContains.isEmpty()) {
+                            List<Map<String, String>> occurencesCopy = new ArrayList<>();
+                            for (Map<String, String> o : occurences) {
+                                Map<String, String> valuesCopy = new ConcurrentHashMap<>(o);
+                                for (Entry<String, String> e : valuesCopy.entrySet()) {
+                                    if (!valueContains.contains(e.getValue())) {
+                                        valuesCopy.remove(e.getKey());
+                                    }
+                                }
+                                if (!valuesCopy.isEmpty()) {
+                                    occurencesCopy.add(valuesCopy);
+                                }
+                            }
+                            if (!occurencesCopy.isEmpty()) {
+                                properties.put(property, occurencesCopy);
+                            }
+                        } else {
+                            properties.put(property, occurences);
+                        }
                     }
                     Map<String, String> occurence = new HashMap<>();
                     occurence.put("instanceKey", key.getKey());
@@ -303,9 +328,16 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
                     occurence.put("serviceKey", i.serviceKey.getKey());
                     occurence.put("service", upenaStore.services.get(i.serviceKey).name);
                     occurence.put("instance", String.valueOf(i.instanceId));
-                    occurence.put("override", overridden.get(property));
-                    occurence.put("default", defaults.get(property));
-                    occurences.add(occurence);
+                    occurence.put("override", overriddenMap.get(property));
+                    occurence.put("default", defaultMaps.get(property));
+
+                    if (isOverridden) {
+                        if (overriddenMap.containsValue(property)) {
+                            occurences.add(occurence);
+                        }
+                    } else {
+                        occurences.add(occurence);
+                    }
                 }
             }
         }
