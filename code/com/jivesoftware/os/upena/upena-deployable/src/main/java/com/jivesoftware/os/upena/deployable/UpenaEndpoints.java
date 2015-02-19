@@ -33,6 +33,7 @@ import com.jivesoftware.os.upena.deployable.soy.SoyService;
 import com.jivesoftware.os.upena.routing.shared.InstanceDescriptor;
 import com.jivesoftware.os.upena.service.UpenaService;
 import com.jivesoftware.os.upena.service.UpenaStore;
+import com.jivesoftware.os.upena.shared.HostKey;
 import com.jivesoftware.os.upena.uba.service.Nanny;
 import com.jivesoftware.os.upena.uba.service.UbaService;
 import java.util.ArrayList;
@@ -77,6 +78,7 @@ public class UpenaEndpoints {
     private final UpenaService upenaService;
     private final UbaService ubaService;
     private final RingHost ringHost;
+    private final HostKey ringHostKey;
     private final SoyService soyService;
 
     public UpenaEndpoints(@Context AmzaClusterName amzaClusterName,
@@ -85,6 +87,7 @@ public class UpenaEndpoints {
         @Context UpenaService upenaService,
         @Context UbaService ubaService,
         @Context RingHost ringHost,
+        @Context HostKey ringHostKey,
         @Context SoyService soyService) {
         this.amzaClusterName = amzaClusterName;
         this.amzaInstance = amzaInstance;
@@ -92,6 +95,7 @@ public class UpenaEndpoints {
         this.upenaService = upenaService;
         this.ubaService = ubaService;
         this.ringHost = ringHost;
+        this.ringHostKey = ringHostKey;
         this.soyService = soyService;
     }
 
@@ -224,7 +228,7 @@ public class UpenaEndpoints {
                 clusterHealth.nodeHealths.add(nodeHealth);
             } catch (Exception x) {
                 clusterHealth.health = 0.0d;
-                NodeHealth nodeHealth = new NodeHealth(ringHost.getHost(), ringHost.getPort());
+                NodeHealth nodeHealth = new NodeHealth("", ringHost.getHost(), ringHost.getPort());
                 nodeHealth.health = 0.0d;
                 nodeHealth.nannyHealths = new ArrayList<>();
                 clusterHealth.nodeHealths.add(nodeHealth);
@@ -243,8 +247,8 @@ public class UpenaEndpoints {
         return requestHelper;
     }
 
-    private NodeHealth buildNodeHealth() {
-        NodeHealth nodeHealth = new NodeHealth(ringHost.getHost(), ringHost.getPort());
+    private NodeHealth buildNodeHealth() throws Exception {
+        NodeHealth nodeHealth = new NodeHealth("", ringHost.getHost(), ringHost.getPort());
         for (Entry<String, Nanny> nanny : ubaService.iterateNannies()) {
             Nanny n = nanny.getValue();
             InstanceDescriptor id = n.getInstanceDescriptor();
@@ -283,6 +287,7 @@ public class UpenaEndpoints {
     static public class NodeHealth {
 
         public double health = 1d;
+        public String hostKey;
         public String host;
         public int port;
         public List<NannyHealth> nannyHealths = new ArrayList<>();
@@ -290,7 +295,8 @@ public class UpenaEndpoints {
         public NodeHealth() {
         }
 
-        public NodeHealth(String host, int port) {
+        public NodeHealth(String hostKey, String host, int port) {
+            this.hostKey = hostKey;
             this.host = host;
             this.port = port;
         }

@@ -198,6 +198,7 @@ public class HealthPluginRegion implements PageRegion<Optional<HealthPluginRegio
 
                         float hh = (float) Math.max(0, nodeHealth.health);
                         hostRows.get(hi).get(0).put("color", "#" + getHEXTrafficlightColor(hh, 1f));
+                        hostRows.get(hi).get(0).put("host", nodeHealth.host); // TODO change to hostKey
                         hostRows.get(hi).get(0).put("hostKey", nodeHealth.host); // TODO change to hostKey
                         hostRows.get(hi).get(0).put("health", host);
 
@@ -207,11 +208,14 @@ public class HealthPluginRegion implements PageRegion<Optional<HealthPluginRegio
                         }
                         float sh = (float) Math.max(0, h);
                         hostRows.get(hi).get(si + 1).put("clusterKey", nannyHealth.instanceDescriptor.clusterKey);
-                        hostRows.get(hi).get(si + 1).put("serviceKey", nannyHealth.instanceDescriptor.clusterKey);
+                        hostRows.get(hi).get(si + 1).put("cluster", nannyHealth.instanceDescriptor.clusterName);
+                        hostRows.get(hi).get(si + 1).put("serviceKey", nannyHealth.instanceDescriptor.serviceKey);
+                        hostRows.get(hi).get(si + 1).put("service", nannyHealth.instanceDescriptor.serviceName);
+                        hostRows.get(hi).get(si + 1).put("releaseKey", nannyHealth.instanceDescriptor.releaseGroupKey);
+                        hostRows.get(hi).get(si + 1).put("release", nannyHealth.instanceDescriptor.releaseGroupName);
                         hostRows.get(hi).get(si + 1).put("instance", String.valueOf(nannyHealth.instanceDescriptor.instanceName));
                         hostRows.get(hi).get(si + 1).put("color", "#" + getHEXTrafficlightColor(sh, 1f));
                         hostRows.get(hi).get(si + 1).put("health", d2f(sh));
-                        hostRows.get(hi).get(si + 1).put("instanceKey", "#" + getHEXTrafficlightColor(sh, 1f));
                         hostRows.get(hi).get(si + 1).put("link",
                             "http://" + nodeHealth.host + ":" + nannyHealth.instanceDescriptor.ports.get("manage").port + "/manage/ui");
 
@@ -367,7 +371,8 @@ public class HealthPluginRegion implements PageRegion<Optional<HealthPluginRegio
                 clusterHealth.nodeHealths.add(nodeHealth);
             } catch (Exception x) {
                 clusterHealth.health = 0.0d;
-                UpenaEndpoints.NodeHealth nodeHealth = new UpenaEndpoints.NodeHealth(ringHost.getHost(), ringHost.getPort());
+
+                UpenaEndpoints.NodeHealth nodeHealth = new UpenaEndpoints.NodeHealth("", ringHost.getHost(), ringHost.getPort());
                 nodeHealth.health = 0.0d;
                 nodeHealth.nannyHealths = new ArrayList<>();
                 clusterHealth.nodeHealths.add(nodeHealth);

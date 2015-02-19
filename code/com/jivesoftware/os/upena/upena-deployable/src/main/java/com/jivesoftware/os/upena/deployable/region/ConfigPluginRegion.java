@@ -304,7 +304,7 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
                             for (Map<String, String> o : occurences) {
                                 Map<String, String> valuesCopy = new ConcurrentHashMap<>(o);
                                 for (Entry<String, String> e : valuesCopy.entrySet()) {
-                                    if (!valueContains.contains(e.getValue())) {
+                                    if (!e.getValue().contains(valueContains)) {
                                         valuesCopy.remove(e.getKey());
                                     }
                                 }

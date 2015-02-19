@@ -2,7 +2,6 @@ package com.jivesoftware.os.upena.deployable.region;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
-import com.jivesoftware.os.amza.shared.RingHost;
 import com.jivesoftware.os.jive.utils.http.client.HttpClient;
 import com.jivesoftware.os.jive.utils.http.client.HttpClientConfig;
 import com.jivesoftware.os.jive.utils.http.client.HttpClientConfiguration;
@@ -18,7 +17,6 @@ import com.jivesoftware.os.upena.routing.shared.InstanceDescriptor;
 import java.awt.Color;
 import java.io.IOException;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
 import org.rendersnake.HtmlAttributes;
@@ -173,35 +171,6 @@ public class HomeRegion implements PageRegion<HomeInput> {
             + "  border: px solid gray;";
     }
 
-    private UpenaEndpoints.ClusterHealth buildClusterHealth(String path) throws Exception {
-        UpenaEndpoints.ClusterHealth clusterHealth = new UpenaEndpoints.ClusterHealth();
-        for (RingHost ringHost : new RingHost[]{
-            new RingHost("soa-prime-data5.phx1.jivehosted.com", 1175),
-            new RingHost("soa-prime-data6.phx1.jivehosted.com", 1175),
-            new RingHost("soa-prime-data7.phx1.jivehosted.com", 1175),
-            new RingHost("soa-prime-data8.phx1.jivehosted.com", 1175),
-            new RingHost("soa-prime-data9.phx1.jivehosted.com", 1175),
-            new RingHost("soa-prime-data10.phx1.jivehosted.com", 1175)
-        }) {
-
-            //for (RingHost ringHost : amzaInstance.getRing("MASTER")) {
-            try {
-                RequestHelper requestHelper = buildRequestHelper(ringHost.getHost(), ringHost.getPort());
-                UpenaEndpoints.NodeHealth nodeHealth = requestHelper.executeGetRequest("/" + path + "/instance", UpenaEndpoints.NodeHealth.class,
-                    null);
-                clusterHealth.health = Math.min(nodeHealth.health, clusterHealth.health);
-                clusterHealth.nodeHealths.add(nodeHealth);
-            } catch (Exception x) {
-                clusterHealth.health = 0.0d;
-                UpenaEndpoints.NodeHealth nodeHealth = new UpenaEndpoints.NodeHealth(ringHost.getHost(), ringHost.getPort());
-                nodeHealth.health = 0.0d;
-                nodeHealth.nannyHealths = new ArrayList<>();
-                clusterHealth.nodeHealths.add(nodeHealth);
-                System.out.println("Failed getting cluster health for " + ringHost + " " + x);
-            }
-        }
-        return clusterHealth;
-    }
 
     RequestHelper buildRequestHelper(String host, int port) {
         HttpClientConfig httpClientConfig = HttpClientConfig.newBuilder().setSocketTimeoutInMillis(10000).build();

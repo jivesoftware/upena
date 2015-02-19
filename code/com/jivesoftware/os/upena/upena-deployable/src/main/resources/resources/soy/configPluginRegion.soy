@@ -26,7 +26,27 @@
             {/if}
             <form id="config" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
                 data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="config">
-
+                <table class="table table-condensed">
+                    <tr stye="background-color:#FFFFE0;">
+                        <td bgcolor="#FFFFE0" colspans="2"> 
+                            Filter Property:<input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                   placeholder="property" value="{$property?:''}" name="property" id="descriptionPicker" class="form-control">
+                        </td>
+                        <td bgcolor="#FFFFE0" colspans="2">
+                            Filter Value:<input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                   placeholder="value" value="{$value?:''}" name="value" class="form-control">
+                        </td>
+                        <td bgcolor="#FFFFE0" colspans="2">
+                            <input class="form-control" type="checkbox" name="overridden" {if $overridden}checked="checked"{/if}>
+                            <span>overridden</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspans="6">
+                            - in -
+                        </td>
+                    </tr>
+                </table>
                 <table class="table table-condensed">
                     <thead>
                         <tr>
@@ -39,26 +59,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr stye="background-color:#FFFFE0;">
-                            <td bgcolor="#FFFFE0" colspans="2"> 
-                                Filter Property:<input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                       placeholder="property" value="{$property?:''}" name="property" id="descriptionPicker" class="form-control">
-                            </td>
-                            <td bgcolor="#FFFFE0" colspans="2">
-                                Filter Value:<input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                       placeholder="value" value="{$value?:''}" name="value" class="form-control">
-                            </td>
-                            <td bgcolor="#FFFFE0" colspans="2">
-                                <input class="form-control" type="checkbox" name="overridden" {if $overridden}checked="checked"{/if}>
-                                <span>overridden</span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td colspans="6">
-                                - in -
-                            </td>
-                        </tr>
-                        <tr style="background-color:#D2E9FF;">
+                        tyle="background-color:#D2E9FF;">
                             <td>
                                 Filter A:
                             </td>
