@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.jivesoftware.os.upena.inheritance.poms</groupId>
         <artifactId>executable-build-management</artifactId>
-        <version>0.41</version>
+        <version>0.42-SNAPSHOT</version>
         <relativePath>../inheritance-poms/executable-build-management/pom.xml</relativePath>
     </parent>
     <groupId>com.jivesoftware.os.upena</groupId>
@@ -43,7 +43,7 @@
         <dependency>
             <groupId>com.jivesoftware.os.upena</groupId>
             <artifactId>uba-shared</artifactId>
-            <version>0.41</version>
+            <version>0.42-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>commons-lang</groupId>
@@ -77,17 +77,17 @@
         <dependency>
             <groupId>com.jivesoftware.os.upena</groupId>
             <artifactId>upena-shared</artifactId>
-            <version>0.41</version>
+            <version>0.42-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.jivesoftware.os.upena</groupId>
             <artifactId>upena-routing-shared</artifactId>
-            <version>0.41</version>
+            <version>0.42-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.jivesoftware.os.upena</groupId>
             <artifactId>upena-config-shared</artifactId>
-            <version>0.41</version>
+            <version>0.42-SNAPSHOT</version>
             <type>jar</type>
         </dependency>
         <dependency>
