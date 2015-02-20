@@ -142,7 +142,7 @@
                         </tr>
                         <tr>
                             <td colspan="6">
-                                <input type="submit" name="action" value="Refresh" class="form-control"/>
+                                <input type="submit" name="action" value="Refresh" class="form-control btn btn-primary"/>
                             </td>
                         </tr>
                     </tbody>
@@ -157,7 +157,12 @@
                     <table class="table table-bordered">
                     {foreach $p in $properties}
                         <tr style="background-color:#FFFFE0;">
-                            <td colspan="26"><h8>{$p.property}</h8></td>
+                            <td colspan="26"><h8>{$p.property}</h8>
+                                <button class="btn btn-default upena-cfg-link" data-upena-cfg-prop="{$p.property}" data-upena-cfg-link="{$p.property}:OBSOLETE">
+                                    <span class="glyphicon glyphicon-trash"></span>
+                                    &nbsp;
+                                </button>
+                            </td>
                         </tr>
                         {foreach $h in $p.has}
                             <tr>

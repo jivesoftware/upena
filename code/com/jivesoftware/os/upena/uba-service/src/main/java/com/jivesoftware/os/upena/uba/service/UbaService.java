@@ -58,6 +58,7 @@ public class UbaService {
         boolean runNanny = false;
         for (InstanceChanged instanceChanged : instanceChanges) {
             if (hostKey.equals(instanceChanged.getHostKey())) {
+                
                 runNanny = true;
             }
         }
