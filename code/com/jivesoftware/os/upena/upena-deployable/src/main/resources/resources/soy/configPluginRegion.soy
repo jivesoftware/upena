@@ -39,15 +39,15 @@
                                    placeholder="value" value="{$value?:''}" name="value" class="form-control">
                         </td>
                         <td bgcolor="#FFFFE0">
-                            <input class="form-control" type="checkbox" name="overridden" {if $overridden}checked="checked"{/if}>
+                            <input class="form-control" type="checkbox" name="overridden" value="true" {if $overridden}checked="checked"{/if}>
                             <span>overridden</span>
                         </td>
                         <td bgcolor="#FFFFE0">
-                            <input class="form-control" type="checkbox" name="service" {if $service}checked="checked"{/if}>
+                            <input class="form-control" type="checkbox" name="service" value="true" {if $service}checked="checked"{/if}>
                             <span>service</span>
                         </td>
                         <td bgcolor="#FFFFE0">
-                            <input class="form-control" type="checkbox" name="health" {if $health}checked="checked"{/if}>
+                            <input class="form-control" type="checkbox" name="health" value="true" {if $health}checked="checked"{/if}>
                             <span>health</span>
                         </td>
                     </tr>
