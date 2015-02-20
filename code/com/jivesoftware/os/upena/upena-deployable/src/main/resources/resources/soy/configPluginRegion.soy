@@ -5,6 +5,8 @@
  * @param? aFilters
  * @param? bFilters
  * @param? overridden
+ * @param? service
+ * @param? health
  * @param? property
  * @param? value
  * @param? properties
@@ -28,21 +30,29 @@
                 data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="config">
                 <table class="table table-condensed">
                     <tr stye="background-color:#FFFFE0;">
-                        <td bgcolor="#FFFFE0" colspans="2"> 
+                        <td bgcolor="#FFFFE0"> 
                             Filter Property:<input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
                                    placeholder="property" value="{$property?:''}" name="property" id="descriptionPicker" class="form-control">
                         </td>
-                        <td bgcolor="#FFFFE0" colspans="2">
+                        <td bgcolor="#FFFFE0">
                             Filter Value:<input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
                                    placeholder="value" value="{$value?:''}" name="value" class="form-control">
                         </td>
-                        <td bgcolor="#FFFFE0" colspans="2">
+                        <td bgcolor="#FFFFE0">
                             <input class="form-control" type="checkbox" name="overridden" {if $overridden}checked="checked"{/if}>
                             <span>overridden</span>
                         </td>
+                        <td bgcolor="#FFFFE0">
+                            <input class="form-control" type="checkbox" name="service" {if $service}checked="checked"{/if}>
+                            <span>service</span>
+                        </td>
+                        <td bgcolor="#FFFFE0">
+                            <input class="form-control" type="checkbox" name="health" {if $health}checked="checked"{/if}>
+                            <span>health</span>
+                        </td>
                     </tr>
                     <tr>
-                        <td colspans="6">
+                        <td colspan="6">
                             - in -
                         </td>
                     </tr>
@@ -93,7 +103,7 @@
                             </td>
                         </tr>
                         <tr>
-                            <td colspans="6">
+                            <td colspan="6">
                                 - vs -
                             </td>
                         </tr>
@@ -131,7 +141,7 @@
                             </td>
                         </tr>
                         <tr>
-                            <td colspans="6">
+                            <td colspan="6">
                                 <input type="submit" name="action" value="Refresh" class="form-control"/>
                             </td>
                         </tr>

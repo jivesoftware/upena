@@ -16,6 +16,7 @@
 package com.jivesoftware.os.upena.uba.config.extractor;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jivesoftware.os.jive.utils.health.api.HealthCheckConfig;
 import com.jivesoftware.os.jive.utils.http.client.HttpClient;
 import com.jivesoftware.os.jive.utils.http.client.HttpClientConfig;
 import com.jivesoftware.os.jive.utils.http.client.HttpClientConfiguration;
@@ -27,12 +28,14 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -51,41 +54,61 @@ import org.reflections.util.ConfigurationBuilder;
 public class ConfigExtractor {
 
     public static void main(String[] args) {
+        String configHost = args[0];
+        String configPort = args[1];
+        String instanceKey = args[2];
+
+        RequestHelper buildRequestHelper = buildRequestHelper(configHost, Integer.parseInt(configPort));
 
         try {
+            Set<URL> packages = new HashSet<>();
+            for (int i = 3; i < args.length; i++) {
+                packages.addAll(ClasspathHelper.forPackage(args[i]));
+            }
+
             Reflections reflections = new Reflections(new ConfigurationBuilder()
-                    .setUrls(ClasspathHelper.forPackage("com.jivesoftware")) // GRRR
-                    .setScanners(new SubTypesScanner(), new TypesScanner()));
+                .setUrls(packages)
+                .setScanners(new SubTypesScanner(), new TypesScanner()));
+
             Set<Class<? extends Config>> subTypesOf = reflections.getSubTypesOf(Config.class);
+
             File configDir = new File("./config");
             configDir.mkdirs();
-            ConfigExtractor configExtractor = new ConfigExtractor(new PropertyPrefix(), subTypesOf);
-            File defaultConfigFile = new File(configDir, "default-config.properties");
-            configExtractor.writeDefaultsToFile(defaultConfigFile);
 
-            RequestHelper buildRequestHelper = buildRequestHelper(args[0], Integer.parseInt(args[1]));
-
-            Properties defaultProperties = createKeySortedProperties();
-            defaultProperties.load(new FileInputStream(defaultConfigFile));
-            Map<String, String> config = new HashMap<>();
-            for (Map.Entry<Object, Object> entry : defaultProperties.entrySet()) {
-                config.put(entry.getKey().toString(), entry.getValue().toString());
+            Set<Class<? extends Config>> serviceConfig = new HashSet<>();
+            Set<Class<? extends Config>> healthConfig = new HashSet<>();
+            for (Class<? extends Config> type : subTypesOf) {
+                if (HealthCheckConfig.class.isAssignableFrom(type)) {
+                    healthConfig.add(type);
+                } else {
+                    serviceConfig.add(type);
+                }
             }
 
-            UpenaConfig setDefaults = new UpenaConfig("default", args[2], config);
-            UpenaConfig setConfig = buildRequestHelper.executeRequest(setDefaults, "/upenaConfig/set", UpenaConfig.class, null);
-            if (setConfig == null) {
-                System.out.println("Failed to publish default config for " + Arrays.deepToString(args));
-            }
+            Map<String, String> defaultServiceConfig = extractAndPublish(serviceConfig,
+                new File(configDir, "default-service-config.properties"), "default", instanceKey, buildRequestHelper);
 
-            UpenaConfig getOverrides = new UpenaConfig("override", args[2], config);
-            UpenaConfig gotConfig = buildRequestHelper.executeRequest(getOverrides, "/upenaConfig/get", UpenaConfig.class, null);
-            if (gotConfig == null) {
-                System.out.println("Failed to publish default config for " + Arrays.deepToString(args));
+            UpenaConfig getServiceOverrides = new UpenaConfig("override", instanceKey, defaultServiceConfig);
+            UpenaConfig gotSerivceConfig = buildRequestHelper.executeRequest(getServiceOverrides, "/upenaConfig/get", UpenaConfig.class, null);
+            if (gotSerivceConfig == null) {
+                System.out.println("Failed to publish default service config for " + Arrays.deepToString(args));
             } else {
                 Properties override = createKeySortedProperties();
-                override.putAll(gotConfig.properties);
-                override.store(new FileOutputStream("config/override-config.properties"), "");
+                override.putAll(gotSerivceConfig.properties);
+                override.store(new FileOutputStream("config/override-service-config.properties"), "");
+            }
+
+            Map<String, String> defaultHealthConfig = extractAndPublish(healthConfig,
+                new File(configDir, "default-health-config.properties"), "default-health", instanceKey, buildRequestHelper);
+
+            UpenaConfig getHealthOverrides = new UpenaConfig("override-health", instanceKey, defaultHealthConfig);
+            UpenaConfig gotHealthConfig = buildRequestHelper.executeRequest(getHealthOverrides, "/upenaConfig/get", UpenaConfig.class, null);
+            if (gotHealthConfig == null) {
+                System.out.println("Failed to publish default health config for " + Arrays.deepToString(args));
+            } else {
+                Properties override = createKeySortedProperties();
+                override.putAll(gotHealthConfig.properties);
+                override.store(new FileOutputStream("config/override-health-config.properties"), "");
             }
 
             Properties instanceProperties = createKeySortedProperties();
@@ -94,15 +117,23 @@ public class ConfigExtractor {
                 instanceProperties.load(new FileInputStream(configFile));
             }
 
-            Properties overrideProperties = createKeySortedProperties();
-            configFile = new File("config/override-config.properties");
+            Properties serviceOverrideProperties = createKeySortedProperties();
+            configFile = new File("config/override-service-config.properties");
             if (configFile.exists()) {
-                overrideProperties.load(new FileInputStream(configFile));
+                serviceOverrideProperties.load(new FileInputStream(configFile));
+            }
+
+            Properties healthOverrideProperties = createKeySortedProperties();
+            configFile = new File("config/override-health-config.properties");
+            if (configFile.exists()) {
+                healthOverrideProperties.load(new FileInputStream(configFile));
             }
 
             Properties properties = createKeySortedProperties();
-            properties.putAll(defaultProperties);
-            properties.putAll(overrideProperties);
+            properties.putAll(defaultServiceConfig);
+            properties.putAll(defaultHealthConfig);
+            properties.putAll(serviceOverrideProperties);
+            properties.putAll(healthOverrideProperties);
             properties.putAll(instanceProperties);
             properties.store(new FileOutputStream("config/config.properties"), "");
 
@@ -112,6 +143,30 @@ public class ConfigExtractor {
             System.exit(1);
         }
 
+    }
+
+    private static Map<String, String> extractAndPublish(Set<Class<? extends Config>> serviceConfig,
+        File defaultServiceConfigFile,
+        String context,
+        String instanceKey,
+        RequestHelper buildRequestHelper) throws IOException {
+
+        ConfigExtractor serviceConfigExtractor = new ConfigExtractor(new PropertyPrefix(), serviceConfig);
+        serviceConfigExtractor.writeDefaultsToFile(defaultServiceConfigFile);
+
+        Properties defaultProperties = createKeySortedProperties();
+        defaultProperties.load(new FileInputStream(defaultServiceConfigFile));
+        Map<String, String> config = new HashMap<>();
+        for (Map.Entry<Object, Object> entry : defaultProperties.entrySet()) {
+            config.put(entry.getKey().toString(), entry.getValue().toString());
+        }
+
+        UpenaConfig setDefaults = new UpenaConfig(context, instanceKey, config);
+        UpenaConfig setConfig = buildRequestHelper.executeRequest(setDefaults, "/upenaConfig/set", UpenaConfig.class, null);
+        if (setConfig == null) {
+            System.out.println("Failed to publish default config for " + instanceKey);
+        }
+        return config;
     }
 
     static Properties createKeySortedProperties() {

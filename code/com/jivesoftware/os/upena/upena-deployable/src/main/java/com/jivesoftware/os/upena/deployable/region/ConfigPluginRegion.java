@@ -25,9 +25,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 /**
@@ -78,26 +76,69 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
         for (String instanceKey : instanceKeys) {
             Instance instance = upenaStore.instances.get(new InstanceKey(instanceKey));
             if (instance != null) {
-                Map<String, String> defaults = configStore.get(instanceKey, "default", null);
-                Map<String, String> overridden = configStore.get(instanceKey, "override", null);
-                boolean modified = false;
+                Map<String, String> serviceDefaults = configStore.get(instanceKey, "default", null);
+                Map<String, String> serviceOverrides = configStore.get(instanceKey, "override", null);
+                Map<String, String> healthDefaults = configStore.get(instanceKey, "default-health", null);
+                Map<String, String> healthOverrides = configStore.get(instanceKey, "override-health", null);
+
+                boolean modifiedServiceDefaults = false;
+                boolean modifiedServiceOverrides = false;
+                boolean modifiedHealthDefaults = false;
+                boolean modifiedHealthOverrides = false;
                 for (Map.Entry<String, Map<String, String>> propEntry : propertyMap.entrySet()) {
                     if (propEntry.getValue().containsKey(instanceKey)) {
                         String property = propEntry.getKey();
                         String value = propEntry.getValue().get(instanceKey);
-                        if (value == null || value.isEmpty() || value.equals(defaults.get(property))) {
-                            overridden.remove(property);
-                            modified = true;
+                        if (value != null && value.equals("OBSOLETE")) {
+                            if (serviceDefaults.containsKey(property)) {
+                                serviceDefaults.remove(property);
+                                modifiedServiceDefaults = true;
+                            }
+                            if (serviceOverrides.containsKey(property)) {
+                                serviceOverrides.remove(property);
+                                modifiedServiceOverrides = true;
+                            }
+                            if (healthDefaults.containsKey(property)) {
+                                healthDefaults.remove(property);
+                                modifiedHealthDefaults = true;
+                            }
+                            if (healthOverrides.containsKey(property)) {
+                                healthOverrides.remove(property);
+                                modifiedHealthOverrides = true;
+                            }
+                        }
+                        if (value == null || value.isEmpty() || value.equals(serviceDefaults.get(property))) {
+                            serviceOverrides.remove(property);
+                            modifiedServiceOverrides = true;
                             log.info("Reverting to default for property:" + property + " for instance:" + instanceKey);
                         } else {
-                            overridden.put(property, value);
-                            modified = true;
+                            serviceOverrides.put(property, value);
+                            modifiedServiceOverrides = true;
+                            log.info("Setting property:" + property + "=" + value + " for instance:" + instanceKey);
+                        }
+
+                        if (value == null || value.isEmpty() || value.equals(healthDefaults.get(property))) {
+                            healthOverrides.remove(property);
+                            modifiedHealthOverrides = true;
+                            log.info("Reverting to default for property:" + property + " for instance:" + instanceKey);
+                        } else {
+                            healthOverrides.put(property, value);
+                            modifiedHealthOverrides = true;
                             log.info("Setting property:" + property + "=" + value + " for instance:" + instanceKey);
                         }
                     }
                 }
-                if (modified) {
-                    configStore.set(instanceKey, "override", overridden);
+                if (modifiedServiceDefaults) {
+                    configStore.set(instanceKey, "default", serviceDefaults);
+                }
+                if (modifiedServiceOverrides) {
+                    configStore.set(instanceKey, "override", serviceOverrides);
+                }
+                if (modifiedHealthDefaults) {
+                    configStore.set(instanceKey, "default-health", healthDefaults);
+                }
+                if (modifiedHealthOverrides) {
+                    configStore.set(instanceKey, "override-health", healthOverrides);
                 }
 
             } else {
@@ -131,13 +172,16 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
         final String property;
         final String value;
         final String overridden;
+        final String service;
+        final String health;
 
         public ConfigPluginRegionInput(
             String aClusterKey, String aCluster, String aHostKey, String aHost, String aServiceKey, String aService, String aInstance,
             String aReleaseKey, String aRelease,
             String bClusterKey, String bCluster, String bHostKey, String bHost, String bServiceKey, String bService,
             String bInstance, String bReleaseKey, String bRelease,
-            String property, String value, String overridden) {
+            String property, String value,
+            String overridden, String service, String health) {
             this.aClusterKey = aClusterKey;
             this.aCluster = aCluster;
             this.aHostKey = aHostKey;
@@ -159,6 +203,8 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
             this.property = property;
             this.value = value;
             this.overridden = overridden;
+            this.service = service;
+            this.health = health;
         }
 
     }
@@ -198,12 +244,16 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
                 data.put("property", input.property);
                 data.put("value", input.value);
                 data.put("overridden", input.overridden);
+                data.put("service", input.service);
+                data.put("health", input.health);
 
                 ConcurrentSkipListMap<String, List<Map<String, String>>> as = packProperties(input.aClusterKey,
-                    input.aHostKey, input.aServiceKey, input.aInstance, input.aReleaseKey, input.property, input.value, input.overridden);
+                    input.aHostKey, input.aServiceKey, input.aInstance, input.aReleaseKey, input.property, input.value,
+                    input.overridden, input.service, input.health);
 
                 ConcurrentSkipListMap<String, List<Map<String, String>>> bs = packProperties(input.bClusterKey,
-                    input.bHostKey, input.bServiceKey, input.bInstance, input.bReleaseKey, input.property, input.value, input.overridden);
+                    input.bHostKey, input.bServiceKey, input.bInstance, input.bReleaseKey, input.property, input.value,
+                    input.overridden, input.service, input.health);
 
                 Set<String> allProperties = Collections.newSetFromMap(new ConcurrentSkipListMap<String, Boolean>());
                 allProperties.addAll(as.keySet());
@@ -263,7 +313,7 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
 
     private ConcurrentSkipListMap<String, List<Map<String, String>>> packProperties(String clusterKey,
         String hostKey, String serviceKey, String instance, String releaseKey, String propertyContains,
-        String valueContains, String overridden) throws Exception {
+        String valueContains, String overridden, String service, String health) throws Exception {
 
         boolean isOverridden = Boolean.parseBoolean(overridden);
 
@@ -288,60 +338,76 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
                 TimestampedValue<Instance> timestampedValue = entrySet.getValue();
                 Instance i = timestampedValue.getValue();
 
-                Map<String, String> defaultMaps = configStore.get(key.getKey(), "default", null);
-                Map<String, String> overriddenMap = configStore.get(key.getKey(), "override", null);
+                if (Boolean.valueOf(service)) {
+                    Map<String, String> defaultServiceMaps = configStore.get(key.getKey(), "default", null);
+                    Map<String, String> overriddenServiceMap = configStore.get(key.getKey(), "override", null);
 
-                for (String property : defaultMaps.keySet()) {
-                    if (!propertyContains.isEmpty() && !property.contains(propertyContains)) {
-                        continue;
-                    }
-
-                    List<Map<String, String>> occurences = properties.get(property);
-                    if (occurences == null) {
-                        occurences = new ArrayList<>();
-                        if (!valueContains.isEmpty()) {
-                            List<Map<String, String>> occurencesCopy = new ArrayList<>();
-                            for (Map<String, String> o : occurences) {
-                                Map<String, String> valuesCopy = new ConcurrentHashMap<>(o);
-                                for (Entry<String, String> e : valuesCopy.entrySet()) {
-                                    if (!e.getValue().contains(valueContains)) {
-                                        valuesCopy.remove(e.getKey());
-                                    }
-                                }
-                                if (!valuesCopy.isEmpty()) {
-                                    occurencesCopy.add(valuesCopy);
-                                }
-                            }
-                            if (!occurencesCopy.isEmpty()) {
-                                properties.put(property, occurencesCopy);
-                            }
-                        } else {
-                            properties.put(property, occurences);
-                        }
-                    }
-                    Map<String, String> occurence = new HashMap<>();
-                    occurence.put("instanceKey", key.getKey());
-                    occurence.put("clusterKey", i.clusterKey.getKey());
-                    occurence.put("cluster", upenaStore.clusters.get(i.clusterKey).name);
-                    occurence.put("hostKey", i.hostKey.getKey());
-                    occurence.put("host", upenaStore.hosts.get(i.hostKey).name);
-                    occurence.put("serviceKey", i.serviceKey.getKey());
-                    occurence.put("service", upenaStore.services.get(i.serviceKey).name);
-                    occurence.put("instance", String.valueOf(i.instanceId));
-                    occurence.put("override", overriddenMap.get(property));
-                    occurence.put("default", defaultMaps.get(property));
-
-                    if (isOverridden) {
-                        if (overriddenMap.containsValue(property)) {
-                            occurences.add(occurence);
-                        }
-                    } else {
-                        occurences.add(occurence);
-                    }
+                    filterProperties(key, i, properties, defaultServiceMaps, overriddenServiceMap, propertyContains, valueContains, isOverridden);
                 }
+                if (Boolean.valueOf(health)) {
+
+                    Map<String, String> defaultHealthMaps = configStore.get(key.getKey(), "default-health", null);
+                    Map<String, String> overriddenHealtheMap = configStore.get(key.getKey(), "override-health", null);
+                    filterProperties(key, i, properties, defaultHealthMaps, overriddenHealtheMap, propertyContains, valueContains, isOverridden);
+                }
+
             }
         }
         return properties;
+    }
+
+    private void filterProperties(InstanceKey key,
+        Instance instance,
+        ConcurrentSkipListMap<String, List<Map<String, String>>> properties,
+        Map<String, String> defaultServiceMaps,
+        Map<String, String> overriddenServiceMap,
+        String propertyContains,
+        String valueContains,
+        boolean isOverridden) throws Exception {
+
+        for (String property : defaultServiceMaps.keySet()) {
+            if (!propertyContains.isEmpty() && !property.contains(propertyContains)) {
+                continue;
+            }
+
+            List<Map<String, String>> occurences = properties.get(property);
+            if (occurences == null) {
+                occurences = new ArrayList<>();
+                properties.put(property, occurences);
+            }
+
+            String defaultValue = defaultServiceMaps.get(property);
+            String overiddenValue = overriddenServiceMap.get(property);
+
+            if (!valueContains.isEmpty()) {
+                if (overiddenValue == null) {
+                    if (!defaultValue.contains(valueContains)) {
+                        continue;
+                    }
+                } else {
+                    if (!overiddenValue.contains(valueContains)) {
+                        continue;
+                    }
+                }
+            }
+            if (isOverridden && overiddenValue == null) {
+                continue;
+            }
+
+            Map<String, String> occurence = new HashMap<>();
+            occurence.put("instanceKey", key.getKey());
+            occurence.put("clusterKey", instance.clusterKey.getKey());
+            occurence.put("cluster", upenaStore.clusters.get(instance.clusterKey).name);
+            occurence.put("hostKey", instance.hostKey.getKey());
+            occurence.put("host", upenaStore.hosts.get(instance.hostKey).name);
+            occurence.put("serviceKey", instance.serviceKey.getKey());
+            occurence.put("service", upenaStore.services.get(instance.serviceKey).name);
+            occurence.put("instance", String.valueOf(instance.instanceId));
+            occurence.put("override", overriddenServiceMap.get(property));
+            occurence.put("default", defaultServiceMaps.get(property));
+
+            occurences.add(occurence);
+        }
     }
 
     @Override

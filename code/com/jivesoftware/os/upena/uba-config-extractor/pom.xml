@@ -49,6 +49,10 @@
             <artifactId>upena-config-shared</artifactId>
             <version>0.43-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>com.jivesoftware.os.jive.utils</groupId>
+            <artifactId>health</artifactId>
+        </dependency>
     </dependencies>
     <name>uba-config-extractor</name>
 </project>
