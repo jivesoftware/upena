@@ -171,9 +171,9 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
 
         final String property;
         final String value;
-        final String overridden;
-        final String service;
-        final String health;
+        final boolean overridden;
+        final boolean service;
+        final boolean health;
 
         public ConfigPluginRegionInput(
             String aClusterKey, String aCluster, String aHostKey, String aHost, String aServiceKey, String aService, String aInstance,
@@ -181,7 +181,7 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
             String bClusterKey, String bCluster, String bHostKey, String bHost, String bServiceKey, String bService,
             String bInstance, String bReleaseKey, String bRelease,
             String property, String value,
-            String overridden, String service, String health) {
+            boolean overridden, boolean service, boolean health) {
             this.aClusterKey = aClusterKey;
             this.aCluster = aCluster;
             this.aHostKey = aHostKey;
@@ -313,9 +313,7 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
 
     private ConcurrentSkipListMap<String, List<Map<String, String>>> packProperties(String clusterKey,
         String hostKey, String serviceKey, String instance, String releaseKey, String propertyContains,
-        String valueContains, String overridden, String service, String health) throws Exception {
-
-        boolean isOverridden = Boolean.parseBoolean(overridden);
+        String valueContains, boolean overridden, boolean service, boolean health) throws Exception {
 
         ConcurrentSkipListMap<String, List<Map<String, String>>> properties = new ConcurrentSkipListMap<>();
         InstanceFilter filter = new InstanceFilter(
@@ -338,17 +336,17 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
                 TimestampedValue<Instance> timestampedValue = entrySet.getValue();
                 Instance i = timestampedValue.getValue();
 
-                if (Boolean.valueOf(service)) {
+                if (service) {
                     Map<String, String> defaultServiceMaps = configStore.get(key.getKey(), "default", null);
                     Map<String, String> overriddenServiceMap = configStore.get(key.getKey(), "override", null);
 
-                    filterProperties(key, i, properties, defaultServiceMaps, overriddenServiceMap, propertyContains, valueContains, isOverridden);
+                    filterProperties(key, i, properties, defaultServiceMaps, overriddenServiceMap, propertyContains, valueContains, overridden);
                 }
-                if (Boolean.valueOf(health)) {
+                if (health) {
 
                     Map<String, String> defaultHealthMaps = configStore.get(key.getKey(), "default-health", null);
                     Map<String, String> overriddenHealtheMap = configStore.get(key.getKey(), "override-health", null);
-                    filterProperties(key, i, properties, defaultHealthMaps, overriddenHealtheMap, propertyContains, valueContains, isOverridden);
+                    filterProperties(key, i, properties, defaultHealthMaps, overriddenHealtheMap, propertyContains, valueContains, overridden);
                 }
 
             }
