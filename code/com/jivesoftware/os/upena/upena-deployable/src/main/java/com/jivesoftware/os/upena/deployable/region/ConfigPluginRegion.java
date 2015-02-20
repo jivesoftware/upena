@@ -106,25 +106,26 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
                                 healthOverrides.remove(property);
                                 modifiedHealthOverrides = true;
                             }
-                        }
-                        if (value == null || value.isEmpty() || value.equals(serviceDefaults.get(property))) {
-                            serviceOverrides.remove(property);
-                            modifiedServiceOverrides = true;
-                            log.info("Reverting to default for property:" + property + " for instance:" + instanceKey);
                         } else {
-                            serviceOverrides.put(property, value);
-                            modifiedServiceOverrides = true;
-                            log.info("Setting property:" + property + "=" + value + " for instance:" + instanceKey);
-                        }
+                            if (value == null || value.isEmpty() || value.equals(serviceDefaults.get(property))) {
+                                serviceOverrides.remove(property);
+                                modifiedServiceOverrides = true;
+                                log.info("Reverting to default for property:" + property + " for instance:" + instanceKey);
+                            } else {
+                                serviceOverrides.put(property, value);
+                                modifiedServiceOverrides = true;
+                                log.info("Setting property:" + property + "=" + value + " for instance:" + instanceKey);
+                            }
 
-                        if (value == null || value.isEmpty() || value.equals(healthDefaults.get(property))) {
-                            healthOverrides.remove(property);
-                            modifiedHealthOverrides = true;
-                            log.info("Reverting to default for property:" + property + " for instance:" + instanceKey);
-                        } else {
-                            healthOverrides.put(property, value);
-                            modifiedHealthOverrides = true;
-                            log.info("Setting property:" + property + "=" + value + " for instance:" + instanceKey);
+                            if (value == null || value.isEmpty() || value.equals(healthDefaults.get(property))) {
+                                healthOverrides.remove(property);
+                                modifiedHealthOverrides = true;
+                                log.info("Reverting to default for property:" + property + " for instance:" + instanceKey);
+                            } else {
+                                healthOverrides.put(property, value);
+                                modifiedHealthOverrides = true;
+                                log.info("Setting property:" + property + "=" + value + " for instance:" + instanceKey);
+                            }
                         }
                     }
                 }
