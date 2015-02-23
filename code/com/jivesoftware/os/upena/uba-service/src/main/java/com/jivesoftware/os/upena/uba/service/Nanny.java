@@ -27,6 +27,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class Nanny {
@@ -42,6 +43,7 @@ public class Nanny {
     private final AtomicReference<InstanceDescriptor> instanceDescriptor;
     private final LinkedBlockingQueue<Runnable> linkedBlockingQueue;
     private final ThreadPoolExecutor threadPoolExecutor;
+    private final AtomicLong restartAtTimestamp = new AtomicLong(-1);
 
     public Nanny(InstanceDescriptor instanceDescriptor,
         InstancePath instancePath,
@@ -81,6 +83,10 @@ public class Nanny {
         } else {
             instanceDescriptor.set(id);
         }
+
+        if (id.restartTimestampGMTMillis > System.currentTimeMillis()) {
+            restartAtTimestamp.set(id.restartTimestampGMTMillis);
+        }
     }
 
     public DeployLog getDeployLog() {
@@ -95,7 +101,15 @@ public class Nanny {
         return new NannyReport(deployLog.getState(), instanceDescriptor.get(), deployLog.commitedLog());
     }
 
-    synchronized public String nanny(String host, String upenaHost, int upenaPort) {
+    synchronized public String nanny(String host, String upenaHost, int upenaPort) throws InterruptedException, ExecutionException {
+
+        if (restartAtTimestamp.get() > 0) {
+            deployLog.log("Nanny", "Restart triggered by timestamp. " + this, null);
+            if (kill()) {
+                restartAtTimestamp.set(-1);
+            }
+        }
+
         try {
             if (destroyed.get()) {
                 deployLog.log("Nanny", "tried to check a service that has been destroyed. " + this, null);

@@ -60,7 +60,7 @@ class CheckForLatestRelease {
         String[] versionParts = deployablecoordinate.trim().split(":");
         if (versionParts.length != 4) {
             LOG.warn("deployable coordinates must be of the following form: groupId:artifactId:packaging:version");
-            return deployablecoordinate;
+            return "Invalid coordinate:" + deployablecoordinate + " expected: groupId:artifactId:packaging:version";
         }
         String groupId = versionParts[0];
         String artifactId = versionParts[1];
@@ -84,7 +84,7 @@ class CheckForLatestRelease {
             return latestRelease;
 
         } catch (ArtifactResolutionException x) {
-            return deployablecoordinate;
+            return "Failed to resolve:" + deployablecoordinate + " Cause:" + x.getMessage();
         }
 
     }

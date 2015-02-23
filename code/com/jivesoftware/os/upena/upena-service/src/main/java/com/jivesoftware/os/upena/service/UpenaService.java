@@ -115,7 +115,7 @@ public class UpenaService {
                 primaryReleaseGroupKey = cluster.defaultReleaseGroups.get(wantToConnectToServiceKey); // Use instance assigned to the instances cluster.
                 if (primaryReleaseGroupKey == null) {
                     return failedConnectionResponse("Cluster:" + cluster + " doesen't have a release group declared for "
-                            + "serviceKey:" + wantToConnectToServiceKey + " .");
+                        + "serviceKey:" + wantToConnectToServiceKey + " .");
                 }
                 got = findInstances(messages, instance.clusterKey, primaryReleaseGroupKey, wantToConnectToServiceKey);
                 if (got != null && !got.isEmpty()) {
@@ -146,14 +146,14 @@ public class UpenaService {
 
         messages.add("Success");
         return new ConnectionDescriptorsResponse(1, messages,
-                (primaryReleaseGroupKey == null) ? null : primaryReleaseGroupKey.getKey(), primaryConnections,
-                (alternateReleaseGroupKey == null) ? null : alternateReleaseGroupKey.getKey(), alternateConnections);
+            (primaryReleaseGroupKey == null) ? null : primaryReleaseGroupKey.getKey(), primaryConnections,
+            (alternateReleaseGroupKey == null) ? null : alternateReleaseGroupKey.getKey(), alternateConnections);
     }
 
     ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> findInstances(List<String> messages,
-            ClusterKey clusterKey,
-            ReleaseGroupKey releaseGroupKey,
-            ServiceKey wantToConnectToServiceKey) throws Exception {
+        ClusterKey clusterKey,
+        ReleaseGroupKey releaseGroupKey,
+        ServiceKey wantToConnectToServiceKey) throws Exception {
         if (releaseGroupKey != null) {
             messages.add("Provided null releaseGroupKey so give null back.");
             return null;
@@ -166,17 +166,17 @@ public class UpenaService {
         }
 
         if (releaseGroupKey != null
-                && releaseGroupKey.getKey() != null
-                && releaseGroupKey.getKey().length() > 0) {
+            && releaseGroupKey.getKey() != null
+            && releaseGroupKey.getKey().length() > 0) {
             InstanceFilter explicityReleaseGroupFilter = new InstanceFilter(clusterKey,
-                    null, wantToConnectToServiceKey, releaseGroupKey, null, 0, Integer.MAX_VALUE);
+                null, wantToConnectToServiceKey, releaseGroupKey, null, 0, Integer.MAX_VALUE);
             return upenaStore.instances.find(explicityReleaseGroupFilter);
         }
         return null;
     }
 
     List<ConnectionDescriptor> buildConnextions(List<String> messages,
-            ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> instances, String portName) throws Exception {
+        ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> instances, String portName) throws Exception {
         List<ConnectionDescriptor> connections = new ArrayList<>();
         for (Entry<InstanceKey, TimestampedValue<Instance>> entry : instances.entrySet()) {
             Instance value = entry.getValue().getValue();
@@ -200,7 +200,7 @@ public class UpenaService {
 
     private ConnectionDescriptorsResponse failedConnectionResponse(String... message) {
         return new ConnectionDescriptorsResponse(-1,
-                Arrays.asList(message), null, null, null, null);
+            Arrays.asList(message), null, null, null, null);
     }
 
     public InstanceDescriptorsResponse instanceDescriptors(InstanceDescriptorsRequest instanceDescriptorsRequest) throws Exception {
@@ -244,15 +244,16 @@ public class UpenaService {
             InstanceKey instanceKey = e.getKey();
 
             InstanceDescriptor instanceDescriptor = new InstanceDescriptor(clusterKey.getKey(),
-                    clusterName,
-                    serviceKey.getKey(),
-                    serviceName,
-                    releaseGroupKey.getKey(),
-                    releaseGroupName,
-                    instanceKey.getKey(),
-                    instance.instanceId,
-                    releaseGroup.version,
-                    releaseGroup.repository);
+                clusterName,
+                serviceKey.getKey(),
+                serviceName,
+                releaseGroupKey.getKey(),
+                releaseGroupName,
+                instanceKey.getKey(),
+                instance.instanceId,
+                releaseGroup.version,
+                releaseGroup.repository,
+                -1);
 
             for (Entry<String, Instance.Port> p : instance.ports.entrySet()) {
                 instanceDescriptor.ports.put(p.getKey(), new InstanceDescriptor.InstanceDescriptorPort(p.getValue().port));

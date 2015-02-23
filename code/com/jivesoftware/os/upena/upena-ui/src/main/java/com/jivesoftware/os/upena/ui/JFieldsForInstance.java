@@ -52,7 +52,6 @@ public class JFieldsForInstance implements JObjectFields<InstanceKey, Instance, 
         this.key = k;
         this.value = v;
 
-
         hostKey = new JEditRef(factory, "host", Host.class, (v != null) ? (v.hostKey != null) ? v.hostKey.getKey() : "" : "");
         fields.put("hostKey", hostKey);
 
@@ -66,7 +65,7 @@ public class JFieldsForInstance implements JObjectFields<InstanceKey, Instance, 
         fields.put("clusterKey", clusterKey);
 
         releaseGroupKey = new JEditRef(
-                factory, "releaseGroup", ReleaseGroup.class, (v != null) ? (v.releaseGroupKey != null) ? v.releaseGroupKey.getKey() : "" : "");
+            factory, "releaseGroup", ReleaseGroup.class, (v != null) ? (v.releaseGroupKey != null) ? v.releaseGroupKey.getKey() : "" : "");
         fields.put("releaseGroupKey", releaseGroupKey);
 
         enabled = new JEditBooleanField("enabled", "");
@@ -96,12 +95,13 @@ public class JFieldsForInstance implements JObjectFields<InstanceKey, Instance, 
     @Override
     public Instance fieldsToObject() {
         return new Instance(new ClusterKey(clusterKey.getValue()),
-                new HostKey(hostKey.getValue()),
-                new ServiceKey(serviceKey.getValue()),
-                new ReleaseGroupKey(releaseGroupKey.getValue()),
-                Integer.parseInt(instanceId.getValue()),
-                Boolean.parseBoolean(enabled.getValue()),
-                Boolean.parseBoolean(locked.getValue()));
+            new HostKey(hostKey.getValue()),
+            new ServiceKey(serviceKey.getValue()),
+            new ReleaseGroupKey(releaseGroupKey.getValue()),
+            Integer.parseInt(instanceId.getValue()),
+            Boolean.parseBoolean(enabled.getValue()),
+            Boolean.parseBoolean(locked.getValue()),
+            System.currentTimeMillis());
 
     }
 
@@ -123,12 +123,12 @@ public class JFieldsForInstance implements JObjectFields<InstanceKey, Instance, 
         } catch (Exception x) {
         }
         InstanceFilter filter = new InstanceFilter(
-                FilterUtils.nullIfEmpty(new ClusterKey(clusterKey.getValue())),
-                FilterUtils.nullIfEmpty(new HostKey(hostKey.getValue())),
-                FilterUtils.nullIfEmpty(new ServiceKey(serviceKey.getValue())),
-                FilterUtils.nullIfEmpty(new ReleaseGroupKey(releaseGroupKey.getValue())),
-                id,
-                0, 100);
+            FilterUtils.nullIfEmpty(new ClusterKey(clusterKey.getValue())),
+            FilterUtils.nullIfEmpty(new HostKey(hostKey.getValue())),
+            FilterUtils.nullIfEmpty(new ServiceKey(serviceKey.getValue())),
+            FilterUtils.nullIfEmpty(new ReleaseGroupKey(releaseGroupKey.getValue())),
+            id,
+            0, 100);
         return filter;
     }
 

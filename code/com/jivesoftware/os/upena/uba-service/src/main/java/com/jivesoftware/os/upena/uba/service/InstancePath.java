@@ -75,7 +75,8 @@ public class InstancePath {
             properties.get(instancePrefix + "instanceKey").toString(),
             Integer.parseInt(properties.get(instancePrefix + "instanceName").toString()),
             properties.get(instancePrefix + "version").toString(),
-            properties.get(instancePrefix + "repository").toString());
+            properties.get(instancePrefix + "repository").toString(),
+            -1);
 
         for (Object key : properties.keySet()) {
             String portKey = key.toString();

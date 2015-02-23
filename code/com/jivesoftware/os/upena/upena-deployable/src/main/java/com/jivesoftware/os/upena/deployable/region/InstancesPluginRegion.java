@@ -24,10 +24,15 @@ import com.jivesoftware.os.upena.shared.Service;
 import com.jivesoftware.os.upena.shared.ServiceKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
 import com.jivesoftware.os.upena.uba.service.UbaService;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
+import java.util.concurrent.TimeUnit;
+import org.apache.commons.lang.time.DurationFormatUtils;
 
 /**
  *
@@ -161,7 +166,7 @@ public class InstancesPluginRegion implements PageRegion<Optional<InstancesPlugi
                                     new ServiceKey(input.serviceKey),
                                     new ReleaseGroupKey(input.releaseKey),
                                     Integer.parseInt(input.instanceId),
-                                    true, false
+                                    true, false, System.currentTimeMillis()
                                 ));
 
                                 data.put("message", "Created Instance.");
@@ -183,7 +188,7 @@ public class InstancesPluginRegion implements PageRegion<Optional<InstancesPlugi
                                     new ServiceKey(input.serviceKey),
                                     new ReleaseGroupKey(input.releaseKey),
                                     Integer.parseInt(input.instanceId),
-                                    true, false));
+                                    true, false, System.currentTimeMillis()));
                                 data.put("message", "Updated Instance:" + input.key);
                             }
 
@@ -203,12 +208,28 @@ public class InstancesPluginRegion implements PageRegion<Optional<InstancesPlugi
                             }
                         }
                     } else if (input.action.equals("restartAll")) {
+                        long now = System.currentTimeMillis();
+                        long stagger = TimeUnit.SECONDS.toMillis(30);
+                        now += stagger;
                         Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(filter);
                         for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {
                             InstanceKey key = entrySet.getKey();
                             TimestampedValue<Instance> timestampedValue = entrySet.getValue();
                             Instance value = timestampedValue.getValue();
-                            ubaService.restartInstance(value.hostKey.getKey(), key.getKey());
+                            value.restartTimestampGMTMillis = now;
+                            upenaStore.instances.update(key, value);
+                            now += stagger;
+                        }
+                    } else if (input.action.equals("cancelRestartAll")) {
+                        Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(filter);
+                        for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {
+                            InstanceKey key = entrySet.getKey();
+                            TimestampedValue<Instance> timestampedValue = entrySet.getValue();
+                            Instance value = timestampedValue.getValue();
+                            if (value.restartTimestampGMTMillis > 0) {
+                                value.restartTimestampGMTMillis = -1;
+                                upenaStore.instances.update(key, value);
+                            }
                         }
                     } else if (input.action.equals("removeAll")) {
                         Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(filter);
@@ -235,6 +256,15 @@ public class InstancesPluginRegion implements PageRegion<Optional<InstancesPlugi
 
                     Map<String, Object> map = new HashMap<>();
                     map.put("key", key.getKey());
+                    long now = System.currentTimeMillis();
+                    if (value.restartTimestampGMTMillis > 0 && now < value.restartTimestampGMTMillis) {
+                        map.put("status", "Will restart in:" + DurationFormatUtils.formatDurationHMS(value.restartTimestampGMTMillis - now));
+                    } else {
+                        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("EEE, dd MMM yyyy hh:mm:ss z");
+                        simpleDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+                        String gmtTimeString = simpleDateFormat.format(new Date(timestampedValue.getTimestamp()));
+                        map.put("status", "Last Modified:" + gmtTimeString);
+                    }
                     map.put("cluster", ImmutableMap.of(
                         "key", value.clusterKey.getKey(),
                         "name", upenaStore.clusters.get(value.clusterKey).name));

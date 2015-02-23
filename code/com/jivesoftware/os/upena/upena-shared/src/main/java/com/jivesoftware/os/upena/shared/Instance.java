@@ -16,12 +16,14 @@
 package com.jivesoftware.os.upena.shared;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Instance implements Stored<Instance>, Serializable {
 
     public static final String PORT_MAIN = "main";
@@ -35,16 +37,18 @@ public class Instance implements Stored<Instance>, Serializable {
     public int instanceId;
     public boolean enabled;
     public boolean locked;
+    public long restartTimestampGMTMillis = -1;
     public Map<String, Port> ports = new ConcurrentHashMap<>();
 
     @JsonCreator
     public Instance(@JsonProperty("clusterKey") ClusterKey clusterKey,
-            @JsonProperty("hostKey") HostKey hostKey,
-            @JsonProperty("serviceKey") ServiceKey serviceKey,
-            @JsonProperty("releaseGroupKey") ReleaseGroupKey releaseGroupKey,
-            @JsonProperty("instanceId") int instanceId,
-            @JsonProperty("enabled") boolean enabled,
-            @JsonProperty("locked") boolean locked) {
+        @JsonProperty("hostKey") HostKey hostKey,
+        @JsonProperty("serviceKey") ServiceKey serviceKey,
+        @JsonProperty("releaseGroupKey") ReleaseGroupKey releaseGroupKey,
+        @JsonProperty("instanceId") int instanceId,
+        @JsonProperty("enabled") boolean enabled,
+        @JsonProperty("locked") boolean locked,
+        @JsonProperty("restartTimestampGMTMillis") long restartTimestampGMTMillis) {
         this.clusterKey = clusterKey;
         this.hostKey = hostKey;
         this.serviceKey = serviceKey;
@@ -52,20 +56,22 @@ public class Instance implements Stored<Instance>, Serializable {
         this.instanceId = instanceId;
         this.enabled = enabled;
         this.locked = locked;
+        this.restartTimestampGMTMillis = restartTimestampGMTMillis;
     }
 
     @Override
     public String toString() {
         return "Instance{"
-                + "clusterKey=" + clusterKey
-                + ", hostKey=" + hostKey
-                + ", serviceKey=" + serviceKey
-                + ", releaseGroupKey=" + releaseGroupKey
-                + ", instanceId=" + instanceId
-                + ", enabled=" + enabled
-                + ", locked=" + locked
-                + ", ports=" + ports
-                + '}';
+            + "clusterKey=" + clusterKey
+            + ", hostKey=" + hostKey
+            + ", serviceKey=" + serviceKey
+            + ", releaseGroupKey=" + releaseGroupKey
+            + ", instanceId=" + instanceId
+            + ", enabled=" + enabled
+            + ", locked=" + locked
+            + ", restartTimestampGMTMillis=" + restartTimestampGMTMillis
+            + ", ports=" + ports
+            + '}';
     }
 
     @Override

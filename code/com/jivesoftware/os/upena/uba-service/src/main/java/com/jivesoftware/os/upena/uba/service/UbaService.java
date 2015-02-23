@@ -58,30 +58,12 @@ public class UbaService {
         boolean runNanny = false;
         for (InstanceChanged instanceChanged : instanceChanges) {
             if (hostKey.equals(instanceChanged.getHostKey())) {
-                
                 runNanny = true;
             }
         }
         if (runNanny) {
             LOG.info("Nanny triggered by instance declaration changes.");
             nanny();
-        }
-    }
-
-    public void restartInstance(String _hostKey, String instanceKey) throws Exception {
-        if (hostKey.equals(_hostKey)) {
-            Map<InstanceDescriptor, InstancePath> onDiskInstances = uba.getOnDiskInstances();
-            for (Map.Entry<InstanceDescriptor, InstancePath> entry : onDiskInstances.entrySet()) {
-                InstanceDescriptor instanceDescriptor = entry.getKey();
-                if (instanceDescriptor.instanceKey.equals(instanceKey)) {
-                    String nanneyKey = uba.instanceDescriptorKey(instanceDescriptor);
-                    if (nannies.containsKey(nanneyKey)) {
-                        Nanny nanny = nannies.get(nanneyKey);
-                        nanny.kill();
-                        nanny.nanny(uba.host, uba.upenaHost, uba.upenaPort);
-                    }
-                }
-            }
         }
     }
 

@@ -224,6 +224,10 @@
             <artifactId>aether-api</artifactId>
             <version>0.9.0.M3</version>
         </dependency>
+        <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+        </dependency>
     </dependencies>
     <name>upena-deployable</name>
 </project>

@@ -20,16 +20,19 @@
                     <form id="filter-form" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
                         data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="instance">
                         <div class="panel-body">
+                            <label>Restart:</label>
                             <div class="btn-group" role="group" aria-label="...">
-                                <button type="submit" name="action" value="restartAll" class="btn btn-default">Restart Visible</button>
+                                <button type="submit" name="action" value="restartAll" class="btn btn-default">Rolling</button>
+                                <button type="submit" name="action" value="cancelRestartAll" class="btn btn-default">Cancel</button>
                             </div>
                         </div>
-                    
+                        
                         <div class="panel-body">
                             <table class="table table-condensed">
 
                                 <thead>
                                     <tr>
+                                        <th>Status</th>
                                         <th>Cluster</th>
                                         <th>Host</th>
                                         <th>Service</th>
@@ -40,6 +43,8 @@
                                 </thead>
                                 <tbody>
                                     <tr style="background-color:#ddd;">
+                                        <td>
+                                        </td>
                                         <td>
                                             <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
                                                 placeholder="Cluster" value="{$filters.cluster?:''}" name="cluster" id="clusterPicker"
@@ -79,6 +84,9 @@
                                         <form id="edit-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
                                             data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="editInstance">
                                             <tr>
+                                                <td>
+                                                    <pre>{$i.status}</pre>
+                                                </td>
                                                 <td>
                                                     <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
                                                         placeholder="Cluster" value="{$i.cluster.name}" name="cluster" class="upena-hs-field form-control"

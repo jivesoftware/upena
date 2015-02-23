@@ -16,11 +16,13 @@
 package com.jivesoftware.os.upena.routing.shared;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class InstanceDescriptor {
 
     public final String clusterKey;
@@ -34,19 +36,21 @@ public class InstanceDescriptor {
     public final String versionName;
     public final String repository;
     public final Map<String, InstanceDescriptorPort> ports = new ConcurrentHashMap<>();
+    public final long restartTimestampGMTMillis; // deliberately not part of hash or equals.
     // TODO add enable and locked
 
     @JsonCreator
     public InstanceDescriptor(@JsonProperty(value = "clusterKey") String clusterKey,
-            @JsonProperty(value = "clusterName") String clusterName,
-            @JsonProperty(value = "serviceKey") String serviceKey,
-            @JsonProperty(value = "serviceName") String serviceName,
-            @JsonProperty(value = "releaseGroupKey") String releaseGroupKey,
-            @JsonProperty(value = "releaseGroupName") String releaseGroupName,
-            @JsonProperty(value = "instanceKey") String instanceKey,
-            @JsonProperty(value = "instanceName") int instanceName,
-            @JsonProperty(value = "versionName") String versionName,
-            @JsonProperty(value = "repository") String repository) {
+        @JsonProperty("clusterName") String clusterName,
+        @JsonProperty("serviceKey") String serviceKey,
+        @JsonProperty("serviceName") String serviceName,
+        @JsonProperty("releaseGroupKey") String releaseGroupKey,
+        @JsonProperty("releaseGroupName") String releaseGroupName,
+        @JsonProperty("instanceKey") String instanceKey,
+        @JsonProperty("instanceName") int instanceName,
+        @JsonProperty("versionName") String versionName,
+        @JsonProperty("repository") String repository,
+        @JsonProperty("restartTimestampGMTMillis") long restartTimestampGMTMillis) {
         this.clusterKey = clusterKey;
         this.clusterName = clusterName.replaceAll("[^a-zA-Z0-9-_\\.]", "_");
         this.serviceKey = serviceKey;
@@ -57,6 +61,7 @@ public class InstanceDescriptor {
         this.instanceName = instanceName;
         this.versionName = versionName;
         this.repository = repository;
+        this.restartTimestampGMTMillis = restartTimestampGMTMillis;
     }
 
     public static class InstanceDescriptorPort {
@@ -100,18 +105,18 @@ public class InstanceDescriptor {
     @Override
     public String toString() {
         return "InstanceDescriptor{"
-                + "clusterKey=" + clusterKey
-                + ", clusterName=" + clusterName
-                + ", serviceKey=" + serviceKey
-                + ", serviceName=" + serviceName
-                + ", releaseGroupKey=" + releaseGroupKey
-                + ", releaseGroupName=" + releaseGroupName
-                + ", instanceKey=" + instanceKey
-                + ", instanceName=" + instanceName
-                + ", versionName=" + versionName
-                + ", repository=" + repository
-                + ", ports=" + ports
-                + '}';
+            + "clusterKey=" + clusterKey
+            + ", clusterName=" + clusterName
+            + ", serviceKey=" + serviceKey
+            + ", serviceName=" + serviceName
+            + ", releaseGroupKey=" + releaseGroupKey
+            + ", releaseGroupName=" + releaseGroupName
+            + ", instanceKey=" + instanceKey
+            + ", instanceName=" + instanceName
+            + ", versionName=" + versionName
+            + ", repository=" + repository
+            + ", ports=" + ports
+            + '}';
     }
 
     @Override
