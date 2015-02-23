@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.jivesoftware.os.amza.shared.AmzaInstance;
 import com.jivesoftware.os.amza.shared.RingHost;
+import com.jivesoftware.os.jive.utils.ordered.id.SnowflakeIdPacker;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
@@ -262,7 +263,9 @@ public class InstancesPluginRegion implements PageRegion<Optional<InstancesPlugi
                     } else {
                         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("EEE, dd MMM yyyy hh:mm:ss z");
                         simpleDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
-                        String gmtTimeString = simpleDateFormat.format(new Date(timestampedValue.getTimestamp()));
+                        long snowflakeTime = timestampedValue.getTimestamp();
+                        long time = new SnowflakeIdPacker().unpack(snowflakeTime)[0];
+                        String gmtTimeString = simpleDateFormat.format(new Date(time));
                         map.put("status", "Last Modified:" + gmtTimeString);
                     }
                     map.put("cluster", ImmutableMap.of(

@@ -253,7 +253,7 @@ public class UpenaService {
                 instance.instanceId,
                 releaseGroup.version,
                 releaseGroup.repository,
-                -1);
+                instance.restartTimestampGMTMillis);
 
             for (Entry<String, Instance.Port> p : instance.ports.entrySet()) {
                 instanceDescriptor.ports.put(p.getKey(), new InstanceDescriptor.InstanceDescriptorPort(p.getValue().port));

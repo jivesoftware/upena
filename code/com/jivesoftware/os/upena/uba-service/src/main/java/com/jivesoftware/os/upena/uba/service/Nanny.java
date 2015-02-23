@@ -83,7 +83,6 @@ public class Nanny {
         } else {
             instanceDescriptor.set(id);
         }
-
         if (id.restartTimestampGMTMillis > System.currentTimeMillis()) {
             restartAtTimestamp.set(id.restartTimestampGMTMillis);
         }
