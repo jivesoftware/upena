@@ -102,7 +102,7 @@ public class Nanny {
 
     synchronized public String nanny(String host, String upenaHost, int upenaPort) throws InterruptedException, ExecutionException {
 
-        if (restartAtTimestamp.get() > 0) {
+        if (restartAtTimestamp.get() > 0 && restartAtTimestamp.get() < System.currentTimeMillis()) {
             deployLog.log("Nanny", "Restart triggered by timestamp. " + this, null);
             if (kill()) {
                 restartAtTimestamp.set(-1);

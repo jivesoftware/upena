@@ -37,7 +37,6 @@ public class InstanceDescriptor {
     public final String repository;
     public final Map<String, InstanceDescriptorPort> ports = new ConcurrentHashMap<>();
     public final long restartTimestampGMTMillis; // deliberately not part of hash or equals.
-    // TODO add enable and locked
 
     @JsonCreator
     public InstanceDescriptor(@JsonProperty(value = "clusterKey") String clusterKey,
@@ -116,6 +115,7 @@ public class InstanceDescriptor {
             + ", versionName=" + versionName
             + ", repository=" + repository
             + ", ports=" + ports
+            + ", restartTimestampGMTMillis=" + restartTimestampGMTMillis
             + '}';
     }
 
