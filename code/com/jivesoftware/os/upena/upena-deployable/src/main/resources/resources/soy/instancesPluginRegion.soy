@@ -69,8 +69,8 @@
                                             <input type="hidden" name="releaseKey" value="{$filters.releaseKey?:''}" />
                                         </td>
                                         <td>
-                                            <button type="submit" name="action" value="filter" class="btn btn-default">Filter</button>
-                                            <button type="submit" name="action" value="add" class="btn btn-default">Add</button>
+                                            <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary"><span class="glyphicon glyphicon-search"></button>
+                                            <button title="Add" type="submit" name="action" value="add" class="btn btn-default"><span class="glyphicon glyphicon-plus"></button>
                                         </td>
                                     </tr>
 
@@ -109,8 +109,8 @@
                                                 </td>
                                                 <td>
                                                     <input type="hidden" name="key" value="{$i.key}">
-                                                    <button type="submit" name="action" value="update" class="btn btn-default form-control">Update</button>
-                                                    <button type="submit" name="action" value="remove" class="btn btn-default form-control">Remove</button>
+                                                    <button title="Update" type="submit" name="action" value="update" class="btn btn-default"><span class="glyphicon glyphicon-save"></button>
+                                                    <button title="Remove" type="submit" name="action" value="remove" class="btn btn-default"><span class="glyphicon glyphicon-trash"></button>
                                                 </td>
                                             </tr>
                                         </form>

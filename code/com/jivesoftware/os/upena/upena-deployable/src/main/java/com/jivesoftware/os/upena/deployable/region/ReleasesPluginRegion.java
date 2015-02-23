@@ -17,8 +17,10 @@ import com.jivesoftware.os.upena.shared.TimestampedValue;
 import com.jivesoftware.os.upena.uba.service.UbaService;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  *
@@ -169,6 +171,27 @@ public class ReleasesPluginRegion implements PageRegion<Optional<ReleasesPluginR
                     row.put("repository", value.repository);
                     row.put("version", value.version);
                     row.put("description", value.description);
+
+                    if (input.action.equals("latest")) {
+                        boolean newerVersionAvailable = false;
+                        StringBuilder newerVersion = new StringBuilder();
+                        LinkedHashMap<String, String> latestRelease = new CheckForLatestRelease().isLatestRelease(value.repository, value.version);
+                        for (Entry<String, String> e : latestRelease.entrySet()) {
+                            if (newerVersion.length() > 0) {
+                                newerVersion.append(",");
+                            }
+                            newerVersion.append(e.getValue());
+                            if (!e.getKey().equals(e.getValue())) {
+                                newerVersionAvailable = true;
+                            }
+                        }
+                        if (newerVersionAvailable) {
+                            row.put("runningLatest", "false");
+                            row.put("newerVersion", newerVersion.toString());
+                        } else {
+                            row.put("runningLatest", "true");
+                        }
+                    }
 
                     rows.add(row);
                 }

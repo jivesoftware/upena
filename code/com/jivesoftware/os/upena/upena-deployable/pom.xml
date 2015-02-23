@@ -219,6 +219,11 @@
             <artifactId>jetty-security</artifactId>
             <version>9.1.0.M0</version>
         </dependency>
+        <dependency>
+            <groupId>org.eclipse.aether</groupId>
+            <artifactId>aether-api</artifactId>
+            <version>0.9.0.M3</version>
+        </dependency>
     </dependencies>
     <name>upena-deployable</name>
 </project>
