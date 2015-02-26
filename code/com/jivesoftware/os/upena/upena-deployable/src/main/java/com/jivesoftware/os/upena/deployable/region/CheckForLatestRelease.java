@@ -62,20 +62,19 @@ class CheckForLatestRelease {
             LOG.warn("deployable coordinates must be of the following form: groupId:artifactId:packaging:version");
             return "Invalid coordinate:" + deployablecoordinate + " expected: groupId:artifactId:packaging:version";
         }
-        String groupId = versionParts[0];
-        String artifactId = versionParts[1];
-        String packaging = versionParts[2];
-        String version = "RELEASE";
-
-        Artifact artifact = new DefaultArtifact(groupId, artifactId, packaging, version);
-        ArtifactRequest artifactRequest = new ArtifactRequest();
-        artifactRequest.setArtifact(artifact);
-        artifactRequest.setRepositories(remoteRepos);
-
-        ArtifactResult artifactResult;
         try {
+            String groupId = versionParts[0];
+            String artifactId = versionParts[1];
+            String packaging = versionParts[2];
+            String version = "RELEASE";
+
+            Artifact artifact = new DefaultArtifact(groupId, artifactId, packaging, version);
+            ArtifactRequest artifactRequest = new ArtifactRequest();
+            artifactRequest.setArtifact(artifact);
+            artifactRequest.setRepositories(remoteRepos);
+
             LOG.info(" Resolving: " + deployablecoordinate);
-            artifactResult = system.resolveArtifact(session, artifactRequest);
+            ArtifactResult artifactResult = system.resolveArtifact(session, artifactRequest);
             artifact = artifactResult.getArtifact();
             String latestRelease = artifact.getGroupId() + ":" + artifact.getArtifactId() + ":" + packaging + ":" + artifact.getVersion();
             if (!latestRelease.equals(deployablecoordinate)) {

@@ -8,7 +8,7 @@
 {template .releasesPluginRegion}
     {if $releases}
         <div class="panel panel-default">
-            <div class="panel-heading">Releases</div>
+            <div class="panel-heading"><span class="glyphicon glyphicon-send"></span>{sp}Releases</div>
                 <div class="panel-body">
                     {if $message}
                         <div class="panel-heading">
@@ -82,10 +82,10 @@
                                                     <pre style="background-color:orange">{$r.newerVersion}</pre>
                                                 {/if}
                                             {/if}
-                                            <textarea name="version" cols="45" class="form-control">{$r.version?:''}</textarea>
+                                            <textarea name="version" rows="4" cols="45" class="form-control">{$r.version?:''}</textarea>
                                         </td>
                                         <td>
-                                            <textarea name="repository" cols="45" class="form-control">{$r.repository?:''}</textarea>
+                                            <textarea name="repository" rows="4" cols="45" class="form-control">{$r.repository?:''}</textarea>
                                         </td>
                                         <td>
                                             <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"

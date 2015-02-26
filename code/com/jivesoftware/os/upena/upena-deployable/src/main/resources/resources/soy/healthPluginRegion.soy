@@ -8,7 +8,7 @@
  */
 {template .healthPluginRegion}
     <div class="panel panel-default">
-        <div class="panel-heading">Filter</div>
+        <div class="panel-heading"><span class="glyphicon glyphicon-fire"></span>{sp}Filter</div>
         <div class="panel-body">
             <form id="filter-health" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
                 data-jive-ui="jive/ui/typeahead/request_typeahead" method="get" name="filter-health">
@@ -279,7 +279,11 @@
                             </script> 
 
                             <div id="{$h.key}" style="background:#ccc;height:20px;width:100%;position:relative;overflow:hidden;">
-                                {$h.name|noAutoescape}<br>{$h.details|noAutoescape}
+                                {$h.clusterName}&nbsp;-&nbsp;{$h.serviceName|noAutoescape}
+                                &nbsp;&nbsp;&nbsp;&nbsp;port={$h.port}
+                                &nbsp;&nbsp;&nbsp;&nbsp;host={$h.hostName}
+                                <br>
+                                {$h.details|noAutoescape}
                             </div>
                         </td>
                     </tr>

@@ -10,7 +10,7 @@
 {template .instancesPluginRegion}
     {if $instances}
         <div class="panel panel-default">
-            <div class="panel-heading" id="upena-instances">Instances</div>
+            <div class="panel-heading" id="upena-instances"><span class="glyphicon glyphicon-pencil"></span>{sp}Instances</div>
                 {if $message}
                     <div class="well">
                         <pre>{$message}</pre>
@@ -22,6 +22,7 @@
                         <div class="panel-body">
                             <label>Restart:</label>
                             <div class="btn-group" role="group" aria-label="...">
+                                <button type="submit" name="action" value="restartAllNow" class="btn btn-default">Now</button>
                                 <button type="submit" name="action" value="restartAll" class="btn btn-default">Rolling</button>
                                 <button type="submit" name="action" value="cancelRestartAll" class="btn btn-default">Cancel</button>
                             </div>
@@ -117,6 +118,7 @@
                                                 </td>
                                                 <td>
                                                     <input type="hidden" name="key" value="{$i.key}">
+                                                    <button title="Update" type="submit" name="action" value="restart" class="btn btn-default"><span class="glyphicon glyphicon-repeat"></button>
                                                     <button title="Update" type="submit" name="action" value="update" class="btn btn-default"><span class="glyphicon glyphicon-save"></button>
                                                     <button title="Remove" type="submit" name="action" value="remove" class="btn btn-default"><span class="glyphicon glyphicon-trash"></button>
                                                 </td>

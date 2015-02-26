@@ -145,7 +145,10 @@ public class HealthPluginRegion implements PageRegion<Optional<HealthPluginRegio
                             + d2f(sh) + "</div>");
 
                         h.put("key", nannyHealth.instanceDescriptor.instanceKey);
-                        h.put("name", nannyHealth.instanceDescriptor.serviceName + " " + nannyHealth.instanceDescriptor.instanceName);
+                        h.put("clusterName", nannyHealth.instanceDescriptor.clusterName);
+                        h.put("serviceName", nannyHealth.instanceDescriptor.serviceName + " " + nannyHealth.instanceDescriptor.instanceName);
+                        h.put("port", String.valueOf(nannyHealth.instanceDescriptor.ports.get("main").port));
+                        h.put("hostName", nodeHealth.host);
 
                         HtmlCanvas hc = new HtmlCanvas();
                         serviceHealth(hc, nannyHealth);

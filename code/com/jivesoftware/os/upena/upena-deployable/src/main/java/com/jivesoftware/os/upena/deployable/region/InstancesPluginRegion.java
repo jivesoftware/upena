@@ -198,6 +198,24 @@ public class InstancesPluginRegion implements PageRegion<Optional<InstancesPlugi
                             String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
                             data.put("message", "Error while trying to update Instance:" + input.key + "\n" + trace);
                         }
+                    } else if (input.action.equals("restart")) {
+                        filters.clear();
+                        try {
+                            Instance instance = upenaStore.instances.get(new InstanceKey(input.key));
+                            if (instance == null) {
+                                data.put("message", "Couldn't update no existent Instance. Someone else likely just removed it since your last refresh.");
+                            } else {
+                                InstanceKey key = new InstanceKey(input.key);
+                                instance.restartTimestampGMTMillis = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(5);
+                                upenaStore.instances.update(key, instance);
+                                data.put("message", "Instance will be restarted momentarily.");
+
+                            }
+
+                        } catch (Exception x) {
+                            String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
+                            data.put("message", "Error while trying to update Instance:" + input.key + "\n" + trace);
+                        }
                     } else if (input.action.equals("remove")) {
                         if (input.key.isEmpty()) {
                             data.put("message", "Failed to remove Instance:" + input.key);
@@ -208,6 +226,16 @@ public class InstancesPluginRegion implements PageRegion<Optional<InstancesPlugi
                                 String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
                                 data.put("message", "Error while trying to remove Instance:" + input.key + "\n" + trace);
                             }
+                        }
+                    } else if (input.action.equals("restartAllNow")) {
+                        long now = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(5);
+                        Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(filter);
+                        for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {
+                            InstanceKey key = entrySet.getKey();
+                            TimestampedValue<Instance> timestampedValue = entrySet.getValue();
+                            Instance value = timestampedValue.getValue();
+                            value.restartTimestampGMTMillis = now;
+                            upenaStore.instances.update(key, value);
                         }
                     } else if (input.action.equals("restartAll")) {
                         long now = System.currentTimeMillis();
@@ -231,17 +259,6 @@ public class InstancesPluginRegion implements PageRegion<Optional<InstancesPlugi
                             if (value.restartTimestampGMTMillis > 0) {
                                 value.restartTimestampGMTMillis = -1;
                                 upenaStore.instances.update(key, value);
-                            }
-                        }
-                    } else if (input.action.equals("removeAll")) {
-                        Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(filter);
-                        for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {
-                            InstanceKey key = entrySet.getKey();
-                            try {
-                                upenaStore.instances.remove(key);
-                            } catch (Exception x) {
-                                String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
-                                data.put("message", "Error while trying to remove Instance:" + input.key + "\n" + trace);
                             }
                         }
                     }
