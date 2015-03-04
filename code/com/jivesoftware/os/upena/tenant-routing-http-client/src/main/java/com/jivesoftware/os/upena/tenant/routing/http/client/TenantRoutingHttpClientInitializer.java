@@ -33,7 +33,7 @@ import java.util.List;
 
 public class TenantRoutingHttpClientInitializer<T> {
 
-    public TenantRoutingHttpClient<T> initialize(TenantsServiceConnectionDescriptorProvider<T> connectionPoolProvider) {
+    public TenantAwareHttpClient<T> initialize(TenantsServiceConnectionDescriptorProvider<T> connectionPoolProvider) {
 
 
         ClientConnectionsFactory<HttpClient> clientConnectionsFactory = new ClientConnectionsFactory<HttpClient>() {

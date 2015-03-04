@@ -22,7 +22,7 @@ import com.jivesoftware.os.upena.hello.routing.bird.service.HelloRoutingBirdServ
 import com.jivesoftware.os.upena.hello.routing.bird.service.endpoints.HelloRoutingBirdServiceRestEndpoints;
 import com.jivesoftware.os.upena.main.Deployable;
 import com.jivesoftware.os.upena.routing.shared.TenantsServiceConnectionDescriptorProvider;
-import com.jivesoftware.os.upena.tenant.routing.http.client.TenantRoutingHttpClient;
+import com.jivesoftware.os.upena.tenant.routing.http.client.TenantAwareHttpClient;
 import com.jivesoftware.os.upena.tenant.routing.http.client.TenantRoutingHttpClientInitializer;
 import java.io.File;
 
@@ -39,7 +39,7 @@ public class Main {
 
         TenantsServiceConnectionDescriptorProvider connections = deployable.getTenantRoutingProvider().getConnections("hello-echo-bird-deployable", "main");
         TenantRoutingHttpClientInitializer<String> tenantRoutingHttpClientInitializer = new TenantRoutingHttpClientInitializer<>();
-        TenantRoutingHttpClient<String> client = tenantRoutingHttpClientInitializer.initialize(connections);
+        TenantAwareHttpClient<String> client = tenantRoutingHttpClientInitializer.initialize(connections);
         HelloRoutingBirdService helloRoutingBirdService = new HelloRoutingBirdServiceInitializer()
                 .initialize(deployable.config(HelloRoutingBirdServiceConfig.class), client);
 

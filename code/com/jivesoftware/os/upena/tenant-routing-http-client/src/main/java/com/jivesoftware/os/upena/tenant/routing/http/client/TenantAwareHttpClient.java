@@ -17,32 +17,56 @@ package com.jivesoftware.os.upena.tenant.routing.http.client;
 
 import com.jivesoftware.os.jive.utils.http.client.HttpClientException;
 import com.jivesoftware.os.jive.utils.http.client.HttpResponse;
+import com.jivesoftware.os.jive.utils.http.client.HttpStreamResponse;
+import java.util.Map;
 
 public interface TenantAwareHttpClient<T> {
 
-    /**
-     *
-     * @param path everything but the leading "http/s://host:port"
-     * @return
-     * @throws HttpClientException
-     */
     HttpResponse get(T tenant, String path) throws HttpClientException;
 
-    /**
-     *
-     * @param path everything but the leading "http/s://host:port"
-     * @param postJsonBody
-     * @return
-     * @throws HttpClientException
-     */
-    HttpResponse postJson(T tenant, String path, String postJsonBody) throws HttpClientException;
+    HttpResponse get(T tenant, String path, Map<String, String> headers) throws HttpClientException;
 
-    /**
-     *
-     * @param path everything but the leading "http/s://host:port"
-     * @param postBytes
-     * @return
-     * @throws HttpClientException
-     */
-    HttpResponse postBytes(T tenant, String path, byte[] postBytes) throws HttpClientException;
+    HttpStreamResponse getStream(T tenant, String path) throws HttpClientException;
+
+    HttpResponse get(T tenant, String path, int timeoutMillis) throws HttpClientException;
+
+    HttpResponse get(T tenant, String path, Map<String, String> headers, int timeoutMillis) throws HttpClientException;
+
+    HttpStreamResponse getStream(T tenant, String path, int timeoutMillis) throws HttpClientException;
+
+    HttpResponse delete(T tenant, String path) throws HttpClientException;
+
+    HttpResponse delete(T tenant, String path, Map<String, String> headers) throws HttpClientException;
+
+    HttpStreamResponse deleteStream(T tenant, String path) throws HttpClientException;
+
+    HttpResponse delete(T tenant, String path, int timeoutMillis) throws HttpClientException;
+
+    HttpResponse delete(T tenant, String path, Map<String, String> headers, int timeoutMillis) throws HttpClientException;
+
+    HttpStreamResponse deleteStream(T tenant, String path, int timeoutMillis) throws HttpClientException;
+
+    HttpResponse postJson(T tenant, String path, String jsonString) throws HttpClientException;
+
+    HttpResponse postJson(T tenant, String path, String jsonString, Map<String, String> headers) throws HttpClientException;
+
+    HttpResponse postJson(T tenant, String path, String jsonString, int timeoutMillis) throws HttpClientException;
+
+    HttpResponse postJson(T tenant, String path, String jsonString, Map<String, String> headers, int timeoutMillis) throws HttpClientException;
+
+    HttpResponse postBytes(T tenant, String path, byte[] bytes) throws HttpClientException;
+
+    HttpResponse postBytes(T tenant, String path, byte[] bytes, int timeoutMillis) throws HttpClientException;
+
+    HttpResponse putJson(T tenant, String path, String jsonString) throws HttpClientException;
+
+    HttpResponse putJson(T tenant, String path, String jsonString, Map<String, String> headers) throws HttpClientException;
+
+    HttpResponse putJson(T tenant, String path, String jsonString, int timeoutMillis) throws HttpClientException;
+
+    HttpResponse putJson(T tenant, String path, String jsonString, Map<String, String> headers, int timeoutMillis) throws HttpClientException;
+
+    HttpResponse putBytes(T tenant, String path, byte[] bytes) throws HttpClientException;
+
+    HttpResponse putBytes(T tenant, String path, byte[] bytes, int timeoutMillis) throws HttpClientException;
 }

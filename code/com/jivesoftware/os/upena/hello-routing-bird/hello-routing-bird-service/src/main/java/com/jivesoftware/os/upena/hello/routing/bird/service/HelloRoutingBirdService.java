@@ -19,7 +19,7 @@ import com.jivesoftware.os.jive.utils.http.client.HttpClientException;
 import com.jivesoftware.os.jive.utils.http.client.HttpResponse;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
-import com.jivesoftware.os.upena.tenant.routing.http.client.TenantRoutingHttpClient;
+import com.jivesoftware.os.upena.tenant.routing.http.client.TenantAwareHttpClient;
 
 /*
  * $Revision$
@@ -33,9 +33,9 @@ public class HelloRoutingBirdService {
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
     private final String greeting;
-    private final TenantRoutingHttpClient<String> client;
+    private final TenantAwareHttpClient<String> client;
 
-    public HelloRoutingBirdService(String greeting, TenantRoutingHttpClient<String> client) {
+    public HelloRoutingBirdService(String greeting, TenantAwareHttpClient<String> client) {
         this.greeting = greeting;
         this.client = client;
     }
