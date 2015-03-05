@@ -289,7 +289,7 @@ public class Main {
         SoyTofu tofu = sfs.compileToTofu();
         SoyRenderer renderer = new SoyRenderer(tofu, new SoyDataUtils());
         SoyService soyService = new SoyService(renderer, new HeaderRegion("soy.chrome.headerRegion", renderer),
-            new HomeRegion("soy.page.homeRegion", renderer));
+            new HomeRegion("soy.page.homeRegion", renderer, upenaStore));
 
         List<ManagePlugin> plugins = Lists.newArrayList(
             new ManagePlugin("fire", "Health", "/ui/health",

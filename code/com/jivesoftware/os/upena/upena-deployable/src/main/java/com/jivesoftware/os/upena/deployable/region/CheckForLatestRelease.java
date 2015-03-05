@@ -18,6 +18,7 @@ package com.jivesoftware.os.upena.deployable.region;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.uba.service.RepositoryProvider;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import org.eclipse.aether.RepositorySystem;
@@ -46,21 +47,26 @@ class CheckForLatestRelease {
         String[] deployablecoordinates = coordinates.trim().split(",");
         LinkedHashMap<String, String> currentToLatestReleases = new LinkedHashMap<>();
         for (String coordinate : deployablecoordinates) {
-            String latestReleaseCoordinate = checkForLatestRelease(coordinate, remoteRepos, system, session);
-            currentToLatestReleases.put(coordinate, latestReleaseCoordinate);
+
+            for (RemoteRepository repo : remoteRepos) {
+                String latestReleaseCoordinate = checkForLatestRelease(coordinate, repo, system, session);
+                if (latestReleaseCoordinate != null) {
+                    currentToLatestReleases.put(coordinate, latestReleaseCoordinate);
+                }
+            }
         }
 
         return currentToLatestReleases;
     }
 
     private String checkForLatestRelease(String deployablecoordinate,
-        List<RemoteRepository> remoteRepos,
+        RemoteRepository remoteRepos,
         RepositorySystem system,
         RepositorySystemSession session) {
         String[] versionParts = deployablecoordinate.trim().split(":");
         if (versionParts.length != 4) {
             LOG.warn("deployable coordinates must be of the following form: groupId:artifactId:packaging:version");
-            return "Invalid coordinate:" + deployablecoordinate + " expected: groupId:artifactId:packaging:version";
+            return null;
         }
         try {
             String groupId = versionParts[0];
@@ -71,7 +77,7 @@ class CheckForLatestRelease {
             Artifact artifact = new DefaultArtifact(groupId, artifactId, packaging, version);
             ArtifactRequest artifactRequest = new ArtifactRequest();
             artifactRequest.setArtifact(artifact);
-            artifactRequest.setRepositories(remoteRepos);
+            artifactRequest.setRepositories(Arrays.asList(remoteRepos));
 
             LOG.info(" Resolving: " + deployablecoordinate);
             ArtifactResult artifactResult = system.resolveArtifact(session, artifactRequest);
@@ -83,7 +89,8 @@ class CheckForLatestRelease {
             return latestRelease;
 
         } catch (ArtifactResolutionException x) {
-            return "Failed to resolve:" + deployablecoordinate + " Cause:" + x.getMessage();
+            LOG.warn("Failed to resolve " + deployablecoordinate + " against " + remoteRepos, x);
+            return null;
         }
 
     }
