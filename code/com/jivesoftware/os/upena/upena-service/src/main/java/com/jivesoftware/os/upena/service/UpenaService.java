@@ -79,13 +79,13 @@ public class UpenaService {
         if (releaseGroup == null) {
             return failedConnectionResponse("Instance has been decommisioned releaseGroupKey:" + instance.releaseGroupKey + " no longer exists.");
         }
-
+        List<String> messages = new ArrayList<>();
         Tenant tenant = null;
         if (connectionsRequest.getTenantId() != null && !connectionsRequest.getTenantId().equals("*") && connectionsRequest.getTenantId().length() > 0) {
             TenantKey tenantkey = new TenantKey(connectionsRequest.getTenantId());
             tenant = upenaStore.tenants.get(tenantkey);
             if (tenant == null) {
-                return failedConnectionResponse("Undeclared tenant for tenantkey:" + tenantkey);
+                messages.add("no tenant defined for tenantkey:" + tenantkey);
             }
         }
 
@@ -103,7 +103,6 @@ public class UpenaService {
 
         ReleaseGroupKey releaseGroupKey = null;
         List<ConnectionDescriptor> primaryConnections = null;
-        List<String> messages = new ArrayList<>();
 
         if (tenant != null) {
             releaseGroupKey = tenant.overrideReleaseGroups.get(wantToConnectToServiceKey);
@@ -111,7 +110,7 @@ public class UpenaService {
                 ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> got = findInstances(messages,
                     instance.clusterKey, releaseGroupKey, wantToConnectToServiceKey);
                 if (got != null && !got.isEmpty()) {
-                    primaryConnections = buildConnextions(messages, got, connectionsRequest.getPortName());
+                    primaryConnections = buildConnections(messages, got, connectionsRequest.getPortName());
                 }
             }
         }
@@ -124,7 +123,7 @@ public class UpenaService {
             ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> got = findInstances(messages,
                 instance.clusterKey, releaseGroupKey, wantToConnectToServiceKey);
             if (got != null && !got.isEmpty()) {
-                primaryConnections = buildConnextions(messages, got, connectionsRequest.getPortName());
+                primaryConnections = buildConnections(messages, got, connectionsRequest.getPortName());
             }
         }
 
@@ -160,7 +159,7 @@ public class UpenaService {
         return null;
     }
 
-    List<ConnectionDescriptor> buildConnextions(List<String> messages,
+    List<ConnectionDescriptor> buildConnections(List<String> messages,
         ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> instances, String portName) throws Exception {
         List<ConnectionDescriptor> connections = new ArrayList<>();
         for (Entry<InstanceKey, TimestampedValue<Instance>> entry : instances.entrySet()) {
