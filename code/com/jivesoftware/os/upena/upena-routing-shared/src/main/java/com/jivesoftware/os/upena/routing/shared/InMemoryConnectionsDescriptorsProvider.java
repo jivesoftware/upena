@@ -64,9 +64,9 @@ public class InMemoryConnectionsDescriptorsProvider implements ConnectionDescrip
     @Override
     public ConnectionDescriptorsResponse requestConnections(ConnectionDescriptorsRequest connectionsRequest) {
         String key = key(connectionsRequest.getTenantId(),
-                connectionsRequest.getInstanceId(),
-                connectionsRequest.getConnectToServiceNamed(),
-                connectionsRequest.getPortName());
+            connectionsRequest.getInstanceId(),
+            connectionsRequest.getConnectToServiceNamed(),
+            connectionsRequest.getPortName());
         routingKeys.add(key);
         ConnectionDescriptor connectionDescriptor = routings.get(key);
         List<ConnectionDescriptor> connectionDescriptors = new ArrayList<>();
@@ -83,7 +83,7 @@ public class InMemoryConnectionsDescriptorsProvider implements ConnectionDescrip
             connectionDescriptors.add(connectionDescriptor);
         }
         ConnectionDescriptorsResponse response = new ConnectionDescriptorsResponse(1, Arrays.asList("Success"),
-                releaseGroup, connectionDescriptors, null, null);
+            releaseGroup, connectionDescriptors);
         return response;
     }
 }

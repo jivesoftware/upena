@@ -45,14 +45,14 @@ public class TenantsServiceConnectionDescriptorsProviderTest {
         descriptor = new ConnectionDescriptor("localhost", 7776, Collections.EMPTY_MAP);
 
         Mockito.when(connectionDescriptorsProvider.requestConnections(Mockito.eq(connectionDescriptorsRequest))).
-                thenReturn(new ConnectionDescriptorsResponse(200, Collections.<String>emptyList(),
-                                userId, Arrays.asList(descriptor), null, null));
+            thenReturn(new ConnectionDescriptorsResponse(200, Collections.<String>emptyList(),
+                    userId, Arrays.asList(descriptor)));
     }
 
     @Test
     public void testGetConnections() {
         TenantsServiceConnectionDescriptorProvider<String> tenantsServiceConnectionPoolProvider = new TenantsServiceConnectionDescriptorProvider<>(
-                instanceId, connectionDescriptorsProvider, serviceId, port);
+            instanceId, connectionDescriptorsProvider, serviceId, port);
         tenantsServiceConnectionPoolProvider.getConnections(tenantId);
         ConnectionDescriptors connections = tenantsServiceConnectionPoolProvider.getConnections(tenantId);
 
@@ -82,7 +82,7 @@ public class TenantsServiceConnectionDescriptorsProviderTest {
     @Test
     public void testRoutingReport() {
         TenantsServiceConnectionDescriptorProvider<String> tenantsServiceConnectionPoolProvider = new TenantsServiceConnectionDescriptorProvider<>(
-                instanceId, connectionDescriptorsProvider, serviceId, port);
+            instanceId, connectionDescriptorsProvider, serviceId, port);
         tenantsServiceConnectionPoolProvider.getConnections(tenantId);
         ConnectionDescriptors connections = tenantsServiceConnectionPoolProvider.getConnections(tenantId);
 

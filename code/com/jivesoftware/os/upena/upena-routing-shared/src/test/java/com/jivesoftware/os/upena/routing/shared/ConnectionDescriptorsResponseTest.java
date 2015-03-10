@@ -36,7 +36,7 @@ public class ConnectionDescriptorsResponseTest {
         List<ConnectionDescriptor> connections = new ArrayList<>();
         connections.add(new ConnectionDescriptor("host", 1, properties));
         ConnectionDescriptorsResponse a = new ConnectionDescriptorsResponse(1, Arrays.asList("message"), "user",
-                connections, null, null);
+            connections);
 
         Assert.assertEquals(a.getConnections(), connections);
         Assert.assertEquals(a.getMessages(), Arrays.asList("message"));

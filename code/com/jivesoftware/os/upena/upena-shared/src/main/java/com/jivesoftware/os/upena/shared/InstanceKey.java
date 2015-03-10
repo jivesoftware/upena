@@ -16,9 +16,11 @@
 package com.jivesoftware.os.upena.shared;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class InstanceKey extends Key<InstanceKey> implements Stored<InstanceKey>, Serializable {
 
     @JsonCreator

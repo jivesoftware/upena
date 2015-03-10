@@ -15,12 +15,13 @@
  */
 package com.jivesoftware.os.upena.ui;
 
-import com.jivesoftware.os.upena.shared.ReleaseGroup;
 import com.jivesoftware.os.upena.shared.ReleaseGroupKey;
+import com.jivesoftware.os.upena.shared.ServiceKey;
 import com.jivesoftware.os.upena.shared.Tenant;
 import com.jivesoftware.os.upena.shared.TenantFilter;
 import com.jivesoftware.os.upena.shared.TenantKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentSkipListMap;
@@ -34,27 +35,21 @@ public class JFieldsTenant implements JObjectFields<TenantKey, Tenant, TenantFil
     JEditKeyField tenantKey;
     JEditField tenantId;
     JEditField description;
-    JEditRef releaseGroupKey;
-    JEditRef alternateReleaseGroupKey;
+    JEditReleaseGroupsField overrideReleaseGroups;
 
-    public JFieldsTenant(JObjectFactory factory, String k, Tenant tenant) {
+    public JFieldsTenant(JObjectFactory factory, String k, Tenant v) {
         this.factory = factory;
         this.key = k;
-        this.value = tenant;
+        this.value = v;
 
-        tenantId = new JEditField("tenantId", (tenant != null) ? tenant.tenantId : "");
+        tenantId = new JEditField("tenantId", (v != null) ? v.tenantId : "");
         fields.put("tenantId", tenantId);
 
-        description = new JEditField("description", (tenant != null) ? tenant.description : "");
+        description = new JEditField("description", (v != null) ? v.description : "");
         fields.put("description", description);
 
-        releaseGroupKey = new JEditRef(factory, "releaseGroupKey", ReleaseGroup.class,
-                (tenant != null) ? (tenant.releaseGroupKey != null) ? tenant.releaseGroupKey.getKey() : "" : "");
-        fields.put("releaseGroupKey", releaseGroupKey);
-
-        alternateReleaseGroupKey = new JEditRef(factory, "alternateReleaseGroupKey", ReleaseGroup.class,
-                (tenant != null) ? (tenant.alternateReleaseGroupKey != null) ? tenant.alternateReleaseGroupKey.getKey() : "" : "");
-        fields.put("alternateReleaseGroupKey", alternateReleaseGroupKey);
+        overrideReleaseGroups = new JEditReleaseGroupsField(factory, "overrideReleaseGroups", (v != null) ? v.overrideReleaseGroups : null);
+        fields.put("overrideReleaseGroups", overrideReleaseGroups);
 
         tenantKey = new JEditKeyField("key", (k != null) ? k : "");
         fields.put("key", tenantKey);
@@ -73,10 +68,13 @@ public class JFieldsTenant implements JObjectFields<TenantKey, Tenant, TenantFil
 
     @Override
     public Tenant fieldsToObject() {
+
+        Map<ServiceKey, ReleaseGroupKey> overrides = new HashMap<>();
+        overrides.putAll(overrideReleaseGroups.field);
+
         return new Tenant(tenantId.getValue(),
-                description.getValue(),
-                new ReleaseGroupKey(releaseGroupKey.getValue()),
-                new ReleaseGroupKey(alternateReleaseGroupKey.getValue()));
+            description.getValue(),
+            overrides);
     }
 
     @Override
@@ -92,9 +90,7 @@ public class JFieldsTenant implements JObjectFields<TenantKey, Tenant, TenantFil
     @Override
     public TenantFilter fieldsToFilter() {
         TenantFilter filter = new TenantFilter(tenantId.getValue(),
-                description.getValue(),
-                FilterUtils.nullIfEmpty(new ReleaseGroupKey(releaseGroupKey.getValue())),
-                FilterUtils.nullIfEmpty(new ReleaseGroupKey(alternateReleaseGroupKey.getValue())), 0, 100);
+            description.getValue(), 0, 100);
         return filter;
     }
 
@@ -103,16 +99,13 @@ public class JFieldsTenant implements JObjectFields<TenantKey, Tenant, TenantFil
         tenantKey.setValue(key.getKey());
         tenantId.setValue(v.tenantId);
         description.setValue(v.description);
-        releaseGroupKey.setValue(v.releaseGroupKey.getKey());
-        alternateReleaseGroupKey.setValue(v.alternateReleaseGroupKey.getKey());
+        overrideReleaseGroups.setValue(v.overrideReleaseGroups);
     }
 
     @Override
     public void updateFilter(TenantKey key, Tenant v) {
         tenantId.setValue(v.tenantId);
         description.setValue(v.description);
-        releaseGroupKey.setValue(v.releaseGroupKey.getKey());
-        alternateReleaseGroupKey.setValue(v.alternateReleaseGroupKey.getKey());
     }
 
     @Override

@@ -16,11 +16,13 @@
 package com.jivesoftware.os.upena.shared;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class InstanceFilter implements KeyValueFilter<InstanceKey, Instance>, Serializable {
 
     public final ClusterKey clusterKey;
@@ -34,12 +36,12 @@ public class InstanceFilter implements KeyValueFilter<InstanceKey, Instance>, Se
 
     @JsonCreator
     public InstanceFilter(@JsonProperty("clusterKey") ClusterKey clusterKey,
-            @JsonProperty("hostKey") HostKey hostKey,
-            @JsonProperty("serviceKey") ServiceKey serviceKey,
-            @JsonProperty("releaseGroupKey") ReleaseGroupKey releaseGroupKey,
-            @JsonProperty("logicalInstanceId") Integer logicalInstanceId,
-            @JsonProperty("start") int start,
-            @JsonProperty("count") int count) {
+        @JsonProperty("hostKey") HostKey hostKey,
+        @JsonProperty("serviceKey") ServiceKey serviceKey,
+        @JsonProperty("releaseGroupKey") ReleaseGroupKey releaseGroupKey,
+        @JsonProperty("logicalInstanceId") Integer logicalInstanceId,
+        @JsonProperty("start") int start,
+        @JsonProperty("count") int count) {
         this.clusterKey = clusterKey;
         this.hostKey = hostKey;
         this.serviceKey = serviceKey;
@@ -52,12 +54,12 @@ public class InstanceFilter implements KeyValueFilter<InstanceKey, Instance>, Se
     @Override
     public String toString() {
         return "InstanceFilter{"
-                + "clusterKey=" + clusterKey
-                + ", hostKey=" + hostKey
-                + ", serviceKey=" + serviceKey
-                + ", releaseGroupKey=" + releaseGroupKey
-                + ", logicalInstanceId=" + logicalInstanceId
-                + '}';
+            + "clusterKey=" + clusterKey
+            + ", hostKey=" + hostKey
+            + ", serviceKey=" + serviceKey
+            + ", releaseGroupKey=" + releaseGroupKey
+            + ", logicalInstanceId=" + logicalInstanceId
+            + '}';
     }
 
     @Override

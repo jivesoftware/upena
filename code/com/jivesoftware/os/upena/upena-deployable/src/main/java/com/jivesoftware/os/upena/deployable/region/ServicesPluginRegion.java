@@ -76,7 +76,7 @@ public class ServicesPluginRegion implements PageRegion<Optional<ServicesPluginR
             if (optionalInput.isPresent()) {
                 ServicesPluginRegionInput input = optionalInput.get();
 
-                 Map<String, String> filters = new HashMap<>();
+                Map<String, String> filters = new HashMap<>();
                 filters.put("name", input.name);
                 filters.put("description", input.description);
                 data.put("filters", filters);

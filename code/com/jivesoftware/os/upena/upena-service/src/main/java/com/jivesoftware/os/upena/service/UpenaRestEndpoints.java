@@ -41,6 +41,7 @@ import com.jivesoftware.os.upena.shared.Tenant;
 import com.jivesoftware.os.upena.shared.TenantFilter;
 import com.jivesoftware.os.upena.shared.TenantKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentNavigableMap;
 import javax.ws.rs.Consumes;
@@ -511,14 +512,14 @@ public class UpenaRestEndpoints {
                     .find(new ReleaseGroupFilter(releaseId, null, null, null, null, 0, 1000));
             Map.Entry<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> firstReleaseGroup = foundReleaseGroups.firstEntry();
 
-            TenantFilter tenantFilter =  new TenantFilter(tenantId, null, null, null, 0, 1000);
+            TenantFilter tenantFilter =  new TenantFilter(tenantId, null, 0, 1000);
             ConcurrentNavigableMap<TenantKey, TimestampedValue<Tenant>> foundTenants = upenaStore.tenants.find(tenantFilter);
             Map.Entry<TenantKey, TimestampedValue<Tenant>> firstTenant = foundTenants.firstEntry();
             Tenant t = firstTenant.getValue().getValue();
             if (releaseId == null || releaseId.length() == 0) {
-                upenaStore.tenants.update(new TenantKey(tenantId), new Tenant(t.tenantId, t.description, new ReleaseGroupKey(""), null));
+                upenaStore.tenants.update(new TenantKey(tenantId), new Tenant(t.tenantId, t.description, new HashMap<ServiceKey, ReleaseGroupKey>()));
             } else {
-                upenaStore.tenants.update(new TenantKey(tenantId), new Tenant(t.tenantId, t.description, firstReleaseGroup.getKey(), null));
+                upenaStore.tenants.update(new TenantKey(tenantId), new Tenant(t.tenantId, t.description, new HashMap<ServiceKey, ReleaseGroupKey>()));
             }
 
             LOG.info("Mapped tenant to release: tenantId:" + tenantId + " releaseId:" + releaseId);

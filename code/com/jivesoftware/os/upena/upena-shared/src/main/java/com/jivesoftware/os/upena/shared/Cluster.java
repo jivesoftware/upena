@@ -16,37 +16,35 @@
 package com.jivesoftware.os.upena.shared;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Objects;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Cluster implements Stored<Cluster>, Serializable {
 
     public final String name;
     public final String description;
     public final Map<ServiceKey, ReleaseGroupKey> defaultReleaseGroups;
-    public final Map<ServiceKey, ReleaseGroupKey> defaultAlternateReleaseGroups;
 
     @JsonCreator
     public Cluster(@JsonProperty("name") String name,
-            @JsonProperty("description") String description,
-            @JsonProperty("defaultReleaseGroups") Map<ServiceKey, ReleaseGroupKey> defaultReleaseGroups,
-            @JsonProperty("defaultAlternateReleaseGroups") Map<ServiceKey, ReleaseGroupKey> defaultAlternateReleaseGroups) {
+        @JsonProperty("description") String description,
+        @JsonProperty("defaultReleaseGroups") Map<ServiceKey, ReleaseGroupKey> defaultReleaseGroups) {
         this.name = name;
         this.description = description;
         this.defaultReleaseGroups = defaultReleaseGroups;
-        this.defaultAlternateReleaseGroups = defaultAlternateReleaseGroups;
     }
 
     @Override
     public String toString() {
         return "Cluster{"
-                + "name=" + name
-                + ", description=" + description
-                + ", defaultReleaseGroups=" + defaultReleaseGroups
-                + ", defaultAlternateReleaseGroups=" + defaultAlternateReleaseGroups
-                + '}';
+            + "name=" + name
+            + ", description=" + description
+            + ", defaultReleaseGroups=" + defaultReleaseGroups
+            + '}';
     }
 
     @Override

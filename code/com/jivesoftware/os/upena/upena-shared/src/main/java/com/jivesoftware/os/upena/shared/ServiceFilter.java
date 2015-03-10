@@ -16,11 +16,13 @@
 package com.jivesoftware.os.upena.shared;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ServiceFilter implements KeyValueFilter<ServiceKey, Service>, Serializable {
 
     public final String name;
@@ -31,9 +33,9 @@ public class ServiceFilter implements KeyValueFilter<ServiceKey, Service>, Seria
 
     @JsonCreator
     public ServiceFilter(@JsonProperty("name") String name,
-            @JsonProperty("description") String description,
-            @JsonProperty("start") int start,
-            @JsonProperty("count") int count) {
+        @JsonProperty("description") String description,
+        @JsonProperty("start") int start,
+        @JsonProperty("count") int count) {
         this.name = name;
         this.description = description;
         this.start = start;

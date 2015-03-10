@@ -31,10 +31,10 @@ public class Host implements Stored<Host>, Serializable {
 
     @JsonCreator
     public Host(@JsonProperty("name") String name,
-            @JsonProperty("hostName") String hostName,
-            @JsonProperty("port") int port,
-            @JsonProperty("workingDirectory") String workingDirectory,
-            @JsonProperty("clusterKey") ClusterKey clusterKey) {
+        @JsonProperty("hostName") String hostName,
+        @JsonProperty("port") int port,
+        @JsonProperty("workingDirectory") String workingDirectory,
+        @JsonProperty("clusterKey") ClusterKey clusterKey) {
         this.name = name;
         this.hostName = hostName;
         this.port = port;
@@ -45,12 +45,12 @@ public class Host implements Stored<Host>, Serializable {
     @Override
     public String toString() {
         return "Host{"
-                + "name=" + name
-                + ", hostName=" + hostName
-                + ", port=" + port
-                + ", workingDirectory=" + workingDirectory
-                + ", clusterKey=" + clusterKey
-                + '}';
+            + "name=" + name
+            + ", hostName=" + hostName
+            + ", port=" + port
+            + ", workingDirectory=" + workingDirectory
+            + ", clusterKey=" + clusterKey
+            + '}';
     }
 
     @Override

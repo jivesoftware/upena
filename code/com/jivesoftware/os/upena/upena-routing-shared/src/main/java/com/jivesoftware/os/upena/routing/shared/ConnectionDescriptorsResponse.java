@@ -26,22 +26,16 @@ public class ConnectionDescriptorsResponse {
     private final List<String> messages;
     private final String releaseGroup;
     private final List<ConnectionDescriptor> connections;
-    private final String alternatReleaseGroup;
-    private final List<ConnectionDescriptor> alternateConnections;
 
     @JsonCreator
     public ConnectionDescriptorsResponse(@JsonProperty("returnCode") int returnCode,
-            @JsonProperty("messages") List<String> messages,
-            @JsonProperty("releaseGroup") String releaseGroup,
-            @JsonProperty("connections") List<ConnectionDescriptor> connections,
-            @JsonProperty("alternatReleaseGroup") String alternatReleaseGroup,
-            @JsonProperty("alternateConnections") List<ConnectionDescriptor> alternateConnections) {
+        @JsonProperty("messages") List<String> messages,
+        @JsonProperty("releaseGroup") String releaseGroup,
+        @JsonProperty("connections") List<ConnectionDescriptor> connections) {
         this.returnCode = returnCode;
         this.messages = messages;
         this.releaseGroup = releaseGroup;
         this.connections = connections;
-        this.alternatReleaseGroup = alternatReleaseGroup;
-        this.alternateConnections = alternateConnections;
     }
 
     public int getReturnCode() {
@@ -63,13 +57,11 @@ public class ConnectionDescriptorsResponse {
     @Override
     public String toString() {
         return "ConnectionDescriptorsResponse{"
-                + "returnCode=" + returnCode
-                + ", messages=" + messages
-                + ", releaseGroup=" + releaseGroup
-                + ", connections=" + connections
-                + ", alternatReleaseGroup=" + alternatReleaseGroup
-                + ", alternateConnections=" + alternateConnections
-                + '}';
+            + "returnCode=" + returnCode
+            + ", messages=" + messages
+            + ", releaseGroup=" + releaseGroup
+            + ", connections=" + connections
+            + '}';
     }
 
     @Override
@@ -79,8 +71,6 @@ public class ConnectionDescriptorsResponse {
         hash = 29 * hash + Objects.hashCode(this.messages);
         hash = 29 * hash + Objects.hashCode(this.releaseGroup);
         hash = 29 * hash + Objects.hashCode(this.connections);
-        hash = 29 * hash + Objects.hashCode(this.alternatReleaseGroup);
-        hash = 29 * hash + Objects.hashCode(this.alternateConnections);
         return hash;
     }
 
@@ -103,12 +93,6 @@ public class ConnectionDescriptorsResponse {
             return false;
         }
         if (!Objects.equals(this.connections, other.connections)) {
-            return false;
-        }
-        if (!Objects.equals(this.alternatReleaseGroup, other.alternatReleaseGroup)) {
-            return false;
-        }
-        if (!Objects.equals(this.alternateConnections, other.alternateConnections)) {
             return false;
         }
         return true;

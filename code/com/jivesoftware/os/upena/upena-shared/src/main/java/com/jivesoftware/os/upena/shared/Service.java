@@ -16,9 +16,11 @@
 package com.jivesoftware.os.upena.shared;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Service implements Stored<Service>, Serializable {
 
     public final String name;
@@ -26,7 +28,7 @@ public class Service implements Stored<Service>, Serializable {
 
     @JsonCreator
     public Service(@JsonProperty("name") String name,
-            @JsonProperty("description") String description) {
+        @JsonProperty("description") String description) {
         this.name = name;
         this.description = description;
     }
@@ -34,9 +36,9 @@ public class Service implements Stored<Service>, Serializable {
     @Override
     public String toString() {
         return "Service{"
-                + "name=" + name
-                + ", description=" + description
-                + '}';
+            + "name=" + name
+            + ", description=" + description
+            + '}';
     }
 
     @Override

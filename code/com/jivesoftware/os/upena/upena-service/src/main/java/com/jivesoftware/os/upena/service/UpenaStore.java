@@ -39,7 +39,6 @@ import com.jivesoftware.os.upena.shared.ReleaseGroupKey;
 import com.jivesoftware.os.upena.shared.Service;
 import com.jivesoftware.os.upena.shared.ServiceKey;
 import com.jivesoftware.os.upena.shared.Tenant;
-import com.jivesoftware.os.upena.shared.TenantFilter;
 import com.jivesoftware.os.upena.shared.TenantKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
 import java.util.ArrayList;
@@ -73,9 +72,9 @@ public class UpenaStore {
     public final UpenaTable<TenantKey, Tenant> tenants;
 
     public UpenaStore(AmzaService amzaService,
-            InstanceChanges instanceChanges,
-            InstanceChanges instanceRemoved,
-            TenantChanges tenantChanges) throws Exception {
+        InstanceChanges instanceChanges,
+        InstanceChanges instanceRemoved,
+        TenantChanges tenantChanges) throws Exception {
         this.amzaService = amzaService;
         this.instanceChanges = instanceChanges;
         this.instanceRemoved = instanceRemoved;
@@ -85,36 +84,36 @@ public class UpenaStore {
         hosts = new UpenaTable<>(amzaService.getTable(hostStoreKey), HostKey.class, Host.class, new HostKeyProvider(), null);
         services = new UpenaTable<>(amzaService.getTable(serviceStoreKey), ServiceKey.class, Service.class, new ServiceKeyProvider(), null);
         releaseGroups = new UpenaTable<>(amzaService.getTable(releaseGroupStoreKey),
-                ReleaseGroupKey.class, ReleaseGroup.class, new ReleaseGroupKeyProvider(), null);
+            ReleaseGroupKey.class, ReleaseGroup.class, new ReleaseGroupKeyProvider(), null);
         instances = new UpenaTable<>(amzaService.getTable(instanceStoreKey),
-                InstanceKey.class, Instance.class, new InstanceKeyProvider(), new InstanceValidator());
+            InstanceKey.class, Instance.class, new InstanceKeyProvider(), new InstanceValidator());
         tenants = new UpenaTable<>(amzaService.getTable(tenantStoreKey), TenantKey.class, Tenant.class, new TenantKeyProvider(), null);
     }
 
     public void attachWatchers() throws Exception {
         amzaService.watch(clusterStoreKey, new Changes<>(ClusterKey.class, Cluster.class,
-                new KeyValueChange<ClusterKey, Cluster>() {
-                    @Override
-                    public void change(ClusterKey key, TimestampedValue<Cluster> value) throws Exception {
-                        InstanceFilter impactedFilter = new InstanceFilter(key, null, null, null, null, 0, Integer.MAX_VALUE);
-                        ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> got = instances.find(impactedFilter);
-                        List<InstanceChanged> changes = new ArrayList<>();
-                        for (Entry<InstanceKey, TimestampedValue<Instance>> instance : got.entrySet()) {
-                            changes.add(new InstanceChanged(instance.getValue().getValue().hostKey.getKey(), instance.getKey().getKey()));
-                        }
-                        instanceChanges.changed(changes);
+            new KeyValueChange<ClusterKey, Cluster>() {
+                @Override
+                public void change(ClusterKey key, TimestampedValue<Cluster> value) throws Exception {
+                    InstanceFilter impactedFilter = new InstanceFilter(key, null, null, null, null, 0, Integer.MAX_VALUE);
+                    ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> got = instances.find(impactedFilter);
+                    List<InstanceChanged> changes = new ArrayList<>();
+                    for (Entry<InstanceKey, TimestampedValue<Instance>> instance : got.entrySet()) {
+                        changes.add(new InstanceChanged(instance.getValue().getValue().hostKey.getKey(), instance.getKey().getKey()));
                     }
-                }, new KeyValueChange<ClusterKey, Cluster>() {
-                    @Override
-                    public void change(ClusterKey key, TimestampedValue<Cluster> value) throws Exception {
-                        InstanceFilter impactedFilter = new InstanceFilter(key, null, null, null, null, 0, Integer.MAX_VALUE);
-                        ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> got = instances.find(impactedFilter);
-                        for (Entry<InstanceKey, TimestampedValue<Instance>> e : got.entrySet()) {
-                            LOG.info("Removing instance:" + e + " because cluster:" + value + " was removed.");
-                            instances.remove(e.getKey());
-                        }
+                    instanceChanges.changed(changes);
+                }
+            }, new KeyValueChange<ClusterKey, Cluster>() {
+                @Override
+                public void change(ClusterKey key, TimestampedValue<Cluster> value) throws Exception {
+                    InstanceFilter impactedFilter = new InstanceFilter(key, null, null, null, null, 0, Integer.MAX_VALUE);
+                    ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> got = instances.find(impactedFilter);
+                    for (Entry<InstanceKey, TimestampedValue<Instance>> e : got.entrySet()) {
+                        LOG.info("Removing instance:" + e + " because cluster:" + value + " was removed.");
+                        instances.remove(e.getKey());
                     }
-                }));
+                }
+            }));
         amzaService.watch(hostStoreKey, new Changes<>(HostKey.class, Host.class, new KeyValueChange<HostKey, Host>() {
             @Override
             public void change(HostKey key, TimestampedValue<Host> value) throws Exception {
@@ -179,12 +178,6 @@ public class UpenaStore {
                 for (Entry<InstanceKey, TimestampedValue<Instance>> e : got.entrySet()) {
                     LOG.info("Removing instance:" + e + " because release group:" + value + " was removed.");
                     instances.remove(e.getKey());
-                }
-
-                TenantFilter impactedTenantsFilter = new TenantFilter(null, null, key, null, 0, Integer.MAX_VALUE);
-                ConcurrentNavigableMap<TenantKey, TimestampedValue<Tenant>> gotTenants = tenants.find(impactedTenantsFilter);
-                for (Entry<TenantKey, TimestampedValue<Tenant>> tenant : gotTenants.entrySet()) {
-                    //updateTenant(new TenantKey(tenant.getKey()), null); TODO copy orphaned tenant
                 }
 
             }

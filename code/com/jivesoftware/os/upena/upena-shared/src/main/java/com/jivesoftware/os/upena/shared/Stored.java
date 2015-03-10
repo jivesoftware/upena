@@ -19,9 +19,9 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 @JsonTypeInfo(
-        use = JsonTypeInfo.Id.NAME,
-        include = JsonTypeInfo.As.PROPERTY,
-        property = "objectType")
+    use = JsonTypeInfo.Id.NAME,
+    include = JsonTypeInfo.As.PROPERTY,
+    property = "objectType")
 @JsonSubTypes({
     @JsonSubTypes.Type(value = ClusterKey.class, name = "branchKey"),
     @JsonSubTypes.Type(value = Cluster.class, name = "branch"),

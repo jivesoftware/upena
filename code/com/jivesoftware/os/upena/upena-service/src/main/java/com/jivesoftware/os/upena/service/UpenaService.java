@@ -101,60 +101,46 @@ public class UpenaService {
 
         ServiceKey wantToConnectToServiceKey = new ServiceKey(gotServices.firstKey().getKey());
 
-        ReleaseGroupKey primaryReleaseGroupKey = null;
+        ReleaseGroupKey releaseGroupKey = null;
         List<ConnectionDescriptor> primaryConnections = null;
-
-        ReleaseGroupKey alternateReleaseGroupKey = null;
-        List<ConnectionDescriptor> alternateConnections = null;
-
         List<String> messages = new ArrayList<>();
+
         if (tenant != null) {
-            ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> got = findInstances(messages,
-                instance.clusterKey, tenant.releaseGroupKey, wantToConnectToServiceKey);
-            if (got == null || got.isEmpty()) {
-                primaryReleaseGroupKey = cluster.defaultReleaseGroups.get(wantToConnectToServiceKey); // Use instance assigned to the instances cluster.
-                if (primaryReleaseGroupKey == null) {
-                    return failedConnectionResponse("Cluster:" + cluster + " doesen't have a release group declared for "
-                        + "serviceKey:" + wantToConnectToServiceKey + " .");
-                }
-                got = findInstances(messages, instance.clusterKey, primaryReleaseGroupKey, wantToConnectToServiceKey);
+            releaseGroupKey = tenant.overrideReleaseGroups.get(wantToConnectToServiceKey);
+            if (releaseGroupKey != null) {
+                ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> got = findInstances(messages,
+                    instance.clusterKey, releaseGroupKey, wantToConnectToServiceKey);
                 if (got != null && !got.isEmpty()) {
-                    primaryReleaseGroupKey = tenant.releaseGroupKey;
                     primaryConnections = buildConnextions(messages, got, connectionsRequest.getPortName());
-
-                    got = findInstances(messages, instance.clusterKey, tenant.alternateReleaseGroupKey, wantToConnectToServiceKey);
-                    if (got != null || !got.isEmpty()) {
-                        alternateReleaseGroupKey = cluster.defaultAlternateReleaseGroups.get(wantToConnectToServiceKey);
-                        alternateConnections = buildConnextions(messages, got, connectionsRequest.getPortName());
-                    }
-                }
-
-            } else {
-                primaryReleaseGroupKey = tenant.releaseGroupKey;
-                primaryConnections = buildConnextions(messages, got, connectionsRequest.getPortName());
-
-                got = findInstances(messages, instance.clusterKey, tenant.alternateReleaseGroupKey, wantToConnectToServiceKey);
-                if (got != null || !got.isEmpty()) {
-                    alternateReleaseGroupKey = tenant.releaseGroupKey;
-                    alternateConnections = buildConnextions(messages, got, connectionsRequest.getPortName());
                 }
             }
         }
+        if (primaryConnections == null) {
+            releaseGroupKey = cluster.defaultReleaseGroups.get(wantToConnectToServiceKey); // Use instance assigned to the instances cluster.
+            if (releaseGroupKey == null) {
+                return failedConnectionResponse("Cluster:" + cluster + " doesen't have a release group declared for "
+                    + "serviceKey:" + wantToConnectToServiceKey + " .");
+            }
+            ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> got = findInstances(messages,
+                instance.clusterKey, releaseGroupKey, wantToConnectToServiceKey);
+            if (got != null && !got.isEmpty()) {
+                primaryConnections = buildConnextions(messages, got, connectionsRequest.getPortName());
+            }
+        }
+
         if (primaryConnections == null || primaryConnections.isEmpty()) {
             return failedConnectionResponse("No declared instance for: " + connectionsRequest);
         }
 
         messages.add("Success");
-        return new ConnectionDescriptorsResponse(1, messages,
-            (primaryReleaseGroupKey == null) ? null : primaryReleaseGroupKey.getKey(), primaryConnections,
-            (alternateReleaseGroupKey == null) ? null : alternateReleaseGroupKey.getKey(), alternateConnections);
+        return new ConnectionDescriptorsResponse(1, messages, (releaseGroupKey == null) ? null : releaseGroupKey.getKey(), primaryConnections);
     }
 
     ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> findInstances(List<String> messages,
         ClusterKey clusterKey,
         ReleaseGroupKey releaseGroupKey,
         ServiceKey wantToConnectToServiceKey) throws Exception {
-        if (releaseGroupKey != null) {
+        if (releaseGroupKey == null) {
             messages.add("Provided null releaseGroupKey so give null back.");
             return null;
         }
@@ -165,8 +151,7 @@ public class UpenaService {
             return null;
         }
 
-        if (releaseGroupKey != null
-            && releaseGroupKey.getKey() != null
+        if (releaseGroupKey.getKey() != null
             && releaseGroupKey.getKey().length() > 0) {
             InstanceFilter explicityReleaseGroupFilter = new InstanceFilter(clusterKey,
                 null, wantToConnectToServiceKey, releaseGroupKey, null, 0, Integer.MAX_VALUE);
@@ -199,8 +184,7 @@ public class UpenaService {
     }
 
     private ConnectionDescriptorsResponse failedConnectionResponse(String... message) {
-        return new ConnectionDescriptorsResponse(-1,
-            Arrays.asList(message), null, null, null, null);
+        return new ConnectionDescriptorsResponse(-1, Arrays.asList(message), null, null);
     }
 
     public InstanceDescriptorsResponse instanceDescriptors(InstanceDescriptorsRequest instanceDescriptorsRequest) throws Exception {

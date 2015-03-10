@@ -95,7 +95,6 @@ public class ClustersPluginRegion implements PageRegion<Optional<ClustersPluginR
                         filters.clear();
                         try {
                             upenaStore.clusters.update(null, new Cluster(input.name, input.description,
-                                new HashMap<ServiceKey, ReleaseGroupKey>(),
                                 new HashMap<ServiceKey, ReleaseGroupKey>()));
 
                             data.put("message", "Created Cluster:" + input.name);
@@ -111,8 +110,7 @@ public class ClustersPluginRegion implements PageRegion<Optional<ClustersPluginR
                                 data.put("message", "Couldn't update no existent cluster. Someone else likely just removed it since your last refresh.");
                             } else {
                                 upenaStore.clusters.update(new ClusterKey(input.key), new Cluster(input.name, input.description,
-                                    cluster.defaultReleaseGroups,
-                                    cluster.defaultAlternateReleaseGroups));
+                                    cluster.defaultReleaseGroups));
                                 data.put("message", "Updated Cluster:" + input.name);
                             }
 

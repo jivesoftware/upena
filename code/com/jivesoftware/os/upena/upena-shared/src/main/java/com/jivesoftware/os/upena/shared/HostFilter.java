@@ -36,12 +36,12 @@ public class HostFilter implements KeyValueFilter<HostKey, Host>, Serializable {
 
     @JsonCreator
     public HostFilter(@JsonProperty("name") String name,
-            @JsonProperty("hostName") String hostName,
-            @JsonProperty("port") Integer port,
-            @JsonProperty("workingDirectory") String workingDirectory,
-            @JsonProperty("clusterKey") ClusterKey clusterKey,
-            @JsonProperty("start") int start,
-            @JsonProperty("count") int count) {
+        @JsonProperty("hostName") String hostName,
+        @JsonProperty("port") Integer port,
+        @JsonProperty("workingDirectory") String workingDirectory,
+        @JsonProperty("clusterKey") ClusterKey clusterKey,
+        @JsonProperty("start") int start,
+        @JsonProperty("count") int count) {
         this.name = name;
         this.hostName = hostName;
         this.port = port;
@@ -54,15 +54,15 @@ public class HostFilter implements KeyValueFilter<HostKey, Host>, Serializable {
     @Override
     public String toString() {
         return "HostFilter{"
-                + "name=" + name
-                + ", hostName=" + hostName
-                + ", port=" + port
-                + ", workingDirectory=" + workingDirectory
-                + ", clusterKey=" + clusterKey
-                + ", start=" + start
-                + ", count=" + count
-                + ", hit=" + hit
-                + '}';
+            + "name=" + name
+            + ", hostName=" + hostName
+            + ", port=" + port
+            + ", workingDirectory=" + workingDirectory
+            + ", clusterKey=" + clusterKey
+            + ", start=" + start
+            + ", count=" + count
+            + ", hit=" + hit
+            + '}';
     }
 
     @Override

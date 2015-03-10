@@ -16,35 +16,34 @@
 package com.jivesoftware.os.upena.shared;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
+import java.util.Map;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Tenant implements Stored<Tenant>, Serializable {
 
     public final String tenantId;
     public final String description;
-    public final ReleaseGroupKey releaseGroupKey;
-    public final ReleaseGroupKey alternateReleaseGroupKey;
+    public final Map<ServiceKey, ReleaseGroupKey> overrideReleaseGroups;
 
     @JsonCreator
     public Tenant(@JsonProperty("tenantId") String tenantId,
-            @JsonProperty("description") String description,
-            @JsonProperty("releaseGroupKey") ReleaseGroupKey releaseGroupKey,
-            @JsonProperty("alternateReleaseGroupKey") ReleaseGroupKey alternateReleaseGroupKey) {
+        @JsonProperty("description") String description,
+        @JsonProperty("overrideReleaseGroups") Map<ServiceKey, ReleaseGroupKey> overrideReleaseGroups) {
         this.tenantId = tenantId;
         this.description = description;
-        this.releaseGroupKey = releaseGroupKey;
-        this.alternateReleaseGroupKey = alternateReleaseGroupKey;
+        this.overrideReleaseGroups = overrideReleaseGroups;
     }
 
     @Override
     public String toString() {
         return "Tenant{"
-                + "tenantId=" + tenantId
-                + ", description=" + description
-                + ", releaseGroupKey=" + releaseGroupKey
-                + ", alternateReleaseGroupKey=" + alternateReleaseGroupKey
-                + '}';
+            + "tenantId=" + tenantId
+            + ", description=" + description
+            + ", overrideReleaseGroups=" + overrideReleaseGroups
+            + '}';
     }
 
     @Override

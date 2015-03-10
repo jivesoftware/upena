@@ -36,7 +36,6 @@ public class JFieldsForCluster implements JObjectFields<ClusterKey, Cluster, Clu
     JEditField name;
     JEditField description;
     JEditReleaseGroupsField defaultReleaseGroups;
-    JEditReleaseGroupsField defaultAlternateReleaseGroups;
 
     public JFieldsForCluster(JObjectFactory factory, String k, Cluster v) {
         this.factory = factory;
@@ -49,10 +48,6 @@ public class JFieldsForCluster implements JObjectFields<ClusterKey, Cluster, Clu
 
         defaultReleaseGroups = new JEditReleaseGroupsField(factory, "defaultReleaseGroups", (v != null) ? v.defaultReleaseGroups : null);
         fields.put("defaultReleaseGroups", defaultReleaseGroups);
-
-        defaultAlternateReleaseGroups = new JEditReleaseGroupsField(factory, "defaultAlternateReleaseGroups",
-                (v != null) ? v.defaultAlternateReleaseGroups : null);
-        fields.put("defaultAlternateReleaseGroups", defaultAlternateReleaseGroups);
 
         clusterKey = new JEditKeyField("key", (k != null) ? k : "");
         fields.put("key", clusterKey);
@@ -74,12 +69,9 @@ public class JFieldsForCluster implements JObjectFields<ClusterKey, Cluster, Clu
         Map<ServiceKey, ReleaseGroupKey> defaults = new HashMap<>();
         defaults.putAll(defaultReleaseGroups.field);
 
-        Map<ServiceKey, ReleaseGroupKey> defaultAlternates = new HashMap<>();
-        defaultAlternates.putAll(defaultAlternateReleaseGroups.field);
         Cluster cluster = new Cluster(name.getValue(),
-                description.getValue(),
-                defaults,
-                defaultAlternates);
+            description.getValue(),
+            defaults);
         return cluster;
     }
 
@@ -96,7 +88,7 @@ public class JFieldsForCluster implements JObjectFields<ClusterKey, Cluster, Clu
     @Override
     public ClusterFilter fieldsToFilter() {
         ClusterFilter filter = new ClusterFilter(name.getValue(),
-                description.getValue(), 0, 100);
+            description.getValue(), 0, 100);
         return filter;
     }
 
@@ -106,7 +98,6 @@ public class JFieldsForCluster implements JObjectFields<ClusterKey, Cluster, Clu
         name.setValue(v.name);
         description.setValue(v.description);
         defaultReleaseGroups.setValue(v.defaultReleaseGroups);
-        defaultAlternateReleaseGroups.setValue(v.defaultAlternateReleaseGroups);
     }
 
     @Override

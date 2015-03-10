@@ -16,32 +16,28 @@
 package com.jivesoftware.os.upena.shared;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class TenantFilter implements KeyValueFilter<TenantKey, Tenant>, Serializable {
 
     public final String tenantId;
     public final String description;
-    public final ReleaseGroupKey releaseGroupKey;
-    public final ReleaseGroupKey alternateReleaseGroupKey;
     public final int start;
     public final int count;
     public int hit;
 
     @JsonCreator
     public TenantFilter(@JsonProperty("tenantId") String tenantId,
-            @JsonProperty("description") String description,
-            @JsonProperty("releaseGroupKey") ReleaseGroupKey releaseGroupKey,
-            @JsonProperty("alternateReleaseGroupKey") ReleaseGroupKey alternateReleaseGroupKey,
-            @JsonProperty("start") int start,
-            @JsonProperty("count") int count) {
+        @JsonProperty("description") String description,
+        @JsonProperty("start") int start,
+        @JsonProperty("count") int count) {
         this.tenantId = tenantId;
         this.description = description;
-        this.releaseGroupKey = releaseGroupKey;
-        this.alternateReleaseGroupKey = alternateReleaseGroupKey;
         this.start = start;
         this.count = count;
     }
@@ -49,13 +45,11 @@ public class TenantFilter implements KeyValueFilter<TenantKey, Tenant>, Serializ
     @Override
     public String toString() {
         return "TenantFilter{"
-                + "tenantId=" + tenantId
-                + ", description=" + description
-                + ", releaseGroupKey=" + releaseGroupKey
-                + ", alternateReleaseGroupKey=" + alternateReleaseGroupKey
-                + ", start=" + start
-                + ", count=" + count
-                + '}';
+            + "tenantId=" + tenantId
+            + ", description=" + description
+            + ", start=" + start
+            + ", count=" + count
+            + '}';
     }
 
     @Override
@@ -75,16 +69,6 @@ public class TenantFilter implements KeyValueFilter<TenantKey, Tenant>, Serializ
         }
         if (description != null && value.description != null) {
             if (!value.description.contains(description)) {
-                return false;
-            }
-        }
-        if (releaseGroupKey != null && value.releaseGroupKey != null) {
-            if (!value.releaseGroupKey.equals(releaseGroupKey)) {
-                return false;
-            }
-        }
-        if (alternateReleaseGroupKey != null && value.alternateReleaseGroupKey != null) {
-            if (!value.alternateReleaseGroupKey.equals(alternateReleaseGroupKey)) {
                 return false;
             }
         }

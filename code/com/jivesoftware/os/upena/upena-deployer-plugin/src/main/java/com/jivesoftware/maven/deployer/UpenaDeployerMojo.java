@@ -226,8 +226,7 @@ public class UpenaDeployerMojo extends AbstractMojo {
                 getLog().info("No cluster named:" + clusterName + ". Automatically adding new cluster.");
                 Map<ServiceKey, ReleaseGroupKey> defaultReleaseGroups = new HashMap<>();
                 defaultReleaseGroups.put(serviceKey, releaseGroupKey);
-                Map<ServiceKey, ReleaseGroupKey> defaultAlternateReleaseGroups = new HashMap<>();
-                clusterKey = requestHelper.executeRequest(new Cluster(clusterName, "", defaultReleaseGroups, defaultAlternateReleaseGroups),
+                clusterKey = requestHelper.executeRequest(new Cluster(clusterName, "", defaultReleaseGroups),
                     "/upena/cluster/add", ClusterKey.class, null);
             }
         } catch (Exception x) {

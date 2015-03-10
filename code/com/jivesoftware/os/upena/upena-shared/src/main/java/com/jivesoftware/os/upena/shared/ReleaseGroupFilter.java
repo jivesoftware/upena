@@ -16,11 +16,13 @@
 package com.jivesoftware.os.upena.shared;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ReleaseGroupFilter implements KeyValueFilter<ReleaseGroupKey, ReleaseGroup>, Serializable {
 
     public final String name;
@@ -34,12 +36,12 @@ public class ReleaseGroupFilter implements KeyValueFilter<ReleaseGroupKey, Relea
 
     @JsonCreator
     public ReleaseGroupFilter(@JsonProperty("name") String name,
-            @JsonProperty("email") String email,
-            @JsonProperty("version") String version,
-            @JsonProperty("repository") String repository,
-            @JsonProperty("description") String description,
-            @JsonProperty("start") int start,
-            @JsonProperty("count") int count) {
+        @JsonProperty("email") String email,
+        @JsonProperty("version") String version,
+        @JsonProperty("repository") String repository,
+        @JsonProperty("description") String description,
+        @JsonProperty("start") int start,
+        @JsonProperty("count") int count) {
         this.name = name;
         this.email = email;
         this.version = version;
@@ -52,15 +54,15 @@ public class ReleaseGroupFilter implements KeyValueFilter<ReleaseGroupKey, Relea
     @Override
     public String toString() {
         return "ReleaseGroupFilter{"
-                + "name=" + name
-                + ", email=" + email
-                + ", version=" + version
-                + ", repository=" + repository
-                + ", description=" + description
-                + ", start=" + start
-                + ", count=" + count
-                + ", hit=" + hit
-                + '}';
+            + "name=" + name
+            + ", email=" + email
+            + ", version=" + version
+            + ", repository=" + repository
+            + ", description=" + description
+            + ", start=" + start
+            + ", count=" + count
+            + ", hit=" + hit
+            + '}';
     }
 
     @Override

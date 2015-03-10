@@ -16,10 +16,12 @@
 package com.jivesoftware.os.upena.shared;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.Objects;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ReleaseGroup implements Stored<ReleaseGroup>, Serializable {
 
     public final String name;
@@ -30,10 +32,10 @@ public class ReleaseGroup implements Stored<ReleaseGroup>, Serializable {
 
     @JsonCreator
     public ReleaseGroup(@JsonProperty("name") String name,
-            @JsonProperty("email") String email,
-            @JsonProperty("version") String version,
-            @JsonProperty("repository") String repository,
-            @JsonProperty("description") String description) {
+        @JsonProperty("email") String email,
+        @JsonProperty("version") String version,
+        @JsonProperty("repository") String repository,
+        @JsonProperty("description") String description) {
         this.name = name;
         this.email = email;
         this.version = version;
@@ -44,12 +46,12 @@ public class ReleaseGroup implements Stored<ReleaseGroup>, Serializable {
     @Override
     public String toString() {
         return "ReleaseGroup{"
-                + "name=" + name
-                + ", email=" + email
-                + ", version=" + version
-                + ", repository=" + repository
-                + ", description=" + description
-                + '}';
+            + "name=" + name
+            + ", email=" + email
+            + ", version=" + version
+            + ", repository=" + repository
+            + ", description=" + description
+            + '}';
     }
 
     @Override
