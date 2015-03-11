@@ -45,15 +45,14 @@ import com.jivesoftware.os.amza.shared.UpdatesSender;
 import com.jivesoftware.os.amza.shared.UpdatesTaker;
 import com.jivesoftware.os.amza.storage.RowTable;
 import com.jivesoftware.os.amza.storage.binary.BinaryRowMarshaller;
-import com.jivesoftware.os.amza.storage.binary.BinaryRowReader;
-import com.jivesoftware.os.amza.storage.binary.BinaryRowWriter;
-import com.jivesoftware.os.amza.storage.filer.Filer;
+import com.jivesoftware.os.amza.storage.binary.BinaryRowsTx;
 import com.jivesoftware.os.amza.transport.http.replication.HttpUpdatesSender;
 import com.jivesoftware.os.amza.transport.http.replication.HttpUpdatesTaker;
 import com.jivesoftware.os.amza.transport.http.replication.endpoints.AmzaReplicationRestEndpoints;
 import com.jivesoftware.os.jive.utils.ordered.id.ConstantWriterIdProvider;
 import com.jivesoftware.os.jive.utils.ordered.id.OrderIdProvider;
 import com.jivesoftware.os.jive.utils.ordered.id.OrderIdProviderImpl;
+import com.jivesoftware.os.jive.utils.ordered.id.TimestampedOrderIdProvider;
 import com.jivesoftware.os.upena.config.UpenaConfigRestEndpoints;
 import com.jivesoftware.os.upena.config.UpenaConfigStore;
 import com.jivesoftware.os.upena.deployable.UpenaEndpoints.AmzaClusterName;
@@ -156,7 +155,7 @@ public class Main {
 
         RingHost ringHost = new RingHost(hostname, port); // TODO include rackId
         // todo need a better way to create writter id.
-        final OrderIdProvider orderIdProvider = new OrderIdProviderImpl(new ConstantWriterIdProvider(new Random().nextInt(512)));
+        final TimestampedOrderIdProvider orderIdProvider = new OrderIdProviderImpl(new ConstantWriterIdProvider(new Random().nextInt(512)));
 
         final ObjectMapper mapper = new ObjectMapper();
         mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
@@ -189,6 +188,7 @@ public class Main {
         amzaService.start(ringHost, amzaServiceConfig.resendReplicasIntervalInMillis,
             amzaServiceConfig.applyReplicasIntervalInMillis,
             amzaServiceConfig.takeFromNeighborsIntervalInMillis,
+            amzaServiceConfig.checkIfCompactionIsNeededIntervalInMillis,
             amzaServiceConfig.compactTombstoneIfOlderThanNMillis);
 
         System.out.println("-----------------------------------------------------------------------");
@@ -327,7 +327,7 @@ public class Main {
             jerseyEndpoints.addInjectable(plugin.region.getClass(), plugin.region);
         }
         jerseyEndpoints.addEndpoint(UpenaPropagatorEndpoints.class);
-        jerseyEndpoints.addInjectable(AmzaClusterName.class, new AmzaClusterName((clusterName == null) ? "maunal" : clusterName));
+        jerseyEndpoints.addInjectable(AmzaClusterName.class, new AmzaClusterName((clusterName == null) ? "manual" : clusterName));
 
         InitializeRestfulServer initializeRestfulServer = new InitializeRestfulServer(port, "UpenaNode", 128, 10000);
         initializeRestfulServer.addClasspathResource("/resources");
@@ -380,11 +380,7 @@ public class Main {
                 directory.mkdirs();
                 File file = new File(directory, tableName.getTableName() + ".kvt");
 
-                Filer filer = new Filer(file.getAbsolutePath(), "rw");
-                BinaryRowReader reader = new BinaryRowReader(filer);
-                BinaryRowWriter writer = new BinaryRowWriter(filer);
                 BinaryRowMarshaller rowMarshaller = new BinaryRowMarshaller();
-
                 RowsIndexProvider tableIndexProvider = new RowsIndexProvider() {
 
                     @Override
@@ -401,10 +397,8 @@ public class Main {
 
                 return new RowTable(tableName,
                     orderIdProvider,
-                    tableIndexProvider,
                     rowMarshaller,
-                    reader,
-                    writer);
+                    new BinaryRowsTx(file, rowMarshaller, tableIndexProvider));
             }
         };
         return rowsStorageProvider;

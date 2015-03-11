@@ -245,13 +245,13 @@ public class UpenaStore {
                         for (RowIndexValue g : got) {
                             K k = mapper.readValue(rawKey.getKey(), keyClass);
                             V v = mapper.readValue(g.getValue(), valueClass);
-                            removes.change(k, new BasicTimestampedValue<>(v, g.getTimestamp(), g.getTombstoned()));
+                            removes.change(k, new BasicTimestampedValue<>(v, g.getTimestampId(), g.getTombstoned()));
                         }
                     }
                 } else if (adds != null) {
                     K k = mapper.readValue(rawKey.getKey(), keyClass);
                     V v = mapper.readValue(rawValue.getValue(), valueClass);
-                    adds.change(k, new BasicTimestampedValue<>(v, rawValue.getTimestamp(), rawValue.getTombstoned()));
+                    adds.change(k, new BasicTimestampedValue<>(v, rawValue.getTimestampId(), rawValue.getTombstoned()));
                 }
             }
         }

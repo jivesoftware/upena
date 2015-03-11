@@ -84,7 +84,7 @@ public class UpenaTable<K extends Key, V extends Stored> {
                     V v = mapper.readValue(value.getValue(), valueClass);
 
                     if (filter.filter(k, v)) {
-                        results.put(k, new BasicTimestampedValue(v, value.getTimestamp(), value.getTombstoned()));
+                        results.put(k, new BasicTimestampedValue(v, value.getTimestampId(), value.getTombstoned()));
                     }
                 }
                 return true;

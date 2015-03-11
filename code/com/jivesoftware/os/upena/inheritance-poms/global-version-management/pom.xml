@@ -12,8 +12,8 @@
     <packaging>pom</packaging>
     <properties>
         <mlogger-version>0.8</mlogger-version>
-        <jive.utils.version>0.74</jive.utils.version>
-        <amza.version>0.14</amza.version>
+        <jive.utils.version>0.78</jive.utils.version>
+        <amza.version>0.19</amza.version>
     </properties>
     <dependencyManagement>
         <dependencies>

@@ -52,13 +52,13 @@ public class TenantRoutingRestEndpoints {
     }
 
     @GET
-    @Path("/invaliateAll")
+    @Path("/invalidateAll")
     public Response invalidateAll() {
         try {
             LOG.info("invalidating all");
             routingProvider.invalidateAll();
             LOG.info("invalidated all");
-            return ResponseHelper.INSTANCE.jsonResponse("InvalidatdAll");
+            return ResponseHelper.INSTANCE.jsonResponse("InvalidatedAll");
         } catch (Exception x) {
             LOG.error("Encountered the following error invalidating all.", x);
             return ResponseHelper.INSTANCE.errorResponse("Encountered the following error invalidating all.", x);
