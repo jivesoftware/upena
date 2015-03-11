@@ -28,14 +28,17 @@ public class TenantRoutingClient<T, C> {
     private final ConcurrentHashMap<T, TimestampedClient<C>> tenantsHttpClient = new ConcurrentHashMap<>();
 
     public TenantRoutingClient(TenantsServiceConnectionDescriptorProvider connectionPoolProvider,
-            ClientConnectionsFactory<C> clientConnectionsFactory,
-            ClientCloser<C> clientCloser) {
+        ClientConnectionsFactory<C> clientConnectionsFactory,
+        ClientCloser<C> clientCloser) {
         this.connectionPoolProvider = connectionPoolProvider;
         this.clientConnectionsFactory = clientConnectionsFactory;
         this.clientCloser = clientCloser;
     }
 
     public <R, E extends Throwable> R tenantAwareCall(T tenant, ClientCall<C, R, E> clientCall) throws E {
+        if (tenant == null) {
+            throw new IllegalArgumentException("tenant cannot be null.");
+        }
         ConnectionDescriptors connections = connectionPoolProvider.getConnections(tenant);
         TimestampedClient<C> timestampedClient = tenantsHttpClient.get(tenant);
         if (timestampedClient == null || timestampedClient.getTimestamp() < connections.getTimestamp()) {

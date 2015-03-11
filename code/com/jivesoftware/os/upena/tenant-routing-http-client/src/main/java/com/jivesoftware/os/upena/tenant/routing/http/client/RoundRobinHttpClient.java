@@ -75,7 +75,7 @@ public class RoundRobinHttpClient implements HttpClient {
                     }
                 }
             }
-            ci = (start + 1) % clients.length;
+            ci = (ci + 1) % clients.length;
         }
         throw new HttpClientException("No client are available");
     }

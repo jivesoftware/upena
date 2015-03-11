@@ -43,7 +43,10 @@ public class TenantRoutingHttpClientInitializer<T> {
                 HttpClientFactoryProvider httpClientFactoryProvider = new HttpClientFactoryProvider();
                 for (ConnectionDescriptor connection : connectionDescriptors.getConnectionDescriptors()) {
                     List<HttpClientConfiguration> config = new ArrayList<>();
-                    config.add(HttpClientConfig.newBuilder().setSocketTimeoutInMillis(15000).build());
+                    config.add(HttpClientConfig
+                        .newBuilder()
+                        .setSocketTimeoutInMillis(600000) // TODO fix get this from connectionDescriptors.properties
+                        .build());
                     HttpClientFactory createHttpClientFactory = httpClientFactoryProvider.createHttpClientFactory(config);
                     HttpClient httpClient = createHttpClientFactory.createClient(connection.getHost(), connection.getPort());
                     httpClients.add(httpClient);
