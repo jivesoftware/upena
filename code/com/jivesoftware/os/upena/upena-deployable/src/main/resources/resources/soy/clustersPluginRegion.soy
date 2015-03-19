@@ -22,6 +22,7 @@
                             <tr>
                                 <th>Name</th>
                                 <th>Description</th>
+                                <th>Releases</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -55,6 +56,49 @@
                                         <td>
                                             <input type="text" autocomplete="off" role="combobox" style="width:280px; padding-left:10px;"
                                             placeholder="Description" value="{$c.description}" name="description" id="descriptionPicker" class="form-control">
+                                        </td>
+                                        <td>
+                                            <table>
+                                                <thead>
+                                                    <tr>
+                                                        <th>Service</th>
+                                                        <th>Release</th>
+                                                        <th>Actions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {foreach $r in $c.defaultReleaseGroups}
+                                                        <tr>
+                                                            <td>
+                                                                {$r.serviceName}
+                                                            </td>
+                                                            <td>
+                                                                {$r.releaseGroupName}
+                                                            </td>
+                                                            <td>
+                                                                <button title="Remove" onClick="upena.clusterReleaseGroups.remove('{$c.key}', '{$r.serviceKey}', '{$r.releaseGroupKey}')" class="btn btn-default"><span class="glyphicon glyphicon-plus"></button>
+                                                            </td>
+                                                        </tr>
+                                                    {/foreach}
+                                                    <tr>
+                                                        <td>
+                                                            <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                                                placeholder="Service" value="" name="service" id="servicePicker-{$c.key}"
+                                                                class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/services">
+                                                            <input type="hidden" name="serviceKey" value="{$filters.serviceKey?:''}" />
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                                                placeholder="Release" value="" name="release" id="releasePicker-{$c.key}"
+                                                                class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/releases">
+                                                            <input type="hidden" name="releaseKey" value="{$filters.releaseKey?:''}" />
+                                                        </td>
+                                                        <td>
+                                                            <button title="Add" onClick="upena.clusterReleaseGroups.add('{$c.key}')" class="btn btn-default"><span class="glyphicon glyphicon-plus"></button>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
                                         </td>
                                         <td>
                                             <input type="hidden" name="key" value="{$c.key}">

@@ -13,7 +13,9 @@ import com.jivesoftware.os.upena.service.UpenaStore;
 import com.jivesoftware.os.upena.shared.Cluster;
 import com.jivesoftware.os.upena.shared.ClusterFilter;
 import com.jivesoftware.os.upena.shared.ClusterKey;
+import com.jivesoftware.os.upena.shared.ReleaseGroup;
 import com.jivesoftware.os.upena.shared.ReleaseGroupKey;
+import com.jivesoftware.os.upena.shared.Service;
 import com.jivesoftware.os.upena.shared.ServiceKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
 import com.jivesoftware.os.upena.uba.service.UbaService;
@@ -21,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  *
@@ -132,17 +135,38 @@ public class ClustersPluginRegion implements PageRegion<Optional<ClustersPluginR
                     }
                 }
 
-                List<Map<String, String>> rows = new ArrayList<>();
+                List<Map<String, Object>> rows = new ArrayList<>();
                 Map<ClusterKey, TimestampedValue<Cluster>> found = upenaStore.clusters.find(filter);
                 for (Map.Entry<ClusterKey, TimestampedValue<Cluster>> entrySet : found.entrySet()) {
                     ClusterKey key = entrySet.getKey();
                     TimestampedValue<Cluster> timestampedValue = entrySet.getValue();
                     Cluster value = timestampedValue.getValue();
 
-                    Map<String, String> row = new HashMap<>();
+                    List<Map<String, String>> defaultReleaseGroups = new ArrayList<>();
+                    for (Entry<ServiceKey, ReleaseGroupKey> e : value.defaultReleaseGroups.entrySet()) {
+                        Map<String, String> row = new HashMap<>();
+                        row.put("serviceKey", e.getKey().getKey());
+                        Service service = upenaStore.services.get(e.getKey());
+                        if (service != null) {
+                            row.put("serviceName", service.name);
+                        } else {
+                            row.put("serviceName", "missing");
+                        }
+                        row.put("releaseGroupKey", e.getValue().getKey());
+                        ReleaseGroup releaseGroup = upenaStore.releaseGroups.get(e.getValue());
+                        if (releaseGroup != null) {
+                            row.put("releaseGroupName", releaseGroup.name);
+                        } else {
+                            row.put("releaseGroupName", "missing");
+                        }
+                        defaultReleaseGroups.add(row);
+                    }
+
+                    Map<String, Object> row = new HashMap<>();
                     row.put("key", key.getKey());
                     row.put("name", value.name);
                     row.put("description", value.description);
+                    row.put("defaultReleaseGroups", defaultReleaseGroups);
                     rows.add(row);
                 }
                 data.put("clusters", rows);
@@ -155,12 +179,45 @@ public class ClustersPluginRegion implements PageRegion<Optional<ClustersPluginR
         return renderer.render(template, data);
     }
 
+    public void add(ReleaseGroupUpdate releaseGroupUpdate) throws Exception {
+        ClusterKey clusterKey = new ClusterKey(releaseGroupUpdate.clusterId);
+        Cluster cluster = upenaStore.clusters.get(clusterKey);
+        if (cluster != null) {
+            cluster.defaultReleaseGroups.put(new ServiceKey(releaseGroupUpdate.serviceId), new ReleaseGroupKey(releaseGroupUpdate.releaseGroupId));
+            upenaStore.clusters.update(clusterKey, cluster);
+        }
+    }
+
+    public void remove(ReleaseGroupUpdate releaseGroupUpdate) throws Exception {
+        ClusterKey clusterKey = new ClusterKey(releaseGroupUpdate.clusterId);
+        Cluster cluster = upenaStore.clusters.get(clusterKey);
+        if (cluster != null) {
+            if (cluster.defaultReleaseGroups.remove(new ServiceKey(releaseGroupUpdate.serviceId)) != null) {
+                upenaStore.clusters.update(clusterKey, cluster);
+            }
+        }
+    }
+
+    public static class ReleaseGroupUpdate {
+
+        public String clusterId;
+        public String serviceId;
+        public String releaseGroupId;
+
+        public ReleaseGroupUpdate() {
+        }
+
+        public ReleaseGroupUpdate(String clusterId, String serviceId, String releaseGroupId) {
+            this.clusterId = clusterId;
+            this.serviceId = serviceId;
+            this.releaseGroupId = releaseGroupId;
+        }
+
+    }
+
     @Override
     public String getTitle() {
         return "Upena Clusters";
     }
 
-    static class ServiceStatus {
-
-    }
 }

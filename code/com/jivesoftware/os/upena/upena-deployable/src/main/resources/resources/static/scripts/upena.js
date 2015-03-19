@@ -156,6 +156,38 @@ upena.instances = {
     }
 };
 
+upena.clusterReleaseGroups = {
+    add: function (clusterId) {
+        var serviceId = $('#servicePicker-'+clusterId).val();
+        var releaseGroupId = $('#releasePicker-'+clusterId).val();
+        
+        $.ajax("/ui/clusters/add", {
+                data: JSON.stringify({ 'clusterId': clusterId, 'serviceId' : serviceId, 'releaseGroupId' : releaseGroupId}),
+                method: "post",
+                contentType: "application/json",
+                success: function () {
+                    window.location.reload(true);
+                },
+                error: function () {
+                    alert('Save failed!');
+                }
+            });
+    },
+    remove: function (clusterId, serviceId, releaseGroupId) {
+        $.ajax("/ui/clusters/remove", {
+                data: JSON.stringify({ 'clusterId': clusterId, 'serviceId' : serviceId, 'releaseGroupId' : releaseGroupId}),
+                method: "post",
+                contentType: "application/json",
+                success: function () {
+                    window.location.reload(true);
+                },
+                error: function () {
+                    alert('Save failed!');
+                }
+            });
+    }
+};
+
 upena.cfg = {
     pending: {},
 

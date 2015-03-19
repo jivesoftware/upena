@@ -129,138 +129,21 @@ public class InstancesPluginRegion implements PageRegion<Optional<InstancesPlugi
                 if (input.action != null) {
                     if (input.action.equals("filter")) {
 
-                        data.put("message", "Filtering: "
-                            + "cluster.equals '" + input.cluster + "' "
-                            + "host.equals '" + input.host + "' "
-                            + "service.equals '" + input.service + "' "
-                            + "release.equals '" + input.release + "'"
-                            + "id.equals '" + input.instanceId + "'"
-                        );
+                        handleFilter(data, input);
                     } else if (input.action.equals("add")) {
-                        filters.clear();
-                        try {
-                            boolean valid = true;
-                            Cluster cluster = upenaStore.clusters.get(new ClusterKey(input.clusterKey));
-                            if (cluster == null) {
-                                data.put("message", "Cluster key:" + input.clusterKey + " is invalid.");
-                                valid = false;
-                            }
-                            Host host = upenaStore.hosts.get(new HostKey(input.hostKey));
-                            if (host == null) {
-                                data.put("message", "Host key:" + input.hostKey + " is invalid.");
-                                valid = false;
-                            }
-                            Service service = upenaStore.services.get(new ServiceKey(input.serviceKey));
-                            if (service == null) {
-                                data.put("message", "Service key:" + input.serviceKey + " is invalid.");
-                                valid = false;
-                            }
-                            ReleaseGroup releaseGroup = upenaStore.releaseGroups.get(new ReleaseGroupKey(input.releaseKey));
-                            if (releaseGroup == null) {
-                                data.put("message", "ReleaseGroup key:" + input.releaseKey + " is invalid.");
-                                valid = false;
-                            }
-
-                            if (valid) {
-                                upenaStore.instances.update(null, new Instance(
-                                    new ClusterKey(input.clusterKey),
-                                    new HostKey(input.hostKey),
-                                    new ServiceKey(input.serviceKey),
-                                    new ReleaseGroupKey(input.releaseKey),
-                                    Integer.parseInt(input.instanceId),
-                                    true, false, System.currentTimeMillis()
-                                ));
-
-                                data.put("message", "Created Instance.");
-                            }
-                        } catch (Exception x) {
-                            String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
-                            data.put("message", "Error while trying to add Instance.\n" + trace);
-                        }
+                        handleAdd(filters, input, data);
                     } else if (input.action.equals("update")) {
-                        filters.clear();
-                        try {
-                            Instance instance = upenaStore.instances.get(new InstanceKey(input.key));
-                            if (instance == null) {
-                                data.put("message", "Couldn't update no existent Instance. Someone else likely just removed it since your last refresh.");
-                            } else {
-                                upenaStore.instances.update(new InstanceKey(input.key), new Instance(
-                                    new ClusterKey(input.clusterKey),
-                                    new HostKey(input.hostKey),
-                                    new ServiceKey(input.serviceKey),
-                                    new ReleaseGroupKey(input.releaseKey),
-                                    Integer.parseInt(input.instanceId),
-                                    true, false, System.currentTimeMillis()));
-                                data.put("message", "Updated Instance:" + input.key);
-                            }
-
-                        } catch (Exception x) {
-                            String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
-                            data.put("message", "Error while trying to update Instance:" + input.key + "\n" + trace);
-                        }
+                        handleUpdate(filters, input, data);
                     } else if (input.action.equals("restart")) {
-                        filters.clear();
-                        try {
-                            Instance instance = upenaStore.instances.get(new InstanceKey(input.key));
-                            if (instance == null) {
-                                data.put("message", "Couldn't update no existent Instance. Someone else likely just removed it since your last refresh.");
-                            } else {
-                                InstanceKey key = new InstanceKey(input.key);
-                                instance.restartTimestampGMTMillis = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(5);
-                                upenaStore.instances.update(key, instance);
-                                data.put("message", "Instance will be restarted momentarily.");
-
-                            }
-
-                        } catch (Exception x) {
-                            String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
-                            data.put("message", "Error while trying to update Instance:" + input.key + "\n" + trace);
-                        }
+                        handleRestart(filters, input, data);
                     } else if (input.action.equals("remove")) {
-                        if (input.key.isEmpty()) {
-                            data.put("message", "Failed to remove Instance:" + input.key);
-                        } else {
-                            try {
-                                upenaStore.instances.remove(new InstanceKey(input.key));
-                            } catch (Exception x) {
-                                String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
-                                data.put("message", "Error while trying to remove Instance:" + input.key + "\n" + trace);
-                            }
-                        }
+                        handleRemove(input, data);
                     } else if (input.action.equals("restartAllNow")) {
-                        long now = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(5);
-                        Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(filter);
-                        for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {
-                            InstanceKey key = entrySet.getKey();
-                            TimestampedValue<Instance> timestampedValue = entrySet.getValue();
-                            Instance value = timestampedValue.getValue();
-                            value.restartTimestampGMTMillis = now;
-                            upenaStore.instances.update(key, value);
-                        }
+                        handleRestartAllNow(filter);
                     } else if (input.action.equals("restartAll")) {
-                        long now = System.currentTimeMillis();
-                        long stagger = TimeUnit.SECONDS.toMillis(30);
-                        now += stagger;
-                        Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(filter);
-                        for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {
-                            InstanceKey key = entrySet.getKey();
-                            TimestampedValue<Instance> timestampedValue = entrySet.getValue();
-                            Instance value = timestampedValue.getValue();
-                            value.restartTimestampGMTMillis = now;
-                            upenaStore.instances.update(key, value);
-                            now += stagger;
-                        }
+                        handleRestartAll(filter);
                     } else if (input.action.equals("cancelRestartAll")) {
-                        Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(filter);
-                        for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {
-                            InstanceKey key = entrySet.getKey();
-                            TimestampedValue<Instance> timestampedValue = entrySet.getValue();
-                            Instance value = timestampedValue.getValue();
-                            if (value.restartTimestampGMTMillis > 0) {
-                                value.restartTimestampGMTMillis = -1;
-                                upenaStore.instances.update(key, value);
-                            }
-                        }
+                        handleCancelRestartAll(filter);
                     }
                 }
 
@@ -271,36 +154,8 @@ public class InstancesPluginRegion implements PageRegion<Optional<InstancesPlugi
                     InstanceKey key = entrySet.getKey();
                     TimestampedValue<Instance> timestampedValue = entrySet.getValue();
                     Instance value = timestampedValue.getValue();
-                    Host host = upenaStore.hosts.get(value.hostKey);
 
-                    Map<String, Object> map = new HashMap<>();
-                    map.put("key", key.getKey());
-                    long now = System.currentTimeMillis();
-                    if (value.restartTimestampGMTMillis > 0 && now < value.restartTimestampGMTMillis) {
-                        map.put("status", "Will restart in:" + DurationFormatUtils.formatDurationHMS(value.restartTimestampGMTMillis - now));
-                    } else {
-                        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("EEE, dd MMM yyyy hh:mm:ss z");
-                        simpleDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
-                        long snowflakeTime = timestampedValue.getTimestamp();
-                        long time = JiveEpochTimestampProvider.JIVE_EPOCH + new SnowflakeIdPacker().unpack(snowflakeTime)[0];
-                        String gmtTimeString = simpleDateFormat.format(new Date(time));
-                        map.put("status", "Last Modified:" + gmtTimeString);
-                    }
-                    map.put("cluster", ImmutableMap.of(
-                        "key", value.clusterKey.getKey(),
-                        "name", upenaStore.clusters.get(value.clusterKey).name));
-                    map.put("host", ImmutableMap.of(
-                        "key", value.hostKey.getKey(),
-                        "name", upenaStore.hosts.get(value.hostKey).name));
-                    map.put("service", ImmutableMap.of(
-                        "key", value.serviceKey.getKey(),
-                        "name", upenaStore.services.get(value.serviceKey).name));
-                    map.put("instanceId", String.valueOf(value.instanceId));
-                    map.put("release", ImmutableMap.of(
-                        "key", value.releaseGroupKey.getKey(),
-                        "name", upenaStore.releaseGroups.get(value.releaseGroupKey).name));
-
-                    rows.add(map);
+                    rows.add(clusterToMap(key, value, timestampedValue));
                 }
 
                 data.put("instances", rows);
@@ -310,6 +165,195 @@ public class InstancesPluginRegion implements PageRegion<Optional<InstancesPlugi
         }
 
         return renderer.render(template, data);
+    }
+
+    private void handleFilter(Map<String, Object> data, InstancesPluginRegionInput input) {
+        data.put("message", "Filtering: "
+            + "cluster.equals '" + input.cluster + "' "
+            + "host.equals '" + input.host + "' "
+            + "service.equals '" + input.service + "' "
+            + "release.equals '" + input.release + "'"
+            + "id.equals '" + input.instanceId + "'"
+        );
+    }
+
+    private void handleCancelRestartAll(InstanceFilter filter) throws Exception {
+        Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(filter);
+        for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {
+            InstanceKey key = entrySet.getKey();
+            TimestampedValue<Instance> timestampedValue = entrySet.getValue();
+            Instance value = timestampedValue.getValue();
+            if (value.restartTimestampGMTMillis > 0) {
+                value.restartTimestampGMTMillis = -1;
+                upenaStore.instances.update(key, value);
+            }
+        }
+    }
+
+    private void handleRestartAll(InstanceFilter filter) throws Exception {
+        long now = System.currentTimeMillis();
+        long stagger = TimeUnit.SECONDS.toMillis(30);
+        now += stagger;
+        Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(filter);
+        for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {
+            InstanceKey key = entrySet.getKey();
+            TimestampedValue<Instance> timestampedValue = entrySet.getValue();
+            Instance value = timestampedValue.getValue();
+            value.restartTimestampGMTMillis = now;
+            upenaStore.instances.update(key, value);
+            now += stagger;
+        }
+    }
+
+    private void handleRestartAllNow(InstanceFilter filter) throws Exception {
+        long now = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(5);
+        Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(filter);
+        for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {
+            InstanceKey key = entrySet.getKey();
+            TimestampedValue<Instance> timestampedValue = entrySet.getValue();
+            Instance value = timestampedValue.getValue();
+            value.restartTimestampGMTMillis = now;
+            upenaStore.instances.update(key, value);
+        }
+    }
+
+    private void handleRemove(InstancesPluginRegionInput input, Map<String, Object> data) {
+        if (input.key.isEmpty()) {
+            data.put("message", "Failed to remove Instance:" + input.key);
+        } else {
+            try {
+                upenaStore.instances.remove(new InstanceKey(input.key));
+            } catch (Exception x) {
+                String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
+                data.put("message", "Error while trying to remove Instance:" + input.key + "\n" + trace);
+            }
+        }
+    }
+
+    private void handleAdd(Map<String, String> filters, InstancesPluginRegionInput input, Map<String, Object> data) {
+        filters.clear();
+        try {
+            boolean valid = true;
+            Cluster cluster = upenaStore.clusters.get(new ClusterKey(input.clusterKey));
+            if (cluster == null) {
+                data.put("message", "Cluster key:" + input.clusterKey + " is invalid.");
+                valid = false;
+            }
+            Host host = upenaStore.hosts.get(new HostKey(input.hostKey));
+            if (host == null) {
+                data.put("message", "Host key:" + input.hostKey + " is invalid.");
+                valid = false;
+            }
+            Service service = upenaStore.services.get(new ServiceKey(input.serviceKey));
+            if (service == null) {
+                data.put("message", "Service key:" + input.serviceKey + " is invalid.");
+                valid = false;
+            }
+            ReleaseGroup releaseGroup = upenaStore.releaseGroups.get(new ReleaseGroupKey(input.releaseKey));
+            if (releaseGroup == null) {
+                data.put("message", "ReleaseGroup key:" + input.releaseKey + " is invalid.");
+                valid = false;
+            }
+
+            if (valid) {
+                upenaStore.instances.update(null, new Instance(
+                    new ClusterKey(input.clusterKey),
+                    new HostKey(input.hostKey),
+                    new ServiceKey(input.serviceKey),
+                    new ReleaseGroupKey(input.releaseKey),
+                    Integer.parseInt(input.instanceId),
+                    true, false, System.currentTimeMillis()
+                ));
+
+                data.put("message", "Created Instance.");
+            }
+        } catch (Exception x) {
+            String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
+            data.put("message", "Error while trying to add Instance.\n" + trace);
+        }
+    }
+
+    private void handleRestart(Map<String, String> filters, InstancesPluginRegionInput input, Map<String, Object> data) {
+        filters.clear();
+        try {
+            Instance instance = upenaStore.instances.get(new InstanceKey(input.key));
+            if (instance == null) {
+                data.put("message", "Couldn't update no existent Instance. Someone else likely just removed it since your last refresh.");
+            } else {
+                InstanceKey key = new InstanceKey(input.key);
+                instance.restartTimestampGMTMillis = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(5);
+                upenaStore.instances.update(key, instance);
+                data.put("message", "Instance will be restarted momentarily.");
+
+            }
+
+        } catch (Exception x) {
+            String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
+            data.put("message", "Error while trying to update Instance:" + input.key + "\n" + trace);
+        }
+    }
+
+    private void handleUpdate(Map<String, String> filters, InstancesPluginRegionInput input, Map<String, Object> data) {
+        filters.clear();
+        try {
+            Instance instance = upenaStore.instances.get(new InstanceKey(input.key));
+            if (instance == null) {
+                data.put("message", "Couldn't update no existent Instance. Someone else likely just removed it since your last refresh.");
+            } else {
+                ClusterKey clusterKey = new ClusterKey(input.clusterKey);
+                Cluster cluster = upenaStore.clusters.get(clusterKey);
+                if (cluster != null) {
+                    Map<ServiceKey, ReleaseGroupKey> defaultReleaseGroups = cluster.defaultReleaseGroups;
+                    if (!defaultReleaseGroups.containsKey(new ServiceKey(input.serviceKey))) {
+                        defaultReleaseGroups.put(new ServiceKey(input.serviceKey), new ReleaseGroupKey(input.releaseKey));
+                        upenaStore.clusters.update(clusterKey, cluster);
+                    }
+                }
+
+                upenaStore.instances.update(new InstanceKey(input.key), new Instance(
+                    new ClusterKey(input.clusterKey),
+                    new HostKey(input.hostKey),
+                    new ServiceKey(input.serviceKey),
+                    new ReleaseGroupKey(input.releaseKey),
+                    Integer.parseInt(input.instanceId),
+                    true, false, System.currentTimeMillis()));
+                data.put("message", "Updated Instance:" + input.key);
+            }
+
+        } catch (Exception x) {
+            String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
+            data.put("message", "Error while trying to update Instance:" + input.key + "\n" + trace);
+        }
+    }
+
+    private Map<String, Object> clusterToMap(InstanceKey key, Instance value, TimestampedValue<Instance> timestampedValue) throws Exception {
+        Map<String, Object> map = new HashMap<>();
+        map.put("key", key.getKey());
+        long now = System.currentTimeMillis();
+        if (value.restartTimestampGMTMillis > 0 && now < value.restartTimestampGMTMillis) {
+            map.put("status", "Will restart in:" + DurationFormatUtils.formatDurationHMS(value.restartTimestampGMTMillis - now));
+        } else {
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("EEE, dd MMM yyyy hh:mm:ss z");
+            simpleDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+            long snowflakeTime = timestampedValue.getTimestamp();
+            long time = JiveEpochTimestampProvider.JIVE_EPOCH + new SnowflakeIdPacker().unpack(snowflakeTime)[0];
+            String gmtTimeString = simpleDateFormat.format(new Date(time));
+            map.put("status", "Last Modified:" + gmtTimeString);
+        }
+        map.put("cluster", ImmutableMap.of(
+            "key", value.clusterKey.getKey(),
+            "name", upenaStore.clusters.get(value.clusterKey).name));
+        map.put("host", ImmutableMap.of(
+            "key", value.hostKey.getKey(),
+            "name", upenaStore.hosts.get(value.hostKey).name));
+        map.put("service", ImmutableMap.of(
+            "key", value.serviceKey.getKey(),
+            "name", upenaStore.services.get(value.serviceKey).name));
+        map.put("instanceId", String.valueOf(value.instanceId));
+        map.put("release", ImmutableMap.of(
+            "key", value.releaseGroupKey.getKey(),
+            "name", upenaStore.releaseGroups.get(value.releaseGroupKey).name));
+        return map;
     }
 
     @Override
