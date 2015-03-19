@@ -2,6 +2,7 @@ package com.jivesoftware.os.upena.deployable.region;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.jivesoftware.os.amza.shared.AmzaInstance;
 import com.jivesoftware.os.amza.shared.RingHost;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
@@ -81,35 +82,34 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
                 Map<String, String> healthDefaults = configStore.get(instanceKey, "default-health", null);
                 Map<String, String> healthOverrides = configStore.get(instanceKey, "override-health", null);
 
-                boolean modifiedServiceDefaults = false;
                 boolean modifiedServiceOverrides = false;
-                boolean modifiedHealthDefaults = false;
                 boolean modifiedHealthOverrides = false;
+
+                Set<String> removeServiceDefaults = Sets.newHashSet();
+                Set<String> removeServiceOverrides = Sets.newHashSet();
+                Set<String> removeHealthDefaults = Sets.newHashSet();
+                Set<String> removeHealthOverrides = Sets.newHashSet();
+
                 for (Map.Entry<String, Map<String, String>> propEntry : propertyMap.entrySet()) {
                     if (propEntry.getValue().containsKey(instanceKey)) {
                         String property = propEntry.getKey();
                         String value = propEntry.getValue().get(instanceKey);
                         if (value != null && value.equals("OBSOLETE")) {
                             if (serviceDefaults.containsKey(property)) {
-                                serviceDefaults.remove(property);
-                                modifiedServiceDefaults = true;
+                                removeServiceDefaults.add(property);
                             }
                             if (serviceOverrides.containsKey(property)) {
-                                serviceOverrides.remove(property);
-                                modifiedServiceOverrides = true;
+                                removeServiceOverrides.add(property);
                             }
                             if (healthDefaults.containsKey(property)) {
-                                healthDefaults.remove(property);
-                                modifiedHealthDefaults = true;
+                                removeHealthDefaults.add(property);
                             }
                             if (healthOverrides.containsKey(property)) {
-                                healthOverrides.remove(property);
-                                modifiedHealthOverrides = true;
+                                removeHealthOverrides.add(property);
                             }
                         } else {
                             if (value == null || value.isEmpty() || value.equals(serviceDefaults.get(property))) {
-                                serviceOverrides.remove(property);
-                                modifiedServiceOverrides = true;
+                                removeServiceOverrides.add(property);
                                 log.info("Reverting to default for property:" + property + " for instance:" + instanceKey);
                             } else {
                                 serviceOverrides.put(property, value);
@@ -118,8 +118,7 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
                             }
 
                             if (value == null || value.isEmpty() || value.equals(healthDefaults.get(property))) {
-                                healthOverrides.remove(property);
-                                modifiedHealthOverrides = true;
+                                removeHealthOverrides.add(property);
                                 log.info("Reverting to default for property:" + property + " for instance:" + instanceKey);
                             } else {
                                 healthOverrides.put(property, value);
@@ -129,21 +128,30 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
                         }
                     }
                 }
-                if (modifiedServiceDefaults) {
-                    configStore.set(instanceKey, "default", serviceDefaults);
-                }
+
                 if (modifiedServiceOverrides) {
-                    configStore.set(instanceKey, "override", serviceOverrides);
+                    configStore.putAll(instanceKey, "override", serviceOverrides);
                 }
-                if (modifiedHealthDefaults) {
-                    configStore.set(instanceKey, "default-health", healthDefaults);
-                }
+
                 if (modifiedHealthOverrides) {
-                    configStore.set(instanceKey, "override-health", healthOverrides);
+                    configStore.putAll(instanceKey, "override-health", healthOverrides);
+                }
+
+                if (!removeServiceDefaults.isEmpty()) {
+                    configStore.remove(instanceKey, "default", removeServiceDefaults);
+                }
+                if (!removeServiceOverrides.isEmpty()) {
+                    configStore.remove(instanceKey, "override", removeServiceOverrides);
+                }
+                if (!removeHealthDefaults.isEmpty()) {
+                    configStore.remove(instanceKey, "default-health", removeHealthDefaults);
+                }
+                if (!removeHealthOverrides.isEmpty()) {
+                    configStore.remove(instanceKey, "override-health", removeHealthOverrides);
                 }
 
             } else {
-                log.warn("Faied to load instance for key:" + instanceKey + " when trying to modify properties.");
+                log.warn("Failed to load instance for key:" + instanceKey + " when trying to modify properties.");
             }
         }
     }

@@ -51,7 +51,7 @@ public class UpenaConfigStore {
         partition.remove(new RowIndexKey(key.getBytes("utf-8")));
     }
 
-    public void set(String instanceKey, String context, Map<String, String> properties) throws Exception {
+    public void putAll(String instanceKey, String context, Map<String, String> properties) throws Exception {
         AmzaTable partition = getPartition();
         String key = createTableName(instanceKey, context);
         RowIndexKey tableIndexKey = new RowIndexKey(key.getBytes("utf-8"));

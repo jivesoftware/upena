@@ -46,8 +46,8 @@ public class UpenaConfigRestEndpoints {
     public Response set(UpenaConfig config) {
         try {
             LOG.debug("Attempting to get: " + config);
-            upenaConfigStore.set(config.instanceKey, config.context,
-                    config.properties);
+            upenaConfigStore.putAll(config.instanceKey, config.context,
+                config.properties);
             Map<String, String> got = upenaConfigStore.get(config.instanceKey, config.context,
                     new ArrayList<>(config.properties.keySet()));
             LOG.info("Set " + got.size() + " properties");
