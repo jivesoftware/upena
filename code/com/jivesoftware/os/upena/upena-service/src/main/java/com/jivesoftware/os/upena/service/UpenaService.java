@@ -204,7 +204,6 @@ public class UpenaService {
             ClusterKey clusterKey = instance.clusterKey;
             Cluster cluster = upenaStore.clusters.get(clusterKey);
             if (cluster == null) {
-                upenaStore.instances.remove(e.getKey());
                 continue;
             }
             String clusterName = cluster.name;
@@ -212,7 +211,6 @@ public class UpenaService {
             ServiceKey serviceKey = instance.serviceKey;
             Service service = upenaStore.services.get(serviceKey);
             if (service == null) {
-                upenaStore.instances.remove(e.getKey());
                 continue;
             }
             String serviceName = service.name;
@@ -220,7 +218,6 @@ public class UpenaService {
             ReleaseGroupKey releaseGroupKey = instance.releaseGroupKey;
             ReleaseGroup releaseGroup = upenaStore.releaseGroups.get(releaseGroupKey);
             if (releaseGroup == null) {
-                upenaStore.instances.remove(e.getKey());
                 continue;
             }
             String releaseGroupName = releaseGroup.email;
