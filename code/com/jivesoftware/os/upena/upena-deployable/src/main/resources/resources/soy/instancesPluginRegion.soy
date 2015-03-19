@@ -37,6 +37,7 @@
                                         <th>Cluster</th>
                                         <th>Host</th>
                                         <th>Service</th>
+                                        <th>Ports</th>
                                         <th>Id</th>
                                         <th>Release</th>
                                         <th>Actions</th>
@@ -63,6 +64,8 @@
                                                 placeholder="Service" value="{$filters.service?:''}" name="service" id="servicePicker"
                                                 class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/services">
                                             <input type="hidden" name="serviceKey" value="{$filters.serviceKey?:''}" />
+                                        </td>
+                                        <td>
                                         </td>
                                         <td>
                                             <input type="text" autocomplete="off" role="combobox" class="form-control" style="width:200px; padding-left:10px;"
@@ -105,6 +108,96 @@
                                                         placeholder="Service" value="{$i.service.name}" name="service" class="upena-hs-field form-control"
                                                         data-upena-lookup="/ui/lookup/services" />
                                                     <input type="hidden" name="serviceKey" value="{$i.service.key}" />
+                                                </td>
+                                                <td>
+                                                    <a href="#" rel="popover" id="popoverAnchor-{$i.key}" data-popover-content="#portsPopover-{$i.key}" data-placement="left" class="btn btn-primary" title="Ports">
+                                                    <span class="glyphicon glyphicon-menu-down">Ports</a>
+                                                    <div id="portsPopover-{$i.key}" class="hide" style="overflow:scroll; height:400px;">
+                                                        <table>
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>Name</th>
+                                                                    <th>Port</th>
+                                                                    <th></th>
+                                                                    <th></th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr class="well">
+                                                                    <td>
+                                                                        <input type="text" id="portName-{$i.key}" style="width:200px; padding-left:10px;"
+                                                                            placeholder="port name" value="">
+                                                                    </td>
+                                                                    <td>
+                                                                        <input type="number" id="port-{$i.key}" style="width:200px; padding-left:10px;"
+                                                                            placeholder="port number" value="">
+                                                                    </td>
+                                                                    <td>
+                                                                    </td>
+                                                                    <td>
+                                                                        <button title="Add" onClick="upena.instancePorts.addPort('{$i.key}')" class="btn btn-default"><span class="glyphicon glyphicon-plus"></button>
+                                                                    </td>
+                                                                </tr>
+                                                                {foreach $p in $i.ports}
+                                                                    <tr>
+                                                                        <td>
+                                                                            {$p.portName}
+                                                                        </td>
+                                                                        <td>
+                                                                            {$p.port}
+                                                                        </td>
+                                                                        <td class="well" colspan="3">
+                                                                            <a href="#" rel="popover" id="propertyPopoverAnchor-{$i.key}-{$p.portName}" data-popover-content="#propertyPopover-{$i.key}-{$p.portName}" data-placement="left" class="btn btn-primary" title="{$p.portName} Properties">
+                                                                            <span class="glyphicon glyphicon-menu-down">Properties</a>
+                                                                            <div id="propertyPopover-{$i.key}-{$p.portName}" class="hide" style="overflow:scroll; height:400px;">
+                                                                                <table>
+                                                                                    <thead>
+                                                                                        <tr>
+                                                                                            <th>Property</th>
+                                                                                            <th>Value</th>
+                                                                                            <th></th>
+                                                                                        </tr>
+                                                                                    </thead>
+                                                                                    <tbody>
+                                                                                        {foreach $nv in $p.properties}
+                                                                                            <tr>
+                                                                                                <td>
+                                                                                                    {$nv.name}
+                                                                                                </td>
+                                                                                                <td>
+                                                                                                    {$nv.value}
+                                                                                                </td>
+                                                                                                <td>
+                                                                                                    <button title="Remove" onClick="upena.instancePorts.removePortProperty('{$i.key}', '{$p.portName}', '{$nv.name}')" class="btn btn-default"><span class="glyphicon glyphicon-trash"></button>
+                                                                                                </td>
+                                                                                            </tr>
+                                                                                        {/foreach}
+                                                                                        <tr>
+                                                                                            <td>
+                                                                                                <input type="text" id="portPropertyName-{$i.key}-{$p.portName}" style="width:200px; padding-left:10px;"
+                                                                                                    placeholder="property name" value="">
+                                                                                            </td>
+                                                                                            <td>
+                                                                                                <input type="number" id="portPropertyValue-{$i.key}-{$p.portName}" style="width:200px; padding-left:10px;"
+                                                                                                    placeholder="property value" value="">
+                                                                                            </td>
+                                                                                            <td>
+                                                                                                <button title="Add" onClick="upena.instancePorts.addPortProperty('{$i.key}', '{$p.portName}')" class="btn btn-default"><span class="glyphicon glyphicon-plus"></button>
+                                                                                            </td>
+                                                                                        </tr>
+                                                                                    </tbody>
+                                                                                </table>
+                                                                            </div>
+                                                                        </td>
+                                                                        <td>
+                                                                            <button title="Remove" onClick="upena.instancePorts.removePort('{$i.key}', '{$p.portName}')" class="btn btn-default"><span class="glyphicon glyphicon-trash"></button>
+                                                                        </td>
+                                                                    </tr>
+                                                                {/foreach}
+                                                            </tbody>
+                                                        </table>
+
+                                                    </div>
                                                 </td>
                                                 <td>
                                                     <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"

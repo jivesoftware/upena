@@ -3,10 +3,8 @@ window.$ = window.jQuery;
 window.upena = {};
 
 upena.hs = {
-
     installed: null,
     queuedUninstall: null,
-
     init: function () {
         $('input[type=text].upena-hs-field').each(function (i, input) {
             var $inputName = $(input);
@@ -30,7 +28,6 @@ upena.hs = {
             });
         });
     },
-
     install: function ($inputKey, $inputName, callback) {
         upena.hs.cancelUninstall();
         upena.hs.uninstall();
@@ -56,7 +53,6 @@ upena.hs = {
             top: offset.top + height + 10
         });
     },
-
     uninstall: function ($inputName) {
         if (!upena.hs.installed || $inputName && upena.hs.installed.inputName != $inputName) {
             return;
@@ -86,7 +82,6 @@ upena.hs = {
         $selector.remove();
         upena.hs.installed = null;
     },
-
     makeSelector: function () {
         var $selector = $('<div>').addClass("upena-hs-selector");
         $selector.focus(function () {
@@ -99,45 +94,41 @@ upena.hs = {
         });
         return $selector;
     },
-
     cancelUninstall: function () {
         if (upena.hs.queuedUninstall) {
             clearTimeout(upena.hs.queuedUninstall);
         }
     },
-
     picked: function (key, name) {
         if (upena.hs.installed) {
             upena.hs.installed.callback(key, name);
             upena.hs.uninstall();
         }
     },
-
     lookup: function (endpoint, contains) {
         var $selector = upena.hs.installed.selector;
         $.ajax(endpoint, {data: {'contains': contains}})
-            .done(function (data) {
-                if (!upena.hs.installed || upena.hs.installed.selector != $selector) {
-                    // selector changed during the query
-                    return;
-                }
-                if (data.length) {
-                    $selector.empty();
-                    for (var i = 0; i < data.length; i++) {
-                        $selector.append(
-                            "<a href='#'" +
-                            " class='upena-hs-choice'" +
-                            " data-upena-key='" + data[i].key + "'" +
-                            " data-upena-name='" + data[i].name + "'>" + data[i].name + "</a><br/>");
+                .done(function (data) {
+                    if (!upena.hs.installed || upena.hs.installed.selector != $selector) {
+                        // selector changed during the query
+                        return;
                     }
-                    upena.hs.link($selector);
-                    upena.hs.installed.ready = true;
-                } else {
-                    $selector.html("<em>No matches</em>");
-                }
-            });
+                    if (data.length) {
+                        $selector.empty();
+                        for (var i = 0; i < data.length; i++) {
+                            $selector.append(
+                                    "<a href='#'" +
+                                    " class='upena-hs-choice'" +
+                                    " data-upena-key='" + data[i].key + "'" +
+                                    " data-upena-name='" + data[i].name + "'>" + data[i].name + "</a><br/>");
+                        }
+                        upena.hs.link($selector);
+                        upena.hs.installed.ready = true;
+                    } else {
+                        $selector.html("<em>No matches</em>");
+                    }
+                });
     },
-
     link: function ($selector) {
         $selector.find('a').each(function (i) {
             var $a = $(this);
@@ -158,39 +149,112 @@ upena.instances = {
 
 upena.clusterReleaseGroups = {
     add: function (clusterId) {
-        var serviceId = $('#servicePicker-'+clusterId).val();
-        var releaseGroupId = $('#releasePicker-'+clusterId).val();
-        
+        var serviceId = $('#serviceId-' + clusterId).val();
+        var releaseGroupId = $('#releaseId-' + clusterId).val();
+
         $.ajax("/ui/clusters/add", {
-                data: JSON.stringify({ 'clusterId': clusterId, 'serviceId' : serviceId, 'releaseGroupId' : releaseGroupId}),
-                method: "post",
-                contentType: "application/json",
-                success: function () {
-                    window.location.reload(true);
-                },
-                error: function () {
-                    alert('Save failed!');
-                }
-            });
+            data: JSON.stringify({'clusterId': clusterId, 'serviceId': serviceId, 'releaseGroupId': releaseGroupId}),
+            method: "post",
+            contentType: "application/json",
+            success: function () {
+                window.location.reload(true);
+            },
+            error: function () {
+                alert('Save failed!');
+            }
+        });
     },
     remove: function (clusterId, serviceId, releaseGroupId) {
         $.ajax("/ui/clusters/remove", {
-                data: JSON.stringify({ 'clusterId': clusterId, 'serviceId' : serviceId, 'releaseGroupId' : releaseGroupId}),
-                method: "post",
-                contentType: "application/json",
-                success: function () {
-                    window.location.reload(true);
-                },
-                error: function () {
-                    alert('Save failed!');
-                }
-            });
+            data: JSON.stringify({'clusterId': clusterId, 'serviceId': serviceId, 'releaseGroupId': releaseGroupId}),
+            method: "post",
+            contentType: "application/json",
+            success: function () {
+                window.location.reload(true);
+            },
+            error: function () {
+                alert('Save failed!');
+            }
+        });
     }
 };
 
+upena.instancePorts = {
+    addPort: function (instanceId) {
+        var portName = $('#portName-' + instanceId).val();
+        var port = $('#port-' + instanceId).val();
+        var propertyName = null;
+        var propertyValue = null;
+
+        console.log(portName + " " + port + " " + instanceId);
+
+        $.ajax("/ui/instances/ports/add", {
+            data: JSON.stringify({'instanceId': instanceId, 'portName': portName, 'port': port, 'propertyName': propertyName, 'propertyValue': propertyValue}),
+            method: "post",
+            contentType: "application/json",
+            success: function () {
+                window.location.reload(true);
+            },
+            error: function () {
+                alert('Save failed!');
+            }
+        });
+    },
+    removePort: function (instanceId, portName) {
+        var port = -1;
+        var propertyName = null;
+        var propertyValue = null;
+
+        $.ajax("/ui/instances/ports/remove", {
+            data: JSON.stringify({'instanceId': instanceId, 'portName': portName, 'port': port, 'propertyName': propertyName, 'propertyValue': propertyValue}),
+            method: "post",
+            contentType: "application/json",
+            success: function () {
+                window.location.reload(true);
+            },
+            error: function () {
+                alert('Save failed!');
+            }
+        });
+    },
+    addPortProperty: function (instanceId, portName) {
+        var port = -1;
+        var propertyName = $('#portPropertyName-' + instanceId + '-' + portName).val();
+        var propertyValue = $('#portPropertyValue-' + instanceId + '-' + portName).val();
+
+        $.ajax("/ui/instances/ports/add", {
+            data: JSON.stringify({'instanceId': instanceId, 'portName': portName, 'port': port, 'propertyName': propertyName, 'propertyValue': propertyValue}),
+            method: "post",
+            contentType: "application/json",
+            success: function () {
+                window.location.reload(true);
+            },
+            error: function () {
+                alert('Save failed!');
+            }
+        });
+    },
+    removePortProperty: function (instanceId, portName, propertyName) {
+        var port = -1;
+        var propertyValue = null;
+
+        $.ajax("/ui/instances/ports/remove", {
+            data: JSON.stringify({'instanceId': instanceId, 'portName': portName, 'port': port, 'propertyName': propertyName, 'propertyValue': propertyValue}),
+            method: "post",
+            contentType: "application/json",
+            success: function () {
+                window.location.reload(true);
+            },
+            error: function () {
+                alert('Save failed!');
+            }
+        });
+    }
+};
+
+
 upena.cfg = {
     pending: {},
-
     save: function () {
         var updates = [];
         $.each(upena.cfg.pending, function (prop) {
@@ -201,7 +265,7 @@ upena.cfg = {
         });
         if (confirm(updates.join(''))) {
             $.ajax("/ui/config/modify", {
-                data: JSON.stringify({ 'updates': upena.cfg.pending }),
+                data: JSON.stringify({'updates': upena.cfg.pending}),
                 method: "post",
                 contentType: "application/json",
                 success: function () {
@@ -214,7 +278,6 @@ upena.cfg = {
             });
         }
     },
-
     init: function () {
         $('#pending-save').click(upena.cfg.save);
 
@@ -250,7 +313,6 @@ upena.cfg = {
             upena.cfg.checkInput($(this));
         });
     },
-
     checkInput: function ($input) {
         var instanceKey = $input.data('upenaCfgInstanceKey');
         var prop = $input.data('upenaCfgProp');
@@ -267,7 +329,6 @@ upena.cfg = {
         }
         upena.cfg.refreshPending();
     },
-
     refreshPending: function () {
         var $fixed = $('#upena-cfg-pending');
         var $pending = $('#pending-count');
@@ -296,4 +357,26 @@ $(document).ready(function () {
     if ($('#upena-cfg').length) {
         upena.cfg.init();
     }
+
+    $(function () {
+        var hack = {};
+        $('[rel="popover"]').popover({
+            container: 'body',
+            html: true,
+            content: function () {
+                console.log($(this).attr('id'));
+                var h = $($(this).data('popover-content')).removeClass('hide');
+                hack[$(this).attr('id')] = h;
+                return h;
+            }
+        }).click(function (e) {
+            e.preventDefault();
+        }).on('hidden.bs.popover', function () {
+            var h = hack[$(this).attr('id')];
+            h.detach();
+            h.addClass('hide');
+            $('body').append(h);
+        });
+    });
+
 });

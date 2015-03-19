@@ -120,7 +120,7 @@ span.dropt:hover span {
 
 div.upena-hs-selector {
     display: none;
-    z-index: 100;
+    z-index: 2000;
     position: absolute;
     background-color: #fff;
     padding: 10px;
@@ -159,5 +159,9 @@ div.upena-cfg-pending-container {
     border-color: #999;
     border-style: solid;
     border-radius: 6px 6px 0 0;
+}
+
+.popover{
+    max-width: 100%; // Max Width of the popover (depending on the container!)
 }
 

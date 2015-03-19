@@ -18,6 +18,7 @@ import com.jivesoftware.os.upena.shared.ClusterKey;
 import com.jivesoftware.os.upena.shared.Host;
 import com.jivesoftware.os.upena.shared.HostKey;
 import com.jivesoftware.os.upena.shared.Instance;
+import com.jivesoftware.os.upena.shared.Instance.Port;
 import com.jivesoftware.os.upena.shared.InstanceFilter;
 import com.jivesoftware.os.upena.shared.InstanceKey;
 import com.jivesoftware.os.upena.shared.ReleaseGroup;
@@ -32,6 +33,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang.time.DurationFormatUtils;
@@ -128,7 +130,6 @@ public class InstancesPluginRegion implements PageRegion<Optional<InstancesPlugi
 
                 if (input.action != null) {
                     if (input.action.equals("filter")) {
-
                         handleFilter(data, input);
                     } else if (input.action.equals("add")) {
                         handleAdd(filters, input, data);
@@ -340,6 +341,22 @@ public class InstancesPluginRegion implements PageRegion<Optional<InstancesPlugi
             String gmtTimeString = simpleDateFormat.format(new Date(time));
             map.put("status", "Last Modified:" + gmtTimeString);
         }
+
+        List<Map<String, Object>> ports = new ArrayList<>();
+        for (Map.Entry<String, Port> e : value.ports.entrySet()) {
+            Map<String, Object> row = new HashMap<>();
+            row.put("portName", e.getKey());
+            row.put("port", String.valueOf(e.getValue().port));
+
+            List<Map<String, String>> properties = new ArrayList<>();
+            for (Entry<String, String> p : e.getValue().properties.entrySet()) {
+                properties.add(ImmutableMap.of("name", p.getKey(), "value", p.getValue()));
+            }
+            row.put("properties", properties);
+            ports.add(row);
+        }
+        map.put("ports", ports);
+
         map.put("cluster", ImmutableMap.of(
             "key", value.clusterKey.getKey(),
             "name", upenaStore.clusters.get(value.clusterKey).name));
@@ -356,8 +373,76 @@ public class InstancesPluginRegion implements PageRegion<Optional<InstancesPlugi
         return map;
     }
 
+    public static class PortUpdate {
+
+        public String instanceId;
+        public String portName;
+        public int port;
+        public String propertyName;
+        public String propertyValue;
+
+        public PortUpdate() {
+        }
+
+        public PortUpdate(String instanceId, String portName, int port, String propertyName, String propertyValue) {
+            this.instanceId = instanceId;
+            this.portName = portName;
+            this.port = port;
+            this.propertyName = propertyName;
+            this.propertyValue = propertyValue;
+        }
+
+        @Override
+        public String toString() {
+            return "PortUpdate{"
+                + "instanceId=" + instanceId
+                + ", portName=" + portName
+                + ", port=" + port
+                + ", propertyName=" + propertyName
+                + ", propertyValue=" + propertyValue
+                + '}';
+        }
+
+    }
+
+    public void add(PortUpdate update) throws Exception {
+        InstanceKey instanceKey = new InstanceKey(update.instanceId);
+        Instance instance = upenaStore.instances.get(instanceKey);
+        Port port = instance.ports.get(update.portName);
+        if (port == null) {
+            port = new Port(update.port, new HashMap<String, String>());
+            if (update.propertyName != null && !update.propertyName.isEmpty()) {
+                port.properties.put(update.propertyName, update.propertyValue);
+            }
+            instance.ports.put(update.portName, port);
+        } else {
+            if (update.propertyName != null && !update.propertyName.isEmpty()) {
+                port.properties.put(update.propertyName, update.propertyValue);
+            } else {
+                port.port = update.port;
+            }
+        }
+        upenaStore.instances.update(instanceKey, instance);
+
+    }
+
+    public void remove(PortUpdate update) throws Exception {
+        InstanceKey instanceKey = new InstanceKey(update.instanceId);
+        Instance instance = upenaStore.instances.get(instanceKey);
+        if (update.propertyName != null && !update.propertyName.isEmpty()) {
+            Port port = instance.ports.get(update.portName);
+            if (port != null) {
+                port.properties.remove(update.propertyName);
+                upenaStore.instances.update(instanceKey, instance);
+            }
+        } else {
+            instance.ports.remove(update.portName);
+            upenaStore.instances.update(instanceKey, instance);
+        }
+    }
+
     @Override
     public String getTitle() {
-        return "Upena Clusters";
+        return "Upena Instances";
     }
 }

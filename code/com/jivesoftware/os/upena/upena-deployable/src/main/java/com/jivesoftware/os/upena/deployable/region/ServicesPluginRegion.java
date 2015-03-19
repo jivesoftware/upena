@@ -84,47 +84,13 @@ public class ServicesPluginRegion implements PageRegion<Optional<ServicesPluginR
                 ServiceFilter filter = new ServiceFilter(null, null, 0, 10000);
                 if (input.action != null) {
                     if (input.action.equals("filter")) {
-                        filter = new ServiceFilter(
-                            input.name.isEmpty() ? null : input.name,
-                            input.description.isEmpty() ? null : input.description,
-                            0, 10000);
-                        data.put("message", "Filtering: name.contains '" + input.name + "' description.contains '" + input.description + "'");
+                        filter = handleFilter(input, data);
                     } else if (input.action.equals("add")) {
-                        filters.clear();
-                        try {
-                            upenaStore.services.update(null, new Service(input.name, input.description));
-
-                            data.put("message", "Created Service:" + input.name);
-                        } catch (Exception x) {
-                            String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
-                            data.put("message", "Error while trying to add Service:" + input.name + "\n" + trace);
-                        }
+                        handleAdd(filters, input, data);
                     } else if (input.action.equals("update")) {
-                        filters.clear();
-                        try {
-                            Service service = upenaStore.services.get(new ServiceKey(input.key));
-                            if (service == null) {
-                                data.put("message", "Couldn't update no existent Service. Someone else likely just removed it since your last refresh.");
-                            } else {
-                                upenaStore.services.update(new ServiceKey(input.key), new Service(input.name, input.description));
-                                data.put("message", "Service Cluster:" + input.name);
-                            }
-
-                        } catch (Exception x) {
-                            String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
-                            data.put("message", "Error while trying to add Service:" + input.name + "\n" + trace);
-                        }
+                        handleUpdate(filters, input, data);
                     } else if (input.action.equals("remove")) {
-                        if (input.key.isEmpty()) {
-                            data.put("message", "Failed to remove Service:" + input.name);
-                        } else {
-                            try {
-                                upenaStore.services.remove(new ServiceKey(input.key));
-                            } catch (Exception x) {
-                                String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
-                                data.put("message", "Error while trying to remove Service:" + input.name + "\n" + trace);
-                            }
-                        }
+                        handeRemove(input, data);
                     }
                 }
 
@@ -152,9 +118,60 @@ public class ServicesPluginRegion implements PageRegion<Optional<ServicesPluginR
         return renderer.render(template, data);
     }
 
+    private ServiceFilter handleFilter(ServicesPluginRegionInput input, Map<String, Object> data) {
+        ServiceFilter filter;
+        filter = new ServiceFilter(
+            input.name.isEmpty() ? null : input.name,
+            input.description.isEmpty() ? null : input.description,
+            0, 10000);
+        data.put("message", "Filtering: name.contains '" + input.name + "' description.contains '" + input.description + "'");
+        return filter;
+    }
+
+    private void handleAdd(Map<String, String> filters, ServicesPluginRegionInput input, Map<String, Object> data) {
+        filters.clear();
+        try {
+            upenaStore.services.update(null, new Service(input.name, input.description));
+
+            data.put("message", "Created Service:" + input.name);
+        } catch (Exception x) {
+            String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
+            data.put("message", "Error while trying to add Service:" + input.name + "\n" + trace);
+        }
+    }
+
+    private void handleUpdate(Map<String, String> filters, ServicesPluginRegionInput input, Map<String, Object> data) {
+        filters.clear();
+        try {
+            Service service = upenaStore.services.get(new ServiceKey(input.key));
+            if (service == null) {
+                data.put("message", "Couldn't update no existent Service. Someone else likely just removed it since your last refresh.");
+            } else {
+                upenaStore.services.update(new ServiceKey(input.key), new Service(input.name, input.description));
+                data.put("message", "Service Cluster:" + input.name);
+            }
+
+        } catch (Exception x) {
+            String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
+            data.put("message", "Error while trying to add Service:" + input.name + "\n" + trace);
+        }
+    }
+
+    private void handeRemove(ServicesPluginRegionInput input, Map<String, Object> data) {
+        if (input.key.isEmpty()) {
+            data.put("message", "Failed to remove Service:" + input.name);
+        } else {
+            try {
+                upenaStore.services.remove(new ServiceKey(input.key));
+            } catch (Exception x) {
+                String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
+                data.put("message", "Error while trying to remove Service:" + input.name + "\n" + trace);
+            }
+        }
+    }
+
     @Override
     public String getTitle() {
         return "Upena Services";
     }
-
 }
