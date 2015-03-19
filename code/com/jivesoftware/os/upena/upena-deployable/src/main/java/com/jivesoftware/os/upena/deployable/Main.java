@@ -29,7 +29,6 @@ import com.jivesoftware.os.amza.service.discovery.AmzaDiscovery;
 import com.jivesoftware.os.amza.service.storage.replication.SendFailureListener;
 import com.jivesoftware.os.amza.service.storage.replication.TakeFailureListener;
 import com.jivesoftware.os.amza.shared.AmzaInstance;
-import com.jivesoftware.os.amza.shared.Flusher;
 import com.jivesoftware.os.amza.shared.MemoryRowsIndex;
 import com.jivesoftware.os.amza.shared.RingHost;
 import com.jivesoftware.os.amza.shared.RowChanges;
@@ -386,19 +385,14 @@ public class Main {
                     @Override
                     public RowsIndex createRowsIndex(TableName tableName) throws Exception {
                         NavigableMap<RowIndexKey, RowIndexValue> navigableMap = new ConcurrentSkipListMap<>();
-                        return new MemoryRowsIndex(navigableMap, new Flusher() {
-
-                            @Override
-                            public void flush() {
-                            }
-                        });
+                        return new MemoryRowsIndex(navigableMap);
                     }
                 };
 
                 return new RowTable(tableName,
                     orderIdProvider,
                     rowMarshaller,
-                    new BinaryRowsTx(file, rowMarshaller, tableIndexProvider));
+                    new BinaryRowsTx(file, rowMarshaller, tableIndexProvider, 1000));
             }
         };
         return rowsStorageProvider;
