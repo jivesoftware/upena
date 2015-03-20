@@ -7,25 +7,24 @@
 */
 {template .homeRegion}
     {if $uis}
-        <div class="panel-body">
-            {foreach $ui in $uis}
-                <div class="btn-group">
-                    <button type="button" class="btn btn-default" onclick="location.href='{$ui.uis[0].host}:{$ui.uis[0].port}{$ui.uis[0].url}'">{$ui.name}</button>
-                    <button type="button" data-toggle="dropdown" class="btn btn-default dropdown-toggle"><span class="caret"></span></button>
-                    <ul class="dropdown-menu">
-                        {foreach $u in $ui.uis}
-                            <li><a target="ui_iframe" href="http://{$u.host}:{$u.port}{$u.url}">
-                                <img src="http://{$u.host}:{$u.port}/static/img/favicon.ico"><img>&nbsp;
-                                {$u.service}&nbsp;{$u.instance}&nbsp;{$u.host}
-                                </a></li>
-                        {/foreach}
-                    </ul>
-                </div>
-                <div>
-                    <iframe src="" width="100%" height="100%" name="ui_iframe"></iframe>
-                </div>
-            {/foreach}       
-        </div>
+        {foreach $ui in $uis}
+            <div class="btn-group">
+                <button type="button" class="btn btn-default" onclick="location.href='{$ui.uis[0].host}:{$ui.uis[0].port}{$ui.uis[0].url}'">{$ui.name}</button>
+                <button type="button" data-toggle="dropdown" class="btn btn-default dropdown-toggle"><span class="caret"></span></button>
+                <ul class="dropdown-menu">
+                    {foreach $u in $ui.uis}
+                        <li><a target="ui_iframe" href="http://{$u.host}:{$u.port}{$u.url}">
+                            <img src="http://{$u.host}:{$u.port}/static/img/favicon.ico"><img>&nbsp;
+                            {$u.service}&nbsp;{$u.instance}&nbsp;{$u.host}
+                            </a></li>
+                    {/foreach}
+                </ul>
+            </div>
+
+        {/foreach}
+        <div>
+            <iframe src="" width="100%" height="100%" name="ui_iframe"></iframe>
+        </div>     
     {else}
         <div style="height:480px;">
         </div>
