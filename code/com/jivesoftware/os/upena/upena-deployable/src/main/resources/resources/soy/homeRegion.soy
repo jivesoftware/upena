@@ -15,10 +15,9 @@
                             {$ui.name}<span class="caret"></span></button>
                         <ul class="dropdown-menu">
                             {foreach $u in $ui.uis}
-                                <li><span><a target="ui_iframe" href="http://{$u.host}:{$u.port}{$u.url}">
+                                <li><a target="ui_iframe" href="http://{$u.host}:{$u.port}{$u.url}">
                                     <img src="http://{$u.host}:{$u.port}/static/img/favicon.ico"><img>&nbsp;
-                                    {$u.service}&nbsp;{$u.instance}&nbsp;{$u.host}</a></span>
-                                    <span class="glyphicon glyphicon-fullscreen"><a class="btn btn-info" href="http://{$u.host}:{$u.port}{$u.url}"></a></span></li>
+                                    {$u.service}&nbsp;{$u.instance}&nbsp;{$u.host}</a></li>
                             {/foreach}
                         </ul>
                     </div>
