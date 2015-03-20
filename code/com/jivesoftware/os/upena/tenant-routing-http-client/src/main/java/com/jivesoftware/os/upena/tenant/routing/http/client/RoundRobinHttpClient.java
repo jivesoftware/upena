@@ -51,9 +51,9 @@ public class RoundRobinHttpClient implements HttpClient {
 
     private <R> R roundRobin(HttpCall<R> httpCall) throws HttpClientException {
         long now = System.currentTimeMillis();
-        int start = lastClientUsed.get() % clients.length;
-        int ci = (start + 1) % clients.length;
-        while (ci != start) {
+        int ci = Math.abs(lastClientUsed.get()) % clients.length;
+        // loop on clients is just to bound the number of attempts
+        for (HttpClient client : clients) {
             if (clientsDeathTimestamp[ci].get() == 0 || now - clientsDeathTimestamp[ci].get() > checkDeadEveryNMillis) {
                 try {
                     LOG.info("roundRobin to index:" + ci + " possibleClients:" + clients.length);
@@ -69,13 +69,10 @@ public class RoundRobinHttpClient implements HttpClient {
                 } finally {
                     clientsDeathTimestamp[ci].set(0);
                     clientsErrors[ci].set(0);
-                    int got = lastClientUsed.incrementAndGet();
-                    if (got > clients.length) {
-                        lastClientUsed.compareAndSet(got, 0);
-                    }
+                    lastClientUsed.incrementAndGet();
                 }
             }
-            ci = (ci + 1) % clients.length;
+            ci = Math.abs(ci + 1) % clients.length;
         }
         throw new HttpClientException("No client are available");
     }
