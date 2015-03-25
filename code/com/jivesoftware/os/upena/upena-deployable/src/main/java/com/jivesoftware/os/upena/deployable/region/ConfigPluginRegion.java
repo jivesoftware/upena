@@ -11,12 +11,16 @@ import com.jivesoftware.os.upena.config.UpenaConfigStore;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.service.UpenaService;
 import com.jivesoftware.os.upena.service.UpenaStore;
+import com.jivesoftware.os.upena.shared.Cluster;
 import com.jivesoftware.os.upena.shared.ClusterKey;
+import com.jivesoftware.os.upena.shared.Host;
 import com.jivesoftware.os.upena.shared.HostKey;
 import com.jivesoftware.os.upena.shared.Instance;
 import com.jivesoftware.os.upena.shared.InstanceFilter;
 import com.jivesoftware.os.upena.shared.InstanceKey;
+import com.jivesoftware.os.upena.shared.ReleaseGroup;
 import com.jivesoftware.os.upena.shared.ReleaseGroupKey;
+import com.jivesoftware.os.upena.shared.Service;
 import com.jivesoftware.os.upena.shared.ServiceKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
 import com.jivesoftware.os.upena.uba.service.UbaService;
@@ -26,6 +30,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListMap;
 
@@ -156,6 +161,67 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
         }
     }
 
+    private String export(ConfigPluginRegionInput input) throws Exception {
+
+        ConcurrentSkipListMap<String, List<Map<String, String>>> properties = new ConcurrentSkipListMap<>();
+        InstanceFilter filter = new InstanceFilter(
+            input.aClusterKey.isEmpty() ? null : new ClusterKey(input.aClusterKey),
+            input.aHostKey.isEmpty() ? null : new HostKey(input.aHostKey),
+            input.aServiceKey.isEmpty() ? null : new ServiceKey(input.aServiceKey),
+            input.aReleaseKey.isEmpty() ? null : new ReleaseGroupKey(input.aReleaseKey),
+            input.aInstance.isEmpty() ? null : Integer.parseInt(input.aInstance),
+            0,
+            10000);
+        StringBuilder sb = new StringBuilder();
+        if (filter.clusterKey != null
+            || filter.hostKey != null
+            || filter.serviceKey != null
+            || filter.releaseGroupKey != null
+            || filter.logicalInstanceId != null) {
+
+            Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(filter);
+            for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {
+                InstanceKey key = entrySet.getKey();
+                TimestampedValue<Instance> timestampedValue = entrySet.getValue();
+                Instance i = timestampedValue.getValue();
+                Cluster cluster = upenaStore.clusters.get(i.clusterKey);
+                Host host = upenaStore.hosts.get(i.hostKey);
+                Service service = upenaStore.services.get(i.serviceKey);
+                ReleaseGroup release = upenaStore.releaseGroups.get(i.releaseGroupKey);
+
+                if (input.service) {
+                    Map<String, String> overriddenServiceMap = configStore.get(key.getKey(), "override", null);
+                    append(sb, key, i, cluster, host, service, release, "override", overriddenServiceMap);
+
+                }
+                if (input.health) {
+                    Map<String, String> overriddenHealtheMap = configStore.get(key.getKey(), "override-health", null);
+                    append(sb, key, i, cluster, host, service, release, "override-health", overriddenHealtheMap);
+                }
+
+            }
+        }
+        return sb.toString();
+
+    }
+
+    public void append(StringBuilder sb, InstanceKey instanceKey, Instance instance, Cluster cluster, Host host, Service service, ReleaseGroup releaseGroup,
+        String context, Map<String, String> properties) {
+        sb.append(instanceKey).append(", ")
+            .append(cluster.name).append(", ")
+            .append(host.name).append(", ")
+            .append(service.name).append(", ")
+            .append(releaseGroup.name).append(", ")
+            .append(instance.instanceId).append("\n");
+
+        for (Entry<String, String> p : properties.entrySet()) {
+            sb.append(instanceKey).append(", ")
+                .append(context).append(", ")
+                .append(p.getKey()).append(", ")
+                .append(p.getValue()).append("\n");
+        }
+    }
+
     public static class ConfigPluginRegionInput {
 
         final String aClusterKey;
@@ -183,6 +249,7 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
         final boolean overridden;
         final boolean service;
         final boolean health;
+        final String action;
 
         public ConfigPluginRegionInput(
             String aClusterKey, String aCluster, String aHostKey, String aHost, String aServiceKey, String aService, String aInstance,
@@ -190,7 +257,7 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
             String bClusterKey, String bCluster, String bHostKey, String bHost, String bServiceKey, String bService,
             String bInstance, String bReleaseKey, String bRelease,
             String property, String value,
-            boolean overridden, boolean service, boolean health) {
+            boolean overridden, boolean service, boolean health, String action) {
             this.aClusterKey = aClusterKey;
             this.aCluster = aCluster;
             this.aHostKey = aHostKey;
@@ -214,6 +281,7 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
             this.overridden = overridden;
             this.service = service;
             this.health = health;
+            this.action = action;
         }
 
     }
@@ -225,6 +293,9 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
         try {
             if (optionalInput.isPresent()) {
                 ConfigPluginRegionInput input = optionalInput.get();
+                if (input.action.equals("export")) {
+                    return export(input);
+                }
 
                 Map<String, String> aFilters = new HashMap<>();
                 aFilters.put("clusterKey", input.aClusterKey);

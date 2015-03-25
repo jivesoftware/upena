@@ -41,7 +41,7 @@ public class ConfigPluginEndpoints {
     @Produces(MediaType.TEXT_HTML)
     public Response services() {
         String rendered = soyService.renderPlugin(pluginRegion,
-            Optional.of(new ConfigPluginRegionInput("", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", false, true, false)));
+            Optional.of(new ConfigPluginRegionInput("", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", false, true, false, "")));
         return Response.ok(rendered).build();
     }
 
@@ -72,12 +72,13 @@ public class ConfigPluginEndpoints {
         @FormParam("value") @DefaultValue("") String value,
         @FormParam("overridden") @DefaultValue("false") boolean overridden,
         @FormParam("service") @DefaultValue("true") boolean service,
-        @FormParam("health") @DefaultValue("false") boolean health) {
+        @FormParam("health") @DefaultValue("false") boolean health,
+        @FormParam("action") @DefaultValue("") String action) {
         String rendered = soyService.renderPlugin(pluginRegion,
             Optional.of(new ConfigPluginRegionInput(
                     aClusterKey, aCluster, aHostKey, aHost, aServiceKey, aService, aInstance, aReleaseKey, aRelease, bClusterKey,
                     bCluster, bHostKey, bHost, bServiceKey, bService, bInstance, bReleaseKey, bRelease,
-                    property, value, overridden, service, health)));
+                    property, value, overridden, service, health, action)));
         return Response.ok(rendered).build();
     }
 
