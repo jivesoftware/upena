@@ -161,7 +161,7 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
         }
     }
 
-    private String export(ConfigPluginRegionInput input) throws Exception {
+    public String export(ConfigPluginRegionInput input) throws Exception {
 
         ConcurrentSkipListMap<String, List<Map<String, String>>> properties = new ConcurrentSkipListMap<>();
         InstanceFilter filter = new InstanceFilter(
@@ -293,9 +293,6 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
         try {
             if (optionalInput.isPresent()) {
                 ConfigPluginRegionInput input = optionalInput.get();
-                if (input.action.equals("export")) {
-                    return export(input);
-                }
 
                 Map<String, String> aFilters = new HashMap<>();
                 aFilters.put("clusterKey", input.aClusterKey);

@@ -47,7 +47,6 @@ public class ConfigPluginEndpoints {
 
     @POST
     @Path("/")
-    @Produces(MediaType.TEXT_HTML)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response action(
         @FormParam("aClusterKey") @DefaultValue("") String aClusterKey,
@@ -73,13 +72,21 @@ public class ConfigPluginEndpoints {
         @FormParam("overridden") @DefaultValue("false") boolean overridden,
         @FormParam("service") @DefaultValue("true") boolean service,
         @FormParam("health") @DefaultValue("false") boolean health,
-        @FormParam("action") @DefaultValue("") String action) {
-        String rendered = soyService.renderPlugin(pluginRegion,
-            Optional.of(new ConfigPluginRegionInput(
-                    aClusterKey, aCluster, aHostKey, aHost, aServiceKey, aService, aInstance, aReleaseKey, aRelease, bClusterKey,
-                    bCluster, bHostKey, bHost, bServiceKey, bService, bInstance, bReleaseKey, bRelease,
-                    property, value, overridden, service, health, action)));
-        return Response.ok(rendered).build();
+        @FormParam("action") @DefaultValue("") String action) throws Exception {
+
+
+        ConfigPluginRegionInput configPluginRegionInput = new ConfigPluginRegionInput(
+            aClusterKey, aCluster, aHostKey, aHost, aServiceKey, aService, aInstance, aReleaseKey, aRelease, bClusterKey,
+            bCluster, bHostKey, bHost, bServiceKey, bService, bInstance, bReleaseKey, bRelease,
+            property, value, overridden, service, health, action);
+        if (action.equals("export")) {
+            String export = pluginRegion.export(configPluginRegionInput);
+            return Response.ok(export, MediaType.TEXT_PLAIN_TYPE).build();
+        } else {
+            String rendered = soyService.renderPlugin(pluginRegion,
+                Optional.of(configPluginRegionInput));
+            return Response.ok(rendered, MediaType.TEXT_HTML).build();
+        }
     }
 
     @POST

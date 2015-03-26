@@ -91,8 +91,6 @@ public class HealthPluginRegion implements PageRegion<Optional<HealthPluginRegio
             filter.put("service", input.service);
             data.put("filter", filter);
 
-            List<Map<String, String>> health = new ArrayList<>();
-
             UpenaEndpoints.ClusterHealth clusterHealth = buildClusterHealth("health");
 
             Map<String, Double> minClusterHealth = new HashMap<>();
@@ -109,6 +107,8 @@ public class HealthPluginRegion implements PageRegion<Optional<HealthPluginRegio
 
             ConcurrentSkipListSet<String> hosts = new ConcurrentSkipListSet<>();
             ConcurrentSkipListSet<Service> services = new ConcurrentSkipListSet<>();
+
+            Map<String, Map<String, String>> instanceHealth = new HashMap<>();
 
             for (UpenaEndpoints.NodeHealth nodeHealth : clusterHealth.nodeHealths) {
                 for (UpenaEndpoints.NannyHealth nannyHealth : nodeHealth.nannyHealths) {
@@ -153,12 +153,11 @@ public class HealthPluginRegion implements PageRegion<Optional<HealthPluginRegio
                         HtmlCanvas hc = new HtmlCanvas();
                         serviceHealth(hc, nannyHealth);
                         h.put("details", hc.toHtml());
-                        health.add(h);
 
+                        instanceHealth.put(nannyHealth.instanceDescriptor.instanceKey, h);
                     }
                 }
             }
-            data.put("health", health);
 
             Map<Service, Integer> serviceIndexs = new HashMap<>();
             int serviceIndex = 0;
@@ -169,12 +168,12 @@ public class HealthPluginRegion implements PageRegion<Optional<HealthPluginRegio
             Map<String, Integer> hostIndexs = new HashMap<>();
             int hostIndex = 0;
 
-            List<List<Map<String, String>>> hostRows = new ArrayList<>();
+            List<List<Map<String, Object>>> hostRows = new ArrayList<>();
             for (String host : hosts) {
                 hostIndexs.put(host, hostIndex);
                 hostIndex++;
-                List<Map<String, String>> hostRow = new ArrayList<>();
-                Map<String, String> healthCell = new HashMap<>();
+                List<Map<String, Object>> hostRow = new ArrayList<>();
+                Map<String, Object> healthCell = new HashMap<>();
                 healthCell.put("color", "#eee");
                 healthCell.put("health", null);
                 hostRow.add(healthCell);
@@ -187,6 +186,7 @@ public class HealthPluginRegion implements PageRegion<Optional<HealthPluginRegio
                 hostRows.add(hostRow);
             }
 
+            int uid = 0;
             for (UpenaEndpoints.NodeHealth nodeHealth : clusterHealth.nodeHealths) {
 
                 for (UpenaEndpoints.NannyHealth nannyHealth : nodeHealth.nannyHealths) {
@@ -204,12 +204,16 @@ public class HealthPluginRegion implements PageRegion<Optional<HealthPluginRegio
                         hostRows.get(hi).get(0).put("host", nodeHealth.host); // TODO change to hostKey
                         hostRows.get(hi).get(0).put("hostKey", nodeHealth.host); // TODO change to hostKey
                         hostRows.get(hi).get(0).put("health", host);
+                        hostRows.get(hi).get(0).put("uid", "uid-" + uid);
+                        uid++;
 
                         double h = 0d;
                         if (nannyHealth.serviceHealth != null) {
                             h = nannyHealth.serviceHealth.health;
                         }
                         float sh = (float) Math.max(0, h);
+                        hostRows.get(hi).get(si + 1).put("uid", "uid-" + uid);
+                        uid++;
                         hostRows.get(hi).get(si + 1).put("clusterKey", nannyHealth.instanceDescriptor.clusterKey);
                         hostRows.get(hi).get(si + 1).put("cluster", nannyHealth.instanceDescriptor.clusterName);
                         hostRows.get(hi).get(si + 1).put("serviceKey", nannyHealth.instanceDescriptor.serviceKey);
@@ -221,6 +225,13 @@ public class HealthPluginRegion implements PageRegion<Optional<HealthPluginRegio
                         hostRows.get(hi).get(si + 1).put("health", d2f(sh));
                         hostRows.get(hi).get(si + 1).put("link",
                             "http://" + nodeHealth.host + ":" + nannyHealth.instanceDescriptor.ports.get("manage").port + "/manage/ui");
+
+                        List<Map<String, String>> got = (List<Map<String, String>>) hostRows.get(hi).get(si + 1).get("instances");
+                        if (got == null) {
+                            got = new ArrayList<>();
+                            hostRows.get(hi).get(si + 1).put("instances", got);
+                        }
+                        got.add(instanceHealth.get(nannyHealth.instanceDescriptor.instanceKey));
 
                     }
                 }
