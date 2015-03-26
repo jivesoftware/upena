@@ -4,10 +4,11 @@
  * @param? gridServices
  * @param? gridHost
  * @param? filter
- * 
+ *
+ */
 {template .healthPluginRegion}
     <div class="panel panel-default">
-        <div class="panel-heading"><span class="glyphicon glyphicon-fire"></span>{sp}Filter</div>
+        <div class="panel-heading"><span class="glyphicon glyphicon-fire"></span>{sp}Health</div>
         <div class="panel-body">
             <form id="filter-health" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
                 data-jive-ui="jive/ui/typeahead/request_typeahead" method="get" name="filter-health">
@@ -31,46 +32,33 @@
                     </tr>
                 </table>
             </form>
-        </div>
-    </div>
-    <div class="panel panel-default">
-        <div class="panel-heading">Health</div>
-        <div class="panel-body">
-            <div class="well" style="background-image: linear-gradient(to bottom,#000 0,#111 100%);">
+            <hr>
+            <div class="well">
                 <table>
                     <thead>
                         <tr>
                             <th></th>
                             {foreach $service in $gridServices}
                                 <th>
-                                    <div class="dropdown">
-                                        <button id="dLabel" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
-                                          class="btn btn-default">
-                                          <div class="vertical-text"><div class="vertical-text__inner">{$service.service}</div></div>
-                                        </button>
-                                        <div class="dropdown-menu" role="menu" style="min-width: 10px;">
-                                            <div class="btn-group">
-                                                <form id="configService" method="post" action="/ui/config" name="configService"> 
-                                                    <input type="hidden" name="serviceKey" value="{$service.serviceKey}">
-                                                    <button type="submit" class="btn btn-default">
-                                                        Config
-                                                    </button>
-                                                </form>
-                                            </div>
-                                            <div class="btn-group">
-                                                <form id="restartService" method="post" action="/ui/restart" name="restartService"> 
-                                                    <button type="submit" class="btn btn-default">
-                                                        Restart
-                                                    </button>
-                                                </form>
-                                            </div>
+                                    <a href="#" rel="popover" id="popoverAnchor-{$service.service}" data-popover-content="#popover-{$service.service}" data-placement="bottom" class="btn btn-primary" title="{$service.service}">
+                                            <span class="glyphicon glyphicon-menu-down">{$service.service}</a>
+                                    <div id="popover-{$service.service}" class="hide">
+                                        <div class="btn-group">
+                                            <form id="configService" method="post" action="/ui/config" name="configService"> 
+                                                <input type="hidden" name="serviceKey" value="{$service.serviceKey}">
+                                                <button type="submit" class="btn btn-primary">
+                                                    Config
+                                                </button>
+                                            </form>
+                                        </div>
+                                        <div class="btn-group">
+                                            <form id="restartService" method="post" action="/ui/restart" name="restartService"> 
+                                                <button type="submit" class="btn btn-primary">
+                                                    Restart
+                                                </button>
+                                            </form>
                                         </div>
                                     </div>
-                                    <script>
-                                        $(function(){lb}
-                                           $(".dropdown-toggle").dropdown('dLabel');
-                                           {rb}); 
-                                     </script>
                                 </th>
                             {/foreach}
                         </tr>
@@ -80,15 +68,16 @@
                             <tr>
                                 {foreach $health in $host}
                                     <td>
-                                        <a style="background-image: linear-gradient(to bottom,{$health.color} 0,{$health.color} 100%);" href="#" rel="popover" id="popoverAnchor-{$health.uid}" data-popover-content="#releaseGroupPopover-{$c.key}" data-placement="left" class="btn btn-default" title="">
-                                            <span class="glyphicon glyphicon-menu-down">
-                                              {if $health.health == null}
-                                                &nbsp;&nbsp;&nbsp;
-                                              {else}
-                                                {$health.health|noAutoescape}
-                                              {/if}
-                                            </a>
+                                        <div class="panel panel-default">
+                                            <div style="float:left; background-image: linear-gradient(to bottom,{$health.color} 0,{$health.color} 100%); width:20px;height:20px"></div>
+                                            <a href="#" rel="popover" id="popoverAnchor-{$health.uid}" data-popover-content="#popover-{$health.uid}" data-placement="bottom" title="">
+                                                <span class="glyphicon glyphicon-menu-down">{if $health.health == null}
+                                                    &nbsp;&nbsp;&nbsp;
+                                                  {else}
+                                                    {$health.health|noAutoescape}
+                                                  {/if}</a>
                                             <div id="popover-{$health.uid}" class="hide">
+
                                                 {if $health.health == null}
                                                     <div class="btn-group">
                                                         <form id="addService" method="post" action="/ui/instances" name="addService">
@@ -119,7 +108,7 @@
                                                             {if $health.instance}
                                                                 <input type="hidden" name="instance" value="{$health.instance}">
                                                             {/if}
-                                                            <button type="submit" class="btn btn-default">
+                                                            <button type="submit" class="btn btn-primary">
                                                                 Add
                                                             </button>
                                                         </form>
@@ -128,7 +117,7 @@
                                                     {if $health.link}
                                                         <div class="btn-group">
                                                             <form id="serviceHealth" method="get" action="{$health.link}" name="serviceHealth"> 
-                                                                <button type="submit" class="btn btn-default">
+                                                                <button type="submit" class="btn btn-primary">
                                                                     Health
                                                                 </button>
                                                             </form>
@@ -163,7 +152,7 @@
                                                             {if $health.instance}
                                                                 <input type="hidden" name="instance" value="{$health.instance}">
                                                             {/if}
-                                                            <button type="submit" class="btn btn-default">
+                                                            <button type="submit" class="btn btn-primary">
                                                                 Config
                                                             </button>
                                                         </form>
@@ -197,7 +186,7 @@
                                                             {if $health.instance}
                                                                 <input type="hidden" name="instance" value="{$health.instance}">
                                                             {/if}
-                                                            <button type="submit" class="btn btn-default">
+                                                            <button type="submit" class="btn btn-primary">
                                                                 Restart
                                                             </button>
                                                         </form>
@@ -231,35 +220,27 @@
                                                             {if $health.instance}
                                                                 <input type="hidden" name="instance" value="{$health.instance}">
                                                             {/if}
-                                                            <button type="submit" class="btn btn-default">
+                                                            <button type="submit" class="btn btn-primary">
                                                                 Remove
                                                             </button>
                                                         </form>
                                                     </div>
                                                 {/if}
 
-                                            {if $health.instances}
-                                                {foreach $i in $health.instances}
-                                                    <div class="panel panel-default">
-                                                        <div class="panel-heading"><span class="glyphicon glyphicon-fire"></span>{sp}
-                                                            {$health.details.clusterName}&nbsp;-&nbsp;{$health.details.serviceName|noAutoescape}
-                                                                            &nbsp;&nbsp;&nbsp;&nbsp;port={$health.details.port}
-                                                                            &nbsp;&nbsp;&nbsp;&nbsp;host={$health.details.hostName}</div>
-                                                        <div class="panel-body">
-                                                            <table>
-                                                                <tr>
-                                                                    <td>{$i.cluster|noAutoescape}</td>
-                                                                    <td>{$i.host|noAutoescape}</td>
-                                                                    <td>{$i.service|noAutoescape}</td>
-                                                                    <td colspan="3">
-                                                                        {$health.details.details|noAutoescape}
-                                                                    </td>
-                                                                </tr>
-                                                            </table>
+                                                {if $health.instances}
+                                                    {foreach $i in $health.instances}
+                                                        <div class="panel panel-default">
+                                                            <div class="panel-heading"><span class="glyphicon glyphicon-fire"></span>{sp}
+                                                                {$i.clusterName}&nbsp;-&nbsp;{$i.serviceName|noAutoescape}
+                                                                                &nbsp;&nbsp;&nbsp;&nbsp;port={$i.port}
+                                                                                &nbsp;&nbsp;&nbsp;&nbsp;host={$i.hostName}</div>
+                                                            <div class="panel-body">
+                                                                {$i.details|noAutoescape}
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                {/foreach}
-                                            {/if}
+                                                    {/foreach}
+                                                {/if}
+                                            </div>
                                         </div>
                                     </td>
                                 {/foreach}
