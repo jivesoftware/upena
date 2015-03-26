@@ -148,7 +148,11 @@
                     </tbody>
                 </table>
                 <div class="btn-group" role="group" aria-label="...">
-                    <button title="Export" type="submit" name="action" value="export" type="button" class="btn btn-default btn-xs">Export All Overriden Config</button>
+                    <button style="float:left" title="Export" type="submit" name="action" value="export" type="button" class="btn btn-default btn-xs">Export All Overriden Config</button>
+                    <form action="/ui/config/upload" method="post" enctype="multipart/form-data">
+                        <input style="float:left" type="file" name="file" size="50" />
+                        <input class="btn btn-default btn-xs" type="submit" value="Import Config" />
+                    </form>
                 </div>
             </form>
         </div>

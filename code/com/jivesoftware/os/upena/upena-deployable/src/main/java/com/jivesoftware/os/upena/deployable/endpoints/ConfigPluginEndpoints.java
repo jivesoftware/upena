@@ -6,6 +6,9 @@ import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.deployable.region.ConfigPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ConfigPluginRegion.ConfigPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Map;
 import javax.inject.Singleton;
 import javax.ws.rs.Consumes;
@@ -18,6 +21,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 
 /**
  *
@@ -74,7 +79,6 @@ public class ConfigPluginEndpoints {
         @FormParam("health") @DefaultValue("false") boolean health,
         @FormParam("action") @DefaultValue("") String action) throws Exception {
 
-
         ConfigPluginRegionInput configPluginRegionInput = new ConfigPluginRegionInput(
             aClusterKey, aCluster, aHostKey, aHost, aServiceKey, aService, aInstance, aReleaseKey, aRelease, bClusterKey,
             bCluster, bHostKey, bHost, bServiceKey, bService, bInstance, bReleaseKey, bRelease,
@@ -113,6 +117,35 @@ public class ConfigPluginEndpoints {
 
         public void setUpdates(Map<String, Map<String, String>> updates) {
             this.updates = updates;
+        }
+    }
+
+    @POST
+    @Path("/upload")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    public Response uploadConfigFile(
+        @FormDataParam("file") InputStream fileInputStream,
+        @FormDataParam("file") FormDataContentDisposition contentDispositionHeader) {
+
+        saveFile(fileInputStream);
+        String output = "You config was uploaded";
+        return Response.status(200).entity(output).build();
+    }
+
+    private void saveFile(InputStream uploadedInputStream) {
+        try {
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            int read = 0;
+            byte[] bytes = new byte[1024];
+            while ((read = uploadedInputStream.read(bytes)) != -1) {
+                outputStream.write(bytes, 0, read);
+            }
+            outputStream.close();
+
+            System.out.println(new String(outputStream.toByteArray()));
+
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
