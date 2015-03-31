@@ -56,7 +56,7 @@ public class RoundRobinHttpClient implements HttpClient {
         for (HttpClient client : clients) {
             if (clientsDeathTimestamp[ci].get() == 0 || now - clientsDeathTimestamp[ci].get() > checkDeadEveryNMillis) {
                 try {
-                    LOG.info("roundRobin to index:" + ci + " possibleClients:" + clients.length);
+                    LOG.debug("roundRobin to index:{} possibleClients:{}", ci, clients.length);
                     return httpCall.call(clients[ci]);
                 } catch (HttpClientException e) {
                     if (e.getCause() instanceof IOException) {
