@@ -1,0 +1,35 @@
+{namespace soy.page}
+
+/**
+* @param uis
+*/
+{template .serviceUIsPluginRegion}
+    {if $uis}
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <table class="condensed">
+                    {foreach $ui in $uis}
+                        <tr>
+                            <td>
+                                {$ui.name}
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    {foreach $u in $ui.uis}
+                                        <li><a href="http://{$u.host}:{$u.port}{$u.url}">{$u.host}/{$u.instance}</a></li>
+                                    {/foreach}
+                                </div>
+                            </td>
+                        </tr>
+                    {/foreach}
+                </table>
+            </div>
+        </div> 
+    {else}
+        <div class="panel-body">
+            <pre>
+                Non of the deployed service conform to the hasUI rest api.
+            </pre>
+        </div>
+    {/if}
+{/template}

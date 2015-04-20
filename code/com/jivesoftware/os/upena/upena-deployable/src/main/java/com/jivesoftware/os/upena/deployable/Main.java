@@ -62,6 +62,7 @@ import com.jivesoftware.os.upena.deployable.endpoints.HealthPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.HostsPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.InstancesPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ReleasesPluginEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.ServiceUIsPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ServicesPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.UpenaRingPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.lookup.AsyncLookupService;
@@ -74,6 +75,7 @@ import com.jivesoftware.os.upena.deployable.region.HostsPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.InstancesPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ManagePlugin;
 import com.jivesoftware.os.upena.deployable.region.ReleasesPluginRegion;
+import com.jivesoftware.os.upena.deployable.region.ServiceUIsRegion;
 import com.jivesoftware.os.upena.deployable.region.ServicesPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.UpenaRingPluginRegion;
 import com.jivesoftware.os.upena.deployable.server.InitializeRestfulServer;
@@ -275,6 +277,7 @@ public class Main {
 
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/chrome.soy"), "chome.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/homeRegion.soy"), "home.soy");
+        soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/serviceUIsPluginRegion.soy"), "serviceUIsPluginRegion.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/healthPluginRegion.soy"), "health.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/instancesPluginRegion.soy"), "instances.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/clustersPluginRegion.soy"), "clusters.soy");
@@ -288,9 +291,12 @@ public class Main {
         SoyTofu tofu = sfs.compileToTofu();
         SoyRenderer renderer = new SoyRenderer(tofu, new SoyDataUtils());
         SoyService soyService = new SoyService(renderer, new HeaderRegion("soy.chrome.headerRegion", renderer),
-            new HomeRegion("soy.page.homeRegion", renderer, upenaStore));
+            new HomeRegion("soy.page.homeRegion", renderer));
 
         List<ManagePlugin> plugins = Lists.newArrayList(
+            new ManagePlugin("eye-open", "UIs", "/ui/serviceUIs",
+                ServiceUIsPluginEndpoints.class,
+                new ServiceUIsRegion("soy.page.serviceUIsPluginRegion", renderer, upenaStore)),
             new ManagePlugin("fire", "Health", "/ui/health",
                 HealthPluginEndpoints.class,
                 new HealthPluginRegion("soy.page.healthPluginRegion", renderer, amzaService, upenaStore, upenaService, ubaService, ringHost)),
