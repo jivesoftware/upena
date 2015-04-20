@@ -15,7 +15,7 @@
                             {$ui.name}<span class="caret"></span></button>
                         <ul class="dropdown-menu">
                             {foreach $u in $ui.uis}
-                                <li><a target="ui_iframe" href="http://{$u.host}:{$u.port}{$u.url}">
+                                <li><a href="http://{$u.host}:{$u.port}{$u.url}">
                                     <img src="http://{$u.host}:{$u.port}/static/img/favicon.ico"><img>&nbsp;
                                     {$u.service}&nbsp;{$u.instance}&nbsp;{$u.host}</a></li>
                             {/foreach}
@@ -23,9 +23,6 @@
                     </div>
 
                 {/foreach}
-            </div>
-            <div class="panel-body">
-                <iframe src="" width="100%" height="900px" name="ui_iframe"></iframe>
             </div>
         </div> 
     {else}
