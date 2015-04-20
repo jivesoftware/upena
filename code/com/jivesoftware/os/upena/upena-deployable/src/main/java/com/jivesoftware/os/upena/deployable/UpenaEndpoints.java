@@ -40,6 +40,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
 import javax.inject.Singleton;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -271,7 +272,11 @@ public class UpenaEndpoints {
                 serviceHealth = new ServiceHealth();
                 serviceHealth.health = -1;
             }
-            NannyHealth nannyHealth = new NannyHealth(id, log, serviceHealth);
+            String uptime = "unknown";
+            if (nanny.getValue().getStartTimeMillis() > 0) {
+                uptime = getDurationBreakdown(System.currentTimeMillis() - nanny.getValue().getStartTimeMillis());
+            }
+            NannyHealth nannyHealth = new NannyHealth(uptime, id, log, serviceHealth);
             nodeHealth.nannyHealths.add(nannyHealth);
 
         }
@@ -305,6 +310,7 @@ public class UpenaEndpoints {
 
     static public class NannyHealth {
 
+        public String uptime;
         public InstanceDescriptor instanceDescriptor;
         public List<String> log;
         public ServiceHealth serviceHealth;
@@ -312,7 +318,8 @@ public class UpenaEndpoints {
         public NannyHealth() {
         }
 
-        public NannyHealth(InstanceDescriptor instanceDescriptor, List<String> log, ServiceHealth serviceHealth) {
+        public NannyHealth(String uptime, InstanceDescriptor instanceDescriptor, List<String> log, ServiceHealth serviceHealth) {
+            this.uptime = uptime;
             this.instanceDescriptor = instanceDescriptor;
             this.log = log;
             this.serviceHealth = serviceHealth;
@@ -348,5 +355,61 @@ public class UpenaEndpoints {
                 + ", checkIntervalMillis=" + checkIntervalMillis
                 + '}';
         }
+    }
+
+    public static String getDurationBreakdown(long millis) {
+        if (millis < 0) {
+            return String.valueOf(millis);
+        }
+
+        long days = TimeUnit.MILLISECONDS.toDays(millis);
+        millis -= TimeUnit.DAYS.toMillis(days);
+        long hours = TimeUnit.MILLISECONDS.toHours(millis);
+        millis -= TimeUnit.HOURS.toMillis(hours);
+        long minutes = TimeUnit.MILLISECONDS.toMinutes(millis);
+        millis -= TimeUnit.MINUTES.toMillis(minutes);
+        long seconds = TimeUnit.MILLISECONDS.toSeconds(millis);
+        millis -= TimeUnit.SECONDS.toMillis(seconds);
+
+        StringBuilder sb = new StringBuilder(64);
+        boolean showRemaining = false;
+        if (showRemaining || days > 0) {
+            sb.append(days);
+            sb.append(" Days ");
+            showRemaining = true;
+        }
+        if (showRemaining || hours > 0) {
+            if (hours < 10) {
+                sb.append('0');
+            }
+            sb.append(hours);
+            sb.append(":");
+            showRemaining = true;
+        }
+        if (showRemaining || minutes > 0) {
+            if (minutes < 10) {
+                sb.append('0');
+            }
+            sb.append(minutes);
+            sb.append(":");
+            showRemaining = true;
+        }
+        if (showRemaining || seconds > 0) {
+            if (seconds < 10) {
+                sb.append('0');
+            }
+            sb.append(seconds);
+            sb.append(".");
+            showRemaining = true;
+        }
+        if (millis < 100) {
+            sb.append('0');
+        }
+        if (millis < 10) {
+            sb.append('0');
+        }
+        sb.append(millis);
+
+        return (sb.toString());
     }
 }

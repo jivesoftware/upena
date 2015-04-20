@@ -44,6 +44,7 @@ public class Nanny {
     private final LinkedBlockingQueue<Runnable> linkedBlockingQueue;
     private final ThreadPoolExecutor threadPoolExecutor;
     private final AtomicLong restartAtTimestamp = new AtomicLong(-1);
+    private final AtomicLong startupTimestamp  = new AtomicLong(-1);
 
     public Nanny(InstanceDescriptor instanceDescriptor,
         InstancePath instancePath,
@@ -67,6 +68,10 @@ public class Nanny {
 
     public InstanceDescriptor getInstanceDescriptor() {
         return instanceDescriptor.get();
+    }
+
+    public long getStartTimeMillis() {
+        return startupTimestamp.longValue();
     }
 
     synchronized public void setInstanceDescriptor(InstanceDescriptor id) {
@@ -142,7 +147,7 @@ public class Nanny {
                         }
                     }
 
-                    NannyStatusCallable nannyTask = new NannyStatusCallable(
+                    NannyStatusCallable nannyTask = new NannyStatusCallable(startupTimestamp,
                         instanceDescriptor.get(),
                         instancePath,
                         deployLog,

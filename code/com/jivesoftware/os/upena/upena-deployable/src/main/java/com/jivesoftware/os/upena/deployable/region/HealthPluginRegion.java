@@ -225,7 +225,7 @@ public class HealthPluginRegion implements PageRegion<Optional<HealthPluginRegio
                         hostRows.get(hi).get(si + 1).put("release", nannyHealth.instanceDescriptor.releaseGroupName);
                         hostRows.get(hi).get(si + 1).put("instance", String.valueOf(nannyHealth.instanceDescriptor.instanceName));
                         hostRows.get(hi).get(si + 1).put("color", "#" + getHEXTrafficlightColor(sh, 1f));
-                        hostRows.get(hi).get(si + 1).put("health", d2f(sh));
+                        hostRows.get(hi).get(si + 1).put("health", d2f(sh) + " (" + nannyHealth.uptime + ")");
                         hostRows.get(hi).get(si + 1).put("link",
                             "http://" + nodeHealth.host + ":" + nannyHealth.instanceDescriptor.ports.get("manage").port + "/manage/ui");
 

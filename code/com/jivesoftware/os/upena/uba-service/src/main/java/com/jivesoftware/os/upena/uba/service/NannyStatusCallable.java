@@ -17,21 +17,25 @@ package com.jivesoftware.os.upena.uba.service;
 
 import com.jivesoftware.os.upena.routing.shared.InstanceDescriptor;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicLong;
 
 class NannyStatusCallable implements Callable<Boolean> {
 
+    private final AtomicLong startupTimestamp;
     private final InstanceDescriptor id;
     private final InstancePath instancePath;
     private final DeployLog deployLog;
     private final HealthLog healthLog;
     private final DeployableScriptInvoker invokeScript;
 
-    public NannyStatusCallable(InstanceDescriptor id,
+    public NannyStatusCallable(AtomicLong startupTimestamp,
+        InstanceDescriptor id,
         InstancePath instancePath,
         DeployLog deployLog,
         HealthLog healthLog,
         DeployableScriptInvoker invokeScript) {
 
+        this.startupTimestamp = startupTimestamp;
         this.id = id;
         this.instancePath = instancePath;
         this.deployLog = deployLog;
@@ -50,39 +54,39 @@ class NannyStatusCallable implements Callable<Boolean> {
                 deployLog.log("Service:" + instancePath.toHumanReadableName() + " 'status'", "ONLINE", null);
                 if (!invokeScript.invoke(healthLog, instancePath, "health")) {
                     deployLog.log("Service:" + instancePath.toHumanReadableName() + " 'health'", "nanny health command failed", null);
-                    healthLog.forecedHealthState("Service health",
+                    healthLog.forcedHealthState("Service health",
                         "Service is failing to report health", "Look at logs or health script:" + invokeScript.scriptPath(instancePath, "health"));
                     return true;
                 }
                 healthLog.commit();
                 return true;
             }
-            healthLog.forecedHealthState("Service Startup",
+            healthLog.forcedHealthState("Service Startup",
                 "Service is attempting to start. Phase: configuring...", "Be patient");
             if (!invokeScript.invoke(deployLog, instancePath, "config")) {
                 deployLog.log("Service:" + instancePath.toHumanReadableName() + " 'config'", "nanny health command failed", null);
-                healthLog.forecedHealthState("Service Config",
+                healthLog.forcedHealthState("Service Config",
                     "Service is failing to generate config", "Look at config script:" + invokeScript.scriptPath(instancePath, "config"));
+                startupTimestamp.set(-1);
                 return false;
             }
-            healthLog.forecedHealthState("Service Startup",
+            healthLog.forcedHealthState("Service Startup",
                 "Service is attempting to start. Phase: start...", "Be patient");
             if (!invokeScript.invoke(deployLog, instancePath, "start")) {
                 deployLog.log("Service:" + instancePath.toHumanReadableName() + " 'start'", "nanny failed while start.", null);
-                healthLog.forecedHealthState("Service Start",
+                healthLog.forcedHealthState("Service Start",
                     "Service is failing to generate config", "Look at config script:" + invokeScript.scriptPath(instancePath, "config"));
+                startupTimestamp.set(-1);
                 return false;
             }
             int checks = 1;
-            while (checks < 10) {
-                // todo expose to config or to instance
-                healthLog.forecedHealthState("Service Startup",
-                    "Service is being verifyed as onine to start. Phase: verify...", "Be patient");
+            while (checks < 10) { // todo expose to config or to instance
+                healthLog.forcedHealthState("Service Startup", "Service is being verifyed. Phase: verify...", "Be patient");
                 if (invokeScript.invoke(deployLog, instancePath, "status")) {
                     deployLog.log("Service:" + instancePath.toHumanReadableName() + " 'status'", "ONLINE", null);
                     if (!invokeScript.invoke(healthLog, instancePath, "health")) {
                         deployLog.log("Service:" + instancePath.toHumanReadableName() + " 'health'", "nanny health command failed", null);
-                        healthLog.forecedHealthState("Service health",
+                        healthLog.forcedHealthState("Service health",
                             "Service is failing to report health", "Look at logs or health script:" + invokeScript.scriptPath(instancePath, "health"));
 
                     } else {
@@ -96,12 +100,14 @@ class NannyStatusCallable implements Callable<Boolean> {
                     Thread.sleep(1000); // todo expose to config or to instance
                 }
             }
+            startupTimestamp.set(System.currentTimeMillis());
             return true;
 
         } catch (InterruptedException x) {
             deployLog.log("Nanny", "status failed.", x);
-            healthLog.forecedHealthState("Nanny Interrupted",
+            healthLog.forcedHealthState("Nanny Interrupted",
                 "The nanny service was interruptd", x.toString());
+            startupTimestamp.set(-1);
             return false;
         }
     }

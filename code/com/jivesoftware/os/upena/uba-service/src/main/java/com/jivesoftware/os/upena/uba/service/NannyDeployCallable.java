@@ -74,19 +74,19 @@ class NannyDeployCallable implements Callable<Boolean> {
             if (deploy()) {
                 if (!invokeScript.invoke(deployLog, instancePath, "init")) {
                     deployLog.log("Nanny", "failed to init service.", null);
-                    healthLog.forecedHealthState("Service startup", "Failed to while calling init:" + Joiner.on("\n").join(deployLog.peek()), "Check logs.");
+                    healthLog.forcedHealthState("Service startup", "Failed to while calling init:" + Joiner.on("\n").join(deployLog.peek()), "Check logs.");
                     return false;
                 }
             } else {
                 deployLog.log("Nanny", "failed to deploy artifact.", null);
-                healthLog.forecedHealthState("Service startup", "Failed to deploy:" + Joiner.on("\n").join(deployLog.peek()), "Check logs.");
+                healthLog.forcedHealthState("Service startup", "Failed to deploy:" + Joiner.on("\n").join(deployLog.peek()), "Check logs.");
                 return false;
             }
-            healthLog.forecedHealthState("Service deployed", "Service will be consider unhealthy until first health check is successful.", "");
+            healthLog.forcedHealthState("Service deployed", "Service will be consider unhealthy until first health check is successful.", "");
             return true;
         } catch (IOException x) {
             deployLog.log("Nanny", "failed.", x);
-            healthLog.forecedHealthState("Service startup", "Nanny failed." + Joiner.on("\n").join(deployLog.peek()), "Check logs.");
+            healthLog.forcedHealthState("Service startup", "Nanny failed." + Joiner.on("\n").join(deployLog.peek()), "Check logs.");
             return false;
         }
     }

@@ -54,7 +54,7 @@ public class HealthLog implements CommandLog {
         return new ArrayList<>(commited);
     }
 
-    public void forecedHealthState(String name, String description, String resolution) {
+    public void forcedHealthState(String name, String description, String resolution) {
         commit();
         log("FailedHealth", "{\n"
             + "\"health\" : \"0.0\",\n"

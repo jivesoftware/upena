@@ -47,7 +47,7 @@ class NannyDestroyCallable implements Callable<Boolean> {
                             checks++;
                             deployLog.log("Service:" + instancePath.toHumanReadableName(),
                                 "Waiting for service to die for " + checks + " time.", null);
-                            healthLog.forecedHealthState("Service health", "Service is refusing to be killed for the " + checks + " time.", "");
+                            healthLog.forcedHealthState("Service health", "Service is refusing to be killed for the " + checks + " time.", "");
                             Thread.sleep(1000); // todo expose to config or to instance
                         }
                     }

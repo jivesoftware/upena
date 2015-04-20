@@ -7,16 +7,16 @@
     {if $uis}
         <div class="panel panel-default">
             <div class="panel-heading">
-                <table class="condensed">
+                <table class="table-condensed">
                     {foreach $ui in $uis}
                         <tr>
                             <td>
                                 {$ui.name}
                             </td>
                             <td>
-                                <div class="btn-group">
+                                <div class="btn-group" role="group">
                                     {foreach $u in $ui.uis}
-                                        <li><a href="http://{$u.host}:{$u.port}{$u.url}">{$u.host}/{$u.instance}</a></li>
+                                        <a class="btn btn-default" href="http://{$u.host}:{$u.port}{$u.url}">{$u.host}/{$u.instance}</a>
                                     {/foreach}
                                 </div>
                             </td>
