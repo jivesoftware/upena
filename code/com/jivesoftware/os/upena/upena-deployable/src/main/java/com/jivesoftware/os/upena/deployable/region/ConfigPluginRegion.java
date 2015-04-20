@@ -374,8 +374,9 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
                         hasProperty.add(has);
                     }
                     propertyAndOccurrences.put("has", hasProperty);
-
-                    rows.add(propertyAndOccurrences);
+                    if (!hasProperty.isEmpty()) {
+                        rows.add(propertyAndOccurrences);
+                    }
                 }
 
                 data.put("properties", rows);
