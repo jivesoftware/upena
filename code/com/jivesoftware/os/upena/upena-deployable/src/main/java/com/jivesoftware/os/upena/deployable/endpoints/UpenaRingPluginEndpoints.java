@@ -26,7 +26,8 @@ public class UpenaRingPluginEndpoints {
     private final SoyService soyService;
     private final UpenaRingPluginRegion pluginRegion;
 
-    public UpenaRingPluginEndpoints(@Context SoyService soyService, @Context UpenaRingPluginRegion pluginRegion) {
+    public UpenaRingPluginEndpoints(@Context SoyService soyService,
+        @Context UpenaRingPluginRegion pluginRegion) {
         this.soyService = soyService;
         this.pluginRegion = pluginRegion;
     }
