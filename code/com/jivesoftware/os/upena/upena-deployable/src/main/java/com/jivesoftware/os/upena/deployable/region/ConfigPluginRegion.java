@@ -3,13 +3,10 @@ package com.jivesoftware.os.upena.deployable.region;
 import com.google.common.base.Optional;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.jivesoftware.os.amza.shared.AmzaInstance;
-import com.jivesoftware.os.amza.shared.RingHost;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.config.UpenaConfigStore;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
-import com.jivesoftware.os.upena.service.UpenaService;
 import com.jivesoftware.os.upena.service.UpenaStore;
 import com.jivesoftware.os.upena.shared.Cluster;
 import com.jivesoftware.os.upena.shared.ClusterKey;
@@ -23,7 +20,6 @@ import com.jivesoftware.os.upena.shared.ReleaseGroupKey;
 import com.jivesoftware.os.upena.shared.Service;
 import com.jivesoftware.os.upena.shared.ServiceKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
-import com.jivesoftware.os.upena.uba.service.UbaService;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -44,38 +40,25 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
 
     private final String template;
     private final SoyRenderer renderer;
-    private final AmzaInstance amzaInstance;
     private final UpenaStore upenaStore;
-    private final UpenaService upenaService;
-    private final UbaService ubaService;
-    private final RingHost ringHost;
     private final UpenaConfigStore configStore;
 
     public ConfigPluginRegion(String template,
         SoyRenderer renderer,
-        AmzaInstance amzaInstance,
         UpenaStore upenaStore,
-        UpenaService upenaService,
-        UbaService ubaService,
-        RingHost ringHost,
         UpenaConfigStore configStore) {
         this.template = template;
         this.renderer = renderer;
-        this.amzaInstance = amzaInstance;
         this.upenaStore = upenaStore;
-        this.upenaService = upenaService;
-        this.ubaService = ubaService;
-        this.ringHost = ringHost;
         this.configStore = configStore;
     }
 
-    public void modified(Map<String, Map<String, String>> propertyMap) throws Exception {
+    public void modified(Map<String, Map<String, String>> property_InstanceKey_Values) throws Exception {
 
         Set<String> instanceKeys = new HashSet<>();
-        for (Map.Entry<String, Map<String, String>> propEntry : propertyMap.entrySet()) {
-            for (Map.Entry<String, String> instanceKeyEntry : propEntry.getValue().entrySet()) {
-                instanceKeys.add(instanceKeyEntry.getKey());
-                System.out.println(String.format("%s: %s -> %s", instanceKeyEntry.getKey(), propEntry.getKey(), instanceKeyEntry.getValue()));
+        for (Map.Entry<String, Map<String, String>> property_InstanceKey_Value : property_InstanceKey_Values.entrySet()) {
+            for (Map.Entry<String, String> instanceKey_value : property_InstanceKey_Value.getValue().entrySet()) {
+                instanceKeys.add(instanceKey_value.getKey());
             }
         }
 
@@ -95,7 +78,7 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
                 Set<String> removeHealthDefaults = Sets.newHashSet();
                 Set<String> removeHealthOverrides = Sets.newHashSet();
 
-                for (Map.Entry<String, Map<String, String>> propEntry : propertyMap.entrySet()) {
+                for (Map.Entry<String, Map<String, String>> propEntry : property_InstanceKey_Values.entrySet()) {
                     if (propEntry.getValue().containsKey(instanceKey)) {
                         String property = propEntry.getKey();
                         String value = propEntry.getValue().get(instanceKey);
@@ -327,6 +310,24 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
                 ConcurrentSkipListMap<String, List<Map<String, String>>> as = packProperties(input.aClusterKey,
                     input.aHostKey, input.aServiceKey, input.aInstance, input.aReleaseKey, input.property, input.value,
                     input.overridden, input.service, input.health);
+
+                if (input.action.equals("revert")) {
+                    Map<String, Map<String, String>> property_instanceKey_revert = new HashMap<>();
+                    for (String property : as.keySet()) {
+                        for (Map<String, String> occurence : as.get(property)) {
+                            String instanceKey = occurence.get("instanceKey");
+                            Map<String, String> revert = property_instanceKey_revert.get(property);
+                            if (revert == null) {
+                                revert = new HashMap<>();
+                                property_instanceKey_revert.put(property, revert);
+                            }
+                            revert.put(instanceKey, "OBSOLETE");
+                        }
+                    }
+                    if (!property_instanceKey_revert.isEmpty()) {
+                        modified(property_instanceKey_revert);
+                    }
+                }
 
                 ConcurrentSkipListMap<String, List<Map<String, String>>> bs = packProperties(input.bClusterKey,
                     input.bHostKey, input.bServiceKey, input.bInstance, input.bReleaseKey, input.property, input.value,

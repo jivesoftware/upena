@@ -305,7 +305,7 @@ public class Main {
                 new InstancesPluginRegion("soy.page.instancesPluginRegion", renderer, amzaService, upenaStore, upenaService, ubaService, ringHost)),
             new ManagePlugin("cog", "Config", "/ui/config",
                 ConfigPluginEndpoints.class,
-                new ConfigPluginRegion("soy.page.configPluginRegion", renderer, amzaService, upenaStore, upenaService, ubaService, ringHost, upenaConfigStore)),
+                new ConfigPluginRegion("soy.page.configPluginRegion", renderer, upenaStore, upenaConfigStore)),
             new ManagePlugin("cloud", "Clusters", "/ui/clusters",
                 ClustersPluginEndpoints.class,
                 new ClustersPluginRegion("soy.page.clustersPluginRegion", renderer, amzaService, upenaStore, upenaService, ubaService, ringHost)),

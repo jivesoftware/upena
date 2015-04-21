@@ -141,7 +141,7 @@
                             </td>
                         </tr>
                         <tr>
-                            <td colspan="6">
+                            <td colspan="5">
                                 <input type="submit" name="action" value="Refresh" class="form-control btn btn-primary"/>
                             </td>
                         </tr>
@@ -162,62 +162,70 @@
                 <div class="panel-heading" id="upena-cfg">Instance Config/s</div>
                 <div class="panel-body">
                     <table class="table table-bordered">
-                    {foreach $p in $properties}
-                        <tr style="background-color:#FFFFE0;">
-                            <td colspan="26"><h8>{$p.property}</h8>
-                                <button class="btn btn-default upena-cfg-link" data-upena-cfg-prop="{$p.property}" data-upena-cfg-link="{$p.property}:OBSOLETE">
-                                    <span class="glyphicon glyphicon-trash"></span>
-                                    &nbsp;
-                                </button>
-                            </td>
-                        </tr>
-                        {foreach $h in $p.has}
-                            <tr>
-                                <td>&nbsp;&nbsp;&nbsp;</td>
-                                <td bgcolor="#8299AF"><div style="max-width: 100px; word-wrap:break-word;">{$h.acluster?:''}</div></td>
-                                <td bgcolor="#92A9BF"><div style="max-width: 100px; word-wrap:break-word;">{$h.ahost?:''}</div></td>
-                                <td bgcolor="#A2B9CF"><div style="max-width: 100px; word-wrap:break-word;">{$h.aservice?:''}</div></td>
-                                <td bgcolor="#B2C9DF"><div style="max-width: 100px; word-wrap:break-word;">{$h.ainstance?:''}</div></td>
-                                <td bgcolor="#C2D9EF"><div style="max-width: 100px; word-wrap:break-word;">{$h.adefault?:''}</div></td>
-                                <td bgcolor="#D2E9FF">
-                                    {if ($h.acluster != null or $h.ahost != null or $h.aservice != null or $h.ainstance != null)}
-                                        <input type="text" style="width:200px; padding-left:10px;"
-                                            placeholder="override" value="{$h.aoverride?:''}" name="override" class="upena-cfg-field-a"
-                                            data-upena-cfg-prop="{$p.property}" data-upena-cfg-link="{$p.property}:{index($h)}"
-                                            data-upena-cfg-instance-key="{$h.ainstanceKey?:''}" data-upena-cfg-override="{$h.aoverride?:''}"
-                                            data-upena-cfg-cluster="{$h.acluster?:''}" data-upena-cfg-host="{$h.ahost?:''}"
-                                            data-upena-cfg-service="{$h.aservice?:''}" data-upena-cfg-instance="{$h.ainstance?:''}">
-                                    {/if}
-                                </td>
-                                <td>
-                                    <button class="btn btn-default upena-cfg-link" data-upena-cfg-prop="{$p.property}" data-upena-cfg-link="{$p.property}:{index($h)}">
-                                        <span class="glyphicon glyphicon-link"></span>
+                        {foreach $p in $properties}
+                            <tr style="background-color:#FFFFE0;">
+                                <td colspan="26"><h8>{$p.property}</h8>
+                                    <button class="btn btn-default upena-cfg-link" data-upena-cfg-prop="{$p.property}" data-upena-cfg-link="{$p.property}:OBSOLETE">
+                                        <span class="glyphicon glyphicon-trash"></span>
                                         &nbsp;
                                     </button>
                                 </td>
-                                <td bgcolor="#EEEEEE">
-                                    {if $h.boverride != null}
-                                        <button class="btn btn-default upena-cfg-copy" data-upena-cfg-prop="{$p.property}" data-upena-cfg-copy="{$p.property}:{index($h)}">
-                                            <span class="glyphicon glyphicon-backward"></span>
+                            </tr>
+                            {foreach $h in $p.has}
+                                <tr>
+                                    <td>&nbsp;&nbsp;&nbsp;</td>
+                                    <td bgcolor="#8299AF"><div style="max-width: 100px; word-wrap:break-word;">{$h.acluster?:''}</div></td>
+                                    <td bgcolor="#92A9BF"><div style="max-width: 100px; word-wrap:break-word;">{$h.ahost?:''}</div></td>
+                                    <td bgcolor="#A2B9CF"><div style="max-width: 100px; word-wrap:break-word;">{$h.aservice?:''}</div></td>
+                                    <td bgcolor="#B2C9DF"><div style="max-width: 100px; word-wrap:break-word;">{$h.ainstance?:''}</div></td>
+                                    <td bgcolor="#C2D9EF"><div style="max-width: 100px; word-wrap:break-word;">{$h.adefault?:''}</div></td>
+                                    <td bgcolor="#D2E9FF">
+                                        {if ($h.acluster != null or $h.ahost != null or $h.aservice != null or $h.ainstance != null)}
+                                            <input type="text" style="width:200px; padding-left:10px;"
+                                                placeholder="override" value="{$h.aoverride?:''}" name="override" class="upena-cfg-field-a"
+                                                data-upena-cfg-prop="{$p.property}" data-upena-cfg-link="{$p.property}:{index($h)}"
+                                                data-upena-cfg-instance-key="{$h.ainstanceKey?:''}" data-upena-cfg-override="{$h.aoverride?:''}"
+                                                data-upena-cfg-cluster="{$h.acluster?:''}" data-upena-cfg-host="{$h.ahost?:''}"
+                                                data-upena-cfg-service="{$h.aservice?:''}" data-upena-cfg-instance="{$h.ainstance?:''}">
+                                        {/if}
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-default upena-cfg-link" data-upena-cfg-prop="{$p.property}" data-upena-cfg-link="{$p.property}:{index($h)}">
+                                            <span class="glyphicon glyphicon-link"></span>
                                             &nbsp;
                                         </button>
-                                    {/if}
-                                </td>
-                                <td bgcolor="#E7E7EF">
-                                    {if $h.boverride != null}
-                                        <input type="text" style="width:200px; padding-left:10px;"
-                                            placeholder="override" value="{$h.boverride?:''}" name="override" class="upena-cfg-field-b"
-                                            data-upena-cfg-prop="{$p.property}" data-upena-cfg-copy="{$p.property}:{index($h)}">
-                                    {/if}
-                                </td>
-                                <td bgcolor="#D7D7DF"><div style="max-width: 100px; word-wrap:break-word;">{$h.bdefault?:''}</div></td>
-                                <td bgcolor="#C7C7CF"><div style="max-width: 100px; word-wrap:break-word;">{$h.binstance?:''}</div></td>
-                                <td bgcolor="#B7B7BF"><div style="max-width: 100px; word-wrap:break-word;">{$h.bservice?:''}</div></td>
-                                <td bgcolor="#A7A7AF"><div style="max-width: 100px; word-wrap:break-word;">{$h.bhost?:''}</div></td>
-                                <td bgcolor="#97979F"><div style="max-width: 100px; word-wrap:break-word;">{$h.bcluster?:''}</div></td>
-                            </tr>
+                                    </td>
+                                    <td bgcolor="#EEEEEE">
+                                        {if $h.boverride != null}
+                                            <button class="btn btn-default upena-cfg-copy" data-upena-cfg-prop="{$p.property}" data-upena-cfg-copy="{$p.property}:{index($h)}">
+                                                <span class="glyphicon glyphicon-backward"></span>
+                                                &nbsp;
+                                            </button>
+                                        {/if}
+                                    </td>
+                                    <td bgcolor="#E7E7EF">
+                                        {if $h.boverride != null}
+                                            <input type="text" style="width:200px; padding-left:10px;"
+                                                placeholder="override" value="{$h.boverride?:''}" name="override" class="upena-cfg-field-b"
+                                                data-upena-cfg-prop="{$p.property}" data-upena-cfg-copy="{$p.property}:{index($h)}">
+                                        {/if}
+                                    </td>
+                                    <td bgcolor="#D7D7DF"><div style="max-width: 100px; word-wrap:break-word;">{$h.bdefault?:''}</div></td>
+                                    <td bgcolor="#C7C7CF"><div style="max-width: 100px; word-wrap:break-word;">{$h.binstance?:''}</div></td>
+                                    <td bgcolor="#B7B7BF"><div style="max-width: 100px; word-wrap:break-word;">{$h.bservice?:''}</div></td>
+                                    <td bgcolor="#A7A7AF"><div style="max-width: 100px; word-wrap:break-word;">{$h.bhost?:''}</div></td>
+                                    <td bgcolor="#97979F"><div style="max-width: 100px; word-wrap:break-word;">{$h.bcluster?:''}</div></td>
+                                </tr>
+                            {/foreach}
                         {/foreach}
-                    {/foreach}
+                        <tr>
+                            <td colspan="15">
+                                <button title="Revert" type="submit" name="action" value="revert" class="btn btn-default">
+                                    <span class="glyphicon glyphicon-trash">Revert Visible Properties back to Defaults
+                                </button>
+                            </td>
+                        </tr>
+                    </table>
                 </div>
             </div>
         {/if}
