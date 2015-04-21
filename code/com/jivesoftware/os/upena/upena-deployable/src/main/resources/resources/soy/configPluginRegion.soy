@@ -141,8 +141,11 @@
                             </td>
                         </tr>
                         <tr>
-                            <td colspan="5">
+                            <td colspan="4">
                                 <input type="submit" name="action" value="Refresh" class="form-control btn btn-primary"/>
+                            </td>
+                            <td colspan="1">
+                                <button title="Revert" type="submit" name="action" value="revert" class="btn btn-default"><span class="glyphicon glyphicon-trash"></button>
                             </td>
                         </tr>
                     </tbody>
@@ -218,13 +221,6 @@
                                 </tr>
                             {/foreach}
                         {/foreach}
-                        <tr>
-                            <td colspan="15">
-                                <button title="Revert" type="submit" name="action" value="revert" class="btn btn-default">
-                                    <span class="glyphicon glyphicon-trash">Revert Visible Properties back to Defaults
-                                </button>
-                            </td>
-                        </tr>
                     </table>
                 </div>
             </div>
