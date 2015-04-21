@@ -274,7 +274,7 @@ public class UpenaEndpoints {
             }
             String uptime = "unknown";
             if (nanny.getValue().getStartTimeMillis() > 0) {
-                uptime = getDurationBreakdown(System.currentTimeMillis() - nanny.getValue().getStartTimeMillis());
+                uptime = getUptime(System.currentTimeMillis() - nanny.getValue().getStartTimeMillis());
             }
             NannyHealth nannyHealth = new NannyHealth(uptime, id, log, serviceHealth);
             nodeHealth.nannyHealths.add(nannyHealth);
@@ -357,13 +357,11 @@ public class UpenaEndpoints {
         }
     }
 
-    public static String getDurationBreakdown(long millis) {
+    public static String getUptime(long millis) {
         if (millis < 0) {
             return String.valueOf(millis);
         }
 
-        long days = TimeUnit.MILLISECONDS.toDays(millis);
-        millis -= TimeUnit.DAYS.toMillis(days);
         long hours = TimeUnit.MILLISECONDS.toHours(millis);
         millis -= TimeUnit.HOURS.toMillis(hours);
         long minutes = TimeUnit.MILLISECONDS.toMinutes(millis);
@@ -372,43 +370,20 @@ public class UpenaEndpoints {
         millis -= TimeUnit.SECONDS.toMillis(seconds);
 
         StringBuilder sb = new StringBuilder(64);
-        boolean showRemaining = false;
-        if (showRemaining || days > 0) {
-            sb.append(days);
-            sb.append(" Days ");
-            showRemaining = true;
-        }
-        if (showRemaining || hours > 0) {
-            if (hours < 10) {
-                sb.append('0');
-            }
-            sb.append(hours);
-            sb.append(":");
-            showRemaining = true;
-        }
-        if (showRemaining || minutes > 0) {
-            if (minutes < 10) {
-                sb.append('0');
-            }
-            sb.append(minutes);
-            sb.append(":");
-            showRemaining = true;
-        }
-        if (showRemaining || seconds > 0) {
-            if (seconds < 10) {
-                sb.append('0');
-            }
-            sb.append(seconds);
-            sb.append(".");
-            showRemaining = true;
-        }
-        if (millis < 100) {
+        if (hours < 10) {
             sb.append('0');
         }
-        if (millis < 10) {
+        sb.append(hours);
+        sb.append(":");
+        if (minutes < 10) {
             sb.append('0');
         }
-        sb.append(millis);
+        sb.append(minutes);
+        sb.append(":");
+        if (seconds < 10) {
+            sb.append('0');
+        }
+        sb.append(seconds);
 
         return (sb.toString());
     }

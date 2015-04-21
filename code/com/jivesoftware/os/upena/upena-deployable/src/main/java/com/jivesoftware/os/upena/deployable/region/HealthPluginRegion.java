@@ -17,9 +17,6 @@ import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.deployable.UpenaEndpoints;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.routing.shared.InstanceDescriptor;
-import com.jivesoftware.os.upena.service.UpenaService;
-import com.jivesoftware.os.upena.service.UpenaStore;
-import com.jivesoftware.os.upena.uba.service.UbaService;
 import java.awt.Color;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -44,25 +41,13 @@ public class HealthPluginRegion implements PageRegion<Optional<HealthPluginRegio
     private final String template;
     private final SoyRenderer renderer;
     private final AmzaInstance amzaInstance;
-    private final UpenaStore upenaStore;
-    private final UpenaService upenaService;
-    private final UbaService ubaService;
-    private final RingHost ringHost;
-
+    
     public HealthPluginRegion(String template,
         SoyRenderer renderer,
-        AmzaInstance amzaInstance,
-        UpenaStore upenaStore,
-        UpenaService upenaService,
-        UbaService ubaService,
-        RingHost ringHost) {
+        AmzaInstance amzaInstance) {
         this.template = template;
         this.renderer = renderer;
         this.amzaInstance = amzaInstance;
-        this.upenaStore = upenaStore;
-        this.upenaService = upenaService;
-        this.ubaService = ubaService;
-        this.ringHost = ringHost;
     }
 
     public static class HealthPluginRegionInput {
@@ -225,7 +210,7 @@ public class HealthPluginRegion implements PageRegion<Optional<HealthPluginRegio
                         hostRows.get(hi).get(si + 1).put("release", nannyHealth.instanceDescriptor.releaseGroupName);
                         hostRows.get(hi).get(si + 1).put("instance", String.valueOf(nannyHealth.instanceDescriptor.instanceName));
                         hostRows.get(hi).get(si + 1).put("color", "#" + getHEXTrafficlightColor(sh, 1f));
-                        hostRows.get(hi).get(si + 1).put("health", d2f(sh) + " (" + nannyHealth.uptime + ")");
+                        hostRows.get(hi).get(si + 1).put("health", d2f(sh) + " [" + nannyHealth.uptime + "]");
                         hostRows.get(hi).get(si + 1).put("link",
                             "http://" + nodeHealth.host + ":" + nannyHealth.instanceDescriptor.ports.get("manage").port + "/manage/ui");
 

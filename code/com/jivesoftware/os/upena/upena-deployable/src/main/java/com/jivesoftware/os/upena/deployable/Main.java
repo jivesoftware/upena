@@ -299,7 +299,7 @@ public class Main {
                 new ServiceUIsRegion("soy.page.serviceUIsPluginRegion", renderer, upenaStore)),
             new ManagePlugin("fire", "Health", "/ui/health",
                 HealthPluginEndpoints.class,
-                new HealthPluginRegion("soy.page.healthPluginRegion", renderer, amzaService, upenaStore, upenaService, ubaService, ringHost)),
+                new HealthPluginRegion("soy.page.healthPluginRegion", renderer, amzaService)),
             new ManagePlugin("pencil", "Instances", "/ui/instances",
                 InstancesPluginEndpoints.class,
                 new InstancesPluginRegion("soy.page.instancesPluginRegion", renderer, amzaService, upenaStore, upenaService, ubaService, ringHost)),
