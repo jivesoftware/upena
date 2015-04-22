@@ -119,16 +119,20 @@ public class ReleasesPluginRegion implements PageRegion<Optional<ReleasesPluginR
                                 data.put("message", "Couldn't update no existent cluster. Someone else likely just removed it since your last refresh.");
                             } else {
 
+                                List<String> errors = new CheckReleasable().isReleasable(input.repository, input.version);
+                                if (errors.isEmpty()) {
 
-
-                                ReleaseGroup updated = new ReleaseGroup(input.name,
-                                    input.email,
-                                    input.version,
-                                    input.repository,
-                                    input.description);
-                                upenaStore.releaseGroups.update(new ReleaseGroupKey(input.key), updated);
-                                data.put("message", "Updated Release:" + input.name);
-                                upenaStore.record("Human", "updated", System.currentTimeMillis(), "", "release", updated.toString());
+                                    ReleaseGroup updated = new ReleaseGroup(input.name,
+                                        input.email,
+                                        input.version,
+                                        input.repository,
+                                        input.description);
+                                    upenaStore.releaseGroups.update(new ReleaseGroupKey(input.key), updated);
+                                    data.put("message", "Updated Release:" + input.name);
+                                    upenaStore.record("Human", "updated", System.currentTimeMillis(), "", "release", updated.toString());
+                                } else {
+                                    data.put("message", Joiner.on("\n").join(errors));
+                                }
                             }
 
                         } catch (Exception x) {
