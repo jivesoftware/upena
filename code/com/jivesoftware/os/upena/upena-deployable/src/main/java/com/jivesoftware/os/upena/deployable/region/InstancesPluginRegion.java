@@ -374,7 +374,7 @@ public class InstancesPluginRegion implements PageRegion<Optional<InstancesPlugi
             ports.add(row);
         }
         map.put("ports", ports);
-
+        map.put("enabled", value.enabled);
         map.put("cluster", ImmutableMap.of(
             "key", value.clusterKey.getKey(),
             "name", upenaStore.clusters.get(value.clusterKey).name));
