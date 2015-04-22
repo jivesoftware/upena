@@ -81,6 +81,8 @@ class NannyStatusCallable implements Callable<Boolean> {
                     "Service is failing to generate config", "Look at config script:" + invokeScript.scriptPath(instancePath, "config"));
                 startupTimestamp.set(-1);
                 return false;
+            } else {
+                ubaLog.record("auto-restart", id.toString(), invokeScript.scriptPath(instancePath, "start"));
             }
             int checks = 1;
             while (checks < 10) { // todo expose to config or to instance
@@ -103,7 +105,6 @@ class NannyStatusCallable implements Callable<Boolean> {
                     Thread.sleep(1000); // todo expose to config or to instance
                 }
             }
-            ubaLog.record("auto-restart", id.toString(), invokeScript.scriptPath(instancePath, "start"));
             startupTimestamp.set(System.currentTimeMillis());
             return true;
 
