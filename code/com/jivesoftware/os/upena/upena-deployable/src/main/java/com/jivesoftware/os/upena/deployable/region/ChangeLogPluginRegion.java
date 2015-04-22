@@ -24,7 +24,7 @@ public class ChangeLogPluginRegion implements PageRegion<Optional<ChangeLogPlugi
     private final String template;
     private final SoyRenderer renderer;
     private final UpenaStore upenaStore;
-    
+
     public ChangeLogPluginRegion(String template,
         SoyRenderer renderer,
         UpenaStore upenaStore) {
@@ -87,7 +87,7 @@ public class ChangeLogPluginRegion implements PageRegion<Optional<ChangeLogPlugi
                             Map<String, String> row = new HashMap<>();
                             row.put("who", change.who);
                             row.put("what", change.what);
-                            row.put("when", String.valueOf(humanReadableUptime(change.when)));
+                            row.put("when", String.valueOf(humanReadableUptime(System.currentTimeMillis() - change.when)));
                             row.put("why", change.why);
                             row.put("where", change.where);
                             row.put("how", change.how);

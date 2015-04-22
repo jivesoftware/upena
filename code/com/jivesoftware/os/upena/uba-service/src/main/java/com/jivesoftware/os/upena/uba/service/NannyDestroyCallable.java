@@ -61,7 +61,7 @@ class NannyDestroyCallable implements Callable<Boolean> {
                 }
             }
         }
-        ubaLog.record("kill", id.toString(), invokeScript.scriptPath(instancePath, "kill"));
+        ubaLog.record("killed", id.toString(), invokeScript.scriptPath(instancePath, "kill"));
         return true;
     }
 

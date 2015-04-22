@@ -11,7 +11,7 @@
                     {foreach $ui in $uis}
                         <tr>
                             <td>
-                                {$ui.name}
+                                <a class="btn btn-primary" href="http://{$ui.uis[0].host}:{$ui.uis[0].port}{$ui.uis[0].url}">{$ui.name}</a>
                             </td>
                             <td>
                                 <div class="btn-group" role="group">
