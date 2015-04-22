@@ -290,6 +290,7 @@ public class Main {
 
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/chrome.soy"), "chome.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/homeRegion.soy"), "home.soy");
+        soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/changeLogPluginRegion.soy"), "changeLog.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/serviceUIsPluginRegion.soy"), "serviceUIsPluginRegion.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/healthPluginRegion.soy"), "health.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/instancesPluginRegion.soy"), "instances.soy");
@@ -315,7 +316,7 @@ public class Main {
                 new ServiceUIsRegion("soy.page.serviceUIsPluginRegion", renderer, upenaStore)),
             new ManagePlugin("road", "Changes", "/ui/changeLog",
                 ChangeLogPluginEndpoints.class,
-                new ChangeLogPluginRegion("soy.page.changeLogPluginRegion", renderer, amzaService, upenaStore, upenaService, ubaService, ringHost)),
+                new ChangeLogPluginRegion("soy.page.changeLogPluginRegion", renderer, upenaStore)),
             new ManagePlugin("pencil", "Instances", "/ui/instances",
                 InstancesPluginEndpoints.class,
                 new InstancesPluginRegion("soy.page.instancesPluginRegion", renderer, upenaStore)),
