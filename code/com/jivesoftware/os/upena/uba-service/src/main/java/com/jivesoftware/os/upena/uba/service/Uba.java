@@ -30,8 +30,9 @@ public class Uba {
     final int upenaPort;
     private final UbaTree ubaTree;
     private final DeployableScriptInvoker invokeScript;
+    private final UbaLog ubaLog;
 
-    public Uba(String host, String upenaHost, int upenaPort, UbaTree ubaTree) {
+    public Uba(String host, String upenaHost, int upenaPort, UbaTree ubaTree, UbaLog ubaLog) {
         this.host = host;
         this.upenaHost = upenaHost;
         this.upenaPort = upenaPort;
@@ -45,6 +46,7 @@ public class Uba {
                 return new Thread(r, "Script onvoker thread-" + id);
             }
         }));
+        this.ubaLog = ubaLog;
     }
 
     public Map<InstanceDescriptor, InstancePath> getOnDiskInstances() {
@@ -85,7 +87,7 @@ public class Uba {
 
         DeployLog deployLog = new DeployLog();
         HealthLog healthLog = new HealthLog(deployLog);
-        return new Nanny(instanceDescriptor, instancePath, new DeployableValidator(), new DeployLog(), healthLog, invokeScript);
+        return new Nanny(instanceDescriptor, instancePath, new DeployableValidator(), new DeployLog(), healthLog, invokeScript, ubaLog);
     }
 
 }

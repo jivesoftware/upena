@@ -3,18 +3,14 @@ package com.jivesoftware.os.upena.deployable.region;
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.collect.Maps;
-import com.jivesoftware.os.amza.shared.AmzaInstance;
-import com.jivesoftware.os.amza.shared.RingHost;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
-import com.jivesoftware.os.upena.service.UpenaService;
 import com.jivesoftware.os.upena.service.UpenaStore;
 import com.jivesoftware.os.upena.shared.Host;
 import com.jivesoftware.os.upena.shared.HostFilter;
 import com.jivesoftware.os.upena.shared.HostKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
-import com.jivesoftware.os.upena.uba.service.UbaService;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -30,26 +26,14 @@ public class HostsPluginRegion implements PageRegion<Optional<HostsPluginRegion.
 
     private final String template;
     private final SoyRenderer renderer;
-    private final AmzaInstance amzaInstance;
     private final UpenaStore upenaStore;
-    private final UpenaService upenaService;
-    private final UbaService ubaService;
-    private final RingHost ringHost;
 
     public HostsPluginRegion(String template,
         SoyRenderer renderer,
-        AmzaInstance amzaInstance,
-        UpenaStore upenaStore,
-        UpenaService upenaService,
-        UbaService ubaService,
-        RingHost ringHost) {
+        UpenaStore upenaStore) {
         this.template = template;
         this.renderer = renderer;
-        this.amzaInstance = amzaInstance;
         this.upenaStore = upenaStore;
-        this.upenaService = upenaService;
-        this.ubaService = ubaService;
-        this.ringHost = ringHost;
     }
 
     public static class HostsPluginRegionInput {
@@ -105,12 +89,15 @@ public class HostsPluginRegion implements PageRegion<Optional<HostsPluginRegion.
                     } else if (input.action.equals("add")) {
                         filters.clear();
                         try {
-                            upenaStore.hosts.update(null, new Host(input.name,
+                            Host newHost = new Host(input.name,
                                 input.host,
                                 Integer.parseInt(input.port),
                                 input.workingDirectory,
                                 null
-                            ));
+                            );
+                            upenaStore.hosts.update(null, newHost);
+
+                            upenaStore.record("Human", "added", System.currentTimeMillis(), "", "host", newHost.toString());
 
                             data.put("message", "Created Host:" + input.name);
                         } catch (Exception x) {
@@ -124,11 +111,13 @@ public class HostsPluginRegion implements PageRegion<Optional<HostsPluginRegion.
                             if (host == null) {
                                 data.put("message", "Couldn't update no existent Host. Someone else likely just removed it since your last refresh.");
                             } else {
-                                upenaStore.hosts.update(new HostKey(input.key), new Host(input.name,
+                                Host updatedHost = new Host(input.name,
                                     input.host,
                                     Integer.parseInt(input.port),
                                     input.workingDirectory,
-                                    null));
+                                    null);
+                                upenaStore.hosts.update(new HostKey(input.key), updatedHost);
+                                upenaStore.record("Human", "updated", System.currentTimeMillis(), "", "host", updatedHost.toString());
                                 data.put("message", "Updated Release:" + input.name);
                             }
 
@@ -141,7 +130,12 @@ public class HostsPluginRegion implements PageRegion<Optional<HostsPluginRegion.
                             data.put("message", "Failed to remove Host:" + input.name);
                         } else {
                             try {
-                                upenaStore.hosts.remove(new HostKey(input.key));
+                                HostKey hostKey = new HostKey(input.key);
+                                Host removing = upenaStore.hosts.get(hostKey);
+                                if (removing != null) {
+                                    upenaStore.hosts.remove(new HostKey(input.key));
+                                    upenaStore.record("Human", "removed", System.currentTimeMillis(), "", "host", removing.toString());
+                                }
                             } catch (Exception x) {
                                 String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
                                 data.put("message", "Error while trying to remove Host:" + input.name + "\n" + trace);

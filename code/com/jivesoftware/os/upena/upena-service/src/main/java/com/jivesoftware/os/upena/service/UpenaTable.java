@@ -48,14 +48,14 @@ public class UpenaTable<K extends Key, V extends Stored> {
     private final UpenaValueValidator<K, V> valueValidator;
 
     public UpenaTable(AmzaTable store,
-            Class<K> keyClass,
-            Class<V> valueClass,
-            UpenaKeyProvider<K, V> nodeKeyProvider,
-            UpenaValueValidator<K, V> valueValidator) {
+        Class<K> keyClass,
+        Class<V> valueClass,
+        UpenaKeyProvider<K, V> keyProvider,
+        UpenaValueValidator<K, V> valueValidator) {
         this.store = store;
         this.keyClass = keyClass;
         this.valueClass = valueClass;
-        this.keyProvider = nodeKeyProvider;
+        this.keyProvider = keyProvider;
         this.valueValidator = valueValidator;
     }
 
@@ -70,6 +70,23 @@ public class UpenaTable<K extends Key, V extends Stored> {
             return null;
         }
         return mapper.readValue(got, valueClass);
+    }
+
+    public void scan(final Stream<K, V> stream) throws Exception {
+        store.scan(new RowScan<Exception>() {
+
+            @Override
+            public boolean row(long l, RowIndexKey key, RowIndexValue value) throws Exception {
+                K k = mapper.readValue(key.getKey(), keyClass);
+                V v = mapper.readValue(value.getValue(), valueClass);
+                return stream.stream(k, v);
+            }
+        });
+    }
+
+    public interface Stream<K, V> {
+
+        boolean stream(K key, V value) throws Exception;
     }
 
     public ConcurrentNavigableMap<K, TimestampedValue<V>> find(final KeyValueFilter<K, V> filter) throws Exception {

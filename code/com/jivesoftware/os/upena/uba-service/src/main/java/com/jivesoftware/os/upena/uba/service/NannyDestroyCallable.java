@@ -1,5 +1,6 @@
 package com.jivesoftware.os.upena.uba.service;
 
+import com.jivesoftware.os.upena.routing.shared.InstanceDescriptor;
 import java.io.File;
 import java.util.Collection;
 import java.util.concurrent.Callable;
@@ -7,19 +8,25 @@ import org.apache.commons.io.FileUtils;
 
 class NannyDestroyCallable implements Callable<Boolean> {
 
+    private final InstanceDescriptor id;
     private final InstancePath instancePath;
     private final DeployLog deployLog;
     private final HealthLog healthLog;
     private final DeployableScriptInvoker invokeScript;
+    private final UbaLog ubaLog;
 
-    public NannyDestroyCallable(InstancePath instancePath,
+    public NannyDestroyCallable(InstanceDescriptor id,
+        InstancePath instancePath,
         DeployLog deployLog,
         HealthLog healthLog,
-        DeployableScriptInvoker invokeScript) {
+        DeployableScriptInvoker invokeScript,
+        UbaLog ubaLog) {
+        this.id = id;
         this.instancePath = instancePath;
         this.deployLog = deployLog;
         this.healthLog = healthLog;
         this.invokeScript = invokeScript;
+        this.ubaLog = ubaLog;
     }
 
     @Override
@@ -54,6 +61,7 @@ class NannyDestroyCallable implements Callable<Boolean> {
                 }
             }
         }
+        ubaLog.record("kill", id.toString(), invokeScript.scriptPath(instancePath, "kill"));
         return true;
     }
 
@@ -65,6 +73,8 @@ class NannyDestroyCallable implements Callable<Boolean> {
         }
         healthLog.commit();
         healthLog.commit(); // Clear out all health
+        ubaLog.record("wiped", id.toString(), serviceRoot.toString());
+
     }
 
     private void deleteFolderIfEmpty(File folder) {

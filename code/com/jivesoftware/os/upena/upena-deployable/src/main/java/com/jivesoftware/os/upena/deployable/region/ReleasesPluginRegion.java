@@ -3,18 +3,14 @@ package com.jivesoftware.os.upena.deployable.region;
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.collect.Maps;
-import com.jivesoftware.os.amza.shared.AmzaInstance;
-import com.jivesoftware.os.amza.shared.RingHost;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
-import com.jivesoftware.os.upena.service.UpenaService;
 import com.jivesoftware.os.upena.service.UpenaStore;
 import com.jivesoftware.os.upena.shared.ReleaseGroup;
 import com.jivesoftware.os.upena.shared.ReleaseGroupFilter;
 import com.jivesoftware.os.upena.shared.ReleaseGroupKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
-import com.jivesoftware.os.upena.uba.service.UbaService;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -32,26 +28,14 @@ public class ReleasesPluginRegion implements PageRegion<Optional<ReleasesPluginR
 
     private final String template;
     private final SoyRenderer renderer;
-    private final AmzaInstance amzaInstance;
     private final UpenaStore upenaStore;
-    private final UpenaService upenaService;
-    private final UbaService ubaService;
-    private final RingHost ringHost;
 
     public ReleasesPluginRegion(String template,
         SoyRenderer renderer,
-        AmzaInstance amzaInstance,
-        UpenaStore upenaStore,
-        UpenaService upenaService,
-        UbaService ubaService,
-        RingHost ringHost) {
+        UpenaStore upenaStore) {
         this.template = template;
         this.renderer = renderer;
-        this.amzaInstance = amzaInstance;
         this.upenaStore = upenaStore;
-        this.upenaService = upenaService;
-        this.ubaService = ubaService;
-        this.ringHost = ringHost;
     }
 
     public static class ReleasesPluginRegionInput {
@@ -112,14 +96,17 @@ public class ReleasesPluginRegion implements PageRegion<Optional<ReleasesPluginR
                     } else if (input.action.equals("add")) {
                         filters.clear();
                         try {
-                            upenaStore.releaseGroups.update(null, new ReleaseGroup(input.name,
+                            ReleaseGroup newRelease = new ReleaseGroup(input.name,
                                 input.email,
                                 input.version,
                                 input.repository,
                                 input.description
-                            ));
+                            );
+                            upenaStore.releaseGroups.update(null, newRelease);
 
                             data.put("message", "Created Release:" + input.name);
+                            upenaStore.record("Human", "added", System.currentTimeMillis(), "", "release", newRelease.toString());
+
                         } catch (Exception x) {
                             String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
                             data.put("message", "Error while trying to add Release:" + input.name + "\n" + trace);
@@ -131,12 +118,14 @@ public class ReleasesPluginRegion implements PageRegion<Optional<ReleasesPluginR
                             if (release == null) {
                                 data.put("message", "Couldn't update no existent cluster. Someone else likely just removed it since your last refresh.");
                             } else {
-                                upenaStore.releaseGroups.update(new ReleaseGroupKey(input.key), new ReleaseGroup(input.name,
+                                ReleaseGroup updated = new ReleaseGroup(input.name,
                                     input.email,
                                     input.version,
                                     input.repository,
-                                    input.description));
+                                    input.description);
+                                upenaStore.releaseGroups.update(new ReleaseGroupKey(input.key), updated);
                                 data.put("message", "Updated Release:" + input.name);
+                                upenaStore.record("Human", "updated", System.currentTimeMillis(), "", "release", updated.toString());
                             }
 
                         } catch (Exception x) {
@@ -148,7 +137,13 @@ public class ReleasesPluginRegion implements PageRegion<Optional<ReleasesPluginR
                             data.put("message", "Failed to remove Release:" + input.name);
                         } else {
                             try {
-                                upenaStore.releaseGroups.remove(new ReleaseGroupKey(input.key));
+                                ReleaseGroupKey releaseGroupKey = new ReleaseGroupKey(input.key);
+                                ReleaseGroup removing = upenaStore.releaseGroups.get(releaseGroupKey);
+                                if (removing != null) {
+                                    upenaStore.releaseGroups.remove(releaseGroupKey);
+                                    upenaStore.record("Human", "removed", System.currentTimeMillis(), "", "release", removing.toString());
+                                }
+
                             } catch (Exception x) {
                                 String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
                                 data.put("message", "Error while trying to remove Release:" + input.name + "\n" + trace);

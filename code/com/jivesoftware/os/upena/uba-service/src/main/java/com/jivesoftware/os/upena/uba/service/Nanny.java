@@ -44,20 +44,23 @@ public class Nanny {
     private final LinkedBlockingQueue<Runnable> linkedBlockingQueue;
     private final ThreadPoolExecutor threadPoolExecutor;
     private final AtomicLong restartAtTimestamp = new AtomicLong(-1);
-    private final AtomicLong startupTimestamp  = new AtomicLong(-1);
+    private final AtomicLong startupTimestamp = new AtomicLong(-1);
+    private final UbaLog ubaLog;
 
     public Nanny(InstanceDescriptor instanceDescriptor,
         InstancePath instancePath,
         DeployableValidator deployableValidator,
         DeployLog deployLog,
         HealthLog healthLog,
-        DeployableScriptInvoker invokeScript) {
+        DeployableScriptInvoker invokeScript,
+        UbaLog ubaLog) {
         this.instanceDescriptor = new AtomicReference<>(instanceDescriptor);
         this.instancePath = instancePath;
         this.deployableValidator = deployableValidator;
         this.deployLog = deployLog;
         this.healthLog = healthLog;
         this.invokeScript = invokeScript;
+        this.ubaLog = ubaLog;
         linkedBlockingQueue = new LinkedBlockingQueue<>(10);
         threadPoolExecutor = new ThreadPoolExecutor(1, 1, 1000, TimeUnit.MILLISECONDS, linkedBlockingQueue);
         boolean exists = instancePath.script("status").exists();
@@ -122,11 +125,12 @@ public class Nanny {
             if (linkedBlockingQueue.size() == 0) {
                 try {
                     if (redeploy.get()) {
-                        NannyDestroyCallable destroyTask = new NannyDestroyCallable(
+                        NannyDestroyCallable destroyTask = new NannyDestroyCallable(instanceDescriptor.get(),
                             instancePath,
                             deployLog,
                             healthLog,
-                            invokeScript);
+                            invokeScript,
+                            ubaLog);
                         deployLog.log("Nanny", "destroying in preperation to redeploy. " + this, null);
                         Future<Boolean> detroyedFuture = threadPoolExecutor.submit(destroyTask);
                         if (detroyedFuture.get()) {
@@ -137,7 +141,8 @@ public class Nanny {
                                 deployLog,
                                 healthLog,
                                 deployableValidator,
-                                invokeScript);
+                                invokeScript,
+                                ubaLog);
                             deployLog.log("Nanny", "redeploying. " + this, null);
                             Future<Boolean> deployedFuture = threadPoolExecutor.submit(deployTask);
                             if (deployedFuture.get()) {
@@ -152,7 +157,8 @@ public class Nanny {
                         instancePath,
                         deployLog,
                         healthLog,
-                        invokeScript);
+                        invokeScript,
+                        ubaLog);
                     if (nannyTask.callable()) {
                         threadPoolExecutor.submit(nannyTask);
                     } else {
@@ -173,11 +179,12 @@ public class Nanny {
 
     synchronized Boolean destroy() throws InterruptedException, ExecutionException {
         destroyed.set(true);
-        NannyDestroyCallable nannyTask = new NannyDestroyCallable(
+        NannyDestroyCallable nannyTask = new NannyDestroyCallable(instanceDescriptor.get(),
             instancePath,
             deployLog,
             healthLog,
-            invokeScript);
+            invokeScript,
+            ubaLog);
         Future<Boolean> waitForDestory = threadPoolExecutor.submit(nannyTask);
         Boolean result = waitForDestory.get();
         nannyTask.wipeoutFiles();
@@ -186,11 +193,12 @@ public class Nanny {
     }
 
     synchronized Boolean kill() throws InterruptedException, ExecutionException {
-        NannyDestroyCallable nannyTask = new NannyDestroyCallable(
+        NannyDestroyCallable nannyTask = new NannyDestroyCallable(instanceDescriptor.get(),
             instancePath,
             deployLog,
             healthLog,
-            invokeScript);
+            invokeScript,
+            ubaLog);
         Future<Boolean> waitForDestory = threadPoolExecutor.submit(nannyTask);
         Boolean result = waitForDestory.get();
         return result;

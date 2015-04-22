@@ -56,6 +56,7 @@ import com.jivesoftware.os.upena.config.UpenaConfigRestEndpoints;
 import com.jivesoftware.os.upena.config.UpenaConfigStore;
 import com.jivesoftware.os.upena.deployable.UpenaEndpoints.AmzaClusterName;
 import com.jivesoftware.os.upena.deployable.endpoints.AsyncLookupEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.ChangeLogPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ClustersPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ConfigPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.HealthPluginEndpoints;
@@ -66,6 +67,7 @@ import com.jivesoftware.os.upena.deployable.endpoints.ServiceUIsPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ServicesPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.UpenaRingPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.lookup.AsyncLookupService;
+import com.jivesoftware.os.upena.deployable.region.ChangeLogPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ClustersPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ConfigPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.HeaderRegion;
@@ -93,6 +95,7 @@ import com.jivesoftware.os.upena.service.UpenaService;
 import com.jivesoftware.os.upena.service.UpenaStore;
 import com.jivesoftware.os.upena.shared.Host;
 import com.jivesoftware.os.upena.shared.HostKey;
+import com.jivesoftware.os.upena.uba.service.UbaLog;
 import com.jivesoftware.os.upena.uba.service.UbaService;
 import com.jivesoftware.os.upena.uba.service.UbaServiceInitializer;
 import com.jivesoftware.os.upena.uba.service.endpoints.UbaServiceRestEndpoints;
@@ -154,7 +157,7 @@ public class Main {
         int multicastPort = Integer.parseInt(System.getProperty("amza.discovery.port", "1123"));
         String clusterName = (args.length > 1 ? args[1] : null);
 
-        RingHost ringHost = new RingHost(hostname, port); // TODO include rackId
+        final RingHost ringHost = new RingHost(hostname, port); // TODO include rackId
         // todo need a better way to create writter id.
         final TimestampedOrderIdProvider orderIdProvider = new OrderIdProviderImpl(new ConstantWriterIdProvider(new Random().nextInt(512)));
 
@@ -203,7 +206,7 @@ public class Main {
         System.out.println("-----------------------------------------------------------------------");
 
         final AtomicReference<UbaService> conductor = new AtomicReference<>();
-        UpenaStore upenaStore = new UpenaStore(amzaService, new InstanceChanges() {
+        final UpenaStore upenaStore = new UpenaStore(amzaService, new InstanceChanges() {
             @Override
             public void changed(final List<InstanceChanged> instanceChanges) throws Exception {
 
@@ -225,10 +228,7 @@ public class Main {
 
             @Override
             public void changed(List<InstanceChanged> changes) throws Exception {
-                for (InstanceChanged instanceChanged : changes) {
-                    upenaConfigStore.remove(instanceChanged.getInstanceId(), "default");
-                    upenaConfigStore.remove(instanceChanged.getInstanceId(), "override");
-                }
+
             }
         }, new TenantChanges() {
             @Override
@@ -253,10 +253,23 @@ public class Main {
             upenaStore.hosts.update(null, host);
         }
 
+        UbaLog ubaLog = new UbaLog() {
+
+            @Override
+            public void record(String what, String why, String how) {
+                try {
+                    upenaStore.record("Machine", what, System.currentTimeMillis(), ringHost.getHost() + ":" + ringHost.getPort(), why, how);
+                } catch (Exception x) {
+                    x.printStackTrace(); // Hmm lame
+                }
+            }
+        };
+
         final UbaService ubaService = new UbaServiceInitializer().initialize(hostKey.getKey(),
             workingDir,
             ringHost.getHost(),
-            ringHost.getPort());
+            ringHost.getPort(),
+            ubaLog);
 
         JerseyEndpoints jerseyEndpoints = new JerseyEndpoints()
             .addEndpoint(UpenaRestEndpoints.class)
@@ -294,30 +307,33 @@ public class Main {
             new HomeRegion("soy.page.homeRegion", renderer));
 
         List<ManagePlugin> plugins = Lists.newArrayList(
-            new ManagePlugin("eye-open", "UIs", "/ui/serviceUIs",
-                ServiceUIsPluginEndpoints.class,
-                new ServiceUIsRegion("soy.page.serviceUIsPluginRegion", renderer, upenaStore)),
             new ManagePlugin("fire", "Health", "/ui/health",
                 HealthPluginEndpoints.class,
                 new HealthPluginRegion("soy.page.healthPluginRegion", renderer, amzaService)),
+            new ManagePlugin("eye-open", "UIs", "/ui/serviceUIs",
+                ServiceUIsPluginEndpoints.class,
+                new ServiceUIsRegion("soy.page.serviceUIsPluginRegion", renderer, upenaStore)),
+            new ManagePlugin("road", "Changes", "/ui/changeLog",
+                ChangeLogPluginEndpoints.class,
+                new ChangeLogPluginRegion("soy.page.changeLogPluginRegion", renderer, amzaService, upenaStore, upenaService, ubaService, ringHost)),
             new ManagePlugin("pencil", "Instances", "/ui/instances",
                 InstancesPluginEndpoints.class,
-                new InstancesPluginRegion("soy.page.instancesPluginRegion", renderer, amzaService, upenaStore, upenaService, ubaService, ringHost)),
+                new InstancesPluginRegion("soy.page.instancesPluginRegion", renderer, upenaStore)),
             new ManagePlugin("cog", "Config", "/ui/config",
                 ConfigPluginEndpoints.class,
                 new ConfigPluginRegion("soy.page.configPluginRegion", renderer, upenaStore, upenaConfigStore)),
             new ManagePlugin("cloud", "Clusters", "/ui/clusters",
                 ClustersPluginEndpoints.class,
-                new ClustersPluginRegion("soy.page.clustersPluginRegion", renderer, amzaService, upenaStore, upenaService, ubaService, ringHost)),
+                new ClustersPluginRegion("soy.page.clustersPluginRegion", renderer, upenaStore)),
             new ManagePlugin("hdd", "Hosts", "/ui/hosts",
                 HostsPluginEndpoints.class,
-                new HostsPluginRegion("soy.page.hostsPluginRegion", renderer, amzaService, upenaStore, upenaService, ubaService, ringHost)),
+                new HostsPluginRegion("soy.page.hostsPluginRegion", renderer, upenaStore)),
             new ManagePlugin("flag", "Services", "/ui/services",
                 ServicesPluginEndpoints.class,
                 new ServicesPluginRegion("soy.page.servicesPluginRegion", renderer, amzaService, upenaStore, upenaService, ubaService, ringHost)),
             new ManagePlugin("send", "Releases", "/ui/releases",
                 ReleasesPluginEndpoints.class,
-                new ReleasesPluginRegion("soy.page.releasesPluginRegion", renderer, amzaService, upenaStore, upenaService, ubaService, ringHost)),
+                new ReleasesPluginRegion("soy.page.releasesPluginRegion", renderer, upenaStore)),
             new ManagePlugin("leaf", "Upena Ring", "/ui/ring",
                 UpenaRingPluginEndpoints.class,
                 new UpenaRingPluginRegion("soy.page.upenaRingPluginRegion", renderer, amzaService, upenaStore, upenaService, ubaService, ringHost)));

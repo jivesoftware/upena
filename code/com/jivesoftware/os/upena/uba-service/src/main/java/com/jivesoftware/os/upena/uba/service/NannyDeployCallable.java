@@ -49,13 +49,15 @@ class NannyDeployCallable implements Callable<Boolean> {
     private final HealthLog healthLog;
     private final DeployableValidator deployableValidator;
     private final DeployableScriptInvoker invokeScript;
+    private final UbaLog ubaLog;
 
     public NannyDeployCallable(String host, String upenaHost, int upenaPort,
         InstanceDescriptor id, InstancePath instancePath,
         DeployLog deployLog,
         HealthLog healthLog,
         DeployableValidator deployableValidator,
-        DeployableScriptInvoker invokeScript) {
+        DeployableScriptInvoker invokeScript,
+        UbaLog ubaLog) {
         this.host = host;
         this.upenaHost = upenaHost;
         this.upenaPort = upenaPort;
@@ -65,6 +67,7 @@ class NannyDeployCallable implements Callable<Boolean> {
         this.healthLog = healthLog;
         this.deployableValidator = deployableValidator;
         this.invokeScript = invokeScript;
+        this.ubaLog = ubaLog;
     }
 
     @Override
@@ -83,6 +86,7 @@ class NannyDeployCallable implements Callable<Boolean> {
                 return false;
             }
             healthLog.forcedHealthState("Service deployed", "Service will be consider unhealthy until first health check is successful.", "");
+            ubaLog.record("deployed", id.toString(), instancePath.lib().getParent());
             return true;
         } catch (IOException x) {
             deployLog.log("Nanny", "failed.", x);

@@ -27,13 +27,15 @@ class NannyStatusCallable implements Callable<Boolean> {
     private final DeployLog deployLog;
     private final HealthLog healthLog;
     private final DeployableScriptInvoker invokeScript;
+    private final UbaLog ubaLog;
 
     public NannyStatusCallable(AtomicLong startupTimestamp,
         InstanceDescriptor id,
         InstancePath instancePath,
         DeployLog deployLog,
         HealthLog healthLog,
-        DeployableScriptInvoker invokeScript) {
+        DeployableScriptInvoker invokeScript,
+        UbaLog ubaLog) {
 
         this.startupTimestamp = startupTimestamp;
         this.id = id;
@@ -41,6 +43,7 @@ class NannyStatusCallable implements Callable<Boolean> {
         this.deployLog = deployLog;
         this.healthLog = healthLog;
         this.invokeScript = invokeScript;
+        this.ubaLog = ubaLog;
     }
 
     boolean callable() {
@@ -100,6 +103,7 @@ class NannyStatusCallable implements Callable<Boolean> {
                     Thread.sleep(1000); // todo expose to config or to instance
                 }
             }
+            ubaLog.record("auto-restart", id.toString(), invokeScript.scriptPath(instancePath, "start"));
             startupTimestamp.set(System.currentTimeMillis());
             return true;
 

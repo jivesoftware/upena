@@ -1,0 +1,161 @@
+package com.jivesoftware.os.upena.deployable.region;
+
+import com.google.common.base.Optional;
+import com.google.common.collect.Maps;
+import com.jivesoftware.os.amza.shared.AmzaInstance;
+import com.jivesoftware.os.amza.shared.RingHost;
+import com.jivesoftware.os.mlogger.core.MetricLogger;
+import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
+import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
+import com.jivesoftware.os.upena.service.UpenaService;
+import com.jivesoftware.os.upena.service.UpenaStore;
+import com.jivesoftware.os.upena.shared.RecordedChange;
+import com.jivesoftware.os.upena.uba.service.UbaService;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
+/**
+ *
+ */
+// soy.page.hostsPluginRegion
+public class ChangeLogPluginRegion implements PageRegion<Optional<ChangeLogPluginRegion.ChangeLogPluginRegionInput>> {
+
+    private static final MetricLogger log = MetricLoggerFactory.getLogger();
+
+    private final String template;
+    private final SoyRenderer renderer;
+    private final AmzaInstance amzaInstance;
+    private final UpenaStore upenaStore;
+    private final UpenaService upenaService;
+    private final UbaService ubaService;
+    private final RingHost ringHost;
+
+    public ChangeLogPluginRegion(String template,
+        SoyRenderer renderer,
+        AmzaInstance amzaInstance,
+        UpenaStore upenaStore,
+        UpenaService upenaService,
+        UbaService ubaService,
+        RingHost ringHost) {
+        this.template = template;
+        this.renderer = renderer;
+        this.amzaInstance = amzaInstance;
+        this.upenaStore = upenaStore;
+        this.upenaService = upenaService;
+        this.ubaService = ubaService;
+        this.ringHost = ringHost;
+    }
+
+    public static class ChangeLogPluginRegionInput {
+
+        final String who;
+        final String what;
+        final String when;
+        final String why;
+        final String where;
+        final String how;
+        final String action;
+
+        public ChangeLogPluginRegionInput(String who, String what, String when, String where, String why, String how, String action) {
+            this.who = who;
+            this.what = what;
+            this.when = when;
+            this.why = why;
+            this.where = where;
+            this.how = how;
+            this.action = action;
+        }
+
+    }
+
+    @Override
+    public String render(Optional<ChangeLogPluginRegionInput> optionalInput) {
+        Map<String, Object> data = Maps.newHashMap();
+
+        try {
+            if (optionalInput.isPresent()) {
+                ChangeLogPluginRegionInput input = optionalInput.get();
+
+                Map<String, String> filters = new HashMap<>();
+                filters.put("who", input.who);
+                filters.put("what", input.what);
+                filters.put("when", String.valueOf(input.when));
+                filters.put("where", input.where);
+                filters.put("why", input.why);
+                filters.put("how", input.how);
+
+                final List<Map<String, String>> rows = new ArrayList<>();
+                upenaStore.log(TimeUnit.DAYS.toMillis(2), // TODO expose?
+                    0,
+                    100, // TODO expose?
+                    input.who,
+                    input.what,
+                    input.why,
+                    input.where,
+                    input.how,
+                    new UpenaStore.LogStream() {
+
+                        @Override
+                        public boolean stream(RecordedChange change) throws Exception {
+                            Map<String, String> row = new HashMap<>();
+                            row.put("who", change.who);
+                            row.put("what", change.what);
+                            row.put("when", String.valueOf(humanReadableUptime(change.when)));
+                            row.put("why", change.why);
+                            row.put("where", change.where);
+                            row.put("how", change.how);
+                            rows.add(row);
+                            return true;
+                        }
+                    });
+
+                data.put("log", rows);
+
+            }
+        } catch (Exception e) {
+            log.error("Unable to retrieve data", e);
+        }
+
+        return renderer.render(template, data);
+    }
+
+    @Override
+    public String getTitle() {
+        return "Change Log";
+
+    }
+
+    public static String humanReadableUptime(long millis) {
+        if (millis < 0) {
+            return String.valueOf(millis);
+        }
+
+        long hours = java.util.concurrent.TimeUnit.MILLISECONDS.toHours(millis);
+        millis -= java.util.concurrent.TimeUnit.HOURS.toMillis(hours);
+        long minutes = java.util.concurrent.TimeUnit.MILLISECONDS.toMinutes(millis);
+        millis -= java.util.concurrent.TimeUnit.MINUTES.toMillis(minutes);
+        long seconds = java.util.concurrent.TimeUnit.MILLISECONDS.toSeconds(millis);
+        millis -= java.util.concurrent.TimeUnit.SECONDS.toMillis(seconds);
+
+        StringBuilder sb = new StringBuilder(64);
+        if (hours < 10) {
+            sb.append('0');
+        }
+        sb.append(hours);
+        sb.append(":");
+        if (minutes < 10) {
+            sb.append('0');
+        }
+        sb.append(minutes);
+        sb.append(":");
+        if (seconds < 10) {
+            sb.append('0');
+        }
+        sb.append(seconds);
+
+        return (sb.toString());
+    }
+}

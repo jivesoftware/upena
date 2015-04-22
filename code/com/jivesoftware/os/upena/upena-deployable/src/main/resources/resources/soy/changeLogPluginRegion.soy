@@ -1,0 +1,89 @@
+{namespace soy.page}
+
+/**
+ * @param? message
+ * @param? filters
+ * @param? log
+ */
+{template .changeLogPluginRegion}
+    {if $log}
+        <div class="panel panel-default">
+            <div class="panel-heading"><span class="glyphicon glyphicon-road"></span>{sp}Change Log</div>
+                <div class="panel-body">
+                    {if $message}
+                        <div class="well">
+                            <pre>{$message}</pre>
+                        </div>
+                    {/if}
+                    <table class="table table-condensed">
+                        <thead>
+                            <tr>
+                                <th>When</th>
+                                <th>Who</th>
+                                <th>What</th>
+                                <th>How</th>
+                                <th>Why</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <form id="add-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                                method="post">
+                                <tr class="well">
+                                    <td>
+                                        <input type="text" style="padding-left:10px;"
+                                        placeholder="When" value="{$filters.when?:''}" name="when" id="whenPicker" class="form-control">
+                                    </td>
+                                    <td>
+                                        <input type="text" style="padding-left:10px;"
+                                        placeholder="Who" value="{$filters.who?:''}" name="who" id="whoPicker" class="form-control">
+                                    </td>
+                                    <td>
+                                        <input type="text" style="padding-left:10px;"
+                                        placeholder="What" value="{$filters.what?:''}" name="what" id="whatPicker" class="form-control">
+                                    </td>
+                                    <td>
+                                        <input type="text" style="padding-left:10px;"
+                                        placeholder="How" value="{$filters.how?:''}" name="how" id="howPicker" class="form-control">
+                                    </td>
+                                    <td>
+                                        <input type="text" style="padding-left:10px;"
+                                        placeholder="Why" value="{$filters.why?:''}" name="why" id="whyPicker" class="form-control">
+                                    </td>
+                                    <td>
+                                        <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary"><span class="glyphicon glyphicon-search"></button>
+                                    <td>
+                                </tr>
+                            </form>
+
+                            {foreach $l in $log}
+                                <form id="edit-host" class="j-form" data-active-class="btn-default"
+                                    method="post">
+                                    <tr>    
+                                        <td>
+                                            {$l.when}
+                                        </td>
+                                        <td>
+                                            {$l.who}
+                                        </td>
+                                        <td>
+                                            {$l.what}
+                                        </td>
+                                        <td>
+                                            {$l.how}
+                                        </td>
+                                        <td>
+                                            {$l.why}
+                                        </td>
+                                        <td>
+                                        </td>
+                                    </tr>
+                                </form>
+                            {/foreach}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    {/if}
+{/template}

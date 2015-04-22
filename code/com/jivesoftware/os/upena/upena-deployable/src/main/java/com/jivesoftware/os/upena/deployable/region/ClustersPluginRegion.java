@@ -3,12 +3,9 @@ package com.jivesoftware.os.upena.deployable.region;
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.collect.Maps;
-import com.jivesoftware.os.amza.shared.AmzaInstance;
-import com.jivesoftware.os.amza.shared.RingHost;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
-import com.jivesoftware.os.upena.service.UpenaService;
 import com.jivesoftware.os.upena.service.UpenaStore;
 import com.jivesoftware.os.upena.shared.Cluster;
 import com.jivesoftware.os.upena.shared.ClusterFilter;
@@ -18,7 +15,6 @@ import com.jivesoftware.os.upena.shared.ReleaseGroupKey;
 import com.jivesoftware.os.upena.shared.Service;
 import com.jivesoftware.os.upena.shared.ServiceKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
-import com.jivesoftware.os.upena.uba.service.UbaService;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -35,26 +31,15 @@ public class ClustersPluginRegion implements PageRegion<Optional<ClustersPluginR
 
     private final String template;
     private final SoyRenderer renderer;
-    private final AmzaInstance amzaInstance;
     private final UpenaStore upenaStore;
-    private final UpenaService upenaService;
-    private final UbaService ubaService;
-    private final RingHost ringHost;
 
     public ClustersPluginRegion(String template,
         SoyRenderer renderer,
-        AmzaInstance amzaInstance,
-        UpenaStore upenaStore,
-        UpenaService upenaService,
-        UbaService ubaService,
-        RingHost ringHost) {
+        UpenaStore upenaStore
+    ) {
         this.template = template;
         this.renderer = renderer;
-        this.amzaInstance = amzaInstance;
         this.upenaStore = upenaStore;
-        this.upenaService = upenaService;
-        this.ubaService = ubaService;
-        this.ringHost = ringHost;
     }
 
     public static class ClustersPluginRegionInput {
@@ -97,8 +82,10 @@ public class ClustersPluginRegion implements PageRegion<Optional<ClustersPluginR
                     } else if (input.action.equals("add")) {
                         filters.clear();
                         try {
-                            upenaStore.clusters.update(null, new Cluster(input.name, input.description,
-                                new HashMap<ServiceKey, ReleaseGroupKey>()));
+                            Cluster newCluster = new Cluster(input.name, input.description,
+                                new HashMap<ServiceKey, ReleaseGroupKey>());
+                            upenaStore.clusters.update(null, newCluster);
+                            upenaStore.record("Human", "added", System.currentTimeMillis(), "", "clusters", newCluster.toString());
 
                             data.put("message", "Created Cluster:" + input.name);
                         } catch (Exception x) {
@@ -112,11 +99,12 @@ public class ClustersPluginRegion implements PageRegion<Optional<ClustersPluginR
                             if (cluster == null) {
                                 data.put("message", "Couldn't update no existent cluster. Someone else likely just removed it since your last refresh.");
                             } else {
-                                upenaStore.clusters.update(new ClusterKey(input.key), new Cluster(input.name, input.description,
-                                    cluster.defaultReleaseGroups));
+                                Cluster updatedCluster = new Cluster(input.name, input.description,
+                                    cluster.defaultReleaseGroups);
+                                upenaStore.clusters.update(new ClusterKey(input.key), updatedCluster);
                                 data.put("message", "Updated Cluster:" + input.name);
+                                upenaStore.record("Human", "updated", System.currentTimeMillis(), "", "clusters", cluster.toString());
                             }
-
                         } catch (Exception x) {
                             String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
                             data.put("message", "Error while trying to add Cluster:" + input.name + "\n" + trace);
@@ -126,7 +114,12 @@ public class ClustersPluginRegion implements PageRegion<Optional<ClustersPluginR
                             data.put("message", "Failed to remove Cluster:" + input.name);
                         } else {
                             try {
-                                upenaStore.clusters.remove(new ClusterKey(input.key));
+                                ClusterKey clusterKey = new ClusterKey(input.key);
+                                Cluster removing = upenaStore.clusters.get(clusterKey);
+                                if (removing != null) {
+                                    upenaStore.clusters.remove(clusterKey);
+                                    upenaStore.record("Human", "removed", System.currentTimeMillis(), "", "clusters", removing.toString());
+                                }
                             } catch (Exception x) {
                                 String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
                                 data.put("message", "Error while trying to remove Cluster:" + input.name + "\n" + trace);
@@ -185,6 +178,7 @@ public class ClustersPluginRegion implements PageRegion<Optional<ClustersPluginR
         if (cluster != null) {
             cluster.defaultReleaseGroups.put(new ServiceKey(releaseGroupUpdate.serviceId), new ReleaseGroupKey(releaseGroupUpdate.releaseGroupId));
             upenaStore.clusters.update(clusterKey, cluster);
+            upenaStore.record("Human", "updated", System.currentTimeMillis(), "", "clusters", cluster.toString());
         }
     }
 
@@ -194,6 +188,7 @@ public class ClustersPluginRegion implements PageRegion<Optional<ClustersPluginR
         if (cluster != null) {
             if (cluster.defaultReleaseGroups.remove(new ServiceKey(releaseGroupUpdate.serviceId)) != null) {
                 upenaStore.clusters.update(clusterKey, cluster);
+                upenaStore.record("Human", "updated", System.currentTimeMillis(), "", "clusters", cluster.toString());
             }
         }
     }

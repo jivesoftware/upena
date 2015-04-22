@@ -29,7 +29,7 @@ import java.util.Arrays;
 
 public class UbaServiceInitializer {
 
-    public UbaService initialize(String hostKey, String workingDir, String composerHost, int composerPort) throws Exception {
+    public UbaService initialize(String hostKey, String workingDir, String composerHost, int composerPort,UbaLog ubaLog) throws Exception {
 
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
@@ -39,8 +39,8 @@ public class UbaServiceInitializer {
         File root = new File(new File(workingDir), "services/");
         root.mkdirs();
         UbaTree tree = new UbaTree(root, new String[]{"cluster", "service", "release", "instance"});
-        Uba conductor = new Uba(composerHost, composerHost, composerPort, tree);
-        UbaService conductorService = new UbaService(conductorClient, conductor, hostKey);
+        Uba uba = new Uba(composerHost, composerHost, composerPort, tree, ubaLog);
+        UbaService conductorService = new UbaService(conductorClient, uba, hostKey);
         return conductorService;
     }
 

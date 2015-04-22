@@ -274,7 +274,7 @@ public class UpenaEndpoints {
             }
             String uptime = "unknown";
             if (nanny.getValue().getStartTimeMillis() > 0) {
-                uptime = getUptime(System.currentTimeMillis() - nanny.getValue().getStartTimeMillis());
+                uptime = humanReadableUptime(System.currentTimeMillis() - nanny.getValue().getStartTimeMillis());
             }
             NannyHealth nannyHealth = new NannyHealth(uptime, id, log, serviceHealth);
             nodeHealth.nannyHealths.add(nannyHealth);
@@ -357,7 +357,7 @@ public class UpenaEndpoints {
         }
     }
 
-    public static String getUptime(long millis) {
+    public static String humanReadableUptime(long millis) {
         if (millis < 0) {
             return String.valueOf(millis);
         }

@@ -4,14 +4,11 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import com.jivesoftware.os.amza.shared.AmzaInstance;
-import com.jivesoftware.os.amza.shared.RingHost;
 import com.jivesoftware.os.jive.utils.ordered.id.JiveEpochTimestampProvider;
 import com.jivesoftware.os.jive.utils.ordered.id.SnowflakeIdPacker;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
-import com.jivesoftware.os.upena.service.UpenaService;
 import com.jivesoftware.os.upena.service.UpenaStore;
 import com.jivesoftware.os.upena.shared.Cluster;
 import com.jivesoftware.os.upena.shared.ClusterKey;
@@ -26,7 +23,6 @@ import com.jivesoftware.os.upena.shared.ReleaseGroupKey;
 import com.jivesoftware.os.upena.shared.Service;
 import com.jivesoftware.os.upena.shared.ServiceKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
-import com.jivesoftware.os.upena.uba.service.UbaService;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -48,26 +44,15 @@ public class InstancesPluginRegion implements PageRegion<Optional<InstancesPlugi
 
     private final String template;
     private final SoyRenderer renderer;
-    private final AmzaInstance amzaInstance;
     private final UpenaStore upenaStore;
-    private final UpenaService upenaService;
-    private final UbaService ubaService;
-    private final RingHost ringHost;
 
     public InstancesPluginRegion(String template,
         SoyRenderer renderer,
-        AmzaInstance amzaInstance,
-        UpenaStore upenaStore,
-        UpenaService upenaService,
-        UbaService ubaService,
-        RingHost ringHost) {
+        UpenaStore upenaStore
+    ) {
         this.template = template;
         this.renderer = renderer;
-        this.amzaInstance = amzaInstance;
         this.upenaStore = upenaStore;
-        this.upenaService = upenaService;
-        this.ubaService = ubaService;
-        this.ringHost = ringHost;
     }
 
     public static class InstancesPluginRegionInput {
@@ -180,6 +165,7 @@ public class InstancesPluginRegion implements PageRegion<Optional<InstancesPlugi
 
     private void handleCancelRestartAll(InstanceFilter filter) throws Exception {
         Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(filter);
+        List<Instance> canceled = new ArrayList<>();
         for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {
             InstanceKey key = entrySet.getKey();
             TimestampedValue<Instance> timestampedValue = entrySet.getValue();
@@ -187,7 +173,12 @@ public class InstancesPluginRegion implements PageRegion<Optional<InstancesPlugi
             if (value.restartTimestampGMTMillis > 0) {
                 value.restartTimestampGMTMillis = -1;
                 upenaStore.instances.update(key, value);
+                canceled.add(value);
             }
+        }
+        if (!canceled.isEmpty()) {
+            upenaStore.record("Human", "cancelRestart", System.currentTimeMillis(), "", "instance", canceled.toString());
+
         }
     }
 
@@ -195,6 +186,7 @@ public class InstancesPluginRegion implements PageRegion<Optional<InstancesPlugi
         long now = System.currentTimeMillis();
         long stagger = TimeUnit.SECONDS.toMillis(30);
         now += stagger;
+        List<Instance> restart = new ArrayList<>();
         Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(filter);
         for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {
             InstanceKey key = entrySet.getKey();
@@ -203,18 +195,27 @@ public class InstancesPluginRegion implements PageRegion<Optional<InstancesPlugi
             value.restartTimestampGMTMillis = now;
             upenaStore.instances.update(key, value);
             now += stagger;
+            restart.add(value);
+        }
+        if (!restart.isEmpty()) {
+            upenaStore.record("Human", "restart", System.currentTimeMillis(), "", "instance", restart.toString());
         }
     }
 
     private void handleRestartAllNow(InstanceFilter filter) throws Exception {
         long now = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(5);
         Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(filter);
+        List<Instance> restart = new ArrayList<>();
         for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {
             InstanceKey key = entrySet.getKey();
             TimestampedValue<Instance> timestampedValue = entrySet.getValue();
             Instance value = timestampedValue.getValue();
             value.restartTimestampGMTMillis = now;
             upenaStore.instances.update(key, value);
+            restart.add(value);
+        }
+        if (!restart.isEmpty()) {
+            upenaStore.record("Human", "restart", System.currentTimeMillis(), "", "instance", restart.toString());
         }
     }
 
@@ -223,7 +224,12 @@ public class InstancesPluginRegion implements PageRegion<Optional<InstancesPlugi
             data.put("message", "Failed to remove Instance:" + input.key);
         } else {
             try {
-                upenaStore.instances.remove(new InstanceKey(input.key));
+                InstanceKey instanceKey = new InstanceKey(input.key);
+                Instance removing = upenaStore.instances.get(instanceKey);
+                if (removing != null) {
+                    upenaStore.instances.remove(instanceKey);
+                    upenaStore.record("Human", "removed", System.currentTimeMillis(), "", "instance", removing.toString());
+                }
             } catch (Exception x) {
                 String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
                 data.put("message", "Error while trying to remove Instance:" + input.key + "\n" + trace);
@@ -257,14 +263,16 @@ public class InstancesPluginRegion implements PageRegion<Optional<InstancesPlugi
             }
 
             if (valid) {
-                upenaStore.instances.update(null, new Instance(
+                Instance newInstance = new Instance(
                     new ClusterKey(input.clusterKey),
                     new HostKey(input.hostKey),
                     new ServiceKey(input.serviceKey),
                     new ReleaseGroupKey(input.releaseKey),
                     Integer.parseInt(input.instanceId),
                     true, false, System.currentTimeMillis()
-                ));
+                );
+                upenaStore.instances.update(null, newInstance);
+                upenaStore.record("Human", "added", System.currentTimeMillis(), "", "instance", newInstance.toString());
 
                 data.put("message", "Created Instance.");
             }
@@ -285,7 +293,7 @@ public class InstancesPluginRegion implements PageRegion<Optional<InstancesPlugi
                 instance.restartTimestampGMTMillis = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(5);
                 upenaStore.instances.update(key, instance);
                 data.put("message", "Instance will be restarted momentarily.");
-
+                upenaStore.record("Human", "restart", System.currentTimeMillis(), "", "instance", instance.toString());
             }
 
         } catch (Exception x) {
@@ -310,14 +318,17 @@ public class InstancesPluginRegion implements PageRegion<Optional<InstancesPlugi
                         upenaStore.clusters.update(clusterKey, cluster);
                     }
                 }
-
-                upenaStore.instances.update(new InstanceKey(input.key), new Instance(
+                Instance updatedInstance = new Instance(
                     new ClusterKey(input.clusterKey),
                     new HostKey(input.hostKey),
                     new ServiceKey(input.serviceKey),
                     new ReleaseGroupKey(input.releaseKey),
                     Integer.parseInt(input.instanceId),
-                    true, false, System.currentTimeMillis()));
+                    true, false, System.currentTimeMillis());
+
+                upenaStore.instances.update(new InstanceKey(input.key), updatedInstance);
+
+                upenaStore.record("Human", "updated", System.currentTimeMillis(), "", "instance", updatedInstance.toString());
                 data.put("message", "Updated Instance:" + input.key);
             }
 
@@ -422,6 +433,7 @@ public class InstancesPluginRegion implements PageRegion<Optional<InstancesPlugi
                 port.port = update.port;
             }
         }
+        upenaStore.record("Human", "updated", System.currentTimeMillis(), "", "instance", instance.toString());
         upenaStore.instances.update(instanceKey, instance);
 
     }
@@ -434,10 +446,12 @@ public class InstancesPluginRegion implements PageRegion<Optional<InstancesPlugi
             if (port != null) {
                 port.properties.remove(update.propertyName);
                 upenaStore.instances.update(instanceKey, instance);
+                upenaStore.record("Human", "updated", System.currentTimeMillis(), "", "instance", instance.toString());
             }
         } else {
             instance.ports.remove(update.portName);
             upenaStore.instances.update(instanceKey, instance);
+            upenaStore.record("Human", "updated", System.currentTimeMillis(), "", "instance", instance.toString());
         }
     }
 
