@@ -67,10 +67,11 @@ public class InstancesPluginRegion implements PageRegion<Optional<InstancesPlugi
         final String instanceId;
         final String releaseKey;
         final String release;
+        final boolean enabled;
         final String action;
 
         public InstancesPluginRegionInput(String key, String clusterKey, String cluster, String hostKey, String host, String serviceKey, String service,
-            String instanceId, String releaseKey, String release, String action) {
+            String instanceId, String releaseKey, String release, boolean enabled, String action) {
             this.key = key;
             this.clusterKey = clusterKey;
             this.cluster = cluster;
@@ -81,6 +82,7 @@ public class InstancesPluginRegion implements PageRegion<Optional<InstancesPlugi
             this.instanceId = instanceId;
             this.releaseKey = releaseKey;
             this.release = release;
+            this.enabled = enabled;
             this.action = action;
         }
 
@@ -93,7 +95,7 @@ public class InstancesPluginRegion implements PageRegion<Optional<InstancesPlugi
         try {
             if (optionalInput.isPresent()) {
                 InstancesPluginRegionInput input = optionalInput.get();
-                Map<String, String> filters = new HashMap<>();
+                Map<String, Object> filters = new HashMap<>();
                 filters.put("clusterKey", input.clusterKey);
                 filters.put("cluster", input.cluster);
                 filters.put("hostKey", input.hostKey);
@@ -103,6 +105,7 @@ public class InstancesPluginRegion implements PageRegion<Optional<InstancesPlugi
                 filters.put("instanceId", input.instanceId);
                 filters.put("releaseKey", input.releaseKey);
                 filters.put("release", input.release);
+                filters.put("enabled", input.enabled);
                 data.put("filters", filters);
 
                 InstanceFilter filter = new InstanceFilter(
@@ -192,10 +195,12 @@ public class InstancesPluginRegion implements PageRegion<Optional<InstancesPlugi
             InstanceKey key = entrySet.getKey();
             TimestampedValue<Instance> timestampedValue = entrySet.getValue();
             Instance value = timestampedValue.getValue();
-            value.restartTimestampGMTMillis = now;
-            upenaStore.instances.update(key, value);
-            now += stagger;
-            restart.add(value);
+            if (value.enabled) {
+                value.restartTimestampGMTMillis = now;
+                upenaStore.instances.update(key, value);
+                now += stagger;
+                restart.add(value);
+            }
         }
         if (!restart.isEmpty()) {
             upenaStore.record("Human", "restart", System.currentTimeMillis(), "", "instance", restart.toString());
@@ -210,9 +215,11 @@ public class InstancesPluginRegion implements PageRegion<Optional<InstancesPlugi
             InstanceKey key = entrySet.getKey();
             TimestampedValue<Instance> timestampedValue = entrySet.getValue();
             Instance value = timestampedValue.getValue();
-            value.restartTimestampGMTMillis = now;
-            upenaStore.instances.update(key, value);
-            restart.add(value);
+            if (value.enabled) {
+                value.restartTimestampGMTMillis = now;
+                upenaStore.instances.update(key, value);
+                restart.add(value);
+            }
         }
         if (!restart.isEmpty()) {
             upenaStore.record("Human", "restart", System.currentTimeMillis(), "", "instance", restart.toString());
@@ -237,7 +244,7 @@ public class InstancesPluginRegion implements PageRegion<Optional<InstancesPlugi
         }
     }
 
-    private void handleAdd(Map<String, String> filters, InstancesPluginRegionInput input, Map<String, Object> data) {
+    private void handleAdd(Map<String, Object> filters, InstancesPluginRegionInput input, Map<String, Object> data) {
         filters.clear();
         try {
             boolean valid = true;
@@ -269,7 +276,7 @@ public class InstancesPluginRegion implements PageRegion<Optional<InstancesPlugi
                     new ServiceKey(input.serviceKey),
                     new ReleaseGroupKey(input.releaseKey),
                     Integer.parseInt(input.instanceId),
-                    true, false, System.currentTimeMillis()
+                    input.enabled, false, System.currentTimeMillis()
                 );
                 upenaStore.instances.update(null, newInstance);
                 upenaStore.record("Human", "added", System.currentTimeMillis(), "", "instance", newInstance.toString());
@@ -282,13 +289,13 @@ public class InstancesPluginRegion implements PageRegion<Optional<InstancesPlugi
         }
     }
 
-    private void handleRestart(Map<String, String> filters, InstancesPluginRegionInput input, Map<String, Object> data) {
+    private void handleRestart(Map<String, Object> filters, InstancesPluginRegionInput input, Map<String, Object> data) {
         filters.clear();
         try {
             Instance instance = upenaStore.instances.get(new InstanceKey(input.key));
             if (instance == null) {
                 data.put("message", "Couldn't update no existent Instance. Someone else likely just removed it since your last refresh.");
-            } else {
+            } else if (instance.enabled) {
                 InstanceKey key = new InstanceKey(input.key);
                 instance.restartTimestampGMTMillis = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(5);
                 upenaStore.instances.update(key, instance);
@@ -302,7 +309,7 @@ public class InstancesPluginRegion implements PageRegion<Optional<InstancesPlugi
         }
     }
 
-    private void handleUpdate(Map<String, String> filters, InstancesPluginRegionInput input, Map<String, Object> data) {
+    private void handleUpdate(Map<String, Object> filters, InstancesPluginRegionInput input, Map<String, Object> data) {
         filters.clear();
         try {
             Instance instance = upenaStore.instances.get(new InstanceKey(input.key));
@@ -324,7 +331,7 @@ public class InstancesPluginRegion implements PageRegion<Optional<InstancesPlugi
                     new ServiceKey(input.serviceKey),
                     new ReleaseGroupKey(input.releaseKey),
                     Integer.parseInt(input.instanceId),
-                    true, false, System.currentTimeMillis());
+                    input.enabled, false, System.currentTimeMillis());
 
                 upenaStore.instances.update(new InstanceKey(input.key), updatedInstance);
 

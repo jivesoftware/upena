@@ -34,6 +34,7 @@
                                 <thead>
                                     <tr>
                                         <th>Status</th>
+                                        <th>Enabled</th>
                                         <th>Cluster</th>
                                         <th>Host</th>
                                         <th>Service</th>
@@ -47,6 +48,10 @@
                                     <tr style="background-color:#ddd;">
                                         <td>
                                         </td>
+                                        <td bgcolor>
+                                            <input class="form-control" type="checkbox" name="enabled" value="true" {if $filters.enabled}checked="checked"{/if}>
+                                            <span>enabled</span>
+                                        </td>                        
                                         <td>
                                             <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
                                                 placeholder="Cluster" value="{$filters.cluster?:''}" name="cluster" id="clusterPicker"
@@ -90,6 +95,9 @@
                                             <tr>
                                                 <td>
                                                     <pre>{$i.status}</pre>
+                                                </td>
+                                                <td>
+                                                    <input class="form-control" type="checkbox" name="enabled" value="true" {if $i.enabled}checked="checked"{/if}>
                                                 </td>
                                                 <td>
                                                     <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"

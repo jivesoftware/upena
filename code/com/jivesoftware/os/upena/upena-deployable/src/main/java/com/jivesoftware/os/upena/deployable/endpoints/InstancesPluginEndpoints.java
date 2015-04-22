@@ -41,7 +41,7 @@ public class InstancesPluginEndpoints {
     @Produces(MediaType.TEXT_HTML)
     public Response instances() {
         String rendered = soyService.renderPlugin(pluginRegion,
-            Optional.of(new InstancesPluginRegionInput("", "", "", "", "", "", "", "", "", "", "")));
+            Optional.of(new InstancesPluginRegionInput("", "", "", "", "", "", "", "", "", "", false, "")));
         return Response.ok(rendered).build();
     }
 
@@ -59,9 +59,11 @@ public class InstancesPluginEndpoints {
         @FormParam("instanceId") @DefaultValue("") String instanceId,
         @FormParam("releaseKey") @DefaultValue("") String releaseKey,
         @FormParam("release") @DefaultValue("") String release,
+        @FormParam("enabled") @DefaultValue("false") boolean enabled,
         @FormParam("action") @DefaultValue("") String action) {
         String rendered = soyService.renderPlugin(pluginRegion,
-            Optional.of(new InstancesPluginRegionInput(key, clusterKey, cluster, hostKey, host, serviceKey, service, instanceId, releaseKey, release, action)));
+            Optional.of(new InstancesPluginRegionInput(
+                    key, clusterKey, cluster, hostKey, host, serviceKey, service, instanceId, releaseKey, release, enabled, action)));
         return Response.ok(rendered).build();
     }
 

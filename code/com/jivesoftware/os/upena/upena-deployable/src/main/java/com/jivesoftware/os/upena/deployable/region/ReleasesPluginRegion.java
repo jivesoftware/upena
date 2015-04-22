@@ -118,6 +118,9 @@ public class ReleasesPluginRegion implements PageRegion<Optional<ReleasesPluginR
                             if (release == null) {
                                 data.put("message", "Couldn't update no existent cluster. Someone else likely just removed it since your last refresh.");
                             } else {
+
+
+
                                 ReleaseGroup updated = new ReleaseGroup(input.name,
                                     input.email,
                                     input.version,
@@ -205,7 +208,4 @@ public class ReleasesPluginRegion implements PageRegion<Optional<ReleasesPluginR
         return "Upena Releases";
     }
 
-    static class ServiceStatus {
-
-    }
 }
