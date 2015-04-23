@@ -51,6 +51,7 @@ public class RestfulServer {
 
         HashLoginService loginService = new HashLoginService();
         loginService.putUser("admin", new Password("admin"), new String[]{"user", "admin"});
+        loginService.putUser("guest", new Password("guest"), new String[]{"user"});
         server.addBean(loginService);
 
         ConstraintSecurityHandler security = new ConstraintSecurityHandler();
