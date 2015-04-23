@@ -20,7 +20,7 @@
         <script src="/static/vendor/bootstrap-3.3.2/js/bootstrap.js"></script>
         <link href="/static/img/favicon.ico" rel="shortcut icon" type="image/x-icon" />
 	</head>
-	<body>
+	<body style="padding-top: 70px;">
         {$header|noAutoescape}
         
         <div class="container">
@@ -70,7 +70,7 @@
  * @param user
  */
 {template .headerRegion}
-	<nav class="navbar navbar-default navbar-fixed-top">
+	<nav class="navbar navbar-default navbar-fixed-top navbar-inverse">
         <div class="container">
             <div id="navbar" class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
@@ -86,7 +86,9 @@
                     {/foreach}
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
-                    Logout:{$user}
+                    <li role="presentation"><a href="/logout">
+                        Logout:{$user}
+                    </a></li>
                 </ul>
             </div>
         </div>
