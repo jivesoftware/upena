@@ -8,6 +8,7 @@ import com.jivesoftware.os.upena.deployable.region.InstancesPluginRegion.Instanc
 import com.jivesoftware.os.upena.deployable.region.InstancesPluginRegion.PortUpdate;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
 import javax.inject.Singleton;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.FormParam;
@@ -39,8 +40,8 @@ public class InstancesPluginEndpoints {
     @GET
     @Path("/")
     @Produces(MediaType.TEXT_HTML)
-    public Response instances() {
-        String rendered = soyService.renderPlugin(pluginRegion,
+    public Response instances(@Context HttpServletRequest httpRequest) {
+        String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
             Optional.of(new InstancesPluginRegionInput("", "", "", "", "", "", "", "", "", "", false, "")));
         return Response.ok(rendered).build();
     }
@@ -49,7 +50,8 @@ public class InstancesPluginEndpoints {
     @Path("/")
     @Produces(MediaType.TEXT_HTML)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    public Response action(@FormParam("key") @DefaultValue("") String key,
+    public Response action(@Context HttpServletRequest httpRequest,
+        @FormParam("key") @DefaultValue("") String key,
         @FormParam("clusterKey") @DefaultValue("") String clusterKey,
         @FormParam("cluster") @DefaultValue("") String cluster,
         @FormParam("hostKey") @DefaultValue("") String hostKey,
@@ -61,7 +63,7 @@ public class InstancesPluginEndpoints {
         @FormParam("release") @DefaultValue("") String release,
         @FormParam("enabled") @DefaultValue("false") boolean enabled,
         @FormParam("action") @DefaultValue("") String action) {
-        String rendered = soyService.renderPlugin(pluginRegion,
+        String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
             Optional.of(new InstancesPluginRegionInput(
                     key, clusterKey, cluster, hostKey, host, serviceKey, service, instanceId, releaseKey, release, enabled, action)));
         return Response.ok(rendered).build();
@@ -71,10 +73,10 @@ public class InstancesPluginEndpoints {
     @Path("/ports/add")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response add(PortUpdate update) {
+    public Response add(@Context HttpServletRequest httpRequest, PortUpdate update) {
 
         try {
-            pluginRegion.add(update);
+            pluginRegion.add(httpRequest.getRemoteUser(), update);
             return Response.ok().build();
         } catch (Exception x) {
             LOG.error("Failed to add ports for:" + update, x);
@@ -86,9 +88,9 @@ public class InstancesPluginEndpoints {
     @Path("/ports/remove")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response remove(PortUpdate update) {
+    public Response remove(@Context HttpServletRequest httpRequest, PortUpdate update) {
         try {
-            pluginRegion.remove(update);
+            pluginRegion.remove(httpRequest.getRemoteUser(), update);
             return Response.ok().build();
         } catch (Exception x) {
             LOG.error("Failed to remove to ports for:" + update, x);

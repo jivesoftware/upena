@@ -57,7 +57,7 @@ public class HostsPluginRegion implements PageRegion<Optional<HostsPluginRegion.
     }
 
     @Override
-    public String render(Optional<HostsPluginRegionInput> optionalInput) {
+    public String render(String user, Optional<HostsPluginRegionInput> optionalInput) {
         Map<String, Object> data = Maps.newHashMap();
 
         try {
@@ -97,7 +97,7 @@ public class HostsPluginRegion implements PageRegion<Optional<HostsPluginRegion.
                             );
                             upenaStore.hosts.update(null, newHost);
 
-                            upenaStore.record("Human", "added", System.currentTimeMillis(), "", "host", newHost.toString());
+                            upenaStore.record(user, "added", System.currentTimeMillis(), "", "host-ui", newHost.toString());
 
                             data.put("message", "Created Host:" + input.name);
                         } catch (Exception x) {
@@ -117,7 +117,7 @@ public class HostsPluginRegion implements PageRegion<Optional<HostsPluginRegion.
                                     input.workingDirectory,
                                     null);
                                 upenaStore.hosts.update(new HostKey(input.key), updatedHost);
-                                upenaStore.record("Human", "updated", System.currentTimeMillis(), "", "host", updatedHost.toString());
+                                upenaStore.record(user, "updated", System.currentTimeMillis(), "", "host-ui", updatedHost.toString());
                                 data.put("message", "Updated Release:" + input.name);
                             }
 
@@ -134,7 +134,7 @@ public class HostsPluginRegion implements PageRegion<Optional<HostsPluginRegion.
                                 Host removing = upenaStore.hosts.get(hostKey);
                                 if (removing != null) {
                                     upenaStore.hosts.remove(new HostKey(input.key));
-                                    upenaStore.record("Human", "removed", System.currentTimeMillis(), "", "host", removing.toString());
+                                    upenaStore.record(user, "removed", System.currentTimeMillis(), "", "host-ui", removing.toString());
                                 }
                             } catch (Exception x) {
                                 String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());

@@ -62,7 +62,7 @@ public class UpenaRingPluginRegion implements PageRegion<Optional<UpenaRingPlugi
     }
 
     @Override
-    public String render(Optional<UpenaRingPluginRegionInput> optionalInput) {
+    public String render(String user, Optional<UpenaRingPluginRegionInput> optionalInput) {
         Map<String, Object> data = Maps.newHashMap();
 
         try {

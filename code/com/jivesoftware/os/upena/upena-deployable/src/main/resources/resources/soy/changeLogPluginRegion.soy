@@ -21,8 +21,9 @@
                                 <th>When</th>
                                 <th>Who</th>
                                 <th>What</th>
-                                <th>How</th>
+                                <th>Where</th>
                                 <th>Why</th>
+                                <th>How</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -44,11 +45,15 @@
                                     </td>
                                     <td>
                                         <input type="text" style="padding-left:10px;"
-                                        placeholder="How" value="{$filters.how?:''}" name="how" id="howPicker" class="form-control">
+                                        placeholder="Where" value="{$filters.where?:''}" name="where" id="whyPicker" class="form-control">
                                     </td>
                                     <td>
                                         <input type="text" style="padding-left:10px;"
                                         placeholder="Why" value="{$filters.why?:''}" name="why" id="whyPicker" class="form-control">
+                                    </td>
+                                    <td>
+                                        <input type="text" style="padding-left:10px;"
+                                        placeholder="How" value="{$filters.how?:''}" name="how" id="howPicker" class="form-control">
                                     </td>
                                     <td>
                                         <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary"><span class="glyphicon glyphicon-search"></button>
@@ -70,10 +75,13 @@
                                             {$l.what}
                                         </td>
                                         <td style="word-wrap:break-word">
-                                            {$l.how}
+                                            {$l.where}
                                         </td>
                                         <td style="word-wrap:break-word">
                                             {$l.why}
+                                        </td>
+                                        <td style="word-wrap:break-word">
+                                            {$l.how}
                                         </td>
                                         <td>
                                         </td>

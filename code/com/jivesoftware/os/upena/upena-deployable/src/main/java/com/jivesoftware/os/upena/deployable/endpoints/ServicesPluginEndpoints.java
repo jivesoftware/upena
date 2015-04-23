@@ -5,6 +5,7 @@ import com.jivesoftware.os.upena.deployable.region.ServicesPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ServicesPluginRegion.ServicesPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
 import javax.inject.Singleton;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.FormParam;
@@ -34,8 +35,8 @@ public class ServicesPluginEndpoints {
     @GET
     @Path("/")
     @Produces(MediaType.TEXT_HTML)
-    public Response services() {
-        String rendered = soyService.renderPlugin(pluginRegion,
+    public Response services(@Context HttpServletRequest httpRequest) {
+        String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
             Optional.of(new ServicesPluginRegionInput("", "", "", "")));
         return Response.ok(rendered).build();
     }
@@ -44,11 +45,12 @@ public class ServicesPluginEndpoints {
     @Path("/")
     @Produces(MediaType.TEXT_HTML)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    public Response action(@FormParam("key") @DefaultValue("") String key,
+    public Response action(@Context HttpServletRequest httpRequest,
+        @FormParam("key") @DefaultValue("") String key,
         @FormParam("name") @DefaultValue("") String name,
         @FormParam("description") @DefaultValue("") String description,
         @FormParam("action") @DefaultValue("") String action) {
-        String rendered = soyService.renderPlugin(pluginRegion,
+        String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
             Optional.of(new ServicesPluginRegionInput(key, name, description, action)));
         return Response.ok(rendered).build();
     }

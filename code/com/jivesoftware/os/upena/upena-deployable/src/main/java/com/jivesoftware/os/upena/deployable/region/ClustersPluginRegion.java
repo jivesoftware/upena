@@ -59,7 +59,7 @@ public class ClustersPluginRegion implements PageRegion<Optional<ClustersPluginR
     }
 
     @Override
-    public String render(Optional<ClustersPluginRegionInput> optionalInput) {
+    public String render(String user, Optional<ClustersPluginRegionInput> optionalInput) {
         Map<String, Object> data = Maps.newHashMap();
 
         try {
@@ -85,7 +85,7 @@ public class ClustersPluginRegion implements PageRegion<Optional<ClustersPluginR
                             Cluster newCluster = new Cluster(input.name, input.description,
                                 new HashMap<ServiceKey, ReleaseGroupKey>());
                             upenaStore.clusters.update(null, newCluster);
-                            upenaStore.record("Human", "added", System.currentTimeMillis(), "", "clusters", newCluster.toString());
+                            upenaStore.record(user, "added", System.currentTimeMillis(), "", "clusters-ui", newCluster.toString());
 
                             data.put("message", "Created Cluster:" + input.name);
                         } catch (Exception x) {
@@ -103,7 +103,7 @@ public class ClustersPluginRegion implements PageRegion<Optional<ClustersPluginR
                                     cluster.defaultReleaseGroups);
                                 upenaStore.clusters.update(new ClusterKey(input.key), updatedCluster);
                                 data.put("message", "Updated Cluster:" + input.name);
-                                upenaStore.record("Human", "updated", System.currentTimeMillis(), "", "clusters", cluster.toString());
+                                upenaStore.record(user, "updated", System.currentTimeMillis(), "", "clusters-ui", cluster.toString());
                             }
                         } catch (Exception x) {
                             String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
@@ -118,7 +118,7 @@ public class ClustersPluginRegion implements PageRegion<Optional<ClustersPluginR
                                 Cluster removing = upenaStore.clusters.get(clusterKey);
                                 if (removing != null) {
                                     upenaStore.clusters.remove(clusterKey);
-                                    upenaStore.record("Human", "removed", System.currentTimeMillis(), "", "clusters", removing.toString());
+                                    upenaStore.record(user, "removed", System.currentTimeMillis(), "", "clusters-ui", removing.toString());
                                 }
                             } catch (Exception x) {
                                 String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
@@ -172,23 +172,23 @@ public class ClustersPluginRegion implements PageRegion<Optional<ClustersPluginR
         return renderer.render(template, data);
     }
 
-    public void add(ReleaseGroupUpdate releaseGroupUpdate) throws Exception {
+    public void add(String user, ReleaseGroupUpdate releaseGroupUpdate) throws Exception {
         ClusterKey clusterKey = new ClusterKey(releaseGroupUpdate.clusterId);
         Cluster cluster = upenaStore.clusters.get(clusterKey);
         if (cluster != null) {
             cluster.defaultReleaseGroups.put(new ServiceKey(releaseGroupUpdate.serviceId), new ReleaseGroupKey(releaseGroupUpdate.releaseGroupId));
             upenaStore.clusters.update(clusterKey, cluster);
-            upenaStore.record("Human", "updated", System.currentTimeMillis(), "", "clusters", cluster.toString());
+            upenaStore.record(user, "updated", System.currentTimeMillis(), "", "clusters-ui", cluster.toString());
         }
     }
 
-    public void remove(ReleaseGroupUpdate releaseGroupUpdate) throws Exception {
+    public void remove(String user, ReleaseGroupUpdate releaseGroupUpdate) throws Exception {
         ClusterKey clusterKey = new ClusterKey(releaseGroupUpdate.clusterId);
         Cluster cluster = upenaStore.clusters.get(clusterKey);
         if (cluster != null) {
             if (cluster.defaultReleaseGroups.remove(new ServiceKey(releaseGroupUpdate.serviceId)) != null) {
                 upenaStore.clusters.update(clusterKey, cluster);
-                upenaStore.record("Human", "updated", System.currentTimeMillis(), "", "clusters", cluster.toString());
+                upenaStore.record(user, "updated", System.currentTimeMillis(), "", "clusters-ui", cluster.toString());
             }
         }
     }

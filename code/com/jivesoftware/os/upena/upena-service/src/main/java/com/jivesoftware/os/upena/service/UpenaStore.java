@@ -100,6 +100,9 @@ public class UpenaStore {
     }
 
     public void record(String who, String what, long whenTimestampMillis, String why, String where, String how) throws Exception {
+        if (who == null) {
+            who = "null";
+        }
         long descendingTimestamp = Long.MAX_VALUE - whenTimestampMillis;
         changeLog.set(new RowIndexKey(longBytes(descendingTimestamp, new byte[8], 0)),
             mapper.writeValueAsBytes(new RecordedChange(who, what, whenTimestampMillis, where, why, how)));

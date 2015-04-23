@@ -30,9 +30,9 @@ public class SoyService {
 
     }
 
-    public String render(String upenaJarWGetURL, String upenaClusterName) {
+    public String render(String user, String upenaJarWGetURL, String upenaClusterName) {
 
-        return chrome(homeRegion).render(new HomeInput(upenaJarWGetURL, upenaClusterName));
+        return chrome(homeRegion).render(user, new HomeInput(upenaJarWGetURL, upenaClusterName));
     }
 
     public void registerPlugin(ManagePlugin plugin) {
@@ -43,7 +43,7 @@ public class SoyService {
         return new ChromeRegion<>("soy.chrome.chromeRegion", renderer, headerRegion, plugins, region);
     }
 
-    public <I> String renderPlugin(PageRegion<I> pluginRegion, I input) {
-        return chrome(pluginRegion).render(input);
+    public <I> String renderPlugin(String user, PageRegion<I> pluginRegion, I input) {
+        return chrome(pluginRegion).render(user, input);
     }
 }

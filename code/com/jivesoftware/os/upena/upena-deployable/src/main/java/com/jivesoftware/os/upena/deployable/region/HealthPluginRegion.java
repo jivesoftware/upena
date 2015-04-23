@@ -64,7 +64,7 @@ public class HealthPluginRegion implements PageRegion<Optional<HealthPluginRegio
     }
 
     @Override
-    public String render(Optional<HealthPluginRegionInput> optionalInput) {
+    public String render(String user, Optional<HealthPluginRegionInput> optionalInput) {
         Map<String, Object> data = Maps.newHashMap();
 
         try {

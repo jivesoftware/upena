@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 import javax.inject.Singleton;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.FormParam;
@@ -44,8 +45,8 @@ public class ConfigPluginEndpoints {
     @GET
     @Path("/")
     @Produces(MediaType.TEXT_HTML)
-    public Response services() {
-        String rendered = soyService.renderPlugin(pluginRegion,
+    public Response services(@Context HttpServletRequest httpRequest) {
+        String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
             Optional.of(new ConfigPluginRegionInput("", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", false, true, false, "")));
         return Response.ok(rendered).build();
     }
@@ -53,7 +54,7 @@ public class ConfigPluginEndpoints {
     @POST
     @Path("/")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    public Response action(
+    public Response action(@Context HttpServletRequest httpRequest,
         @FormParam("aClusterKey") @DefaultValue("") String aClusterKey,
         @FormParam("aCluster") @DefaultValue("") String aCluster,
         @FormParam("aHostKey") @DefaultValue("") String aHostKey,
@@ -87,7 +88,7 @@ public class ConfigPluginEndpoints {
             String export = pluginRegion.export(configPluginRegionInput);
             return Response.ok(export, MediaType.TEXT_PLAIN_TYPE).build();
         } else {
-            String rendered = soyService.renderPlugin(pluginRegion,
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
                 Optional.of(configPluginRegionInput));
             return Response.ok(rendered, MediaType.TEXT_HTML).build();
         }
@@ -96,10 +97,10 @@ public class ConfigPluginEndpoints {
     @POST
     @Path("/modify")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response modifyConfigs(ModifyRequest modifyRequest) {
+    public Response modifyConfigs(@Context HttpServletRequest httpRequest, ModifyRequest modifyRequest) {
         Map<String, Map<String, String>> propertyMap = modifyRequest.getUpdates();
         try {
-            pluginRegion.modified(propertyMap);
+            pluginRegion.modified(httpRequest.getRemoteUser(), propertyMap);
             return Response.ok().build();
         } catch (Exception x) {
             LOG.error("Failed while setting properties:" + propertyMap);

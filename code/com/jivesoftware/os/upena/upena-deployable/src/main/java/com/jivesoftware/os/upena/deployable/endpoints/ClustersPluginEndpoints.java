@@ -7,6 +7,7 @@ import com.jivesoftware.os.upena.deployable.region.ClustersPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ClustersPluginRegion.ClustersPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
 import javax.inject.Singleton;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.FormParam;
@@ -38,8 +39,9 @@ public class ClustersPluginEndpoints {
     @GET
     @Path("/")
     @Produces(MediaType.TEXT_HTML)
-    public Response clusters() {
-        String rendered = soyService.renderPlugin(pluginRegion,
+    public Response clusters(@Context HttpServletRequest httpRequest) {
+        String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(),
+            pluginRegion,
             Optional.of(new ClustersPluginRegionInput("", "", "", "")));
         return Response.ok(rendered).build();
     }
@@ -48,11 +50,12 @@ public class ClustersPluginEndpoints {
     @Path("/")
     @Produces(MediaType.TEXT_HTML)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    public Response action(@FormParam("key") @DefaultValue("") String key,
+    public Response action(@Context HttpServletRequest httpRequest,
+        @FormParam("key") @DefaultValue("") String key,
         @FormParam("name") @DefaultValue("") String name,
         @FormParam("description") @DefaultValue("") String description,
         @FormParam("action") @DefaultValue("") String action) {
-        String rendered = soyService.renderPlugin(pluginRegion,
+        String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
             Optional.of(new ClustersPluginRegionInput(key, name, description, action)));
         return Response.ok(rendered).build();
     }
@@ -61,10 +64,9 @@ public class ClustersPluginEndpoints {
     @Path("/add")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response add(ClustersPluginRegion.ReleaseGroupUpdate update) {
-
+    public Response add(ClustersPluginRegion.ReleaseGroupUpdate update, @Context HttpServletRequest httpRequest) {
         try {
-            pluginRegion.add(update);
+            pluginRegion.add(httpRequest.getRemoteUser(), update);
             return Response.ok().build();
         } catch (Exception x) {
             LOG.error("Failed to add to default release groups for:" + update, x);
@@ -76,9 +78,9 @@ public class ClustersPluginEndpoints {
     @Path("/remove")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response remove(ClustersPluginRegion.ReleaseGroupUpdate update) {
+    public Response remove(ClustersPluginRegion.ReleaseGroupUpdate update, @Context HttpServletRequest httpRequest) {
         try {
-            pluginRegion.remove(update);
+            pluginRegion.remove(httpRequest.getRemoteUser(), update);
             return Response.ok().build();
         } catch (Exception x) {
             LOG.error("Failed to remove to default release groups for:" + update, x);

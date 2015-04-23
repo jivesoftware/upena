@@ -30,7 +30,7 @@ public class ChromeRegion<I, R extends PageRegion<I>> implements Region<I> {
     }
 
     @Override
-    public String render(I input) {
+    public String render(String user, I input) {
         List<Map<String, String>> p = Lists.transform(plugins, new Function<ManagePlugin, Map<String, String>>() {
             @Override
             public Map<String, String> apply(ManagePlugin input) {
@@ -39,12 +39,14 @@ public class ChromeRegion<I, R extends PageRegion<I>> implements Region<I> {
         });
         Map<String, Object> headerData = new HashMap<>();
         headerData.put("plugins", p);
+        headerData.put("user", user);
 
         Map<String, Object> data = Maps.newHashMap();
-        data.put("header", headerRegion.render(headerData));
-        data.put("region", region.render(input));
+        data.put("header", headerRegion.render(user, headerData));
+        data.put("region", region.render(user, input));
         data.put("title", region.getTitle());
         data.put("plugins", p);
+        data.put("user", user);
         return renderer.render(template, data);
 
     }

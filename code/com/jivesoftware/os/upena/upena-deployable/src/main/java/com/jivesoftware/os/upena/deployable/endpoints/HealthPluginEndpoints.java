@@ -5,6 +5,7 @@ import com.jivesoftware.os.upena.deployable.region.HealthPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.HealthPluginRegion.HealthPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
 import javax.inject.Singleton;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -32,10 +33,11 @@ public class HealthPluginEndpoints {
     @GET
     @Path("/")
     @Produces(MediaType.TEXT_HTML)
-    public Response filter(@QueryParam("cluster") @DefaultValue("") String cluster,
+    public Response filter(@Context HttpServletRequest httpRequest,
+        @QueryParam("cluster") @DefaultValue("") String cluster,
         @QueryParam("host") @DefaultValue("") String host,
         @QueryParam("service") @DefaultValue("") String service) {
-        String rendered = soyService.renderPlugin(pluginRegion,
+        String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
             Optional.of(new HealthPluginRegionInput(cluster, host, service)));
         return Response.ok(rendered).build();
     }

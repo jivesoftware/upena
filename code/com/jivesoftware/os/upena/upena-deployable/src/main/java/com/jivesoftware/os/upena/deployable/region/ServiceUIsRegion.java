@@ -56,7 +56,7 @@ public class ServiceUIsRegion implements PageRegion<ServiceUIsRegionInput> {
     }
 
     @Override
-    public String render(ServiceUIsRegionInput input) {
+    public String render(String user, ServiceUIsRegionInput input) {
         Map<String, Object> data = Maps.newHashMap();
 
         InstanceFilter filter = new InstanceFilter(
@@ -87,7 +87,7 @@ public class ServiceUIsRegion implements PageRegion<ServiceUIsRegionInput> {
 
                                 Instance.Port uiPort = value.ports.get(ui.portName);
                                 if (uiPort != null) {
-                                    String uiName = cluster.name + " - " + ui.name;
+                                    String uiName = cluster.name + " - " + service.name;
                                     List<Map<String, String>> namedUIs = uis.get(uiName);
                                     if (namedUIs == null) {
                                         namedUIs = new ArrayList<>();

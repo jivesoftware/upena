@@ -53,7 +53,7 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
         this.configStore = configStore;
     }
 
-    public void modified(Map<String, Map<String, String>> property_InstanceKey_Values) throws Exception {
+    public void modified(String user, Map<String, Map<String, String>> property_InstanceKey_Values) throws Exception {
 
         Set<String> instanceKeys = new HashSet<>();
         for (Map.Entry<String, Map<String, String>> property_InstanceKey_Value : property_InstanceKey_Values.entrySet()) {
@@ -143,7 +143,7 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
             }
         }
 
-        upenaStore.record("Human", "modified", System.currentTimeMillis(), "", "config", property_InstanceKey_Values.toString());
+        upenaStore.record(user, "modified", System.currentTimeMillis(), "", "config", property_InstanceKey_Values.toString());
 
     }
 
@@ -273,7 +273,7 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
     }
 
     @Override
-    public String render(Optional<ConfigPluginRegionInput> optionalInput) {
+    public String render(String user, Optional<ConfigPluginRegionInput> optionalInput) {
         Map<String, Object> data = Maps.newHashMap();
 
         try {
@@ -328,7 +328,7 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
                         }
                     }
                     if (!property_instanceKey_revert.isEmpty()) {
-                        modified(property_instanceKey_revert);
+                        modified(user, property_instanceKey_revert);
                     }
                     
                     as = packProperties(input.aClusterKey,

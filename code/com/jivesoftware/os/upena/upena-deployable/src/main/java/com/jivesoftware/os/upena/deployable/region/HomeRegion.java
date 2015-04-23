@@ -31,7 +31,7 @@ public class HomeRegion implements PageRegion<HomeInput> {
     }
 
     @Override
-    public String render(HomeInput input) {
+    public String render(String user, HomeInput input) {
         Map<String, Object> data = Maps.newHashMap();
         data.put("wgetURL", input.wgetURL);
         data.put("upenaClusterName", input.upenaClusterName);

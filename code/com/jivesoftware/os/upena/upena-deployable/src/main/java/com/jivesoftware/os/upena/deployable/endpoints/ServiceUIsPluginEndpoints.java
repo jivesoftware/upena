@@ -6,6 +6,7 @@ import com.jivesoftware.os.upena.deployable.region.ServiceUIsRegion;
 import com.jivesoftware.os.upena.deployable.region.ServiceUIsRegion.ServiceUIsRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
 import javax.inject.Singleton;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -33,8 +34,8 @@ public class ServiceUIsPluginEndpoints {
     @GET
     @Path("/")
     @Produces(MediaType.TEXT_HTML)
-    public Response instances() {
-        String rendered = soyService.renderPlugin(pluginRegion, new ServiceUIsRegionInput());
+    public Response instances(@Context HttpServletRequest httpRequest) {
+        String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion, new ServiceUIsRegionInput());
         return Response.ok(rendered).build();
     }
 

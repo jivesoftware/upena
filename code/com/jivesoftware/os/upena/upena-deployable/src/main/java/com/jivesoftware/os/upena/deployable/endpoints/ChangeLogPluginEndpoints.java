@@ -5,6 +5,7 @@ import com.jivesoftware.os.upena.deployable.region.ChangeLogPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ChangeLogPluginRegion.ChangeLogPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
 import javax.inject.Singleton;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.FormParam;
@@ -34,8 +35,8 @@ public class ChangeLogPluginEndpoints {
     @GET
     @Path("/")
     @Produces(MediaType.TEXT_HTML)
-    public Response hosts() {
-        String rendered = soyService.renderPlugin(pluginRegion,
+    public Response hosts(@Context HttpServletRequest httpRequest) {
+        String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
             Optional.of(new ChangeLogPluginRegionInput("", "", "", "", "", "", "")));
         return Response.ok(rendered).build();
     }
@@ -44,14 +45,15 @@ public class ChangeLogPluginEndpoints {
     @Path("/")
     @Produces(MediaType.TEXT_HTML)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    public Response action(@FormParam("who") @DefaultValue("") String who,
+    public Response action(@Context HttpServletRequest httpRequest,
+        @FormParam("who") @DefaultValue("") String who,
         @FormParam("what") @DefaultValue("") String what,
         @FormParam("when") @DefaultValue("") String when,
         @FormParam("where") @DefaultValue("") String where,
         @FormParam("why") @DefaultValue("") String why,
         @FormParam("how") @DefaultValue("") String how,
         @FormParam("action") @DefaultValue("") String action) {
-        String rendered = soyService.renderPlugin(pluginRegion,
+        String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
             Optional.of(new ChangeLogPluginRegionInput(who, what, when, where, why, how, action)));
         return Response.ok(rendered).build();
     }

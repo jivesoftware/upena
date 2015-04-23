@@ -15,7 +15,7 @@ public class HeaderRegion implements Region<Map<String, ?>> {
     }
 
     @Override
-    public String render(Map<String, ?> input) {
+    public String render(String user, Map<String, ?> input) {
         return renderer.render(template, input);
     }
 }

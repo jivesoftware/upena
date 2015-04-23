@@ -69,7 +69,7 @@ public class ServicesPluginRegion implements PageRegion<Optional<ServicesPluginR
     }
 
     @Override
-    public String render(Optional<ServicesPluginRegionInput> optionalInput) {
+    public String render(String user, Optional<ServicesPluginRegionInput> optionalInput) {
         Map<String, Object> data = Maps.newHashMap();
 
         try {
@@ -86,11 +86,11 @@ public class ServicesPluginRegion implements PageRegion<Optional<ServicesPluginR
                     if (input.action.equals("filter")) {
                         filter = handleFilter(input, data);
                     } else if (input.action.equals("add")) {
-                        handleAdd(filters, input, data);
+                        handleAdd(user, filters, input, data);
                     } else if (input.action.equals("update")) {
-                        handleUpdate(filters, input, data);
+                        handleUpdate(user, filters, input, data);
                     } else if (input.action.equals("remove")) {
-                        handeRemove(input, data);
+                        handeRemove(user, input, data);
                     }
                 }
 
@@ -128,26 +128,30 @@ public class ServicesPluginRegion implements PageRegion<Optional<ServicesPluginR
         return filter;
     }
 
-    private void handleAdd(Map<String, String> filters, ServicesPluginRegionInput input, Map<String, Object> data) {
+    private void handleAdd(String user, Map<String, String> filters, ServicesPluginRegionInput input, Map<String, Object> data) {
         filters.clear();
         try {
-            upenaStore.services.update(null, new Service(input.name, input.description));
+            Service newService = new Service(input.name, input.description);
+            upenaStore.services.update(null, newService);
 
             data.put("message", "Created Service:" + input.name);
+            upenaStore.record(user, "added", System.currentTimeMillis(), "", "service-ui", newService.toString());
         } catch (Exception x) {
             String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
             data.put("message", "Error while trying to add Service:" + input.name + "\n" + trace);
         }
     }
 
-    private void handleUpdate(Map<String, String> filters, ServicesPluginRegionInput input, Map<String, Object> data) {
+    private void handleUpdate(String user, Map<String, String> filters, ServicesPluginRegionInput input, Map<String, Object> data) {
         filters.clear();
         try {
             Service service = upenaStore.services.get(new ServiceKey(input.key));
             if (service == null) {
                 data.put("message", "Couldn't update no existent Service. Someone else likely just removed it since your last refresh.");
             } else {
-                upenaStore.services.update(new ServiceKey(input.key), new Service(input.name, input.description));
+                Service update = new Service(input.name, input.description);
+                upenaStore.services.update(new ServiceKey(input.key), update);
+                upenaStore.record(user, "updated", System.currentTimeMillis(), "", "service-ui", update.toString());
                 data.put("message", "Service Cluster:" + input.name);
             }
 
@@ -157,12 +161,18 @@ public class ServicesPluginRegion implements PageRegion<Optional<ServicesPluginR
         }
     }
 
-    private void handeRemove(ServicesPluginRegionInput input, Map<String, Object> data) {
+    private void handeRemove(String user, ServicesPluginRegionInput input, Map<String, Object> data) {
         if (input.key.isEmpty()) {
             data.put("message", "Failed to remove Service:" + input.name);
         } else {
             try {
-                upenaStore.services.remove(new ServiceKey(input.key));
+                ServiceKey serviceKey = new ServiceKey(input.key);
+                Service removing = upenaStore.services.get(serviceKey);
+                if (removing != null) {
+                    upenaStore.services.remove(serviceKey);
+                    upenaStore.record(user, "updated", System.currentTimeMillis(), "", "service-ui", removing.toString());
+                }
+
             } catch (Exception x) {
                 String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
                 data.put("message", "Error while trying to remove Service:" + input.name + "\n" + trace);

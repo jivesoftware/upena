@@ -56,7 +56,7 @@ public class ChangeLogPluginRegion implements PageRegion<Optional<ChangeLogPlugi
     }
 
     @Override
-    public String render(Optional<ChangeLogPluginRegionInput> optionalInput) {
+    public String render(String user, Optional<ChangeLogPluginRegionInput> optionalInput) {
         Map<String, Object> data = Maps.newHashMap();
 
         try {

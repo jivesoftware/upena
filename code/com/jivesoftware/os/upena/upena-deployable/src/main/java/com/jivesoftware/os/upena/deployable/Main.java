@@ -258,7 +258,7 @@ public class Main {
             @Override
             public void record(String what, String why, String how) {
                 try {
-                    upenaStore.record("Machine", what, System.currentTimeMillis(), ringHost.getHost() + ":" + ringHost.getPort(), why, how);
+                    upenaStore.record("Uba-" + ringHost.getHost() + ":" + ringHost.getPort(), what, System.currentTimeMillis(), why, "", how);
                 } catch (Exception x) {
                     x.printStackTrace(); // Hmm lame
                 }

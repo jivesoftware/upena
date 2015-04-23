@@ -61,7 +61,7 @@ public class ReleasesPluginRegion implements PageRegion<Optional<ReleasesPluginR
     }
 
     @Override
-    public String render(Optional<ReleasesPluginRegionInput> optionalInput) {
+    public String render(String user, Optional<ReleasesPluginRegionInput> optionalInput) {
         Map<String, Object> data = Maps.newHashMap();
 
         try {
@@ -105,7 +105,7 @@ public class ReleasesPluginRegion implements PageRegion<Optional<ReleasesPluginR
                             upenaStore.releaseGroups.update(null, newRelease);
 
                             data.put("message", "Created Release:" + input.name);
-                            upenaStore.record("Human", "added", System.currentTimeMillis(), "", "release", newRelease.toString());
+                            upenaStore.record(user, "added", System.currentTimeMillis(), "", "release-ui", newRelease.toString());
 
                         } catch (Exception x) {
                             String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
@@ -129,7 +129,7 @@ public class ReleasesPluginRegion implements PageRegion<Optional<ReleasesPluginR
                                         input.description);
                                     upenaStore.releaseGroups.update(new ReleaseGroupKey(input.key), updated);
                                     data.put("message", "Updated Release:" + input.name);
-                                    upenaStore.record("Human", "updated", System.currentTimeMillis(), "", "release", updated.toString());
+                                    upenaStore.record(user, "updated", System.currentTimeMillis(), "", "release-ui", updated.toString());
                                 } else {
                                     data.put("message", Joiner.on("\n").join(errors));
                                 }
@@ -148,7 +148,7 @@ public class ReleasesPluginRegion implements PageRegion<Optional<ReleasesPluginR
                                 ReleaseGroup removing = upenaStore.releaseGroups.get(releaseGroupKey);
                                 if (removing != null) {
                                     upenaStore.releaseGroups.remove(releaseGroupKey);
-                                    upenaStore.record("Human", "removed", System.currentTimeMillis(), "", "release", removing.toString());
+                                    upenaStore.record(user, "removed", System.currentTimeMillis(), "", "release-ui", removing.toString());
                                 }
 
                             } catch (Exception x) {
