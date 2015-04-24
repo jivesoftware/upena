@@ -259,7 +259,7 @@
  */
 {template .healthPluginRegionUIs}
     <div class="btn-group" role="group">
-        {foreach $u in $ui.uis}
+        {foreach $u in $uis.uis}
             <a class="btn btn-default" href="http://{$u.host}:{$u.port}{$u.url}">{$u.name}</a>
         {/foreach}
     </div>

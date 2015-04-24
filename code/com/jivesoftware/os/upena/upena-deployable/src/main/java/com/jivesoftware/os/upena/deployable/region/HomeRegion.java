@@ -77,7 +77,7 @@ public class HomeRegion implements PageRegion<HomeInput> {
         @Override
         public void line(String line) {
             if (!line.isEmpty() && !line.startsWith("Average")) {
-                lines.add(Arrays.asList(line.split(" ")));
+                lines.add(Arrays.asList(line.split("\\s+")));
             }
         }
 
