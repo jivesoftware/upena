@@ -373,9 +373,11 @@ $(document).ready(function () {
             e.preventDefault();
         }).on('hidden.bs.popover', function () {
             var h = hack[$(this).attr('id')];
-            h.detach();
-            h.addClass('hide');
-            $('body').append(h);
+            if (h) {
+                h.detach();
+                h.addClass('hide');
+                $('body').append(h);
+            }
         });
     });
     
