@@ -70,7 +70,7 @@
                                     <td>
                                         <div class="panel panel-default">
                                             <div style="float:left; background-image: linear-gradient(to bottom,{$health.color} 0,{$health.color} 100%); width:20px;height:20px"></div>
-                                            <a class="health-instance" href="#" rel="popover" id="popoverAnchor-{$health.uid}" 
+                                            <a href="#" rel="popover-health" id="popoverAnchor-{$health.uid}" 
                                                 {if $health.instanceKey} data-popover-instance-key="{$health.instanceKey}" {/if}
                                                 data-popover-content="#popover-{$health.uid}" data-placement="bottom" title="">
                                                 <span class="glyphicon glyphicon-menu-down">{if $health.health == null}

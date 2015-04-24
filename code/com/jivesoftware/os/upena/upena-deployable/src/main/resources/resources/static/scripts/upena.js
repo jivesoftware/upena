@@ -383,7 +383,7 @@ $(document).ready(function () {
     
     $(function () {
         var hack = {};
-        $('[rel="popover"].health-instance').popover({
+        $('[rel="popover-health"]').popover({
             container: 'body',
             html: true,
             content: function () {
