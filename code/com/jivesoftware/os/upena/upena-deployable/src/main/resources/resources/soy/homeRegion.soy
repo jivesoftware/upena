@@ -17,9 +17,13 @@
                 {if $s.lines}
                     <table class="table table-striped">
                         {foreach $l in $s.lines}
-                            <tr><td>
-                                {$l}
-                            </td></tr>
+                            <tr>
+                                {foreach $v in $l}
+                                    <td>
+                                        {$v}
+                                    </td>
+                                {/foreach}
+                            </tr>
                         {/foreach}
                     </table>
                 {/if}

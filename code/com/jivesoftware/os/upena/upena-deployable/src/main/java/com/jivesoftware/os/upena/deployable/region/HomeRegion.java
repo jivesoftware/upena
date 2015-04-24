@@ -6,6 +6,7 @@ import com.jivesoftware.os.upena.deployable.SARInvoker;
 import com.jivesoftware.os.upena.deployable.region.HomeRegion.HomeInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -47,13 +48,13 @@ public class HomeRegion implements PageRegion<HomeInput> {
         data.put("sarData", sarData);
 
         SARInvoker sarInvoker = new SARInvoker(executor);
-        sarInvoker.invoke(new String[]{"-q", "1", "3"}, new CaptureSAR(sarData, "Load"));
-        sarInvoker.invoke(new String[]{"-u", "1", "3"}, new CaptureSAR(sarData, "CPU"));
-        sarInvoker.invoke(new String[]{"-d", "1", "3"}, new CaptureSAR(sarData, "I/O"));
-        sarInvoker.invoke(new String[]{"-r", "1", "3"}, new CaptureSAR(sarData, "Memory"));
-        sarInvoker.invoke(new String[]{"-w", "1", "3"}, new CaptureSAR(sarData, "Context Switch"));
+        sarInvoker.invoke(new String[]{"-q", "1", "1"}, new CaptureSAR(sarData, "Load"));
+        sarInvoker.invoke(new String[]{"-u", "1", "1"}, new CaptureSAR(sarData, "CPU"));
+        sarInvoker.invoke(new String[]{"-d", "1", "1"}, new CaptureSAR(sarData, "I/O"));
+        sarInvoker.invoke(new String[]{"-r", "1", "1"}, new CaptureSAR(sarData, "Memory"));
+        sarInvoker.invoke(new String[]{"-w", "1", "1"}, new CaptureSAR(sarData, "Context Switch"));
         sarInvoker.invoke(new String[]{"-n", "DEV", "1", "1"}, new CaptureSAR(sarData, "Network"));
-        
+
         return renderer.render(template, data);
     }
 
@@ -66,7 +67,7 @@ public class HomeRegion implements PageRegion<HomeInput> {
 
         private final List<Map<String, Object>> data;
         private final String title;
-        private final List<String> lines = new ArrayList<>();
+        private final List<List<String>> lines = new ArrayList<>();
 
         public CaptureSAR(List<Map<String, Object>> data, String title) {
             this.data = data;
@@ -75,7 +76,9 @@ public class HomeRegion implements PageRegion<HomeInput> {
 
         @Override
         public void line(String line) {
-            lines.add(line);
+            if (!line.isEmpty() && !line.startsWith("Average")) {
+                lines.add(Arrays.asList(line.split(" ")));
+            }
         }
 
         @Override
@@ -85,7 +88,7 @@ public class HomeRegion implements PageRegion<HomeInput> {
 
         @Override
         public void success(boolean success) {
-            data.add(ImmutableMap.<String, Object>of("title", title, "error", "", "lines", lines));
+            data.add(ImmutableMap.<String, Object>of("title", title, "error", "", "lines", lines.subList(1, lines.size())));
         }
 
     }

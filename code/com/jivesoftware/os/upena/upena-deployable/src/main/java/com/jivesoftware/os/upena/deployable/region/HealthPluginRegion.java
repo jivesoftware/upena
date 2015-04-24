@@ -3,6 +3,7 @@ package com.jivesoftware.os.upena.deployable.region;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.jivesoftware.os.amza.shared.AmzaInstance;
 import com.jivesoftware.os.amza.shared.RingHost;
@@ -14,9 +15,16 @@ import com.jivesoftware.os.jive.utils.http.client.HttpClientFactoryProvider;
 import com.jivesoftware.os.jive.utils.http.client.rest.RequestHelper;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
+import com.jivesoftware.os.server.http.jetty.jersey.endpoints.base.HasUI;
+import com.jivesoftware.os.server.http.jetty.jersey.endpoints.base.HasUI.UI;
 import com.jivesoftware.os.upena.deployable.UpenaEndpoints;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.routing.shared.InstanceDescriptor;
+import com.jivesoftware.os.upena.service.UpenaStore;
+import com.jivesoftware.os.upena.shared.Cluster;
+import com.jivesoftware.os.upena.shared.Host;
+import com.jivesoftware.os.upena.shared.Instance;
+import com.jivesoftware.os.upena.shared.InstanceKey;
 import java.awt.Color;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -39,15 +47,21 @@ public class HealthPluginRegion implements PageRegion<Optional<HealthPluginRegio
     private static final MetricLogger log = MetricLoggerFactory.getLogger();
 
     private final String template;
+    private final String uisTemplate;
     private final SoyRenderer renderer;
     private final AmzaInstance amzaInstance;
-    
+    private final UpenaStore upenaStore;
+
     public HealthPluginRegion(String template,
+        String uisTemplate,
         SoyRenderer renderer,
-        AmzaInstance amzaInstance) {
+        AmzaInstance amzaInstance,
+        UpenaStore upenaStore) {
         this.template = template;
+        this.uisTemplate = uisTemplate;
         this.renderer = renderer;
         this.amzaInstance = amzaInstance;
+        this.upenaStore = upenaStore;
     }
 
     public static class HealthPluginRegionInput {
@@ -202,6 +216,7 @@ public class HealthPluginRegion implements PageRegion<Optional<HealthPluginRegio
                         float sh = (float) Math.max(0, h);
                         hostRows.get(hi).get(si + 1).put("uid", "uid-" + uid);
                         uid++;
+                        hostRows.get(hi).get(si + 1).put("instanceKey", nannyHealth.instanceDescriptor.instanceKey);
                         hostRows.get(hi).get(si + 1).put("clusterKey", nannyHealth.instanceDescriptor.clusterKey);
                         hostRows.get(hi).get(si + 1).put("cluster", nannyHealth.instanceDescriptor.clusterName);
                         hostRows.get(hi).get(si + 1).put("serviceKey", nannyHealth.instanceDescriptor.serviceKey);
@@ -416,5 +431,50 @@ public class HealthPluginRegion implements PageRegion<Optional<HealthPluginRegio
         //String s = Integer.toHexString(Color.HSBtoRGB(0.6f, 1f - ((float) value), sat) & 0xffffff);
         String s = Integer.toHexString(Color.HSBtoRGB((float) value / 3f, sat, 1f) & 0xffffff);
         return "000000".substring(s.length()) + s;
+    }
+
+    public String renderUIs(String instanceKey) throws Exception {
+
+        Instance instance = upenaStore.instances.get(new InstanceKey(instanceKey));
+        if (instance == null) {
+            return "";
+        }
+        Host host = upenaStore.hosts.get(instance.hostKey);
+        Cluster cluster = upenaStore.clusters.get(instance.clusterKey);
+        com.jivesoftware.os.upena.shared.Service service = upenaStore.services.get(instance.serviceKey);
+
+        Instance.Port port = instance.ports.get("manage");
+        if (port == null) {
+            return "";
+        }
+        try {
+            RequestHelper requestHelper = buildRequestHelper(host.hostName, port.port);
+            HasUI hasUI = requestHelper.executeGetRequest("/manage/hasUI", HasUI.class, null);
+            if (hasUI == null) {
+                return "";
+            }
+            List<Map<String, String>> namedUIs = new ArrayList<>();
+            for (UI ui : hasUI.uis) {
+
+                Instance.Port uiPort = instance.ports.get(ui.portName);
+                if (uiPort != null) {
+                    Map<String, String> uiMap = new HashMap<>();
+                    uiMap.put("cluster", cluster.name);
+                    uiMap.put("host", host.name);
+                    uiMap.put("port", String.valueOf(uiPort.port));
+                    uiMap.put("service", service.name);
+                    uiMap.put("instance", String.valueOf(instance.instanceId));
+                    uiMap.put("name", ui.name);
+                    uiMap.put("url", ui.url);
+                    namedUIs.add(uiMap);
+                }
+            }
+
+            return renderer.render(uisTemplate, ImmutableMap.of("uis", namedUIs));
+
+        } catch (Exception x) {
+            log.debug("instance doens't have a ui.", x);
+            return "";
+        }
     }
 }

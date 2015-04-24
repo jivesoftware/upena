@@ -378,5 +378,40 @@ $(document).ready(function () {
             $('body').append(h);
         });
     });
+    
+    $(function () {
+        var hack = {};
+        $('[rel="popover"].health-instance').popover({
+            container: 'body',
+            html: true,
+            content: function () {
+                console.log($(this).attr('id'));
+                var h = $($(this).data('popover-content')).removeClass('hide');
+                hack[$(this).attr('id')] = h;
+                return h;
+            }
+        }).click(function (e) {
+            e.preventDefault();
+        }).on('show.bs.popover', function () {
+            var instanceKey = $(this).data('popoverInstanceKey');
+            var h = hack[$(this).attr('id')];
+            $.ajax("/ui/health/uis", {
+                method: "get",
+                data: {"instanceKey": instanceKey},
+                success: function (data) {
+                    $(h).find(".uis").html(data);
+                },
+                error: function () {
+                    $(h).find(".uis").html("Failed to load UIs");
+                }
+            });
+            
+        }).on('hidden.bs.popover', function () {
+            var h = hack[$(this).attr('id')];
+            h.detach();
+            h.addClass('hide');
+            $('body').append(h);
+        });
+    });
 
 });

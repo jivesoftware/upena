@@ -70,7 +70,7 @@
                                     <td>
                                         <div class="panel panel-default">
                                             <div style="float:left; background-image: linear-gradient(to bottom,{$health.color} 0,{$health.color} 100%); width:20px;height:20px"></div>
-                                            <a href="#" rel="popover" id="popoverAnchor-{$health.uid}" data-popover-content="#popover-{$health.uid}" data-placement="bottom" title="">
+                                            <a class="health-instance" href="#" rel="popover" id="popoverAnchor-{$health.uid}" data-popover-instance-key="{$health.instanceKey}" data-popover-content="#popover-{$health.uid}" data-placement="bottom" title="">
                                                 <span class="glyphicon glyphicon-menu-down">{if $health.health == null}
                                                     &nbsp;&nbsp;&nbsp;
                                                   {else}
@@ -114,6 +114,7 @@
                                                         </form>
                                                     </div>
                                                 {else}
+                                                    <div class="uis"></div>
                                                     {if $health.link}
                                                         <div class="btn-group">
                                                             <form id="serviceHealth" method="get" action="{$health.link}" name="serviceHealth"> 
@@ -250,5 +251,16 @@
                 </table>
             </div>
         </div>
+    </div>
+{/template}
+
+/**
+ * @param? uis
+ */
+{template .healthPluginRegionUIs}
+    <div class="btn-group" role="group">
+        {foreach $u in $ui.uis}
+            <a class="btn btn-default" href="http://{$u.host}:{$u.port}{$u.url}">{$u.name}</a>
+        {/foreach}
     </div>
 {/template}

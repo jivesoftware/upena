@@ -310,7 +310,7 @@ public class Main {
         List<ManagePlugin> plugins = Lists.newArrayList(
             new ManagePlugin("fire", "Health", "/ui/health",
                 HealthPluginEndpoints.class,
-                new HealthPluginRegion("soy.page.healthPluginRegion", renderer, amzaService)),
+                new HealthPluginRegion("soy.page.healthPluginRegion", "soy.page.healthPluginRegionUIs", renderer, amzaService, upenaStore)),
             new ManagePlugin("eye-open", "UIs", "/ui/serviceUIs",
                 ServiceUIsPluginEndpoints.class,
                 new ServiceUIsRegion("soy.page.serviceUIsPluginRegion", renderer, upenaStore)),

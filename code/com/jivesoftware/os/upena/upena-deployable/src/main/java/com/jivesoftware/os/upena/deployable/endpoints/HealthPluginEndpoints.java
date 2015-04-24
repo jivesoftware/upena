@@ -42,4 +42,11 @@ public class HealthPluginEndpoints {
         return Response.ok(rendered).build();
     }
 
+    @GET
+    @Produces(MediaType.TEXT_HTML)
+    @Path("/uis")
+    public Response uis(@QueryParam("instanceKey") @DefaultValue("") String instanceKey) throws Exception {
+        return Response.ok(pluginRegion.renderUIs(instanceKey)).build();
+    }
+
 }
