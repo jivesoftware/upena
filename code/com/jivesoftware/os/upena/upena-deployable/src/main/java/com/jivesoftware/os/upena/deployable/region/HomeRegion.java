@@ -1,9 +1,15 @@
 package com.jivesoftware.os.upena.deployable.region;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import com.jivesoftware.os.upena.deployable.SARInvoker;
 import com.jivesoftware.os.upena.deployable.region.HomeRegion.HomeInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  *
@@ -12,6 +18,7 @@ public class HomeRegion implements PageRegion<HomeInput> {
 
     private final String template;
     private final SoyRenderer renderer;
+    private final ExecutorService executor = Executors.newCachedThreadPool();
 
     public HomeRegion(String template, SoyRenderer renderer) {
         this.template = template;
@@ -35,11 +42,51 @@ public class HomeRegion implements PageRegion<HomeInput> {
         Map<String, Object> data = Maps.newHashMap();
         data.put("wgetURL", input.wgetURL);
         data.put("upenaClusterName", input.upenaClusterName);
+
+        List<Map<String, Object>> sarData = new ArrayList<>();
+        data.put("sarData", sarData);
+
+        SARInvoker sarInvoker = new SARInvoker(executor);
+        sarInvoker.invoke(new String[]{"-q", "1", "3"}, new CaptureSAR(sarData, "Load"));
+        sarInvoker.invoke(new String[]{"-u", "1", "3"}, new CaptureSAR(sarData, "CPU"));
+        sarInvoker.invoke(new String[]{"-d", "1", "3"}, new CaptureSAR(sarData, "I/O"));
+        sarInvoker.invoke(new String[]{"-r", "1", "3"}, new CaptureSAR(sarData, "Memory"));
+        sarInvoker.invoke(new String[]{"-w", "1", "3"}, new CaptureSAR(sarData, "Context Switch"));
+        sarInvoker.invoke(new String[]{"-n", "DEV", "1", "1"}, new CaptureSAR(sarData, "Network"));
+        
         return renderer.render(template, data);
     }
 
     @Override
     public String getTitle() {
         return "Home";
+    }
+
+    private final class CaptureSAR implements SARInvoker.SAROutput {
+
+        private final List<Map<String, Object>> data;
+        private final String title;
+        private final List<String> lines = new ArrayList<>();
+
+        public CaptureSAR(List<Map<String, Object>> data, String title) {
+            this.data = data;
+            this.title = title;
+        }
+
+        @Override
+        public void line(String line) {
+            lines.add(line);
+        }
+
+        @Override
+        public void error(Throwable t) {
+            data.add(ImmutableMap.<String, Object>of("title", title, "error", t.toString(), "lines", new ArrayList<String>()));
+        }
+
+        @Override
+        public void success(boolean success) {
+            data.add(ImmutableMap.<String, Object>of("title", title, "error", "", "lines", lines));
+        }
+
     }
 }

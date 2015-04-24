@@ -3,31 +3,28 @@
 /**
 * @param wgetURL
 * @param upenaClusterName
-* @param uis
+* @param sarData
 */
 {template .homeRegion}
-    {if $uis}
-        <div class="panel panel-default">
-            <div class="panel-heading"><img src="/static/img/icon.png" alt="Fun with deployment" width="24" height="24"><img>
-                {foreach $ui in $uis}
-                    <div class="btn-group">
-                        <button aria-expanded="false" type="button" data-toggle="dropdown" class="btn btn-default btn-sm dropdown-toggle" onclick="location.href='{$ui.uis[0].host}:{$ui.uis[0].port}{$ui.uis[0].url}'">
-                            {$ui.name}<span class="caret"></span></button>
-                        <ul class="dropdown-menu">
-                            {foreach $u in $ui.uis}
-                                <li><a href="http://{$u.host}:{$u.port}{$u.url}">
-                                    <img src="http://{$u.host}:{$u.port}/static/img/favicon.ico"><img>&nbsp;
-                                    {$u.service}&nbsp;{$u.instance}&nbsp;{$u.host}</a></li>
-                            {/foreach}
-                        </ul>
-                    </div>
-
-                {/foreach}
-            </div>
-        </div> 
-    {else}
-        <div style="height:480px;">
-        </div>
+    {if $sarData}
+        {foreach $s in $sarData}
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    {$s.title}
+                </div>
+                {if $s.error}
+                {/if}
+                {if $s.lines}
+                    <table class="table table-striped">
+                        {foreach $l in $s.lines}
+                            <tr><td>
+                                {$l}
+                            </td></tr>
+                        {/foreach}
+                    </table>
+                {/if}
+            </div> 
+        {/foreach}
     {/if}
     <div class="panel panel-default">
         <div class="panel-heading"><img src="/static/img/icon.png" alt="Fun with deployment" width="24" height="24"><img>
