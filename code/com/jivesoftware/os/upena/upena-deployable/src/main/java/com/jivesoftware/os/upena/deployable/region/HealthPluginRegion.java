@@ -438,7 +438,7 @@ public class HealthPluginRegion implements PageRegion<Optional<HealthPluginRegio
 
         Instance instance = upenaStore.instances.get(new InstanceKey(instanceKey));
         if (instance == null) {
-            return "";
+            return "No instance for instanceKey:" + instanceKey;
         }
         Host host = upenaStore.hosts.get(instance.hostKey);
         Cluster cluster = upenaStore.clusters.get(instance.clusterKey);
@@ -446,13 +446,13 @@ public class HealthPluginRegion implements PageRegion<Optional<HealthPluginRegio
 
         Instance.Port port = instance.ports.get("manage");
         if (port == null) {
-            return "";
+            return "No manage port for instanceKey:" + instanceKey;
         }
         try {
             RequestHelper requestHelper = buildRequestHelper(host.hostName, port.port);
             HasUI hasUI = requestHelper.executeGetRequest("/manage/hasUI", HasUI.class, null);
             if (hasUI == null) {
-                return "";
+                return host.hostName + ":" + port.port + " has no UIs.";
             }
             List<Map<String, String>> namedUIs = new ArrayList<>();
             for (UI ui : hasUI.uis) {
@@ -475,7 +475,7 @@ public class HealthPluginRegion implements PageRegion<Optional<HealthPluginRegio
 
         } catch (Exception x) {
             log.debug("instance doens't have a ui.", x);
-            return "";
+            return "Encountered the following error getting UIs. " + x.getMessage();
         }
     }
 }
