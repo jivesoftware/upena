@@ -207,6 +207,7 @@ public class HealthPluginRegion implements PageRegion<Optional<HealthPluginRegio
                         hostRows.get(hi).get(0).put("hostKey", nodeHealth.host); // TODO change to hostKey
                         hostRows.get(hi).get(0).put("health", host);
                         hostRows.get(hi).get(0).put("uid", "uid-" + uid);
+                        hostRows.get(hi).get(0).put("instanceKey", "");
                         uid++;
 
                         double h = 0d;

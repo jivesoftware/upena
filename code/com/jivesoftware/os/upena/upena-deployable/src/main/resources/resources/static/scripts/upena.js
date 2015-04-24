@@ -394,17 +394,19 @@ $(document).ready(function () {
             e.preventDefault();
         }).on('show.bs.popover', function () {
             var instanceKey = $(this).data('popoverInstanceKey');
-            var h = hack[$(this).attr('id')];
-            $.ajax("/ui/health/uis", {
-                method: "get",
-                data: {"instanceKey": instanceKey},
-                success: function (data) {
-                    $(h).find(".uis").html(data);
-                },
-                error: function () {
-                    $(h).find(".uis").html("Failed to load UIs");
-                }
-            });
+            if (instanceKey) {
+                var h = hack[$(this).attr('id')];
+                $.ajax("/ui/health/uis", {
+                    method: "get",
+                    data: {"instanceKey": instanceKey},
+                    success: function (data) {
+                        $(h).find(".uis").html(data);
+                    },
+                    error: function () {
+                        $(h).find(".uis").html("Failed to load UIs");
+                    }
+                });
+            }
             
         }).on('hidden.bs.popover', function () {
             var h = hack[$(this).attr('id')];
