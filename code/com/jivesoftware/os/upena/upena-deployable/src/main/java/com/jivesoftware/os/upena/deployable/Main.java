@@ -63,7 +63,6 @@ import com.jivesoftware.os.upena.deployable.endpoints.HealthPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.HostsPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.InstancesPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ReleasesPluginEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.ServiceUIsPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ServicesPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.UpenaRingPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.lookup.AsyncLookupService;
@@ -77,7 +76,6 @@ import com.jivesoftware.os.upena.deployable.region.HostsPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.InstancesPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ManagePlugin;
 import com.jivesoftware.os.upena.deployable.region.ReleasesPluginRegion;
-import com.jivesoftware.os.upena.deployable.region.ServiceUIsRegion;
 import com.jivesoftware.os.upena.deployable.region.ServicesPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.UpenaRingPluginRegion;
 import com.jivesoftware.os.upena.deployable.server.InitializeRestfulServer;
@@ -305,15 +303,15 @@ public class Main {
         SoyTofu tofu = sfs.compileToTofu();
         SoyRenderer renderer = new SoyRenderer(tofu, new SoyDataUtils());
         SoyService soyService = new SoyService(renderer, new HeaderRegion("soy.chrome.headerRegion", renderer),
-            new HomeRegion("soy.page.homeRegion", renderer));
+            new HomeRegion("soy.page.homeRegion", renderer, amzaService, ringHost));
 
         List<ManagePlugin> plugins = Lists.newArrayList(
             new ManagePlugin("fire", "Health", "/ui/health",
                 HealthPluginEndpoints.class,
                 new HealthPluginRegion("soy.page.healthPluginRegion", "soy.page.healthPluginRegionUIs", renderer, amzaService, upenaStore)),
-            new ManagePlugin("eye-open", "UIs", "/ui/serviceUIs",
-                ServiceUIsPluginEndpoints.class,
-                new ServiceUIsRegion("soy.page.serviceUIsPluginRegion", renderer, upenaStore)),
+            //new ManagePlugin("eye-open", "UIs", "/ui/serviceUIs",
+            //    ServiceUIsPluginEndpoints.class,
+            //    new ServiceUIsRegion("soy.page.serviceUIsPluginRegion", renderer, upenaStore)),
             new ManagePlugin("road", "Changes", "/ui/changeLog",
                 ChangeLogPluginEndpoints.class,
                 new ChangeLogPluginRegion("soy.page.changeLogPluginRegion", renderer, upenaStore)),
