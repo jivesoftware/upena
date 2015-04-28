@@ -8,9 +8,11 @@
 * @param sarData
 */
 {template .homeRegion}
-    <div class="btn-group" role="group">
-        <button type="button" class="btn btn-default" onclick="location.href='{$priorHost}"><-{$priorHost}-(prior)-</button>
-        <button type="button" class="btn btn-default" onclick="location.href='{$nextHost}"-(next)-{$nextHost}-></button>
+    <div class="panel panel-default">
+        <div class="btn-group" role="group">
+            <button type="button" class="btn btn-default" onclick="location.href='http://{$priorHost}'">{$priorHost}-(prior)</button>
+            <button type="button" class="btn btn-default" onclick="location.href='http://{$nextHost}'">(next)-{$nextHost}</button>
+        </div>
     </div>
     {if $sarData}
         {foreach $s in $sarData}
