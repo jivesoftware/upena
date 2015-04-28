@@ -135,24 +135,22 @@ public class HomeRegion implements PageRegion<HomeInput> {
         public void error(Throwable t) {
             captured.set(ImmutableMap.<String, Object>of("title", title, "error", t.toString(), "lines", new ArrayList<String>()));
             lines.clear();
+            running.set(false);
         }
 
         @Override
         public void success(boolean success) {
             captured.set(ImmutableMap.<String, Object>of("title", title, "error", "", "lines", lines.subList(1, lines.size())));
             lines.clear();
+            running.set(false);
         }
 
         @Override
         public void run() {
             if (running.compareAndSet(false, true)) {
-                try {
-                    sarInvoker.invoke(new String[]{"-q", "1", "1"}, this);
-                } finally {
-                    running.set(false);
-                }
+                lines.clear();
+                sarInvoker.invoke(args, this);
             }
         }
-
     }
 }
