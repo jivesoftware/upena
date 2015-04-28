@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
 import com.google.template.soy.SoyFileSet;
+import com.google.template.soy.base.SoySyntaxException;
 import com.google.template.soy.tofu.SoyTofu;
 import com.jivesoftware.os.amza.service.AmzaService;
 import com.jivesoftware.os.amza.service.AmzaServiceInitializer;
@@ -282,6 +283,51 @@ public class Main {
             .addEndpoint(UpenaEndpoints.class)
             .addInjectable(RingHost.class, ringHost);
 
+        injectUI(amzaService, ringHost, upenaStore, upenaConfigStore, upenaService, ubaService, jerseyEndpoints, clusterName);
+
+        InitializeRestfulServer initializeRestfulServer = new InitializeRestfulServer(port, "UpenaNode", 128, 10000);
+        initializeRestfulServer.addClasspathResource("/resources");
+        initializeRestfulServer.addContextHandler("/", jerseyEndpoints);
+
+        RestfulServer restfulServer = initializeRestfulServer.build();
+        restfulServer.start();
+
+        System.out.println("-----------------------------------------------------------------------");
+        System.out.println("|      Jetty Service Online");
+        System.out.println("-----------------------------------------------------------------------");
+
+        if (ubaService != null) {
+            Executors.newScheduledThreadPool(1).scheduleWithFixedDelay(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        ubaService.nanny();
+                    } catch (Exception ex) {
+                        ex.printStackTrace(); // HACK
+                    }
+                }
+            }, 15, 15, TimeUnit.SECONDS);
+            System.out.println("-----------------------------------------------------------------------");
+            System.out.println("|      Uba Service Online");
+            System.out.println("-----------------------------------------------------------------------");
+        }
+        conductor.set(ubaService);
+
+        if (clusterName != null) {
+            AmzaDiscovery amzaDiscovery = new AmzaDiscovery(amzaService, ringHost, clusterName, multicastGroup, multicastPort);
+            amzaDiscovery.start();
+            System.out.println("-----------------------------------------------------------------------");
+            System.out.println("|      Amza Service Discovery Online");
+            System.out.println("-----------------------------------------------------------------------");
+        } else {
+            System.out.println("-----------------------------------------------------------------------");
+            System.out.println("|     Amza Service is in manual Discovery mode.  No cluster name was specified");
+            System.out.println("-----------------------------------------------------------------------");
+        }
+    }
+
+    private void injectUI(AmzaService amzaService, final RingHost ringHost, final UpenaStore upenaStore, final UpenaConfigStore upenaConfigStore,
+        UpenaService upenaService, final UbaService ubaService, JerseyEndpoints jerseyEndpoints, String clusterName) throws SoySyntaxException {
         SoyFileSet.Builder soyFileSetBuilder = new SoyFileSet.Builder();
 
         System.out.println("Add....");
@@ -348,46 +394,6 @@ public class Main {
         }
         jerseyEndpoints.addEndpoint(UpenaPropagatorEndpoints.class);
         jerseyEndpoints.addInjectable(AmzaClusterName.class, new AmzaClusterName((clusterName == null) ? "manual" : clusterName));
-
-        InitializeRestfulServer initializeRestfulServer = new InitializeRestfulServer(port, "UpenaNode", 128, 10000);
-        initializeRestfulServer.addClasspathResource("/resources");
-        initializeRestfulServer.addContextHandler("/", jerseyEndpoints);
-
-        RestfulServer restfulServer = initializeRestfulServer.build();
-        restfulServer.start();
-
-        System.out.println("-----------------------------------------------------------------------");
-        System.out.println("|      Jetty Service Online");
-        System.out.println("-----------------------------------------------------------------------");
-
-        if (ubaService != null) {
-            Executors.newScheduledThreadPool(1).scheduleWithFixedDelay(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        ubaService.nanny();
-                    } catch (Exception ex) {
-                        ex.printStackTrace(); // HACK
-                    }
-                }
-            }, 15, 15, TimeUnit.SECONDS);
-            System.out.println("-----------------------------------------------------------------------");
-            System.out.println("|      Uba Service Online");
-            System.out.println("-----------------------------------------------------------------------");
-        }
-        conductor.set(ubaService);
-
-        if (clusterName != null) {
-            AmzaDiscovery amzaDiscovery = new AmzaDiscovery(amzaService, ringHost, clusterName, multicastGroup, multicastPort);
-            amzaDiscovery.start();
-            System.out.println("-----------------------------------------------------------------------");
-            System.out.println("|      Amza Service Discovery Online");
-            System.out.println("-----------------------------------------------------------------------");
-        } else {
-            System.out.println("-----------------------------------------------------------------------");
-            System.out.println("|     Amza Service is in manual Discovery mode.  No cluster name was specified");
-            System.out.println("-----------------------------------------------------------------------");
-        }
     }
 
     private RowsStorageProvider rowsStorageProvider(final OrderIdProvider orderIdProvider) {

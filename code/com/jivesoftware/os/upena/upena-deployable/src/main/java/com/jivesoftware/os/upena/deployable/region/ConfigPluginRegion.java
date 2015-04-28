@@ -330,10 +330,10 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
                     if (!property_instanceKey_revert.isEmpty()) {
                         modified(user, property_instanceKey_revert);
                     }
-                    
+
                     as = packProperties(input.aClusterKey,
-                    input.aHostKey, input.aServiceKey, input.aInstance, input.aReleaseKey, input.property, input.value,
-                    input.overridden, input.service, input.health);
+                        input.aHostKey, input.aServiceKey, input.aInstance, input.aReleaseKey, input.property, input.value,
+                        input.overridden, input.service, input.health);
                 }
 
                 ConcurrentSkipListMap<String, List<Map<String, String>>> bs = packProperties(input.bClusterKey,

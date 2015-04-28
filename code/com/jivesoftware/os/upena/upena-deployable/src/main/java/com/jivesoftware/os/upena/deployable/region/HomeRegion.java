@@ -58,6 +58,7 @@ public class HomeRegion implements PageRegion<HomeInput> {
         Map<String, Object> data = Maps.newHashMap();
         data.put("wgetURL", input.wgetURL);
         data.put("upenaClusterName", input.upenaClusterName);
+        data.put("currentHost", ringHost.getHost() + ":" + ringHost.getPort());
 
         try {
             List<RingHost> ring = amzaInstance.getRing("master");
@@ -65,7 +66,7 @@ public class HomeRegion implements PageRegion<HomeInput> {
             if (hostIndex != -1) {
                 RingHost priorHost = ring.get(hostIndex - 1 < 0 ? ring.size() - 1 : hostIndex - 1);
                 data.put("priorHost", priorHost.getHost() + ":" + priorHost.getPort());
-                RingHost nextHost = ring.get(hostIndex + 1 <= ring.size() ? 0 : hostIndex + 1);
+                RingHost nextHost = ring.get(hostIndex + 1 >= ring.size() ? 0 : hostIndex + 1);
                 data.put("nextHost", nextHost.getHost() + ":" + nextHost.getPort());
             } else {
                 data.put("nextHost", "invalid");
@@ -119,8 +120,7 @@ public class HomeRegion implements PageRegion<HomeInput> {
             this.sarInvoker = sarInvoker;
             this.args = args;
             this.title = title;
-            captured.set(ImmutableMap.<String, Object>of("title", title, "error", "", "lines",
-                Arrays.asList("Loading", String.valueOf(System.currentTimeMillis()))));
+            captured.set(ImmutableMap.<String, Object>of("title", title, "error", "Loading", "lines", new ArrayList<String>()));
 
         }
 
