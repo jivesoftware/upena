@@ -140,7 +140,7 @@ public class HomeRegion implements PageRegion<HomeInput> {
 
         @Override
         public void success(boolean success) {
-            captured.set(ImmutableMap.<String, Object>of("title", title, "error", "", "lines", lines.subList(1, lines.size())));
+            captured.set(ImmutableMap.<String, Object>of("title", title, "error", "", "lines", new ArrayList<>(lines.subList(1, lines.size()))));
             lines.clear();
             running.set(false);
         }
