@@ -31,11 +31,11 @@
                                 data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="addHost">
                                 <tr style="background-color:#ddd;">
                                     <td>
-                                        <input type="text" autocomplete="off" role="combobox" style="width:280px; padding-left:10px;"
+                                        <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
                                         placeholder="Name" value="{$filters.name?:''}" name="name" id="namePicker" class="form-control">
                                     </td>
                                     <td>
-                                        <input type="text" autocomplete="off" role="combobox" style="width:280px; padding-left:10px;"
+                                        <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
                                         placeholder="Description" value="{$filters.description?:''}" name="description" id="descriptionPicker" class="form-control">
                                     </td>
                                     <td>
@@ -52,11 +52,11 @@
                                     data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="editHost">
                                     <tr>    
                                         <td>
-                                            <input type="text" autocomplete="off" role="combobox" style="width:280px; padding-left:10px;"
+                                            <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
                                             placeholder="Name" value="{$c.name}" name="name" id="namePicker" class="form-control">
                                         </td>
                                         <td>
-                                            <input type="text" autocomplete="off" role="combobox" style="width:280px; padding-left:10px;"
+                                            <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
                                             placeholder="Description" value="{$c.description}" name="description" id="descriptionPicker" class="form-control">
                                         </td>
                                         <td>
@@ -87,13 +87,13 @@
                                                         {/foreach}
                                                         <tr>
                                                             <td>
-                                                                <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                                                <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
                                                                     placeholder="Service" value="" name="service"
                                                                     class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/services">
                                                                 <input type="hidden" name="serviceKey" id="serviceId-{$c.key}" value="{$filters.serviceKey?:''}" />
                                                             </td>
                                                             <td>
-                                                                <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                                                <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
                                                                     placeholder="Release" value="" name="release"
                                                                     class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/releases">
                                                                 <input type="hidden" name="releaseKey" id="releaseId-{$c.key}" value="{$filters.releaseKey?:''}" />

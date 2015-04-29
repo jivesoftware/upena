@@ -371,6 +371,29 @@ public class UpenaEndpoints {
         }
     }
 
+    public static String humanReadableLatency(long millis) {
+        if (millis < 0) {
+            return String.valueOf(millis);
+        }
+
+        long seconds = TimeUnit.MILLISECONDS.toSeconds(millis);
+        millis -= TimeUnit.SECONDS.toMillis(seconds);
+
+        StringBuilder sb = new StringBuilder(64);
+        if (seconds < 10) {
+            sb.append('0');
+        }
+        sb.append(seconds);
+        if (millis < 100) {
+            sb.append('0');
+        }
+        if (millis < 10) {
+            sb.append('0');
+        }
+        sb.append(millis);
+        return (sb.toString());
+    }
+
     public static String humanReadableUptime(long millis) {
         if (millis < 0) {
             return String.valueOf(millis);
