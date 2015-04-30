@@ -61,8 +61,16 @@ public class UpenaConfigStore {
         } else {
             Map<String, String> current = mapper.readValue(rawProperties, new TypeReference<HashMap<String, String>>() {
             });
-            current.putAll(properties);
-            partition.set(tableIndexKey, mapper.writeValueAsBytes(current));
+            boolean changed = false;
+            for (Map.Entry<String, String> entry : properties.entrySet()) {
+                String existing = current.put(entry.getKey(), entry.getValue());
+                if (existing == null || !existing.equals(entry.getValue())) {
+                    changed = true;
+                }
+            }
+            if (changed) {
+                partition.set(tableIndexKey, mapper.writeValueAsBytes(current));
+            }
         }
     }
 

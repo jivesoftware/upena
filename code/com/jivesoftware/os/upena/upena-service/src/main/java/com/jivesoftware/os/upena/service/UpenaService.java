@@ -198,9 +198,6 @@ public class UpenaService {
         ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> got = upenaStore.instances.find(impactedFilter);
         for (Entry<InstanceKey, TimestampedValue<Instance>> e : got.entrySet()) {
             Instance instance = e.getValue().getValue();
-            if (!instance.enabled) {
-                continue;
-            }
             ClusterKey clusterKey = instance.clusterKey;
             Cluster cluster = upenaStore.clusters.get(clusterKey);
             if (cluster == null) {
@@ -233,7 +230,8 @@ public class UpenaService {
                 instance.instanceId,
                 releaseGroup.version,
                 releaseGroup.repository,
-                instance.restartTimestampGMTMillis);
+                instance.restartTimestampGMTMillis,
+                instance.enabled);
 
             for (Entry<String, Instance.Port> p : instance.ports.entrySet()) {
                 instanceDescriptor.ports.put(p.getKey(), new InstanceDescriptor.InstanceDescriptorPort(p.getValue().port));

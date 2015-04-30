@@ -19,7 +19,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -37,6 +36,7 @@ public class InstanceDescriptor {
     public final String repository;
     public final Map<String, InstanceDescriptorPort> ports = new ConcurrentHashMap<>();
     public final long restartTimestampGMTMillis; // deliberately not part of hash or equals.
+    public final boolean enabled;
 
     @JsonCreator
     public InstanceDescriptor(@JsonProperty(value = "clusterKey") String clusterKey,
@@ -49,7 +49,8 @@ public class InstanceDescriptor {
         @JsonProperty("instanceName") int instanceName,
         @JsonProperty("versionName") String versionName,
         @JsonProperty("repository") String repository,
-        @JsonProperty("restartTimestampGMTMillis") long restartTimestampGMTMillis) {
+        @JsonProperty("restartTimestampGMTMillis") long restartTimestampGMTMillis,
+        @JsonProperty("enabled") boolean enabled) {
         this.clusterKey = clusterKey;
         this.clusterName = clusterName.replaceAll("[^a-zA-Z0-9-_\\.]", "_");
         this.serviceKey = serviceKey;
@@ -61,6 +62,7 @@ public class InstanceDescriptor {
         this.versionName = versionName;
         this.repository = repository;
         this.restartTimestampGMTMillis = restartTimestampGMTMillis;
+        this.enabled = enabled;
     }
 
     public static class InstanceDescriptorPort {
@@ -116,69 +118,72 @@ public class InstanceDescriptor {
             + ", repository=" + repository
             + ", ports=" + ports
             + ", restartTimestampGMTMillis=" + restartTimestampGMTMillis
+            + ", enabled=" + enabled
             + '}';
     }
 
     @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 73 * hash + Objects.hashCode(this.clusterKey);
-        hash = 73 * hash + Objects.hashCode(this.clusterName);
-        hash = 73 * hash + Objects.hashCode(this.serviceKey);
-        hash = 73 * hash + Objects.hashCode(this.serviceName);
-        hash = 73 * hash + Objects.hashCode(this.releaseGroupKey);
-        hash = 73 * hash + Objects.hashCode(this.releaseGroupName);
-        hash = 73 * hash + Objects.hashCode(this.instanceKey);
-        hash = 73 * hash + this.instanceName;
-        hash = 73 * hash + Objects.hashCode(this.versionName);
-        hash = 73 * hash + Objects.hashCode(this.repository);
-        hash = 73 * hash + Objects.hashCode(this.ports);
-        return hash;
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        InstanceDescriptor that = (InstanceDescriptor) o;
+
+        if (instanceName != that.instanceName) {
+            return false;
+        }
+        if (enabled != that.enabled) {
+            return false;
+        }
+        if (clusterKey != null ? !clusterKey.equals(that.clusterKey) : that.clusterKey != null) {
+            return false;
+        }
+        if (clusterName != null ? !clusterName.equals(that.clusterName) : that.clusterName != null) {
+            return false;
+        }
+        if (serviceKey != null ? !serviceKey.equals(that.serviceKey) : that.serviceKey != null) {
+            return false;
+        }
+        if (serviceName != null ? !serviceName.equals(that.serviceName) : that.serviceName != null) {
+            return false;
+        }
+        if (releaseGroupKey != null ? !releaseGroupKey.equals(that.releaseGroupKey) : that.releaseGroupKey != null) {
+            return false;
+        }
+        if (releaseGroupName != null ? !releaseGroupName.equals(that.releaseGroupName) : that.releaseGroupName != null) {
+            return false;
+        }
+        if (instanceKey != null ? !instanceKey.equals(that.instanceKey) : that.instanceKey != null) {
+            return false;
+        }
+        if (versionName != null ? !versionName.equals(that.versionName) : that.versionName != null) {
+            return false;
+        }
+        if (repository != null ? !repository.equals(that.repository) : that.repository != null) {
+            return false;
+        }
+        return !(ports != null ? !ports.equals(that.ports) : that.ports != null);
+
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final InstanceDescriptor other = (InstanceDescriptor) obj;
-        if (!Objects.equals(this.clusterKey, other.clusterKey)) {
-            return false;
-        }
-        if (!Objects.equals(this.clusterName, other.clusterName)) {
-            return false;
-        }
-        if (!Objects.equals(this.serviceKey, other.serviceKey)) {
-            return false;
-        }
-        if (!Objects.equals(this.serviceName, other.serviceName)) {
-            return false;
-        }
-        if (!Objects.equals(this.releaseGroupKey, other.releaseGroupKey)) {
-            return false;
-        }
-        if (!Objects.equals(this.releaseGroupName, other.releaseGroupName)) {
-            return false;
-        }
-        if (!Objects.equals(this.instanceKey, other.instanceKey)) {
-            return false;
-        }
-        if (this.instanceName != other.instanceName) {
-            return false;
-        }
-        if (!Objects.equals(this.versionName, other.versionName)) {
-            return false;
-        }
-        if (!Objects.equals(this.repository, other.repository)) {
-            return false;
-        }
-        if (!Objects.equals(this.ports, other.ports)) {
-            return false;
-        }
-        return true;
+    public int hashCode() {
+        int result = clusterKey != null ? clusterKey.hashCode() : 0;
+        result = 31 * result + (clusterName != null ? clusterName.hashCode() : 0);
+        result = 31 * result + (serviceKey != null ? serviceKey.hashCode() : 0);
+        result = 31 * result + (serviceName != null ? serviceName.hashCode() : 0);
+        result = 31 * result + (releaseGroupKey != null ? releaseGroupKey.hashCode() : 0);
+        result = 31 * result + (releaseGroupName != null ? releaseGroupName.hashCode() : 0);
+        result = 31 * result + (instanceKey != null ? instanceKey.hashCode() : 0);
+        result = 31 * result + instanceName;
+        result = 31 * result + (versionName != null ? versionName.hashCode() : 0);
+        result = 31 * result + (repository != null ? repository.hashCode() : 0);
+        result = 31 * result + (ports != null ? ports.hashCode() : 0);
+        result = 31 * result + (enabled ? 1 : 0);
+        return result;
     }
-
 }

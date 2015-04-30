@@ -61,18 +61,18 @@ public class UpenaDecommissionMojo extends AbstractMojo {
 
     /**
      *
-     * @parameter expression="${upena.host}" default-value="localhost"
+     * @parameter property="upena.host" default-value="localhost"
      */
     private String composerHost;
     /**
      *
-     * @parameter expression="${upena.port}" default-value="1175"
+     * @parameter property="upena.port" default-value="1175"
      */
     private String composerPort;
 
     /**
      *
-     * @parameter expression="${upena.release}" default-value=""
+     * @parameter property="upena.release" default-value=""
      */
     private String release;
 

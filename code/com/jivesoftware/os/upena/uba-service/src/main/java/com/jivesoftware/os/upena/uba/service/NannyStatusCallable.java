@@ -73,6 +73,13 @@ class NannyStatusCallable implements Callable<Boolean> {
                 startupTimestamp.set(-1);
                 return false;
             }
+
+            if (!id.enabled) {
+                healthLog.forcedHealthState("Service Startup",
+                    "Service is not enabled. Phase: stop...", "Enable when ready");
+                return true;
+            }
+
             healthLog.forcedHealthState("Service Startup",
                 "Service is attempting to start. Phase: start...", "Be patient");
             if (!invokeScript.invoke(deployLog, instancePath, "start")) {

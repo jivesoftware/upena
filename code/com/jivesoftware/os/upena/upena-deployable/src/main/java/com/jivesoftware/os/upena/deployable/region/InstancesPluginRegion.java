@@ -158,11 +158,11 @@ public class InstancesPluginRegion implements PageRegion<Optional<InstancesPlugi
 
     private void handleFilter(Map<String, Object> data, InstancesPluginRegionInput input) {
         data.put("message", "Filtering: "
-            + "cluster.equals '" + input.cluster + "' "
-            + "host.equals '" + input.host + "' "
-            + "service.equals '" + input.service + "' "
-            + "release.equals '" + input.release + "'"
-            + "id.equals '" + input.instanceId + "'"
+                + "cluster.equals '" + input.cluster + "' "
+                + "host.equals '" + input.host + "' "
+                + "service.equals '" + input.service + "' "
+                + "release.equals '" + input.release + "'"
+                + "id.equals '" + input.instanceId + "'"
         );
     }
 
@@ -281,7 +281,7 @@ public class InstancesPluginRegion implements PageRegion<Optional<InstancesPlugi
                 upenaStore.instances.update(null, newInstance);
                 upenaStore.record(user, "added", System.currentTimeMillis(), "", "instance-ui",
                     instanceToHumanReadableString(newInstance) + "\n" + newInstance
-                    .toString());
+                        .toString());
 
                 data.put("message", "Created Instance.");
             }
@@ -318,29 +318,50 @@ public class InstancesPluginRegion implements PageRegion<Optional<InstancesPlugi
             if (instance == null) {
                 data.put("message", "Couldn't update no existent Instance. Someone else likely just removed it since your last refresh.");
             } else {
+                boolean valid = true;
                 ClusterKey clusterKey = new ClusterKey(input.clusterKey);
                 Cluster cluster = upenaStore.clusters.get(clusterKey);
-                if (cluster != null) {
+                if (cluster == null) {
+                    data.put("message", "Cluster key:" + input.clusterKey + " is invalid.");
+                    valid = false;
+                }
+                Host host = upenaStore.hosts.get(new HostKey(input.hostKey));
+                if (host == null) {
+                    data.put("message", "Host key:" + input.hostKey + " is invalid.");
+                    valid = false;
+                }
+                Service service = upenaStore.services.get(new ServiceKey(input.serviceKey));
+                if (service == null) {
+                    data.put("message", "Service key:" + input.serviceKey + " is invalid.");
+                    valid = false;
+                }
+                ReleaseGroup releaseGroup = upenaStore.releaseGroups.get(new ReleaseGroupKey(input.releaseKey));
+                if (releaseGroup == null) {
+                    data.put("message", "ReleaseGroup key:" + input.releaseKey + " is invalid.");
+                    valid = false;
+                }
+
+                if (valid) {
                     Map<ServiceKey, ReleaseGroupKey> defaultReleaseGroups = cluster.defaultReleaseGroups;
                     if (!defaultReleaseGroups.containsKey(new ServiceKey(input.serviceKey))) {
                         defaultReleaseGroups.put(new ServiceKey(input.serviceKey), new ReleaseGroupKey(input.releaseKey));
                         upenaStore.clusters.update(clusterKey, cluster);
                     }
+                    Instance updatedInstance = new Instance(
+                        new ClusterKey(input.clusterKey),
+                        new HostKey(input.hostKey),
+                        new ServiceKey(input.serviceKey),
+                        new ReleaseGroupKey(input.releaseKey),
+                        Integer.parseInt(input.instanceId),
+                        input.enabled, false, System.currentTimeMillis());
+
+                    upenaStore.instances.update(new InstanceKey(input.key), updatedInstance);
+
+                    upenaStore.record(user, "updated", System.currentTimeMillis(), "", "instance-ui", instanceToHumanReadableString(instance) + "\n"
+                            + updatedInstance.toString()
+                    );
+                    data.put("message", "Updated Instance:" + input.key);
                 }
-                Instance updatedInstance = new Instance(
-                    new ClusterKey(input.clusterKey),
-                    new HostKey(input.hostKey),
-                    new ServiceKey(input.serviceKey),
-                    new ReleaseGroupKey(input.releaseKey),
-                    Integer.parseInt(input.instanceId),
-                    input.enabled, false, System.currentTimeMillis());
-
-                upenaStore.instances.update(new InstanceKey(input.key), updatedInstance);
-
-                upenaStore.record(user, "updated", System.currentTimeMillis(), "", "instance-ui", instanceToHumanReadableString(instance) + "\n"
-                    + updatedInstance.toString()
-                );
-                data.put("message", "Updated Instance:" + input.key);
             }
 
         } catch (Exception x) {
@@ -379,19 +400,25 @@ public class InstancesPluginRegion implements PageRegion<Optional<InstancesPlugi
         }
         map.put("ports", ports);
         map.put("enabled", value.enabled);
+
+        Cluster cluster = upenaStore.clusters.get(value.clusterKey);
+        Host host = upenaStore.hosts.get(value.hostKey);
+        Service service = upenaStore.services.get(value.serviceKey);
+        ReleaseGroup releaseGroup = upenaStore.releaseGroups.get(value.releaseGroupKey);
+
         map.put("cluster", ImmutableMap.of(
             "key", value.clusterKey.getKey(),
-            "name", upenaStore.clusters.get(value.clusterKey).name));
+            "name", cluster != null ? cluster.name : "unknownCluster"));
         map.put("host", ImmutableMap.of(
             "key", value.hostKey.getKey(),
-            "name", upenaStore.hosts.get(value.hostKey).name));
+            "name", host != null ? host.name : "unknownHost"));
         map.put("service", ImmutableMap.of(
             "key", value.serviceKey.getKey(),
-            "name", upenaStore.services.get(value.serviceKey).name));
+            "name", service != null ? service.name : "unknownService"));
         map.put("instanceId", String.valueOf(value.instanceId));
         map.put("release", ImmutableMap.of(
             "key", value.releaseGroupKey.getKey(),
-            "name", upenaStore.releaseGroups.get(value.releaseGroupKey).name));
+            "name", releaseGroup != null ? releaseGroup.name : "unknownRelease"));
         return map;
     }
 

@@ -73,11 +73,14 @@
                                             <a href="#" rel="popover-health" id="popoverAnchor-{$health.uid}" 
                                                 {if $health.instanceKey} data-popover-instance-key="{$health.instanceKey}" {/if}
                                                 data-popover-content="#popover-{$health.uid}" data-placement="bottom" title="">
-                                                <span class="glyphicon glyphicon-menu-down">{if $health.health == null}
-                                                    &nbsp;&nbsp;&nbsp;
-                                                  {else}
-                                                    {$health.health|noAutoescape}
-                                                  {/if}</span></a>
+                                                <span class="glyphicon glyphicon-menu-down">
+                                                    {if $health.health == null}
+                                                        &nbsp;&nbsp;&nbsp;
+                                                    {else}
+                                                        {$health.health|noAutoescape}
+                                                    {/if}
+                                                </span>
+                                            </a>
                                             <div id="popover-{$health.uid}" class="hide">
 
                                                 {if $health.health == null}
