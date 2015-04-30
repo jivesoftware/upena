@@ -65,6 +65,10 @@ public class InstancePath {
         properties.load(new FileInputStream(instanceProperties()));
 
         System.out.println("readInstanceDescriptor:" + properties);
+        Object enabled = properties.get(instancePrefix + "enabled");
+        if (enabled == null) {
+            enabled = "true";
+        }
 
         InstanceDescriptor id = new InstanceDescriptor(properties.get(instancePrefix + "clusterKey").toString(),
             properties.get(instancePrefix + "clusterName").toString(),
@@ -77,7 +81,7 @@ public class InstancePath {
             properties.get(instancePrefix + "version").toString(),
             properties.get(instancePrefix + "repository").toString(),
             -1,
-            Boolean.parseBoolean(properties.get(instancePrefix + "enabled").toString()));
+            Boolean.parseBoolean(enabled.toString()));
 
         for (Object key : properties.keySet()) {
             String portKey = key.toString();

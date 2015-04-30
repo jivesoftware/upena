@@ -380,10 +380,9 @@ public class UpenaEndpoints {
         millis -= TimeUnit.SECONDS.toMillis(seconds);
 
         StringBuilder sb = new StringBuilder(64);
-        if (seconds < 10) {
-            sb.append('0');
-        }
         sb.append(seconds);
+        sb.append(".");
+
         if (millis < 100) {
             sb.append('0');
         }
