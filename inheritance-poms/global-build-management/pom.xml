@@ -35,11 +35,6 @@
             <id>checks</id>
             <build>
                 <plugins>
-                    <!--Makes sure nobody depends on SNAPSHOTs.-->
-                    <!--                    <plugin>
-                        <groupId>com.jivesoftware.jive.build.configuration.maven.plugins</groupId>
-                        <artifactId>no-snapshots-plugin</artifactId>
-                    </plugin>-->
                 </plugins>
             </build>
         </profile>

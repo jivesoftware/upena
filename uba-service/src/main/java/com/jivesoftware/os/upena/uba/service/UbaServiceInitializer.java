@@ -29,7 +29,7 @@ import java.util.Arrays;
 
 public class UbaServiceInitializer {
 
-    public UbaService initialize(String hostKey, String workingDir, String composerHost, int composerPort,UbaLog ubaLog) throws Exception {
+    public UbaService initialize(String hostKey, String workingDir, String composerHost, int composerPort, UbaLog ubaLog) throws Exception {
 
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
@@ -47,7 +47,7 @@ public class UbaServiceInitializer {
     RequestHelper buildRequestHelper(String host, int port, ObjectMapper mapper) {
         HttpClientConfig httpClientConfig = HttpClientConfig.newBuilder().build();
         HttpClientFactory httpClientFactory = new HttpClientFactoryProvider()
-                .createHttpClientFactory(Arrays.<HttpClientConfiguration>asList(httpClientConfig));
+            .createHttpClientFactory(Arrays.<HttpClientConfiguration>asList(httpClientConfig));
         HttpClient httpClient = httpClientFactory.createClient(host, port);
         RequestHelper requestHelper = new RequestHelper(httpClient, mapper);
         return requestHelper;
