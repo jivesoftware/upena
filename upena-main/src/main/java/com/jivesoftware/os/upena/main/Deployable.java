@@ -17,11 +17,13 @@ package com.jivesoftware.os.upena.main;
 
 import com.jivesoftware.os.jive.utils.base.service.ServiceHandle;
 import com.jivesoftware.os.jive.utils.health.HealthCheck;
+import com.jivesoftware.os.jive.utils.health.HealthCheckResponseImpl;
 import com.jivesoftware.os.server.http.jetty.jersey.endpoints.configuration.MainProperties;
 import com.jivesoftware.os.server.http.jetty.jersey.endpoints.configuration.MainPropertiesEndpoints;
 import com.jivesoftware.os.server.http.jetty.jersey.server.InitializeRestfulServer;
 import com.jivesoftware.os.server.http.jetty.jersey.server.JerseyEndpoints;
 import com.jivesoftware.os.server.http.jetty.jersey.server.RestfulManageServer;
+import com.jivesoftware.os.server.http.jetty.jersey.server.RestfulServer;
 import com.jivesoftware.os.server.http.jetty.jersey.server.util.Resource;
 import com.jivesoftware.os.upena.reporter.service.StatusReportBroadcaster;
 import com.jivesoftware.os.upena.reporter.service.StatusReportBroadcaster.StatusReportCallback;
@@ -65,8 +67,8 @@ public class Deployable {
         String applicationName = "manage " + instanceConfig.getServiceName() + " " + instanceConfig.getClusterName();
         restfulManageServer = new RestfulManageServer(instanceConfig.getManagePort(),
             applicationName,
-            128,
-            10000);
+            instanceConfig.getManageMaxThreads(),
+            instanceConfig.getManageMaxQueuedRequests());
 
         restfulManageServer.addEndpoint(TenantRoutingRestEndpoints.class);
         restfulManageServer.addInjectable(TenantRoutingProvider.class, tenantRoutingProvider);
@@ -76,8 +78,8 @@ public class Deployable {
         jerseyEndpoints = new JerseyEndpoints();
         restfulServer = new InitializeRestfulServer(instanceConfig.getMainPort(),
             applicationName,
-            128,
-            10000);
+            instanceConfig.getMainMaxThreads(),
+            instanceConfig.getMainMaxQueuedRequests());
     }
 
     /**
@@ -140,9 +142,18 @@ public class Deployable {
             ComponentHealthCheck healthCheck = new ComponentHealthCheck("'" + applicationName + "'service initialization");
             restfulManageServer.addHealthCheck(healthCheck);
             try {
-                restfulManageServer.initialize();
+                RestfulManageServer server = restfulManageServer.initialize();
                 healthCheck.setHealthy("'" + applicationName + "' service is initialized.");
                 banneredOneLiner("'" + applicationName + "' service started. Elapse:" + (System.currentTimeMillis() - time));
+                server.addHealthCheck((HealthCheck) () -> {
+                    String status = "Currently this service on port:"
+                        + instanceConfig.getManagePort() + " has " + server.getIdleThreads() + " idle thread/s.";
+                    String description = "How many free thread are available to handle http request.";
+                    String resolution = "Increase the number or threads or add more services.";
+                    return new HealthCheckResponseImpl("manage>http>threadPool",
+                        server.isLowOnThreads() ? 0d : 1d,
+                        status, description, resolution, System.currentTimeMillis());
+                });
                 return new ServiceHandle() {
 
                     @Override
@@ -185,16 +196,25 @@ public class Deployable {
 
     public ServiceHandle buildServer() throws Exception {
         if (serverStarted.compareAndSet(false, true)) {
-            InstanceConfig instanceConfig = configBinder.bind(InstanceConfig.class);
+            final InstanceConfig instanceConfig = configBinder.bind(InstanceConfig.class);
             String applicationName = instanceConfig.getServiceName() + " " + instanceConfig.getClusterName();
             ComponentHealthCheck healthCheck = new ComponentHealthCheck("'" + applicationName + "' service initialization");
             restfulManageServer.addHealthCheck(healthCheck);
             try {
                 restfulServer.addContextHandler("/", jerseyEndpoints);
-                ServiceHandle serviceHandle = restfulServer.build();
+                final RestfulServer server = restfulServer.build();
                 healthCheck.setHealthy("'" + applicationName + "' service is initialized.");
                 startedUpBanner();
-                return serviceHandle;
+                restfulManageServer.addHealthCheck((HealthCheck) () -> {
+                    String status = "Currently this service on port:"
+                        + instanceConfig.getMainPort()+ " has " + server.getIdleThreads() + " idle thread/s.";
+                    String description = "How many free thread are available to handle http request.";
+                    String resolution = "Increase the number or threads or add more services.";
+                    return new HealthCheckResponseImpl("main>http>threadPool",
+                        server.isLowOnThreads() ? 0d : 1d,
+                        status, description, resolution, System.currentTimeMillis());
+                });
+                return server;
             } catch (Exception x) {
                 healthCheck.setUnhealthy("Failed to initialize service '" + applicationName + "'.", x);
                 throw x;

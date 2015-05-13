@@ -63,4 +63,16 @@ import org.merlin.config.defaults.IntDefault;
     @IntDefault(10001)
     Integer getManagePort();
 
+    @IntDefault(1024)
+    Integer getMainMaxThreads();
+
+    @IntDefault(1024)
+    Integer getManageMaxThreads();
+
+    @IntDefault(10000)
+    Integer getMainMaxQueuedRequests();
+
+    @IntDefault(10000)
+    Integer getManageMaxQueuedRequests();
+
 }

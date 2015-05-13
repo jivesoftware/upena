@@ -32,4 +32,10 @@ class TimestampedClient<C> {
     public C getClient() {
         return client;
     }
+
+    @Override
+    public String toString() {
+        return "TimestampedClient{" + "timestamp=" + timestamp + ", client=" + client + '}';
+    }
+
 }
