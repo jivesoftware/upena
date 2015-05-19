@@ -15,9 +15,14 @@
  */
 package com.jivesoftware.os.upena.main;
 
+import com.google.common.base.Joiner;
 import com.jivesoftware.os.jive.utils.base.service.ServiceHandle;
 import com.jivesoftware.os.jive.utils.health.HealthCheck;
+import com.jivesoftware.os.jive.utils.health.HealthCheckResponse;
 import com.jivesoftware.os.jive.utils.health.HealthCheckResponseImpl;
+import com.jivesoftware.os.mlogger.core.LoggerSummary;
+import com.jivesoftware.os.mlogger.core.MetricLogger;
+import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.server.http.jetty.jersey.endpoints.configuration.MainProperties;
 import com.jivesoftware.os.server.http.jetty.jersey.endpoints.configuration.MainPropertiesEndpoints;
 import com.jivesoftware.os.server.http.jetty.jersey.server.InitializeRestfulServer;
@@ -39,6 +44,8 @@ import org.merlin.config.Config;
 
 public class Deployable {
 
+    private final MetricLogger LOG = MetricLoggerFactory.getLogger();
+
     private final ConfigBinder configBinder;
     private final TenantRoutingProvider tenantRoutingProvider;
     private final RestfulManageServer restfulManageServer;
@@ -47,6 +54,7 @@ public class Deployable {
     private final InitializeRestfulServer restfulServer;
     private final JerseyEndpoints jerseyEndpoints;
     private final AtomicBoolean serverStarted = new AtomicBoolean(false);
+    private final InstanceConfig instanceConfig;
 
     public Deployable(String[] args) throws IOException {
         this(args, null);
@@ -55,7 +63,7 @@ public class Deployable {
     public Deployable(String[] args, ConnectionDescriptorsProvider connectionsDescriptorProvider) throws IOException {
 
         configBinder = new ConfigBinder(args);
-        InstanceConfig instanceConfig = configBinder.bind(InstanceConfig.class);
+        instanceConfig = configBinder.bind(InstanceConfig.class);
         if (connectionsDescriptorProvider == null) {
             TenantRoutingBirdProviderBuilder tenantRoutingBirdBuilder = new TenantRoutingBirdProviderBuilder(instanceConfig.getRoutesHost(),
                 instanceConfig.getRoutesPort());
@@ -137,7 +145,6 @@ public class Deployable {
     public ServiceHandle buildManageServer() throws Exception {
         if (manageServerStarted.compareAndSet(false, true)) {
             long time = System.currentTimeMillis();
-            InstanceConfig instanceConfig = configBinder.bind(InstanceConfig.class);
             String applicationName = "manage " + instanceConfig.getServiceName() + " " + instanceConfig.getClusterName();
             ComponentHealthCheck healthCheck = new ComponentHealthCheck("'" + applicationName + "'service initialization");
             restfulManageServer.addHealthCheck(healthCheck);
@@ -194,9 +201,61 @@ public class Deployable {
         restfulServer.addResource(resource);
     }
 
+    private class LoggerSummaryHealthCheck implements HealthCheck {
+
+        private final LoggerSummary loggerSummary;
+
+        public LoggerSummaryHealthCheck(LoggerSummary loggerSummary) {
+            this.loggerSummary = loggerSummary;
+        }
+
+        @Override
+        public HealthCheckResponse checkHealth() throws Exception {
+            return new HealthCheckResponse() {
+
+                @Override
+                public String getName() {
+                    return "logged>errors";
+                }
+
+                @Override
+                public double getHealth() {
+                    return loggerSummary.errors > 0 ? 0d : 1d;
+                }
+
+                @Override
+                public String getStatus() {
+                    return "infos:" + loggerSummary.infos + " warns:" + loggerSummary.warns + " errors:" + loggerSummary.errors;
+                }
+
+                @Override
+                public String getDescription() {
+                    String[] errors = loggerSummary.lastNErrors.get();
+                    return "Recent Errors:\n" + Joiner.on("\n").join(errors);
+                }
+
+                @Override
+                public String getResolution() {
+                    return "Look confirn errors are benign. Click/Curl/Hit to clear reset. http://" + instanceConfig.getHost() + ":" + instanceConfig
+                        .getManagePort() + "/manage/resetErrors";
+                }
+
+                @Override
+                public long getTimestamp() {
+                    return System.currentTimeMillis();
+                }
+            };
+        }
+
+    }
+
+    public void addErrorHealthChecks() {
+        restfulManageServer.addHealthCheck(new LoggerSummaryHealthCheck(LoggerSummary.INSTANCE),
+            new LoggerSummaryHealthCheck(LoggerSummary.INSTANCE_EXTERNAL_INTERACTIONS));
+    }
+
     public ServiceHandle buildServer() throws Exception {
         if (serverStarted.compareAndSet(false, true)) {
-            final InstanceConfig instanceConfig = configBinder.bind(InstanceConfig.class);
             String applicationName = instanceConfig.getServiceName() + " " + instanceConfig.getClusterName();
             ComponentHealthCheck healthCheck = new ComponentHealthCheck("'" + applicationName + "' service initialization");
             restfulManageServer.addHealthCheck(healthCheck);
@@ -207,7 +266,7 @@ public class Deployable {
                 startedUpBanner();
                 restfulManageServer.addHealthCheck((HealthCheck) () -> {
                     String status = "Currently this service on port:"
-                        + instanceConfig.getMainPort()+ " has " + server.getIdleThreads() + " idle thread/s.";
+                        + instanceConfig.getMainPort() + " has " + server.getIdleThreads() + " idle thread/s.";
                     String description = "How many free thread are available to handle http request.";
                     String resolution = "Increase the number or threads or add more services.";
                     return new HealthCheckResponseImpl("main>http>threadPool",
@@ -225,31 +284,29 @@ public class Deployable {
     }
 
     void banneredOneLiner(String message) {
-        System.out.println(pad("-", "", "-", '-', 100));
-        System.out.println(pad("|", "", "|", ' ', 100));
-        System.out.println(pad("|", "      " + message, "|", ' ', 100));
-        System.out.println(pad("|", "", "|", ' ', 100));
-        System.out.println(pad("-", "", "-", '-', 100));
+        LOG.info(pad("-", "", "-", '-', 100));
+        LOG.info(pad("|", "", "|", ' ', 100));
+        LOG.info(pad("|", "      " + message, "|", ' ', 100));
+        LOG.info(pad("|", "", "|", ' ', 100));
+        LOG.info(pad("-", "", "-", '-', 100));
     }
 
     void startedUpBanner() {
-        InstanceConfig instanceConfig = configBinder.bind(InstanceConfig.class);
 
-        System.out.println(pad("-", "", "-", '-', 100));
-        System.out.println(pad("|", "", "|", ' ', 100));
-        System.out.println(pad("|", "      Service INSTANCEKEY:" + instanceConfig.getInstanceKey(), "|", ' ', 100));
-        System.out.println(pad("|", "", "|", ' ', 100));
-        System.out.println(pad("|", "      Service CLUSTER:" + instanceConfig.getClusterName(), "|", ' ', 100));
-        System.out.println(pad("|", "         Service HOST:" + instanceConfig.getHost(), "|", ' ', 100));
-        System.out.println(pad("|", "      Service SERVICE:" + instanceConfig.getServiceName(), "|", ' ', 100));
-        System.out.println(pad("|", "     Service INSTANCE:" + instanceConfig.getInstanceName(), "|", ' ', 100));
-        System.out.println(pad("|", "         Primary PORT:" + instanceConfig.getMainPort(), "|", ' ', 100));
-        System.out.println(pad("|", "          Manage PORT:" + instanceConfig.getManagePort(), "|", ' ', 100));
-        System.out.println(pad("|", "", "|", ' ', 100));
-        System.out.println(pad("|", "        curl " + instanceConfig.getHost()
-            + ":" + instanceConfig.getManagePort() + "/manage/help", "|", ' ', 100));
-        System.out.println(pad("|", "", "|", ' ', 100));
-        System.out.println(pad("-", "", "-", '-', 100));
+        LOG.info(pad("-", "", "-", '-', 100));
+        LOG.info(pad("|", "", "|", ' ', 100));
+        LOG.info(pad("|", "      Service INSTANCEKEY:" + instanceConfig.getInstanceKey(), "|", ' ', 100));
+        LOG.info(pad("|", "", "|", ' ', 100));
+        LOG.info(pad("|", "      Service CLUSTER:" + instanceConfig.getClusterName(), "|", ' ', 100));
+        LOG.info(pad("|", "         Service HOST:" + instanceConfig.getHost(), "|", ' ', 100));
+        LOG.info(pad("|", "      Service SERVICE:" + instanceConfig.getServiceName(), "|", ' ', 100));
+        LOG.info(pad("|", "     Service INSTANCE:" + instanceConfig.getInstanceName(), "|", ' ', 100));
+        LOG.info(pad("|", "         Primary PORT:" + instanceConfig.getMainPort(), "|", ' ', 100));
+        LOG.info(pad("|", "          Manage PORT:" + instanceConfig.getManagePort(), "|", ' ', 100));
+        LOG.info(pad("|", "", "|", ' ', 100));
+        LOG.info(pad("|", "        curl " + instanceConfig.getHost() + ":" + instanceConfig.getManagePort() + "/manage/help", "|", ' ', 100));
+        LOG.info(pad("|", "", "|", ' ', 100));
+        LOG.info(pad("-", "", "-", '-', 100));
     }
 
     String pad(String prefic, String string, String postFix, char pad, int totalLength) {
