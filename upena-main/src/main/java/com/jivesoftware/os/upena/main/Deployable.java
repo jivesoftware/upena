@@ -232,6 +232,13 @@ public class Deployable {
                 @Override
                 public String getDescription() {
                     String[] errors = loggerSummary.lastNErrors.get();
+                    if (errors != null && errors.length > 0) {
+                        for (int i = 0; i < errors.length; i++) {
+                            if (errors[i] == null) {
+                                errors[i] = "";
+                            }
+                        }
+                    }
                     return "Recent Errors:\n" + Joiner.on("\n").join(Objects.firstNonNull(errors, new String[]{""}));
                 }
 
