@@ -16,6 +16,7 @@
 package com.jivesoftware.os.upena.main;
 
 import com.google.common.base.Joiner;
+import com.google.common.base.Objects;
 import com.jivesoftware.os.jive.utils.base.service.ServiceHandle;
 import com.jivesoftware.os.jive.utils.health.HealthCheck;
 import com.jivesoftware.os.jive.utils.health.HealthCheckResponse;
@@ -231,7 +232,7 @@ public class Deployable {
                 @Override
                 public String getDescription() {
                     String[] errors = loggerSummary.lastNErrors.get();
-                    return "Recent Errors:\n" + Joiner.on("\n").join(errors);
+                    return "Recent Errors:\n" + Joiner.on("\n").join(Objects.firstNonNull(errors, new String[]{""}));
                 }
 
                 @Override
