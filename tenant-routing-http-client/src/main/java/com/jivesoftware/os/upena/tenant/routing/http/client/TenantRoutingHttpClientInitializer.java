@@ -45,6 +45,7 @@ public class TenantRoutingHttpClientInitializer<T> {
                     List<HttpClientConfiguration> config = new ArrayList<>();
                     config.add(HttpClientConfig
                         .newBuilder()
+                        .setMaxConnections(512) // TODO expose to config
                         .setSocketTimeoutInMillis(600000) // TODO fix get this from connectionDescriptors.properties
                         .build());
                     HttpClientFactory createHttpClientFactory = httpClientFactoryProvider.createHttpClientFactory(config);
