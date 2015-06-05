@@ -46,25 +46,32 @@ import org.merlin.config.Config;
 public class Deployable {
 
     private final MetricLogger LOG = MetricLoggerFactory.getLogger();
-
+    private final MainProperties mainProperties;
     private final ConfigBinder configBinder;
-    private final TenantRoutingProvider tenantRoutingProvider;
-    private final RestfulManageServer restfulManageServer;
+    private final InstanceConfig instanceConfig;
+    private TenantRoutingProvider tenantRoutingProvider;
+    private RestfulManageServer restfulManageServer;
     private final AtomicBoolean manageServerStarted = new AtomicBoolean(false);
     //--------------------------------------------------------------------------
-    private final InitializeRestfulServer restfulServer;
-    private final JerseyEndpoints jerseyEndpoints;
+    private InitializeRestfulServer restfulServer;
+    private JerseyEndpoints jerseyEndpoints;
     private final AtomicBoolean serverStarted = new AtomicBoolean(false);
-    private final InstanceConfig instanceConfig;
 
     public Deployable(String[] args) throws IOException {
-        this(args, null);
+        this.mainProperties = new MainProperties(args);
+        this.configBinder = new ConfigBinder(args);
+        this.instanceConfig = configBinder.bind(InstanceConfig.class);
+        init(null);
     }
 
-    public Deployable(String[] args, ConnectionDescriptorsProvider connectionsDescriptorProvider) throws IOException {
+    public Deployable(String[] args, ConfigBinder configBinder, InstanceConfig instanceConfig, ConnectionDescriptorsProvider connectionsDescriptorProvider) {
+        this.mainProperties = new MainProperties(args);
+        this.configBinder = configBinder;
+        this.instanceConfig = instanceConfig;
+        init(null);
+    }
 
-        configBinder = new ConfigBinder(args);
-        instanceConfig = configBinder.bind(InstanceConfig.class);
+    private void init(ConnectionDescriptorsProvider connectionsDescriptorProvider) {
         if (connectionsDescriptorProvider == null) {
             TenantRoutingBirdProviderBuilder tenantRoutingBirdBuilder = new TenantRoutingBirdProviderBuilder(instanceConfig.getRoutesHost(),
                 instanceConfig.getRoutesPort());
@@ -82,7 +89,7 @@ public class Deployable {
         restfulManageServer.addEndpoint(TenantRoutingRestEndpoints.class);
         restfulManageServer.addInjectable(TenantRoutingProvider.class, tenantRoutingProvider);
         restfulManageServer.addEndpoint(MainPropertiesEndpoints.class);
-        restfulManageServer.addInjectable(MainProperties.class, new MainProperties(args));
+        restfulManageServer.addInjectable(MainProperties.class, mainProperties);
 
         jerseyEndpoints = new JerseyEndpoints();
         restfulServer = new InitializeRestfulServer(instanceConfig.getMainPort(),

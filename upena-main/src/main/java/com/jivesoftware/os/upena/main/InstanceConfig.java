@@ -57,8 +57,12 @@ public interface InstanceConfig extends Config {
     @Default("unspecified")
     String getInstanceKey();
 
+    void setInstanceKey(String instanceKey);
+
     @IntDefault(-1)
     Integer getInstanceName();
+
+    void setInstanceName(Integer instanceName);
 
     @Default("unspecified")
     String getVersion();
