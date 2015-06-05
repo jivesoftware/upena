@@ -19,7 +19,7 @@ import org.merlin.config.Config;
 import org.merlin.config.defaults.Default;
 import org.merlin.config.defaults.IntDefault;
 
- public interface InstanceConfig extends Config {
+public interface InstanceConfig extends Config {
 
     @Default("localhost")
     String getHost();
@@ -27,14 +27,20 @@ import org.merlin.config.defaults.IntDefault;
     @Default("localhost")
     String getRoutesHost();
 
+    void setRoutesHost(String host);
+
     @IntDefault(-1)
     Integer getRoutesPort();
+
+    void setRoutesPort(int port);
 
     @Default("-1")
     String getClusterKey();
 
     @Default("unspecified")
     String getClusterName();
+
+    void setClusterName(String clusterName);
 
     @Default("-1")
     String getServiceKey();
