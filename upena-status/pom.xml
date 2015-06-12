@@ -36,11 +36,8 @@
             <artifactId>routing-bird-http-client</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.jivesoftware.os.upena</groupId>
-            <artifactId>reporter-shared</artifactId>
-            <version>0.125-SNAPSHOT</version>
-            <type>jar</type>
+            <groupId>com.jivesoftware.os.routing.bird</groupId>
+            <artifactId>deployable-reporter-shared</artifactId>
         </dependency>
     </dependencies>
-    <name>upena-status</name>
 </project>

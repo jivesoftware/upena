@@ -71,10 +71,8 @@
             <artifactId>routing-bird-shared</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.jivesoftware.os.upena</groupId>
-            <artifactId>upena-config-shared</artifactId>
-            <version>0.125-SNAPSHOT</version>
-            <type>jar</type>
+            <groupId>com.jivesoftware.os.routing.bird</groupId>
+            <artifactId>deployable-config-shared</artifactId>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>

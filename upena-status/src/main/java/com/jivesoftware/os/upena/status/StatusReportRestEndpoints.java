@@ -1,7 +1,7 @@
 package com.jivesoftware.os.upena.status;
 
+import com.jivesoftware.os.routing.bird.deployable.reporter.shared.StatusReport;
 import com.jivesoftware.os.routing.bird.shared.ResponseHelper;
-import com.jivesoftware.os.upena.reporter.shared.StatusReport;
 import java.util.LinkedList;
 import java.util.concurrent.TimeUnit;
 import javax.ws.rs.Consumes;

@@ -8,7 +8,7 @@
  */
 package com.jivesoftware.os.upena.status;
 
-import com.jivesoftware.os.upena.reporter.shared.StatusReport;
+import com.jivesoftware.os.routing.bird.deployable.reporter.shared.StatusReport;
 
 /**
  *

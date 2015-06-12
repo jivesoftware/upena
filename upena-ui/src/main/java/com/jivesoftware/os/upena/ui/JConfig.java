@@ -15,7 +15,7 @@
  */
 package com.jivesoftware.os.upena.ui;
 
-import com.jivesoftware.os.upena.config.shared.UpenaConfig;
+import com.jivesoftware.os.routing.bird.deployable.config.shared.DeployableConfig;
 import com.jivesoftware.os.upena.shared.Cluster;
 import com.jivesoftware.os.upena.shared.ClusterKey;
 import com.jivesoftware.os.upena.shared.Host;
@@ -264,7 +264,7 @@ public class JConfig extends JPanel {
                         }
                     }
                     if (update) {
-                        UpenaConfig gotUpdated = requestHelperProviderA.get().executeRequest(dao.override, "/upenaConfig/set", UpenaConfig.class, null);
+                        DeployableConfig gotUpdated = requestHelperProviderA.get().executeRequest(dao.override, "/upenaConfig/set", DeployableConfig.class, null);
                         System.out.println("Updated:" + gotUpdated);
                     }
                     boolean remove = false;
@@ -279,7 +279,7 @@ public class JConfig extends JPanel {
                         }
                     }
                     if (remove) {
-                        UpenaConfig gotRemoved = requestHelperProviderA.get().executeRequest(dao.override, "/upenaConfig/remove", UpenaConfig.class, null);
+                        DeployableConfig gotRemoved = requestHelperProviderA.get().executeRequest(dao.override, "/upenaConfig/remove", DeployableConfig.class, null);
                         System.out.println("Removed:" + gotRemoved);
                     }
                 }
@@ -345,7 +345,7 @@ public class JConfig extends JPanel {
             InstanceFilter filter,
             Map<String, String> configKeys,
             RequestHelperProvider helperProvider) {
-        UpenaConfig get = new UpenaConfig("default",
+        DeployableConfig get = new DeployableConfig("default",
                 instanceKey.getKey(),
                 new HashMap<String, String>());
 
@@ -397,11 +397,11 @@ public class JConfig extends JPanel {
         name += instance.instanceId;
         names.put(instanceKey.getKey(), name);
 
-        UpenaConfig gotDefault = helperProvider.get().executeRequest(get, "/upenaConfig/get", UpenaConfig.class, null);
-        UpenaConfig getOverride = new UpenaConfig("override",
+        DeployableConfig gotDefault = helperProvider.get().executeRequest(get, "/upenaConfig/get", DeployableConfig.class, null);
+        DeployableConfig getOverride = new DeployableConfig("override",
                 instanceKey.getKey(),
                 new HashMap<String, String>());
-        UpenaConfig gotOverride = helperProvider.get().executeRequest(getOverride, "/upenaConfig/get", UpenaConfig.class, null);
+        DeployableConfig gotOverride = helperProvider.get().executeRequest(getOverride, "/upenaConfig/get", DeployableConfig.class, null);
 
         if (gotDefault != null && gotOverride != null) {
             for (String pk : gotDefault.properties.keySet()) {
@@ -612,7 +612,7 @@ public class JConfig extends JPanel {
         }
     }
 
-    String key(UpenaConfig config) {
+    String key(DeployableConfig config) {
         return config.context + " " + config.instanceKey;
     }
 
@@ -633,11 +633,11 @@ public class JConfig extends JPanel {
 
     static class DefaultAndOverride {
 
-        final UpenaConfig config;
-        final UpenaConfig override;
+        final DeployableConfig config;
+        final DeployableConfig override;
         final Map<String, String> changes = new ConcurrentHashMap<>();
 
-        public DefaultAndOverride(UpenaConfig config, UpenaConfig override) {
+        public DefaultAndOverride(DeployableConfig config, DeployableConfig override) {
             this.config = config;
             this.override = override;
         }

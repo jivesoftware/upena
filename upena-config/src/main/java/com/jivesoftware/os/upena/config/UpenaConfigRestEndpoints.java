@@ -17,8 +17,8 @@ package com.jivesoftware.os.upena.config;
 
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
+import com.jivesoftware.os.routing.bird.deployable.config.shared.DeployableConfig;
 import com.jivesoftware.os.routing.bird.shared.ResponseHelper;
-import com.jivesoftware.os.upena.config.shared.UpenaConfig;
 import java.util.ArrayList;
 import java.util.Map;
 import javax.ws.rs.Consumes;
@@ -43,7 +43,7 @@ public class UpenaConfigRestEndpoints {
     @POST
     @Consumes("application/json")
     @Path("/set")
-    public Response set(UpenaConfig config) {
+    public Response set(DeployableConfig config) {
         try {
             LOG.debug("Attempting to get: " + config);
             upenaConfigStore.putAll(config.instanceKey, config.context,
@@ -51,7 +51,7 @@ public class UpenaConfigRestEndpoints {
             Map<String, String> got = upenaConfigStore.get(config.instanceKey, config.context,
                     new ArrayList<>(config.properties.keySet()));
             LOG.info("Set " + got.size() + " properties");
-            return ResponseHelper.INSTANCE.jsonResponse(new UpenaConfig(config.context,
+            return ResponseHelper.INSTANCE.jsonResponse(new DeployableConfig(config.context,
                     config.instanceKey, got));
         } catch (Exception x) {
             LOG.warn("Failed to get: " + config, x);
@@ -62,13 +62,13 @@ public class UpenaConfigRestEndpoints {
     @POST
     @Consumes("application/json")
     @Path("/get")
-    public Response get(UpenaConfig config) {
+    public Response get(DeployableConfig config) {
         try {
             LOG.debug("Attempting to get: " + config);
             Map<String, String> got = upenaConfigStore.get(config.instanceKey, config.context,
                     new ArrayList<>(config.properties.keySet()));
             LOG.info("Got " + got.size() + " properties for " + config);
-            return ResponseHelper.INSTANCE.jsonResponse(new UpenaConfig(config.context,
+            return ResponseHelper.INSTANCE.jsonResponse(new DeployableConfig(config.context,
                     config.instanceKey, got));
         } catch (Exception x) {
             LOG.warn("Failed to get: " + config, x);
@@ -79,7 +79,7 @@ public class UpenaConfigRestEndpoints {
     @POST
     @Consumes("application/json")
     @Path("/remove")
-    public Response remove(UpenaConfig config) {
+    public Response remove(DeployableConfig config) {
         try {
             LOG.debug("Attempting to remove: " + config);
             upenaConfigStore.remove(config.instanceKey, config.context,
@@ -87,7 +87,7 @@ public class UpenaConfigRestEndpoints {
             Map<String, String> got = upenaConfigStore.get(config.instanceKey, config.context,
                     new ArrayList<>(config.properties.keySet()));
             LOG.info("Removed " + got.size() + " properties");
-            return ResponseHelper.INSTANCE.jsonResponse(new UpenaConfig(config.context,
+            return ResponseHelper.INSTANCE.jsonResponse(new DeployableConfig(config.context,
                     config.instanceKey, got));
         } catch (Exception x) {
             LOG.warn("Failed to remove: " + config, x);
