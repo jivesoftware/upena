@@ -15,7 +15,7 @@
  */
 package com.jivesoftware.os.uba.shared;
 
-import com.jivesoftware.os.upena.routing.shared.InstanceDescriptor;
+import com.jivesoftware.os.routing.bird.shared.InstanceDescriptor;
 import java.util.List;
 
 /**

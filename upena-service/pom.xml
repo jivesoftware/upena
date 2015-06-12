@@ -42,9 +42,8 @@
             <type>jar</type>
         </dependency>
         <dependency>
-            <groupId>com.jivesoftware.os.upena</groupId>
-            <artifactId>upena-routing-shared</artifactId>
-            <version>0.125-SNAPSHOT</version>
+            <groupId>com.jivesoftware.os.routing.bird</groupId>
+            <artifactId>routing-bird-shared</artifactId>
         </dependency>
         <dependency>
             <groupId>com.jivesoftware.os.jive.utils</groupId>

@@ -1,6 +1,6 @@
 package com.jivesoftware.os.upena.uba.service;
 
-import com.jivesoftware.os.upena.routing.shared.InstanceDescriptor;
+import com.jivesoftware.os.routing.bird.shared.InstanceDescriptor;
 import java.io.File;
 import java.util.Collection;
 import java.util.concurrent.Callable;

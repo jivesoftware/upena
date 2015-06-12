@@ -17,12 +17,12 @@ package com.jivesoftware.os.upena.uba.service;
 
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
+import com.jivesoftware.os.routing.bird.shared.InstanceChanged;
+import com.jivesoftware.os.routing.bird.shared.InstanceDescriptor;
+import com.jivesoftware.os.routing.bird.shared.InstanceDescriptorsRequest;
+import com.jivesoftware.os.routing.bird.shared.InstanceDescriptorsResponse;
+import com.jivesoftware.os.routing.bird.shared.TenantChanged;
 import com.jivesoftware.os.uba.shared.UbaReport;
-import com.jivesoftware.os.upena.routing.shared.InstanceChanged;
-import com.jivesoftware.os.upena.routing.shared.InstanceDescriptor;
-import com.jivesoftware.os.upena.routing.shared.InstanceDescriptorsRequest;
-import com.jivesoftware.os.upena.routing.shared.InstanceDescriptorsResponse;
-import com.jivesoftware.os.upena.routing.shared.TenantChanged;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;

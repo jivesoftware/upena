@@ -18,12 +18,12 @@ package com.jivesoftware.os.upena.uba.service;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.jivesoftware.os.jive.utils.http.client.HttpClient;
-import com.jivesoftware.os.jive.utils.http.client.HttpClientConfig;
-import com.jivesoftware.os.jive.utils.http.client.HttpClientConfiguration;
-import com.jivesoftware.os.jive.utils.http.client.HttpClientFactory;
-import com.jivesoftware.os.jive.utils.http.client.HttpClientFactoryProvider;
-import com.jivesoftware.os.jive.utils.http.client.rest.RequestHelper;
+import com.jivesoftware.os.routing.bird.http.client.HttpClient;
+import com.jivesoftware.os.routing.bird.http.client.HttpClientConfig;
+import com.jivesoftware.os.routing.bird.http.client.HttpClientConfiguration;
+import com.jivesoftware.os.routing.bird.http.client.HttpClientFactory;
+import com.jivesoftware.os.routing.bird.http.client.HttpClientFactoryProvider;
+import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelper;
 import java.io.File;
 import java.util.Arrays;
 
@@ -44,12 +44,12 @@ public class UbaServiceInitializer {
         return conductorService;
     }
 
-    RequestHelper buildRequestHelper(String host, int port, ObjectMapper mapper) {
+    HttpRequestHelper buildRequestHelper(String host, int port, ObjectMapper mapper) {
         HttpClientConfig httpClientConfig = HttpClientConfig.newBuilder().build();
         HttpClientFactory httpClientFactory = new HttpClientFactoryProvider()
             .createHttpClientFactory(Arrays.<HttpClientConfiguration>asList(httpClientConfig));
         HttpClient httpClient = httpClientFactory.createClient(host, port);
-        RequestHelper requestHelper = new RequestHelper(httpClient, mapper);
+        HttpRequestHelper requestHelper = new HttpRequestHelper(httpClient, mapper);
         return requestHelper;
     }
 }

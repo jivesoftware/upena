@@ -15,7 +15,7 @@
  */
 package com.jivesoftware.os.upena.hello.routing.bird.service;
 
-import com.jivesoftware.os.upena.tenant.routing.http.client.TenantAwareHttpClient;
+import com.jivesoftware.os.routing.bird.http.client.TenantAwareHttpClient;
 import org.merlin.config.Config;
 import org.merlin.config.defaults.StringDefault;
 

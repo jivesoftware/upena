@@ -27,10 +27,6 @@
             <artifactId>merlin-config</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.jivesoftware.os.jive.utils</groupId>
-            <artifactId>http-client</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
             <scope>test</scope>
@@ -52,10 +48,12 @@
             <artifactId>base</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.jivesoftware.os.upena</groupId>
-            <artifactId>upena-routing-shared</artifactId>
-            <version>0.125-SNAPSHOT</version>
-            <type>jar</type>
+            <groupId>com.jivesoftware.os.routing.bird</groupId>
+            <artifactId>routing-bird-shared</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.jivesoftware.os.routing.bird</groupId>
+            <artifactId>routing-bird-http-server-endpoints</artifactId>
         </dependency>
         <dependency>
             <groupId>com.jivesoftware.os.upena</groupId>
@@ -64,19 +62,9 @@
         </dependency>
         <dependency>
             <groupId>com.jivesoftware.os.upena</groupId>
-            <artifactId>tenant-routing-http-server-endpoints</artifactId>
-            <version>0.125-SNAPSHOT</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>com.jivesoftware.os.upena</groupId>
             <artifactId>reporter-service</artifactId>
             <version>0.125-SNAPSHOT</version>
             <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>com.jivesoftware.os.jive.utils</groupId>
-            <artifactId>jaxrs-util</artifactId>
         </dependency>
         <dependency>
             <groupId>com.google.inject</groupId>

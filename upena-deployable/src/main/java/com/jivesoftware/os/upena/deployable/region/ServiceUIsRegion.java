@@ -3,14 +3,14 @@ package com.jivesoftware.os.upena.deployable.region;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import com.jivesoftware.os.jive.utils.http.client.HttpClient;
-import com.jivesoftware.os.jive.utils.http.client.HttpClientConfig;
-import com.jivesoftware.os.jive.utils.http.client.HttpClientConfiguration;
-import com.jivesoftware.os.jive.utils.http.client.HttpClientFactory;
-import com.jivesoftware.os.jive.utils.http.client.HttpClientFactoryProvider;
-import com.jivesoftware.os.jive.utils.http.client.rest.RequestHelper;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
+import com.jivesoftware.os.routing.bird.http.client.HttpClient;
+import com.jivesoftware.os.routing.bird.http.client.HttpClientConfig;
+import com.jivesoftware.os.routing.bird.http.client.HttpClientConfiguration;
+import com.jivesoftware.os.routing.bird.http.client.HttpClientFactory;
+import com.jivesoftware.os.routing.bird.http.client.HttpClientFactoryProvider;
+import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelper;
 import com.jivesoftware.os.server.http.jetty.jersey.endpoints.base.HasUI;
 import com.jivesoftware.os.server.http.jetty.jersey.endpoints.base.HasUI.UI;
 import com.jivesoftware.os.upena.deployable.region.ServiceUIsRegion.ServiceUIsRegionInput;
@@ -80,7 +80,7 @@ public class ServiceUIsRegion implements PageRegion<ServiceUIsRegionInput> {
                 Instance.Port port = value.ports.get("manage");
                 if (port != null) {
                     try {
-                        RequestHelper requestHelper = buildRequestHelper(host.hostName, port.port);
+                        HttpRequestHelper requestHelper = buildRequestHelper(host.hostName, port.port);
                         HasUI hasUI = requestHelper.executeGetRequest("/manage/hasUI", HasUI.class, null);
                         if (hasUI != null) {
                             for (UI ui : hasUI.uis) {
@@ -128,12 +128,12 @@ public class ServiceUIsRegion implements PageRegion<ServiceUIsRegionInput> {
         return "UIs";
     }
 
-    RequestHelper buildRequestHelper(String host, int port) {
+    HttpRequestHelper buildRequestHelper(String host, int port) {
         HttpClientConfig httpClientConfig = HttpClientConfig.newBuilder().setSocketTimeoutInMillis(10000).build();
         HttpClientFactory httpClientFactory = new HttpClientFactoryProvider()
             .createHttpClientFactory(Arrays.<HttpClientConfiguration>asList(httpClientConfig));
         HttpClient httpClient = httpClientFactory.createClient(host, port);
-        RequestHelper requestHelper = new RequestHelper(httpClient, new ObjectMapper());
+        HttpRequestHelper requestHelper = new HttpRequestHelper(httpClient, new ObjectMapper());
         return requestHelper;
     }
 

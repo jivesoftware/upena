@@ -15,15 +15,16 @@
  */
 package com.jivesoftware.os.upena.uba.service;
 
-import com.jivesoftware.os.jive.utils.http.client.rest.RequestHelper;
-import com.jivesoftware.os.upena.routing.shared.InstanceDescriptorsRequest;
-import com.jivesoftware.os.upena.routing.shared.InstanceDescriptorsResponse;
+import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelper;
+import com.jivesoftware.os.routing.bird.shared.InstanceDescriptorsRequest;
+import com.jivesoftware.os.routing.bird.shared.InstanceDescriptorsResponse;
+
 
 public class UpenaClient {
 
-    private final RequestHelper requestHelper;
+    private final HttpRequestHelper requestHelper;
 
-    UpenaClient(RequestHelper requestHelper) {
+    UpenaClient(HttpRequestHelper requestHelper) {
         this.requestHelper = requestHelper;
     }
 

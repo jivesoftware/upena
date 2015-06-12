@@ -17,12 +17,12 @@ package com.jivesoftware.os.upena.uba.config.extractor;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jivesoftware.os.jive.utils.health.api.HealthCheckConfig;
-import com.jivesoftware.os.jive.utils.http.client.HttpClient;
-import com.jivesoftware.os.jive.utils.http.client.HttpClientConfig;
-import com.jivesoftware.os.jive.utils.http.client.HttpClientConfiguration;
-import com.jivesoftware.os.jive.utils.http.client.HttpClientFactory;
-import com.jivesoftware.os.jive.utils.http.client.HttpClientFactoryProvider;
-import com.jivesoftware.os.jive.utils.http.client.rest.RequestHelper;
+import com.jivesoftware.os.routing.bird.http.client.HttpClient;
+import com.jivesoftware.os.routing.bird.http.client.HttpClientConfig;
+import com.jivesoftware.os.routing.bird.http.client.HttpClientConfiguration;
+import com.jivesoftware.os.routing.bird.http.client.HttpClientFactory;
+import com.jivesoftware.os.routing.bird.http.client.HttpClientFactoryProvider;
+import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelper;
 import com.jivesoftware.os.upena.config.shared.UpenaConfig;
 import java.io.File;
 import java.io.FileInputStream;
@@ -58,7 +58,7 @@ public class ConfigExtractor {
         String configPort = args[1];
         String instanceKey = args[2];
 
-        RequestHelper buildRequestHelper = buildRequestHelper(configHost, Integer.parseInt(configPort));
+        HttpRequestHelper buildRequestHelper = buildRequestHelper(configHost, Integer.parseInt(configPort));
 
         try {
             Set<URL> packages = new HashSet<>();
@@ -149,7 +149,7 @@ public class ConfigExtractor {
         File defaultServiceConfigFile,
         String context,
         String instanceKey,
-        RequestHelper buildRequestHelper) throws IOException {
+        HttpRequestHelper buildRequestHelper) throws IOException {
 
         ConfigExtractor serviceConfigExtractor = new ConfigExtractor(new PropertyPrefix(), serviceConfig);
         serviceConfigExtractor.writeDefaultsToFile(defaultServiceConfigFile);
@@ -178,11 +178,11 @@ public class ConfigExtractor {
         };
     }
 
-    static RequestHelper buildRequestHelper(String host, int port) {
+    static HttpRequestHelper buildRequestHelper(String host, int port) {
         HttpClientConfig httpClientConfig = HttpClientConfig.newBuilder().build();
         HttpClientFactory httpClientFactory = new HttpClientFactoryProvider().createHttpClientFactory(Arrays.<HttpClientConfiguration>asList(httpClientConfig));
         HttpClient httpClient = httpClientFactory.createClient(host, port);
-        RequestHelper requestHelper = new RequestHelper(httpClient, new ObjectMapper());
+        HttpRequestHelper requestHelper = new HttpRequestHelper(httpClient, new ObjectMapper());
         return requestHelper;
     }
 

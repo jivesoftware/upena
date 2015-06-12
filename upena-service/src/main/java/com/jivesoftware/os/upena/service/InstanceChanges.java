@@ -15,7 +15,7 @@
  */
 package com.jivesoftware.os.upena.service;
 
-import com.jivesoftware.os.upena.routing.shared.InstanceChanged;
+import com.jivesoftware.os.routing.bird.shared.InstanceChanged;
 import java.util.List;
 
 public interface InstanceChanges {

@@ -18,10 +18,10 @@ package com.jivesoftware.os.upena.ui;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Table;
 import com.google.common.collect.TreeBasedTable;
+import com.jivesoftware.os.routing.bird.shared.InstanceDescriptor;
+import com.jivesoftware.os.routing.bird.shared.InstanceDescriptor.InstanceDescriptorPort;
 import com.jivesoftware.os.uba.shared.NannyReport;
 import com.jivesoftware.os.uba.shared.UbaReport;
-import com.jivesoftware.os.upena.routing.shared.InstanceDescriptor;
-import com.jivesoftware.os.upena.routing.shared.InstanceDescriptor.InstanceDescriptorPort;
 import com.jivesoftware.os.upena.shared.Host;
 import com.jivesoftware.os.upena.shared.HostFilter;
 import com.jivesoftware.os.upena.shared.HostKey;
@@ -156,7 +156,7 @@ public class JCluster extends JPanel implements DocumentListener {
     class StatusTable extends AbstractTableModel {
 
         Table<String, String, Object> table = TreeBasedTable.create();
-        String[] columnNames = new String[] {
+        String[] columnNames = new String[]{
             "status", //0
             "load", //1
             "host", //2
@@ -456,7 +456,7 @@ public class JCluster extends JPanel implements DocumentListener {
                                 String url = "http://" + hostAndNannyReport.host.hostName
                                     + ":" + hostAndNannyReport.nannyReport.instanceDescriptor.ports.get("manage").port + "/manage/ping";
                                 try {
-                                    String curl = Curl.create(1000, 1000).curl(url);
+                                    String curl = "ping";//Curl.create(1000, 1000).curl(url);
                                     if ("ping".equals(curl)) {
                                         if (!hostAndNannyReport.online) {
                                             hostAndNannyReport.checked = true;
@@ -467,9 +467,9 @@ public class JCluster extends JPanel implements DocumentListener {
                                         try {
                                             String statuUrl = "http://" + hostAndNannyReport.host.hostName
                                                 + ":" + hostAndNannyReport.nannyReport.instanceDescriptor.ports.get(
-                                                "manage").port + "/manage/announcement/json";
+                                                    "manage").port + "/manage/announcement/json";
 
-                                            String statusJson = Curl.create(1000, 1000).curl(statuUrl);
+                                            String statusJson = "";//Curl.create(1000, 1000).curl(statuUrl);
                                             if (statusJson != null) {
                                                 StatusReport readValue = new ObjectMapper().readValue(statusJson, StatusReport.class);
                                                 statusTable.set(readValue, row);
@@ -507,7 +507,7 @@ public class JCluster extends JPanel implements DocumentListener {
         String url = "http://" + hostAndNannyReport.host.hostName
             + ":" + hostAndNannyReport.nannyReport.instanceDescriptor.ports.get("manage").port + manageEndpoint;
         try {
-            String curl = Curl.create(15000, 15000).curl(url);
+            String curl = "";//Curl.create(15000, 15000).curl(url);
             tail.append(curl);
         } catch (Exception x) {
             tail.setText("failed to call " + url + " " + new Date());
@@ -537,7 +537,7 @@ public class JCluster extends JPanel implements DocumentListener {
             System.out.println("host:" + host);
             //viewResults.add(new JLabel("Host:" + host.hostName));
             try {
-                String reportString = Curl.create(15000, 15000).curl("http://" + host.hostName + ":" + host.port + "/uba/report");
+                String reportString = ""; // Curl.create(15000, 15000).curl("http://" + host.hostName + ":" + host.port + "/uba/report");
                 if (reportString != null) {
 
                     UbaReport ubaReport = new ObjectMapper().readValue(reportString, UbaReport.class);
@@ -688,6 +688,7 @@ public class JCluster extends JPanel implements DocumentListener {
     }
 
     private class RefreshActionListener implements ActionListener {
+
         @Override
         public void actionPerformed(ActionEvent e) {
             Util.invokeLater(new Runnable() {
@@ -700,6 +701,7 @@ public class JCluster extends JPanel implements DocumentListener {
     }
 
     private class ShutdownActionListener implements ActionListener {
+
         @Override
         public void actionPerformed(ActionEvent e) {
             Util.invokeLater(new Runnable() {
@@ -722,6 +724,7 @@ public class JCluster extends JPanel implements DocumentListener {
     }
 
     private class PurgeRoutesActionListener implements ActionListener {
+
         @Override
         public void actionPerformed(ActionEvent e) {
             Util.invokeLater(new Runnable() {
@@ -745,6 +748,7 @@ public class JCluster extends JPanel implements DocumentListener {
     }
 
     private class RoutesActionListener implements ActionListener {
+
         @Override
         public void actionPerformed(ActionEvent e) {
             Util.invokeLater(new Runnable() {
@@ -767,6 +771,7 @@ public class JCluster extends JPanel implements DocumentListener {
     }
 
     private class ResetInteractionErrorsActionListener implements ActionListener {
+
         @Override
         public void actionPerformed(ActionEvent e) {
             Util.invokeLater(new Runnable() {
@@ -789,6 +794,7 @@ public class JCluster extends JPanel implements DocumentListener {
     }
 
     private class ResetErrorsActionListener implements ActionListener {
+
         @Override
         public void actionPerformed(ActionEvent e) {
             Util.invokeLater(new Runnable() {
@@ -811,6 +817,7 @@ public class JCluster extends JPanel implements DocumentListener {
     }
 
     private class RecentErrorsActionListener implements ActionListener {
+
         @Override
         public void actionPerformed(ActionEvent e) {
             Util.invokeLater(new Runnable() {
@@ -833,6 +840,7 @@ public class JCluster extends JPanel implements DocumentListener {
     }
 
     private class ForceGCActionListener implements ActionListener {
+
         @Override
         public void actionPerformed(ActionEvent e) {
             Util.invokeLater(new Runnable() {
@@ -855,6 +863,7 @@ public class JCluster extends JPanel implements DocumentListener {
     }
 
     private class TailActionListener implements ActionListener {
+
         @Override
         public void actionPerformed(ActionEvent e) {
             Util.invokeLater(new Runnable() {
@@ -877,6 +886,7 @@ public class JCluster extends JPanel implements DocumentListener {
     }
 
     private class PingActionListener implements ActionListener {
+
         @Override
         public void actionPerformed(ActionEvent e) {
             Util.invokeLater(new Runnable() {
@@ -899,6 +909,7 @@ public class JCluster extends JPanel implements DocumentListener {
     }
 
     private class StatusActionListener implements ActionListener {
+
         @Override
         public void actionPerformed(ActionEvent e) {
             Util.invokeLater(new Runnable() {
@@ -921,6 +932,7 @@ public class JCluster extends JPanel implements DocumentListener {
     }
 
     private class TimersActionListener implements ActionListener {
+
         @Override
         public void actionPerformed(ActionEvent e) {
             Util.invokeLater(new Runnable() {
@@ -943,6 +955,7 @@ public class JCluster extends JPanel implements DocumentListener {
     }
 
     private class CountersActionListener implements ActionListener {
+
         @Override
         public void actionPerformed(ActionEvent e) {
             Util.invokeLater(new Runnable() {
@@ -965,6 +978,7 @@ public class JCluster extends JPanel implements DocumentListener {
     }
 
     private class ThreadDumpActionListener implements ActionListener {
+
         @Override
         public void actionPerformed(ActionEvent e) {
             Util.invokeLater(new Runnable() {
@@ -988,6 +1002,7 @@ public class JCluster extends JPanel implements DocumentListener {
     }
 
     private class ErrorsActionListener implements ActionListener {
+
         @Override
         public void actionPerformed(ActionEvent e) {
             Util.invokeLater(new Runnable() {
@@ -1010,6 +1025,7 @@ public class JCluster extends JPanel implements DocumentListener {
     }
 
     private class UpenaReportActionListener implements ActionListener {
+
         @Override
         public void actionPerformed(ActionEvent e) {
             Util.invokeLater(new Runnable() {
@@ -1031,6 +1047,7 @@ public class JCluster extends JPanel implements DocumentListener {
     }
 
     private class PropertiesActionListener implements ActionListener {
+
         @Override
         public void actionPerformed(ActionEvent e) {
             Util.invokeLater(new Runnable() {
@@ -1053,6 +1070,7 @@ public class JCluster extends JPanel implements DocumentListener {
     }
 
     private class ManageActionListener implements ActionListener {
+
         @Override
         public void actionPerformed(ActionEvent e) {
             Util.invokeLater(new Runnable() {
@@ -1063,7 +1081,7 @@ public class JCluster extends JPanel implements DocumentListener {
                         try {
                             openWebpage(new URI(
                                 "http://" + hostAndNannyReport.host.hostName
-                                    + ":" + hostAndNannyReport.nannyReport.instanceDescriptor.ports.get("manage").port + "/manage/help"));
+                                + ":" + hostAndNannyReport.nannyReport.instanceDescriptor.ports.get("manage").port + "/manage/help"));
                         } catch (URISyntaxException ex) {
                             ex.printStackTrace();
                         }

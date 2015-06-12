@@ -18,17 +18,17 @@ package com.jivesoftware.os.upena.main;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.jivesoftware.os.jive.utils.http.client.HttpClient;
-import com.jivesoftware.os.jive.utils.http.client.HttpClientConfig;
-import com.jivesoftware.os.jive.utils.http.client.HttpClientConfiguration;
-import com.jivesoftware.os.jive.utils.http.client.HttpClientException;
-import com.jivesoftware.os.jive.utils.http.client.HttpClientFactoryProvider;
-import com.jivesoftware.os.jive.utils.http.client.HttpResponse;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
-import com.jivesoftware.os.upena.routing.shared.ConnectionDescriptorsProvider;
-import com.jivesoftware.os.upena.routing.shared.ConnectionDescriptorsRequest;
-import com.jivesoftware.os.upena.routing.shared.ConnectionDescriptorsResponse;
+import com.jivesoftware.os.routing.bird.http.client.HttpClient;
+import com.jivesoftware.os.routing.bird.http.client.HttpClientConfig;
+import com.jivesoftware.os.routing.bird.http.client.HttpClientConfiguration;
+import com.jivesoftware.os.routing.bird.http.client.HttpClientException;
+import com.jivesoftware.os.routing.bird.http.client.HttpClientFactoryProvider;
+import com.jivesoftware.os.routing.bird.http.client.HttpResponse;
+import com.jivesoftware.os.routing.bird.shared.ConnectionDescriptorsProvider;
+import com.jivesoftware.os.routing.bird.shared.ConnectionDescriptorsRequest;
+import com.jivesoftware.os.routing.bird.shared.ConnectionDescriptorsResponse;
 import java.io.IOException;
 import java.util.Arrays;
 
@@ -70,7 +70,7 @@ public class TenantRoutingBirdProviderBuilder {
                 HttpResponse response;
                 String path = "/upena/request/connections";
                 try {
-                    response = httpClient.postJson(path, postEntity);
+                    response = httpClient.postJson(path, postEntity, null);
                 } catch (HttpClientException e) {
                     LOG.error("Error posting query request to server.  The entity posted "
                             + "was \"" + postEntity + "\" and the endpoint posted to was \"" + path + "\". " + e.getMessage());

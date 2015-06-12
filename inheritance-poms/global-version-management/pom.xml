@@ -14,9 +14,25 @@
         <mlogger-version>0.9</mlogger-version>
         <jive.utils.version>0.90</jive.utils.version>
         <amza.version>0.21</amza.version>
+        <routing.bird.version>0.1-SNAPSHOT</routing.bird.version>
     </properties>
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>com.jivesoftware.os.routing.bird</groupId>
+                <artifactId>routing-bird-shared</artifactId>
+                <version>${routing.bird.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.jivesoftware.os.routing.bird</groupId>
+                <artifactId>routing-bird-http-client</artifactId>
+                <version>${routing.bird.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.jivesoftware.os.routing.bird</groupId>
+                <artifactId>routing-bird-http-server-endpoints</artifactId>
+                <version>${routing.bird.version}</version>
+            </dependency>
             <dependency>
                 <groupId>com.jivesoftware.os.amza</groupId>
                 <artifactId>amza-service</artifactId>
@@ -38,7 +54,7 @@
                 <artifactId>amza-shared</artifactId>
                 <version>${amza.version}</version>
             </dependency>
-             <dependency>
+            <dependency>
                 <groupId>com.jivesoftware.os.jive.utils</groupId>
                 <artifactId>health</artifactId>
                 <version>${jive.utils.version}</version>
@@ -89,11 +105,6 @@
                 <version>1.2.16</version>
             </dependency>
             <dependency>
-                <groupId>commons-httpclient</groupId>
-                <artifactId>commons-httpclient</artifactId>
-                <version>3.1</version>
-            </dependency>
-            <dependency>
                 <groupId>commons-lang</groupId>
                 <artifactId>commons-lang</artifactId>
                 <version>2.6</version>
@@ -118,14 +129,6 @@
                 <artifactId>commons-math</artifactId>
                 <version>2.2</version>
             </dependency>
-
-
-            <dependency>
-                <groupId>com.jivesoftware.os.jive.utils</groupId>
-                <artifactId>http-client</artifactId>
-                <version>${jive.utils.version}</version>
-            </dependency>
-
             <dependency>
                 <groupId>org.testng</groupId>
                 <artifactId>testng</artifactId>
@@ -173,11 +176,6 @@
                 <artifactId>commons-compress</artifactId>
                 <version>1.2</version>
                 <type>jar</type>
-            </dependency>
-            <dependency>
-                <groupId>com.jivesoftware.os.jive.utils</groupId>
-                <artifactId>http-client-rest</artifactId>
-                <version>${jive.utils.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

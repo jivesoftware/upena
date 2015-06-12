@@ -18,7 +18,7 @@ package com.jivesoftware.os.upena.uba.service;
 import com.google.common.base.Joiner;
 import com.jivesoftware.os.jive.utils.shell.utils.Untar;
 import com.jivesoftware.os.jive.utils.shell.utils.Unzip;
-import com.jivesoftware.os.upena.routing.shared.InstanceDescriptor;
+import com.jivesoftware.os.routing.bird.shared.InstanceDescriptor;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;

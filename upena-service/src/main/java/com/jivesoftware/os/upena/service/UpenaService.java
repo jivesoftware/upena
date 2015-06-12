@@ -15,13 +15,13 @@
  */
 package com.jivesoftware.os.upena.service;
 
-import com.jivesoftware.os.upena.routing.shared.ConnectionDescriptor;
-import com.jivesoftware.os.upena.routing.shared.ConnectionDescriptorsRequest;
-import com.jivesoftware.os.upena.routing.shared.ConnectionDescriptorsResponse;
-import com.jivesoftware.os.upena.routing.shared.HostPort;
-import com.jivesoftware.os.upena.routing.shared.InstanceDescriptor;
-import com.jivesoftware.os.upena.routing.shared.InstanceDescriptorsRequest;
-import com.jivesoftware.os.upena.routing.shared.InstanceDescriptorsResponse;
+import com.jivesoftware.os.routing.bird.shared.ConnectionDescriptor;
+import com.jivesoftware.os.routing.bird.shared.ConnectionDescriptorsRequest;
+import com.jivesoftware.os.routing.bird.shared.ConnectionDescriptorsResponse;
+import com.jivesoftware.os.routing.bird.shared.HostPort;
+import com.jivesoftware.os.routing.bird.shared.InstanceDescriptor;
+import com.jivesoftware.os.routing.bird.shared.InstanceDescriptorsRequest;
+import com.jivesoftware.os.routing.bird.shared.InstanceDescriptorsResponse;
 import com.jivesoftware.os.upena.shared.Cluster;
 import com.jivesoftware.os.upena.shared.ClusterKey;
 import com.jivesoftware.os.upena.shared.Host;

@@ -15,9 +15,9 @@
  */
 package com.jivesoftware.os.upena.ui;
 
-import com.jivesoftware.os.upena.routing.shared.ConnectionDescriptor;
-import com.jivesoftware.os.upena.routing.shared.ConnectionDescriptorsRequest;
-import com.jivesoftware.os.upena.routing.shared.ConnectionDescriptorsResponse;
+import com.jivesoftware.os.routing.bird.shared.ConnectionDescriptor;
+import com.jivesoftware.os.routing.bird.shared.ConnectionDescriptorsRequest;
+import com.jivesoftware.os.routing.bird.shared.ConnectionDescriptorsResponse;
 import com.jivesoftware.os.upena.shared.Instance;
 import com.jivesoftware.os.upena.shared.Service;
 import com.jivesoftware.os.upena.shared.ServiceFilter;

@@ -15,13 +15,13 @@
  */
 package com.jivesoftware.os.upena.hello.routing.bird.service;
 
-import com.jivesoftware.os.jive.utils.http.client.HttpClientException;
-import com.jivesoftware.os.jive.utils.http.client.HttpResponse;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
-import com.jivesoftware.os.upena.routing.shared.ClientCall.ClientResponse;
-import com.jivesoftware.os.upena.tenant.routing.http.client.RoundRobinStrategy;
-import com.jivesoftware.os.upena.tenant.routing.http.client.TenantAwareHttpClient;
+import com.jivesoftware.os.routing.bird.http.client.HttpClientException;
+import com.jivesoftware.os.routing.bird.http.client.HttpResponse;
+import com.jivesoftware.os.routing.bird.http.client.RoundRobinStrategy;
+import com.jivesoftware.os.routing.bird.http.client.TenantAwareHttpClient;
+import com.jivesoftware.os.routing.bird.shared.ClientCall.ClientResponse;
 
 /*
  * $Revision$
@@ -46,7 +46,7 @@ public class HelloRoutingBirdService {
         LOG.info("echo: tenantId:" + tenantId + " message:" + message + " echos:" + echos);
         if (echos > 0) {
             HttpResponse got = tenantAwareHttpClient.call(tenantId, new RoundRobinStrategy(),
-                client -> new ClientResponse<>(client.get("/echo?tenantId=" + tenantId + "&message=" + message + "&echos=" + (echos - 1)), true));
+                client -> new ClientResponse<>(client.get("/echo?tenantId=" + tenantId + "&message=" + message + "&echos=" + (echos - 1), null), true));
             return "{" + new String(got.getResponseBody()) + " " + message + "}";
         }
         return "{" + message + "} ";
