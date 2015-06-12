@@ -456,7 +456,7 @@ public class JCluster extends JPanel implements DocumentListener {
                                 String url = "http://" + hostAndNannyReport.host.hostName
                                     + ":" + hostAndNannyReport.nannyReport.instanceDescriptor.ports.get("manage").port + "/manage/ping";
                                 try {
-                                    String curl = "ping";//Curl.create(1000, 1000).curl(url);
+                                    String curl = "ping"; //Curl.create(1000, 1000).curl(url);
                                     if ("ping".equals(curl)) {
                                         if (!hostAndNannyReport.online) {
                                             hostAndNannyReport.checked = true;
@@ -469,7 +469,7 @@ public class JCluster extends JPanel implements DocumentListener {
                                                 + ":" + hostAndNannyReport.nannyReport.instanceDescriptor.ports.get(
                                                     "manage").port + "/manage/announcement/json";
 
-                                            String statusJson = "";//Curl.create(1000, 1000).curl(statuUrl);
+                                            String statusJson = ""; //Curl.create(1000, 1000).curl(statuUrl);
                                             if (statusJson != null) {
                                                 StatusReport readValue = new ObjectMapper().readValue(statusJson, StatusReport.class);
                                                 statusTable.set(readValue, row);
@@ -507,7 +507,7 @@ public class JCluster extends JPanel implements DocumentListener {
         String url = "http://" + hostAndNannyReport.host.hostName
             + ":" + hostAndNannyReport.nannyReport.instanceDescriptor.ports.get("manage").port + manageEndpoint;
         try {
-            String curl = "";//Curl.create(15000, 15000).curl(url);
+            String curl = ""; //Curl.create(15000, 15000).curl(url);
             tail.append(curl);
         } catch (Exception x) {
             tail.setText("failed to call " + url + " " + new Date());

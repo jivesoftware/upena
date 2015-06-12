@@ -85,5 +85,4 @@
             <artifactId>routing-bird-http-client</artifactId>
         </dependency>
     </dependencies>
-    <name>upena-ui</name>
 </project>

@@ -18,22 +18,22 @@ package com.jivesoftware.os.upena.main;
 import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
 import com.jivesoftware.os.jive.utils.base.service.ServiceHandle;
-import com.jivesoftware.os.jive.utils.health.HealthCheck;
-import com.jivesoftware.os.jive.utils.health.HealthCheckResponse;
-import com.jivesoftware.os.jive.utils.health.HealthCheckResponseImpl;
 import com.jivesoftware.os.mlogger.core.LoggerSummary;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
+import com.jivesoftware.os.routing.bird.endpoints.configuration.MainProperties;
+import com.jivesoftware.os.routing.bird.endpoints.configuration.MainPropertiesEndpoints;
+import com.jivesoftware.os.routing.bird.health.HealthCheck;
+import com.jivesoftware.os.routing.bird.health.HealthCheckResponse;
+import com.jivesoftware.os.routing.bird.health.HealthCheckResponseImpl;
 import com.jivesoftware.os.routing.bird.http.server.endpoints.TenantRoutingRestEndpoints;
+import com.jivesoftware.os.routing.bird.server.InitializeRestfulServer;
+import com.jivesoftware.os.routing.bird.server.JerseyEndpoints;
+import com.jivesoftware.os.routing.bird.server.RestfulManageServer;
+import com.jivesoftware.os.routing.bird.server.RestfulServer;
+import com.jivesoftware.os.routing.bird.server.util.Resource;
 import com.jivesoftware.os.routing.bird.shared.ConnectionDescriptorsProvider;
 import com.jivesoftware.os.routing.bird.shared.TenantRoutingProvider;
-import com.jivesoftware.os.server.http.jetty.jersey.endpoints.configuration.MainProperties;
-import com.jivesoftware.os.server.http.jetty.jersey.endpoints.configuration.MainPropertiesEndpoints;
-import com.jivesoftware.os.server.http.jetty.jersey.server.InitializeRestfulServer;
-import com.jivesoftware.os.server.http.jetty.jersey.server.JerseyEndpoints;
-import com.jivesoftware.os.server.http.jetty.jersey.server.RestfulManageServer;
-import com.jivesoftware.os.server.http.jetty.jersey.server.RestfulServer;
-import com.jivesoftware.os.server.http.jetty.jersey.server.util.Resource;
 import com.jivesoftware.os.upena.reporter.service.StatusReportBroadcaster;
 import com.jivesoftware.os.upena.reporter.service.StatusReportBroadcaster.StatusReportCallback;
 import com.jivesoftware.os.upena.reporter.service.StatusReportConfig;
@@ -269,7 +269,7 @@ public class Deployable {
             new LoggerSummaryHealthCheck(LoggerSummary.INSTANCE_EXTERNAL_INTERACTIONS));
     }
 
-    public ServiceHandle buildServer() throws Exception {
+    public RestfulServer buildServer() throws Exception {
         if (serverStarted.compareAndSet(false, true)) {
             String applicationName = instanceConfig.getServiceName() + " " + instanceConfig.getClusterName();
             ComponentHealthCheck healthCheck = new ComponentHealthCheck("'" + applicationName + "' service initialization");

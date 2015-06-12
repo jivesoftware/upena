@@ -16,7 +16,7 @@
 package com.jivesoftware.os.upena.uba.config.extractor;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jivesoftware.os.jive.utils.health.api.HealthCheckConfig;
+import com.jivesoftware.os.routing.bird.health.api.HealthCheckConfig;
 import com.jivesoftware.os.routing.bird.http.client.HttpClient;
 import com.jivesoftware.os.routing.bird.http.client.HttpClientConfig;
 import com.jivesoftware.os.routing.bird.http.client.HttpClientConfiguration;

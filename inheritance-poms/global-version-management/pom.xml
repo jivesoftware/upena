@@ -12,9 +12,9 @@
     <packaging>pom</packaging>
     <properties>
         <mlogger-version>0.9</mlogger-version>
-        <jive.utils.version>0.90</jive.utils.version>
+        <jive.utils.version>0.93</jive.utils.version>
         <amza.version>0.21</amza.version>
-        <routing.bird.version>0.1-SNAPSHOT</routing.bird.version>
+        <routing.bird.version>0.2</routing.bird.version>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -33,6 +33,22 @@
                 <artifactId>routing-bird-http-server-endpoints</artifactId>
                 <version>${routing.bird.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.jivesoftware.os.routing.bird</groupId>
+                <artifactId>routing-bird-health</artifactId>
+                <version>${routing.bird.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.jivesoftware.os.routing.bird</groupId>
+                <artifactId>routing-bird-server</artifactId>
+                <version>${routing.bird.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.jivesoftware.os.routing.bird</groupId>
+                <artifactId>merlin-config</artifactId>
+                <version>${routing.bird.version}</version>
+            </dependency>
+            
             <dependency>
                 <groupId>com.jivesoftware.os.amza</groupId>
                 <artifactId>amza-service</artifactId>
@@ -55,34 +71,9 @@
                 <version>${amza.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.jivesoftware.os.jive.utils</groupId>
-                <artifactId>health</artifactId>
-                <version>${jive.utils.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.jivesoftware.os.jive.utils</groupId>
-                <artifactId>merlin-config</artifactId>
-                <version>${jive.utils.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>org.reflections</groupId>
                 <artifactId>reflections</artifactId>
                 <version>0.9.9</version>
-            </dependency>
-            <dependency>
-                <groupId>com.jivesoftware.os.jive.utils</groupId>
-                <artifactId>shell-utils</artifactId>
-                <version>${jive.utils.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.jivesoftware.os.jive.utils</groupId>
-                <artifactId>jaxrs-util</artifactId>
-                <version>${jive.utils.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.jivesoftware.os.jive.utils</groupId>
-                <artifactId>server-http-jetty-jersey</artifactId>
-                <version>${jive.utils.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.xerial.snappy</groupId>
@@ -116,7 +107,17 @@
             </dependency>
             <dependency>
                 <groupId>com.jivesoftware.os.jive.utils</groupId>
+                <artifactId>shell-utils</artifactId>
+                <version>${jive.utils.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.jivesoftware.os.jive.utils</groupId>
                 <artifactId>base</artifactId>
+                <version>${jive.utils.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.jivesoftware.os.jive.utils</groupId>
+                <artifactId>ordered-id</artifactId>
                 <version>${jive.utils.version}</version>
             </dependency>
             <dependency>
@@ -144,11 +145,6 @@
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
                 <version>14.0.1</version>
-            </dependency>
-            <dependency>
-                <groupId>com.jivesoftware.os.jive.utils</groupId>
-                <artifactId>ordered-id</artifactId>
-                <version>${jive.utils.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>

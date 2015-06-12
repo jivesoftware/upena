@@ -17,8 +17,8 @@ package com.jivesoftware.os.upena.hello.echo.bird.deployable;
 
 import com.jivesoftware.os.routing.bird.http.client.TenantAwareHttpClient;
 import com.jivesoftware.os.routing.bird.http.client.TenantRoutingHttpClientInitializer;
+import com.jivesoftware.os.routing.bird.server.util.Resource;
 import com.jivesoftware.os.routing.bird.shared.TenantsServiceConnectionDescriptorProvider;
-import com.jivesoftware.os.server.http.jetty.jersey.server.util.Resource;
 import com.jivesoftware.os.upena.hello.routing.bird.service.HelloRoutingBirdService;
 import com.jivesoftware.os.upena.hello.routing.bird.service.HelloRoutingBirdServiceInitializer;
 import com.jivesoftware.os.upena.hello.routing.bird.service.HelloRoutingBirdServiceInitializer.HelloRoutingBirdServiceConfig;

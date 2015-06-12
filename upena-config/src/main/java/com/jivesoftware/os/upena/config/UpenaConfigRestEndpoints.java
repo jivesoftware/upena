@@ -15,9 +15,9 @@
  */
 package com.jivesoftware.os.upena.config;
 
-import com.jivesoftware.os.jive.utils.jaxrs.util.ResponseHelper;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
+import com.jivesoftware.os.routing.bird.shared.ResponseHelper;
 import com.jivesoftware.os.upena.config.shared.UpenaConfig;
 import java.util.ArrayList;
 import java.util.Map;

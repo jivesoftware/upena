@@ -15,9 +15,9 @@
  */
 package com.jivesoftware.os.upena.main;
 
-import com.jivesoftware.os.jive.utils.health.HealthCheck;
-import com.jivesoftware.os.jive.utils.health.HealthCheckResponse;
-import com.jivesoftware.os.jive.utils.health.HealthCheckResponseImpl;
+import com.jivesoftware.os.routing.bird.health.HealthCheck;
+import com.jivesoftware.os.routing.bird.health.HealthCheckResponse;
+import com.jivesoftware.os.routing.bird.health.HealthCheckResponseImpl;
 
 public class ComponentHealthCheck implements HealthCheck {
 
