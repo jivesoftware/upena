@@ -13,7 +13,6 @@
         <relativePath>inheritance-poms/global-repo-management/pom.xml</relativePath>
     </parent>
     <modules>
-        <module>hello-routing-bird</module>
         <module>upena-ui</module>
         <module>upena-status</module>
         <module>upena-service</module>
@@ -21,13 +20,7 @@
         <module>upena-deployable</module>
         <module>uba-service</module>
         <module>uba-shared</module>
-        <module>upena-scripts</module>
-        <module>upena-main</module>
-        <module>reporter-service</module>
-        <module>reporter-shared</module>
-        <module>uba-config-extractor</module>
         <module>upena-config</module>
-        <module>upena-config-shared</module>
         <module>inheritance-poms</module>
     </modules>
 </project>
