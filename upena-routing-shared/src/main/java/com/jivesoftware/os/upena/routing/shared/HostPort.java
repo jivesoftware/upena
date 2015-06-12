@@ -17,34 +17,33 @@ package com.jivesoftware.os.upena.routing.shared;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.Map;
 
-public class ConnectionDescriptor {
+public class HostPort {
 
-    private final HostPort hostPort;
-    private final Map<String, String> properties;
+    private final String host;
+    private final int port;
 
     @JsonCreator
-    public ConnectionDescriptor(@JsonProperty("hostPort") HostPort hostPort,
-        @JsonProperty("properties") Map<String, String> properties) {
-        this.hostPort = hostPort;
-        this.properties = properties;
+    public HostPort(@JsonProperty("host") String host,
+        @JsonProperty("port") int port) {
+        this.host = host;
+        this.port = port;
     }
 
-    public HostPort getHostPort() {
-        return hostPort;
+    public String getHost() {
+        return host;
     }
 
-    public Map<String, String> getProperties() {
-        return properties;
+    public int getPort() {
+        return port;
     }
 
     @Override
     public String toString() {
-        return "ConnectionDescriptor{" +
-            "hostPort=" + hostPort +
-            ", properties=" + properties +
-            '}';
+        return "ConnectionDescriptor{"
+                + "host=" + host
+                + ", port=" + port
+                + '}';
     }
 
     @Override
@@ -56,19 +55,19 @@ public class ConnectionDescriptor {
             return false;
         }
 
-        ConnectionDescriptor that = (ConnectionDescriptor) o;
+        HostPort hostPort = (HostPort) o;
 
-        if (hostPort != null ? !hostPort.equals(that.hostPort) : that.hostPort != null) {
+        if (port != hostPort.port) {
             return false;
         }
-        return !(properties != null ? !properties.equals(that.properties) : that.properties != null);
+        return !(host != null ? !host.equals(hostPort.host) : hostPort.host != null);
 
     }
 
     @Override
     public int hashCode() {
-        int result = hostPort != null ? hostPort.hashCode() : 0;
-        result = 31 * result + (properties != null ? properties.hashCode() : 0);
+        int result = host != null ? host.hashCode() : 0;
+        result = 31 * result + port;
         return result;
     }
 }

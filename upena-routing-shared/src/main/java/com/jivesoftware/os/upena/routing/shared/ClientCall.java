@@ -17,5 +17,15 @@ package com.jivesoftware.os.upena.routing.shared;
 
 public interface ClientCall<C, R, E extends Throwable> {
 
-    R call(C client) throws E;
+    ClientResponse<R> call(C client) throws E;
+
+    class ClientResponse<R> {
+        public final R response;
+        public final boolean responseComplete;
+
+        public ClientResponse(R response, boolean responseComplete) {
+            this.response = response;
+            this.responseComplete = responseComplete;
+        }
+    }
 }

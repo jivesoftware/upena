@@ -40,7 +40,7 @@ public class TenantRoutingProviderTest {
         ConnectionDescriptorsRequest request = new ConnectionDescriptorsRequest("tenant", "1234", "serviceA", "port1");
 
         List<ConnectionDescriptor> connections = new ArrayList<>();
-        connections.add(new ConnectionDescriptor("a", 1, new HashMap<String, String>()));
+        connections.add(new ConnectionDescriptor(new HostPort("a", 1), new HashMap<String, String>()));
         ConnectionDescriptorsResponse response = new ConnectionDescriptorsResponse(0, null, "releaseGroupA", connections);
         Mockito.when(connectionDescriptorsProvider.requestConnections(Mockito.eq(request))).thenReturn(response);
 
@@ -61,8 +61,7 @@ public class TenantRoutingProviderTest {
         connectionDescriptors = descriptorProvider.getConnections("tenant");
         System.out.println(connectionDescriptors);
         Assert.assertTrue(connectionDescriptors.getConnectionDescriptors().size() == 1);
-        Assert.assertEquals(connectionDescriptors.getConnectionDescriptors().get(0).getHost(), "a");
-
+        Assert.assertEquals(connectionDescriptors.getConnectionDescriptors().get(0).getHostPort().getHost(), "a");
     }
 
     @Test

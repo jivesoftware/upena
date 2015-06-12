@@ -18,13 +18,12 @@ package com.jivesoftware.os.upena.tenant.routing.http.client;
 import com.jivesoftware.os.jive.utils.http.client.HttpClient;
 import com.jivesoftware.os.jive.utils.http.client.HttpClientConfig;
 import com.jivesoftware.os.jive.utils.http.client.HttpClientConfiguration;
+import com.jivesoftware.os.jive.utils.http.client.HttpClientException;
 import com.jivesoftware.os.jive.utils.http.client.HttpClientFactory;
 import com.jivesoftware.os.jive.utils.http.client.HttpClientFactoryProvider;
-import com.jivesoftware.os.jive.utils.http.client.NoClientAvailableHttpClient;
-import com.jivesoftware.os.upena.routing.shared.ClientCloser;
 import com.jivesoftware.os.upena.routing.shared.ClientConnectionsFactory;
+import com.jivesoftware.os.upena.routing.shared.ClientsCloser;
 import com.jivesoftware.os.upena.routing.shared.ConnectionDescriptor;
-import com.jivesoftware.os.upena.routing.shared.ConnectionDescriptors;
 import com.jivesoftware.os.upena.routing.shared.TenantRoutingClient;
 import com.jivesoftware.os.upena.routing.shared.TenantsServiceConnectionDescriptorProvider;
 import java.util.ArrayList;
@@ -35,40 +34,32 @@ public class TenantRoutingHttpClientInitializer<T> {
 
     public TenantAwareHttpClient<T> initialize(TenantsServiceConnectionDescriptorProvider<T> connectionPoolProvider) {
 
-
-        ClientConnectionsFactory<HttpClient> clientConnectionsFactory = new ClientConnectionsFactory<HttpClient>() {
-            @Override
-            public HttpClient createClient(ConnectionDescriptors connectionDescriptors) {
-                List<HttpClient> httpClients = new ArrayList<>();
-                HttpClientFactoryProvider httpClientFactoryProvider = new HttpClientFactoryProvider();
-                for (ConnectionDescriptor connection : connectionDescriptors.getConnectionDescriptors()) {
-                    List<HttpClientConfiguration> config = new ArrayList<>();
-                    config.add(HttpClientConfig
-                        .newBuilder()
-                        .setMaxConnections(32) // TODO expose to config
-                        .setSocketTimeoutInMillis(600000) // TODO fix get this from connectionDescriptors.properties
-                        .build());
-                    HttpClientFactory createHttpClientFactory = httpClientFactoryProvider.createHttpClientFactory(config);
-                    HttpClient httpClient = createHttpClientFactory.createClient(connection.getHost(), connection.getPort());
-                    httpClients.add(httpClient);
-                }
-
-                if (httpClients.isEmpty()) {
-                    return new NoClientAvailableHttpClient();
-                } else {
-                    return new RoundRobinHttpClient(httpClients.toArray(new HttpClient[httpClients.size()]), 10, 10000);
-                }
+        ClientConnectionsFactory<HttpClient, HttpClientException> clientConnectionsFactory = connectionDescriptors -> {
+            List<ConnectionDescriptor> descriptors = connectionDescriptors.getConnectionDescriptors();
+            ConnectionDescriptor[] connections = descriptors.toArray(new ConnectionDescriptor[descriptors.size()]);
+            HttpClient[] httpClients = new HttpClient[descriptors.size()];
+            HttpClientFactoryProvider httpClientFactoryProvider = new HttpClientFactoryProvider();
+            for (int i = 0; i < connections.length; i++) {
+                ConnectionDescriptor connection = connections[i];
+                List<HttpClientConfiguration> config = new ArrayList<>();
+                config.add(HttpClientConfig
+                    .newBuilder()
+                    .setMaxConnections(32) // TODO expose to config
+                    .setSocketTimeoutInMillis(600000) // TODO fix get this from connectionDescriptors.properties
+                    .build());
+                HttpClientFactory createHttpClientFactory = httpClientFactoryProvider.createHttpClientFactory(config);
+                HttpClient httpClient = createHttpClientFactory.createClient(connection.getHostPort().getHost(), connection.getHostPort().getPort());
+                httpClients[i] = httpClient;
             }
+
+            return new ErrorCheckingTimestampedClients<>(System.currentTimeMillis(), connections, httpClients, 10, 10_000); //TODO config
         };
 
-        ClientCloser<HttpClient> clientCloser = new ClientCloser<HttpClient>() {
-            @Override
-            public void closeClient(HttpClient client) {
-            }
+        ClientsCloser<HttpClient> clientsCloser = clients -> {
         };
 
-        TenantRoutingClient<T, HttpClient> tenantRoutingClient = new TenantRoutingClient<>(connectionPoolProvider,
-                clientConnectionsFactory, clientCloser);
+        TenantRoutingClient<T, HttpClient, HttpClientException> tenantRoutingClient = new TenantRoutingClient<>(connectionPoolProvider,
+            clientConnectionsFactory, clientsCloser);
         return new TenantRoutingHttpClient<>(tenantRoutingClient);
     }
 }

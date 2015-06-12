@@ -34,7 +34,7 @@ public class ConnectionDescriptorsResponseTest {
         Map<String, String> properties = new HashMap<>();
         properties.put("a", "b");
         List<ConnectionDescriptor> connections = new ArrayList<>();
-        connections.add(new ConnectionDescriptor("host", 1, properties));
+        connections.add(new ConnectionDescriptor(new HostPort("host", 1), properties));
         ConnectionDescriptorsResponse a = new ConnectionDescriptorsResponse(1, Arrays.asList("message"), "user",
             connections);
 

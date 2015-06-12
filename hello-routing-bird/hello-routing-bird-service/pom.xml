@@ -25,6 +25,11 @@
             <version>0.125-SNAPSHOT</version>
         </dependency>
         <dependency>
+            <groupId>com.jivesoftware.os.upena</groupId>
+            <artifactId>upena-routing-shared</artifactId>
+            <version>0.125-SNAPSHOT</version>
+        </dependency>
+        <dependency>
             <groupId>com.jivesoftware.os.mlogger</groupId>
             <artifactId>core</artifactId>
             <scope>compile</scope>

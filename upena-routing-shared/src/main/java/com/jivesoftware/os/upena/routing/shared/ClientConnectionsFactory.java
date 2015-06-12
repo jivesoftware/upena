@@ -15,7 +15,7 @@
  */
 package com.jivesoftware.os.upena.routing.shared;
 
-public interface ClientConnectionsFactory<C> {
+public interface ClientConnectionsFactory<C, E extends Throwable> {
 
-    C createClient(ConnectionDescriptors connections);
+    TimestampedClients<C, E> createClients(ConnectionDescriptors connections);
 }

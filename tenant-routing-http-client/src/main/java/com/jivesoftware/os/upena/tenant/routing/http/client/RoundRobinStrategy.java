@@ -15,17 +15,27 @@
  */
 package com.jivesoftware.os.upena.tenant.routing.http.client;
 
-import com.jivesoftware.os.jive.utils.http.client.HttpClient;
-import com.jivesoftware.os.jive.utils.http.client.HttpClientException;
-import com.jivesoftware.os.jive.utils.http.client.HttpResponse;
-import com.jivesoftware.os.upena.routing.shared.ClientCall;
+import com.jivesoftware.os.upena.routing.shared.ConnectionDescriptor;
 import com.jivesoftware.os.upena.routing.shared.NextClientStrategy;
+import java.util.concurrent.atomic.AtomicInteger;
 
-public interface TenantAwareHttpClient<T> {
+public class RoundRobinStrategy implements NextClientStrategy {
 
-    HttpResponse call(T tenant,
-        NextClientStrategy strategy,
-        ClientCall<HttpClient, HttpResponse, HttpClientException> clientCall)
-        throws HttpClientException;
+    private final AtomicInteger lastIndexUsed = new AtomicInteger(0);
 
+    @Override
+    public int[] getClients(ConnectionDescriptor[] connectionDescriptors) {
+        int last = lastIndexUsed.get();
+        int len = connectionDescriptors.length;
+        int[] indexes = new int[len];
+        for (int i = 0; i < len; i++) {
+            indexes[i] = (last + i + 1) % len;
+        }
+        return indexes;
+    }
+
+    @Override
+    public void usedClientAtIndex(int index) {
+        lastIndexUsed.set(index);
+    }
 }

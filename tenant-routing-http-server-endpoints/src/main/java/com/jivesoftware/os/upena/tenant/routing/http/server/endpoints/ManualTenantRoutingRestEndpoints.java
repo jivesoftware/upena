@@ -19,6 +19,7 @@ import com.jivesoftware.os.jive.utils.jaxrs.util.ResponseHelper;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.routing.shared.ConnectionDescriptor;
+import com.jivesoftware.os.upena.routing.shared.HostPort;
 import com.jivesoftware.os.upena.routing.shared.InMemoryConnectionsDescriptorsProvider;
 import java.util.Collection;
 import java.util.HashMap;
@@ -72,7 +73,7 @@ public class ManualTenantRoutingRestEndpoints {
         try {
             LOG.info("setting "
                     + "tenantId:" + tenantId + " instanceId:" + instanceId + " connectToServiceNamed:" + connectToServiceNamed + " portName:" + portName);
-            ConnectionDescriptor connectionDescriptor = new ConnectionDescriptor(host, port, new HashMap<String, String>());
+            ConnectionDescriptor connectionDescriptor = new ConnectionDescriptor(new HostPort(host, port), new HashMap<String, String>());
             connectionsDescriptorsProvider.set(tenantId, instanceId, connectToServiceNamed, portName, connectionDescriptor);
             LOG.info("set"
                     + "tenantId:" + tenantId + " instanceId:" + instanceId + " connectToServiceNamed:" + connectToServiceNamed + " portName:" + portName);

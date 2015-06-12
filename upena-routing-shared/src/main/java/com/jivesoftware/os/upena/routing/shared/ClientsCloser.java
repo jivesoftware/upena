@@ -15,7 +15,7 @@
  */
 package com.jivesoftware.os.upena.routing.shared;
 
-public interface ClientCloser<C> {
+public interface ClientsCloser<C> {
 
-    void closeClient(C client);
+    void closeClients(C[] client);
 }

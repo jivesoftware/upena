@@ -18,6 +18,7 @@ package com.jivesoftware.os.upena.service;
 import com.jivesoftware.os.upena.routing.shared.ConnectionDescriptor;
 import com.jivesoftware.os.upena.routing.shared.ConnectionDescriptorsRequest;
 import com.jivesoftware.os.upena.routing.shared.ConnectionDescriptorsResponse;
+import com.jivesoftware.os.upena.routing.shared.HostPort;
 import com.jivesoftware.os.upena.routing.shared.InstanceDescriptor;
 import com.jivesoftware.os.upena.routing.shared.InstanceDescriptorsRequest;
 import com.jivesoftware.os.upena.routing.shared.InstanceDescriptorsResponse;
@@ -175,7 +176,7 @@ public class UpenaService {
                 } else {
                     Map<String, String> properties = new HashMap<>();
                     properties.putAll(port.properties);
-                    connections.add(new ConnectionDescriptor(host.hostName, port.port, properties));
+                    connections.add(new ConnectionDescriptor(new HostPort(host.hostName, port.port), properties));
                 }
             }
         }

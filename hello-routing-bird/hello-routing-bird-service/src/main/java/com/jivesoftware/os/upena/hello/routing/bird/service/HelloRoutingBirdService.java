@@ -19,6 +19,8 @@ import com.jivesoftware.os.jive.utils.http.client.HttpClientException;
 import com.jivesoftware.os.jive.utils.http.client.HttpResponse;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
+import com.jivesoftware.os.upena.routing.shared.ClientCall.ClientResponse;
+import com.jivesoftware.os.upena.tenant.routing.http.client.RoundRobinStrategy;
 import com.jivesoftware.os.upena.tenant.routing.http.client.TenantAwareHttpClient;
 
 /*
@@ -33,17 +35,18 @@ public class HelloRoutingBirdService {
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
     private final String greeting;
-    private final TenantAwareHttpClient<String> client;
+    private final TenantAwareHttpClient<String> tenantAwareHttpClient;
 
-    public HelloRoutingBirdService(String greeting, TenantAwareHttpClient<String> client) {
+    public HelloRoutingBirdService(String greeting, TenantAwareHttpClient<String> tenantAwareHttpClient) {
         this.greeting = greeting;
-        this.client = client;
+        this.tenantAwareHttpClient = tenantAwareHttpClient;
     }
 
     public String echo(String tenantId, String message, int echos) throws HttpClientException {
         LOG.info("echo: tenantId:" + tenantId + " message:" + message + " echos:" + echos);
         if (echos > 0) {
-            HttpResponse got = client.get(tenantId, "/echo?tenantId=" + tenantId + "&message=" + message + "&echos=" + (echos - 1));
+            HttpResponse got = tenantAwareHttpClient.call(tenantId, new RoundRobinStrategy(),
+                client -> new ClientResponse<>(client.get("/echo?tenantId=" + tenantId + "&message=" + message + "&echos=" + (echos - 1)), true));
             return "{" + new String(got.getResponseBody()) + " " + message + "}";
         }
         return "{" + message + "} ";

@@ -17,46 +17,46 @@ package com.jivesoftware.os.upena.routing.shared;
 
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
+import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class TenantRoutingClient<T, C> {
+public class TenantRoutingClient<T, C, E extends Throwable> {
 
     static private final MetricLogger LOG = MetricLoggerFactory.getLogger();
-    private final TenantsServiceConnectionDescriptorProvider connectionPoolProvider;
-    private final ClientConnectionsFactory<C> clientConnectionsFactory;
-    private final ClientCloser<C> clientCloser;
-    private final ConcurrentHashMap<T, TimestampedClient<C>> tenantsHttpClient = new ConcurrentHashMap<>();
+    private final TenantsServiceConnectionDescriptorProvider<T> connectionPoolProvider;
+    private final ClientConnectionsFactory<C, E> clientConnectionsFactory;
+    private final ClientsCloser<C> clientsCloser;
+    private final ConcurrentHashMap<T, TimestampedClients<C, E>> tenantsHttpClient = new ConcurrentHashMap<>();
 
-    public TenantRoutingClient(TenantsServiceConnectionDescriptorProvider connectionPoolProvider,
-        ClientConnectionsFactory<C> clientConnectionsFactory,
-        ClientCloser<C> clientCloser) {
+    public TenantRoutingClient(TenantsServiceConnectionDescriptorProvider<T> connectionPoolProvider,
+        ClientConnectionsFactory<C, E> clientConnectionsFactory,
+        ClientsCloser<C> clientsCloser) {
         this.connectionPoolProvider = connectionPoolProvider;
         this.clientConnectionsFactory = clientConnectionsFactory;
-        this.clientCloser = clientCloser;
+        this.clientsCloser = clientsCloser;
     }
 
-    public <R, E extends Throwable> R tenantAwareCall(T tenant, ClientCall<C, R, E> clientCall) throws E {
+    public <R> R tenantAwareCall(T tenant, NextClientStrategy strategy, ClientCall<C, R, E> call) throws E {
         if (tenant == null) {
             throw new IllegalArgumentException("tenant cannot be null.");
         }
         ConnectionDescriptors connections = connectionPoolProvider.getConnections(tenant);
-        TimestampedClient<C> timestampedClient = tenantsHttpClient.get(tenant);
-        if (timestampedClient == null || timestampedClient.getTimestamp() < connections.getTimestamp()) {
-            if (timestampedClient != null) {
+        TimestampedClients<C, E> timestampedClients = tenantsHttpClient.get(tenant);
+        if (timestampedClients == null || timestampedClients.getTimestamp() < connections.getTimestamp()) {
+            if (timestampedClients != null) {
                 try {
-                    clientCloser.closeClient(timestampedClient.getClient());
+                    clientsCloser.closeClients(timestampedClients.getClients());
                 } catch (Exception x) {
-                    LOG.warn("Failed while trying to close client:" + timestampedClient.getClient(), x);
+                    LOG.warn("Failed while trying to close clients:" + Arrays.toString(timestampedClients.getClients()), x);
                 }
             }
-            C client = clientConnectionsFactory.createClient(connections);
-            if (client == null) {
+            timestampedClients = clientConnectionsFactory.createClients(connections);
+            if (timestampedClients == null) {
                 throw new IllegalStateException("clientConnectionsFactory:" + clientConnectionsFactory + " should not return a null client but did!");
             }
-            timestampedClient = new TimestampedClient(System.currentTimeMillis(), client);
-            tenantsHttpClient.put(tenant, timestampedClient);
+            tenantsHttpClient.put(tenant, timestampedClients);
         }
-        return clientCall.call(timestampedClient.getClient());
+        return timestampedClients.call(strategy, call);
     }
 
     public void closeAll() {

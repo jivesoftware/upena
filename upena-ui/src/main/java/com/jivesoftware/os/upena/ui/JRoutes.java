@@ -191,7 +191,7 @@ public class JRoutes extends JPanel {
 
             if (connectionDescriptorsResponse.getConnections() != null) {
                 for (ConnectionDescriptor cd : connectionDescriptorsResponse.getConnections()) {
-                    viewResults.add(new JLabel("Route: " + cd.getHost() + ":" + cd.getPort() + " " + cd.getProperties()));
+                    viewResults.add(new JLabel("Route: " + cd.getHostPort().getHost() + ":" + cd.getHostPort().getPort() + " " + cd.getProperties()));
                     count++;
                 }
             }
