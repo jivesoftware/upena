@@ -85,6 +85,7 @@ public class HomeRegion implements PageRegion<HomeInput> {
         sarData.add(capture(new String[]{"-u", "1", "1"}, "CPU"));
         sarData.add(capture(new String[]{"-d", "1", "1"}, "I/O"));
         sarData.add(capture(new String[]{"-r", "1", "1"}, "Memory"));
+        sarData.add(capture(new String[]{"-B", "1", "1"}, "Paging"));
         sarData.add(capture(new String[]{"-w", "1", "1"}, "Context Switch"));
         sarData.add(capture(new String[]{"-n", "DEV", "1", "1"}, "Network"));
 

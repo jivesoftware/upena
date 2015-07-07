@@ -54,7 +54,10 @@ public class InstancePath {
 
     File instanceProperties() {
         File instanceProperties = new File(path(path, -1), "config/instance.properties");
-        instanceProperties.getParentFile().mkdirs();
+        File parentFile = instanceProperties.getParentFile();
+        if (!parentFile.exists() && !parentFile.mkdirs()) {
+            throw new RuntimeException("Failed trying to mkdirs for " + parentFile);
+        }
         return instanceProperties;
     }
 
@@ -158,7 +161,9 @@ public class InstancePath {
             fsPath.append(p.toStringForm());
         }
         File folder = new File(root, fsPath.toString());
-        folder.mkdirs();
+        if (!folder.exists() && !folder.mkdirs()) {
+            throw new RuntimeException("Failed trying to mkdirs for " + folder);
+        }
         return folder;
     }
 

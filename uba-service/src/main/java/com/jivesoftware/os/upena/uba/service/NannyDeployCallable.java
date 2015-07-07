@@ -102,7 +102,9 @@ class NannyDeployCallable implements Callable<Boolean> {
             System.out.println("Clearing:" + libDir);
             FileUtils.deleteDirectory(libDir);
             System.out.println("Creating if absent:" + libDir);
-            libDir.mkdirs();
+            if (!libDir.exists() && !libDir.mkdirs()) {
+                throw new RuntimeException("Failed trying to mkdirs for " + libDir);
+            }
         } catch (IOException x) {
             deployLog.log("Nanny", "failed to cleanup '" + libDir + "'.", x);
             return false;
@@ -114,7 +116,9 @@ class NannyDeployCallable implements Callable<Boolean> {
             System.out.println("Clearing:" + pluginlibDir);
             FileUtils.deleteDirectory(pluginlibDir);
             System.out.println("Creating if absent:" + pluginlibDir);
-            pluginlibDir.mkdirs();
+            if (!pluginlibDir.exists() && !pluginlibDir.mkdirs()) {
+                throw new RuntimeException("Failed trying to mkdirs for " + pluginlibDir);
+            }
         } catch (IOException x) {
             deployLog.log("Nanny", "failed to cleanup '" + pluginlibDir + "'.", x);
             return false;

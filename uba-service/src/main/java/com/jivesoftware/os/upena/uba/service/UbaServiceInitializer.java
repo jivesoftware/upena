@@ -37,7 +37,9 @@ public class UbaServiceInitializer {
 
         UpenaClient conductorClient = new UpenaClient(buildRequestHelper(composerHost, composerPort, mapper));
         File root = new File(new File(workingDir), "services/");
-        root.mkdirs();
+        if (!root.exists() && !root.mkdirs()) {
+            throw new RuntimeException("Failed trying to mkdirs for " + root);
+        }
         UbaTree tree = new UbaTree(root, new String[]{"cluster", "service", "release", "instance"});
         Uba uba = new Uba(composerHost, composerHost, composerPort, tree, ubaLog);
         UbaService conductorService = new UbaService(conductorClient, uba, hostKey);
