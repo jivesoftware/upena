@@ -54,7 +54,7 @@ div.container {
     margin: -1.5em 0 100%;
 }
 
-property-title {
+.property-title {
     -webkit-border-top-left-radius: 4px;
     -webkit-border-top-right-radius: 8px;
     -webkit-border-bottom-right-radius: 16px;
@@ -78,6 +78,14 @@ table.shadow-property {
     -webkit-box-shadow: 2px 2px 4px 5px #ccc;
     box-shadow: 2px 2px 4px 5px #ccc;
     background-color: #555555;
+}
+
+tr.grid-host:hover {
+    background-color: #369;
+}
+
+div.grid-host-panel {
+    margin-bottom: 0;
 }
 
 span.dropt:hover {

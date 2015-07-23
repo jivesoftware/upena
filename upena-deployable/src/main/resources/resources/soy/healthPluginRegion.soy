@@ -65,10 +65,10 @@
                     </thead>
                     <tbody>
                         {foreach $host in $gridHost}
-                            <tr>
+                            <tr class="grid-host">
                                 {foreach $health in $host}
                                     <td>
-                                        <div class="panel panel-default">
+                                        <div class="panel panel-default grid-host-panel">
                                             <div style="float:left; background-image: linear-gradient(to bottom,{$health.color} 0,{$health.color} 100%); width:20px;height:20px"></div>
                                             <a href="#" rel="popover-health" id="popoverAnchor-{$health.uid}" 
                                                 {if $health.instanceKey} data-popover-instance-key="{$health.instanceKey}" {/if}
