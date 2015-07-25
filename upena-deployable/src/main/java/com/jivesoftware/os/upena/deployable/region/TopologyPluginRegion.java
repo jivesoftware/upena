@@ -94,8 +94,10 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
 
                 Instance instance = upenaStore.instances.get(new InstanceKey(route.getInstanceId()));
                 Service service = upenaStore.services.get(instance.serviceKey);
+                Edge edge = new Edge(service.name, route.getConnectToServiceNamed());
+                edges.add(edge);
 
-                edges.add(new Edge(service.name, route.getConnectToServiceNamed()));
+                System.out.println("EDGE:" + edge);
 
             }
 
@@ -157,6 +159,12 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
             }
             return true;
         }
+
+        @Override
+        public String toString() {
+            return "Edge{" + "from=" + from + ", to=" + to + '}';
+        }
+
     }
 
     public void toInstance(HostPort hostPort) {
@@ -176,6 +184,9 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
         List<Route> allRoutes = new ArrayList<>();
 
         allRoutes.addAll(discoveredRoutes.routes());
+        for (Routes v : nodeRoutes.values()) {
+            allRoutes.addAll(v.getRoutes());
+        }
 
 //        for (RingHost ringHost : new RingHost[]{
 //            new RingHost("soa-prime-data5.phx1.jivehosted.com", 1175),
@@ -191,6 +202,7 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
                     try {
                         HttpRequestHelper requestHelper = buildRequestHelper(ringHost.getHost(), ringHost.getPort());
                         Routes routes = requestHelper.executeGetRequest("/routes/instances", Routes.class, null);
+                        System.out.println("routes:" + routes);
                         nodeRoutes.put(ringHost, routes);
                     } catch (Exception x) {
                         Routes routes = new Routes(Collections.emptyList());
