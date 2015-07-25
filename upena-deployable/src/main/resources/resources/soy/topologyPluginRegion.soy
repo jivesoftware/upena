@@ -2,6 +2,7 @@
 
 /**
  * @param? filter
+ * @param? nodes
  * @param? edges
  *
  */
@@ -33,19 +34,34 @@
             </form>
         </div>
         <script type="text/javascript" src="/static/scripts/raphael-min.js"></script>
-        <script type="text/javascript" src="/static/scripts/graffle.js"></script>
-        <script type="text/javascript" src="/static/scripts/graph.js"></script>
+        <script type="text/javascript" src="/static/scripts/dracula_graffle.js"></script>
+        <script type="text/javascript" src="/static/scripts/dracula_graph.js"></script>
+        <script type="text/javascript" src="/static/scripts/dracula_algorithms.js"></script>
         <script type="text/javascript">
    
             var redraw;
-            var height = 1000;
-            var width = 1000;
+            var height = 600;
+            var width = 800;
 
             /* only do all this when document has finished loading (needed for RaphaelJS */
             window.onload = function() {lb}
                 
                 /* http://www.graphdracula.net/ */
                 var g = new Graph();
+ 
+
+                {foreach $n in $nodes}
+                    var render = function(r, n) {lb}
+                        /* the Raphael set is obligatory, containing all you want to display */
+                        var set = r.set().push(
+                            /* custom objects go here */
+                            r.rect(n.point[0]-30, n.point[1]-13, 60, 44).attr({lb}"fill": "#{$n.color}", r : "12px", "stroke-width" : n.distance == 0 ? "3px" : "1px" {rb})).push(
+                            r.text(n.point[0], n.point[1] + 10, (n.label || n.id)));
+                        return set;
+                    {rb};
+                    g.addNode("{$n.id}", {lb} label : "{$n.label}",render:render {rb});
+                {/foreach}
+                
                 
                 {foreach $e in $edges}
                     g.addEdge("{$e.from}", "{$e.to}", {lb} directed : true {rb});

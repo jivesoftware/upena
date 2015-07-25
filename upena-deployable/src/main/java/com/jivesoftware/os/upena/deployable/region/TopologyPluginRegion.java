@@ -26,11 +26,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -89,15 +87,41 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
             filter.put("service", input.service);
             data.put("filter", filter);
 
-            Set<Edge> edges = new HashSet<>();
+            Map<String, Node> nodes = new HashMap<>();
+            Map<String, Edge> edges = new HashMap<>();
+            int id = 0;
             for (Route route : buildClusterRoutes()) {
 
                 Instance instance = upenaStore.instances.get(new InstanceKey(route.getInstanceId()));
-                Service service = upenaStore.services.get(instance.serviceKey);
-                Edge edge = new Edge(service.name, route.getConnectToServiceNamed());
-                edges.add(edge);
+                Service service = null;
+                if (instance != null) {
+                    service = upenaStore.services.get(instance.serviceKey);
+                }
+                String serviceName = service != null ? service.name : route.getInstanceId();
+                Node from = nodes.get(serviceName);
+                if (from == null) {
+                    from = new Node(serviceName, "id" + id, 0);
+                    nodes.put(serviceName, from);
+                    id++;
+                    System.out.println("from:" + from);
+                }
+                from.count++;
 
-                System.out.println("EDGE:" + edge);
+                Node to = nodes.get(route.getConnectToServiceNamed());
+                if (to == null) {
+                    to = new Node(route.getConnectToServiceNamed(), "id" + id, 0);
+                    nodes.put(route.getConnectToServiceNamed(), to);
+                    id++;
+                    System.out.println("to:" + to);
+                }
+                to.count++;
+
+                Edge edge = edges.get(from.id + "->" + to.id);
+                if (edge == null) {
+                    edge = new Edge(from.id, to.id, "");
+                    edges.put(from.id + "->" + to.id, edge);
+                    System.out.println("edge:" + edge);
+                }
 
             }
 
@@ -107,10 +131,22 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
 //            edges.add(new Edge("c", "d"));
 //            edges.add(new Edge("b", "e"));
 //            edges.add(new Edge("b", "f"));
+            List<Map<String, String>> renderNodes = new ArrayList<>();
+            for (Node n : nodes.values()) {
+                Map<String, String> node = new HashMap<>();
+                node.put("id", n.id);
+                node.put("color", "090");
+                node.put("label", n.label + "\\n(" + n.count + ")");
+                node.put("count", String.valueOf(n.count));
+                renderNodes.add(node);
+            }
+
+            data.put("nodes", renderNodes);
             List<Map<String, String>> renderEdges = new ArrayList<>();
-            for (Edge e : edges) {
+            for (Edge e : edges.values()) {
                 Map<String, String> edge = new HashMap<>();
                 edge.put("from", e.from);
+                edge.put("label", e.label);
                 edge.put("to", e.to);
                 renderEdges.add(edge);
             }
@@ -124,14 +160,35 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
         return renderer.render(template, data);
     }
 
+    public static class Node {
+
+        String label;
+        String id;
+        int count;
+
+        public Node(String label, String id, int count) {
+            this.label = label;
+            this.id = id;
+            this.count = count;
+        }
+
+        @Override
+        public String toString() {
+            return "Node{" + "label=" + label + ", id=" + id + ", count=" + count + '}';
+        }
+
+    }
+
     public static class Edge {
 
         String from;
+        String label;
         String to;
 
-        public Edge(String from, String to) {
+        public Edge(String from, String to, String label) {
             this.from = from;
             this.to = to;
+            this.label = label;
         }
 
         @Override
@@ -162,7 +219,11 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
 
         @Override
         public String toString() {
-            return "Edge{" + "from=" + from + ", to=" + to + '}';
+            return "Edge{"
+                + "from=" + from
+                + ", label=" + label
+                + ", to=" + to
+                + '}';
         }
 
     }
