@@ -286,6 +286,7 @@ public class Main {
             .addEndpoint(AmzaReplicationRestEndpoints.class)
             .addInjectable(AmzaInstance.class, amzaService)
             .addEndpoint(UpenaEndpoints.class)
+            .addInjectable(DiscoveredRoutes.class, discoveredRoutes)
             .addInjectable(RingHost.class, ringHost);
 
         injectUI(amzaService, ringHost, upenaStore, upenaConfigStore, upenaService, ubaService, jerseyEndpoints, clusterName, discoveredRoutes);
@@ -400,6 +401,7 @@ public class Main {
         jerseyEndpoints.addInjectable(SoyService.class, soyService);
         jerseyEndpoints.addEndpoint(AsyncLookupEndpoints.class);
         jerseyEndpoints.addInjectable(AsyncLookupService.class, new AsyncLookupService(upenaStore));
+        jerseyEndpoints.addInjectable(DiscoveredRoutes.class, discoveredRoutes);
 
         for (ManagePlugin plugin : plugins) {
             soyService.registerPlugin(plugin);
