@@ -27,7 +27,7 @@
                             placeholder="Service" value="{$filter.service?:''}" name="service" id="servicePicker" class="form-control">
                         </td>
                         <td>
-                            <button title="Filter" type="submit" name="filter" value="filter" class="btn btn-primary"><span class="glyphicon glyphicon-search"></button>
+                            <button title="Filter" type="submit" name="filter" value="filter" class="btn btn-primary"><span class="glyphicon glyphicon-search"></span></button>
                         </td>
                     </tr>
                 </table>
@@ -41,7 +41,8 @@
                             {foreach $service in $gridServices}
                                 <th>
                                     <a href="#" rel="popover" id="popoverAnchor-{$service.service}" data-popover-content="#popover-{$service.service}" data-placement="bottom" class="btn btn-primary" title="{$service.service}">
-                                            <span class="glyphicon glyphicon-menu-down">{$service.service}</a>
+                                        <span class="glyphicon glyphicon-menu-down"></span>{$service.service}
+                                    </a>
                                     <div id="popover-{$service.service}" class="hide">
                                         <div class="btn-group">
                                             <form id="configService" method="post" action="/ui/config" name="configService"> 
@@ -73,13 +74,12 @@
                                             <a href="#" rel="popover-health" id="popoverAnchor-{$health.uid}" 
                                                 {if $health.instanceKey} data-popover-instance-key="{$health.instanceKey}" {/if}
                                                 data-popover-content="#popover-{$health.uid}" data-placement="bottom" title="">
-                                                <span class="glyphicon glyphicon-menu-down">
-                                                    {if $health.health == null}
-                                                        &nbsp;&nbsp;&nbsp;
-                                                    {else}
-                                                        {$health.health|noAutoescape}
-                                                    {/if}
-                                                </span>
+                                                <span class="glyphicon glyphicon-menu-down"></span>
+                                                {if $health.health == null}
+                                                    &nbsp;&nbsp;&nbsp;
+                                                {else}
+                                                    {$health.health|noAutoescape}
+                                                {/if}
                                             </a>
                                             <div id="popover-{$health.uid}" class="hide">
 
@@ -236,10 +236,12 @@
                                                 {if $health.instances}
                                                     {foreach $i in $health.instances}
                                                         <div class="panel panel-default">
-                                                            <div class="panel-heading"><span class="glyphicon glyphicon-fire"></span>{sp}
+                                                            <div class="panel-heading">
+                                                                <span class="glyphicon glyphicon-fire"></span>{sp}
                                                                 {$i.clusterName}&nbsp;-&nbsp;{$i.serviceName|noAutoescape}
                                                                                 &nbsp;&nbsp;&nbsp;&nbsp;port={$i.port}
-                                                                                &nbsp;&nbsp;&nbsp;&nbsp;host={$i.hostName}</div>
+                                                                                &nbsp;&nbsp;&nbsp;&nbsp;host={$i.hostName}
+                                                            </div>
                                                             <div class="panel-body">
                                                                 {$i.details|noAutoescape}
                                                             </div>

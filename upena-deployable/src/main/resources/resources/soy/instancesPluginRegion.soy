@@ -82,8 +82,8 @@
                                             <input type="hidden" name="releaseKey" value="{$filters.releaseKey?:''}" />
                                         </td>
                                         <td>
-                                            <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary"><span class="glyphicon glyphicon-search"></button>
-                                            <button title="Add" type="submit" name="action" value="add" class="btn btn-default"><span class="glyphicon glyphicon-plus"></button>
+                                            <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary"><span class="glyphicon glyphicon-search"></span></button>
+                                            <button title="Add" type="submit" name="action" value="add" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span></button>
                                         </td>
                                     </tr>
                                 </form>
@@ -118,7 +118,8 @@
                                             </td>
                                             <td>
                                                 <a href="#" rel="popover" id="popoverAnchor-{$i.key}" data-popover-content="#portsPopover-{$i.key}" data-placement="left" class="btn btn-primary" title="Ports">
-                                                <span class="glyphicon glyphicon-menu-down">Ports</a>
+                                                    <span class="glyphicon glyphicon-menu-down"></span>Ports
+                                                </a>
                                                 <div id="portsPopover-{$i.key}" class="hide" style="overflow:scroll; height:400px;">
                                                     <table>
                                                         <thead>
@@ -142,7 +143,7 @@
                                                                 <td>
                                                                 </td>
                                                                 <td>
-                                                                    <button title="Add" onClick="upena.instancePorts.addPort('{$i.key}')" class="btn btn-default"><span class="glyphicon glyphicon-plus"></button>
+                                                                    <button title="Add" onClick="upena.instancePorts.addPort('{$i.key}')" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span></button>
                                                                 </td>
                                                             </tr>
                                                             {foreach $p in $i.ports}
@@ -155,7 +156,8 @@
                                                                     </td>
                                                                     <td class="well" colspan="3">
                                                                         <a href="#" rel="popover" id="propertyPopoverAnchor-{$i.key}-{$p.portName}" data-popover-content="#propertyPopover-{$i.key}-{$p.portName}" data-placement="left" class="btn btn-primary" title="{$p.portName} Properties">
-                                                                        <span class="glyphicon glyphicon-menu-down">Properties</a>
+                                                                            <span class="glyphicon glyphicon-menu-down"></span>Properties
+                                                                        </a>
                                                                         <div id="propertyPopover-{$i.key}-{$p.portName}" class="hide" style="overflow:scroll; height:400px;">
                                                                             <table>
                                                                                 <thead>
@@ -175,7 +177,7 @@
                                                                                                 {$nv.value}
                                                                                             </td>
                                                                                             <td>
-                                                                                                <button title="Remove" onClick="upena.instancePorts.removePortProperty('{$i.key}', '{$p.portName}', '{$nv.name}')" class="btn btn-default"><span class="glyphicon glyphicon-trash"></button>
+                                                                                                <button title="Remove" onClick="upena.instancePorts.removePortProperty('{$i.key}', '{$p.portName}', '{$nv.name}')" class="btn btn-default"><span class="glyphicon glyphicon-trash"></span></button>
                                                                                             </td>
                                                                                         </tr>
                                                                                     {/foreach}
@@ -189,7 +191,7 @@
                                                                                                 placeholder="property value" value="">
                                                                                         </td>
                                                                                         <td>
-                                                                                            <button title="Add" onClick="upena.instancePorts.addPortProperty('{$i.key}', '{$p.portName}')" class="btn btn-default"><span class="glyphicon glyphicon-plus"></button>
+                                                                                            <button title="Add" onClick="upena.instancePorts.addPortProperty('{$i.key}', '{$p.portName}')" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span></button>
                                                                                         </td>
                                                                                     </tr>
                                                                                 </tbody>
@@ -197,7 +199,7 @@
                                                                         </div>
                                                                     </td>
                                                                     <td>
-                                                                        <button title="Remove" onClick="upena.instancePorts.removePort('{$i.key}', '{$p.portName}')" class="btn btn-default"><span class="glyphicon glyphicon-trash"></button>
+                                                                        <button title="Remove" onClick="upena.instancePorts.removePort('{$i.key}', '{$p.portName}')" class="btn btn-default"><span class="glyphicon glyphicon-trash"></span></button>
                                                                     </td>
                                                                 </tr>
                                                             {/foreach}
@@ -218,9 +220,9 @@
                                             </td>
                                             <td>
                                                 <input type="hidden" name="key" value="{$i.key}">
-                                                <button title="Update" type="submit" name="action" value="restart" class="btn btn-default"><span class="glyphicon glyphicon-repeat"></button>
-                                                <button title="Update" type="submit" name="action" value="update" class="btn btn-default"><span class="glyphicon glyphicon-save"></button>
-                                                <button title="Remove" type="submit" name="action" value="remove" class="btn btn-default"><span class="glyphicon glyphicon-trash"></button>
+                                                <button title="Update" type="submit" name="action" value="restart" class="btn btn-default"><span class="glyphicon glyphicon-repeat"></span></button>
+                                                <button title="Update" type="submit" name="action" value="update" class="btn btn-default"><span class="glyphicon glyphicon-save"></span></button>
+                                                <button title="Remove" type="submit" name="action" value="remove" class="btn btn-default"><span class="glyphicon glyphicon-trash"></span></button>
                                             </td>
                                         </tr>
                                     </form>

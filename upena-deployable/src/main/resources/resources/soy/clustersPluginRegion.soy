@@ -41,8 +41,8 @@
                                     <td>
                                     </td>
                                     <td>
-                                        <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary"><span class="glyphicon glyphicon-search"></button>
-                                        <button title="Add" type="submit" name="action" value="add" class="btn btn-default"><span class="glyphicon glyphicon-plus"></button>
+                                        <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary"><span class="glyphicon glyphicon-search"></span></button>
+                                        <button title="Add" type="submit" name="action" value="add" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span></button>
                                     </td>
                                 </tr>
                             </form>
@@ -61,7 +61,8 @@
                                         </td>
                                         <td>
                                             <a href="#" rel="popover" id="releaseGroupPopoverAnchor-{$c.key}" data-popover-content="#releaseGroupPopover-{$c.key}" data-placement="left" class="btn btn-primary" title="Use these releases for this cluster">
-                                            <span class="glyphicon glyphicon-menu-down">Releases</a>
+                                                <span class="glyphicon glyphicon-menu-down"></span>Releases
+                                            </a>
                                             <div id="releaseGroupPopover-{$c.key}" class="hide">
                                                 <table class="table">
                                                     <thead>
@@ -81,7 +82,7 @@
                                                                     {$r.releaseGroupName}
                                                                 </td>
                                                                 <td>
-                                                                    <button title="Remove" onClick="upena.clusterReleaseGroups.remove('{$c.key}', '{$r.serviceKey}', '{$r.releaseGroupKey}')" class="btn btn-default"><span class="glyphicon glyphicon-trash"></button>
+                                                                    <button title="Remove" onClick="upena.clusterReleaseGroups.remove('{$c.key}', '{$r.serviceKey}', '{$r.releaseGroupKey}')" class="btn btn-default"><span class="glyphicon glyphicon-trash"></span></button>
                                                                 </td>
                                                             </tr>
                                                         {/foreach}
@@ -99,7 +100,7 @@
                                                                 <input type="hidden" name="releaseKey" id="releaseId-{$c.key}" value="{$filters.releaseKey?:''}" />
                                                             </td>
                                                             <td>
-                                                                <button title="Add" onClick="upena.clusterReleaseGroups.add('{$c.key}')" class="btn btn-default"><span class="glyphicon glyphicon-plus"></button>
+                                                                <button title="Add" onClick="upena.clusterReleaseGroups.add('{$c.key}')" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span></button>
                                                             </td>
                                                         </tr>
                                                     </tbody>
@@ -108,8 +109,8 @@
                                         </td>
                                         <td>
                                             <input type="hidden" name="key" value="{$c.key}">
-                                            <button title="Update" type="submit" name="action" value="update" class="btn btn-default"><span class="glyphicon glyphicon-save"></button>
-                                            <button title="Remove" type="submit" name="action" value="remove" class="btn btn-default"><span class="glyphicon glyphicon-trash"></button>
+                                            <button title="Update" type="submit" name="action" value="update" class="btn btn-default"><span class="glyphicon glyphicon-save"></span></button>
+                                            <button title="Remove" type="submit" name="action" value="remove" class="btn btn-default"><span class="glyphicon glyphicon-trash"></span></button>
                                         </td>
                                     </tr>
                                 </form>
