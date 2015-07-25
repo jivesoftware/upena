@@ -190,13 +190,12 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
                 executorService.submit(() -> {
                     try {
                         HttpRequestHelper requestHelper = buildRequestHelper(ringHost.getHost(), ringHost.getPort());
-                        Routes routes = requestHelper.executeGetRequest("/routes/instances", Routes.class,
-                            null);
+                        Routes routes = requestHelper.executeGetRequest("/routes/instances", Routes.class, null);
                         nodeRoutes.put(ringHost, routes);
                     } catch (Exception x) {
                         Routes routes = new Routes(Collections.emptyList());
                         nodeRoutes.put(ringHost, routes);
-                        System.out.println("Failed getting cluster health for " + ringHost + " " + x);
+                        System.out.println("Failed getting routes for instances " + ringHost + " " + x);
                     } finally {
                         nodeRecency.put(ringHost.getHost() + ":" + ringHost.getPort(), System.currentTimeMillis());
                         currentlyExecuting.remove(ringHost);

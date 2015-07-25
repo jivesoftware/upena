@@ -32,6 +32,7 @@ import com.jivesoftware.os.routing.bird.shared.InstanceDescriptor;
 import com.jivesoftware.os.routing.bird.shared.ResponseHelper;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
 import com.jivesoftware.os.upena.service.DiscoveredRoutes;
+import com.jivesoftware.os.upena.service.DiscoveredRoutes.Routes;
 import com.jivesoftware.os.upena.service.UpenaService;
 import com.jivesoftware.os.upena.service.UpenaStore;
 import com.jivesoftware.os.upena.shared.HostKey;
@@ -220,7 +221,7 @@ public class UpenaEndpoints {
     @Path("/routes/instances")
     public Response getInstancesRoutes() {
         try {
-            return ResponseHelper.INSTANCE.jsonResponse(discoveredRoutes.routes());
+            return ResponseHelper.INSTANCE.jsonResponse(new Routes(discoveredRoutes.routes()));
         } catch (Exception x) {
             return ResponseHelper.INSTANCE.errorResponse("Failed building all health view.", x);
         }
