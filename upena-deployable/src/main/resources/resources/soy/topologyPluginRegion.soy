@@ -1,0 +1,76 @@
+{namespace soy.page}
+
+/**
+ * @param? filter
+ * @param? edges
+ *
+ */
+{template .topologyPluginRegion}
+    <div class="panel panel-default">
+        <div class="panel-heading"><span class="glyphicon glyphicon-transfer"></span>{sp}Topology</div>
+        <div class="panel-body">
+            <form id="filter-health" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                data-jive-ui="jive/ui/typeahead/request_typeahead" method="get" name="filter-health">
+                <table class="table">
+                    <tr style="background-color:#ddd;">
+                        <td>
+                            <input type="text" autocomplete="off" role="combobox" style="width:280px; padding-left:10px;"
+                            placeholder="Cluster" value="{$filter.cluster?:''}" name="cluster" id="clusterPicker" class="form-control">
+                        </td>
+                        <td>
+                            <input type="text" autocomplete="off" role="combobox" style="width:280px; padding-left:10px;"
+                            placeholder="Host" value="{$filter.host?:''}" name="host" id="hostPicker" class="form-control">
+                        </td>
+                        <td>
+                            <input type="text" autocomplete="off" role="combobox" style="width:280px; padding-left:10px;"
+                            placeholder="Service" value="{$filter.service?:''}" name="service" id="servicePicker" class="form-control">
+                        </td>
+                        <td>
+                            <button title="Filter" type="submit" name="filter" value="filter" class="btn btn-primary"><span class="glyphicon glyphicon-search"></button>
+                        </td>
+                    </tr>
+                </table>
+            </form>
+        </div>
+        <script type="text/javascript" src="/static/scripts/raphael-min.js"></script>
+        <script type="text/javascript" src="/static/scripts/graffle.js"></script>
+        <script type="text/javascript" src="/static/scripts/graph.js"></script>
+        <script type="text/javascript">
+   
+            var redraw;
+            var height = 1000;
+            var width = 1000;
+
+            /* only do all this when document has finished loading (needed for RaphaelJS */
+            window.onload = function() {lb}
+                
+                /* http://www.graphdracula.net/ */
+                var g = new Graph();
+                
+                {foreach $e in $edges}
+                    g.addEdge("{$e.from}", "{$e.to}");
+                {/foreach}
+                
+
+                /* layout the graph using the Spring layout implementation */
+                var layouter = new Graph.Layout.Spring(g);
+                layouter.layout();
+
+                /* draw the graph using the RaphaelJS draw implementation */
+                var renderer = new Graph.Renderer.Raphael('canvas', g, width, height);
+                renderer.draw();
+
+                redraw = function() {lb}
+                    layouter.layout();
+                    renderer.draw();
+                {rb};
+            {rb};
+
+        </script>
+        
+
+        <div id="canvas">
+        </div>
+    </div>
+{/template}
+

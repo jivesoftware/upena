@@ -31,6 +31,7 @@ import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelper;
 import com.jivesoftware.os.routing.bird.shared.InstanceDescriptor;
 import com.jivesoftware.os.routing.bird.shared.ResponseHelper;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
+import com.jivesoftware.os.upena.service.DiscoveredRoutes;
 import com.jivesoftware.os.upena.service.UpenaService;
 import com.jivesoftware.os.upena.service.UpenaStore;
 import com.jivesoftware.os.upena.shared.HostKey;
@@ -83,6 +84,7 @@ public class UpenaEndpoints {
     private final RingHost ringHost;
     private final HostKey ringHostKey;
     private final SoyService soyService;
+    private final DiscoveredRoutes discoveredRoutes;
 
     public UpenaEndpoints(@Context AmzaClusterName amzaClusterName,
         @Context AmzaInstance amzaInstance,
@@ -91,7 +93,8 @@ public class UpenaEndpoints {
         @Context UbaService ubaService,
         @Context RingHost ringHost,
         @Context HostKey ringHostKey,
-        @Context SoyService soyService) {
+        @Context SoyService soyService,
+        @Context DiscoveredRoutes discoveredRoutes) {
         this.amzaClusterName = amzaClusterName;
         this.amzaInstance = amzaInstance;
         this.upenaStore = upenaStore;
@@ -100,6 +103,7 @@ public class UpenaEndpoints {
         this.ringHost = ringHost;
         this.ringHostKey = ringHostKey;
         this.soyService = soyService;
+        this.discoveredRoutes = discoveredRoutes;
     }
 
     @GET
@@ -206,6 +210,17 @@ public class UpenaEndpoints {
         try {
             NodeHealth upenaHealth = buildNodeHealth();
             return ResponseHelper.INSTANCE.jsonResponse(upenaHealth);
+        } catch (Exception x) {
+            return ResponseHelper.INSTANCE.errorResponse("Failed building all health view.", x);
+        }
+    }
+
+    @GET
+    @Consumes("application/json")
+    @Path("/routes/instances")
+    public Response getInstancesRoutes() {
+        try {
+            return ResponseHelper.INSTANCE.jsonResponse(discoveredRoutes.routes());
         } catch (Exception x) {
             return ResponseHelper.INSTANCE.errorResponse("Failed building all health view.", x);
         }

@@ -60,10 +60,14 @@ public class UpenaRestEndpoints {
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
     private final UpenaStore upenaStore;
     private final UpenaService upenaService;
+    private final DiscoveredRoutes discoveredRoutes;
 
-    public UpenaRestEndpoints(@Context UpenaStore upenaStore, @Context UpenaService upenaService) {
+    public UpenaRestEndpoints(@Context UpenaStore upenaStore,
+        @Context UpenaService upenaService,
+        @Context DiscoveredRoutes discoveredRoutes) {
         this.upenaStore = upenaStore;
         this.upenaService = upenaService;
+        this.discoveredRoutes = discoveredRoutes;
     }
 
     @POST
@@ -480,6 +484,7 @@ public class UpenaRestEndpoints {
             LOG.info("connectionsRequest:" + connectionsRequest);
             ConnectionDescriptorsResponse connectionDescriptorsResponse = upenaService.connectionRequest(connectionsRequest);
             LOG.info("connectionDescriptorsResponse:" + connectionDescriptorsResponse);
+            discoveredRoutes.discovered(connectionsRequest, connectionDescriptorsResponse);
             return ResponseHelper.INSTANCE.jsonResponse(connectionDescriptorsResponse);
         } catch (Exception x) {
             LOG.warn("Failed to connectionsRequest:" + connectionsRequest, x);
@@ -505,14 +510,14 @@ public class UpenaRestEndpoints {
     @GET
     @Consumes("application/json")
     @Path("/mapTenantToRelease")
-    public Response getInstanceConfig(@QueryParam("tenantId") String tenantId, @QueryParam("releaseId")  @DefaultValue("") String releaseId) {
+    public Response getInstanceConfig(@QueryParam("tenantId") String tenantId, @QueryParam("releaseId") @DefaultValue("") String releaseId) {
         try {
             LOG.info("Attempting to map tenant to release: tenantId:" + tenantId + " releaseId:" + releaseId);
             ConcurrentNavigableMap<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> foundReleaseGroups = upenaStore.releaseGroups
-                    .find(new ReleaseGroupFilter(releaseId, null, null, null, null, 0, 1000));
+                .find(new ReleaseGroupFilter(releaseId, null, null, null, null, 0, 1000));
             Map.Entry<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> firstReleaseGroup = foundReleaseGroups.firstEntry();
 
-            TenantFilter tenantFilter =  new TenantFilter(tenantId, null, 0, 1000);
+            TenantFilter tenantFilter = new TenantFilter(tenantId, null, 0, 1000);
             ConcurrentNavigableMap<TenantKey, TimestampedValue<Tenant>> foundTenants = upenaStore.tenants.find(tenantFilter);
             Map.Entry<TenantKey, TimestampedValue<Tenant>> firstTenant = foundTenants.firstEntry();
             Tenant t = firstTenant.getValue().getValue();
