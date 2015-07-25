@@ -401,8 +401,7 @@ public class Main {
         jerseyEndpoints.addInjectable(SoyService.class, soyService);
         jerseyEndpoints.addEndpoint(AsyncLookupEndpoints.class);
         jerseyEndpoints.addInjectable(AsyncLookupService.class, new AsyncLookupService(upenaStore));
-        jerseyEndpoints.addInjectable(DiscoveredRoutes.class, discoveredRoutes);
-
+        
         for (ManagePlugin plugin : plugins) {
             soyService.registerPlugin(plugin);
             jerseyEndpoints.addEndpoint(plugin.endpointsClass);
