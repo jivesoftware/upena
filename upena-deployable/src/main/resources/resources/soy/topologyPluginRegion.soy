@@ -48,7 +48,7 @@
                 var g = new Graph();
                 
                 {foreach $e in $edges}
-                    g.addEdge("{$e.from}", "{$e.to}", { directed : true });
+                    g.addEdge("{$e.from}", "{$e.to}", {lb} directed : true {rb});
                 {/foreach}
                 
 
