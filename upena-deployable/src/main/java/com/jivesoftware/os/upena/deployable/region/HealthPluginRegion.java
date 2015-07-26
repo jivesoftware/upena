@@ -95,7 +95,7 @@ public class HealthPluginRegion implements PageRegion<Optional<HealthPluginRegio
             filter.put("service", input.service);
             data.put("filter", filter);
 
-            Collection<UpenaEndpoints.NodeHealth> nodeHealths = buildClusterHealth("health");
+            Collection<UpenaEndpoints.NodeHealth> nodeHealths = buildClusterHealth();
 
             Map<String, Double> minClusterHealth = new HashMap<>();
             for (UpenaEndpoints.NodeHealth nodeHealth : nodeHealths) {
@@ -354,7 +354,7 @@ public class HealthPluginRegion implements PageRegion<Optional<HealthPluginRegio
     private final ConcurrentMap<String, Long> nodeRecency = Maps.newConcurrentMap();
     private final ConcurrentMap<RingHost, Boolean> currentlyExecuting = Maps.newConcurrentMap();
 
-    private Collection<UpenaEndpoints.NodeHealth> buildClusterHealth(final String path) throws Exception {
+    Collection<UpenaEndpoints.NodeHealth> buildClusterHealth() throws Exception {
 //        for (RingHost ringHost : new RingHost[]{
 //            new RingHost("soa-prime-data5.phx1.jivehosted.com", 1175),
 //            new RingHost("soa-prime-data6.phx1.jivehosted.com", 1175),
@@ -371,7 +371,7 @@ public class HealthPluginRegion implements PageRegion<Optional<HealthPluginRegio
                     public void run() {
                         try {
                             HttpRequestHelper requestHelper = buildRequestHelper(ringHost.getHost(), ringHost.getPort());
-                            UpenaEndpoints.NodeHealth nodeHealth = requestHelper.executeGetRequest("/" + path + "/instance", UpenaEndpoints.NodeHealth.class,
+                            UpenaEndpoints.NodeHealth nodeHealth = requestHelper.executeGetRequest("/health/instance", UpenaEndpoints.NodeHealth.class,
                                 null);
                             nodeHealths.put(ringHost, nodeHealth);
                         } catch (Exception x) {

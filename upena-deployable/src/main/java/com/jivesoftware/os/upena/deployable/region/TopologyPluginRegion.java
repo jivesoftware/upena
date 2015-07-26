@@ -14,6 +14,8 @@ import com.jivesoftware.os.routing.bird.http.client.HttpClientFactory;
 import com.jivesoftware.os.routing.bird.http.client.HttpClientFactoryProvider;
 import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelper;
 import com.jivesoftware.os.routing.bird.shared.HostPort;
+import com.jivesoftware.os.upena.deployable.UpenaEndpoints.NannyHealth;
+import com.jivesoftware.os.upena.deployable.UpenaEndpoints.NodeHealth;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.service.DiscoveredRoutes;
 import com.jivesoftware.os.upena.service.DiscoveredRoutes.Route;
@@ -24,6 +26,7 @@ import com.jivesoftware.os.upena.shared.InstanceKey;
 import com.jivesoftware.os.upena.shared.Service;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -45,6 +48,7 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
     private final SoyRenderer renderer;
     private final AmzaInstance amzaInstance;
     private final UpenaStore upenaStore;
+    private final HealthPluginRegion healthPluginRegion;
     private final DiscoveredRoutes discoveredRoutes;
     private final ExecutorService executorService = Executors.newCachedThreadPool();
 
@@ -52,12 +56,14 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
         SoyRenderer renderer,
         AmzaInstance amzaInstance,
         UpenaStore upenaStore,
+        HealthPluginRegion healthPluginRegion,
         DiscoveredRoutes discoveredRoutes) {
 
         this.template = template;
         this.renderer = renderer;
         this.amzaInstance = amzaInstance;
         this.upenaStore = upenaStore;
+        this.healthPluginRegion = healthPluginRegion;
         this.discoveredRoutes = discoveredRoutes;
     }
 
@@ -93,6 +99,20 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
             for (Route route : buildClusterRoutes()) {
 
                 Instance instance = upenaStore.instances.get(new InstanceKey(route.getInstanceId()));
+
+                NannyHealth health = null;
+                Collection<NodeHealth> nodeHealths = healthPluginRegion.buildClusterHealth();
+                for (NodeHealth nodeHealth : nodeHealths) {
+                    for (NannyHealth nannyHealth : nodeHealth.nannyHealths) {
+                        if (nannyHealth.instanceDescriptor.instanceKey.equals(route.getInstanceId())) {
+                            health = nannyHealth;
+                            break;
+                        }
+                    }
+                }
+
+                String healthColor = health == null ? "999" : healthPluginRegion.getHEXTrafficlightColor(health.serviceHealth.health, 1.0F);
+
                 Service service = null;
                 if (instance != null) {
                     service = upenaStore.services.get(instance.serviceKey);
@@ -100,28 +120,49 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
                 String serviceName = service != null ? service.name : route.getInstanceId();
                 Node from = nodes.get(serviceName);
                 if (from == null) {
-                    from = new Node(serviceName, "id" + id, 0);
+                    from = new Node(serviceName, "id" + id, healthColor, "16", 0);
                     nodes.put(serviceName, from);
                     id++;
                     System.out.println("from:" + from);
                 }
                 from.count++;
 
-                Node to = nodes.get(route.getConnectToServiceNamed());
-                if (to == null) {
-                    to = new Node(route.getConnectToServiceNamed(), "id" + id, 0);
-                    nodes.put(route.getConnectToServiceNamed(), to);
-                    id++;
-                    System.out.println("to:" + to);
-                }
-                to.count++;
+                Node to;
+                if (route.getReturnCode() == 1) {
 
-                Edge edge = edges.get(from.id + "->" + to.id);
-                if (edge == null) {
-                    edge = new Edge(from.id, to.id, "");
-                    edges.put(from.id + "->" + to.id, edge);
-                    System.out.println("edge:" + edge);
+                    to = nodes.get(route.getPortName() + "->" + route.getConnectToServiceNamed());
+                    if (to == null) {
+                        to = new Node(route.getPortName(), "id" + id, "004", "10", 0);
+                        nodes.put(route.getPortName() + "->" + route.getConnectToServiceNamed(), to);
+                        id++;
+                        System.out.println("to:" + to);
+                    }
+                    to.count++;
+
+                    addEdge(edges, from, to);
+                    from = to;
+
+                    to = nodes.get(route.getConnectToServiceNamed());
+                    if (to == null) {
+                        to = new Node(route.getConnectToServiceNamed(), "id" + id, "060", "16", 0);
+                        nodes.put(route.getConnectToServiceNamed(), to);
+                        id++;
+                        System.out.println("to:" + to);
+                    }
+                    to.count++;
+
+                } else {
+                    to = nodes.get("Errors");
+                    if (to == null) {
+                        to = new Node("Errors", "id" + id, "900", "20", 0);
+                        nodes.put("Errors", to);
+                        id++;
+                        System.out.println("to:" + to);
+                    }
+                    to.count++;
                 }
+
+                addEdge(edges, from, to);
 
             }
 
@@ -135,7 +176,8 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
             for (Node n : nodes.values()) {
                 Map<String, String> node = new HashMap<>();
                 node.put("id", n.id);
-                node.put("color", "090");
+                node.put("bgcolor", n.bgcolor);
+                node.put("fontSize", n.fontSize);
                 node.put("label", n.label + "\\n(" + n.count + ")");
                 node.put("count", String.valueOf(n.count));
                 renderNodes.add(node);
@@ -160,21 +202,34 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
         return renderer.render(template, data);
     }
 
+    private void addEdge(Map<String, Edge> edges, Node from, Node to) {
+        Edge edge = edges.get(from.id + "->" + to.id);
+        if (edge == null) {
+            edge = new Edge(from.id, to.id, "");
+            edges.put(from.id + "->" + to.id, edge);
+            System.out.println("edge:" + edge);
+        }
+    }
+
     public static class Node {
 
         String label;
         String id;
+        String bgcolor;
+        String fontSize;
         int count;
 
-        public Node(String label, String id, int count) {
+        public Node(String label, String id, String bgcolor, String fontSize, int count) {
             this.label = label;
             this.id = id;
+            this.bgcolor = bgcolor;
+            this.fontSize = fontSize;
             this.count = count;
         }
 
         @Override
         public String toString() {
-            return "Node{" + "label=" + label + ", id=" + id + ", count=" + count + '}';
+            return "Node{" + "label=" + label + ", id=" + id + ", bgcolor=" + bgcolor + ", count=" + count + '}';
         }
 
     }

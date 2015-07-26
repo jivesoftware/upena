@@ -48,23 +48,30 @@
                 
                 /* http://www.graphdracula.net/ */
                 var g = new Graph();
- 
 
                 {foreach $n in $nodes}
                     var render = function(r, n) {lb}
                         /* the Raphael set is obligatory, containing all you want to display */
+                        var t = r.text(n.point[0], n.point[1], n.label).attr({lb}"font-size":"{$n.fontSize}px"{rb});
+                        var bb = t.getBBox(true);
+                        var w = bb.width+12;
+                        var h = bb.height+12;
                         var set = r.set().push(
                             /* custom objects go here */
-                            r.rect(n.point[0]-30, n.point[1]-13, 60, 44).attr({lb}"fill": "#{$n.color}", r : "12px", "stroke-width" : n.distance == 0 ? "3px" : "1px" {rb})).push(
-                            r.text(n.point[0], n.point[1] + 10, (n.label || n.id)));
+                            r.rect(n.point[0]-(w/2), n.point[1]-(h/2), w, h).attr({lb}
+                                "fill": "#{$n.bgcolor}",
+                                r : "6px",
+                                "stroke-width" : n.distance == 0 ? "3px" : "1px"
+                            {rb}))
+                            .push(t);
                         return set;
                     {rb};
-                    g.addNode("{$n.id}", {lb} label : "{$n.label}",render:render {rb});
+                    g.addNode("{$n.id}", {lb} label : "{$n.label}", render:render {rb});
                 {/foreach}
                 
                 
                 {foreach $e in $edges}
-                    g.addEdge("{$e.from}", "{$e.to}", {lb} directed : true {rb});
+                    g.addEdge("{$e.from}", "{$e.to}", {lb} directed : true  {rb});
                 {/foreach}
                 
 
@@ -82,11 +89,13 @@
                 {rb};
             {rb};
 
+
         </script>
         
 
         <div id="canvas">
         </div>
+        <button id="redraw" onclick="redraw();">redraw</button>!
     </div>
 {/template}
 

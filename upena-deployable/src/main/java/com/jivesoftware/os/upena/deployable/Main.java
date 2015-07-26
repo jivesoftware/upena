@@ -366,37 +366,38 @@ public class Main {
         SoyService soyService = new SoyService(renderer, new HeaderRegion("soy.chrome.headerRegion", renderer),
             new HomeRegion("soy.page.homeRegion", renderer, amzaService, ringHost));
 
-        List<ManagePlugin> plugins = Lists.newArrayList(
-            new ManagePlugin("fire", "Health", "/ui/health",
-                HealthPluginEndpoints.class,
-                new HealthPluginRegion("soy.page.healthPluginRegion", "soy.page.healthPluginRegionUIs", renderer, amzaService, upenaStore)),
-            new ManagePlugin("transfer", "Topology", "/ui/topology",
-                TopologyPluginEndpoints.class,
-                new TopologyPluginRegion("soy.page.topologyPluginRegion", renderer, amzaService, upenaStore, discoveredRoutes)),
-            new ManagePlugin("road", "Changes", "/ui/changeLog",
-                ChangeLogPluginEndpoints.class,
-                new ChangeLogPluginRegion("soy.page.changeLogPluginRegion", renderer, upenaStore)),
-            new ManagePlugin("pencil", "Instances", "/ui/instances",
-                InstancesPluginEndpoints.class,
-                new InstancesPluginRegion("soy.page.instancesPluginRegion", renderer, upenaStore)),
-            new ManagePlugin("cog", "Config", "/ui/config",
-                ConfigPluginEndpoints.class,
-                new ConfigPluginRegion("soy.page.configPluginRegion", renderer, upenaStore, upenaConfigStore)),
-            new ManagePlugin("cloud", "Clusters", "/ui/clusters",
-                ClustersPluginEndpoints.class,
-                new ClustersPluginRegion("soy.page.clustersPluginRegion", renderer, upenaStore)),
-            new ManagePlugin("hdd", "Hosts", "/ui/hosts",
-                HostsPluginEndpoints.class,
-                new HostsPluginRegion("soy.page.hostsPluginRegion", renderer, upenaStore)),
-            new ManagePlugin("flag", "Services", "/ui/services",
-                ServicesPluginEndpoints.class,
-                new ServicesPluginRegion("soy.page.servicesPluginRegion", renderer, amzaService, upenaStore, upenaService, ubaService, ringHost)),
-            new ManagePlugin("send", "Releases", "/ui/releases",
-                ReleasesPluginEndpoints.class,
-                new ReleasesPluginRegion("soy.page.releasesPluginRegion", renderer, upenaStore)),
-            new ManagePlugin("leaf", "Upena Ring", "/ui/ring",
-                UpenaRingPluginEndpoints.class,
-                new UpenaRingPluginRegion("soy.page.upenaRingPluginRegion", renderer, amzaService, upenaStore, upenaService, ubaService, ringHost)));
+        HealthPluginRegion healthPluginRegion = new HealthPluginRegion("soy.page.healthPluginRegion", "soy.page.healthPluginRegionUIs", renderer, amzaService, upenaStore);
+        ManagePlugin health = new ManagePlugin("fire", "Health", "/ui/health",
+            HealthPluginEndpoints.class, healthPluginRegion);
+        ManagePlugin topology = new ManagePlugin("transfer", "Topology", "/ui/topology",
+            TopologyPluginEndpoints.class,
+            new TopologyPluginRegion("soy.page.topologyPluginRegion", renderer, amzaService, upenaStore, healthPluginRegion, discoveredRoutes));
+        ManagePlugin changes = new ManagePlugin("road", "Changes", "/ui/changeLog",
+            ChangeLogPluginEndpoints.class,
+            new ChangeLogPluginRegion("soy.page.changeLogPluginRegion", renderer, upenaStore));
+        ManagePlugin instances = new ManagePlugin("pencil", "Instances", "/ui/instances",
+            InstancesPluginEndpoints.class,
+            new InstancesPluginRegion("soy.page.instancesPluginRegion", renderer, upenaStore));
+        ManagePlugin config = new ManagePlugin("cog", "Config", "/ui/config",
+            ConfigPluginEndpoints.class,
+            new ConfigPluginRegion("soy.page.configPluginRegion", renderer, upenaStore, upenaConfigStore));
+        ManagePlugin clusters = new ManagePlugin("cloud", "Clusters", "/ui/clusters",
+            ClustersPluginEndpoints.class,
+            new ClustersPluginRegion("soy.page.clustersPluginRegion", renderer, upenaStore));
+        ManagePlugin hosts = new ManagePlugin("hdd", "Hosts", "/ui/hosts",
+            HostsPluginEndpoints.class,
+            new HostsPluginRegion("soy.page.hostsPluginRegion", renderer, upenaStore));
+        ManagePlugin services = new ManagePlugin("flag", "Services", "/ui/services",
+            ServicesPluginEndpoints.class,
+            new ServicesPluginRegion("soy.page.servicesPluginRegion", renderer, amzaService, upenaStore, upenaService, ubaService, ringHost));
+        ManagePlugin releases = new ManagePlugin("send", "Releases", "/ui/releases",
+            ReleasesPluginEndpoints.class,
+            new ReleasesPluginRegion("soy.page.releasesPluginRegion", renderer, upenaStore));
+        ManagePlugin ring = new ManagePlugin("leaf", "Upena Ring", "/ui/ring",
+            UpenaRingPluginEndpoints.class,
+            new UpenaRingPluginRegion("soy.page.upenaRingPluginRegion", renderer, amzaService, upenaStore, upenaService, ubaService, ringHost));
+
+        List<ManagePlugin> plugins = Lists.newArrayList(health, topology, changes, instances, config, clusters, hosts, services, releases, ring);
 
         jerseyEndpoints.addInjectable(SoyService.class, soyService);
         jerseyEndpoints.addEndpoint(AsyncLookupEndpoints.class);
