@@ -83,7 +83,7 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
     @Override
     public String render(String user, Optional<TopologyPluginRegionInput> optionalInput) {
         Map<String, Object> data = Maps.newHashMap();
-
+        boolean portNames = false;
         try {
             TopologyPluginRegionInput input = optionalInput.get();
 
@@ -130,17 +130,19 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
                 Node to;
                 if (route.getReturnCode() == 1) {
 
-                    to = nodes.get(route.getPortName() + "->" + route.getConnectToServiceNamed());
-                    if (to == null) {
-                        to = new Node(route.getPortName(), "id" + id, "004", "10", 0);
-                        nodes.put(route.getPortName() + "->" + route.getConnectToServiceNamed(), to);
-                        id++;
-                        System.out.println("to:" + to);
-                    }
-                    to.count++;
+                    if (portNames) {
+                        to = nodes.get(route.getPortName() + "->" + route.getConnectToServiceNamed());
+                        if (to == null) {
+                            to = new Node(route.getPortName(), "id" + id, "004", "10", 0);
+                            nodes.put(route.getPortName() + "->" + route.getConnectToServiceNamed(), to);
+                            id++;
+                            System.out.println("to:" + to);
+                        }
+                        to.count++;
 
-                    addEdge(edges, from, to);
-                    from = to;
+                        addEdge(edges, from, to);
+                        from = to;
+                    }
 
                     to = nodes.get(route.getConnectToServiceNamed());
                     if (to == null) {

@@ -1,7 +1,6 @@
 {namespace soy.page}
 
 /**
- * @param? filter
  * @param? nodes
  * @param? edges
  *
@@ -10,92 +9,70 @@
     <div class="panel panel-default">
         <div class="panel-heading"><span class="glyphicon glyphicon-transfer"></span>{sp}Topology</div>
         <div class="panel-body">
-            <form id="filter-health" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
-                data-jive-ui="jive/ui/typeahead/request_typeahead" method="get" name="filter-health">
-                <table class="table">
-                    <tr style="background-color:#ddd;">
-                        <td>
-                            <input type="text" autocomplete="off" role="combobox" style="width:280px; padding-left:10px;"
-                            placeholder="Cluster" value="{$filter.cluster?:''}" name="cluster" id="clusterPicker" class="form-control">
-                        </td>
-                        <td>
-                            <input type="text" autocomplete="off" role="combobox" style="width:280px; padding-left:10px;"
-                            placeholder="Host" value="{$filter.host?:''}" name="host" id="hostPicker" class="form-control">
-                        </td>
-                        <td>
-                            <input type="text" autocomplete="off" role="combobox" style="width:280px; padding-left:10px;"
-                            placeholder="Service" value="{$filter.service?:''}" name="service" id="servicePicker" class="form-control">
-                        </td>
-                        <td>
-                            <button title="Filter" type="submit" name="filter" value="filter" class="btn btn-primary"><span class="glyphicon glyphicon-search"></button>
-                        </td>
-                    </tr>
-                </table>
-            </form>
-        </div>
-        <script type="text/javascript" src="/static/scripts/raphael-min.js"></script>
-        <script type="text/javascript" src="/static/scripts/dracula_graffle.js"></script>
-        <script type="text/javascript" src="/static/scripts/dracula_graph.js"></script>
-        <script type="text/javascript" src="/static/scripts/dracula_algorithms.js"></script>
-        <script type="text/javascript">
-   
-            var redraw;
-            var height = 600;
-            var width = 800;
+            <script type="text/javascript" src="/static/scripts/raphael-min.js"></script>
+            <script type="text/javascript" src="/static/scripts/dracula_graffle.js"></script>
+            <script type="text/javascript" src="/static/scripts/dracula_graph.js"></script>
+            <script type="text/javascript" src="/static/scripts/dracula_algorithms.js"></script>
+            <script type="text/javascript">
 
-            /* only do all this when document has finished loading (needed for RaphaelJS */
-            window.onload = function() {lb}
-                
-                /* http://www.graphdracula.net/ */
-                var g = new Graph();
+                var redraw;
+                var height = 600;
+                var width = 800;
 
-                {foreach $n in $nodes}
-                    var render = function(r, n) {lb}
-                        /* the Raphael set is obligatory, containing all you want to display */
-                        var t = r.text(n.point[0], n.point[1], n.label).attr({lb}"font-size":"{$n.fontSize}px"{rb});
-                        var bb = t.getBBox(true);
-                        var w = bb.width+12;
-                        var h = bb.height+12;
-                        var set = r.set().push(
-                            /* custom objects go here */
-                            r.rect(n.point[0]-(w/2), n.point[1]-(h/2), w, h).attr({lb}
-                                "fill": "#{$n.bgcolor}",
-                                r : "6px",
-                                "stroke-width" : n.distance == 0 ? "3px" : "1px"
-                            {rb}))
-                            .push(t);
-                        return set;
-                    {rb};
-                    g.addNode("{$n.id}", {lb} label : "{$n.label}", render:render {rb});
-                {/foreach}
-                
-                
-                {foreach $e in $edges}
-                    g.addEdge("{$e.from}", "{$e.to}", {lb} directed : true  {rb});
-                {/foreach}
-                
+                /* only do all this when document has finished loading (needed for RaphaelJS */
+                window.onload = function() {lb}
 
-                /* layout the graph using the Spring layout implementation */
-                var layouter = new Graph.Layout.Spring(g);
-                layouter.layout();
+                    /* http://www.graphdracula.net/ */
+                    var g = new Graph();
 
-                /* draw the graph using the RaphaelJS draw implementation */
-                var renderer = new Graph.Renderer.Raphael('canvas', g, width, height);
-                renderer.draw();
+                    {foreach $n in $nodes}
+                        var render = function(r, n) {lb}
+                            /* the Raphael set is obligatory, containing all you want to display */
+                            var t = r.text(n.point[0], n.point[1], n.label).attr({lb}"font-size":"{$n.fontSize}px"{rb});
+                            var bb = t.getBBox(true);
+                            var w = bb.width+12;
+                            var h = bb.height+12;
+                            var set = r.set().push(
+                                /* custom objects go here */
+                                r.rect(n.point[0]-(w/2), n.point[1]-(h/2), w, h).attr({lb}
+                                    "fill": "#{$n.bgcolor}",
+                                    r : "6px",
+                                    "stroke-width" : n.distance == 0 ? "3px" : "1px"
+                                {rb}))
+                                .push(t);
+                            return set;
+                        {rb};
+                        g.addNode("{$n.id}", {lb} label : "{$n.label}", render:render {rb});
+                    {/foreach}
 
-                redraw = function() {lb}
+
+                    {foreach $e in $edges}
+                        g.addEdge("{$e.from}", "{$e.to}", {lb} directed : true  {rb});
+                    {/foreach}
+
+
+                    /* layout the graph using the Spring layout implementation */
+                    var layouter = new Graph.Layout.Spring(g);
                     layouter.layout();
+
+                    /* draw the graph using the RaphaelJS draw implementation */
+                    var renderer = new Graph.Renderer.Raphael('canvas', g, width, height);
                     renderer.draw();
+
+                    redraw = function() {lb}
+                        layouter.layout();
+                        renderer.draw();
+                    {rb};
                 {rb};
-            {rb};
 
 
-        </script>
-        
+            </script>
 
-        <div id="canvas">
+
+            <div id="canvas">
+            </div>
+            <button id="redraw" onclick="redraw();">redraw</button>!
         </div>
-        <button id="redraw" onclick="redraw();">redraw</button>!
     </div>
 {/template}
 
