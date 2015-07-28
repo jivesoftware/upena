@@ -13,6 +13,7 @@ import com.jivesoftware.os.routing.bird.http.client.HttpClientConfiguration;
 import com.jivesoftware.os.routing.bird.http.client.HttpClientFactory;
 import com.jivesoftware.os.routing.bird.http.client.HttpClientFactoryProvider;
 import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelper;
+import com.jivesoftware.os.routing.bird.shared.ConnectionDescriptor;
 import com.jivesoftware.os.routing.bird.shared.HostPort;
 import com.jivesoftware.os.upena.deployable.UpenaEndpoints.NannyHealth;
 import com.jivesoftware.os.upena.deployable.UpenaEndpoints.NodeHealth;
@@ -23,10 +24,15 @@ import com.jivesoftware.os.upena.service.DiscoveredRoutes.RouteHealths;
 import com.jivesoftware.os.upena.service.DiscoveredRoutes.Routes;
 import com.jivesoftware.os.upena.service.UpenaStore;
 import com.jivesoftware.os.upena.shared.ConnectionHealth;
+import com.jivesoftware.os.upena.shared.Host;
+import com.jivesoftware.os.upena.shared.HostFilter;
+import com.jivesoftware.os.upena.shared.HostKey;
 import com.jivesoftware.os.upena.shared.Instance;
 import com.jivesoftware.os.upena.shared.InstanceConnectionHealth;
+import com.jivesoftware.os.upena.shared.InstanceFilter;
 import com.jivesoftware.os.upena.shared.InstanceKey;
 import com.jivesoftware.os.upena.shared.Service;
+import com.jivesoftware.os.upena.shared.TimestampedValue;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -36,6 +42,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.apache.commons.lang.exception.ExceptionUtils;
@@ -184,11 +191,18 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
 
                 Edge edge = addEdge(edges, from, to);
 
+                List<ConnectionDescriptor> connections = route.getConnections();
+
                 long successes = 0;
                 Map<HostPort, Map<String, ConnectionHealth>> connectionHealth = discoveredRoutes.getConnectionHealth(route.getInstanceId());
                 for (Map<String, ConnectionHealth> value : connectionHealth.values()) {
                     for (ConnectionHealth value1 : value.values()) {
-                        successes += value1.successPerSecond;
+                        for (ConnectionDescriptor connection : connections) {
+                            if (connection.getHostPort().equals(value1.hostPort)) {
+                                successes += value1.successPerSecond;
+                                break;
+                            }
+                        }
                     }
                 }
 
@@ -247,16 +261,36 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
 
     }
 
-    private String renderConnectionHealth(String name, String instanceId) {
+    private String hostPortToServiceName(HostPort hostPort, String portName) throws Exception {
+        ConcurrentNavigableMap<HostKey, TimestampedValue<Host>> find = upenaStore.hosts.find(new HostFilter(null, hostPort.getHost(), null, null, null, 0, 1));
+        for (HostKey hostKey : find.keySet()) {
+            ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> instances = upenaStore.instances.find(
+                new InstanceFilter(null, hostKey, null, null, Integer.MIN_VALUE, 0, 1000));
+            for (TimestampedValue<Instance> value : instances.values()) {
+                if (!value.getTombstoned()) {
+                    Instance.Port mainPort = value.getValue().ports.get(portName);
+                    if (mainPort != null && mainPort.port == hostPort.getPort()) {
+                        return upenaStore.services.get(value.getValue().serviceKey).name;
+                    }
+                }
+            }
+        }
+        return hostPort.getHost() + ":" + hostPort.getPort();
+    }
+
+    private String renderConnectionHealth(String from, String instanceId) throws Exception {
         List<Map<String, Object>> healths = new ArrayList<>();
         Map<HostPort, Map<String, ConnectionHealth>> connectionHealths = discoveredRoutes.getConnectionHealth(instanceId);
         for (Map.Entry<HostPort, Map<String, ConnectionHealth>> hostPortHealth : connectionHealths.entrySet()) {
+
+            String to = hostPortToServiceName(hostPortHealth.getKey(), "main"); // hack
+
             for (Map.Entry<String, ConnectionHealth> familyHealth : hostPortHealth.getValue().entrySet()) {
 
                 Map<String, Object> health = new HashMap<>();
-                health.put("name", name);
-                health.put("host", hostPortHealth.getKey().getHost());
-                health.put("port", hostPortHealth.getKey().getPort());
+                health.put("from", from);
+                health.put("to", to);
+
                 health.put("family", familyHealth.getKey());
 
                 health.put("success", String.valueOf(familyHealth.getValue().success));
@@ -274,6 +308,9 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
                 health.put("latency95th", String.valueOf(familyHealth.getValue().latencyStats.latency95th));
                 health.put("latency99th", String.valueOf(familyHealth.getValue().latencyStats.latency99th));
                 health.put("latency999th", String.valueOf(familyHealth.getValue().latencyStats.latency999th));
+
+                health.put("host", hostPortHealth.getKey().getHost());
+                health.put("port", hostPortHealth.getKey().getPort());
 
                 healths.add(health);
             }

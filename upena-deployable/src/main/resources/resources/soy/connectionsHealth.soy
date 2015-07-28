@@ -8,30 +8,30 @@
     <table class="table table-striped">
         <thead>
             <tr>
-                <th>Name</th>
-                <th>Host</th>
-                <th>port</th>
-                <th>Connection</th>
+                <th>from</th>
+                <th>to</th>
+                <th>connection</th>
                 <th>success</th>
                 <th>success/sec</th>
                 <th>inflight</th>
-                <th>Min</th>
-                <th>Mean</th>
-                <th>Max</th>
+                <th>min</th>
+                <th>mean</th>
+                <th>max</th>
                 <th>50th</th>
                 <th>75th</th>
                 <th>90th</th>
                 <th>95th</th>
                 <th>99th</th>
                 <th>999th</th>
+                <th>host</th>
+                <th>port</th>
             </tr>
         </thead>
         <tbody>
             {foreach $h in $healths}
                 <tr>    
-                    <td>{$h.name}</td>
-                    <td>{$h.host}</td>
-                    <td>{$h.port}</td>
+                    <td>{$h.from}</td>
+                    <td>{$h.to}</td>
                     <td>{$h.family}</td>
                     <td>{$h.success}</td>
                     <td>{$h.successPerSecond}</td>
@@ -45,6 +45,8 @@
                     <td>{$h.latency95th}</td>   
                     <td>{$h.latency99th}</td>
                     <td>{$h.latency999th}</td>
+                    <td>{$h.host}</td>
+                    <td>{$h.port}</td>
                 </tr>
             {/foreach}
         </tbody>
