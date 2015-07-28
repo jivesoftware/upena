@@ -318,7 +318,7 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
 
         Collections.sort(healths, (Map<String, Object> o1, Map<String, Object> o2) -> {
 
-            int c = ((String) o1.get("name")).compareTo((String) o2.get("name"));
+            int c = ((String) o1.get("family")).compareTo((String) o2.get("family"));
             if (c != 0) {
                 return c;
             }
