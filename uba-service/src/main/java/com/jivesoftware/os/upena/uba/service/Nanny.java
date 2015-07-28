@@ -43,6 +43,7 @@ public class Nanny {
     private final AtomicReference<InstanceDescriptor> instanceDescriptor;
     private final LinkedBlockingQueue<Runnable> linkedBlockingQueue;
     private final ThreadPoolExecutor threadPoolExecutor;
+    private final AtomicLong lastRestart = new AtomicLong(-1);
     private final AtomicLong restartAtTimestamp = new AtomicLong(-1);
     private final AtomicLong startupTimestamp = new AtomicLong(-1);
     private final UbaLog ubaLog;
@@ -91,7 +92,7 @@ public class Nanny {
         } else {
             instanceDescriptor.set(id);
         }
-        if (id.restartTimestampGMTMillis > System.currentTimeMillis()) {
+        if (id.restartTimestampGMTMillis > lastRestart.get()) {
             restartAtTimestamp.set(id.restartTimestampGMTMillis);
         }
     }
@@ -110,9 +111,11 @@ public class Nanny {
 
     synchronized public String nanny(String host, String upenaHost, int upenaPort) throws InterruptedException, ExecutionException {
 
-        if (restartAtTimestamp.get() > 0 && restartAtTimestamp.get() < System.currentTimeMillis()) {
+        long now = System.currentTimeMillis();
+        if (restartAtTimestamp.get() > 0 && restartAtTimestamp.get() < now) {
             deployLog.log("Nanny", "Restart triggered by timestamp. " + this, null);
             if (kill()) {
+                lastRestart.set(now);
                 restartAtTimestamp.set(-1);
             }
         }

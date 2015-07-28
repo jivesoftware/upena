@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.jivesoftware.os.routing.bird.shared.ConnectionDescriptor;
 import com.jivesoftware.os.routing.bird.shared.ConnectionDescriptorsRequest;
 import com.jivesoftware.os.routing.bird.shared.ConnectionDescriptorsResponse;
+import com.jivesoftware.os.routing.bird.shared.ConnectionHealth;
+import com.jivesoftware.os.routing.bird.shared.HostPort;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +20,26 @@ import java.util.concurrent.ConcurrentHashMap;
 public class DiscoveredRoutes {
 
     public final Map<ConnectionDescriptorsRequest, TimestampedConnectionDescriptorsResponse> discoveredConnection = new ConcurrentHashMap<>();
+    public final Map<HostPort, Map<String, ConnectionHealth>> connectionFamilyHealths = new ConcurrentHashMap<>();
+
+    public void connectionHealth(ConnectionHealth connectionHealth) {
+        Map<String, ConnectionHealth> familyHealth = connectionFamilyHealths.computeIfAbsent(connectionHealth.hostPort, (HostPort t) -> {
+            return new ConcurrentHashMap<>();
+        });
+        familyHealth.compute(connectionHealth.family, (String key, ConnectionHealth value) -> {
+            if (value == null) {
+                return connectionHealth;
+            } else {
+                return value.timestampMillis > connectionHealth.timestampMillis ? value : connectionHealth;
+            }
+        });
+    }
+
+    public Map<String, ConnectionHealth> getConnectionHealth(HostPort hostPort) {
+        return connectionFamilyHealths.computeIfAbsent(hostPort, (HostPort t) -> {
+            return new ConcurrentHashMap<>();
+        });
+    }
 
     public void discovered(ConnectionDescriptorsRequest request, ConnectionDescriptorsResponse response) {
         discoveredConnection.compute(request, (ConnectionDescriptorsRequest t, TimestampedConnectionDescriptorsResponse u) -> {

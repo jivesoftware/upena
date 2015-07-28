@@ -24,6 +24,10 @@
             <artifactId>testng</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.jivesoftware.os.routing.bird</groupId>
+            <artifactId>routing-bird-shared</artifactId>
+        </dependency>
     </dependencies>
     <name>upena-shared</name>
 </project>

@@ -347,6 +347,66 @@ upena.cfg = {
     }
 };
 
+upena.topology = {
+    layouter: null,
+    renderer: null,
+    redraw: null,
+    height: null,
+    width: null,
+    init: function () {
+
+        upena.topology.height = "600";
+        upena.topology.width = $(document).width() - 100;
+        var nodes = $('#upena-topology').data('nodes');
+        var edges = $('#upena-topology').data('edges');
+
+
+        /* http://www.graphdracula.net/ */
+        var g = new Graph();
+
+        $(nodes).each(function (key, node) {
+            var render = function (r, n) {
+                /* the Raphael set is obligatory, containing all you want to display */
+                var text = r.text(n.point[0], n.point[1], n.label).attr({"font-size": node.fontSize + "px", opacity: 1.0, fill: "#000"});
+                var bb = text.getBBox(true);
+                var w = bb.width + 12;
+                var h = bb.height + 12;
+                var rect = r.rect(n.point[0] - (w / 2), n.point[1] - (h / 2), w, h).attr({
+                    fill: "270-#" + node.maxbgcolor+"-#"+node.minbgcolor,
+                    r: "6px",
+                    "stroke-width": n.distance == 0 ? "3px" : "1px"
+                });
+                
+                var set = r.set().push(rect).push(text);
+                text.toFront();
+                return set;
+            };
+            g.addNode(node.id, {label: node.label, render: render});
+        });
+
+
+        $(edges).each(function (key, edge) {
+            g.addEdge(edge.from, edge.to, {directed: true});
+        });
+
+
+        /* layout the graph using the Spring layout implementation */
+        upena.topology.layouter = new Graph.Layout.Spring(g);
+        upena.topology.layouter.layout();
+
+        /* draw the graph using the RaphaelJS draw implementation */
+        upena.topology.renderer = new Graph.Renderer.Raphael('upena-topology', g, upena.topology.width, upena.topology.height);
+        upena.topology.renderer.draw();
+
+
+    },
+    redraw : function () {
+        dracula_graph_seed = 1;
+        upena.topology.layouter.layout();
+        upena.topology.renderer.draw();
+    }
+}
+
 $(document).ready(function () {
     if ($('.upena-hs-field').length) {
         upena.hs.init();
@@ -356,6 +416,10 @@ $(document).ready(function () {
     }
     if ($('#upena-cfg').length) {
         upena.cfg.init();
+    }
+
+    if ($('#upena-topology').length) {
+        upena.topology.init();
     }
 
     $(function () {
@@ -380,7 +444,7 @@ $(document).ready(function () {
             }
         });
     });
-    
+
     $(function () {
         var hack = {};
         $('[rel="popover-health"]').popover({
@@ -409,7 +473,7 @@ $(document).ready(function () {
                     }
                 });
             }
-            
+
         }).on('hidden.bs.popover', function () {
             var h = hack[$(this).attr('id')];
             if (h) {

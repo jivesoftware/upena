@@ -19,6 +19,7 @@ import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.routing.bird.shared.ConnectionDescriptorsRequest;
 import com.jivesoftware.os.routing.bird.shared.ConnectionDescriptorsResponse;
+import com.jivesoftware.os.routing.bird.shared.ConnectionHealth;
 import com.jivesoftware.os.routing.bird.shared.InstanceDescriptorsRequest;
 import com.jivesoftware.os.routing.bird.shared.InstanceDescriptorsResponse;
 import com.jivesoftware.os.routing.bird.shared.ResponseHelper;
@@ -42,6 +43,7 @@ import com.jivesoftware.os.upena.shared.TenantFilter;
 import com.jivesoftware.os.upena.shared.TenantKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentNavigableMap;
 import javax.ws.rs.Consumes;
@@ -489,6 +491,21 @@ public class UpenaRestEndpoints {
         } catch (Exception x) {
             LOG.warn("Failed to connectionsRequest:" + connectionsRequest, x);
             return ResponseHelper.INSTANCE.errorResponse("Failed to requestConnections for:" + connectionsRequest, x);
+        }
+    }
+
+    @POST
+    @Consumes("application/json")
+    @Path("/upena/connections/health")
+    public Response connectionsHealth(List<ConnectionHealth> connectionHealths) {
+        try {
+            for (ConnectionHealth connectionHealth : connectionHealths) {
+                discoveredRoutes.connectionHealth(connectionHealth);
+            }
+            return ResponseHelper.INSTANCE.jsonResponse("thanks");
+        } catch (Exception x) {
+            LOG.warn("Failed to connectionsHealth:" + connectionHealths, x);
+            return ResponseHelper.INSTANCE.errorResponse("Failed to requestConnections for:" + connectionHealths, x);
         }
     }
 

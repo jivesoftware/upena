@@ -238,7 +238,7 @@ public class UpenaEndpoints {
             return ResponseHelper.INSTANCE.errorResponse("Failed building all health view.", x);
         }
     }
-
+    
     private ClusterHealth buildClusterHealth(UriInfo uriInfo) throws Exception {
         ClusterHealth clusterHealth = new ClusterHealth();
         /*for (RingHost ringHost : new RingHost[]{

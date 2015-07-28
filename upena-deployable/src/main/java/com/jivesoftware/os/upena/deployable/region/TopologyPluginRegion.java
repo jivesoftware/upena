@@ -13,6 +13,8 @@ import com.jivesoftware.os.routing.bird.http.client.HttpClientConfiguration;
 import com.jivesoftware.os.routing.bird.http.client.HttpClientFactory;
 import com.jivesoftware.os.routing.bird.http.client.HttpClientFactoryProvider;
 import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelper;
+import com.jivesoftware.os.routing.bird.shared.ConnectionDescriptor;
+import com.jivesoftware.os.routing.bird.shared.ConnectionHealth;
 import com.jivesoftware.os.routing.bird.shared.HostPort;
 import com.jivesoftware.os.upena.deployable.UpenaEndpoints.NannyHealth;
 import com.jivesoftware.os.upena.deployable.UpenaEndpoints.NodeHealth;
@@ -43,6 +45,7 @@ import java.util.concurrent.Executors;
 public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginRegion.TopologyPluginRegionInput>> {
 
     private static final MetricLogger log = MetricLoggerFactory.getLogger();
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     private final String template;
     private final SoyRenderer renderer;
@@ -110,8 +113,7 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
                         }
                     }
                 }
-
-                String healthColor = health == null ? "999" : healthPluginRegion.getHEXTrafficlightColor(health.serviceHealth.health, 1.0F);
+                double serviceHealth = health == null ? 0d : Math.max(0d, Math.min(health.serviceHealth.health, 1d));
 
                 Service service = null;
                 if (instance != null) {
@@ -120,11 +122,13 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
                 String serviceName = service != null ? service.name : route.getInstanceId();
                 Node from = nodes.get(serviceName);
                 if (from == null) {
-                    from = new Node(serviceName, "id" + id, healthColor, "16", 0);
+                    from = new Node(serviceName, "id" + id, "666", "16", 0);
                     nodes.put(serviceName, from);
                     id++;
                     System.out.println("from:" + from);
                 }
+                from.maxHealth = Math.max(from.maxHealth, serviceHealth);
+                from.minHealth = Math.min(from.minHealth, serviceHealth);
                 from.count++;
 
                 Node to;
@@ -151,6 +155,8 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
                         id++;
                         System.out.println("to:" + to);
                     }
+                    to.maxHealth = Math.max(to.maxHealth, serviceHealth);
+                    to.minHealth = Math.min(to.minHealth, serviceHealth);
                     to.count++;
 
                 } else {
@@ -164,7 +170,19 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
                     to.count++;
                 }
 
-                addEdge(edges, from, to);
+                Edge edge = addEdge(edges, from, to);
+
+                String label = "";
+                long successes = 0;
+                for (ConnectionDescriptor connection : route.getConnections()) {
+                    Map<String, ConnectionHealth> connectionHealth = discoveredRoutes.getConnectionHealth(connection.getHostPort());
+                    for (Map.Entry<String, ConnectionHealth> entrySet : connectionHealth.entrySet()) {
+                        successes += entrySet.getValue().success;
+                    }
+                }
+                if (successes > 0) {
+                    edge.label = "(" + successes + ")";
+                }
 
             }
 
@@ -178,14 +196,22 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
             for (Node n : nodes.values()) {
                 Map<String, String> node = new HashMap<>();
                 node.put("id", n.id);
-                node.put("bgcolor", n.bgcolor);
+
+                if (n.maxHealth == Double.MAX_VALUE) {
+                    node.put("maxbgcolor", n.bgcolor);
+                    node.put("minbgcolor", n.bgcolor);
+                } else {
+                    node.put("maxbgcolor", healthPluginRegion.getHEXTrafficlightColor(n.maxHealth, 1f));
+                    node.put("minbgcolor", healthPluginRegion.getHEXTrafficlightColor(n.minHealth, 1f));
+                }
                 node.put("fontSize", n.fontSize);
-                node.put("label", n.label + "\\n(" + n.count + ")");
+                node.put("label", n.label + "\n(" + n.count + ")");
                 node.put("count", String.valueOf(n.count));
                 renderNodes.add(node);
             }
 
-            data.put("nodes", renderNodes);
+            data.put("nodes", MAPPER.writeValueAsString(renderNodes));
+
             List<Map<String, String>> renderEdges = new ArrayList<>();
             for (Edge e : edges.values()) {
                 Map<String, String> edge = new HashMap<>();
@@ -195,7 +221,7 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
                 renderEdges.add(edge);
             }
 
-            data.put("edges", renderEdges);
+            data.put("edges", MAPPER.writeValueAsString(renderEdges));
 
         } catch (Exception e) {
             log.error("Unable to retrieve data", e);
@@ -204,13 +230,14 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
         return renderer.render(template, data);
     }
 
-    private void addEdge(Map<String, Edge> edges, Node from, Node to) {
+    private Edge addEdge(Map<String, Edge> edges, Node from, Node to) {
         Edge edge = edges.get(from.id + "->" + to.id);
         if (edge == null) {
             edge = new Edge(from.id, to.id, "");
             edges.put(from.id + "->" + to.id, edge);
             System.out.println("edge:" + edge);
         }
+        return edge;
     }
 
     public static class Node {
@@ -220,6 +247,8 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
         String bgcolor;
         String fontSize;
         int count;
+        double maxHealth = -Double.MAX_VALUE;
+        double minHealth = Double.MAX_VALUE;
 
         public Node(String label, String id, String bgcolor, String fontSize, int count) {
             this.label = label;
