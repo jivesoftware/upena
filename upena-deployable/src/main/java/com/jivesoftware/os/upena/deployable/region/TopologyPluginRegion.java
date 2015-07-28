@@ -38,6 +38,7 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import org.apache.commons.lang.exception.ExceptionUtils;
 
 /**
  *
@@ -49,6 +50,7 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     private final String template;
+    private final String connectionHealthTemplate;
     private final SoyRenderer renderer;
     private final AmzaInstance amzaInstance;
     private final UpenaStore upenaStore;
@@ -57,6 +59,7 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
     private final ExecutorService executorService = Executors.newCachedThreadPool();
 
     public TopologyPluginRegion(String template,
+        String connectionHealthTemplate,
         SoyRenderer renderer,
         AmzaInstance amzaInstance,
         UpenaStore upenaStore,
@@ -64,6 +67,7 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
         DiscoveredRoutes discoveredRoutes) {
 
         this.template = template;
+        this.connectionHealthTemplate = connectionHealthTemplate;
         this.renderer = renderer;
         this.amzaInstance = amzaInstance;
         this.upenaStore = upenaStore;
@@ -127,7 +131,13 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
                     nodes.put(serviceName, from);
                     id++;
                     System.out.println("from:" + from);
+
                 }
+
+                if (from.focusHtml == null) {
+                    from.focusHtml = renderConnectionHealth(serviceName, route);
+                }
+
                 from.maxHealth = Math.max(from.maxHealth, serviceHealth);
                 from.minHealth = Math.min(from.minHealth, serviceHealth);
                 from.count++;
@@ -155,6 +165,7 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
                         nodes.put(route.getConnectToServiceNamed(), to);
                         id++;
                         System.out.println("to:" + to);
+
                     }
                     to.maxHealth = Math.max(to.maxHealth, serviceHealth);
                     to.minHealth = Math.min(to.minHealth, serviceHealth);
@@ -209,6 +220,8 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
                 node.put("fontSize", n.fontSize);
                 node.put("label", n.label + "\n(" + n.count + ")");
                 node.put("count", String.valueOf(n.count));
+                node.put("focusHtml", n.focusHtml);
+
                 renderNodes.add(node);
             }
 
@@ -224,12 +237,40 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
             }
 
             data.put("edges", MAPPER.writeValueAsString(renderEdges));
+            return renderer.render(template, data);
 
         } catch (Exception e) {
             log.error("Unable to retrieve data", e);
+            return "Oops:" + ExceptionUtils.getStackTrace(e);
         }
 
-        return renderer.render(template, data);
+    }
+
+    private String renderConnectionHealth(String name, Route route) {
+        List<Map<String, Object>> healths = new ArrayList<>();
+        for (ConnectionDescriptor connection : route.getConnections()) {
+            Map<String, ConnectionHealth> connectionHealth = discoveredRoutes.getConnectionHealth(connection.getHostPort());
+            for (Map.Entry<String, ConnectionHealth> entrySet : connectionHealth.entrySet()) {
+                Map<String, Object> health = new HashMap<>();
+                health.put("name", name);
+                health.put("host", connection.getHostPort().getHost());
+                health.put("port", connection.getHostPort().getPort());
+                health.put("family", entrySet.getKey());
+
+                health.put("attempt", String.valueOf(entrySet.getValue().attempt));
+                health.put("attemptPerSecond", String.valueOf(entrySet.getValue().attemptPerSecond));
+                health.put("success", String.valueOf(entrySet.getValue().success));
+                health.put("successPerSecond", String.valueOf(entrySet.getValue().successPerSecond));
+
+                health.put("min", entrySet.getValue().latencyStats.latencyMin);
+                health.put("mean", entrySet.getValue().latencyStats.latencyMean);
+                health.put("max", entrySet.getValue().latencyStats.latencyMax);
+                healths.add(health);
+            }
+        }
+        Map<String, Object> data = new HashMap<>();
+        data.put("healths", healths);
+        return renderer.render(connectionHealthTemplate, data);
     }
 
     private Edge addEdge(Map<String, Edge> edges, Node from, Node to) {
@@ -248,6 +289,7 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
         String id;
         String bgcolor;
         String fontSize;
+        String focusHtml;
         int count;
         double maxHealth = -Double.MAX_VALUE;
         double minHealth = Double.MAX_VALUE;
@@ -338,7 +380,7 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
         }
 
 //        for (RingHost ringHost : new RingHost[]{
-//            new RingHost("soa-prime-data5.phx1.jivehosted.com", 1175),
+//            new RingHost("soa-prime-data5.phx1.jivehosted.com", 1175)∂,
 //            new RingHost("soa-prime-data6.phx1.jivehosted.com", 1175),
 //            new RingHost("soa-prime-data7.phx1.jivehosted.com", 1175),
 //            new RingHost("soa-prime-data8.phx1.jivehosted.com", 1175),

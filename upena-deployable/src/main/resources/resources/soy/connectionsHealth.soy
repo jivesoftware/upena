@@ -1,0 +1,42 @@
+{namespace soy.page}
+
+/**
+ * 
+ * @param? healths
+ */
+{template .connectionsHealth}
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Host</th>
+                <th>port</th>
+                <th>Connection</th>
+                <th>attempt</th>
+                <th>attempt/sec</th>
+                <th>success</th>
+                <th>success/sec</th>
+                <th>Min</th>
+                <th>Mean</th>
+                <th>Max</th>
+            </tr>
+        </thead>
+        <tbody>
+            {foreach $h in $healths}
+                <tr>    
+                    <td>{$h.name}</td>
+                    <td>{$h.host}</td>
+                    <td>{$h.port}</td>
+                    <td>{$h.family}</td>
+                    <td>{$h.attempt}</td>
+                    <td>{$h.attemptPerSecond}</td>
+                    <td>{$h.success}</td>
+                    <td>{$h.successPerSecond}</td>
+                    <td>{$h.min}</td>
+                    <td>{$h.mean}</td>
+                    <td>{$h.max}</td>
+                </tr>
+            {/foreach}
+        </tbody>
+    </table>
+{/template}

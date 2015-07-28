@@ -336,7 +336,7 @@ public class Main {
         RingHost ringHost,
         UpenaStore upenaStore,
         UpenaConfigStore upenaConfigStore,
-        UpenaService upenaService, 
+        UpenaService upenaService,
         UbaService ubaService,
         JerseyEndpoints jerseyEndpoints,
         String clusterName,
@@ -352,6 +352,7 @@ public class Main {
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/serviceUIsPluginRegion.soy"), "serviceUIsPluginRegion.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/healthPluginRegion.soy"), "health.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/topologyPluginRegion.soy"), "topology.soy");
+        soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/connectionsHealth.soy"), "connectionsHealth.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/instancesPluginRegion.soy"), "instances.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/clustersPluginRegion.soy"), "clusters.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/hostsPluginRegion.soy"), "hosts.soy");
@@ -366,12 +367,14 @@ public class Main {
         SoyService soyService = new SoyService(renderer, new HeaderRegion("soy.chrome.headerRegion", renderer),
             new HomeRegion("soy.page.homeRegion", renderer, amzaService, ringHost));
 
-        HealthPluginRegion healthPluginRegion = new HealthPluginRegion("soy.page.healthPluginRegion", "soy.page.healthPluginRegionUIs", renderer, amzaService, upenaStore);
+        HealthPluginRegion healthPluginRegion = new HealthPluginRegion("soy.page.healthPluginRegion", "soy.page.healthPluginRegionUIs", renderer, amzaService,
+            upenaStore);
         ManagePlugin health = new ManagePlugin("fire", "Health", "/ui/health",
             HealthPluginEndpoints.class, healthPluginRegion);
         ManagePlugin topology = new ManagePlugin("transfer", "Topology", "/ui/topology",
             TopologyPluginEndpoints.class,
-            new TopologyPluginRegion("soy.page.topologyPluginRegion", renderer, amzaService, upenaStore, healthPluginRegion, discoveredRoutes));
+            new TopologyPluginRegion("soy.page.topologyPluginRegion", "soy.page.connectionsHealth",
+                renderer, amzaService, upenaStore, healthPluginRegion, discoveredRoutes));
         ManagePlugin changes = new ManagePlugin("road", "Changes", "/ui/changeLog",
             ChangeLogPluginEndpoints.class,
             new ChangeLogPluginRegion("soy.page.changeLogPluginRegion", renderer, upenaStore));
@@ -402,7 +405,7 @@ public class Main {
         jerseyEndpoints.addInjectable(SoyService.class, soyService);
         jerseyEndpoints.addEndpoint(AsyncLookupEndpoints.class);
         jerseyEndpoints.addInjectable(AsyncLookupService.class, new AsyncLookupService(upenaStore));
-        
+
         for (ManagePlugin plugin : plugins) {
             soyService.registerPlugin(plugin);
             jerseyEndpoints.addEndpoint(plugin.endpointsClass);

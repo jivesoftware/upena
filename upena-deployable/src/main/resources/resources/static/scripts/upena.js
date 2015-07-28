@@ -366,22 +366,28 @@ upena.topology = {
 
         $(nodes).each(function (key, node) {
             var render = function (r, n) {
+
+
                 /* the Raphael set is obligatory, containing all you want to display */
                 var text = r.text(n.point[0], n.point[1], n.label).attr({"font-size": node.fontSize + "px", opacity: 1.0, fill: "#000"});
                 var bb = text.getBBox(true);
                 var w = bb.width + 12;
                 var h = bb.height + 12;
                 var rect = r.rect(n.point[0] - (w / 2), n.point[1] - (h / 2), w, h).attr({
-                    fill: "270-#" + node.maxbgcolor+"-#"+node.minbgcolor,
+                    fill: "270-#" + node.maxbgcolor + "-#" + node.minbgcolor,
                     r: "6px",
                     "stroke-width": n.distance == 0 ? "3px" : "1px"
                 });
-                
+
                 var set = r.set().push(rect).push(text);
                 text.toFront();
                 return set;
             };
-            g.addNode(node.id, {label: node.label, render: render});
+            var clicked = function () {
+                $("#topology-health").html(node.focusHtml);
+                return;
+            }
+            g.addNode(node.id, {label: node.label, render: render, clicked: clicked});
         });
 
 
@@ -397,7 +403,6 @@ upena.topology = {
         /* draw the graph using the RaphaelJS draw implementation */
         upena.topology.renderer = new Graph.Renderer.Raphael('upena-topology', g, upena.topology.width, upena.topology.height);
         upena.topology.renderer.draw();
-
 
     },
     redraw : function () {

@@ -213,6 +213,7 @@ Graph.Renderer.Raphael.prototype = {
             item.node.style.cursor = "move";
         });
         shape.mousedown(this.dragger);
+        shape.mouseup(node.clicked);
         node.shape = shape;
     },
     drawEdge: function (edge) {
