@@ -263,16 +263,16 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
                 health.put("successPerSecond", String.valueOf(familyHealth.getValue().successPerSecond));
 
                 health.put("inflight", String.valueOf(familyHealth.getValue().attempt - familyHealth.getValue().success));
-                
-                health.put("min", familyHealth.getValue().latencyStats.latencyMin);
-                health.put("mean", familyHealth.getValue().latencyStats.latencyMean);
-                health.put("max", familyHealth.getValue().latencyStats.latencyMax);
 
-                health.put("latency50th", familyHealth.getValue().latencyStats.latency50th);
-                health.put("latency75th", familyHealth.getValue().latencyStats.latency75th);
-                health.put("latency95th", familyHealth.getValue().latencyStats.latency95th);
-                health.put("latency99th", familyHealth.getValue().latencyStats.latency99th);
-                health.put("latency999th", familyHealth.getValue().latencyStats.latency999th);
+                health.put("min", String.valueOf(familyHealth.getValue().latencyStats.latencyMin));
+                health.put("mean", String.valueOf(familyHealth.getValue().latencyStats.latencyMean));
+                health.put("max", String.valueOf(familyHealth.getValue().latencyStats.latencyMax));
+
+                health.put("latency50th", String.valueOf(familyHealth.getValue().latencyStats.latency50th));
+                health.put("latency75th", String.valueOf(familyHealth.getValue().latencyStats.latency75th));
+                health.put("latency95th", String.valueOf(familyHealth.getValue().latencyStats.latency95th));
+                health.put("latency99th", String.valueOf(familyHealth.getValue().latencyStats.latency99th));
+                health.put("latency999th", String.valueOf(familyHealth.getValue().latencyStats.latency999th));
 
                 healths.add(health);
             }
@@ -280,11 +280,11 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
 
         Collections.sort(healths, (Map<String, Object> o1, Map<String, Object> o2) -> {
 
-            int c = ((String)o1.get("name")).compareTo((String)o2.get("name"));
+            int c = ((String) o1.get("name")).compareTo((String) o2.get("name"));
             if (c != 0) {
                 return c;
             }
-            return Double.compare(Double.valueOf((String)o1.get("max")),Double.valueOf((String)o2.get("max")));
+            return Double.compare(Double.valueOf((String) o1.get("max")), Double.valueOf((String) o2.get("max")));
         });
 
         Map<String, Object> data = new HashMap<>();
