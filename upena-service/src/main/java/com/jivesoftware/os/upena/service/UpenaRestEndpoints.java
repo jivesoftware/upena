@@ -25,11 +25,11 @@ import com.jivesoftware.os.routing.bird.shared.ResponseHelper;
 import com.jivesoftware.os.upena.shared.Cluster;
 import com.jivesoftware.os.upena.shared.ClusterFilter;
 import com.jivesoftware.os.upena.shared.ClusterKey;
-import com.jivesoftware.os.upena.shared.ConnectionHealth;
 import com.jivesoftware.os.upena.shared.Host;
 import com.jivesoftware.os.upena.shared.HostFilter;
 import com.jivesoftware.os.upena.shared.HostKey;
 import com.jivesoftware.os.upena.shared.Instance;
+import com.jivesoftware.os.upena.shared.InstanceConnectionHealth;
 import com.jivesoftware.os.upena.shared.InstanceFilter;
 import com.jivesoftware.os.upena.shared.InstanceKey;
 import com.jivesoftware.os.upena.shared.ReleaseGroup;
@@ -43,7 +43,6 @@ import com.jivesoftware.os.upena.shared.TenantFilter;
 import com.jivesoftware.os.upena.shared.TenantKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentNavigableMap;
 import javax.ws.rs.Consumes;
@@ -497,15 +496,13 @@ public class UpenaRestEndpoints {
     @POST
     @Consumes("application/json")
     @Path("/connections/health")
-    public Response connectionsHealth(List<ConnectionHealth> connectionHealths) {
+    public Response connectionsHealth(InstanceConnectionHealth instanceConnectionHealth) {
         try {
-            for (ConnectionHealth connectionHealth : connectionHealths) {
-                discoveredRoutes.connectionHealth(connectionHealth);
-            }
+            discoveredRoutes.connectionHealth(instanceConnectionHealth);
             return ResponseHelper.INSTANCE.jsonResponse("thanks");
         } catch (Exception x) {
-            LOG.warn("Failed to connectionsHealth:" + connectionHealths, x);
-            return ResponseHelper.INSTANCE.errorResponse("Failed to requestConnections for:" + connectionHealths, x);
+            LOG.warn("Failed to connectionsHealth:" + instanceConnectionHealth, x);
+            return ResponseHelper.INSTANCE.errorResponse("Failed to requestConnections for:" + instanceConnectionHealth, x);
         }
     }
 

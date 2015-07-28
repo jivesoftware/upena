@@ -12,13 +12,18 @@
                 <th>Host</th>
                 <th>port</th>
                 <th>Connection</th>
-                <th>attempt</th>
-                <th>attempt/sec</th>
                 <th>success</th>
                 <th>success/sec</th>
+                <th>inflight</th>
                 <th>Min</th>
                 <th>Mean</th>
                 <th>Max</th>
+                <th>50th</th>
+                <th>75th</th>
+                <th>90th</th>
+                <th>95th</th>
+                <th>99th</th>
+                <th>999th</th>
             </tr>
         </thead>
         <tbody>
@@ -28,13 +33,18 @@
                     <td>{$h.host}</td>
                     <td>{$h.port}</td>
                     <td>{$h.family}</td>
-                    <td>{$h.attempt}</td>
-                    <td>{$h.attemptPerSecond}</td>
                     <td>{$h.success}</td>
                     <td>{$h.successPerSecond}</td>
+                    <td>{$h.inflight}</td>
                     <td>{$h.min}</td>
                     <td>{$h.mean}</td>
                     <td>{$h.max}</td>
+                    <td>{$h.latency50th}</td>
+                    <td>{$h.latency75th}</td>
+                    <td>{$h.latency90th}</td>
+                    <td>{$h.latency95th}</td>   
+                    <td>{$h.latency99th}</td>
+                    <td>{$h.latency999th}</td>
                 </tr>
             {/foreach}
         </tbody>

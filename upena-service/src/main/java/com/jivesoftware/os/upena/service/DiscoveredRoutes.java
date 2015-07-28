@@ -7,6 +7,7 @@ import com.jivesoftware.os.routing.bird.shared.ConnectionDescriptorsRequest;
 import com.jivesoftware.os.routing.bird.shared.ConnectionDescriptorsResponse;
 import com.jivesoftware.os.routing.bird.shared.HostPort;
 import com.jivesoftware.os.upena.shared.ConnectionHealth;
+import com.jivesoftware.os.upena.shared.InstanceConnectionHealth;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -20,35 +21,51 @@ import java.util.concurrent.ConcurrentHashMap;
 public class DiscoveredRoutes {
 
     public final Map<ConnectionDescriptorsRequest, TimestampedConnectionDescriptorsResponse> discoveredConnection = new ConcurrentHashMap<>();
-    public final Map<HostPort, Map<String, ConnectionHealth>> connectionFamilyHealths = new ConcurrentHashMap<>();
+    public final Map<String, Map<HostPort, Map<String, ConnectionHealth>>> instanceHostPortFamilyConnectionHealths = new ConcurrentHashMap<>();
 
-    public List<ConnectionHealth> routesHealth(long sinceTimestampMillis) {
-        List<ConnectionHealth> recentRoutesHealth = new ArrayList<>();
-        for (Entry<HostPort, Map<String, ConnectionHealth>> familyHealth : connectionFamilyHealths.entrySet()) {
-            for (ConnectionHealth value : familyHealth.getValue().values()) {
-                if (value.timestampMillis > sinceTimestampMillis) {
-                    recentRoutesHealth.add(value);
+    public List<InstanceConnectionHealth> routesHealth(long sinceTimestampMillis) {
+        List<InstanceConnectionHealth> instanceConnectionHealths = new ArrayList<>();
+
+        for (Entry<String, Map<HostPort, Map<String, ConnectionHealth>>> instances : instanceHostPortFamilyConnectionHealths.entrySet()) {
+
+            List<ConnectionHealth> connectionHealths = new ArrayList<>();
+            for (Entry<HostPort, Map<String, ConnectionHealth>> hostPorts : instances.getValue().entrySet()) {
+                for (ConnectionHealth value : hostPorts.getValue().values()) {
+                    if (value.timestampMillis > sinceTimestampMillis) {
+                        connectionHealths.add(value);
+                    }
                 }
             }
-        }
-        return recentRoutesHealth;
-    }
-
-    public void connectionHealth(ConnectionHealth connectionHealth) {
-        Map<String, ConnectionHealth> familyHealth = connectionFamilyHealths.computeIfAbsent(connectionHealth.hostPort, (HostPort t) -> {
-            return new ConcurrentHashMap<>();
-        });
-        familyHealth.compute(connectionHealth.family, (String key, ConnectionHealth value) -> {
-            if (value == null) {
-                return connectionHealth;
-            } else {
-                return value.timestampMillis > connectionHealth.timestampMillis ? value : connectionHealth;
+            if (!connectionHealths.isEmpty()) {
+                instanceConnectionHealths.add(new InstanceConnectionHealth(instances.getKey(), connectionHealths));
             }
-        });
+        }
+        return instanceConnectionHealths;
     }
 
-    public Map<String, ConnectionHealth> getConnectionHealth(HostPort hostPort) {
-        return connectionFamilyHealths.computeIfAbsent(hostPort, (HostPort t) -> {
+    public void connectionHealth(InstanceConnectionHealth instanceConnectionHealth) {
+        Map<HostPort, Map<String, ConnectionHealth>> hostPortFamilyConnectionHealths = instanceHostPortFamilyConnectionHealths.computeIfAbsent(
+            instanceConnectionHealth.instanceId, (key) -> {
+                return new ConcurrentHashMap<>();
+            });
+
+        for (ConnectionHealth connectionHealth : instanceConnectionHealth.connectionHealths) {
+            Map<String, ConnectionHealth> familyConnectionHealths = hostPortFamilyConnectionHealths.computeIfAbsent(connectionHealth.hostPort, (key) -> {
+                return new ConcurrentHashMap<>();
+            });
+
+            familyConnectionHealths.compute(connectionHealth.family, (String key, ConnectionHealth value) -> {
+                if (value == null) {
+                    return connectionHealth;
+                } else {
+                    return value.timestampMillis > connectionHealth.timestampMillis ? value : connectionHealth;
+                }
+            });
+        }
+    }
+
+    public Map<HostPort, Map<String, ConnectionHealth>> getConnectionHealth(String instanceId) {
+        return instanceHostPortFamilyConnectionHealths.computeIfAbsent(instanceId, (key) -> {
             return new ConcurrentHashMap<>();
         });
     }
@@ -100,14 +117,14 @@ public class DiscoveredRoutes {
 
     static public class RouteHealths {
 
-        private final List<ConnectionHealth> routeHealths;
+        private final List<InstanceConnectionHealth> routeHealths;
 
         @JsonCreator
-        public RouteHealths(@JsonProperty("routeHealths") List<ConnectionHealth> routeHealths) {
+        public RouteHealths(@JsonProperty("routeHealths") List<InstanceConnectionHealth> routeHealths) {
             this.routeHealths = routeHealths;
         }
 
-        public List<ConnectionHealth> getRouteHealths() {
+        public List<InstanceConnectionHealth> getRouteHealths() {
             return routeHealths;
         }
 

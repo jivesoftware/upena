@@ -13,7 +13,6 @@ import com.jivesoftware.os.routing.bird.http.client.HttpClientConfiguration;
 import com.jivesoftware.os.routing.bird.http.client.HttpClientFactory;
 import com.jivesoftware.os.routing.bird.http.client.HttpClientFactoryProvider;
 import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelper;
-import com.jivesoftware.os.routing.bird.shared.ConnectionDescriptor;
 import com.jivesoftware.os.routing.bird.shared.HostPort;
 import com.jivesoftware.os.upena.deployable.UpenaEndpoints.NannyHealth;
 import com.jivesoftware.os.upena.deployable.UpenaEndpoints.NodeHealth;
@@ -25,6 +24,7 @@ import com.jivesoftware.os.upena.service.DiscoveredRoutes.Routes;
 import com.jivesoftware.os.upena.service.UpenaStore;
 import com.jivesoftware.os.upena.shared.ConnectionHealth;
 import com.jivesoftware.os.upena.shared.Instance;
+import com.jivesoftware.os.upena.shared.InstanceConnectionHealth;
 import com.jivesoftware.os.upena.shared.InstanceKey;
 import com.jivesoftware.os.upena.shared.Service;
 import java.util.ArrayList;
@@ -135,7 +135,7 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
                 }
 
                 if (from.focusHtml == null) {
-                    from.focusHtml = renderConnectionHealth(serviceName, route);
+                    from.focusHtml = renderConnectionHealth(serviceName, route.getInstanceId());
                 }
 
                 from.maxHealth = Math.max(from.maxHealth, serviceHealth);
@@ -185,14 +185,15 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
                 Edge edge = addEdge(edges, from, to);
 
                 long successes = 0;
-                for (ConnectionDescriptor connection : route.getConnections()) {
-                    Map<String, ConnectionHealth> connectionHealth = discoveredRoutes.getConnectionHealth(connection.getHostPort());
-                    for (Map.Entry<String, ConnectionHealth> entrySet : connectionHealth.entrySet()) {
-                        successes += entrySet.getValue().success;
+                Map<HostPort, Map<String, ConnectionHealth>> connectionHealth = discoveredRoutes.getConnectionHealth(route.getInstanceId());
+                for (Map<String, ConnectionHealth> value : connectionHealth.values()) {
+                    for (ConnectionHealth value1 : value.values()) {
+                        successes += value1.successPerSecond;
                     }
                 }
+
                 if (successes > 0) {
-                    edge.label = "(" + successes + ")";
+                    edge.label = "(" + successes + "/sec)";
                 } else {
                     edge.label = "";
                 }
@@ -246,28 +247,46 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
 
     }
 
-    private String renderConnectionHealth(String name, Route route) {
+    private String renderConnectionHealth(String name, String instanceId) {
         List<Map<String, Object>> healths = new ArrayList<>();
-        for (ConnectionDescriptor connection : route.getConnections()) {
-            Map<String, ConnectionHealth> connectionHealth = discoveredRoutes.getConnectionHealth(connection.getHostPort());
-            for (Map.Entry<String, ConnectionHealth> entrySet : connectionHealth.entrySet()) {
+        Map<HostPort, Map<String, ConnectionHealth>> connectionHealths = discoveredRoutes.getConnectionHealth(instanceId);
+        for (Map.Entry<HostPort, Map<String, ConnectionHealth>> hostPortHealth : connectionHealths.entrySet()) {
+            for (Map.Entry<String, ConnectionHealth> familyHealth : hostPortHealth.getValue().entrySet()) {
+
                 Map<String, Object> health = new HashMap<>();
                 health.put("name", name);
-                health.put("host", connection.getHostPort().getHost());
-                health.put("port", connection.getHostPort().getPort());
-                health.put("family", entrySet.getKey());
+                health.put("host", hostPortHealth.getKey().getHost());
+                health.put("port", hostPortHealth.getKey().getPort());
+                health.put("family", familyHealth.getKey());
 
-                health.put("attempt", String.valueOf(entrySet.getValue().attempt));
-                health.put("attemptPerSecond", String.valueOf(entrySet.getValue().attemptPerSecond));
-                health.put("success", String.valueOf(entrySet.getValue().success));
-                health.put("successPerSecond", String.valueOf(entrySet.getValue().successPerSecond));
+                health.put("success", String.valueOf(familyHealth.getValue().success));
+                health.put("successPerSecond", String.valueOf(familyHealth.getValue().successPerSecond));
 
-                health.put("min", entrySet.getValue().latencyStats.latencyMin);
-                health.put("mean", entrySet.getValue().latencyStats.latencyMean);
-                health.put("max", entrySet.getValue().latencyStats.latencyMax);
+                health.put("inflight", String.valueOf(familyHealth.getValue().attempt - familyHealth.getValue().success));
+                
+                health.put("min", familyHealth.getValue().latencyStats.latencyMin);
+                health.put("mean", familyHealth.getValue().latencyStats.latencyMean);
+                health.put("max", familyHealth.getValue().latencyStats.latencyMax);
+
+                health.put("latency50th", familyHealth.getValue().latencyStats.latency50th);
+                health.put("latency75th", familyHealth.getValue().latencyStats.latency75th);
+                health.put("latency95th", familyHealth.getValue().latencyStats.latency95th);
+                health.put("latency99th", familyHealth.getValue().latencyStats.latency99th);
+                health.put("latency999th", familyHealth.getValue().latencyStats.latency999th);
+
                 healths.add(health);
             }
         }
+
+        Collections.sort(healths, (Map<String, Object> o1, Map<String, Object> o2) -> {
+
+            int c = ((String)o1.get("name")).compareTo((String)o2.get("name"));
+            if (c != 0) {
+                return c;
+            }
+            return Double.compare(Double.valueOf((String)o1.get("max")),Double.valueOf((String)o2.get("max")));
+        });
+
         Map<String, Object> data = new HashMap<>();
         data.put("healths", healths);
         return renderer.render(connectionHealthTemplate, data);
@@ -398,7 +417,7 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
                         long sinceTimestampMillis = last == null ? 0 : last;
                         HttpRequestHelper requestHelper = buildRequestHelper(ringHost.getHost(), ringHost.getPort());
                         RouteHealths routeHealths = requestHelper.executeGetRequest("/routes/health/" + sinceTimestampMillis, RouteHealths.class, null);
-                        for (ConnectionHealth routeHealth : routeHealths.getRouteHealths()) {
+                        for (InstanceConnectionHealth routeHealth : routeHealths.getRouteHealths()) {
                             discoveredRoutes.connectionHealth(routeHealth);
                         }
                     } catch (Exception x) {
