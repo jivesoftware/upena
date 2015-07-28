@@ -270,6 +270,7 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
 
                 health.put("latency50th", String.valueOf(familyHealth.getValue().latencyStats.latency50th));
                 health.put("latency75th", String.valueOf(familyHealth.getValue().latencyStats.latency75th));
+                health.put("latency90th", String.valueOf(familyHealth.getValue().latencyStats.latency90th));
                 health.put("latency95th", String.valueOf(familyHealth.getValue().latencyStats.latency95th));
                 health.put("latency99th", String.valueOf(familyHealth.getValue().latencyStats.latency99th));
                 health.put("latency999th", String.valueOf(familyHealth.getValue().latencyStats.latency999th));
