@@ -22,6 +22,18 @@ public class DiscoveredRoutes {
     public final Map<ConnectionDescriptorsRequest, TimestampedConnectionDescriptorsResponse> discoveredConnection = new ConcurrentHashMap<>();
     public final Map<HostPort, Map<String, ConnectionHealth>> connectionFamilyHealths = new ConcurrentHashMap<>();
 
+    public List<ConnectionHealth> routesHealth(long sinceTimestampMillis) {
+        List<ConnectionHealth> recentRoutesHealth = new ArrayList<>();
+        for (Entry<HostPort, Map<String, ConnectionHealth>> familyHealth : connectionFamilyHealths.entrySet()) {
+            for (ConnectionHealth value : familyHealth.getValue().values()) {
+                if (value.timestampMillis > sinceTimestampMillis) {
+                    recentRoutesHealth.add(value);
+                }
+            }
+        }
+        return recentRoutesHealth;
+    }
+
     public void connectionHealth(ConnectionHealth connectionHealth) {
         Map<String, ConnectionHealth> familyHealth = connectionFamilyHealths.computeIfAbsent(connectionHealth.hostPort, (HostPort t) -> {
             return new ConcurrentHashMap<>();
@@ -52,7 +64,7 @@ public class DiscoveredRoutes {
         });
     }
 
-    private static class TimestampedConnectionDescriptorsResponse {
+    public static class TimestampedConnectionDescriptorsResponse {
 
         private final long timestamp;
         private final ConnectionDescriptorsResponse response;
@@ -84,6 +96,26 @@ public class DiscoveredRoutes {
                 response.getReturnCode(), response.getMessages(), response.getReleaseGroup(), response.getConnections()));
         }
         return routes;
+    }
+
+    static public class RouteHealths {
+
+        private final List<ConnectionHealth> routeHealths;
+
+        @JsonCreator
+        public RouteHealths(@JsonProperty("routeHealths") List<ConnectionHealth> routeHealths) {
+            this.routeHealths = routeHealths;
+        }
+
+        public List<ConnectionHealth> getRouteHealths() {
+            return routeHealths;
+        }
+
+        @Override
+        public String toString() {
+            return "Healths{" + "routeHealths=" + routeHealths + '}';
+        }
+
     }
 
     static public class Routes {

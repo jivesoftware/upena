@@ -20,6 +20,7 @@ import com.jivesoftware.os.upena.deployable.UpenaEndpoints.NodeHealth;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.service.DiscoveredRoutes;
 import com.jivesoftware.os.upena.service.DiscoveredRoutes.Route;
+import com.jivesoftware.os.upena.service.DiscoveredRoutes.RouteHealths;
 import com.jivesoftware.os.upena.service.DiscoveredRoutes.Routes;
 import com.jivesoftware.os.upena.service.UpenaStore;
 import com.jivesoftware.os.upena.shared.ConnectionHealth;
@@ -172,7 +173,6 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
 
                 Edge edge = addEdge(edges, from, to);
 
-                String label = "";
                 long successes = 0;
                 for (ConnectionDescriptor connection : route.getConnections()) {
                     Map<String, ConnectionHealth> connectionHealth = discoveredRoutes.getConnectionHealth(connection.getHostPort());
@@ -182,6 +182,8 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
                 }
                 if (successes > 0) {
                     edge.label = "(" + successes + ")";
+                } else {
+                    edge.label = "";
                 }
 
             }
@@ -346,19 +348,34 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
         for (final RingHost ringHost : amzaInstance.getRing("MASTER")) {
             if (currentlyExecuting.putIfAbsent(ringHost, true) == null) {
                 executorService.submit(() -> {
+                    long start = System.currentTimeMillis();
+                    String nodeKey = ringHost.getHost() + ":" + ringHost.getPort();
+
+                    try {
+                        Long last = nodeRecency.get(nodeKey);
+                        long sinceTimestampMillis = last == null ? 0 : last;
+                        HttpRequestHelper requestHelper = buildRequestHelper(ringHost.getHost(), ringHost.getPort());
+                        RouteHealths routeHealths = requestHelper.executeGetRequest("/routes/health/" + sinceTimestampMillis, RouteHealths.class, null);
+                        for (ConnectionHealth routeHealth : routeHealths.getRouteHealths()) {
+                            discoveredRoutes.connectionHealth(routeHealth);
+                        }
+                    } catch (Exception x) {
+                        System.out.println("Failed getting route health for instances " + ringHost + " " + x);
+                    }
+
                     try {
                         HttpRequestHelper requestHelper = buildRequestHelper(ringHost.getHost(), ringHost.getPort());
                         Routes routes = requestHelper.executeGetRequest("/routes/instances", Routes.class, null);
-                        System.out.println("routes:" + routes);
                         nodeRoutes.put(ringHost, routes);
                     } catch (Exception x) {
                         Routes routes = new Routes(Collections.emptyList());
                         nodeRoutes.put(ringHost, routes);
                         System.out.println("Failed getting routes for instances " + ringHost + " " + x);
                     } finally {
-                        nodeRecency.put(ringHost.getHost() + ":" + ringHost.getPort(), System.currentTimeMillis());
+                        nodeRecency.put(nodeKey, start);
                         currentlyExecuting.remove(ringHost);
                     }
+
                 });
             }
         }

@@ -366,24 +366,21 @@ public class HealthPluginRegion implements PageRegion<Optional<HealthPluginRegio
 
         for (final RingHost ringHost : amzaInstance.getRing("MASTER")) {
             if (currentlyExecuting.putIfAbsent(ringHost, true) == null) {
-                executorService.submit(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            HttpRequestHelper requestHelper = buildRequestHelper(ringHost.getHost(), ringHost.getPort());
-                            UpenaEndpoints.NodeHealth nodeHealth = requestHelper.executeGetRequest("/health/instance", UpenaEndpoints.NodeHealth.class,
-                                null);
-                            nodeHealths.put(ringHost, nodeHealth);
-                        } catch (Exception x) {
-                            UpenaEndpoints.NodeHealth nodeHealth = new UpenaEndpoints.NodeHealth("", ringHost.getHost(), ringHost.getPort());
-                            nodeHealth.health = 0.0d;
-                            nodeHealth.nannyHealths = new ArrayList<>();
-                            nodeHealths.put(ringHost, nodeHealth);
-                            System.out.println("Failed getting cluster health for " + ringHost + " " + x);
-                        } finally {
-                            nodeRecency.put(ringHost.getHost() + ":" + ringHost.getPort(), System.currentTimeMillis());
-                            currentlyExecuting.remove(ringHost);
-                        }
+                executorService.submit(() -> {
+                    try {
+                        HttpRequestHelper requestHelper = buildRequestHelper(ringHost.getHost(), ringHost.getPort());
+                        UpenaEndpoints.NodeHealth nodeHealth = requestHelper.executeGetRequest("/health/instance", UpenaEndpoints.NodeHealth.class,
+                            null);
+                        nodeHealths.put(ringHost, nodeHealth);
+                    } catch (Exception x) {
+                        UpenaEndpoints.NodeHealth nodeHealth = new UpenaEndpoints.NodeHealth("", ringHost.getHost(), ringHost.getPort());
+                        nodeHealth.health = 0.0d;
+                        nodeHealth.nannyHealths = new ArrayList<>();
+                        nodeHealths.put(ringHost, nodeHealth);
+                        System.out.println("Failed getting cluster health for " + ringHost + " " + x);
+                    } finally {
+                        nodeRecency.put(ringHost.getHost() + ":" + ringHost.getPort(), System.currentTimeMillis());
+                        currentlyExecuting.remove(ringHost);
                     }
                 });
             }
