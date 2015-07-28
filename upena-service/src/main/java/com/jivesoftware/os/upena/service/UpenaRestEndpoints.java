@@ -496,7 +496,7 @@ public class UpenaRestEndpoints {
 
     @POST
     @Consumes("application/json")
-    @Path("/upena/connections/health")
+    @Path("/connections/health")
     public Response connectionsHealth(List<ConnectionHealth> connectionHealths) {
         try {
             for (ConnectionHealth connectionHealth : connectionHealths) {

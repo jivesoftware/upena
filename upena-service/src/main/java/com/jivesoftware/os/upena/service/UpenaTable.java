@@ -18,8 +18,6 @@ package com.jivesoftware.os.upena.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jivesoftware.os.amza.service.AmzaTable;
 import com.jivesoftware.os.amza.shared.RowIndexKey;
-import com.jivesoftware.os.amza.shared.RowIndexValue;
-import com.jivesoftware.os.amza.shared.RowScan;
 import com.jivesoftware.os.upena.shared.BasicTimestampedValue;
 import com.jivesoftware.os.upena.shared.Key;
 import com.jivesoftware.os.upena.shared.KeyValueFilter;
@@ -73,14 +71,10 @@ public class UpenaTable<K extends Key, V extends Stored> {
     }
 
     public void scan(final Stream<K, V> stream) throws Exception {
-        store.scan(new RowScan<Exception>() {
-
-            @Override
-            public boolean row(long l, RowIndexKey key, RowIndexValue value) throws Exception {
-                K k = mapper.readValue(key.getKey(), keyClass);
-                V v = mapper.readValue(value.getValue(), valueClass);
-                return stream.stream(k, v);
-            }
+        store.scan((l, key, value) -> {
+            K k = mapper.readValue(key.getKey(), keyClass);
+            V v = mapper.readValue(value.getValue(), valueClass);
+            return stream.stream(k, v);
         });
     }
 
@@ -92,20 +86,16 @@ public class UpenaTable<K extends Key, V extends Stored> {
     public ConcurrentNavigableMap<K, TimestampedValue<V>> find(final KeyValueFilter<K, V> filter) throws Exception {
 
         final ConcurrentNavigableMap<K, TimestampedValue<V>> results = filter.createCollector();
-        store.scan(new RowScan<Exception>() {
+        store.scan((transactionId, key, value) -> {
+            if (!value.getTombstoned()) {
+                K k = mapper.readValue(key.getKey(), keyClass);
+                V v = mapper.readValue(value.getValue(), valueClass);
 
-            @Override
-            public boolean row(long transactionId, RowIndexKey key, RowIndexValue value) throws Exception {
-                if (!value.getTombstoned()) {
-                    K k = mapper.readValue(key.getKey(), keyClass);
-                    V v = mapper.readValue(value.getValue(), valueClass);
-
-                    if (filter.filter(k, v)) {
-                        results.put(k, new BasicTimestampedValue(v, value.getTimestampId(), value.getTombstoned()));
-                    }
+                if (filter.filter(k, v)) {
+                    results.put(k, new BasicTimestampedValue(v, value.getTimestampId(), value.getTombstoned()));
                 }
-                return true;
             }
+            return true;
         });
         return results;
     }
