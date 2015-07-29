@@ -5,7 +5,7 @@
  * @param? healths
  */
 {template .connectionsHealth}
-    <table class="table table-striped">
+    <table class="table">
         <thead>
             <tr>
                 <th>from</th>
@@ -29,7 +29,7 @@
         </thead>
         <tbody>
             {foreach $h in $healths}
-                <tr>    
+                <tr class="grid-host">    
                     <td>{$h.from}</td>
                     <td>{$h.to}</td>
                     <td>{$h.family}</td>

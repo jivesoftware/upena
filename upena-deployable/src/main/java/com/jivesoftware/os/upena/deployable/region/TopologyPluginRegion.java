@@ -33,6 +33,7 @@ import com.jivesoftware.os.upena.shared.InstanceFilter;
 import com.jivesoftware.os.upena.shared.InstanceKey;
 import com.jivesoftware.os.upena.shared.Service;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -55,6 +56,7 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
 
     private static final MetricLogger log = MetricLoggerFactory.getLogger();
     private static final ObjectMapper MAPPER = new ObjectMapper();
+    private final NumberFormat numberFormat = NumberFormat.getNumberInstance();
 
     private final String template;
     private final String connectionHealthTemplate;
@@ -211,15 +213,9 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
                 } else {
                     edge.label = "";
                 }
-
             }
 
-//            edges.add(new Edge("a", "b"));
-//            edges.add(new Edge("a", "c"));
-//            edges.add(new Edge("c", "d"));
-//            edges.add(new Edge("c", "d"));
-//            edges.add(new Edge("b", "e"));
-//            edges.add(new Edge("b", "f"));
+
             List<Map<String, String>> renderNodes = new ArrayList<>();
             for (Node n : nodes.values()) {
                 Map<String, String> node = new HashMap<>();
@@ -293,21 +289,21 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
 
                 health.put("family", familyHealth.getKey());
 
-                health.put("success", String.valueOf(familyHealth.getValue().success));
-                health.put("successPerSecond", String.valueOf(familyHealth.getValue().successPerSecond));
+                health.put("success", numberFormat.format(familyHealth.getValue().success));
+                health.put("successPerSecond", numberFormat.format(familyHealth.getValue().successPerSecond));
 
-                health.put("inflight", String.valueOf(familyHealth.getValue().attempt - familyHealth.getValue().success));
+                health.put("inflight", numberFormat.format(familyHealth.getValue().attempt - familyHealth.getValue().success));
 
-                health.put("min", String.valueOf(familyHealth.getValue().latencyStats.latencyMin));
-                health.put("mean", String.valueOf(familyHealth.getValue().latencyStats.latencyMean));
-                health.put("max", String.valueOf(familyHealth.getValue().latencyStats.latencyMax));
+                health.put("min", numberFormat.format(familyHealth.getValue().latencyStats.latencyMin));
+                health.put("mean", numberFormat.format(familyHealth.getValue().latencyStats.latencyMean));
+                health.put("max", numberFormat.format(familyHealth.getValue().latencyStats.latencyMax));
 
-                health.put("latency50th", String.valueOf(familyHealth.getValue().latencyStats.latency50th));
-                health.put("latency75th", String.valueOf(familyHealth.getValue().latencyStats.latency75th));
-                health.put("latency90th", String.valueOf(familyHealth.getValue().latencyStats.latency90th));
-                health.put("latency95th", String.valueOf(familyHealth.getValue().latencyStats.latency95th));
-                health.put("latency99th", String.valueOf(familyHealth.getValue().latencyStats.latency99th));
-                health.put("latency999th", String.valueOf(familyHealth.getValue().latencyStats.latency999th));
+                health.put("latency50th", numberFormat.format(familyHealth.getValue().latencyStats.latency50th));
+                health.put("latency75th", numberFormat.format(familyHealth.getValue().latencyStats.latency75th));
+                health.put("latency90th", numberFormat.format(familyHealth.getValue().latencyStats.latency90th));
+                health.put("latency95th", numberFormat.format(familyHealth.getValue().latencyStats.latency95th));
+                health.put("latency99th", numberFormat.format(familyHealth.getValue().latencyStats.latency99th));
+                health.put("latency999th", numberFormat.format(familyHealth.getValue().latencyStats.latency999th));
 
                 health.put("host", hostPortHealth.getKey().getHost());
                 health.put("port", hostPortHealth.getKey().getPort());
@@ -318,11 +314,7 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
 
         Collections.sort(healths, (Map<String, Object> o1, Map<String, Object> o2) -> {
 
-            int c = ((String) o1.get("family")).compareTo((String) o2.get("family"));
-            if (c != 0) {
-                return c;
-            }
-            return Double.compare(Double.valueOf((String) o1.get("max")), Double.valueOf((String) o2.get("max")));
+            return ((String) o1.get("family")).compareTo((String) o2.get("family"));
         });
 
         Map<String, Object> data = new HashMap<>();
@@ -437,7 +429,7 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
         }
 
 //        for (RingHost ringHost : new RingHost[]{
-//            new RingHost("soa-prime-data5.phx1.jivehosted.com", 1175)∂,
+//            new RingHost("soa-prime-data5.phx1.jivehosted.com", 1175),
 //            new RingHost("soa-prime-data6.phx1.jivehosted.com", 1175),
 //            new RingHost("soa-prime-data7.phx1.jivehosted.com", 1175),
 //            new RingHost("soa-prime-data8.phx1.jivehosted.com", 1175),

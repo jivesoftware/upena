@@ -16,10 +16,19 @@
     </licenses>
     <distributionManagement>
         <repository>
+            
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>central</id>
+            <name>libs-release</name>
+            <url>http://ec2-54-149-172-126.us-west-2.compute.amazonaws.com/artifactory/libs-release</url>
+        </repository>
+        <!--        <repository>
             <id>modified-thirdparty</id>
             <name>Jive Internal Repository</name>
             <url>http://nexus-int.eng.jiveland.com/content/repositories/modified-thirdparty</url>
-        </repository>
+        </repository>-->
     </distributionManagement>
     <scm>
         <url>https://github.com/jivesoftware/upena</url>
