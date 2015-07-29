@@ -165,18 +165,23 @@ public class UpenaService {
         List<ConnectionDescriptor> connections = new ArrayList<>();
         for (Entry<InstanceKey, TimestampedValue<Instance>> entry : instances.entrySet()) {
             Instance value = entry.getValue().getValue();
-
-            Host host = upenaStore.hosts.get(value.hostKey);
-            if (host == null) {
-                // garbage instance. should be removed?
-            } else {
-                Port port = value.ports.get(portName);
-                if (port == null) {
-                    messages.add("instanceKey:" + entry.getKey() + " doesn't have a port declared for '" + portName + "'");
+            InstanceDescriptor instanceDescriptor = toInstanceDescriptor(entry.getKey(), entry.getValue().getValue());
+            if (instanceDescriptor != null) {
+                Host host = upenaStore.hosts.get(value.hostKey);
+                if (host == null) {
+                    // garbage instance. should be removed?
                 } else {
-                    Map<String, String> properties = new HashMap<>();
-                    properties.putAll(port.properties);
-                    connections.add(new ConnectionDescriptor(new HostPort(host.hostName, port.port), properties));
+                    Port port = value.ports.get(portName);
+                    if (port == null) {
+                        messages.add("instanceKey:" + entry.getKey() + " doesn't have a port declared for '" + portName + "'");
+                    } else {
+                        Map<String, String> properties = new HashMap<>();
+                        properties.putAll(port.properties);
+                        InstanceDescriptor descriptor = toInstanceDescriptor(entry.getKey(), entry.getValue().getValue());
+                        if (descriptor != null) {
+                            connections.add(new ConnectionDescriptor(descriptor, new HostPort(host.hostName, port.port), properties));
+                        }
+                    }
                 }
             }
         }
@@ -198,49 +203,60 @@ public class UpenaService {
         InstanceFilter impactedFilter = new InstanceFilter(null, hostKey, null, null, null, 0, Integer.MAX_VALUE);
         ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> got = upenaStore.instances.find(impactedFilter);
         for (Entry<InstanceKey, TimestampedValue<Instance>> e : got.entrySet()) {
-            Instance instance = e.getValue().getValue();
-            ClusterKey clusterKey = instance.clusterKey;
-            Cluster cluster = upenaStore.clusters.get(clusterKey);
-            if (cluster == null) {
-                continue;
+            InstanceDescriptor instanceDescriptor = toInstanceDescriptor(e.getKey(), e.getValue().getValue());
+            if (instanceDescriptor != null) {
+                instanceDescriptorsResponse.instanceDescriptors.add(instanceDescriptor);
             }
-            String clusterName = cluster.name;
+        }
+        return instanceDescriptorsResponse;
+    }
 
-            ServiceKey serviceKey = instance.serviceKey;
-            Service service = upenaStore.services.get(serviceKey);
-            if (service == null) {
-                continue;
-            }
-            String serviceName = service.name;
+    private InstanceDescriptor toInstanceDescriptor(InstanceKey instanceKey, Instance instance) throws Exception {
+        ClusterKey clusterKey = instance.clusterKey;
 
-            ReleaseGroupKey releaseGroupKey = instance.releaseGroupKey;
-            ReleaseGroup releaseGroup = upenaStore.releaseGroups.get(releaseGroupKey);
-            if (releaseGroup == null) {
-                continue;
-            }
-            String releaseGroupName = releaseGroup.email;
-            InstanceKey instanceKey = e.getKey();
-
-            InstanceDescriptor instanceDescriptor = new InstanceDescriptor(clusterKey.getKey(),
-                clusterName,
-                serviceKey.getKey(),
-                serviceName,
-                releaseGroupKey.getKey(),
-                releaseGroupName,
-                instanceKey.getKey(),
-                instance.instanceId,
-                releaseGroup.version,
-                releaseGroup.repository,
-                instance.restartTimestampGMTMillis,
-                instance.enabled);
-
-            for (Entry<String, Instance.Port> p : instance.ports.entrySet()) {
-                instanceDescriptor.ports.put(p.getKey(), new InstanceDescriptor.InstanceDescriptorPort(p.getValue().port));
-            }
-
-            instanceDescriptorsResponse.instanceDescriptors.add(instanceDescriptor);
+        Host host = upenaStore.hosts.get(instance.hostKey);
+        if (host == null) {
+            return null;
         }
 
-        return instanceDescriptorsResponse;
+        Cluster cluster = upenaStore.clusters.get(clusterKey);
+        if (cluster == null) {
+            return null;
+        }
+        String clusterName = cluster.name;
+
+        ServiceKey serviceKey = instance.serviceKey;
+        Service service = upenaStore.services.get(serviceKey);
+        if (service == null) {
+            return null;
+        }
+        String serviceName = service.name;
+
+        ReleaseGroupKey releaseGroupKey = instance.releaseGroupKey;
+        ReleaseGroup releaseGroup = upenaStore.releaseGroups.get(releaseGroupKey);
+        if (releaseGroup == null) {
+            return null;
+        }
+        String releaseGroupName = releaseGroup.email;
+
+        InstanceDescriptor instanceDescriptor = new InstanceDescriptor(clusterKey.getKey(),
+            clusterName,
+            serviceKey.getKey(),
+            serviceName,
+            releaseGroupKey.getKey(),
+            releaseGroupName,
+            instanceKey.getKey(),
+            instance.instanceId,
+            releaseGroup.version,
+            releaseGroup.repository,
+            instance.restartTimestampGMTMillis,
+            instance.enabled);
+
+        for (Entry<String, Instance.Port> p : instance.ports.entrySet()) {
+            instanceDescriptor.ports.put(p.getKey(), new InstanceDescriptor.InstanceDescriptorPort(p.getValue().port));
+        }
+
+        return instanceDescriptor;
+
     }
 }
