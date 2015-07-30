@@ -400,7 +400,7 @@ public class Main {
             UpenaRingPluginEndpoints.class,
             new UpenaRingPluginRegion("soy.page.upenaRingPluginRegion", renderer, amzaService, upenaStore, upenaService, ubaService, ringHost));
 
-        List<ManagePlugin> plugins = Lists.newArrayList(health, topology, changes, instances, config, clusters, hosts, services, releases, ring);
+        List<ManagePlugin> plugins = Lists.newArrayList(health, topology, changes, clusters, hosts, services, releases, instances, config, ring);
 
         jerseyEndpoints.addInjectable(SoyService.class, soyService);
         jerseyEndpoints.addEndpoint(AsyncLookupEndpoints.class);

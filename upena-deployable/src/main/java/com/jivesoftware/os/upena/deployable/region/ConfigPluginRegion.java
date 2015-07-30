@@ -1,5 +1,6 @@
 package com.jivesoftware.os.upena.deployable.region;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Optional;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -37,6 +38,7 @@ import java.util.concurrent.ConcurrentSkipListMap;
 public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegion.ConfigPluginRegionInput>> {
 
     private static final MetricLogger log = MetricLoggerFactory.getLogger();
+    private static final ObjectMapper mapper = new ObjectMapper();
 
     private final String template;
     private final SoyRenderer renderer;
@@ -147,6 +149,19 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
 
     }
 
+    private static class ExportImportCluster {
+
+        public Map<ClusterKey, Cluster> clusters = new HashMap<>();
+        public Map<HostKey, Host> hosts = new HashMap<>();
+        public Map<ServiceKey, Service> services = new HashMap<>();
+        public Map<ReleaseGroupKey, ReleaseGroup> release = new HashMap<>();
+        public Map<InstanceKey, Instance> instances = new HashMap<>();
+
+        public List<String> config = new ArrayList<>();
+        public List<String> healthConfig = new ArrayList<>();
+
+    }
+
     public String export(ConfigPluginRegionInput input) throws Exception {
 
         ConcurrentSkipListMap<String, List<Map<String, String>>> properties = new ConcurrentSkipListMap<>();
@@ -158,7 +173,8 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
             input.aInstance.isEmpty() ? null : Integer.parseInt(input.aInstance),
             0,
             10000);
-        StringBuilder sb = new StringBuilder();
+
+        ExportImportCluster exportImportCluster = new ExportImportCluster();
         if (filter.clusterKey != null
             || filter.hostKey != null
             || filter.serviceKey != null
@@ -166,45 +182,82 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
             || filter.logicalInstanceId != null) {
 
             Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(filter);
-            for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {
-                InstanceKey key = entrySet.getKey();
-                TimestampedValue<Instance> timestampedValue = entrySet.getValue();
-                Instance i = timestampedValue.getValue();
-                Cluster cluster = upenaStore.clusters.get(i.clusterKey);
-                Host host = upenaStore.hosts.get(i.hostKey);
-                Service service = upenaStore.services.get(i.serviceKey);
-                ReleaseGroup release = upenaStore.releaseGroups.get(i.releaseGroupKey);
+            if (found != null) {
+                for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {
+                    if (!entrySet.getValue().getTombstoned()) {
+                        InstanceKey key = entrySet.getKey();
+                        Instance instance = entrySet.getValue().getValue();
 
-                if (input.service) {
-                    Map<String, String> overriddenServiceMap = configStore.get(key.getKey(), "override", null);
-                    append(sb, key, i, cluster, host, service, release, "override", overriddenServiceMap);
+                        exportImportCluster.instances.put(key, instance);
 
+                        if (!exportImportCluster.clusters.containsKey(instance.clusterKey)) {
+                            Cluster got = upenaStore.clusters.get(instance.clusterKey);
+                            if (got == null) {
+                                return "Export failed no cluster for clusterKey:" + instance.clusterKey;
+                            }
+                            exportImportCluster.clusters.put(instance.clusterKey, got);
+                        }
+
+                        if (!exportImportCluster.hosts.containsKey(instance.hostKey)) {
+                            Host got = upenaStore.hosts.get(instance.hostKey);
+                            if (got == null) {
+                                return "Export failed no host for hostKey:" + instance.hostKey;
+                            }
+                            exportImportCluster.hosts.put(instance.hostKey, got);
+                        }
+
+                        if (!exportImportCluster.services.containsKey(instance.serviceKey)) {
+                            Service got = upenaStore.services.get(instance.serviceKey);
+                            if (got == null) {
+                                return "Export failed no serivce for serviceKey:" + instance.serviceKey;
+                            }
+                            exportImportCluster.services.put(instance.serviceKey, got);
+                        }
+
+                        if (!exportImportCluster.release.containsKey(instance.releaseGroupKey)) {
+                            ReleaseGroup got = upenaStore.releaseGroups.get(instance.releaseGroupKey);
+                            if (got == null) {
+                                return "Export failed no release group for releaseGroupKey:" + instance.releaseGroupKey;
+                            }
+                            exportImportCluster.release.put(instance.releaseGroupKey, got);
+                        }
+                    }
                 }
-                if (input.health) {
-                    Map<String, String> overriddenHealtheMap = configStore.get(key.getKey(), "override-health", null);
-                    append(sb, key, i, cluster, host, service, release, "override-health", overriddenHealtheMap);
-                }
 
+                for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {
+                    InstanceKey key = entrySet.getKey();
+                    TimestampedValue<Instance> timestampedValue = entrySet.getValue();
+                    Instance i = timestampedValue.getValue();
+                    Cluster cluster = upenaStore.clusters.get(i.clusterKey);
+                    Host host = upenaStore.hosts.get(i.hostKey);
+                    Service service = upenaStore.services.get(i.serviceKey);
+                    ReleaseGroup release = upenaStore.releaseGroups.get(i.releaseGroupKey);
+
+                    if (input.service) {
+                        Map<String, String> overriddenServiceMap = configStore.get(key.getKey(), "override", null);
+                        append(exportImportCluster.config, key, overriddenServiceMap);
+
+                    }
+                    if (input.health) {
+                        Map<String, String> overriddenHealtheMap = configStore.get(key.getKey(), "override-health", null);
+                        append(exportImportCluster.healthConfig, key, overriddenHealtheMap);
+                    }
+                }
             }
         }
-        return sb.toString();
+
+        return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(exportImportCluster);
 
     }
 
-    public void append(StringBuilder sb, InstanceKey instanceKey, Instance instance, Cluster cluster, Host host, Service service, ReleaseGroup releaseGroup,
-        String context, Map<String, String> properties) {
-        sb.append(instanceKey).append(", ")
-            .append(cluster.name).append(", ")
-            .append(host.name).append(", ")
-            .append(service.name).append(", ")
-            .append(releaseGroup.name).append(", ")
-            .append(instance.instanceId).append("\n");
+    public void append(List<String> config, InstanceKey instanceKey, Map<String, String> properties) {
 
         for (Entry<String, String> p : properties.entrySet()) {
+            StringBuilder sb = new StringBuilder();
             sb.append(instanceKey).append(", ")
-                .append(context).append(", ")
                 .append(p.getKey()).append(", ")
                 .append(p.getValue()).append("\n");
+            config.add(sb.toString());
         }
     }
 
