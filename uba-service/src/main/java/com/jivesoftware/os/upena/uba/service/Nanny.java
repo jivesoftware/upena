@@ -44,7 +44,7 @@ public class Nanny {
     private final LinkedBlockingQueue<Runnable> linkedBlockingQueue;
     private final ThreadPoolExecutor threadPoolExecutor;
     private final AtomicLong lastRestart = new AtomicLong(-1);
-    private final AtomicLong restartAtTimestamp = new AtomicLong(-1);
+    private final AtomicLong restartAtTimestamp = new AtomicLong(System.currentTimeMillis());
     private final AtomicLong startupTimestamp = new AtomicLong(-1);
     private final UbaLog ubaLog;
 

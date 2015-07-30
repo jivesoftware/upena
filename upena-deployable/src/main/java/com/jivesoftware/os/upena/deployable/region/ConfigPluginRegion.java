@@ -193,7 +193,8 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
                         if (!exportImportCluster.clusters.containsKey(instance.clusterKey)) {
                             Cluster got = upenaStore.clusters.get(instance.clusterKey);
                             if (got == null) {
-                                return "Export failed no cluster for clusterKey:" + instance.clusterKey;
+                                return "Export failed no cluster for clusterKey:" + instance.clusterKey + "\n" + mapper.writerWithDefaultPrettyPrinter()
+                                    .writeValueAsString(instance);
                             }
                             exportImportCluster.clusters.put(instance.clusterKey, got);
                         }
@@ -201,7 +202,8 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
                         if (!exportImportCluster.hosts.containsKey(instance.hostKey)) {
                             Host got = upenaStore.hosts.get(instance.hostKey);
                             if (got == null) {
-                                return "Export failed no host for hostKey:" + instance.hostKey;
+                                return "Export failed no host for hostKey:" + instance.hostKey + "\n" + mapper.writerWithDefaultPrettyPrinter()
+                                    .writeValueAsString(instance);
                             }
                             exportImportCluster.hosts.put(instance.hostKey, got);
                         }
@@ -209,7 +211,8 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
                         if (!exportImportCluster.services.containsKey(instance.serviceKey)) {
                             Service got = upenaStore.services.get(instance.serviceKey);
                             if (got == null) {
-                                return "Export failed no serivce for serviceKey:" + instance.serviceKey;
+                                return "Export failed no serivce for serviceKey:" + instance.serviceKey + "\n" + mapper.writerWithDefaultPrettyPrinter()
+                                    .writeValueAsString(instance);
                             }
                             exportImportCluster.services.put(instance.serviceKey, got);
                         }
@@ -217,7 +220,9 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
                         if (!exportImportCluster.release.containsKey(instance.releaseGroupKey)) {
                             ReleaseGroup got = upenaStore.releaseGroups.get(instance.releaseGroupKey);
                             if (got == null) {
-                                return "Export failed no release group for releaseGroupKey:" + instance.releaseGroupKey;
+                                return "Export failed no release group for releaseGroupKey:" + instance.releaseGroupKey + "\n" + mapper
+                                    .writerWithDefaultPrettyPrinter()
+                                    .writeValueAsString(instance);
                             }
                             exportImportCluster.release.put(instance.releaseGroupKey, got);
                         }
