@@ -392,7 +392,7 @@ upena.topology = {
 
 
         $(edges).each(function (key, edge) {
-            g.addEdge(edge.from, edge.to, {label: edge.label, directed: true});
+            g.addEdge(edge.from, edge.to, {label: edge.label, directed: true, stroke: "#" + edge.color, fill: "#" + edge.color});
         });
 
 

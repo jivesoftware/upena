@@ -467,6 +467,14 @@ public class HealthPluginRegion implements PageRegion<Optional<HealthPluginRegio
         return "000000".substring(s.length()) + s;
     }
 
+    String getHEXIdColor(double value, float sat) {
+        //String s = Integer.toHexString(Color.HSBtoRGB(0.6f, 1f - ((float) value), sat) & 0xffffff);
+        float hue = (float) value / 3f;
+        hue = (1f / 3f) + (hue * 2);
+        String s = Integer.toHexString(Color.HSBtoRGB(hue, sat, 1f) & 0xffffff);
+        return "000000".substring(s.length()) + s;
+    }
+
     public String renderUIs(String instanceKey) throws Exception {
 
         Instance instance = upenaStore.instances.get(new InstanceKey(instanceKey));

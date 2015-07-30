@@ -41,7 +41,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ExecutorService;
@@ -117,18 +116,6 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
 
                 Instance instance = upenaStore.instances.get(new InstanceKey(route.getInstanceId()));
 
-                NannyHealth health = null;
-                Collection<NodeHealth> nodeHealths = healthPluginRegion.buildClusterHealth();
-                for (NodeHealth nodeHealth : nodeHealths) {
-                    for (NannyHealth nannyHealth : nodeHealth.nannyHealths) {
-                        if (nannyHealth.instanceDescriptor.instanceKey.equals(route.getInstanceId())) {
-                            health = nannyHealth;
-                            break;
-                        }
-                    }
-                }
-                double serviceHealth = health == null ? 0d : Math.max(0d, Math.min(health.serviceHealth.health, 1d));
-
                 Service service = null;
                 if (instance != null) {
                     service = upenaStore.services.get(instance.serviceKey);
@@ -136,7 +123,7 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
                 String serviceName = service != null ? service.name : route.getInstanceId();
                 Node from = nodes.get(serviceName);
                 if (from == null) {
-                    from = new Node(serviceName, "id" + id, "666", "16", 0);
+                    from = new Node(serviceName, id, "666", "16", 0);
                     nodes.put(serviceName, from);
                     id++;
                     System.out.println("from:" + from);
@@ -147,6 +134,7 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
                     from.focusHtml = renderConnectionHealth(serviceName, route.getInstanceId());
                 }
 
+                double serviceHealth = serviceHealth(route.getInstanceId());
                 from.maxHealth = Math.max(from.maxHealth, serviceHealth);
                 from.minHealth = Math.min(from.minHealth, serviceHealth);
                 from.count++;
@@ -154,36 +142,27 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
                 Node to;
                 if (route.getReturnCode() == 1) {
 
-                    if (portNames) {
-                        to = nodes.get(route.getPortName() + "->" + route.getConnectToServiceNamed());
-                        if (to == null) {
-                            to = new Node(route.getPortName(), "id" + id, "004", "10", 0);
-                            nodes.put(route.getPortName() + "->" + route.getConnectToServiceNamed(), to);
-                            id++;
-                            System.out.println("to:" + to);
-                        }
-                        to.count++;
-
-                        addEdge(edges, from, to);
-                        from = to;
-                    }
-
                     to = nodes.get(route.getConnectToServiceNamed());
                     if (to == null) {
-                        to = new Node(route.getConnectToServiceNamed(), "id" + id, "060", "16", 0);
+                        to = new Node(route.getConnectToServiceNamed(), id, "060", "16", 0);
                         nodes.put(route.getConnectToServiceNamed(), to);
                         id++;
                         System.out.println("to:" + to);
 
                     }
-                    to.maxHealth = Math.max(to.maxHealth, serviceHealth);
-                    to.minHealth = Math.min(to.minHealth, serviceHealth);
+
+                    for (ConnectionDescriptor connection : route.getConnections()) {
+                        serviceHealth = serviceHealth(connection.getInstanceDescriptor().instanceKey);
+                        to.maxHealth = Math.max(to.maxHealth, serviceHealth);
+                        to.minHealth = Math.min(to.minHealth, serviceHealth);
+                    }
+
                     to.count++;
 
                 } else {
                     to = nodes.get("Errors");
                     if (to == null) {
-                        to = new Node("Errors", "id" + id, "900", "20", 0);
+                        to = new Node("Errors", id, "900", "20", 0);
                         nodes.put("Errors", to);
                         id++;
                         System.out.println("to:" + to);
@@ -215,11 +194,10 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
                 }
             }
 
-
             List<Map<String, String>> renderNodes = new ArrayList<>();
             for (Node n : nodes.values()) {
                 Map<String, String> node = new HashMap<>();
-                node.put("id", n.id);
+                node.put("id", "id" + n.id);
 
                 if (n.maxHealth == Double.MAX_VALUE) {
                     node.put("maxbgcolor", n.bgcolor);
@@ -241,9 +219,10 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
             List<Map<String, String>> renderEdges = new ArrayList<>();
             for (Edge e : edges.values()) {
                 Map<String, String> edge = new HashMap<>();
-                edge.put("from", e.from);
+                edge.put("from", "id" + e.from);
                 edge.put("label", e.label);
-                edge.put("to", e.to);
+                edge.put("to", "id" + e.to);
+                edge.put("color", healthPluginRegion.getHEXIdColor((float) e.from / (float) id, 1f));
                 renderEdges.add(edge);
             }
 
@@ -255,6 +234,21 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
             return "Oops:" + ExceptionUtils.getStackTrace(e);
         }
 
+    }
+
+    private double serviceHealth(String instanceId) throws Exception {
+        NannyHealth health = null;
+        Collection<NodeHealth> nodeHealths = healthPluginRegion.buildClusterHealth();
+        for (NodeHealth nodeHealth : nodeHealths) {
+            for (NannyHealth nannyHealth : nodeHealth.nannyHealths) {
+                if (nannyHealth.instanceDescriptor.instanceKey.equals(instanceId)) {
+                    health = nannyHealth;
+                    break;
+                }
+            }
+        }
+        double serviceHealth = health == null ? 0d : Math.max(0d, Math.min(health.serviceHealth.health, 1d));
+        return serviceHealth;
     }
 
     private String hostPortToServiceName(HostPort hostPort, String portName) throws Exception {
@@ -333,7 +327,7 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
     public static class Node {
 
         String label;
-        String id;
+        int id;
         String bgcolor;
         String fontSize;
         String focusHtml;
@@ -341,7 +335,7 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
         double maxHealth = -Double.MAX_VALUE;
         double minHealth = Double.MAX_VALUE;
 
-        public Node(String label, String id, String bgcolor, String fontSize, int count) {
+        public Node(String label, int id, String bgcolor, String fontSize, int count) {
             this.label = label;
             this.id = id;
             this.bgcolor = bgcolor;
@@ -358,11 +352,12 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
 
     public static class Edge {
 
-        String from;
+        int from;
         String label;
-        String to;
+        int to;
+        String edgeColor = "000";
 
-        public Edge(String from, String to, String label) {
+        public Edge(int id, int to, String label) {
             this.from = from;
             this.to = to;
             this.label = label;
@@ -370,9 +365,9 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
 
         @Override
         public int hashCode() {
-            int hash = 7;
-            hash = 97 * hash + Objects.hashCode(this.from);
-            hash = 97 * hash + Objects.hashCode(this.to);
+            int hash = 3;
+            hash = 79 * hash + this.from;
+            hash = 79 * hash + this.to;
             return hash;
         }
 
@@ -385,10 +380,10 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
                 return false;
             }
             final Edge other = (Edge) obj;
-            if (!Objects.equals(this.from, other.from)) {
+            if (this.from != other.from) {
                 return false;
             }
-            if (!Objects.equals(this.to, other.to)) {
+            if (this.to != other.to) {
                 return false;
             }
             return true;
