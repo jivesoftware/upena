@@ -200,29 +200,8 @@ public class HealthPluginRegion implements PageRegion<Optional<HealthPluginRegio
             for (UpenaEndpoints.NodeHealth nodeHealth : nodeHealths) {
                 if (nodeHealth.nannyHealths.isEmpty()) {
                     String host = "UNREACHABLE:" + nodeHealth.host + ":" + nodeHealth.port;
-                    int hi = hostIndexs.get(host);
-
-                    Long recency = nodeRecency.get(nodeHealth.host + ":" + nodeHealth.port);
-                    String age = recency != null ? UpenaEndpoints.humanReadableLatency(System.currentTimeMillis() - recency) : "unknown";
-
-                    float hh = (float) Math.max(0, nodeHealth.health);
-                    hostRows.get(hi).get(0).put("color", "#" + getHEXTrafficlightColor(hh, 1f));
-                    hostRows.get(hi).get(0).put("host", nodeHealth.host); // TODO change to hostKey
-                    hostRows.get(hi).get(0).put("hostKey", nodeHealth.host); // TODO change to hostKey
-                    hostRows.get(hi).get(0).put("health", host + " [" + age + "]");
-                    hostRows.get(hi).get(0).put("uid", "uid-" + uid);
-                    hostRows.get(hi).get(0).put("instanceKey", "");
-                    uid++;
-                }
-                for (UpenaEndpoints.NannyHealth nannyHealth : nodeHealth.nannyHealths) {
-                    boolean cshow = input.cluster.isEmpty() ? false : nannyHealth.instanceDescriptor.clusterName.contains(input.cluster);
-                    boolean hshow = input.host.isEmpty() ? false : nodeHealth.host.contains(input.host);
-                    boolean sshow = input.service.isEmpty() ? false : nannyHealth.instanceDescriptor.serviceName.contains(input.service);
-
-                    if ((!input.cluster.isEmpty() == cshow) && (!input.host.isEmpty() == hshow) && (!input.service.isEmpty() == sshow)) {
-                        String host = nannyHealth.instanceDescriptor.clusterName + ":" + nodeHealth.host + ":" + nodeHealth.port;
-                        int hi = hostIndexs.get(host);
-                        int si = serviceIndexs.get(new Service(nannyHealth.instanceDescriptor.serviceKey, nannyHealth.instanceDescriptor.serviceName));
+                    Integer hi = hostIndexs.get(host);
+                    if (hi != null) {
 
                         Long recency = nodeRecency.get(nodeHealth.host + ":" + nodeHealth.port);
                         String age = recency != null ? UpenaEndpoints.humanReadableLatency(System.currentTimeMillis() - recency) : "unknown";
@@ -235,33 +214,58 @@ public class HealthPluginRegion implements PageRegion<Optional<HealthPluginRegio
                         hostRows.get(hi).get(0).put("uid", "uid-" + uid);
                         hostRows.get(hi).get(0).put("instanceKey", "");
                         uid++;
+                    }
+                }
+                for (UpenaEndpoints.NannyHealth nannyHealth : nodeHealth.nannyHealths) {
+                    boolean cshow = input.cluster.isEmpty() ? false : nannyHealth.instanceDescriptor.clusterName.contains(input.cluster);
+                    boolean hshow = input.host.isEmpty() ? false : nodeHealth.host.contains(input.host);
+                    boolean sshow = input.service.isEmpty() ? false : nannyHealth.instanceDescriptor.serviceName.contains(input.service);
 
-                        double h = 0d;
-                        if (nannyHealth.serviceHealth != null) {
-                            h = nannyHealth.serviceHealth.health;
-                        }
-                        float sh = (float) Math.max(0, h);
-                        hostRows.get(hi).get(si + 1).put("uid", "uid-" + uid);
-                        uid++;
-                        hostRows.get(hi).get(si + 1).put("instanceKey", nannyHealth.instanceDescriptor.instanceKey);
-                        hostRows.get(hi).get(si + 1).put("clusterKey", nannyHealth.instanceDescriptor.clusterKey);
-                        hostRows.get(hi).get(si + 1).put("cluster", nannyHealth.instanceDescriptor.clusterName);
-                        hostRows.get(hi).get(si + 1).put("serviceKey", nannyHealth.instanceDescriptor.serviceKey);
-                        hostRows.get(hi).get(si + 1).put("service", nannyHealth.instanceDescriptor.serviceName);
-                        hostRows.get(hi).get(si + 1).put("releaseKey", nannyHealth.instanceDescriptor.releaseGroupKey);
-                        hostRows.get(hi).get(si + 1).put("release", nannyHealth.instanceDescriptor.releaseGroupName);
-                        hostRows.get(hi).get(si + 1).put("instance", String.valueOf(nannyHealth.instanceDescriptor.instanceName));
-                        hostRows.get(hi).get(si + 1).put("color", "#" + getHEXTrafficlightColor(sh, 1f));
-                        hostRows.get(hi).get(si + 1).put("health", d2f(sh) + " [" + nannyHealth.uptime + "]");
-                        hostRows.get(hi).get(si + 1).put("link",
-                            "http://" + nodeHealth.host + ":" + nannyHealth.instanceDescriptor.ports.get("manage").port + "/manage/ui");
+                    if ((!input.cluster.isEmpty() == cshow) && (!input.host.isEmpty() == hshow) && (!input.service.isEmpty() == sshow)) {
+                        String host = nannyHealth.instanceDescriptor.clusterName + ":" + nodeHealth.host + ":" + nodeHealth.port;
+                        Integer hi = hostIndexs.get(host);
+                        Integer si = serviceIndexs.get(new Service(nannyHealth.instanceDescriptor.serviceKey, nannyHealth.instanceDescriptor.serviceName));
+                        if (hi != null && si != null) {
 
-                        List<Map<String, String>> got = (List<Map<String, String>>) hostRows.get(hi).get(si + 1).get("instances");
-                        if (got == null) {
-                            got = new ArrayList<>();
-                            hostRows.get(hi).get(si + 1).put("instances", got);
+                            Long recency = nodeRecency.get(nodeHealth.host + ":" + nodeHealth.port);
+                            String age = recency != null ? UpenaEndpoints.humanReadableLatency(System.currentTimeMillis() - recency) : "unknown";
+
+                            float hh = (float) Math.max(0, nodeHealth.health);
+                            hostRows.get(hi).get(0).put("color", "#" + getHEXTrafficlightColor(hh, 1f));
+                            hostRows.get(hi).get(0).put("host", nodeHealth.host); // TODO change to hostKey
+                            hostRows.get(hi).get(0).put("hostKey", nodeHealth.host); // TODO change to hostKey
+                            hostRows.get(hi).get(0).put("health", host + " [" + age + "]");
+                            hostRows.get(hi).get(0).put("uid", "uid-" + uid);
+                            hostRows.get(hi).get(0).put("instanceKey", "");
+                            uid++;
+
+                            double h = 0d;
+                            if (nannyHealth.serviceHealth != null) {
+                                h = nannyHealth.serviceHealth.health;
+                            }
+                            float sh = (float) Math.max(0, h);
+                            hostRows.get(hi).get(si + 1).put("uid", "uid-" + uid);
+                            uid++;
+                            hostRows.get(hi).get(si + 1).put("instanceKey", nannyHealth.instanceDescriptor.instanceKey);
+                            hostRows.get(hi).get(si + 1).put("clusterKey", nannyHealth.instanceDescriptor.clusterKey);
+                            hostRows.get(hi).get(si + 1).put("cluster", nannyHealth.instanceDescriptor.clusterName);
+                            hostRows.get(hi).get(si + 1).put("serviceKey", nannyHealth.instanceDescriptor.serviceKey);
+                            hostRows.get(hi).get(si + 1).put("service", nannyHealth.instanceDescriptor.serviceName);
+                            hostRows.get(hi).get(si + 1).put("releaseKey", nannyHealth.instanceDescriptor.releaseGroupKey);
+                            hostRows.get(hi).get(si + 1).put("release", nannyHealth.instanceDescriptor.releaseGroupName);
+                            hostRows.get(hi).get(si + 1).put("instance", String.valueOf(nannyHealth.instanceDescriptor.instanceName));
+                            hostRows.get(hi).get(si + 1).put("color", "#" + getHEXTrafficlightColor(sh, 1f));
+                            hostRows.get(hi).get(si + 1).put("health", d2f(sh) + " [" + nannyHealth.uptime + "]");
+                            hostRows.get(hi).get(si + 1).put("link",
+                                "http://" + nodeHealth.host + ":" + nannyHealth.instanceDescriptor.ports.get("manage").port + "/manage/ui");
+
+                            List<Map<String, String>> got = (List<Map<String, String>>) hostRows.get(hi).get(si + 1).get("instances");
+                            if (got == null) {
+                                got = new ArrayList<>();
+                                hostRows.get(hi).get(si + 1).put("instances", got);
+                            }
+                            got.add(instanceHealth.get(nannyHealth.instanceDescriptor.instanceKey));
                         }
-                        got.add(instanceHealth.get(nannyHealth.instanceDescriptor.instanceKey));
 
                     }
                 }
