@@ -50,7 +50,8 @@ public class DiscoveredRoutes {
             });
 
         for (ConnectionHealth connectionHealth : instanceConnectionHealth.connectionHealths) {
-            Map<String, ConnectionHealth> familyConnectionHealths = hostPortFamilyConnectionHealths.computeIfAbsent(connectionHealth.hostPort,
+            Map<String, ConnectionHealth> familyConnectionHealths = hostPortFamilyConnectionHealths.computeIfAbsent(
+                connectionHealth.connectionDescriptor.getHostPort(),
                 (key) -> {
                     return new ConcurrentHashMap<>();
                 });
