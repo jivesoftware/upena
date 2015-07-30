@@ -47,7 +47,7 @@
                                         <input type="hidden" name="action" value="remove">
                                         <td>{$r.host}</td>
                                         <td>{$r.port}</td>
-                                        <td><button title="Remove" type="submit" name="action" value="remove" class="btn btn-default"><span class="glyphicon glyphicon-trash"></span></button><td>
+                                        <td><button onclick="return confirm('Are you sure you want to delete?')" title="Remove" type="submit" name="action" value="remove" class="btn btn-default"><span class="glyphicon glyphicon-trash"></span></button><td>
                                     </tr>
                                 </form>
                             {/foreach}

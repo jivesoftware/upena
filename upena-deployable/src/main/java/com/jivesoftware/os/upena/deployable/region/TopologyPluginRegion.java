@@ -157,7 +157,6 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
                         to.minHealth = Math.min(to.minHealth, serviceHealth);
                     }
 
-                    to.count++;
 
                 } else {
                     to = nodes.get("Errors");
