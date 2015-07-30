@@ -14,7 +14,9 @@ import com.jivesoftware.os.routing.bird.http.client.HttpClientFactory;
 import com.jivesoftware.os.routing.bird.http.client.HttpClientFactoryProvider;
 import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelper;
 import com.jivesoftware.os.routing.bird.shared.ConnectionDescriptor;
+import com.jivesoftware.os.routing.bird.shared.ConnectionHealth;
 import com.jivesoftware.os.routing.bird.shared.HostPort;
+import com.jivesoftware.os.routing.bird.shared.InstanceConnectionHealth;
 import com.jivesoftware.os.upena.deployable.UpenaEndpoints.NannyHealth;
 import com.jivesoftware.os.upena.deployable.UpenaEndpoints.NodeHealth;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
@@ -23,12 +25,10 @@ import com.jivesoftware.os.upena.service.DiscoveredRoutes.Route;
 import com.jivesoftware.os.upena.service.DiscoveredRoutes.RouteHealths;
 import com.jivesoftware.os.upena.service.DiscoveredRoutes.Routes;
 import com.jivesoftware.os.upena.service.UpenaStore;
-import com.jivesoftware.os.upena.shared.ConnectionHealth;
 import com.jivesoftware.os.upena.shared.Host;
 import com.jivesoftware.os.upena.shared.HostFilter;
 import com.jivesoftware.os.upena.shared.HostKey;
 import com.jivesoftware.os.upena.shared.Instance;
-import com.jivesoftware.os.upena.shared.InstanceConnectionHealth;
 import com.jivesoftware.os.upena.shared.InstanceFilter;
 import com.jivesoftware.os.upena.shared.InstanceKey;
 import com.jivesoftware.os.upena.shared.Service;
@@ -200,7 +200,7 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
                 for (Map<String, ConnectionHealth> value : connectionHealth.values()) {
                     for (ConnectionHealth value1 : value.values()) {
                         for (ConnectionDescriptor connection : connections) {
-                            if (connection.getHostPort().equals(value1.hostPort)) {
+                            if (connection.getHostPort().equals(value1.connectionDescriptor.getHostPort())) {
                                 successes += value1.successPerSecond;
                                 break;
                             }
@@ -279,13 +279,11 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
         Map<HostPort, Map<String, ConnectionHealth>> connectionHealths = discoveredRoutes.getConnectionHealth(instanceId);
         for (Map.Entry<HostPort, Map<String, ConnectionHealth>> hostPortHealth : connectionHealths.entrySet()) {
 
-            String to = hostPortToServiceName(hostPortHealth.getKey(), "main"); // hack
-
             for (Map.Entry<String, ConnectionHealth> familyHealth : hostPortHealth.getValue().entrySet()) {
 
                 Map<String, Object> health = new HashMap<>();
                 health.put("from", from);
-                health.put("to", to);
+                health.put("to", familyHealth.getValue().connectionDescriptor.getInstanceDescriptor().serviceName);
 
                 health.put("family", familyHealth.getKey());
 

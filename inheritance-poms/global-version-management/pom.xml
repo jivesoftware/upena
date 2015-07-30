@@ -14,9 +14,10 @@
         <mlogger-version>0.10</mlogger-version>
         <jive.utils.version>0.93</jive.utils.version>
         <amza.version>0.21</amza.version>
-        <routing.bird.version>0.23</routing.bird.version>
+        <routing.bird.version>0.24</routing.bird.version>
         <jackson-version>2.2.3</jackson-version>
-        
+        <aetherVersion>0.9.0.M3</aetherVersion>
+    
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -139,7 +140,64 @@
             
             <!--END: force stuff back to older jetty / jersey etc to be compatible with amza 0.21-->
             
+            <dependency>
+                <groupId>org.eclipse.aether</groupId>
+                <artifactId>aether-api</artifactId>
+                <version>${aetherVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.aether</groupId>
+                <artifactId>aether-spi</artifactId>
+                <version>${aetherVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.aether</groupId>
+                <artifactId>aether-util</artifactId>
+                <version>${aetherVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.aether</groupId>
+                <artifactId>aether-impl</artifactId>
+                <version>${aetherVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.aether</groupId>
+                <artifactId>aether-connector-basic</artifactId>
+                <version>${aetherVersion}</version>
+            </dependency>
+            <!--        <dependency>
+                <groupId>org.eclipse.aether</groupId>
+                <artifactId>aether-transport-classpath</artifactId>
+                <version>${aetherVersion}</version>
+            </dependency>-->
+            <dependency>
+                <groupId>org.eclipse.aether</groupId>
+                <artifactId>aether-transport-file</artifactId>
+                <version>${aetherVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.aether</groupId>
+                <artifactId>aether-transport-http</artifactId>
+                <version>${aetherVersion}</version>
+            </dependency>
+            <!--        <dependency>
+                <groupId>org.eclipse.aether</groupId>
+                <artifactId>aether-transport-wagon</artifactId>
+                <version>${aetherVersion}</version>
+            </dependency>-->
+            <dependency>
+                <groupId>org.apache.maven</groupId>
+                <artifactId>maven-aether-provider</artifactId>
+                <version>3.1.0</version>
+                <type>jar</type>
+            </dependency>
+        
             
+            <dependency>
+                <groupId>commons-collections</groupId>
+                <artifactId>commons-collections</artifactId>
+                <version>3.2.1</version>
+            </dependency>
             <dependency>
                 <groupId>com.jivesoftware.os.routing.bird</groupId>
                 <artifactId>deployable-config-shared</artifactId>

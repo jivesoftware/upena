@@ -12,7 +12,6 @@
     <artifactId>uba-service</artifactId>
     <properties>
         <module.type>service_lib</module.type>
-        <aetherVersion>0.9.0.M3</aetherVersion>
     </properties>
     <dependencies>
         <dependency>
@@ -22,52 +21,42 @@
         <dependency>
             <groupId>org.eclipse.aether</groupId>
             <artifactId>aether-api</artifactId>
-            <version>${aetherVersion}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.aether</groupId>
             <artifactId>aether-spi</artifactId>
-            <version>${aetherVersion}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.aether</groupId>
             <artifactId>aether-util</artifactId>
-            <version>${aetherVersion}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.aether</groupId>
             <artifactId>aether-impl</artifactId>
-            <version>${aetherVersion}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.aether</groupId>
             <artifactId>aether-connector-basic</artifactId>
-            <version>${aetherVersion}</version>
         </dependency>
         <!--        <dependency>
             <groupId>org.eclipse.aether</groupId>
             <artifactId>aether-transport-classpath</artifactId>
-            <version>${aetherVersion}</version>
         </dependency>-->
         <dependency>
             <groupId>org.eclipse.aether</groupId>
             <artifactId>aether-transport-file</artifactId>
-            <version>${aetherVersion}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.aether</groupId>
             <artifactId>aether-transport-http</artifactId>
-            <version>${aetherVersion}</version>
         </dependency>
         <!--        <dependency>
             <groupId>org.eclipse.aether</groupId>
             <artifactId>aether-transport-wagon</artifactId>
-            <version>${aetherVersion}</version>
         </dependency>-->
         <dependency>
             <groupId>commons-collections</groupId>
             <artifactId>commons-collections</artifactId>
-            <version>3.2.1</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -105,7 +94,6 @@
             <groupId>com.jivesoftware.os.upena</groupId>
             <artifactId>uba-shared</artifactId>
             <version>0.153-SNAPSHOT</version>
-            <type>jar</type>
         </dependency>
         <dependency>
             <groupId>com.jivesoftware.os.routing.bird</groupId>
@@ -118,8 +106,6 @@
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-aether-provider</artifactId>
-            <version>3.1.0</version>
-            <type>jar</type>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>

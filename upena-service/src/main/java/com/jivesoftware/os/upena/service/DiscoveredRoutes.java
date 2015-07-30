@@ -5,9 +5,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.jivesoftware.os.routing.bird.shared.ConnectionDescriptor;
 import com.jivesoftware.os.routing.bird.shared.ConnectionDescriptorsRequest;
 import com.jivesoftware.os.routing.bird.shared.ConnectionDescriptorsResponse;
+import com.jivesoftware.os.routing.bird.shared.ConnectionHealth;
 import com.jivesoftware.os.routing.bird.shared.HostPort;
-import com.jivesoftware.os.upena.shared.ConnectionHealth;
-import com.jivesoftware.os.upena.shared.InstanceConnectionHealth;
+import com.jivesoftware.os.routing.bird.shared.InstanceConnectionHealth;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -50,9 +50,10 @@ public class DiscoveredRoutes {
             });
 
         for (ConnectionHealth connectionHealth : instanceConnectionHealth.connectionHealths) {
-            Map<String, ConnectionHealth> familyConnectionHealths = hostPortFamilyConnectionHealths.computeIfAbsent(connectionHealth.hostPort, (key) -> {
-                return new ConcurrentHashMap<>();
-            });
+            Map<String, ConnectionHealth> familyConnectionHealths = hostPortFamilyConnectionHealths.computeIfAbsent(connectionHealth.hostPort,
+                (key) -> {
+                    return new ConcurrentHashMap<>();
+                });
 
             familyConnectionHealths.compute(connectionHealth.family, (String key, ConnectionHealth value) -> {
                 if (value == null) {
