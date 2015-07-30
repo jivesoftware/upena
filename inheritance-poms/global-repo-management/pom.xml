@@ -14,28 +14,13 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
-    <profiles>
-        <profile>
-            <id>deploy-aws</id>
-            <distributionManagement>
-                <repository>
-                    <id>aws</id>
-                    <name>libs-release-local</name>
-                    <url>http://ec2-54-149-172-126.us-west-2.compute.amazonaws.com/artifactory/libs-release-local</url>
-                </repository>
-            </distributionManagement>
-        </profile>
-        <profile>
-            <id>deploy-jive</id>
-            <distributionManagement>
-                <repository>
-                    <id>modified-thirdparty</id>
-                    <name>Jive Internal Repository</name>
-                    <url>http://nexus-int.eng.jiveland.com/content/repositories/modified-thirdparty</url>
-                </repository>
-            </distributionManagement>
-        </profile>
-    </profiles>
+    <distributionManagement>
+        <repository>
+            <id>modified-thirdparty</id>
+            <name>Jive Internal Repository</name>
+            <url>http://nexus-int.eng.jiveland.com/content/repositories/modified-thirdparty</url>
+        </repository>
+    </distributionManagement>
     <scm>
         <url>https://github.com/jivesoftware/upena</url>
         <connection>scm:git:git://github.com/jivesoftware/upena.git</connection>
