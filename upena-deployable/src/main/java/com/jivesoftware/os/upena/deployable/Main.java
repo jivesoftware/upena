@@ -38,7 +38,6 @@ import com.jivesoftware.os.amza.shared.RowIndexValue;
 import com.jivesoftware.os.amza.shared.RowsChanged;
 import com.jivesoftware.os.amza.shared.RowsIndex;
 import com.jivesoftware.os.amza.shared.RowsIndexProvider;
-import com.jivesoftware.os.amza.shared.RowsStorage;
 import com.jivesoftware.os.amza.shared.RowsStorageProvider;
 import com.jivesoftware.os.amza.shared.TableName;
 import com.jivesoftware.os.amza.shared.UpdatesSender;
@@ -92,8 +91,6 @@ import com.jivesoftware.os.upena.deployable.soy.SoyDataUtils;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
 import com.jivesoftware.os.upena.service.DiscoveredRoutes;
-import com.jivesoftware.os.upena.service.InstanceChanges;
-import com.jivesoftware.os.upena.service.TenantChanges;
 import com.jivesoftware.os.upena.service.UpenaRestEndpoints;
 import com.jivesoftware.os.upena.service.UpenaService;
 import com.jivesoftware.os.upena.service.UpenaStore;
@@ -210,35 +207,20 @@ public class Main {
         System.out.println("-----------------------------------------------------------------------");
 
         final AtomicReference<UbaService> conductor = new AtomicReference<>();
-        final UpenaStore upenaStore = new UpenaStore(amzaService, new InstanceChanges() {
-            @Override
-            public void changed(final List<InstanceChanged> instanceChanges) throws Exception {
-
-                Executors.newSingleThreadExecutor().submit(new Runnable() {
-                    @Override
-                    public void run() {
-                        UbaService got = conductor.get();
-                        if (got != null) {
-                            try {
-                                got.instanceChanged(instanceChanges);
-                            } catch (Exception ex) {
-                                ex.printStackTrace();
-                            }
-                        }
+        final UpenaStore upenaStore = new UpenaStore(amzaService, (List<InstanceChanged> instanceChanges) -> {
+            Executors.newSingleThreadExecutor().submit(() -> {
+                UbaService got = conductor.get();
+                if (got != null) {
+                    try {
+                        got.instanceChanged(instanceChanges);
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
                     }
-                });
-            }
-        }, new InstanceChanges() {
-
-            @Override
-            public void changed(List<InstanceChanged> changes) throws Exception {
-
-            }
-        }, new TenantChanges() {
-            @Override
-            public void changed(List<TenantChanged> change) throws Exception {
-                System.out.println("TODO: tie into conductor. " + change);
-            }
+                }
+            });
+        }, (List<InstanceChanged> changes) -> {
+        }, (List<TenantChanged> change) -> {
+            System.out.println("TODO: tie into conductor. " + change);
         });
         upenaStore.attachWatchers();
 
@@ -257,15 +239,11 @@ public class Main {
             upenaStore.hosts.update(null, host);
         }
 
-        UbaLog ubaLog = new UbaLog() {
-
-            @Override
-            public void record(String what, String why, String how) {
-                try {
-                    upenaStore.record("Uba-" + ringHost.getHost() + ":" + ringHost.getPort(), what, System.currentTimeMillis(), why, "", how);
-                } catch (Exception x) {
-                    x.printStackTrace(); // Hmm lame
-                }
+        UbaLog ubaLog = (String what, String why, String how) -> {
+            try {
+                upenaStore.record("Uba-" + ringHost.getHost() + ":" + ringHost.getPort(), what, System.currentTimeMillis(), why, "", how);
+            } catch (Exception x) {
+                x.printStackTrace(); // Hmm lame
             }
         };
 
@@ -424,30 +402,25 @@ public class Main {
     }
 
     private RowsStorageProvider rowsStorageProvider(final OrderIdProvider orderIdProvider) {
-        RowsStorageProvider rowsStorageProvider = new RowsStorageProvider() {
-            @Override
-            public RowsStorage createRowsStorage(File workingDirectory,
-                String tableDomain,
-                TableName tableName) throws Exception {
-                final File directory = new File(workingDirectory, tableDomain);
-                directory.mkdirs();
-                File file = new File(directory, tableName.getTableName() + ".kvt");
-
-                BinaryRowMarshaller rowMarshaller = new BinaryRowMarshaller();
-                RowsIndexProvider tableIndexProvider = new RowsIndexProvider() {
-
-                    @Override
-                    public RowsIndex createRowsIndex(TableName tableName) throws Exception {
-                        NavigableMap<RowIndexKey, RowIndexValue> navigableMap = new ConcurrentSkipListMap<>();
-                        return new MemoryRowsIndex(navigableMap);
-                    }
-                };
-
-                return new RowTable(tableName,
-                    orderIdProvider,
-                    rowMarshaller,
-                    new BinaryRowsTx(file, rowMarshaller, tableIndexProvider, 1000));
-            }
+        RowsStorageProvider rowsStorageProvider = (File workingDirectory, String tableDomain, TableName tableName) -> {
+            final File directory = new File(workingDirectory, tableDomain);
+            directory.mkdirs();
+            File file = new File(directory, tableName.getTableName() + ".kvt");
+            
+            BinaryRowMarshaller rowMarshaller = new BinaryRowMarshaller();
+            RowsIndexProvider tableIndexProvider = new RowsIndexProvider() {
+                
+                @Override
+                public RowsIndex createRowsIndex(TableName tableName) throws Exception {
+                    NavigableMap<RowIndexKey, RowIndexValue> navigableMap = new ConcurrentSkipListMap<>();
+                    return new MemoryRowsIndex(navigableMap);
+                }
+            };
+            
+            return new RowTable(tableName,
+                orderIdProvider,
+                rowMarshaller,
+                new BinaryRowsTx(file, rowMarshaller, tableIndexProvider, 1000));
         };
         return rowsStorageProvider;
     }
