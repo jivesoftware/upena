@@ -102,66 +102,13 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
             data.put("filter", filter);
 
             Map<String, Node> nodes = new HashMap<>();
-            Map<String, Edge> edges = new HashMap<>();
             int id = 0;
 
+            buildClusterRoutes();
             Map<String, Map<HostPort, Map<String, ConnectionHealth>>> routes = discoveredRoutes.instanceHostPortFamilyConnectionHealths;
 
             for (Map.Entry<String, Map<HostPort, Map<String, ConnectionHealth>>> entrySet : routes.entrySet()) {
                 String instanceId = entrySet.getKey();
-                Map<HostPort, Map<String, ConnectionHealth>> hostPortFamilyConnectionHealths = entrySet.getValue();
-
-                for (Map.Entry<HostPort, Map<String, ConnectionHealth>> hostPortFamilyConnectionHealth : hostPortFamilyConnectionHealths.entrySet()) {
-
-                    HostPort hostPort = hostPortFamilyConnectionHealth.getKey();
-                    Map<String, ConnectionHealth> familyConnectionHealths = hostPortFamilyConnectionHealth.getValue();
-
-                    for (Map.Entry<String, ConnectionHealth> familyConnectionHealth : familyConnectionHealths.entrySet()) {
-                        String family = familyConnectionHealth.getKey();
-                        ConnectionHealth connectionHealth = familyConnectionHealth.getValue();
-
-                        Instance instance = upenaStore.instances.get(new InstanceKey(instanceId));
-
-                        Service service = null;
-                        if (instance != null) {
-                            service = upenaStore.services.get(instance.serviceKey);
-                        }
-                        String serviceName = service != null ? service.name : instanceId;
-                        Node from = nodes.get(serviceName);
-                        if (from == null) {
-                            from = new Node(serviceName, id, "666", "16", 0);
-                            nodes.put(serviceName, from);
-                            id++;
-                        }
-
-                        double serviceHealth = serviceHealth(instanceId);
-                        from.maxHealth = Math.max(from.maxHealth, serviceHealth);
-                        from.minHealth = Math.min(from.minHealth, serviceHealth);
-                        from.count++;
-
-                        String toServiceName = connectionHealth.connectionDescriptor.getInstanceDescriptor().serviceName;
-                        Node to = nodes.get(toServiceName);
-                        if (to == null) {
-                            to = new Node(toServiceName, id, "060", "16", 0);
-                            nodes.put(toServiceName, to);
-                            id++;
-                        }
-
-                        serviceHealth = serviceHealth(connectionHealth.connectionDescriptor.getInstanceDescriptor().instanceKey);
-                        to.maxHealth = Math.max(to.maxHealth, serviceHealth);
-                        to.minHealth = Math.min(to.minHealth, serviceHealth);
-
-                        Edge edge = addEdge(edges, from, to);
-
-                        edge.weight += connectionHealth.successPerSecond;
-
-                    }
-                }
-            }
-
-            for (Map.Entry<String, Map<HostPort, Map<String, ConnectionHealth>>> entrySet : routes.entrySet()) {
-                String instanceId = entrySet.getKey();
-                Map<HostPort, Map<String, ConnectionHealth>> hostPortFamilyConnectionHealths = entrySet.getValue();
                 Instance instance = upenaStore.instances.get(new InstanceKey(instanceId));
                 Service service = null;
                 if (instance != null) {
@@ -169,9 +116,90 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
                 }
                 String serviceName = service != null ? service.name : instanceId;
                 Node from = nodes.get(serviceName);
-                if (from.focusHtml == null) {
-                    MinMaxDouble mmd = new MinMaxDouble();
-                    from.focusHtml = renderConnectionHealth(mmd, nodes, serviceName, instanceId);
+                if (from == null) {
+                    from = new Node(serviceName, id, "666", "16", 0);
+                    id++;
+                    nodes.put(serviceName, from);
+
+                    double serviceHealth = serviceHealth(instanceId);
+                    from.maxHealth = Math.max(from.maxHealth, serviceHealth);
+                    from.minHealth = Math.min(from.minHealth, serviceHealth);
+                } else {
+                    from.count++;
+                }
+
+                Map<HostPort, Map<String, ConnectionHealth>> hostPortFamilyConnectionHealths = entrySet.getValue();
+                for (Map.Entry<HostPort, Map<String, ConnectionHealth>> hostPortFamilyConnectionHealth : hostPortFamilyConnectionHealths.entrySet()) {
+                    Map<String, ConnectionHealth> familyConnectionHealths = hostPortFamilyConnectionHealth.getValue();
+                    for (Map.Entry<String, ConnectionHealth> familyConnectionHealth : familyConnectionHealths.entrySet()) {
+                        ConnectionHealth connectionHealth = familyConnectionHealth.getValue();
+                        String toServiceName = connectionHealth.connectionDescriptor.getInstanceDescriptor().serviceName;
+                        Node to = nodes.get(toServiceName);
+                        if (to == null) {
+                            to = new Node(toServiceName, id, "060", "16", 0);
+                            id++;
+                            nodes.put(toServiceName, to);
+
+                            double serviceHealth = serviceHealth(connectionHealth.connectionDescriptor.getInstanceDescriptor().instanceKey);
+                            to.maxHealth = Math.max(to.maxHealth, serviceHealth);
+                            to.minHealth = Math.min(to.minHealth, serviceHealth);
+                        }
+                    }
+                }
+            }
+
+            Map<String, Edge> edges = new HashMap<>();
+
+            for (Map.Entry<String, Map<HostPort, Map<String, ConnectionHealth>>> entrySet : routes.entrySet()) {
+                String instanceId = entrySet.getKey();
+                Map<HostPort, Map<String, ConnectionHealth>> hostPortFamilyConnectionHealths = entrySet.getValue();
+
+                Instance instance = upenaStore.instances.get(new InstanceKey(instanceId));
+                Service service = null;
+                if (instance != null) {
+                    service = upenaStore.services.get(instance.serviceKey);
+                }
+                String serviceName = service != null ? service.name : instanceId;
+                Node from = nodes.get(serviceName);
+
+                MinMaxDouble mmd = new MinMaxDouble();
+                from.focusHtml = renderConnectionHealth(mmd, nodes, serviceName, instanceId);
+
+                for (Map.Entry<HostPort, Map<String, ConnectionHealth>> hostPortFamilyConnectionHealth : hostPortFamilyConnectionHealths.entrySet()) {
+
+                    HostPort hostPort = hostPortFamilyConnectionHealth.getKey();
+                    Map<String, ConnectionHealth> familyConnectionHealths = hostPortFamilyConnectionHealth.getValue();
+                    Node to = null;
+                    MinMaxDouble edgeWeight = new MinMaxDouble();
+                    double successPerSecond = 0;
+                    for (Map.Entry<String, ConnectionHealth> familyConnectionHealth : familyConnectionHealths.entrySet()) {
+                        String family = familyConnectionHealth.getKey();
+                        ConnectionHealth connectionHealth = familyConnectionHealth.getValue();
+
+                        if (to == null) {
+                            String toServiceName = connectionHealth.connectionDescriptor.getInstanceDescriptor().serviceName;
+                            to = nodes.get(toServiceName);
+                            if (to == null) {
+                                to = new Node(toServiceName, id, "060", "16", 0);
+                                nodes.put(toServiceName, to);
+                                id++;
+                            }
+
+                        }
+                        successPerSecond += connectionHealth.successPerSecond;
+                        
+                        edgeWeight.value(connectionHealth.latencyStats.latency50th);
+                        edgeWeight.value(connectionHealth.latencyStats.latency75th);
+                        edgeWeight.value(connectionHealth.latencyStats.latency90th);
+                        edgeWeight.value(connectionHealth.latencyStats.latency95th);
+                        edgeWeight.value(connectionHealth.latencyStats.latency99th);
+                        edgeWeight.value(connectionHealth.latencyStats.latency999th);
+                    }
+
+                    Edge edge = addEdge(edges, from, to);
+                    edge.min = 1d - mmd.zeroToOne(edgeWeight.min);
+                    edge.max = 1d - mmd.zeroToOne(edgeWeight.max);
+                    edge.label = numberFormat.format(successPerSecond) + "/sec";
                 }
             }
 
@@ -205,6 +233,8 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
                 edge.put("label", e.label);
                 edge.put("to", "id" + e.to);
                 edge.put("color", healthPluginRegion.getHEXIdColor(((float) e.from / (float) id), 1f));
+                edge.put("minColor", healthPluginRegion.getHEXTrafficlightColor(e.min, 1f));
+                edge.put("maxColor", healthPluginRegion.getHEXTrafficlightColor(e.max, 1f));
                 renderEdges.add(edge);
             }
 
@@ -330,7 +360,7 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
         String bgcolor;
         String fontSize;
         String focusHtml;
-        int count;
+        int count = 1;
         double maxHealth = -Double.MAX_VALUE;
         double minHealth = Double.MAX_VALUE;
 
@@ -353,7 +383,8 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
 
         int from;
         String label;
-        double weight;
+        double min;
+        double max;
         int to;
         String edgeColor = "000";
 
@@ -421,15 +452,15 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
             allRoutes.addAll(v.getRoutes());
         }
 
-//        for (RingHost ringHost : new RingHost[]{
-//            new RingHost("soa-prime-data5.phx1.jivehosted.com", 1175),
-//            new RingHost("soa-prime-data6.phx1.jivehosted.com", 1175),
-//            new RingHost("soa-prime-data7.phx1.jivehosted.com", 1175),
-//            new RingHost("soa-prime-data8.phx1.jivehosted.com", 1175),
-//            new RingHost("soa-prime-data9.phx1.jivehosted.com", 1175),
-//            new RingHost("soa-prime-data10.phx1.jivehosted.com", 1175)
-//        }) {
-        for (final RingHost ringHost : amzaInstance.getRing("MASTER")) {
+        for (RingHost ringHost : new RingHost[]{
+            new RingHost("soa-prime-data5.phx1.jivehosted.com", 1175),
+            new RingHost("soa-prime-data6.phx1.jivehosted.com", 1175),
+            new RingHost("soa-prime-data7.phx1.jivehosted.com", 1175),
+            new RingHost("soa-prime-data8.phx1.jivehosted.com", 1175),
+            new RingHost("soa-prime-data9.phx1.jivehosted.com", 1175),
+            new RingHost("soa-prime-data10.phx1.jivehosted.com", 1175)
+        }) {
+//        for (final RingHost ringHost : amzaInstance.getRing("MASTER")) {
             if (currentlyExecuting.putIfAbsent(ringHost, true) == null) {
                 executorService.submit(() -> {
                     long start = System.currentTimeMillis();

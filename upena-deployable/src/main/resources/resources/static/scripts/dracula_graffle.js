@@ -99,6 +99,7 @@ Raphael.fn.connection = function (obj1, obj2, style) {
             }
 
             /* applying path(s) */
+            
             edge.fg && edge.fg.attr({path: path})
                     || (edge.fg = selfRef.path(path).attr({stroke: style && style.stroke || "#000", fill: "none"}).toBack());
             edge.bg && edge.bg.attr({path: path})
@@ -106,8 +107,9 @@ Raphael.fn.connection = function (obj1, obj2, style) {
                         stroke: style.fill.split("|")[0],
                         fill: "none",
                         "arrow-end": "classic-wide-long",
-                        "stroke-width": 2}
+                        "stroke-width": 5}
                     ).toBack());
+            
             /* setting label */
             if (style && style.label) {
                 var x = (x1 + x4) / 2;
@@ -119,7 +121,6 @@ Raphael.fn.connection = function (obj1, obj2, style) {
                     var text = selfRef.text(x, y, style.label).attr({
                         fill: "#000",
                         "font-size": "16px"});
-
 
                     var bb = text.getBBox(true);
                     bb.height += 8;

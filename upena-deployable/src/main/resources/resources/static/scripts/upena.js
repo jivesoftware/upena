@@ -380,8 +380,8 @@ upena.topology = {
             g.addEdge(edge.from, edge.to, {
                 label: edge.label,
                 directed: true,
-                stroke: "#" + edge.color,
-                fill: "#" + edge.color
+                stroke: "#" + edge.minColor,
+                fill: "#" + edge.maxColor
             });
         });
         /* layout the graph using the Spring layout implementation */
