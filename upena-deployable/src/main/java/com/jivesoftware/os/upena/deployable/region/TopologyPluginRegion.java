@@ -188,12 +188,9 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
                         }
                         successPerSecond += connectionHealth.successPerSecond;
                         
-                        edgeWeight.value(connectionHealth.latencyStats.latency50th);
-                        edgeWeight.value(connectionHealth.latencyStats.latency75th);
                         edgeWeight.value(connectionHealth.latencyStats.latency90th);
                         edgeWeight.value(connectionHealth.latencyStats.latency95th);
                         edgeWeight.value(connectionHealth.latencyStats.latency99th);
-                        edgeWeight.value(connectionHealth.latencyStats.latency999th);
                     }
 
                     Edge edge = addEdge(edges, from, to);
