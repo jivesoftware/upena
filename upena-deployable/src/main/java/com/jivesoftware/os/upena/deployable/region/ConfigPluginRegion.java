@@ -6,6 +6,9 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
+import com.jivesoftware.os.routing.bird.deployable.config.shared.DeployableConfig;
+import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelper;
+import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelperUtils;
 import com.jivesoftware.os.upena.config.UpenaConfigStore;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.service.UpenaStore;
@@ -293,6 +296,10 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
         final boolean overridden;
         final boolean service;
         final boolean health;
+
+        final String remoteConfigHost;
+        final int remoteConfigPort;
+
         final String action;
 
         public ConfigPluginRegionInput(
@@ -301,7 +308,11 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
             String bClusterKey, String bCluster, String bHostKey, String bHost, String bServiceKey, String bService,
             String bInstance, String bReleaseKey, String bRelease,
             String property, String value,
-            boolean overridden, boolean service, boolean health, String action) {
+            boolean overridden, boolean service, boolean health,
+            String remoteConfigHost,
+            int remoteConfigPort,
+            String action) {
+
             this.aClusterKey = aClusterKey;
             this.aCluster = aCluster;
             this.aHostKey = aHostKey;
@@ -325,6 +336,8 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
             this.overridden = overridden;
             this.service = service;
             this.health = health;
+            this.remoteConfigHost = remoteConfigHost;
+            this.remoteConfigPort = remoteConfigPort;
             this.action = action;
         }
 
@@ -368,7 +381,10 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
                 data.put("service", input.service);
                 data.put("health", input.health);
 
-                ConcurrentSkipListMap<String, List<Map<String, String>>> as = packProperties(input.aClusterKey,
+                data.put("remoteConfigHost", input.remoteConfigHost);
+                data.put("remoteConfigPort", String.valueOf(input.remoteConfigPort));
+
+                ConcurrentSkipListMap<String, List<Map<String, String>>> as = packProperties("", -1, input.aClusterKey,
                     input.aHostKey, input.aServiceKey, input.aInstance, input.aReleaseKey, input.property, input.value,
                     input.overridden, input.service, input.health);
 
@@ -389,12 +405,13 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
                         modified(user, property_instanceKey_revert);
                     }
 
-                    as = packProperties(input.aClusterKey,
+                    as = packProperties("", -1, input.aClusterKey,
                         input.aHostKey, input.aServiceKey, input.aInstance, input.aReleaseKey, input.property, input.value,
                         input.overridden, input.service, input.health);
                 }
 
-                ConcurrentSkipListMap<String, List<Map<String, String>>> bs = packProperties(input.bClusterKey,
+                ConcurrentSkipListMap<String, List<Map<String, String>>> bs = packProperties(input.remoteConfigHost, input.remoteConfigPort,
+                    input.bClusterKey,
                     input.bHostKey, input.bServiceKey, input.bInstance, input.bReleaseKey, input.property, input.value,
                     input.overridden, input.service, input.health);
 
@@ -455,7 +472,8 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
         return renderer.render(template, data);
     }
 
-    private ConcurrentSkipListMap<String, List<Map<String, String>>> packProperties(String clusterKey,
+    private ConcurrentSkipListMap<String, List<Map<String, String>>> packProperties(String remoteConfigHost,
+        int remoteConfigPort, String clusterKey,
         String hostKey, String serviceKey, String instance, String releaseKey, String propertyContains,
         String valueContains, boolean overridden, boolean service, boolean health) throws Exception {
 
@@ -480,17 +498,39 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
                 TimestampedValue<Instance> timestampedValue = entrySet.getValue();
                 Instance i = timestampedValue.getValue();
 
-                if (service) {
-                    Map<String, String> defaultServiceMaps = configStore.get(key.getKey(), "default", null);
-                    Map<String, String> overriddenServiceMap = configStore.get(key.getKey(), "override", null);
+                if (remoteConfigPort > -1) {
 
-                    filterProperties(key, i, properties, defaultServiceMaps, overriddenServiceMap, propertyContains, valueContains, overridden);
-                }
-                if (health) {
+                    HttpRequestHelper requestHelper = HttpRequestHelperUtils.buildRequestHelper(remoteConfigHost, remoteConfigPort);
+                    if (service) {
+                        DeployableConfig get = new DeployableConfig("default", key.getKey(), new HashMap<>());
+                        DeployableConfig gotDefault = requestHelper.executeRequest(get, "/upenaConfig/get", DeployableConfig.class, null);
+                        DeployableConfig getOverride = new DeployableConfig("override", key.getKey(), new HashMap<>());
+                        DeployableConfig gotOverride = requestHelper.executeRequest(getOverride, "/upenaConfig/get", DeployableConfig.class, null);
 
-                    Map<String, String> defaultHealthMaps = configStore.get(key.getKey(), "default-health", null);
-                    Map<String, String> overriddenHealtheMap = configStore.get(key.getKey(), "override-health", null);
-                    filterProperties(key, i, properties, defaultHealthMaps, overriddenHealtheMap, propertyContains, valueContains, overridden);
+                        filterProperties(key, i, properties, gotDefault.properties, gotOverride.properties, propertyContains, valueContains, overridden);
+                    }
+
+                    if (health) {
+                        DeployableConfig get = new DeployableConfig("default-health", key.getKey(), new HashMap<>());
+                        DeployableConfig gotDefault = requestHelper.executeRequest(get, "/upenaConfig/get", DeployableConfig.class, null);
+                        DeployableConfig getOverride = new DeployableConfig("override-health", key.getKey(), new HashMap<>());
+                        DeployableConfig gotOverride = requestHelper.executeRequest(getOverride, "/upenaConfig/get", DeployableConfig.class, null);
+
+                        filterProperties(key, i, properties, gotDefault.properties, gotOverride.properties, propertyContains, valueContains, overridden);
+                    }
+                } else {
+
+                    if (service) {
+                        Map<String, String> defaultServiceMaps = configStore.get(key.getKey(), "default", null);
+                        Map<String, String> overriddenServiceMap = configStore.get(key.getKey(), "override", null);
+
+                        filterProperties(key, i, properties, defaultServiceMaps, overriddenServiceMap, propertyContains, valueContains, overridden);
+                    }
+                    if (health) {
+                        Map<String, String> defaultHealthMaps = configStore.get(key.getKey(), "default-health", null);
+                        Map<String, String> overriddenHealtheMap = configStore.get(key.getKey(), "override-health", null);
+                        filterProperties(key, i, properties, defaultHealthMaps, overriddenHealtheMap, propertyContains, valueContains, overridden);
+                    }
                 }
 
             }

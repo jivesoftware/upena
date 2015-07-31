@@ -174,3 +174,8 @@ div.upena-cfg-pending-container {
     max-width: 100%; // Max Width of the popover (depending on the container!)
 }
 
+
+form#query-filters.query-advanced { display: none; }
+form#query-filters.query-show-advanced tr.query-advanced { display: table-row; }
+form#query-filters.query-show-advanced td.query-advanced { display: table-cell; }
+

@@ -322,6 +322,20 @@ upena.cfg = {
         }
     }
 };
+
+upena.query = {
+
+    advanced: function (ele) {
+        var $e = $(ele);
+        if ($e.prop('checked')) {
+            $('#query-filters').addClass('query-show-advanced');
+        } else {
+            $('#query-filters').removeClass('query-show-advanced');
+        }
+    },
+};
+
+
 upena.topology = {
     layouter: null,
     renderer: null,
@@ -412,7 +426,7 @@ $(document).ready(function () {
     if ($('#upena-topology').length) {
         upena.topology.init();
     }
-
+    
     $(function () {
         var hack = {};
         $('[rel="popover"]').popover({

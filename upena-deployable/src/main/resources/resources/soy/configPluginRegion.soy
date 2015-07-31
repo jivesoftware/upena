@@ -4,6 +4,8 @@
  * @param? message
  * @param? aFilters
  * @param? bFilters
+ * @param? remoteConfigHost
+ * @param? remoteConfigPort
  * @param? overridden
  * @param? service
  * @param? health
@@ -102,12 +104,22 @@
                                 <input type="hidden" name="aReleaseKey" value="{$aFilters.releaseKey}" />
                             </td>
                         </tr>
-                        <tr>
+                        <tr class="query-advanced">
                             <td colspan="6">
                                 - vs -
                             </td>
                         </tr>
-                        <tr style="background-color:#E7E7EF;">
+                        <tr class="query-advanced">
+                            <td>
+                                <input type="text" role="combobox" style="padding-left:10px;"
+                                placeholder="Host" value="{$filters.remoteConfigHost?:''}" name="remoteConfigHost" id="hostPicker" class="form-control">
+                            </td>
+                            <td>
+                                <input type="text" role="combobox" style="padding-left:10px;"
+                                placeholder="Port" value="{$filters.remoteConfigPort?:''}" name="remoteConfigPort" id="portPicker" class="form-control">
+                            </td>
+                        </tr>
+                        <tr class="query-advanced" style="background-color:#E7E7EF;">
                             <td>
                                 Filter B:
                             </td>
@@ -139,6 +151,11 @@
                                     data-upena-lookup="/ui/lookup/releases">
                                 <input type="hidden" name="bReleaseKey" value="{$bFilters.releaseKey}" />
                             </td>
+                        </tr>
+                        <tr>
+                            <div class="checkbox">
+                                <label><input type="checkbox" onchange="upena.query.advanced(this);">advanced &nbsp;</label>
+                            </div>
                         </tr>
                         <tr>
                             <td colspan="4">
