@@ -210,7 +210,8 @@ public class HealthPluginRegion implements PageRegion<Optional<HealthPluginRegio
                         hostRows.get(hi).get(0).put("color", "#" + getHEXTrafficlightColor(hh, 1f));
                         hostRows.get(hi).get(0).put("host", nodeHealth.host); // TODO change to hostKey
                         hostRows.get(hi).get(0).put("hostKey", nodeHealth.host); // TODO change to hostKey
-                        hostRows.get(hi).get(0).put("health", host + " [" + age + "]");
+                        hostRows.get(hi).get(0).put("health", host);
+                        hostRows.get(hi).get(0).put("age", age);
                         hostRows.get(hi).get(0).put("uid", "uid-" + uid);
                         hostRows.get(hi).get(0).put("instanceKey", "");
                         uid++;
@@ -234,7 +235,8 @@ public class HealthPluginRegion implements PageRegion<Optional<HealthPluginRegio
                             hostRows.get(hi).get(0).put("color", "#" + getHEXTrafficlightColor(hh, 1f));
                             hostRows.get(hi).get(0).put("host", nodeHealth.host); // TODO change to hostKey
                             hostRows.get(hi).get(0).put("hostKey", nodeHealth.host); // TODO change to hostKey
-                            hostRows.get(hi).get(0).put("health", host + " [" + age + "]");
+                            hostRows.get(hi).get(0).put("health", host);
+                            hostRows.get(hi).get(0).put("age", age);
                             hostRows.get(hi).get(0).put("uid", "uid-" + uid);
                             hostRows.get(hi).get(0).put("instanceKey", "");
                             uid++;
@@ -255,7 +257,8 @@ public class HealthPluginRegion implements PageRegion<Optional<HealthPluginRegio
                             hostRows.get(hi).get(si + 1).put("release", nannyHealth.instanceDescriptor.releaseGroupName);
                             hostRows.get(hi).get(si + 1).put("instance", String.valueOf(nannyHealth.instanceDescriptor.instanceName));
                             hostRows.get(hi).get(si + 1).put("color", "#" + getHEXTrafficlightColor(sh, 1f));
-                            hostRows.get(hi).get(si + 1).put("health", d2f(sh) + " [" + nannyHealth.uptime + "]");
+                            hostRows.get(hi).get(si + 1).put("health", d2f(sh));
+                            hostRows.get(hi).get(si + 1).put("age", nannyHealth.uptime);
                             hostRows.get(hi).get(si + 1).put("link",
                                 "http://" + nodeHealth.host + ":" + nannyHealth.instanceDescriptor.ports.get("manage").port + "/manage/ui");
 

@@ -100,26 +100,26 @@ upena.hs = {
     lookup: function (endpoint, contains) {
         var $selector = upena.hs.installed.selector;
         $.ajax(endpoint, {data: {'contains': contains}})
-                .done(function (data) {
-                    if (!upena.hs.installed || upena.hs.installed.selector != $selector) {
-                        // selector changed during the query
-                        return;
+            .done(function (data) {
+                if (!upena.hs.installed || upena.hs.installed.selector != $selector) {
+                    // selector changed during the query
+                    return;
+                }
+                if (data.length) {
+                    $selector.empty();
+                    for (var i = 0; i < data.length; i++) {
+                        $selector.append(
+                            "<a href='#'" +
+                            " class='upena-hs-choice'" +
+                            " data-upena-key='" + data[i].key + "'" +
+                            " data-upena-name='" + data[i].name + "'>" + data[i].name + "</a><br/>");
                     }
-                    if (data.length) {
-                        $selector.empty();
-                        for (var i = 0; i < data.length; i++) {
-                            $selector.append(
-                                    "<a href='#'" +
-                                    " class='upena-hs-choice'" +
-                                    " data-upena-key='" + data[i].key + "'" +
-                                    " data-upena-name='" + data[i].name + "'>" + data[i].name + "</a><br/>");
-                        }
-                        upena.hs.link($selector);
-                        upena.hs.installed.ready = true;
-                    } else {
-                        $selector.html("<em>No matches</em>");
-                    }
-                });
+                    upena.hs.link($selector);
+                    upena.hs.installed.ready = true;
+                } else {
+                    $selector.html("<em>No matches</em>");
+                }
+            });
     },
     link: function ($selector) {
         $selector.find('a').each(function (i) {
@@ -339,9 +339,9 @@ upena.query = {
 upena.topology = {
     layouter: null,
     renderer: null,
-    redraw: null,
     height: null,
     width: null,
+
     init: function () {
 
         upena.topology.height = "600";
@@ -385,8 +385,7 @@ upena.topology = {
             };
             var clicked = function () {
                 $("#topology-health").html(node.focusHtml);
-                return;
-            }
+            };
             g.addNode(node.id, {label: node.label, render: render, clicked: clicked});
         });
         $(edges).each(function (key, edge) {
@@ -405,12 +404,13 @@ upena.topology = {
         upena.topology.renderer = new Graph.Renderer.Raphael('upena-topology', g, upena.topology.width, upena.topology.height);
         upena.topology.renderer.draw();
     },
-    redraw : function () {
+
+    redraw: function () {
         dracula_graph_seed = 1;
         upena.topology.layouter.layout();
         upena.topology.renderer.draw();
     }
-}
+};
 
 $(document).ready(function () {
     if ($('.upena-hs-field').length) {
@@ -426,8 +426,8 @@ $(document).ready(function () {
     if ($('#upena-topology').length) {
         upena.topology.init();
     }
-    
-    $(function () {
+
+    (function () {
         var hack = {};
         $('[rel="popover"]').popover({
             container: 'body',
@@ -448,10 +448,11 @@ $(document).ready(function () {
                 $('body').append(h);
             }
         });
-    });
-    $(function () {
+    })();
+
+    (function () {
         var hack = {};
-        $('[rel="popover-health"]').popover({
+        $('div.popover-health').popover({
             container: 'body',
             html: true,
             content: function () {
@@ -486,5 +487,5 @@ $(document).ready(function () {
                 $('body').append(h);
             }
         });
-    });
+    })();
 });
