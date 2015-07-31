@@ -13,7 +13,6 @@ import com.jivesoftware.os.routing.bird.http.client.HttpClientConfiguration;
 import com.jivesoftware.os.routing.bird.http.client.HttpClientFactory;
 import com.jivesoftware.os.routing.bird.http.client.HttpClientFactoryProvider;
 import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelper;
-import com.jivesoftware.os.routing.bird.shared.ConnectionDescriptor;
 import com.jivesoftware.os.routing.bird.shared.ConnectionHealth;
 import com.jivesoftware.os.routing.bird.shared.HostPort;
 import com.jivesoftware.os.routing.bird.shared.InstanceConnectionHealth;
@@ -93,7 +92,6 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
     @Override
     public String render(String user, Optional<TopologyPluginRegionInput> optionalInput) {
         Map<String, Object> data = Maps.newHashMap();
-        boolean portNames = false;
         try {
             TopologyPluginRegionInput input = optionalInput.get();
 
@@ -106,87 +104,73 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
             Map<String, Node> nodes = new HashMap<>();
             Map<String, Edge> edges = new HashMap<>();
             int id = 0;
-            for (Route route : buildClusterRoutes()) {
 
-                Instance instance = upenaStore.instances.get(new InstanceKey(route.getInstanceId()));
+            Map<String, Map<HostPort, Map<String, ConnectionHealth>>> routes = discoveredRoutes.instanceHostPortFamilyConnectionHealths;
 
-                Service service = null;
-                if (instance != null) {
-                    service = upenaStore.services.get(instance.serviceKey);
-                }
-                String serviceName = service != null ? service.name : route.getInstanceId();
-                Node from = nodes.get(serviceName);
-                if (from == null) {
-                    from = new Node(serviceName, id, "666", "16", 0);
-                    nodes.put(serviceName, from);
-                    id++;
-                }
+            for (Map.Entry<String, Map<HostPort, Map<String, ConnectionHealth>>> entrySet : routes.entrySet()) {
+                String instanceId = entrySet.getKey();
+                Map<HostPort, Map<String, ConnectionHealth>> hostPortFamilyConnectionHealths = entrySet.getValue();
+               
+                for (Map.Entry<HostPort, Map<String, ConnectionHealth>> hostPortFamilyConnectionHealth : hostPortFamilyConnectionHealths.entrySet()) {
 
-                double serviceHealth = serviceHealth(route.getInstanceId());
-                from.maxHealth = Math.max(from.maxHealth, serviceHealth);
-                from.minHealth = Math.min(from.minHealth, serviceHealth);
-                from.count++;
+                    HostPort hostPort = hostPortFamilyConnectionHealth.getKey();
+                    Map<String, ConnectionHealth> familyConnectionHealths = hostPortFamilyConnectionHealth.getValue();
 
-                Node to;
-                if (route.getReturnCode() == 1) {
+                    for (Map.Entry<String, ConnectionHealth> familyConnectionHealth : familyConnectionHealths.entrySet()) {
+                        String family = familyConnectionHealth.getKey();
+                        ConnectionHealth connectionHealth = familyConnectionHealth.getValue();
 
-                    to = nodes.get(route.getConnectToServiceNamed());
-                    if (to == null) {
-                        to = new Node(route.getConnectToServiceNamed(), id, "060", "16", 0);
-                        nodes.put(route.getConnectToServiceNamed(), to);
-                        id++;
-                    }
+                        Instance instance = upenaStore.instances.get(new InstanceKey(instanceId));
 
-                    for (ConnectionDescriptor connection : route.getConnections()) {
-                        serviceHealth = serviceHealth(connection.getInstanceDescriptor().instanceKey);
+                        Service service = null;
+                        if (instance != null) {
+                            service = upenaStore.services.get(instance.serviceKey);
+                        }
+                        String serviceName = service != null ? service.name : instanceId;
+                        Node from = nodes.get(serviceName);
+                        if (from == null) {
+                            from = new Node(serviceName, id, "666", "16", 0);
+                            nodes.put(serviceName, from);
+                            id++;
+                        }
+
+                        double serviceHealth = serviceHealth(instanceId);
+                        from.maxHealth = Math.max(from.maxHealth, serviceHealth);
+                        from.minHealth = Math.min(from.minHealth, serviceHealth);
+                        from.count++;
+
+                        String toServiceName = connectionHealth.connectionDescriptor.getInstanceDescriptor().serviceName;
+                        Node to = nodes.get(toServiceName);
+                        if (to == null) {
+                            to = new Node(toServiceName, id, "060", "16", 0);
+                            nodes.put(toServiceName, to);
+                            id++;
+                        }
+
+                        serviceHealth = serviceHealth(connectionHealth.connectionDescriptor.getInstanceDescriptor().instanceKey);
                         to.maxHealth = Math.max(to.maxHealth, serviceHealth);
                         to.minHealth = Math.min(to.minHealth, serviceHealth);
+
+                        Edge edge = addEdge(edges, from, to);
+
+                        edge.weight += connectionHealth.successPerSecond;
+
                     }
-
-                } else {
-                    to = nodes.get("Errors");
-                    if (to == null) {
-                        to = new Node("Errors", id, "900", "20", 0);
-                        nodes.put("Errors", to);
-                        id++;
-                    }
-                    to.count++;
-                }
-
-                Edge edge = addEdge(edges, from, to);
-
-                List<ConnectionDescriptor> connections = route.getConnections();
-
-                long successes = 0;
-                Map<HostPort, Map<String, ConnectionHealth>> connectionHealth = discoveredRoutes.getConnectionHealth(route.getInstanceId());
-                for (Map<String, ConnectionHealth> value : connectionHealth.values()) {
-                    for (ConnectionHealth value1 : value.values()) {
-                        for (ConnectionDescriptor connection : connections) {
-                            if (connection.getHostPort().equals(value1.connectionDescriptor.getHostPort())) {
-                                successes += value1.successPerSecond;
-                                break;
-                            }
-                        }
-                    }
-                }
-
-                if (successes > 0) {
-                    edge.label = successes + "/sec";
-                } else {
-                    edge.label = "";
                 }
             }
 
-            for (Route route : buildClusterRoutes()) {
-                Instance instance = upenaStore.instances.get(new InstanceKey(route.getInstanceId()));
+            for (Map.Entry<String, Map<HostPort, Map<String, ConnectionHealth>>> entrySet : routes.entrySet()) {
+                String instanceId = entrySet.getKey();
+                Map<HostPort, Map<String, ConnectionHealth>> hostPortFamilyConnectionHealths = entrySet.getValue();
+                Instance instance = upenaStore.instances.get(new InstanceKey(instanceId));
                 Service service = null;
                 if (instance != null) {
                     service = upenaStore.services.get(instance.serviceKey);
                 }
-                String serviceName = service != null ? service.name : route.getInstanceId();
+                String serviceName = service != null ? service.name : instanceId;
                 Node from = nodes.get(serviceName);
                 if (from.focusHtml == null) {
-                    from.focusHtml = renderConnectionHealth(nodes, serviceName, route.getInstanceId());
+                    from.focusHtml = renderConnectionHealth(nodes, serviceName, instanceId);
                 }
             }
 
@@ -369,6 +353,7 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
 
         int from;
         String label;
+        double weight;
         int to;
         String edgeColor = "000";
 
