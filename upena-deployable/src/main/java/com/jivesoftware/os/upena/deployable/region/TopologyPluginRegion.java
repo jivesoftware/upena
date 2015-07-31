@@ -110,7 +110,7 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
             for (Map.Entry<String, Map<HostPort, Map<String, ConnectionHealth>>> entrySet : routes.entrySet()) {
                 String instanceId = entrySet.getKey();
                 Map<HostPort, Map<String, ConnectionHealth>> hostPortFamilyConnectionHealths = entrySet.getValue();
-               
+
                 for (Map.Entry<HostPort, Map<String, ConnectionHealth>> hostPortFamilyConnectionHealth : hostPortFamilyConnectionHealths.entrySet()) {
 
                     HostPort hostPort = hostPortFamilyConnectionHealth.getKey();
@@ -170,7 +170,8 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
                 String serviceName = service != null ? service.name : instanceId;
                 Node from = nodes.get(serviceName);
                 if (from.focusHtml == null) {
-                    from.focusHtml = renderConnectionHealth(nodes, serviceName, instanceId);
+                    MinMaxDouble mmd = new MinMaxDouble();
+                    from.focusHtml = renderConnectionHealth(mmd, nodes, serviceName, instanceId);
                 }
             }
 
@@ -232,10 +233,9 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
         return serviceHealth;
     }
 
-    private String renderConnectionHealth(Map<String, Node> nodes, String from, String instanceId) throws Exception {
+    private String renderConnectionHealth(MinMaxDouble mmd, Map<String, Node> nodes, String from, String instanceId) throws Exception {
         List<Map<String, Object>> healths = new ArrayList<>();
         Map<HostPort, Map<String, ConnectionHealth>> connectionHealths = discoveredRoutes.getConnectionHealth(instanceId);
-        MinMaxDouble mmd = new MinMaxDouble();
 
         for (Map.Entry<HostPort, Map<String, ConnectionHealth>> hostPortHealth : connectionHealths.entrySet()) {
 
