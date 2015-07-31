@@ -356,7 +356,7 @@ upena.topology = {
 
                 /* the Raphael set is obligatory, containing all you want to display */
                 var pad = 12;
-                var hs = 36;
+                var hs = 28;
                 var text = r.text(n.point[0], n.point[1], n.label).attr({"font-size": node.fontSize + "px", opacity: 1.0, fill: "#000"});
                 var bb = text.getBBox(true);
                 var w = hs + (pad / 2) + bb.width + pad;

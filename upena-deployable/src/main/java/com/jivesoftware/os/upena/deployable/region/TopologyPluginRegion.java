@@ -117,7 +117,7 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
                 String serviceName = service != null ? service.name : instanceId;
                 Node from = nodes.get(serviceName);
                 if (from == null) {
-                    from = new Node(serviceName, id, "666", "16", 0);
+                    from = new Node(serviceName, id, "666", "12", 0);
                     id++;
                     nodes.put(serviceName, from);
 
@@ -136,7 +136,7 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
                         String toServiceName = connectionHealth.connectionDescriptor.getInstanceDescriptor().serviceName;
                         Node to = nodes.get(toServiceName);
                         if (to == null) {
-                            to = new Node(toServiceName, id, "060", "16", 0);
+                            to = new Node(toServiceName, id, "060", "12", 0);
                             id++;
                             nodes.put(toServiceName, to);
 
@@ -180,7 +180,7 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
                             String toServiceName = connectionHealth.connectionDescriptor.getInstanceDescriptor().serviceName;
                             to = nodes.get(toServiceName);
                             if (to == null) {
-                                to = new Node(toServiceName, id, "060", "16", 0);
+                                to = new Node(toServiceName, id, "060", "12", 0);
                                 nodes.put(toServiceName, to);
                                 id++;
                             }

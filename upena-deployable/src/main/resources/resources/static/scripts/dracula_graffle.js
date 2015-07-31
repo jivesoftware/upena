@@ -37,7 +37,7 @@ Raphael.fn.connection = function (obj1, obj2, style) {
             bb1.height += 8;
             bb2.height += 8;
 
-
+            
             /* coordinates for potential connection coordinates from/to the objects */
             var p = [
                 {x: bb1.x + bb1.width / 2, y: bb1.y - off1}, /* NORTH 1 */
@@ -99,42 +99,68 @@ Raphael.fn.connection = function (obj1, obj2, style) {
             }
 
             /* applying path(s) */
-            
-            edge.fg && edge.fg.attr({path: path})
-                    || (edge.fg = selfRef.path(path).attr({stroke: style && style.stroke || "#000", fill: "none"}).toBack());
-            edge.bg && edge.bg.attr({path: path})
-                    || style && style.fill && (edge.bg = style.fill.split && selfRef.path(path).attr({
+
+            if (edge.fg) {
+                edge.fg.attr({path: path});
+            } else {
+                edge.fg = selfRef.path(path).attr({
+                    stroke: style && style.stroke || "#000",
+                    fill: "none",
+                    "stroke-width": 4,
+                    "stroke-dasharray": [". "]
+                }).toBack();
+            }
+
+            if (edge.bg) {
+                edge.bg.attr({path: path});
+            } else {
+                if (style && style.fill && style.fill.split) {
+                    var path = selfRef.path(path).attr({
                         stroke: style.fill.split("|")[0],
                         fill: "none",
                         "arrow-end": "classic-wide-long",
-                        "stroke-width": 5}
-                    ).toBack());
-            
+                        "stroke-width": 4
+                    }).toBack();
+
+                    edge.bg = path;
+                }
+            }
+
+
             /* setting label */
             if (style && style.label) {
                 var x = (x1 + x4) / 2;
                 var y = (y1 + y4) / 2;
                 if (edge.label) {
-                    edge.label.attr({x: x, y: y});
+                    console.log(edge.label);
+                    var bb = edge.label[0].getBBox(true);
+                    var rh = bb.height + 8;
+                    var rw = bb.width + 8;
+                    
+                    edge.label[0].attr({x: x, y: y});
+                    edge.label[1].attr({x: x - (rw / 2), y: y - (rh / 2)});
                 } else {
 
                     var text = selfRef.text(x, y, style.label).attr({
+                        stroke: "none",
                         fill: "#000",
-                        "font-size": "16px"});
+                        "font-size": "10px"});
 
                     var bb = text.getBBox(true);
-                    bb.height += 8;
-                    bb.width += 8;
-                    var rect = selfRef.rect(x - (bb.width / 2), y - (bb.height / 2), bb.width, bb.height).attr({
+                    var rh = bb.height + 8;
+                    var rw = bb.width + 8;
+                    var rect = selfRef.rect(x - (rw / 2), y - (rh / 2), rw, rh).attr({
                         fill: "#fff",
                         r: "6px",
-                        opacity: 1.0,
+                        opacity: 1.0
                     });
+
+
+                    text.toFront();
 
                     var set = selfRef.set();
                     set.push(text);
                     set.push(rect);
-                    text.toFront();
                     edge.label = set;
                 }
             }
@@ -143,4 +169,3 @@ Raphael.fn.connection = function (obj1, obj2, style) {
     edge.draw();
     return edge;
 };
-//Raphael.prototype.set.prototype.dodo=function(){console.log("works");};

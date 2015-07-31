@@ -190,41 +190,45 @@ Graph.Renderer.Raphael.prototype = {
             var opoint = [oBBox.x + Math.round(oBBox.width / 2), oBBox.y + Math.round(oBBox.height / 2)];
             node.shape.translate(point[0] - opoint[0], point[1] - opoint[1]);
             this.r.safari();
-            return;
-        }/* else, draw new nodes */
-        var shape;
-        /* if a node renderer function is provided by the user, then use it */
-        if (node.render) {
-            shape = node.render(this.r, node);
-            /* or check for an ajax representation of the nodes */
-        } else if (node.shape) {
-            // TODO ajax representation
-            /* the default node drawing */
         } else {
-            var color = Raphael.getColor();
-            shape = this.r.set().
-                    push(this.r.ellipse(point[0], point[1], 30, 20).attr({fill: color, stroke: color, "stroke-width": 2})).
-                    push(this.r.text(point[0], point[1] + 30, node.label || node.id));
+            var shape;
+            /* if a node renderer function is provided by the user, then use it */
+            if (node.render) {
+                shape = node.render(this.r, node);
+                /* or check for an ajax representation of the nodes */
+            } else if (node.shape) {
+                // TODO ajax representation
+                /* the default node drawing */
+            } else {
+                var color = Raphael.getColor();
+                shape = this.r.set().
+                        push(this.r.ellipse(point[0], point[1], 30, 20).attr({fill: color, stroke: color, "stroke-width": 2})).
+                        push(this.r.text(point[0], point[1] + 30, node.label || node.id));
+            }
+            shape.attr({"fill-opacity": 1});
+            /* reference to the node an element belongs to, needed for dragging all elements of a node */
+            shape.items.forEach(function (item) {
+                item.set = shape;
+                item.node.style.cursor = "move";
+            });
+            shape.mousedown(this.dragger);
+            shape.mouseup(node.clicked);
+            node.shape = shape;
         }
-        shape.attr({"fill-opacity": 1});
-        /* reference to the node an element belongs to, needed for dragging all elements of a node */
-        shape.items.forEach(function (item) {
-            item.set = shape;
-            item.node.style.cursor = "move";
-        });
-        shape.mousedown(this.dragger);
-        shape.mouseup(node.clicked);
-        node.shape = shape;
     },
     drawEdge: function (edge) {
         /* if this edge already exists the other way around and is undirected */
-        if (edge.backedge)
+        if (edge.backedge) {
             return;
-        /* if edge already has been drawn, only refresh the edge */
-        edge.connection && edge.connection.draw();
-        if (!edge.connection) {
-            edge.style && edge.style.callback && edge.style.callback(edge);//TODO move this somewhere else
-            edge.connection = this.r.connection(edge.source.shape, edge.target.shape, edge.style);
+        } else {
+            /* if edge already has been drawn, only refresh the edge */
+            if (edge.connection) {
+                edge.connection.draw();
+            } else {
+                edge.style && edge.style.callback && edge.style.callback(edge);//TODO move this somewhere else
+                
+                edge.connection = this.r.connection(edge.source.shape, edge.target.shape, edge.style);
+            }
         }
     }
 };
