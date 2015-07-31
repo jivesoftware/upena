@@ -452,15 +452,15 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
             allRoutes.addAll(v.getRoutes());
         }
 
-        for (RingHost ringHost : new RingHost[]{
-            new RingHost("soa-prime-data5.phx1.jivehosted.com", 1175),
-            new RingHost("soa-prime-data6.phx1.jivehosted.com", 1175),
-            new RingHost("soa-prime-data7.phx1.jivehosted.com", 1175),
-            new RingHost("soa-prime-data8.phx1.jivehosted.com", 1175),
-            new RingHost("soa-prime-data9.phx1.jivehosted.com", 1175),
-            new RingHost("soa-prime-data10.phx1.jivehosted.com", 1175)
-        }) {
-//        for (final RingHost ringHost : amzaInstance.getRing("MASTER")) {
+//        for (RingHost ringHost : new RingHost[]{
+//            new RingHost("soa-prime-data5.phx1.jivehosted.com", 1175),
+//            new RingHost("soa-prime-data6.phx1.jivehosted.com", 1175),
+//            new RingHost("soa-prime-data7.phx1.jivehosted.com", 1175),
+//            new RingHost("soa-prime-data8.phx1.jivehosted.com", 1175),
+//            new RingHost("soa-prime-data9.phx1.jivehosted.com", 1175),
+//            new RingHost("soa-prime-data10.phx1.jivehosted.com", 1175)
+//        }) {
+        for (final RingHost ringHost : amzaInstance.getRing("MASTER")) {
             if (currentlyExecuting.putIfAbsent(ringHost, true) == null) {
                 executorService.submit(() -> {
                     long start = System.currentTimeMillis();
