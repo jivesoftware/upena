@@ -471,12 +471,26 @@ public class HealthPluginRegion implements PageRegion<Optional<HealthPluginRegio
         return "000000".substring(s.length()) + s;
     }
 
+    String trafficlightColorRGB(double value, float sat) {
+        //String s = Integer.toHexString(Color.HSBtoRGB(0.6f, 1f - ((float) value), sat) & 0xffffff);
+        Color color = new Color(Color.HSBtoRGB((float) value / 3f, sat, 1f));
+        return color.getRed()+","+color.getGreen()+","+color.getBlue();
+    }
+
     String getHEXIdColor(double value, float sat) {
         //String s = Integer.toHexString(Color.HSBtoRGB(0.6f, 1f - ((float) value), sat) & 0xffffff);
         float hue = (float) value / 3f;
         hue = (1f / 3f) + (hue * 2);
         String s = Integer.toHexString(Color.HSBtoRGB(hue, sat, 1f) & 0xffffff);
         return "000000".substring(s.length()) + s;
+    }
+
+    String idColorRGB(double value, float sat) {
+        //String s = Integer.toHexString(Color.HSBtoRGB(0.6f, 1f - ((float) value), sat) & 0xffffff);
+        float hue = (float) value / 3f;
+        hue = (1f / 3f) + (hue * 2);
+        Color color = new Color(Color.HSBtoRGB(hue, sat, 1f));
+        return color.getRed()+","+color.getGreen()+","+color.getBlue();
     }
 
     public String renderUIs(String instanceKey) throws Exception {

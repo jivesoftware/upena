@@ -111,7 +111,7 @@ Graph.Renderer.Raphael = function (element, graph, width, height) {
     this.height = height || 400;
     var selfRef = this;
     this.r = Raphael(element, this.width, this.height);
-    this.radius = 40; /* max dimension of a node */
+    this.radius = 120; /* max dimension of a node */
     this.graph = graph;
     this.mouse_in = false;
 
@@ -154,7 +154,7 @@ Graph.Renderer.Raphael = function (element, graph, width, height) {
         }
     };
     document.onmouseup = function () {
-        selfRef.isDrag && selfRef.isDrag.set.animate({"fill-opacity": .6}, 500);
+        selfRef.isDrag && selfRef.isDrag.set.animate({"fill-opacity": 1}, 500);
         selfRef.isDrag = false;
     };
 };
@@ -206,7 +206,7 @@ Graph.Renderer.Raphael.prototype = {
                     push(this.r.ellipse(point[0], point[1], 30, 20).attr({fill: color, stroke: color, "stroke-width": 2})).
                     push(this.r.text(point[0], point[1] + 30, node.label || node.id));
         }
-        shape.attr({"fill-opacity": .6});
+        shape.attr({"fill-opacity": 1});
         /* reference to the node an element belongs to, needed for dragging all elements of a node */
         shape.items.forEach(function (item) {
             item.set = shape;

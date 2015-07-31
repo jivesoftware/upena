@@ -25,14 +25,9 @@ import com.jivesoftware.os.upena.service.DiscoveredRoutes.Route;
 import com.jivesoftware.os.upena.service.DiscoveredRoutes.RouteHealths;
 import com.jivesoftware.os.upena.service.DiscoveredRoutes.Routes;
 import com.jivesoftware.os.upena.service.UpenaStore;
-import com.jivesoftware.os.upena.shared.Host;
-import com.jivesoftware.os.upena.shared.HostFilter;
-import com.jivesoftware.os.upena.shared.HostKey;
 import com.jivesoftware.os.upena.shared.Instance;
-import com.jivesoftware.os.upena.shared.InstanceFilter;
 import com.jivesoftware.os.upena.shared.InstanceKey;
 import com.jivesoftware.os.upena.shared.Service;
-import com.jivesoftware.os.upena.shared.TimestampedValue;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,7 +37,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.apache.commons.lang.exception.ExceptionUtils;
@@ -128,10 +122,6 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
                     id++;
                 }
 
-                if (from.focusHtml == null) {
-                    from.focusHtml = renderConnectionHealth(serviceName, route.getInstanceId());
-                }
-
                 double serviceHealth = serviceHealth(route.getInstanceId());
                 from.maxHealth = Math.max(from.maxHealth, serviceHealth);
                 from.minHealth = Math.min(from.minHealth, serviceHealth);
@@ -187,6 +177,19 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
                 }
             }
 
+            for (Route route : buildClusterRoutes()) {
+                Instance instance = upenaStore.instances.get(new InstanceKey(route.getInstanceId()));
+                Service service = null;
+                if (instance != null) {
+                    service = upenaStore.services.get(instance.serviceKey);
+                }
+                String serviceName = service != null ? service.name : route.getInstanceId();
+                Node from = nodes.get(serviceName);
+                if (from.focusHtml == null) {
+                    from.focusHtml = renderConnectionHealth(nodes, serviceName, route.getInstanceId());
+                }
+            }
+
             List<Map<String, String>> renderNodes = new ArrayList<>();
             for (Node n : nodes.values()) {
                 Map<String, String> node = new HashMap<>();
@@ -203,7 +206,7 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
                 node.put("label", n.label + "\n(" + n.count + ")");
                 node.put("count", String.valueOf(n.count));
                 node.put("focusHtml", n.focusHtml);
-                node.put("stroke", healthPluginRegion.getHEXIdColor(((float) n.id / (float) id), 1f));
+                node.put("color", healthPluginRegion.getHEXIdColor(((float) n.id / (float) id), 1f));
 
                 renderNodes.add(node);
             }
@@ -245,51 +248,69 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
         return serviceHealth;
     }
 
-    private String hostPortToServiceName(HostPort hostPort, String portName) throws Exception {
-        ConcurrentNavigableMap<HostKey, TimestampedValue<Host>> find = upenaStore.hosts.find(new HostFilter(null, hostPort.getHost(), null, null, null, 0, 1));
-        for (HostKey hostKey : find.keySet()) {
-            ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> instances = upenaStore.instances.find(
-                new InstanceFilter(null, hostKey, null, null, Integer.MIN_VALUE, 0, 1000));
-            for (TimestampedValue<Instance> value : instances.values()) {
-                if (!value.getTombstoned()) {
-                    Instance.Port mainPort = value.getValue().ports.get(portName);
-                    if (mainPort != null && mainPort.port == hostPort.getPort()) {
-                        return upenaStore.services.get(value.getValue().serviceKey).name;
-                    }
-                }
-            }
-        }
-        return hostPort.getHost() + ":" + hostPort.getPort();
-    }
-
-    private String renderConnectionHealth(String from, String instanceId) throws Exception {
+    private String renderConnectionHealth(Map<String, Node> nodes, String from, String instanceId) throws Exception {
         List<Map<String, Object>> healths = new ArrayList<>();
         Map<HostPort, Map<String, ConnectionHealth>> connectionHealths = discoveredRoutes.getConnectionHealth(instanceId);
+        MinMaxDouble mmd = new MinMaxDouble();
+
         for (Map.Entry<HostPort, Map<String, ConnectionHealth>> hostPortHealth : connectionHealths.entrySet()) {
 
             for (Map.Entry<String, ConnectionHealth> familyHealth : hostPortHealth.getValue().entrySet()) {
 
+                mmd.value(familyHealth.getValue().latencyStats.latencyMin);
+                mmd.value(familyHealth.getValue().latencyStats.latencyMean);
+                mmd.value(familyHealth.getValue().latencyStats.latencyMax);
+
+                mmd.value(familyHealth.getValue().latencyStats.latency50th);
+                mmd.value(familyHealth.getValue().latencyStats.latency75th);
+                mmd.value(familyHealth.getValue().latencyStats.latency90th);
+                mmd.value(familyHealth.getValue().latencyStats.latency95th);
+                mmd.value(familyHealth.getValue().latencyStats.latency99th);
+                mmd.value(familyHealth.getValue().latencyStats.latency999th);
+            }
+        }
+
+        for (Map.Entry<HostPort, Map<String, ConnectionHealth>> hostPortHealth : connectionHealths.entrySet()) {
+
+            for (Map.Entry<String, ConnectionHealth> familyHealth : hostPortHealth.getValue().entrySet()) {
+
+                ConnectionHealth value = familyHealth.getValue();
+
                 Map<String, Object> health = new HashMap<>();
                 health.put("from", from);
-                health.put("to", familyHealth.getValue().connectionDescriptor.getInstanceDescriptor().serviceName);
+                Node fromNode = nodes.get(from);
+                health.put("fromColor", healthPluginRegion.idColorRGB(((float) fromNode.id / (float) nodes.size()), 1f));
+
+                health.put("to", value.connectionDescriptor.getInstanceDescriptor().serviceName);
+                Node toNode = nodes.get(value.connectionDescriptor.getInstanceDescriptor().serviceName);
+                health.put("toColor", healthPluginRegion.idColorRGB(((float) toNode.id / (float) nodes.size()), 1f));
 
                 health.put("family", familyHealth.getKey());
 
-                health.put("success", numberFormat.format(familyHealth.getValue().success));
-                health.put("successPerSecond", numberFormat.format(familyHealth.getValue().successPerSecond));
+                health.put("success", numberFormat.format(value.success));
+                health.put("successPerSecond", numberFormat.format(value.successPerSecond));
 
-                health.put("inflight", numberFormat.format(familyHealth.getValue().attempt - familyHealth.getValue().success));
+                health.put("inflight", numberFormat.format(value.attempt - value.success));
 
-                health.put("min", numberFormat.format(familyHealth.getValue().latencyStats.latencyMin));
-                health.put("mean", numberFormat.format(familyHealth.getValue().latencyStats.latencyMean));
-                health.put("max", numberFormat.format(familyHealth.getValue().latencyStats.latencyMax));
+                health.put("min", numberFormat.format(value.latencyStats.latencyMin));
+                health.put("minColor", healthPluginRegion.trafficlightColorRGB(1d - mmd.zeroToOne(value.latencyStats.latencyMin), 1f));
+                health.put("mean", numberFormat.format(value.latencyStats.latencyMean));
+                health.put("meanColor", healthPluginRegion.trafficlightColorRGB(1d - mmd.zeroToOne(value.latencyStats.latencyMean), 1f));
+                health.put("max", numberFormat.format(value.latencyStats.latencyMax));
+                health.put("maxColor", healthPluginRegion.trafficlightColorRGB(1d - mmd.zeroToOne(value.latencyStats.latencyMax), 1f));
 
-                health.put("latency50th", numberFormat.format(familyHealth.getValue().latencyStats.latency50th));
-                health.put("latency75th", numberFormat.format(familyHealth.getValue().latencyStats.latency75th));
-                health.put("latency90th", numberFormat.format(familyHealth.getValue().latencyStats.latency90th));
-                health.put("latency95th", numberFormat.format(familyHealth.getValue().latencyStats.latency95th));
-                health.put("latency99th", numberFormat.format(familyHealth.getValue().latencyStats.latency99th));
-                health.put("latency999th", numberFormat.format(familyHealth.getValue().latencyStats.latency999th));
+                health.put("latency50th", numberFormat.format(value.latencyStats.latency50th));
+                health.put("latency50thColor", healthPluginRegion.trafficlightColorRGB(1d - mmd.zeroToOne(value.latencyStats.latency50th), 1f));
+                health.put("latency75th", numberFormat.format(value.latencyStats.latency75th));
+                health.put("latency75thColor", healthPluginRegion.trafficlightColorRGB(1d - mmd.zeroToOne(value.latencyStats.latency75th), 1f));
+                health.put("latency90th", numberFormat.format(value.latencyStats.latency90th));
+                health.put("latency90thColor", healthPluginRegion.trafficlightColorRGB(1d - mmd.zeroToOne(value.latencyStats.latency90th), 1f));
+                health.put("latency95th", numberFormat.format(value.latencyStats.latency95th));
+                health.put("latency95thColor", healthPluginRegion.trafficlightColorRGB(1d - mmd.zeroToOne(value.latencyStats.latency95th), 1f));
+                health.put("latency99th", numberFormat.format(value.latencyStats.latency99th));
+                health.put("latency99thColor", healthPluginRegion.trafficlightColorRGB(1d - mmd.zeroToOne(value.latencyStats.latency99th), 1f));
+                health.put("latency999th", numberFormat.format(value.latencyStats.latency999th));
+                health.put("latency999thColor", healthPluginRegion.trafficlightColorRGB(1d - mmd.zeroToOne(value.latencyStats.latency999th), 1f));
 
                 health.put("host", hostPortHealth.getKey().getHost());
                 health.put("port", hostPortHealth.getKey().getPort());

@@ -30,21 +30,21 @@
         <tbody>
             {foreach $h in $healths}
                 <tr class="grid-host">    
-                    <td>{$h.from}</td>
-                    <td>{$h.to}</td>
+                    <td style="background-color:rgba({$h.fromColor},  0.4)">{$h.from}</td>
+                    <td style="background-color:rgba({$h.toColor},  0.4)">{$h.to}</td>
                     <td>{$h.family}</td>
                     <td>{$h.success}</td>
                     <td>{$h.successPerSecond}</td>
                     <td>{$h.inflight}</td>
-                    <td>{$h.min}</td>
-                    <td>{$h.mean}</td>
-                    <td>{$h.max}</td>
-                    <td>{$h.latency50th}</td>
-                    <td>{$h.latency75th}</td>
-                    <td>{$h.latency90th}</td>
-                    <td>{$h.latency95th}</td>   
-                    <td>{$h.latency99th}</td>
-                    <td>{$h.latency999th}</td>
+                    <td style="background:rgb({$h.minColor});">{$h.min}</td>
+                    <td style="background:rgb({$h.meanColor})">{$h.mean}</td>
+                    <td style="background:rgb({$h.maxColor})">{$h.max}</td>
+                    <td style="background:rgb({$h.latency50thColor})">{$h.latency50th}</td>
+                    <td style="background:rgb({$h.latency75thColor})">{$h.latency75th}</td>
+                    <td style="background:rgb({$h.latency90thColor})">{$h.latency90th}</td>
+                    <td style="background:rgb({$h.latency95thColor})">{$h.latency95th}</td>   
+                    <td style="background:rgb({$h.latency99thColor})">{$h.latency99th}</td>
+                    <td style="background:rgb({$h.latency999thColor})">{$h.latency999th}</td>
                     <td>{$h.host}</td>
                     <td>{$h.port}</td>
                 </tr>

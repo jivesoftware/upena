@@ -105,7 +105,8 @@ Raphael.fn.connection = function (obj1, obj2, style) {
                     || style && style.fill && (edge.bg = style.fill.split && selfRef.path(path).attr({
                         stroke: style.fill.split("|")[0],
                         fill: "none",
-                        "stroke-width": style.fill.split("|")[1] || 3}
+                        "arrow-end": "classic-wide-long",
+                        "stroke-width": 2}
                     ).toBack());
             /* setting label */
             if (style && style.label) {
@@ -130,7 +131,8 @@ Raphael.fn.connection = function (obj1, obj2, style) {
                     });
 
                     var set = selfRef.set();
-                    set.push(text).push(rect);
+                    set.push(text);
+                    set.push(rect);
                     text.toFront();
                     edge.label = set;
                 }

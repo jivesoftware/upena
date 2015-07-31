@@ -343,16 +343,16 @@ upena.topology = {
                 /* the Raphael set is obligatory, containing all you want to display */
                 var pad = 12;
                 var hs = 36;
-                var text = r.text(n.point[0], n.point[1], n.label).attr({"font-size": node.fontSize + "px", opacity: 1.0, fill: "#fff"});
+                var text = r.text(n.point[0], n.point[1], n.label).attr({"font-size": node.fontSize + "px", opacity: 1.0, fill: "#000"});
                 var bb = text.getBBox(true);
-                var w = hs + bb.width + pad;
+                var w = hs + (pad / 2) + bb.width + pad;
                 var h = bb.height + pad;
                 var rect = r.rect(n.point[0] - (w / 2) - (hs / 2), n.point[1] - (h / 2), w, h).attr({
-                    stroke: "#111",
-                    fill: "#000",
+                    stroke: "#000",
+                    fill: "#" + node.color,
                     r: "6px",
-                    "stroke-width": "3px",
-                    opacity: 1.0,
+                    "stroke-width": "2px",
+                    opacity: 0.4,
                 });
                 var health = r.rect(n.point[0] - (w / 2) - (hs / 2) + (pad / 2), n.point[1] - (h / 2) + (pad / 2), hs, hs).attr({
                     stroke: "#222",
@@ -361,39 +361,11 @@ upena.topology = {
                     "stroke-width": "1px",
                     opacity: 1.0,
                 });
-                var rAchor = r.circle(n.point[0] - (w / 2) - (hs / 2), n.point[1], 4, 4).attr({
-                    stroke: "#" + node.stroke,
-                    fill: "#" + node.stroke,
-                    "stroke-width": "1px",
-                    opacity: 1.0,
-                });
-                var lAchor = r.circle(n.point[0] + (bb.width / 2) + (pad / 2), n.point[1], 4, 4).attr({
-                    stroke: "#" + node.stroke,
-                    fill: "#" + node.stroke,
-                    "stroke-width": "1px",
-                    opacity: 1.0,
-                });
 
-                var tAchor = r.circle(n.point[0] - (hs / 2), n.point[1] - (h / 2), 4, 4).attr({
-                    stroke: "#" + node.stroke,
-                    fill: "#" + node.stroke,
-                    "stroke-width": "1px",
-                    opacity: 1.0,
-                });
-                var bAchor = r.circle(n.point[0] - (hs / 2), n.point[1] + (h / 2), 4, 4).attr({
-                    stroke: "#" + node.stroke,
-                    fill: "#" + node.stroke,
-                    "stroke-width": "1px",
-                    opacity: 1.0,
-                });
                 var set = r.set();
                 set.push(rect);
                 set.push(health);
                 set.push(text);
-                set.push(lAchor);
-                set.push(rAchor);
-                set.push(tAchor);
-                set.push(bAchor);
                 text.toFront();
                 return set;
             };
@@ -404,12 +376,12 @@ upena.topology = {
             g.addNode(node.id, {label: node.label, render: render, clicked: clicked});
         });
         $(edges).each(function (key, edge) {
+
             g.addEdge(edge.from, edge.to, {
                 label: edge.label,
                 directed: true,
                 stroke: "#" + edge.color,
-                fill: "#" + edge.color,
-                "arrow-end": "diamond-wide-long"
+                fill: "#" + edge.color
             });
         });
         /* layout the graph using the Spring layout implementation */
