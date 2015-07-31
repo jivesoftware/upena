@@ -1,7 +1,5 @@
 window.$ = window.jQuery;
-
 window.upena = {};
-
 upena.hs = {
     installed: null,
     queuedUninstall: null,
@@ -31,10 +29,8 @@ upena.hs = {
     install: function ($inputKey, $inputName, callback) {
         upena.hs.cancelUninstall();
         upena.hs.uninstall();
-
         var $selector = upena.hs.makeSelector();
         $('body').append($selector);
-
         upena.hs.installed = {
             selector: $selector,
             inputKey: $inputKey,
@@ -42,9 +38,7 @@ upena.hs = {
             callback: callback,
             ready: false
         };
-
         $inputName.removeClass('upena-hs-field-broken');
-
         var offset = $inputName.offset();
         var height = $inputName.height();
         $selector.show();
@@ -62,7 +56,6 @@ upena.hs = {
         var $inputKey = upena.hs.installed.inputKey;
         var name = $inputName.val();
         var found = false;
-
         var $selector = upena.hs.installed.selector;
         $selector.find('a').each(function (i) {
             var $a = $(this);
@@ -73,7 +66,6 @@ upena.hs = {
                 return false;
             }
         });
-
         if (!found) {
             $inputName.addClass('upena-hs-field-broken');
             upena.hs.installed.inputKey.val('');
@@ -141,17 +133,14 @@ upena.hs = {
         });
     }
 };
-
 upena.instances = {
     init: function () {
     }
 };
-
 upena.clusterReleaseGroups = {
     add: function (clusterId) {
         var serviceId = $('#serviceId-' + clusterId).val();
         var releaseGroupId = $('#releaseId-' + clusterId).val();
-
         $.ajax("/ui/clusters/add", {
             data: JSON.stringify({'clusterId': clusterId, 'serviceId': serviceId, 'releaseGroupId': releaseGroupId}),
             method: "post",
@@ -178,16 +167,13 @@ upena.clusterReleaseGroups = {
         });
     }
 };
-
 upena.instancePorts = {
     addPort: function (instanceId) {
         var portName = $('#portName-' + instanceId).val();
         var port = $('#port-' + instanceId).val();
         var propertyName = null;
         var propertyValue = null;
-
         console.log(portName + " " + port + " " + instanceId);
-
         $.ajax("/ui/instances/ports/add", {
             data: JSON.stringify({'instanceId': instanceId, 'portName': portName, 'port': port, 'propertyName': propertyName, 'propertyValue': propertyValue}),
             method: "post",
@@ -204,7 +190,6 @@ upena.instancePorts = {
         var port = -1;
         var propertyName = null;
         var propertyValue = null;
-
         $.ajax("/ui/instances/ports/remove", {
             data: JSON.stringify({'instanceId': instanceId, 'portName': portName, 'port': port, 'propertyName': propertyName, 'propertyValue': propertyValue}),
             method: "post",
@@ -221,7 +206,6 @@ upena.instancePorts = {
         var port = -1;
         var propertyName = $('#portPropertyName-' + instanceId + '-' + portName).val();
         var propertyValue = $('#portPropertyValue-' + instanceId + '-' + portName).val();
-
         $.ajax("/ui/instances/ports/add", {
             data: JSON.stringify({'instanceId': instanceId, 'portName': portName, 'port': port, 'propertyName': propertyName, 'propertyValue': propertyValue}),
             method: "post",
@@ -237,7 +221,6 @@ upena.instancePorts = {
     removePortProperty: function (instanceId, portName, propertyName) {
         var port = -1;
         var propertyValue = null;
-
         $.ajax("/ui/instances/ports/remove", {
             data: JSON.stringify({'instanceId': instanceId, 'portName': portName, 'port': port, 'propertyName': propertyName, 'propertyValue': propertyValue}),
             method: "post",
@@ -251,8 +234,6 @@ upena.instancePorts = {
         });
     }
 };
-
-
 upena.cfg = {
     pending: {},
     save: function () {
@@ -280,12 +261,10 @@ upena.cfg = {
     },
     init: function () {
         $('#pending-save').click(upena.cfg.save);
-
         $('button.upena-cfg-link').each(function (i) {
             var $button = $(this);
             var link = $button.data('upenaCfgLink');
             var prop = $button.data('upenaCfgProp');
-
             $button.click(function () {
                 var value = $('input[type=text][data-upena-cfg-link="' + link + '"]').val();
                 $('input[type=text][data-upena-cfg-prop="' + prop + '"].upena-cfg-field-a').each(function () {
@@ -294,12 +273,10 @@ upena.cfg = {
                 });
             });
         });
-
         $('button.upena-cfg-copy').each(function (i) {
             var $button = $(this);
             var copy = $button.data('upenaCfgCopy');
             var prop = $button.data('upenaCfgProp');
-
             $button.click(function () {
                 var value = $('input[type=text][data-upena-cfg-copy="' + copy + '"]').val();
                 $('input[type=text][data-upena-cfg-prop="' + prop + '"].upena-cfg-field-a').each(function () {
@@ -308,7 +285,6 @@ upena.cfg = {
                 });
             });
         });
-
         $('input[type=text].upena-cfg-field-a').on('input', function () {
             upena.cfg.checkInput($(this));
         });
@@ -346,7 +322,6 @@ upena.cfg = {
         }
     }
 };
-
 upena.topology = {
     layouter: null,
     renderer: null,
@@ -359,27 +334,66 @@ upena.topology = {
         upena.topology.width = $(document).width() - 100;
         var nodes = $('#upena-topology').data('nodes');
         var edges = $('#upena-topology').data('edges');
-
-
         /* http://www.graphdracula.net/ */
         var g = new Graph();
-
         $(nodes).each(function (key, node) {
             var render = function (r, n) {
 
 
                 /* the Raphael set is obligatory, containing all you want to display */
-                var text = r.text(n.point[0], n.point[1], n.label).attr({"font-size": node.fontSize + "px", opacity: 1.0, fill: "#000"});
+                var pad = 12;
+                var hs = 36;
+                var text = r.text(n.point[0], n.point[1], n.label).attr({"font-size": node.fontSize + "px", opacity: 1.0, fill: "#fff"});
                 var bb = text.getBBox(true);
-                var w = bb.width + 12;
-                var h = bb.height + 12;
-                var rect = r.rect(n.point[0] - (w / 2), n.point[1] - (h / 2), w, h).attr({
-                    fill: "270-#" + node.maxbgcolor + "-#" + node.minbgcolor,
+                var w = hs + bb.width + pad;
+                var h = bb.height + pad;
+                var rect = r.rect(n.point[0] - (w / 2) - (hs / 2), n.point[1] - (h / 2), w, h).attr({
+                    stroke: "#111",
+                    fill: "#000",
                     r: "6px",
-                    "stroke-width": n.distance == 0 ? "3px" : "1px"
+                    "stroke-width": "3px",
+                    opacity: 1.0,
+                });
+                var health = r.rect(n.point[0] - (w / 2) - (hs / 2) + (pad / 2), n.point[1] - (h / 2) + (pad / 2), hs, hs).attr({
+                    stroke: "#222",
+                    fill: "270-#" + node.maxbgcolor + "-#" + node.minbgcolor,
+                    r: "4px",
+                    "stroke-width": "1px",
+                    opacity: 1.0,
+                });
+                var rAchor = r.circle(n.point[0] - (w / 2) - (hs / 2), n.point[1], 4, 4).attr({
+                    stroke: "#" + node.stroke,
+                    fill: "#" + node.stroke,
+                    "stroke-width": "1px",
+                    opacity: 1.0,
+                });
+                var lAchor = r.circle(n.point[0] + (bb.width / 2) + (pad / 2), n.point[1], 4, 4).attr({
+                    stroke: "#" + node.stroke,
+                    fill: "#" + node.stroke,
+                    "stroke-width": "1px",
+                    opacity: 1.0,
                 });
 
-                var set = r.set().push(rect).push(text);
+                var tAchor = r.circle(n.point[0] - (hs / 2), n.point[1] - (h / 2), 4, 4).attr({
+                    stroke: "#" + node.stroke,
+                    fill: "#" + node.stroke,
+                    "stroke-width": "1px",
+                    opacity: 1.0,
+                });
+                var bAchor = r.circle(n.point[0] - (hs / 2), n.point[1] + (h / 2), 4, 4).attr({
+                    stroke: "#" + node.stroke,
+                    fill: "#" + node.stroke,
+                    "stroke-width": "1px",
+                    opacity: 1.0,
+                });
+                var set = r.set();
+                set.push(rect);
+                set.push(health);
+                set.push(text);
+                set.push(lAchor);
+                set.push(rAchor);
+                set.push(tAchor);
+                set.push(bAchor);
                 text.toFront();
                 return set;
             };
@@ -389,21 +403,21 @@ upena.topology = {
             }
             g.addNode(node.id, {label: node.label, render: render, clicked: clicked});
         });
-
-
         $(edges).each(function (key, edge) {
-            g.addEdge(edge.from, edge.to, {label: edge.label, directed: true, stroke: "#" + edge.color, fill: "#" + edge.color});
+            g.addEdge(edge.from, edge.to, {
+                label: edge.label,
+                directed: true,
+                stroke: "#" + edge.color,
+                fill: "#" + edge.color,
+                "arrow-end": "diamond-wide-long"
+            });
         });
-
-
         /* layout the graph using the Spring layout implementation */
         upena.topology.layouter = new Graph.Layout.Spring(g);
         upena.topology.layouter.layout();
-
         /* draw the graph using the RaphaelJS draw implementation */
         upena.topology.renderer = new Graph.Renderer.Raphael('upena-topology', g, upena.topology.width, upena.topology.height);
         upena.topology.renderer.draw();
-
     },
     redraw : function () {
         dracula_graph_seed = 1;
@@ -449,7 +463,6 @@ $(document).ready(function () {
             }
         });
     });
-
     $(function () {
         var hack = {};
         $('[rel="popover-health"]').popover({
@@ -488,5 +501,4 @@ $(document).ready(function () {
             }
         });
     });
-
 });

@@ -126,8 +126,6 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
                     from = new Node(serviceName, id, "666", "16", 0);
                     nodes.put(serviceName, from);
                     id++;
-                    System.out.println("from:" + from);
-
                 }
 
                 if (from.focusHtml == null) {
@@ -147,8 +145,6 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
                         to = new Node(route.getConnectToServiceNamed(), id, "060", "16", 0);
                         nodes.put(route.getConnectToServiceNamed(), to);
                         id++;
-                        System.out.println("to:" + to);
-
                     }
 
                     for (ConnectionDescriptor connection : route.getConnections()) {
@@ -157,14 +153,12 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
                         to.minHealth = Math.min(to.minHealth, serviceHealth);
                     }
 
-
                 } else {
                     to = nodes.get("Errors");
                     if (to == null) {
                         to = new Node("Errors", id, "900", "20", 0);
                         nodes.put("Errors", to);
                         id++;
-                        System.out.println("to:" + to);
                     }
                     to.count++;
                 }
@@ -187,7 +181,7 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
                 }
 
                 if (successes > 0) {
-                    edge.label = "(" + successes + "/sec)";
+                    edge.label = successes + "/sec";
                 } else {
                     edge.label = "";
                 }
@@ -209,6 +203,7 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
                 node.put("label", n.label + "\n(" + n.count + ")");
                 node.put("count", String.valueOf(n.count));
                 node.put("focusHtml", n.focusHtml);
+                node.put("stroke", healthPluginRegion.getHEXIdColor(((float) n.id / (float) id), 1f));
 
                 renderNodes.add(node);
             }
@@ -221,7 +216,7 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
                 edge.put("from", "id" + e.from);
                 edge.put("label", e.label);
                 edge.put("to", "id" + e.to);
-                edge.put("color", healthPluginRegion.getHEXIdColor((float) e.from / (float) id, 1f));
+                edge.put("color", healthPluginRegion.getHEXIdColor(((float) e.from / (float) id), 1f));
                 renderEdges.add(edge);
             }
 
@@ -356,7 +351,7 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
         int to;
         String edgeColor = "000";
 
-        public Edge(int id, int to, String label) {
+        public Edge(int from, int to, String label) {
             this.from = from;
             this.to = to;
             this.label = label;
