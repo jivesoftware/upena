@@ -8,16 +8,18 @@ upena.hs = {
             var $inputName = $(input);
             var $inputKey = $(input).next('input[type=hidden]');
             var endpoint = $inputName.data('upenaLookup');
+            var ab = $inputName.data('upenaRemote');
+
             $inputName.focus(function () {
                 upena.hs.install($inputKey, $inputName, function (key, name) {
                     $inputKey.val(key);
                     $inputName.val(name);
                 });
-                upena.hs.lookup(endpoint, $inputName.val());
+                upena.hs.lookup(endpoint, ab, $inputName.val());
             });
             $inputName.on('input', function () {
                 $inputKey.val('');
-                upena.hs.lookup(endpoint, $inputName.val());
+                upena.hs.lookup(endpoint, ab, $inputName.val());
             });
             $inputName.blur(function () {
                 upena.hs.queuedUninstall = setTimeout(function () {
@@ -97,32 +99,42 @@ upena.hs = {
             upena.hs.uninstall();
         }
     },
-    lookup: function (endpoint, contains) {
+    lookup: function (endpoint, ab, contains) {
+        
+        
+        
+        var host = "#" + ab + "RemoteHostPicker";
+        var port = "#" + ab + "RemotePortPicker";
+        
+        console.log(host+" "+port);
+        
+        console.log($(host).attr('value')+" "+$(port).attr('value'));
+        
         var $selector = upena.hs.installed.selector;
         $.ajax(endpoint, {data: {'contains': contains,
-                'remoteHost': $('#remoteHostPicker').attr('value'),
-                'remotePort': $('#remotePortPicker').attr('value')
+                'remoteHost': $(host).attr('value'),
+                'remotePort': $(port).attr('value')
             }})
-            .done(function (data) {
-                if (!upena.hs.installed || upena.hs.installed.selector != $selector) {
-                    // selector changed during the query
-                    return;
-                }
-                if (data.length) {
-                    $selector.empty();
-                    for (var i = 0; i < data.length; i++) {
-                        $selector.append(
-                            "<a href='#'" +
-                            " class='upena-hs-choice'" +
-                            " data-upena-key='" + data[i].key + "'" +
-                            " data-upena-name='" + data[i].name + "'>" + data[i].name + "</a><br/>");
+                .done(function (data) {
+                    if (!upena.hs.installed || upena.hs.installed.selector != $selector) {
+                        // selector changed during the query
+                        return;
                     }
-                    upena.hs.link($selector);
-                    upena.hs.installed.ready = true;
-                } else {
-                    $selector.html("<em>No matches</em>");
-                }
-            });
+                    if (data.length) {
+                        $selector.empty();
+                        for (var i = 0; i < data.length; i++) {
+                            $selector.append(
+                                    "<a href='#'" +
+                                    " class='upena-hs-choice'" +
+                                    " data-upena-key='" + data[i].key + "'" +
+                                    " data-upena-name='" + data[i].name + "'>" + data[i].name + "</a><br/>");
+                        }
+                        upena.hs.link($selector);
+                        upena.hs.installed.ready = true;
+                    } else {
+                        $selector.html("<em>No matches</em>");
+                    }
+                });
     },
     link: function ($selector) {
         $selector.find('a').each(function (i) {
@@ -327,7 +339,6 @@ upena.cfg = {
 };
 
 upena.query = {
-
     advanced: function (ele) {
         var $e = $(ele);
         if ($e.prop('checked')) {
@@ -344,7 +355,6 @@ upena.topology = {
     renderer: null,
     height: null,
     width: null,
-
     init: function () {
 
         upena.topology.height = "600";
@@ -383,7 +393,7 @@ upena.topology = {
                 set.push(rect);
                 set.push(health);
                 set.push(text);
-                
+
                 //set.items.forEach(function(el) {el.tooltip(r.set().push(r.rect(-70,-100, 30, 30).attr({"fill": "#999", "stroke-width": 1, r : "4px"})))});
 
                 text.toFront();
@@ -410,7 +420,6 @@ upena.topology = {
         upena.topology.renderer = new Graph.Renderer.Raphael('upena-topology', g, upena.topology.width, upena.topology.height);
         upena.topology.renderer.draw();
     },
-
     redraw: function () {
         dracula_graph_seed = 1;
         upena.topology.layouter.layout();

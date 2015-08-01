@@ -3,9 +3,11 @@
 /**
  * @param? message
  * @param? aFilters
+ * @param? aRemoteConfigHost
+ * @param? aRemoteConfigPort
  * @param? bFilters
- * @param? remoteConfigHost
- * @param? remoteConfigPort
+ * @param? bRemoteConfigHost
+ * @param? bRemoteConfigPort
  * @param? overridden
  * @param? service
  * @param? health
@@ -53,109 +55,101 @@
                             <span>health</span>
                         </td>
                     </tr>
-                    <tr>
-                        <td colspan="6">
-                            - in -
-                        </td>
-                    </tr>
                 </table>
                 <table class="table table-condensed">
                     <thead>
                         <tr>
-                            <th></th>
-                            <th>Cluster</th>
-                            <th>Host</th>
-                            <th>Service</th>
-                            <th>Instance</th>
-                            <th>Version</th>
+                            <th>A</th>
+                            <th>- vs -</th>
+                            <th>B</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr style="background-color:#D2E9FF;">
-                            <td>
-                                Filter A:
-                            </td>
-                            <td>
-                                <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                        <tr>
+                            <td bgcolor="#8299AF">
+                                <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
                                     placeholder="Cluster" value="{$aFilters.cluster?:''}" name="aCluster" class="form-control upena-hs-field"
-                                    data-upena-lookup="/ui/lookup/clusters">
+                                    data-upena-lookup="/ui/lookup/clusters" data-upena-remote="a">
                                 <input type="hidden" name="aClusterKey" value="{$aFilters.clusterKey}" />
                             </td>
-                            <td>
-                                <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                    placeholder="Host" value="{$aFilters.host?:''}" name="aHost" class="form-control upena-hs-field"
-                                    data-upena-lookup="/ui/lookup/hosts">
-                                <input type="hidden" name="aHostKey" value="{$aFilters.hostKey}" />
-                            </td>
-                            <td>
-                                <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                    placeholder="Service" value="{$aFilters.service?:''}" name="aService" class="form-control upena-hs-field"
-                                    data-upena-lookup="/ui/lookup/services">
-                                <input type="hidden" name="aServiceKey" value="{$aFilters.serviceKey}" />
-                            </td>
-                            <td>
-                                <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                    placeholder="Instance" value="{$aFilters.instance?:''}" name="aInstance" class="form-control">
-                            </td>
-                            <td>
-                                <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                    placeholder="Release" value="{$aFilters.release?:''}" name="aRelease" class="form-control upena-hs-field"
-                                    data-upena-lookup="/ui/lookup/releases">
-                                <input type="hidden" name="aReleaseKey" value="{$aFilters.releaseKey}" />
-                            </td>
-                        </tr>
-                        <tr class="query-advanced">
-                            <td colspan="6">
-                                - vs -
-                            </td>
-                        </tr>
-                        <tr class="query-advanced">
-                            <td>
-                                <input type="text" style="padding-left:10px;"
-                                placeholder="Host" value="{$remoteConfigHost?:''}" name="remoteConfigHost" id="remoteHostPicker" >
-                            </td>
-                            <td>
-                                <input type="text"  style="padding-left:10px;"
-                                placeholder="Port" value="{$remoteConfigPort?:''}" name="remoteConfigPort" id="remotePortPicker" >
-                            </td>
-                        </tr>
-                        <tr class="query-advanced" style="background-color:#E7E7EF;">
-                            <td>
-                                Filter B:
-                            </td>
-                            <td>
-                                <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                            <td>Cluster</td>
+                            <td bgcolor="#97979F">
+                                <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
                                     placeholder="Cluster" value="{$bFilters.cluster?:''}" name="bCluster" class="form-control upena-hs-field"
-                                    data-upena-lookup="/ui/lookup/clusters">
+                                    data-upena-lookup="/ui/lookup/clusters" data-upena-remote="b">
                                 <input type="hidden" name="bClusterKey" value="{$bFilters.clusterKey}" />
                             </td>
-                            <td>
-                                <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                        </tr>
+                        <tr>
+                            <td bgcolor="#92A9BF">
+                                <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                    placeholder="Host" value="{$aFilters.host?:''}" name="aHost" class="form-control upena-hs-field"
+                                    data-upena-lookup="/ui/lookup/hosts" data-upena-remote="a">
+                                <input type="hidden" name="aHostKey" value="{$aFilters.hostKey}" />
+                            </td>
+                            <td>Host</td>
+                            <td bgcolor="#A7A7AF">
+                                <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
                                     placeholder="Host" value="{$bFilters.host?:''}" name="bHost" class="form-control upena-hs-field"
-                                    data-upena-lookup="/ui/lookup/hosts">
+                                    data-upena-lookup="/ui/lookup/hosts" data-upena-remote="b">
                                 <input type="hidden" name="bHostKey" value="{$bFilters.hostKey}" />
                             </td>
-                            <td>
-                                <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                        </tr>
+                        <tr>
+                            <td bgcolor="#A2B9CF">
+                                <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                    placeholder="Service" value="{$aFilters.service?:''}" name="aService" class="form-control upena-hs-field"
+                                    data-upena-lookup="/ui/lookup/services" data-upena-remote="a">
+                                <input type="hidden" name="aServiceKey" value="{$aFilters.serviceKey}" />
+                            </td>
+                            <td>Service</td>
+                            <td bgcolor="#B7B7BF">
+                                <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
                                     placeholder="Service" value="{$bFilters.service?:''}" name="bService" class="form-control upena-hs-field"
-                                    data-upena-lookup="/ui/lookup/services">
+                                    data-upena-lookup="/ui/lookup/services" data-upena-remote="b">
                                 <input type="hidden" name="bServiceKey" value="{$bFilters.serviceKey}" />
                             </td>
-                            <td>
-                                <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                        </tr>
+                        <tr>
+                            <td bgcolor="#B2C9DF">
+                                <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                    placeholder="Instance" value="{$aFilters.instance?:''}" name="aInstance" class="form-control">
+                            </td>
+                            <td>Instance</td>
+                            <td bgcolor="#C7C7CF">
+                                <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
                                     placeholder="Instance" value="{$bFilters.instance?:''}" name="bInstance" class="form-control">
                             </td>
-                            <td>
-                                <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                        </tr>
+                        <tr>
+                            <td bgcolor="#C2D9EF">
+                                <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                    placeholder="Release" value="{$aFilters.release?:''}" name="aRelease" class="form-control upena-hs-field"
+                                    data-upena-lookup="/ui/lookup/releases" data-upena-remote="a">
+                                <input type="hidden" name="aReleaseKey" value="{$aFilters.releaseKey}" />
+                            </td>
+                            <td>Version</td>
+                            <td bgcolor="#D7D7DF">
+                                <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
                                     placeholder="Release" value="{$bFilters.release?:''}" name="bRelease" class="form-control upena-hs-field"
-                                    data-upena-lookup="/ui/lookup/releases">
+                                    data-upena-lookup="/ui/lookup/releases" data-upena-remote="b">
                                 <input type="hidden" name="bReleaseKey" value="{$bFilters.releaseKey}" />
                             </td>
                         </tr>
                         <tr>
-                            <div class="checkbox">
-                                <label><input type="checkbox" onchange="upena.query.advanced(this);">advanced &nbsp;</label>
-                            </div>
+                            <td>
+                                <input type="text" style="width:300px; padding-left:10px;"
+                                placeholder="Host" value="{$aRemoteConfigHost?:''}" name="aRemoteConfigHost" id="aRemoteHostPicker" >
+                                <input type="text"  style="padding-left:10px;"
+                                placeholder="Port" value="{$aRemoteConfigPort?:''}" name="aRemoteConfigPort" id="aRemotePortPicker" >
+                            </td>
+                            <td></td>
+                            <td>
+                                <input type="text" style="width:300px; padding-left:10px;"
+                                placeholder="Host" value="{$bRemoteConfigHost?:''}" name="bRemoteConfigHost" id="bRemoteHostPicker" >
+                                <input type="text"  style="padding-left:10px;"
+                                placeholder="Port" value="{$bRemoteConfigPort?:''}" name="bRemoteConfigPort" id="bRemotePortPicker" >
+                            </td>
                         </tr>
                         <tr>
                             <td colspan="4">

@@ -58,6 +58,8 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
         this.configStore = configStore;
     }
 
+
+    // TODO handle host and port
     public void modified(String user, Map<String, Map<String, String>> property_InstanceKey_Values) throws Exception {
 
         Set<String> instanceKeys = new HashSet<>();
@@ -236,11 +238,7 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
                     InstanceKey key = entrySet.getKey();
                     TimestampedValue<Instance> timestampedValue = entrySet.getValue();
                     Instance i = timestampedValue.getValue();
-                    Cluster cluster = upenaStore.clusters.get(i.clusterKey);
-                    Host host = upenaStore.hosts.get(i.hostKey);
-                    Service service = upenaStore.services.get(i.serviceKey);
-                    ReleaseGroup release = upenaStore.releaseGroups.get(i.releaseGroupKey);
-
+                    
                     if (input.service) {
                         Map<String, String> overriddenServiceMap = configStore.get(key.getKey(), "override", null);
                         append(exportImportCluster.config, key, overriddenServiceMap);
@@ -297,8 +295,11 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
         final boolean service;
         final boolean health;
 
-        final String remoteConfigHost;
-        final int remoteConfigPort;
+        final String aRemoteConfigHost;
+        final int aRemoteConfigPort;
+
+        final String bRemoteConfigHost;
+        final int bRemoteConfigPort;
 
         final String action;
 
@@ -309,8 +310,10 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
             String bInstance, String bReleaseKey, String bRelease,
             String property, String value,
             boolean overridden, boolean service, boolean health,
-            String remoteConfigHost,
-            int remoteConfigPort,
+            String aRemoteConfigHost,
+            int aRemoteConfigPort,
+            String bRemoteConfigHost,
+            int bRemoteConfigPort,
             String action) {
 
             this.aClusterKey = aClusterKey;
@@ -336,8 +339,10 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
             this.overridden = overridden;
             this.service = service;
             this.health = health;
-            this.remoteConfigHost = remoteConfigHost;
-            this.remoteConfigPort = remoteConfigPort;
+            this.aRemoteConfigHost = aRemoteConfigHost;
+            this.aRemoteConfigPort = aRemoteConfigPort;
+            this.bRemoteConfigHost = bRemoteConfigHost;
+            this.bRemoteConfigPort = bRemoteConfigPort;
             this.action = action;
         }
 
@@ -381,10 +386,14 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
                 data.put("service", input.service);
                 data.put("health", input.health);
 
-                data.put("remoteConfigHost", input.remoteConfigHost);
-                data.put("remoteConfigPort", String.valueOf(input.remoteConfigPort));
+                data.put("aRemoteConfigHost", input.aRemoteConfigHost);
+                data.put("aRemoteConfigPort", String.valueOf(input.aRemoteConfigPort));
+                data.put("bRemoteConfigHost", input.bRemoteConfigHost);
+                data.put("bRemoteConfigPort", String.valueOf(input.bRemoteConfigPort));
 
-                ConcurrentSkipListMap<String, List<Map<String, String>>> as = packProperties("", -1, input.aClusterKey,
+                ConcurrentSkipListMap<String, List<Map<String, String>>> as = packProperties(
+                    input.aRemoteConfigHost, input.aRemoteConfigPort,
+                    input.aClusterKey,
                     input.aHostKey, input.aServiceKey, input.aInstance, input.aReleaseKey, input.property, input.value,
                     input.overridden, input.service, input.health);
 
@@ -405,12 +414,13 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
                         modified(user, property_instanceKey_revert);
                     }
 
-                    as = packProperties("", -1, input.aClusterKey,
+                    as = packProperties(input.aRemoteConfigHost, input.aRemoteConfigPort, input.aClusterKey,
                         input.aHostKey, input.aServiceKey, input.aInstance, input.aReleaseKey, input.property, input.value,
                         input.overridden, input.service, input.health);
                 }
 
-                ConcurrentSkipListMap<String, List<Map<String, String>>> bs = packProperties(input.remoteConfigHost, input.remoteConfigPort,
+                ConcurrentSkipListMap<String, List<Map<String, String>>> bs = packProperties(
+                    input.bRemoteConfigHost, input.bRemoteConfigPort,
                     input.bClusterKey,
                     input.bHostKey, input.bServiceKey, input.bInstance, input.bReleaseKey, input.property, input.value,
                     input.overridden, input.service, input.health);
@@ -472,10 +482,25 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
         return renderer.render(template, data);
     }
 
+    public static class InstanceResults extends ConcurrentSkipListMap<InstanceKey, TimestampedValue<Instance>> {
+    }
+
     private ConcurrentSkipListMap<String, List<Map<String, String>>> packProperties(String remoteConfigHost,
-        int remoteConfigPort, String clusterKey,
-        String hostKey, String serviceKey, String instance, String releaseKey, String propertyContains,
-        String valueContains, boolean overridden, boolean service, boolean health) throws Exception {
+        int remoteConfigPort,
+        String clusterKey,
+        String hostKey,
+        String serviceKey,
+        String instance,
+        String releaseKey,
+        String propertyContains,
+        String valueContains,
+        boolean overridden,
+        boolean service,
+        boolean health) throws Exception {
+
+        System.out.println(
+            remoteConfigHost + " " + remoteConfigPort + " " + clusterKey + " " + hostKey + " " + serviceKey + " "
+            + instance + " " + releaseKey + " " + propertyContains + " " + valueContains + " " + overridden + " " + service + " " + health);
 
         ConcurrentSkipListMap<String, List<Map<String, String>>> properties = new ConcurrentSkipListMap<>();
         InstanceFilter filter = new InstanceFilter(
@@ -492,13 +517,18 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
             || filter.releaseGroupKey != null
             || filter.logicalInstanceId != null) {
 
-            
-            Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(filter);
+            Map<InstanceKey, TimestampedValue<Instance>> found;
+            if (remoteConfigPort > -1) {
+                HttpRequestHelper helper = HttpRequestHelperUtils.buildRequestHelper(remoteConfigHost, remoteConfigPort);
+                found = helper.executeRequest(filter, "/upena/instance/find", InstanceResults.class, new InstanceResults());
+            } else {
+                found = upenaStore.instances.find(filter);
+            }
+
             for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {
                 InstanceKey key = entrySet.getKey();
                 TimestampedValue<Instance> timestampedValue = entrySet.getValue();
                 Instance i = timestampedValue.getValue();
-
                 if (remoteConfigPort > -1) {
 
                     HttpRequestHelper requestHelper = HttpRequestHelperUtils.buildRequestHelper(remoteConfigHost, remoteConfigPort);
@@ -508,8 +538,7 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
                         DeployableConfig getOverride = new DeployableConfig("override", key.getKey(), new HashMap<>());
                         DeployableConfig gotOverride = requestHelper.executeRequest(getOverride, "/upenaConfig/get", DeployableConfig.class, null);
 
-                       
-                        filterProperties(key, i, properties,
+                        filterProperties(requestHelper, key, i, properties,
                             gotDefault != null ? gotDefault.properties : Collections.emptyMap(),
                             gotOverride != null ? gotOverride.properties : Collections.emptyMap(),
                             propertyContains, valueContains, overridden);
@@ -521,8 +550,7 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
                         DeployableConfig getOverride = new DeployableConfig("override-health", key.getKey(), new HashMap<>());
                         DeployableConfig gotOverride = requestHelper.executeRequest(getOverride, "/upenaConfig/get", DeployableConfig.class, null);
 
-                       
-                        filterProperties(key, i, properties,
+                        filterProperties(requestHelper, key, i, properties,
                             gotDefault != null ? gotDefault.properties : Collections.emptyMap(),
                             gotOverride != null ? gotOverride.properties : Collections.emptyMap(),
                             propertyContains, valueContains, overridden);
@@ -533,12 +561,14 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
                         Map<String, String> defaultServiceMaps = configStore.get(key.getKey(), "default", null);
                         Map<String, String> overriddenServiceMap = configStore.get(key.getKey(), "override", null);
 
-                        filterProperties(key, i, properties, defaultServiceMaps, overriddenServiceMap, propertyContains, valueContains, overridden);
+                        filterProperties(null, key, i, properties, defaultServiceMaps, overriddenServiceMap, propertyContains,
+                            valueContains, overridden);
                     }
                     if (health) {
                         Map<String, String> defaultHealthMaps = configStore.get(key.getKey(), "default-health", null);
                         Map<String, String> overriddenHealtheMap = configStore.get(key.getKey(), "override-health", null);
-                        filterProperties(key, i, properties, defaultHealthMaps, overriddenHealtheMap, propertyContains, valueContains, overridden);
+                        filterProperties(null, key, i, properties, defaultHealthMaps, overriddenHealtheMap, propertyContains,
+                            valueContains, overridden);
                     }
                 }
 
@@ -547,7 +577,8 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
         return properties;
     }
 
-    private void filterProperties(InstanceKey key,
+    private void filterProperties(HttpRequestHelper requestHelper,
+        InstanceKey key,
         Instance instance,
         ConcurrentSkipListMap<String, List<Map<String, String>>> properties,
         Map<String, String> defaultServiceMaps,
@@ -555,6 +586,10 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
         String propertyContains,
         String valueContains,
         boolean isOverridden) throws Exception {
+
+        Map<ClusterKey, String> clusterNameCache = new HashMap<>();
+        Map<HostKey, String> hostNameCache = new HashMap<>();
+        Map<ServiceKey, String> serviceNameCache = new HashMap<>();
 
         for (String property : defaultServiceMaps.keySet()) {
             if (!propertyContains.isEmpty() && !property.contains(propertyContains)) {
@@ -588,14 +623,43 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
             Map<String, String> occurence = new HashMap<>();
             occurence.put("instanceKey", key.getKey());
             occurence.put("clusterKey", instance.clusterKey.getKey());
-            occurence.put("cluster", upenaStore.clusters.get(instance.clusterKey).name);
             occurence.put("hostKey", instance.hostKey.getKey());
-            occurence.put("host", upenaStore.hosts.get(instance.hostKey).name);
             occurence.put("serviceKey", instance.serviceKey.getKey());
-            occurence.put("service", upenaStore.services.get(instance.serviceKey).name);
             occurence.put("instance", String.valueOf(instance.instanceId));
             occurence.put("override", overriddenServiceMap.get(property));
             occurence.put("default", defaultServiceMaps.get(property));
+
+            if (requestHelper != null) {
+
+                String clusterName = clusterNameCache.get(instance.clusterKey);
+                if (clusterName == null) {
+                    Cluster cluster = requestHelper.executeRequest(instance.clusterKey, "/upena/cluster/get", Cluster.class, null);
+                    clusterName = cluster.name;
+                    clusterNameCache.put(instance.clusterKey, clusterName);
+                }
+
+                String hostName = hostNameCache.get(instance.hostKey);
+                if (hostName == null) {
+                    Host host = requestHelper.executeRequest(instance.hostKey, "/upena/host/get", Host.class, null);
+                    hostName = host.name;
+                    hostNameCache.put(instance.hostKey, hostName);
+                }
+
+                String serviceName = serviceNameCache.get(instance.serviceKey);
+                if (serviceName == null) {
+                    Service service = requestHelper.executeRequest(instance.serviceKey, "/upena/service/get", Service.class, null);
+                    serviceName = service.name;
+                    serviceNameCache.put(instance.serviceKey, serviceName);
+                }
+
+                occurence.put("cluster", clusterName);
+                occurence.put("host", hostName);
+                occurence.put("service", serviceName);
+            } else {
+                occurence.put("cluster", upenaStore.clusters.get(instance.clusterKey).name);
+                occurence.put("host", upenaStore.hosts.get(instance.hostKey).name);
+                occurence.put("service", upenaStore.services.get(instance.serviceKey).name);
+            }
 
             occurences.add(occurence);
         }
