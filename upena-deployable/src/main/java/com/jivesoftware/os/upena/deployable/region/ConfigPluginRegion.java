@@ -492,6 +492,7 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
             || filter.releaseGroupKey != null
             || filter.logicalInstanceId != null) {
 
+            
             Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(filter);
             for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {
                 InstanceKey key = entrySet.getKey();
@@ -507,7 +508,11 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
                         DeployableConfig getOverride = new DeployableConfig("override", key.getKey(), new HashMap<>());
                         DeployableConfig gotOverride = requestHelper.executeRequest(getOverride, "/upenaConfig/get", DeployableConfig.class, null);
 
-                        filterProperties(key, i, properties, gotDefault.properties, gotOverride.properties, propertyContains, valueContains, overridden);
+                       
+                        filterProperties(key, i, properties,
+                            gotDefault != null ? gotDefault.properties : Collections.emptyMap(),
+                            gotOverride != null ? gotOverride.properties : Collections.emptyMap(),
+                            propertyContains, valueContains, overridden);
                     }
 
                     if (health) {
@@ -516,7 +521,11 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
                         DeployableConfig getOverride = new DeployableConfig("override-health", key.getKey(), new HashMap<>());
                         DeployableConfig gotOverride = requestHelper.executeRequest(getOverride, "/upenaConfig/get", DeployableConfig.class, null);
 
-                        filterProperties(key, i, properties, gotDefault.properties, gotOverride.properties, propertyContains, valueContains, overridden);
+                       
+                        filterProperties(key, i, properties,
+                            gotDefault != null ? gotDefault.properties : Collections.emptyMap(),
+                            gotOverride != null ? gotOverride.properties : Collections.emptyMap(),
+                            propertyContains, valueContains, overridden);
                     }
                 } else {
 

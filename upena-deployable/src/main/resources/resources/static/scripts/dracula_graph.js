@@ -226,7 +226,6 @@ Graph.Renderer.Raphael.prototype = {
                 edge.connection.draw();
             } else {
                 edge.style && edge.style.callback && edge.style.callback(edge);//TODO move this somewhere else
-                
                 edge.connection = this.r.connection(edge.source.shape, edge.target.shape, edge.style);
             }
         }
@@ -408,8 +407,7 @@ Raphael.el.tooltip = function (tp) {
     this.hover(
             function (event) {
                 this.mousemove(function (event) {
-                    this.tp.translate(event.clientX -
-                            this.tp.o.x, event.clientY - this.tp.o.y);
+                    this.tp.translate(event.clientX - this.tp.o.x, event.clientY - this.tp.o.y);
                     this.tp.o = {x: event.clientX, y: event.clientY};
                 });
                 this.tp.show().toFront();

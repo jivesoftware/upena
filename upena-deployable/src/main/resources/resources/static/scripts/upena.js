@@ -99,7 +99,10 @@ upena.hs = {
     },
     lookup: function (endpoint, contains) {
         var $selector = upena.hs.installed.selector;
-        $.ajax(endpoint, {data: {'contains': contains}})
+        $.ajax(endpoint, {data: {'contains': contains,
+                'remoteHost': $('#remoteHostPicker').attr('value'),
+                'remotePort': $('#remotePortPicker').attr('value')
+            }})
             .done(function (data) {
                 if (!upena.hs.installed || upena.hs.installed.selector != $selector) {
                     // selector changed during the query
@@ -356,7 +359,7 @@ upena.topology = {
 
                 /* the Raphael set is obligatory, containing all you want to display */
                 var pad = 12;
-                var hs = 28;
+                var hs = 10;
                 var text = r.text(n.point[0], n.point[1], n.label).attr({"font-size": node.fontSize + "px", opacity: 1.0, fill: "#000"});
                 var bb = text.getBBox(true);
                 var w = hs + (pad / 2) + bb.width + pad;
@@ -365,11 +368,11 @@ upena.topology = {
                     stroke: "#000",
                     fill: "#" + node.color,
                     r: "6px",
-                    "stroke-width": "2px",
+                    "stroke-width": "1px",
                     opacity: 0.4,
                 });
                 var health = r.rect(n.point[0] - (w / 2) - (hs / 2) + (pad / 2), n.point[1] - (h / 2) + (pad / 2), hs, hs).attr({
-                    stroke: "#222",
+                    stroke: "#111",
                     fill: "270-#" + node.maxbgcolor + "-#" + node.minbgcolor,
                     r: "4px",
                     "stroke-width": "1px",
@@ -380,6 +383,9 @@ upena.topology = {
                 set.push(rect);
                 set.push(health);
                 set.push(text);
+                
+                //set.items.forEach(function(el) {el.tooltip(r.set().push(r.rect(-70,-100, 30, 30).attr({"fill": "#999", "stroke-width": 1, r : "4px"})))});
+
                 text.toFront();
                 return set;
             };

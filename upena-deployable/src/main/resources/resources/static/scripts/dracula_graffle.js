@@ -88,7 +88,7 @@ Raphael.fn.connection = function (obj1, obj2, style) {
                 var mag = Math.sqrt((y4 - y3) * (y4 - y3) + (x4 - x3) * (x4 - x3));
                 /* vector normalisation to specified length  */
                 var norm = function (x, l) {
-                    return (-x * (l || 5) / mag);
+                    return (-x * (l || 9) / mag);
                 };
                 /* calculate array coordinates (two lines orthogonal to the path vector) */
                 var arr = [
@@ -104,9 +104,9 @@ Raphael.fn.connection = function (obj1, obj2, style) {
                 edge.fg.attr({path: path});
             } else {
                 edge.fg = selfRef.path(path).attr({
-                    stroke: style && style.stroke || "#000",
+                    stroke: style && style.fill.split("|")[0],
                     fill: "none",
-                    "stroke-width": 4,
+                    "stroke-width": 3,
                     "stroke-dasharray": [". "]
                 }).toBack();
             }
@@ -116,10 +116,9 @@ Raphael.fn.connection = function (obj1, obj2, style) {
             } else {
                 if (style && style.fill && style.fill.split) {
                     var path = selfRef.path(path).attr({
-                        stroke: style.fill.split("|")[0],
+                        stroke: style.stroke || "#000",
                         fill: "none",
-                        "arrow-end": "classic-wide-long",
-                        "stroke-width": 4
+                        "stroke-width": 2
                     }).toBack();
 
                     edge.bg = path;
@@ -150,6 +149,7 @@ Raphael.fn.connection = function (obj1, obj2, style) {
                     var rh = bb.height + 8;
                     var rw = bb.width + 8;
                     var rect = selfRef.rect(x - (rw / 2), y - (rh / 2), rw, rh).attr({
+                        stroke: "#999",
                         fill: "#fff",
                         r: "6px",
                         opacity: 1.0
@@ -161,6 +161,9 @@ Raphael.fn.connection = function (obj1, obj2, style) {
                     var set = selfRef.set();
                     set.push(text);
                     set.push(rect);
+                    
+                    //set.items.forEach(function(el) {el.tooltip(selfRef.set().push(selfRef.rect(-70,-100, 30, 30).attr({"fill": "#999", "stroke-width": 1, r : "4px"})))});
+
                     edge.label = set;
                 }
             }
