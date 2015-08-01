@@ -1,19 +1,32 @@
 {namespace soy.page}
 
 /**
- * @param? nodes
- * @param? edges
+ * @param? filter
+ * @param? topologyNodes
+ * @param? topologyEdges
+ * @param? connectivityNodes
+ * @param? connectivityEdges
  *
  */
 {template .topologyPluginRegion}
     <div class="panel panel-default">
-        <div class="panel-heading"><span class="glyphicon glyphicon-transfer"></span>{sp}Topology</div>
+        <form id="filter-health" class="j-form" data-active-class="btn-default" method="POST" name="graph-type">
+            <div class="panel-heading">
+                <span class="glyphicon glyphicon-transfer"></span>{sp}
+                    <span class="digest-option">Topology</span>
+                    <input type="checkbox" name="graphType" value="topology" {if $filter.graphType.topology}checked="checked"{/if}>
+                    &nbsp;&nbsp;&nbsp;&nbsp;
+                    <span class="digest-option">Connectivity</span>
+                    <input type="checkbox" name="graphType" value="connectivity" {if $filter.graphType.connectivity}checked="checked"{/if}>
+                    &nbsp;&nbsp;&nbsp;&nbsp;
+                    <input class="btn btn-default" type="submit" value="refresh">
+            </div>
+        </from>
         <div class="panel-body">
-            <div id="upena-topology" data-nodes="{$nodes|escapeHtml}" data-edges="{$edges|escapeHtml}">
-            </div>
-            <button id="topology-redraw" onclick="upena.topology.redraw();">redraw</button>
-            <div id="topology-health">
-            </div>
+            <div id="upena-topology" data-nodes="{$topologyNodes|escapeHtml}" data-edges="{$topologyEdges|escapeHtml}"></div>
+            <div id="topology-health"></div>
+            <div id="upena-connectivity" data-nodes="{$connectivityNodes|escapeHtml}" data-edges="{$connectivityEdges|escapeHtml}"></div>
+            <div id="connectivity-health"></div>
         </div>
     </div>
 {/template}

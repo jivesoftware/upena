@@ -427,6 +427,83 @@ upena.topology = {
     }
 };
 
+upena.connectivity = {
+    layouter: null,
+    renderer: null,
+    height: null,
+    width: null,
+    init: function () {
+
+        upena.connectivity.height = "600";
+        upena.connectivity.width = $(document).width() - 100;
+        var nodes = $('#upena-connectivity').data('nodes');
+        var edges = $('#upena-connectivity').data('edges');
+        /* http://www.graphdracula.net/ */
+        var g = new Graph();
+        $(nodes).each(function (key, node) {
+            var render = function (r, n) {
+
+
+                /* the Raphael set is obligatory, containing all you want to display */
+                var pad = 12;
+                var hs = 10;
+                var text = r.text(n.point[0], n.point[1], n.label).attr({"font-size": node.fontSize + "px", opacity: 1.0, fill: "#000"});
+                var bb = text.getBBox(true);
+                var w = hs + (pad / 2) + bb.width + pad;
+                var h = bb.height + pad;
+                var rect = r.rect(n.point[0] - (w / 2) - (hs / 2), n.point[1] - (h / 2), w, h).attr({
+                    stroke: "#000",
+                    fill: "#" + node.color,
+                    r: "6px",
+                    "stroke-width": "1px",
+                    opacity: 0.4,
+                });
+                var health = r.rect(n.point[0] - (w / 2) - (hs / 2) + (pad / 2), n.point[1] - (h / 2) + (pad / 2), hs, hs).attr({
+                    stroke: "#111",
+                    fill: "270-#" + node.maxbgcolor + "-#" + node.minbgcolor,
+                    r: "4px",
+                    "stroke-width": "1px",
+                    opacity: 1.0,
+                });
+
+                var set = r.set();
+                set.push(rect);
+                set.push(health);
+                set.push(text);
+
+                //set.items.forEach(function(el) {el.tooltip(r.set().push(r.rect(-70,-100, 30, 30).attr({"fill": "#999", "stroke-width": 1, r : "4px"})))});
+
+                text.toFront();
+                return set;
+            };
+            var clicked = function () {
+                $("#connectivity-health").html(node.focusHtml);
+            };
+            g.addNode(node.id, {label: node.label, render: render, clicked: clicked});
+        });
+        $(edges).each(function (key, edge) {
+
+            g.addEdge(edge.from, edge.to, {
+                label: edge.label,
+                directed: true,
+                stroke: "#" + edge.minColor,
+                fill: "#" + edge.maxColor
+            });
+        });
+        /* layout the graph using the Spring layout implementation */
+        upena.connectivity.layouter = new Graph.Layout.Spring(g);
+        upena.connectivity.layouter.layout();
+        /* draw the graph using the RaphaelJS draw implementation */
+        upena.connectivity.renderer = new Graph.Renderer.Raphael('upena-connectivity', g, upena.connectivity.width, upena.connectivity.height);
+        upena.connectivity.renderer.draw();
+    },
+    redraw: function () {
+        dracula_graph_seed = 1;
+        upena.connectivity.layouter.layout();
+        upena.connectivity.renderer.draw();
+    }
+};
+
 $(document).ready(function () {
     if ($('.upena-hs-field').length) {
         upena.hs.init();
@@ -440,6 +517,10 @@ $(document).ready(function () {
 
     if ($('#upena-topology').length) {
         upena.topology.init();
+    }
+    
+    if ($('#upena-connectivity').length) {
+        upena.connectivity.init();
     }
 
     (function () {
