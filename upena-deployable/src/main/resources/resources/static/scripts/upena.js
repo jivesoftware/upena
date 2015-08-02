@@ -369,27 +369,57 @@ upena.topology = {
 
 
                 /* the Raphael set is obligatory, containing all you want to display */
-                var pad = 12;
                 var hs = 10;
-                var text = r.text(n.point[0], n.point[1], n.label).attr({"font-size": node.fontSize + "px", opacity: 1.0, fill: "#000"});
-                var bb = text.getBBox(true);
-                var w = hs + (pad / 2) + bb.width + pad;
-                var h = bb.height + pad;
-                var rectbg = r.rect(n.point[0] - (w / 2) - (hs / 2), n.point[1] - (h / 2), w, h).attr({
+                var iconSize = 24;
+                var halfIconSize = iconSize / 2;
+
+                var icon;
+                var text;
+                var bb;
+
+                var cx = n.point[0];
+                var cy = n.point[1];
+
+                var ox = 0;
+                if (node.label) {
+                    if (node.icon) {
+                        ox = iconSize;
+                    }
+                    text = r.text(cx + ox, cy, node.label).attr({"font-size": node.fontSize + "px", opacity: 1.0, fill: "#000"});
+                    bb = text.getBBox(false);
+
+                }
+
+                if (node.icon) {
+                    if (bb) {
+                        icon = r.image("/static/img/" + node.icon + ".png", cx - iconSize, cy - halfIconSize, iconSize, iconSize);
+                        bb.x -= ox;
+                        bb.width += iconSize;
+                        bb.x2 = bb.x + bb.width;
+                    } else {
+                        icon = r.image("/static/img/" + node.icon + ".png", cx - halfIconSize, cy - halfIconSize, iconSize, iconSize);
+                        bb = {x: cx - halfIconSize, y: cy - halfIconSize, x2: cx + iconSize, y2: cy + iconSize, width: iconSize, height: iconSize};
+                    }
+                }
+
+                var w = bb.width;
+                var h = bb.height;
+                var rx = (cx - ((w - ox) / 2));
+                var rectbg = r.rect(rx, cy - (h / 2), w, h).attr({
                     stroke: "none",
                     fill: "#fff",
                     r: "6px",
                     "stroke-width": "1px",
                     opacity: 1,
                 });
-                var rectfg = r.rect(n.point[0] - (w / 2) - (hs / 2), n.point[1] - (h / 2), w, h).attr({
+                var rectfg = r.rect(rx, cy - (h / 2), w, h).attr({
                     stroke: "#000",
                     fill: "#" + node.color,
                     r: "6px",
                     "stroke-width": "1px",
                     opacity: 0.4,
                 });
-                var health = r.rect(n.point[0] - (w / 2) - (hs / 2) + (pad / 2), n.point[1] - (h / 2) + (pad / 2), hs, hs).attr({
+                var health = r.rect(rx - (hs / 2), cy - (h / 2) - (hs / 2), hs, hs).attr({
                     stroke: "#111",
                     fill: "270-#" + node.maxbgcolor + "-#" + node.minbgcolor,
                     r: "4px",
@@ -401,7 +431,14 @@ upena.topology = {
                 set.push(rectbg);
                 set.push(rectfg);
                 set.push(health);
-                set.push(text);
+                if (icon) {
+                    set.push(icon);
+                    icon.toFront();
+                }
+                if (text) {
+                    set.push(text);
+                    text.toFront();
+                }
 
                 if (node.tooltip) {
 
@@ -419,8 +456,6 @@ upena.topology = {
                         el.tooltip(tt);
                     });
                 }
-
-                text.toFront();
                 return set;
             };
             var clicked = function () {
