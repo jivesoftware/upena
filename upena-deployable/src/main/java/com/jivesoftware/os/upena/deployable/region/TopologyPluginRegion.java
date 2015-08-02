@@ -3,6 +3,7 @@ package com.jivesoftware.os.upena.deployable.region;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.jivesoftware.os.amza.shared.AmzaInstance;
 import com.jivesoftware.os.amza.shared.RingHost;
@@ -32,6 +33,8 @@ import com.jivesoftware.os.upena.shared.InstanceFilter;
 import com.jivesoftware.os.upena.shared.InstanceKey;
 import com.jivesoftware.os.upena.shared.ReleaseGroup;
 import com.jivesoftware.os.upena.shared.Service;
+import com.jivesoftware.os.upena.shared.ServiceFilter;
+import com.jivesoftware.os.upena.shared.ServiceKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -43,6 +46,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.apache.commons.lang.exception.ExceptionUtils;
@@ -116,12 +120,34 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
             filter.put("graphType", selectedTypes);
             data.put("filter", filter);
 
+            ConcurrentNavigableMap<ServiceKey, TimestampedValue<Service>> services = upenaStore.services.find(new ServiceFilter(null, null, 0, 10000));
+            int i = 0;
+            Map<String, Integer> serviceColor = new HashMap<>();
+            for (Map.Entry<ServiceKey, TimestampedValue<Service>> entrySet : services.entrySet()) {
+                if (!entrySet.getValue().getTombstoned()) {
+                    serviceColor.put(entrySet.getValue().getValue().name, i);
+                    i++;
+                }
+            }
+
+            List<Map<String, String>> serviceNameLegend = new ArrayList<>();
+            i = 0;
+            for (Map.Entry<ServiceKey, TimestampedValue<Service>> entrySet : services.entrySet()) {
+                if (!entrySet.getValue().getTombstoned()) {
+                    String idColor = healthPluginRegion.getHEXIdColor((double) i / (double) serviceColor.size(), 1f);
+                    serviceNameLegend.add(ImmutableMap.of("name", entrySet.getValue().getValue().name, "color", idColor));
+                    i++;
+                }
+            }
+
+            data.put("serviceLegend", MAPPER.writeValueAsString(serviceNameLegend));
+
             if (input.graphType.contains("connectivity")) {
-                connectivityGraph(data);
+                connectivityGraph(serviceColor, data);
             }
 
             if (input.graphType.contains("topology")) {
-                topologyGraph(data);
+                topologyGraph(serviceColor, data);
             }
 
             for (String ensure : new String[]{"connectivityNodes", "connectivityEdges", "topologyNodes", "topologyEdges"}) {
@@ -139,10 +165,9 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
 
     }
 
-    private void topologyGraph(Map<String, Object> data) throws Exception, JsonProcessingException {
+    private void topologyGraph(Map<String, Integer> serviceColor, Map<String, Object> data) throws Exception, JsonProcessingException {
         int id = 0;
         buildClusterRoutes();
-        Map<String, Map<HostPort, Map<String, ConnectionHealth>>> routes = discoveredRoutes.instanceHostPortFamilyConnectionHealths;
 
         Map<String, Edge> edges = new HashMap<>();
         Map<String, Node> nodes = new HashMap<>();
@@ -165,52 +190,99 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
                 Service service = upenaStore.services.get(value.serviceKey);
                 ReleaseGroup releaseGroup = upenaStore.releaseGroups.get(value.releaseGroupKey);
 
+                double serviceHealth = serviceHealth(entrySet.getKey().toString());
+
+                int fs = 22;
                 Node from = nodes.get(value.clusterKey.toString());
                 if (from == null) {
-                    from = new Node(cluster.name, id, "ccc", "12", 0);
+                    from = new Node(cluster.name, id, "ccc", String.valueOf(fs), 0);
                     id++;
                     nodes.put(value.clusterKey.toString(), from);
                     from.focusHtml = "";
+                    fs -= 2;
+
+                    from.maxHealth = Math.max(from.maxHealth, serviceHealth);
+                    from.minHealth = Math.min(from.minHealth, serviceHealth);
+
+                    from.tooltip = cluster.description;
                 }
 
                 Node to = nodes.get(value.hostKey.toString());
                 if (to == null) {
-                    to = new Node(host.name, id, "aaa", "12", 0);
+                    to = new Node("H", id, "aaa", String.valueOf(fs), 0);
+                    to.tooltip = host.hostName;
                     id++;
                     nodes.put(value.hostKey.toString(), to);
                     to.focusHtml = "";
+                    fs -= 2;
+                    addEdge(edges, from, to);
+                    from = to;
+
+                    from.maxHealth = Math.max(from.maxHealth, serviceHealth);
+                    from.minHealth = Math.min(from.minHealth, serviceHealth);
+
                 }
-                Edge edge = addEdge(edges, from, to);
-                from = to;
 
                 to = nodes.get(value.releaseGroupKey.toString());
                 if (to == null) {
-                    to = new Node(releaseGroup.name, id, "888", "12", 0);
+                    String versions = "V:";
+                    for (String dep : releaseGroup.version.split(",")) {
+                        String[] coord = dep.split(":");
+                        versions += coord[3] + "\n";
+                    }
+
+                    to = new Node(versions, id, "888", String.valueOf(fs), 0);
                     id++;
                     nodes.put(value.releaseGroupKey.toString(), to);
                     to.focusHtml = "";
+                    fs -= 2;
+                    addEdge(edges, from, to);
+                    from = to;
+
+                    from.maxHealth = Math.max(from.maxHealth, serviceHealth);
+                    from.minHealth = Math.min(from.minHealth, serviceHealth);
+
+                    from.tooltip = releaseGroup.version;
+
                 }
-                edge = addEdge(edges, from, to);
-                from = to;
 
                 to = nodes.get(value.serviceKey.toString());
+                String idColor = "666";
                 if (to == null) {
-                    to = new Node(service.name, id, "666", "12", 0);
+                    Integer serviceNumber = serviceColor.get(service.name);
+                    idColor = healthPluginRegion.getHEXIdColor((double) serviceNumber / (double) serviceColor.size(), 1f);
+
+                    to = new Node("S", id, idColor, String.valueOf(fs), 0);
                     id++;
                     nodes.put(value.serviceKey.toString(), to);
                     to.focusHtml = "";
+                    fs -= 2;
+                    addEdge(edges, from, to);
+                    from = to;
+
+                    from.maxHealth = Math.max(from.maxHealth, serviceHealth);
+                    from.minHealth = Math.min(from.minHealth, serviceHealth);
+                    from.tooltip = service.name;
                 }
-                edge = addEdge(edges, from, to);
-                from = to;
 
                 to = nodes.get(entrySet.getKey().toString());
                 if (to == null) {
-                    to = new Node(""+value.instanceId, id, "444", "12", 0);
+                    to = new Node("I" + value.instanceId, id, idColor, String.valueOf(fs), 0);
                     id++;
                     nodes.put(entrySet.getKey().toString(), to);
                     to.focusHtml = "";
+                    fs -= 2;
+                    addEdge(edges, from, to);
+                    from = to;
+
+                    from.maxHealth = Math.max(from.maxHealth, serviceHealth);
+                    from.minHealth = Math.min(from.minHealth, serviceHealth);
+                    from.tooltip = "";
+                    for (Map.Entry<String, Instance.Port> e : entrySet.getValue().getValue().ports.entrySet()) {
+                        from.tooltip += e.getKey() + ":" + e.getValue().port + "\n";
+                    }
                 }
-                edge = addEdge(edges, from, to);
+
             }
         }
 
@@ -219,8 +291,16 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
             Map<String, String> node = new HashMap<>();
             node.put("id", "id" + n.id);
 
-            node.put("maxbgcolor", "888");
-            node.put("minbgcolor", "888");
+            if (n.maxHealth == Double.MAX_VALUE) {
+                node.put("maxbgcolor", n.bgcolor);
+                node.put("minbgcolor", n.bgcolor);
+            } else {
+                node.put("maxbgcolor", healthPluginRegion.getHEXTrafficlightColor(n.maxHealth, 1f));
+                node.put("minbgcolor", healthPluginRegion.getHEXTrafficlightColor(n.minHealth, 1f));
+            }
+            if (n.tooltip != null) {
+                node.put("tooltip", n.tooltip);
+            }
             node.put("fontSize", n.fontSize);
             node.put("label", n.label);
             node.put("count", String.valueOf(n.count));
@@ -248,7 +328,7 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
 
     }
 
-    private void connectivityGraph(Map<String, Object> data) throws Exception, JsonProcessingException {
+    private void connectivityGraph(Map<String, Integer> serviceColor, Map<String, Object> data) throws Exception, JsonProcessingException {
         Map<String, Node> nodes = new HashMap<>();
         int id = 0;
         buildClusterRoutes();
@@ -264,7 +344,9 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
             String serviceName = service != null ? service.name : instanceId;
             Node from = nodes.get(serviceName);
             if (from == null) {
-                from = new Node(serviceName, id, "666", "12", 0);
+
+                String idColor = healthPluginRegion.getHEXIdColor(((float) serviceColor.get(serviceName) / (float) serviceColor.size()), 1f);
+                from = new Node(serviceName, id, idColor, "12", 0);
                 id++;
                 nodes.put(serviceName, from);
 
@@ -283,7 +365,9 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
                     String toServiceName = connectionHealth.connectionDescriptor.getInstanceDescriptor().serviceName;
                     Node to = nodes.get(toServiceName);
                     if (to == null) {
-                        to = new Node(toServiceName, id, "060", "12", 0);
+                        String idColor = healthPluginRegion.getHEXIdColor(((float) serviceColor.get(toServiceName) / (float) serviceColor.size()), 1f);
+
+                        to = new Node(toServiceName, id, idColor, "12", 0);
                         id++;
                         nodes.put(toServiceName, to);
 
@@ -327,7 +411,8 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
                         String toServiceName = connectionHealth.connectionDescriptor.getInstanceDescriptor().serviceName;
                         to = nodes.get(toServiceName);
                         if (to == null) {
-                            to = new Node(toServiceName, id, "060", "12", 0);
+                            String idColor = healthPluginRegion.getHEXIdColor(((float) serviceColor.get(toServiceName) / (float) serviceColor.size()), 1f);
+                            to = new Node(toServiceName, id, idColor, "12", 0);
                             nodes.put(toServiceName, to);
                             id++;
                         }
@@ -363,7 +448,10 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
             node.put("label", n.label + " (" + n.count + ")");
             node.put("count", String.valueOf(n.count));
             node.put("focusHtml", n.focusHtml);
-            node.put("color", healthPluginRegion.getHEXIdColor(((float) n.id / (float) id), 1f));
+            if (n.tooltip != null) {
+                node.put("tooltip", n.tooltip);
+            }
+            node.put("color", n.bgcolor);
 
             renderNodes.add(node);
         }
@@ -498,6 +586,7 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
         String bgcolor;
         String fontSize;
         String focusHtml;
+        String tooltip;
         int count = 1;
         double maxHealth = -Double.MAX_VALUE;
         double minHealth = Double.MAX_VALUE;
@@ -590,15 +679,15 @@ public class TopologyPluginRegion implements PageRegion<Optional<TopologyPluginR
             allRoutes.addAll(v.getRoutes());
         }
 
-//        for (RingHost ringHost : new RingHost[]{
-//            new RingHost("soa-prime-data5.phx1.jivehosted.com", 1175),
-//            new RingHost("soa-prime-data6.phx1.jivehosted.com", 1175),
-//            new RingHost("soa-prime-data7.phx1.jivehosted.com", 1175),
-//            new RingHost("soa-prime-data8.phx1.jivehosted.com", 1175),
-//            new RingHost("soa-prime-data9.phx1.jivehosted.com", 1175),
-//            new RingHost("soa-prime-data10.phx1.jivehosted.com", 1175)
-//        }) {
-        for (final RingHost ringHost : amzaInstance.getRing("MASTER")) {
+        for (RingHost ringHost : new RingHost[]{
+            new RingHost("soa-prime-data5.phx1.jivehosted.com", 1175),
+            new RingHost("soa-prime-data6.phx1.jivehosted.com", 1175),
+            new RingHost("soa-prime-data7.phx1.jivehosted.com", 1175),
+            new RingHost("soa-prime-data8.phx1.jivehosted.com", 1175),
+            new RingHost("soa-prime-data9.phx1.jivehosted.com", 1175),
+            new RingHost("soa-prime-data10.phx1.jivehosted.com", 1175)
+        }) {
+//        for (final RingHost ringHost : amzaInstance.getRing("MASTER")) {
             if (currentlyExecuting.putIfAbsent(ringHost, true) == null) {
                 executorService.submit(() -> {
                     long start = System.currentTimeMillis();

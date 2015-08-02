@@ -100,16 +100,16 @@ upena.hs = {
         }
     },
     lookup: function (endpoint, ab, contains) {
-        
-        
-        
+
+
+
         var host = "#" + ab + "RemoteHostPicker";
         var port = "#" + ab + "RemotePortPicker";
-        
-        console.log(host+" "+port);
-        
-        console.log($(host).attr('value')+" "+$(port).attr('value'));
-        
+
+        console.log(host + " " + port);
+
+        console.log($(host).attr('value') + " " + $(port).attr('value'));
+
         var $selector = upena.hs.installed.selector;
         $.ajax(endpoint, {data: {'contains': contains,
                 'remoteHost': $(host).attr('value'),
@@ -361,6 +361,7 @@ upena.topology = {
         upena.topology.width = $(document).width() - 100;
         var nodes = $('#upena-topology').data('nodes');
         var edges = $('#upena-topology').data('edges');
+        var legend = $('#upena-topology').data('legend');
         /* http://www.graphdracula.net/ */
         var g = new Graph();
         $(nodes).each(function (key, node) {
@@ -374,7 +375,14 @@ upena.topology = {
                 var bb = text.getBBox(true);
                 var w = hs + (pad / 2) + bb.width + pad;
                 var h = bb.height + pad;
-                var rect = r.rect(n.point[0] - (w / 2) - (hs / 2), n.point[1] - (h / 2), w, h).attr({
+                var rectbg = r.rect(n.point[0] - (w / 2) - (hs / 2), n.point[1] - (h / 2), w, h).attr({
+                    stroke: "none",
+                    fill: "#fff",
+                    r: "6px",
+                    "stroke-width": "1px",
+                    opacity: 1,
+                });
+                var rectfg = r.rect(n.point[0] - (w / 2) - (hs / 2), n.point[1] - (h / 2), w, h).attr({
                     stroke: "#000",
                     fill: "#" + node.color,
                     r: "6px",
@@ -390,11 +398,27 @@ upena.topology = {
                 });
 
                 var set = r.set();
-                set.push(rect);
+                set.push(rectbg);
+                set.push(rectfg);
                 set.push(health);
                 set.push(text);
 
-                //set.items.forEach(function(el) {el.tooltip(r.set().push(r.rect(-70,-100, 30, 30).attr({"fill": "#999", "stroke-width": 1, r : "4px"})))});
+                if (node.tooltip) {
+
+                    set.items.forEach(function (el) {
+
+                        var tts = r.set();
+                        var text = r.text(-70, -100, node.tooltip).attr({"font-size": "16px", opacity: 1.0, fill: "#000"});
+                        var bb = text.getBBox(true);
+                        bb.width += 10;
+                        bb.height += 10;
+
+                        var ttr = r.rect(-70 - (bb.width / 2), -100 - (bb.height / 2), bb.width, bb.height).attr({"fill": "#999", "stroke-width": 1, r: "4px"});
+                        var tt = tts.push(ttr).push(text);
+                        text.toFront();
+                        el.tooltip(tt);
+                    });
+                }
 
                 text.toFront();
                 return set;
@@ -408,7 +432,8 @@ upena.topology = {
 
             g.addEdge(edge.from, edge.to, {
                 label: edge.label,
-                directed: true,
+                straight: true,
+                directed: false,
                 stroke: "#" + edge.minColor,
                 fill: "#" + edge.maxColor
             });
@@ -418,7 +443,32 @@ upena.topology = {
         upena.topology.layouter.layout();
         /* draw the graph using the RaphaelJS draw implementation */
         upena.topology.renderer = new Graph.Renderer.Raphael('upena-topology', g, upena.topology.width, upena.topology.height);
+
         upena.topology.renderer.draw();
+
+
+        var r = upena.topology.renderer.r;
+
+        if (legend) {
+            var x = 48;
+            var y = 10;
+            for (i = 0; i < legend.length; i++) {
+
+                var text = r.text(x, y, legend[i].name);
+                text.attr({"font-size": 16 + "px", opacity: 1.0, fill: "#000"});
+                var bb = text.getBBox(true);
+                var rect = r.rect(x - (bb.height * 2) - 10, y - (bb.height / 2), bb.height, bb.height);
+                rect.attr({
+                    stroke: "#000",
+                    fill: "#" + legend[i].color,
+                    r: "6px",
+                    "stroke-width": "1px",
+                    opacity: 0.4,
+                });
+
+                y += bb.height + 10;
+            }
+        }
     },
     redraw: function () {
         dracula_graph_seed = 1;
@@ -518,7 +568,7 @@ $(document).ready(function () {
     if ($('#upena-topology').length) {
         upena.topology.init();
     }
-    
+
     if ($('#upena-connectivity').length) {
         upena.connectivity.init();
     }

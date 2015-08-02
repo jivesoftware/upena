@@ -6,6 +6,7 @@
  * @param? topologyEdges
  * @param? connectivityNodes
  * @param? connectivityEdges
+ * @param? serviceLegend
  *
  */
 {template .topologyPluginRegion}
@@ -23,7 +24,7 @@
             </div>
         </from>
         <div class="panel-body">
-            <div id="upena-topology" data-nodes="{$topologyNodes|escapeHtml}" data-edges="{$topologyEdges|escapeHtml}"></div>
+            <div id="upena-topology" data-nodes="{$topologyNodes|escapeHtml}" data-edges="{$topologyEdges|escapeHtml}" data-legend="{$serviceLegend|escapeHtml}"></div>
             <div id="topology-health"></div>
             <div id="upena-connectivity" data-nodes="{$connectivityNodes|escapeHtml}" data-edges="{$connectivityEdges|escapeHtml}"></div>
             <div id="connectivity-health"></div>
