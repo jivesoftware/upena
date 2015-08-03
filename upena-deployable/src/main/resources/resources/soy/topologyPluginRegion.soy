@@ -18,51 +18,38 @@
         </div>
         <div class="panel-body">
             <form id="filter-health" class="j-form" data-active-class="btn-default" method="POST" name="graph-type">
-                <div class="well">
-                    <table class="table table-condensed">
-                        <thead>
-                            <tr>
-                                <th>Cluster</th>
-                                <th>Host</th>
-                                <th>Service</th>
-                                <th>Release</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>
-                                    <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                        placeholder="Cluster" value="{$filters.cluster?:''}" name="cluster" id="clusterPicker"
-                                        class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/clusters">
-                                    <input type="hidden" name="clusterKey" value="{$filters.clusterKey?:''}" />
-                                </td>
-                                <td>
-                                    <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                        placeholder="Host" value="{$filters.host?:''}" name="host" id="hostPicker"
-                                        class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/hosts">
-                                    <input type="hidden" name="hostKey" value="{$filters.hostKey?:''}" />
-                                </td>
-                                <td>
-                                    <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                        placeholder="Service" value="{$filters.service?:''}" name="service" id="servicePicker"
-                                        class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/services">
-                                    <input type="hidden" name="serviceKey" value="{$filters.serviceKey?:''}" />
-                                </td>
-                                <td>
-                                    <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                        placeholder="Release" value="{$filters.release?:''}" name="release" id="releasePicker"
-                                        class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/releases">
-                                    <input type="hidden" name="releaseKey" value="{$filters.releaseKey?:''}" />
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-
-
-                    <p>
-                        <input class="btn btn-primary" type="submit" value="Filter">
-                    </p>
-                </div>
+                <table class="table table-condensed">
+                    <tr>
+                        <td>
+                            <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                placeholder="Cluster" value="{$filters.cluster?:''}" name="cluster" id="clusterPicker"
+                                class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/clusters">
+                            <input type="hidden" name="clusterKey" value="{$filters.clusterKey?:''}" />
+                        </td>
+                        <td>
+                            <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                placeholder="Host" value="{$filters.host?:''}" name="host" id="hostPicker"
+                                class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/hosts">
+                            <input type="hidden" name="hostKey" value="{$filters.hostKey?:''}" />
+                        </td>
+                        <td>
+                            <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                placeholder="Service" value="{$filters.service?:''}" name="service" id="servicePicker"
+                                class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/services">
+                            <input type="hidden" name="serviceKey" value="{$filters.serviceKey?:''}" />
+                        </td>
+                        <td>
+                            <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                placeholder="Release" value="{$filters.release?:''}" name="release" id="releasePicker"
+                                class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/releases">
+                            <input type="hidden" name="releaseKey" value="{$filters.releaseKey?:''}" />
+                        </td>
+                        <td>
+                            <button title="Filter" type="submit" name="filter" value="filter" class="btn btn-primary"><span class="glyphicon glyphicon-search"></span></button>
+                        </td>
+                    </tr>
+                </table>
+                   
                 <hr>
                 
                 <div class="panel panel-default">
