@@ -357,7 +357,7 @@ upena.topology = {
     width: null,
     init: function () {
 
-        upena.topology.height = $(document).width() - 100;
+        upena.topology.height = $(document).height() - 200;
         upena.topology.width = $(document).width() - 100;
         var nodes = $('#upena-topology').data('nodes');
         var edges = $('#upena-topology').data('edges');
