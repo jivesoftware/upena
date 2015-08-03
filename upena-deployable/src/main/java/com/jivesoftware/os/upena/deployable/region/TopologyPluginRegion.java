@@ -256,12 +256,11 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegion.Top
                     linkable.add(n);
                 }
 
-                String idColor = "666";
-
+                String idColor = serviceIdColor(serviceColor, service.name);
+                    
                 if (linkType.contains("linkService")) {
                     Node n = nodes.get(value.serviceKey.toString());
                     if (n == null) {
-                        idColor = serviceIdColor(serviceColor, service.name);
                         n = new Node(null, id, idColor, String.valueOf(fs), 0);
                         id++;
                         nodes.put(value.serviceKey.toString(), n);
