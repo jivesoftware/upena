@@ -1,7 +1,7 @@
 {namespace soy.page}
 
 /**
- * @param? filter
+ * @param? filters
  * @param? topologyNodes
  * @param? topologyEdges
  * @param? connectivityNodes
@@ -11,23 +11,126 @@
  */
 {template .topologyPluginRegion}
     <div class="panel panel-default">
-        <form id="filter-health" class="j-form" data-active-class="btn-default" method="POST" name="graph-type">
-            <div class="panel-heading">
-                <span class="glyphicon glyphicon-transfer"></span>{sp}
-                    <span class="digest-option">Topology</span>
-                    <input type="checkbox" name="graphType" value="topology" {if $filter.graphType.topology}checked="checked"{/if}>
-                    &nbsp;&nbsp;&nbsp;&nbsp;
-                    <span class="digest-option">Connectivity</span>
-                    <input type="checkbox" name="graphType" value="connectivity" {if $filter.graphType.connectivity}checked="checked"{/if}>
-                    &nbsp;&nbsp;&nbsp;&nbsp;
-                    <input class="btn btn-default" type="submit" value="refresh">
-            </div>
-        </from>
+        
+
+        <div class="panel-heading">
+            <span class="glyphicon glyphicon-transfer"> Topology</span>{sp}
+        </div>
         <div class="panel-body">
-            <div id="upena-topology" data-nodes="{$topologyNodes|escapeHtml}" data-edges="{$topologyEdges|escapeHtml}" data-legend="{$serviceLegend|escapeHtml}"></div>
-            <div id="topology-health"></div>
-            <div id="upena-connectivity" data-nodes="{$connectivityNodes|escapeHtml}" data-edges="{$connectivityEdges|escapeHtml}"></div>
-            <div id="connectivity-health"></div>
+            <form id="filter-health" class="j-form" data-active-class="btn-default" method="POST" name="graph-type">
+                <div class="well">
+                    <table class="table table-condensed">
+                        <thead>
+                            <tr>
+                                <th>Cluster</th>
+                                <th>Host</th>
+                                <th>Service</th>
+                                <th>Release</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                        placeholder="Cluster" value="{$filters.cluster?:''}" name="cluster" id="clusterPicker"
+                                        class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/clusters">
+                                    <input type="hidden" name="clusterKey" value="{$filters.clusterKey?:''}" />
+                                </td>
+                                <td>
+                                    <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                        placeholder="Host" value="{$filters.host?:''}" name="host" id="hostPicker"
+                                        class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/hosts">
+                                    <input type="hidden" name="hostKey" value="{$filters.hostKey?:''}" />
+                                </td>
+                                <td>
+                                    <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                        placeholder="Service" value="{$filters.service?:''}" name="service" id="servicePicker"
+                                        class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/services">
+                                    <input type="hidden" name="serviceKey" value="{$filters.serviceKey?:''}" />
+                                </td>
+                                <td>
+                                    <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                        placeholder="Release" value="{$filters.release?:''}" name="release" id="releasePicker"
+                                        class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/releases">
+                                    <input type="hidden" name="releaseKey" value="{$filters.releaseKey?:''}" />
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+
+                    <p>
+                        <input class="btn btn-primary" type="submit" value="Filter">
+                    </p>
+                </div>
+                <hr>
+                
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <label>
+                            <span class="glyphicon glyphicon-transfer"></span>
+                                &nbsp&nbspTopology&nbsp&nbsp
+                                <input onclick="this.form.submit()" type="checkbox" name="graphType" value="topology" {if $filters.graphType.topology}checked="checked"{/if}>
+                        </label>
+                    </div>
+                    <div class="panel-body">
+
+                        {if $filters.graphType.topology}
+                            <table class="table table-condensed">
+                                <tr>
+                                    <td>
+                                        <label>
+                                            Cluster&nbsp
+                                            <input onclick="this.form.submit()" type="checkbox" name="linkType" value="linkCluster" {if $filters.linkType.linkCluster}checked="checked"{/if}>
+                                        </label>
+                                    </td>
+                                    <td>
+                                        <label>
+                                            Host&nbsp
+                                            <input onclick="this.form.submit()" type="checkbox" name="linkType" value="linkHost" {if $filters.linkType.linkHost}checked="checked"{/if}>
+                                        </label>
+                                    </td>
+                                    <td>
+                                        <label>
+                                            Service&nbsp
+                                            <input onclick="this.form.submit()" type="checkbox" name="linkType" value="linkService" {if $filters.linkType.linkService}checked="checked"{/if}>
+                                        </label>
+                                    </td>
+                                    <td>
+                                        <label>
+                                            Version&nbsp
+                                            <input onclick="this.form.submit()" type="checkbox" name="linkType" value="linkRelease" {if $filters.linkType.linkRelease}checked="checked"{/if}>
+                                        </label>
+                                    </td>
+                                    <td>
+                                        <label>
+                                            Instance&nbsp
+                                            <input onclick="this.form.submit()" type="checkbox" name="linkType" value="linkInstance" {if $filters.linkType.linkInstance}checked="checked"{/if}>
+                                        </label>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <div id="upena-topology" data-nodes="{$topologyNodes|escapeHtml}" data-edges="{$topologyEdges|escapeHtml}" data-legend="{$serviceLegend|escapeHtml}"></div>
+                            <div id="topology-health"></div>
+                        {/if}
+                    </div>
+                </div>
+
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <label>Connectivity&nbsp
+                            <input onclick="this.form.submit()" type="checkbox" name="graphType" value="connectivity" {if $filters.graphType.connectivity}checked="checked"{/if}>
+                        </label>
+                    </div>
+                    <div class="panel-body">
+                        {if $filters.graphType.connectivity}
+                            <div id="upena-connectivity" data-nodes="{$connectivityNodes|escapeHtml}" data-edges="{$connectivityEdges|escapeHtml}"></div>
+                            <div id="connectivity-health"></div>
+                        {/if}
+                    </div>
+                </div>
+            </from>
         </div>
     </div>
 {/template}
