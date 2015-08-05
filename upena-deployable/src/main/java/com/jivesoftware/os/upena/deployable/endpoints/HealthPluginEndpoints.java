@@ -1,6 +1,5 @@
 package com.jivesoftware.os.upena.deployable.endpoints;
 
-import com.google.common.base.Optional;
 import com.jivesoftware.os.upena.deployable.region.HealthPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.HealthPluginRegion.HealthPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
@@ -38,7 +37,7 @@ public class HealthPluginEndpoints {
         @QueryParam("host") @DefaultValue("") String host,
         @QueryParam("service") @DefaultValue("") String service) {
         String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-            Optional.of(new HealthPluginRegionInput(cluster, host, service)));
+            new HealthPluginRegionInput(cluster, host, service));
         return Response.ok(rendered).build();
     }
 
