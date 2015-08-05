@@ -38,9 +38,9 @@ public class TopologyPluginEndpoints {
     @Path("/")
     @Produces(MediaType.TEXT_HTML)
     public Response render(@Context HttpServletRequest httpRequest) {
-        String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,new TopologyPluginRegionInput("", "", "", "", "", "", "", "",
-                    new HashSet<>(Arrays.asList("linkCluster", "linkService", "linkInstance")),
-                    new HashSet<>(Arrays.asList("topology,connectivity"))));
+        String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion, new TopologyPluginRegionInput("", "", "", "", "", "", "", "",
+            new HashSet<>(Arrays.asList("linkCluster", "linkService", "linkInstance")),
+            new HashSet<>(Arrays.asList("topology", "connectivity"))));
         return Response.ok(rendered).build();
     }
 

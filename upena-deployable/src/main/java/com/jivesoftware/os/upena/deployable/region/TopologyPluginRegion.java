@@ -181,11 +181,11 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegion.Top
             data.put("serviceLegend", MAPPER.writeValueAsString(serviceNameLegend));
 
             if (input.graphType.contains("connectivity")) {
-                connectivityGraph(instanceFilter, serviceColor, data);
+                connectivityGraph(user, instanceFilter, serviceColor, data);
             }
 
             if (input.graphType.contains("topology")) {
-                topologyGraph(instanceFilter, input.linkType, serviceColor, data);
+                topologyGraph(user, instanceFilter, input.linkType, serviceColor, data);
             }
 
             for (String ensure : new String[]{"connectivityNodes", "connectivityEdges", "topologyNodes", "topologyEdges"}) {
@@ -203,7 +203,8 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegion.Top
 
     }
 
-    private void topologyGraph(InstanceFilter filter, Set<String> linkType, Map<String, Integer> serviceColor, Map<String, Object> data) throws Exception,
+    private void topologyGraph(String user, InstanceFilter filter, Set<String> linkType, Map<String, Integer> serviceColor, Map<String, Object> data) throws
+        Exception,
         JsonProcessingException {
 
         int id = 0;
@@ -222,7 +223,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegion.Top
                 Host host = upenaStore.hosts.get(value.hostKey);
                 Service service = upenaStore.services.get(value.serviceKey);
                 ReleaseGroup releaseGroup = upenaStore.releaseGroups.get(value.releaseGroupKey);
-                
+
                 NannyHealth nannyHealth = nannyHealth(instanceKey);
                 double serviceHealth = serviceHealth(nannyHealth);
 
@@ -293,7 +294,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegion.Top
                         n = new Node(versions, id, idColor, String.valueOf(fs), 0);
                         id++;
                         nodes.put(value.releaseGroupKey.toString(), n);
-                        n.focusHtml = healthPluginRegion.renderUIs(instanceKey) + "<br>" + releasesPluginRegion.render("topo",
+                        n.focusHtml = healthPluginRegion.renderUIs(instanceKey) + "<br>" + releasesPluginRegion.render(user,
                             new ReleasesPluginRegionInput(value.releaseGroupKey.toString(), releaseGroup.name, "", "", "", "", "filter"));
                         fs -= 2;
 
@@ -384,7 +385,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegion.Top
 
     }
 
-    private void connectivityGraph(InstanceFilter filter,
+    private void connectivityGraph(String user, InstanceFilter filter,
         Map<String, Integer> serviceColor,
         Map<String, Object> data) throws Exception, JsonProcessingException {
 
