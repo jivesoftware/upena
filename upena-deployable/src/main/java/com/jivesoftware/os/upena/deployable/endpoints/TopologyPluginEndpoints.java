@@ -39,8 +39,8 @@ public class TopologyPluginEndpoints {
     @Produces(MediaType.TEXT_HTML)
     public Response render(@Context HttpServletRequest httpRequest) {
         String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,new TopologyPluginRegionInput("", "", "", "", "", "", "", "",
-                    new HashSet<>(Arrays.asList("linkCluster", "linkHost", "linkService", "linkRelease", "linkInstance")),
-                    new HashSet<>(Arrays.asList("connectivity"))));
+                    new HashSet<>(Arrays.asList("linkCluster", "linkService", "linkInstance")),
+                    new HashSet<>(Arrays.asList("topology,connectivity"))));
         return Response.ok(rendered).build();
     }
 
@@ -57,8 +57,8 @@ public class TopologyPluginEndpoints {
         @FormParam("service") @DefaultValue("") String service,
         @FormParam("releaseKey") @DefaultValue("") String releaseKey,
         @FormParam("release") @DefaultValue("") String release,
-        @FormParam("linkType") @DefaultValue("linkCluster,linkHost,linkService,linkRelease,linkInstance") List<String> linkType,
-        @FormParam("graphType") @DefaultValue("connectivity") List<String> graphType) {
+        @FormParam("linkType") @DefaultValue("linkCluster,linkService,linkInstance") List<String> linkType,
+        @FormParam("graphType") @DefaultValue("topology,connectivity") List<String> graphType) {
 
         String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
             new TopologyPluginRegionInput(clusterKey, cluster, hostKey, host, serviceKey, service, releaseKey, release, new HashSet<>(linkType), new HashSet<>(

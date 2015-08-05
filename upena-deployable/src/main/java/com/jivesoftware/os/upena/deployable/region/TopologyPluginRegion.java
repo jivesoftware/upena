@@ -216,13 +216,14 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegion.Top
         for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {
             TimestampedValue<Instance> timestampedValue = entrySet.getValue();
             if (!timestampedValue.getTombstoned()) {
+                String instanceKey = entrySet.getKey().toString();
                 Instance value = timestampedValue.getValue();
                 Cluster cluster = upenaStore.clusters.get(value.clusterKey);
                 Host host = upenaStore.hosts.get(value.hostKey);
                 Service service = upenaStore.services.get(value.serviceKey);
                 ReleaseGroup releaseGroup = upenaStore.releaseGroups.get(value.releaseGroupKey);
-
-                NannyHealth nannyHealth = nannyHealth(entrySet.getKey().toString());
+                
+                NannyHealth nannyHealth = nannyHealth(instanceKey);
                 double serviceHealth = serviceHealth(nannyHealth);
 
                 List<Node> linkable = new ArrayList<>();
@@ -234,7 +235,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegion.Top
                         n = new Node(cluster.name, id, "ccc", String.valueOf(fs), 0);
                         id++;
                         nodes.put(value.clusterKey.toString(), n);
-                        n.focusHtml = "";
+                        n.focusHtml = healthPluginRegion.render("topology", new HealthPluginRegion.HealthPluginRegionInput(cluster.name, "", ""));
                         fs -= 2;
 
                         n.maxHealth = Math.max(n.maxHealth, serviceHealth);
@@ -292,7 +293,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegion.Top
                         n = new Node(versions, id, idColor, String.valueOf(fs), 0);
                         id++;
                         nodes.put(value.releaseGroupKey.toString(), n);
-                        n.focusHtml = releasesPluginRegion.render("topo",
+                        n.focusHtml = healthPluginRegion.renderUIs(instanceKey) + "<br>" + releasesPluginRegion.render("topo",
                             new ReleasesPluginRegionInput(value.releaseGroupKey.toString(), releaseGroup.name, "", "", "", "", "filter"));
                         fs -= 2;
 
@@ -306,11 +307,11 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegion.Top
                 }
                 if (linkType.contains("linkInstance")) {
 
-                    Node n = nodes.get(entrySet.getKey().toString());
+                    Node n = nodes.get(instanceKey);
                     if (n == null) {
                         n = new Node(String.valueOf(value.instanceId), id, idColor, String.valueOf(fs), 0);
                         id++;
-                        nodes.put(entrySet.getKey().toString(), n);
+                        nodes.put(instanceKey, n);
 
                         HtmlCanvas hc = new HtmlCanvas();
                         healthPluginRegion.serviceHealth(hc, nannyHealth);

@@ -2,7 +2,6 @@ package com.jivesoftware.os.upena.deployable.region;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.jivesoftware.os.amza.shared.AmzaInstance;
@@ -46,7 +45,7 @@ import org.rendersnake.HtmlCanvas;
  *
  */
 // soy.page.healthPluginRegion
-public class HealthPluginRegion implements PageRegion<Optional<HealthPluginRegion.HealthPluginRegionInput>> {
+public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthPluginRegionInput> {
 
     private static final MetricLogger log = MetricLoggerFactory.getLogger();
 
@@ -83,11 +82,10 @@ public class HealthPluginRegion implements PageRegion<Optional<HealthPluginRegio
     }
 
     @Override
-    public String render(String user, Optional<HealthPluginRegionInput> optionalInput) {
+    public String render(String user, HealthPluginRegionInput input) {
         Map<String, Object> data = Maps.newHashMap();
 
         try {
-            HealthPluginRegionInput input = optionalInput.get();
 
             Map<String, String> filter = new HashMap<>();
             filter.put("cluster", input.cluster);
@@ -477,7 +475,7 @@ public class HealthPluginRegion implements PageRegion<Optional<HealthPluginRegio
     String trafficlightColorRGB(double value, float sat) {
         //String s = Integer.toHexString(Color.HSBtoRGB(0.6f, 1f - ((float) value), sat) & 0xffffff);
         Color color = new Color(Color.HSBtoRGB((float) value / 3f, sat, 1f));
-        return color.getRed()+","+color.getGreen()+","+color.getBlue();
+        return color.getRed() + "," + color.getGreen() + "," + color.getBlue();
     }
 
     String getHEXIdColor(double value, float sat) {
@@ -493,7 +491,7 @@ public class HealthPluginRegion implements PageRegion<Optional<HealthPluginRegio
         float hue = (float) value / 3f;
         hue = (1f / 3f) + (hue * 2);
         Color color = new Color(Color.HSBtoRGB(hue, sat, 1f));
-        return color.getRed()+","+color.getGreen()+","+color.getBlue();
+        return color.getRed() + "," + color.getGreen() + "," + color.getBlue();
     }
 
     public String renderUIs(String instanceKey) throws Exception {
