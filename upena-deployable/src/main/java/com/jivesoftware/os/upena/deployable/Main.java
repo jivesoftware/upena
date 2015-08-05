@@ -350,12 +350,15 @@ public class Main {
 
         HealthPluginRegion healthPluginRegion = new HealthPluginRegion("soy.page.healthPluginRegion", "soy.page.healthPluginRegionUIs", renderer, amzaService,
             upenaStore);
+        ReleasesPluginRegion releasesPluginRegion = new ReleasesPluginRegion("soy.page.releasesPluginRegion", renderer, upenaStore);
+
+
         ManagePlugin health = new ManagePlugin("fire", "Health", "/ui/health",
             HealthPluginEndpoints.class, healthPluginRegion);
         ManagePlugin topology = new ManagePlugin("transfer", "Topology", "/ui/topology",
             TopologyPluginEndpoints.class,
             new TopologyPluginRegion("soy.page.topologyPluginRegion", "soy.page.connectionsHealth",
-                renderer, amzaService, upenaStore, healthPluginRegion, discoveredRoutes));
+                renderer, amzaService, upenaStore, healthPluginRegion, releasesPluginRegion, discoveredRoutes));
         ManagePlugin changes = new ManagePlugin("road", "Changes", "/ui/changeLog",
             ChangeLogPluginEndpoints.class,
             new ChangeLogPluginRegion("soy.page.changeLogPluginRegion", renderer, upenaStore));
@@ -375,8 +378,7 @@ public class Main {
             ServicesPluginEndpoints.class,
             new ServicesPluginRegion("soy.page.servicesPluginRegion", renderer, amzaService, upenaStore, upenaService, ubaService, ringHost));
         ManagePlugin releases = new ManagePlugin("send", "Releases", "/ui/releases",
-            ReleasesPluginEndpoints.class,
-            new ReleasesPluginRegion("soy.page.releasesPluginRegion", renderer, upenaStore));
+            ReleasesPluginEndpoints.class, releasesPluginRegion);
 
         ManagePlugin dependencies = new ManagePlugin("list", "Deps", "/ui/dependencies",
             DependenciesPluginEndpoints.class,

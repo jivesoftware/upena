@@ -19,6 +19,7 @@ import com.jivesoftware.os.routing.bird.shared.HostPort;
 import com.jivesoftware.os.routing.bird.shared.InstanceConnectionHealth;
 import com.jivesoftware.os.upena.deployable.UpenaEndpoints.NannyHealth;
 import com.jivesoftware.os.upena.deployable.UpenaEndpoints.NodeHealth;
+import com.jivesoftware.os.upena.deployable.region.ReleasesPluginRegion.ReleasesPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.service.DiscoveredRoutes;
 import com.jivesoftware.os.upena.service.DiscoveredRoutes.Route;
@@ -52,6 +53,7 @@ import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.rendersnake.HtmlCanvas;
 
 /**
  *
@@ -69,6 +71,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegion.Top
     private final AmzaInstance amzaInstance;
     private final UpenaStore upenaStore;
     private final HealthPluginRegion healthPluginRegion;
+    private final ReleasesPluginRegion releasesPluginRegion;
     private final DiscoveredRoutes discoveredRoutes;
     private final ExecutorService executorService = Executors.newCachedThreadPool();
 
@@ -78,6 +81,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegion.Top
         AmzaInstance amzaInstance,
         UpenaStore upenaStore,
         HealthPluginRegion healthPluginRegion,
+        ReleasesPluginRegion releasesPluginRegion,
         DiscoveredRoutes discoveredRoutes) {
 
         this.template = template;
@@ -86,6 +90,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegion.Top
         this.amzaInstance = amzaInstance;
         this.upenaStore = upenaStore;
         this.healthPluginRegion = healthPluginRegion;
+        this.releasesPluginRegion = releasesPluginRegion;
         this.discoveredRoutes = discoveredRoutes;
     }
 
@@ -217,7 +222,8 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegion.Top
                 Service service = upenaStore.services.get(value.serviceKey);
                 ReleaseGroup releaseGroup = upenaStore.releaseGroups.get(value.releaseGroupKey);
 
-                double serviceHealth = serviceHealth(entrySet.getKey().toString());
+                NannyHealth nannyHealth = nannyHealth(entrySet.getKey().toString());
+                double serviceHealth = serviceHealth(nannyHealth);
 
                 List<Node> linkable = new ArrayList<>();
 
@@ -286,7 +292,8 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegion.Top
                         n = new Node(versions, id, idColor, String.valueOf(fs), 0);
                         id++;
                         nodes.put(value.releaseGroupKey.toString(), n);
-                        n.focusHtml = "";
+                        n.focusHtml = releasesPluginRegion.render("topo",
+                            new ReleasesPluginRegionInput(value.releaseGroupKey.toString(), releaseGroup.name, "", "", "", "", "filter"));
                         fs -= 2;
 
                         n.maxHealth = Math.max(n.maxHealth, serviceHealth);
@@ -304,7 +311,10 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegion.Top
                         n = new Node(String.valueOf(value.instanceId), id, idColor, String.valueOf(fs), 0);
                         id++;
                         nodes.put(entrySet.getKey().toString(), n);
-                        n.focusHtml = "";
+
+                        HtmlCanvas hc = new HtmlCanvas();
+                        healthPluginRegion.serviceHealth(hc, nannyHealth);
+                        n.focusHtml = hc.toHtml();
                         fs -= 2;
 
                         n.maxHealth = Math.max(n.maxHealth, serviceHealth);
@@ -401,7 +411,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegion.Top
                 id++;
                 nodes.put(serviceName, from);
 
-                double serviceHealth = serviceHealth(instanceId);
+                double serviceHealth = serviceHealth(nannyHealth(instanceId));
                 from.maxHealth = Math.max(from.maxHealth, serviceHealth);
                 from.minHealth = Math.min(from.minHealth, serviceHealth);
             } else {
@@ -420,7 +430,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegion.Top
                         id++;
                         nodes.put(toServiceName, to);
 
-                        double serviceHealth = serviceHealth(connectionHealth.connectionDescriptor.getInstanceDescriptor().instanceKey);
+                        double serviceHealth = serviceHealth(nannyHealth(connectionHealth.connectionDescriptor.getInstanceDescriptor().instanceKey));
                         to.maxHealth = Math.max(to.maxHealth, serviceHealth);
                         to.minHealth = Math.min(to.minHealth, serviceHealth);
                     }
@@ -534,7 +544,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegion.Top
         return idColor;
     }
 
-    private double serviceHealth(String instanceId) throws Exception {
+    private NannyHealth nannyHealth(String instanceId) throws Exception {
         NannyHealth health = null;
         Collection<NodeHealth> nodeHealths = healthPluginRegion.buildClusterHealth();
         for (NodeHealth nodeHealth : nodeHealths) {
@@ -545,8 +555,11 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegion.Top
                 }
             }
         }
-        double serviceHealth = health == null ? 0d : Math.max(0d, Math.min(health.serviceHealth.health, 1d));
-        return serviceHealth;
+        return health;
+    }
+
+    private double serviceHealth(NannyHealth health) {
+        return health == null ? 0d : Math.max(0d, Math.min(health.serviceHealth.health, 1d));
     }
 
     private String renderConnectionHealth(MinMaxDouble mmd, Map<String, Node> nodes, String from, String instanceId) throws Exception {
