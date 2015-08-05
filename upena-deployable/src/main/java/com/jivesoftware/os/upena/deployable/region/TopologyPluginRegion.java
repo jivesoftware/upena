@@ -257,7 +257,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegion.Top
                 }
 
                 String idColor = serviceIdColor(serviceColor, service.name);
-                    
+
                 if (linkType.contains("linkService")) {
                     Node n = nodes.get(value.serviceKey.toString());
                     if (n == null) {
@@ -277,13 +277,13 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegion.Top
                 if (linkType.contains("linkRelease")) {
                     Node n = nodes.get(value.releaseGroupKey.toString());
                     if (n == null) {
-                        String versions = "V:";
+                        String versions = "";
                         for (String dep : releaseGroup.version.split(",")) {
                             String[] coord = dep.split(":");
                             versions += coord[3] + "\n";
                         }
 
-                        n = new Node(versions, id, "888", String.valueOf(fs), 0);
+                        n = new Node(versions, id, idColor, String.valueOf(fs), 0);
                         id++;
                         nodes.put(value.releaseGroupKey.toString(), n);
                         n.focusHtml = "";
@@ -309,7 +309,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegion.Top
 
                         n.maxHealth = Math.max(n.maxHealth, serviceHealth);
                         n.minHealth = Math.min(n.minHealth, serviceHealth);
-                        n.tooltip = "";
+                        n.tooltip = service.name + "\n";
                         for (Map.Entry<String, Instance.Port> e : entrySet.getValue().getValue().ports.entrySet()) {
                             n.tooltip += e.getKey() + ":" + e.getValue().port + "\n";
                         }

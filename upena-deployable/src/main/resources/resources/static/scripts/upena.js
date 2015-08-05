@@ -380,52 +380,40 @@ upena.topology = {
                 var cx = n.point[0];
                 var cy = n.point[1];
 
-                var ox = 0;
                 if (node.label) {
-                    if (node.icon) {
-                        ox = iconSize;
-                    }
-                    text = r.text(cx + ox, cy, node.label).attr({"font-size": node.fontSize + "px", opacity: 1.0, fill: "#000"});
+                    text = r.text(cx, cy + iconSize, node.label).attr({"font-size": node.fontSize + "px", opacity: 1.0, fill: "#000"});
                     bb = text.getBBox(false);
-
                 }
 
                 if (node.icon) {
-                    if (bb) {
-                        icon = r.image("/static/img/" + node.icon + ".png", cx - iconSize, cy - halfIconSize, iconSize, iconSize);
-                        bb.x -= ox;
-                        bb.width += iconSize;
-                        bb.x2 = bb.x + bb.width;
-                    } else {
-                        icon = r.image("/static/img/" + node.icon + ".png", cx - halfIconSize, cy - halfIconSize, iconSize, iconSize);
-                        bb = {x: cx - halfIconSize, y: cy - halfIconSize, x2: cx + iconSize, y2: cy + iconSize, width: iconSize, height: iconSize};
-                    }
+                    icon = r.image("/static/img/" + node.icon + ".png", cx - halfIconSize, cy - halfIconSize, iconSize, iconSize);
+                    bb = {x: cx - halfIconSize, y: cy - halfIconSize, x2: cx + iconSize, y2: cy + iconSize, width: iconSize, height: iconSize};
                 }
 
                 var w = bb.width;
                 var h = bb.height;
-                var rx = (cx - ((w - ox) / 2));
-                var rectbg = r.rect(rx, cy - (h / 2), w, h).attr({
+                var s = (Math.max(w, h) / 2) + 2;
+
+                var rectbg = r.circle(cx, cy - 2, s).attr({
                     stroke: "none",
                     fill: "#fff",
-                    r: "6px",
                     "stroke-width": "1px",
                     opacity: 1,
                 });
-                var rectfg = r.rect(rx, cy - (h / 2), w, h).attr({
+                var rectfg = r.circle(cx, cy - 2, s).attr({
                     stroke: "#000",
                     fill: "#" + node.color,
-                    r: "6px",
                     "stroke-width": "1px",
                     opacity: 0.4,
                 });
-                var health = r.rect(rx - (hs / 2), cy - (h / 2) - (hs / 2), hs, hs).attr({
+                var health = r.circle(cx, cy - 2, s + 5).attr({
                     stroke: "#111",
                     fill: "270-#" + node.maxbgcolor + "-#" + node.minbgcolor,
-                    r: "4px",
                     "stroke-width": "1px",
                     opacity: 1.0,
                 });
+
+                health.toBack();
 
                 var set = r.set();
                 set.push(rectbg);
@@ -520,6 +508,7 @@ upena.connectivity = {
     init: function () {
 
         upena.connectivity.height = "600";
+        upena.connectivity.height = ($(document).height() / 3) * 2;
         upena.connectivity.width = $(document).width() - 100;
         var nodes = $('#upena-connectivity').data('nodes');
         var edges = $('#upena-connectivity').data('edges');
@@ -589,7 +578,10 @@ upena.connectivity = {
     }
 };
 
+
+
 $(document).ready(function () {
+   
     if ($('.upena-hs-field').length) {
         upena.hs.init();
     }

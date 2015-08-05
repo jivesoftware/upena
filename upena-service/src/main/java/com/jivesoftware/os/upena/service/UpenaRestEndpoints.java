@@ -485,7 +485,6 @@ public class UpenaRestEndpoints {
             LOG.info("connectionsRequest:" + connectionsRequest);
             ConnectionDescriptorsResponse connectionDescriptorsResponse = upenaService.connectionRequest(connectionsRequest);
             LOG.info("connectionDescriptorsResponse:" + connectionDescriptorsResponse);
-            discoveredRoutes.discovered(connectionsRequest, connectionDescriptorsResponse);
             return ResponseHelper.INSTANCE.jsonResponse(connectionDescriptorsResponse);
         } catch (Exception x) {
             LOG.warn("Failed to connectionsRequest:" + connectionsRequest, x);
