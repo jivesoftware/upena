@@ -463,7 +463,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegion.Top
                         String toServiceName = connectionHealth.connectionDescriptor.getInstanceDescriptor().serviceName;
                         to = nodes.get(toServiceName);
                         if (to == null) {
-                            to = new Node(toServiceName, id, serviceIdColor(serviceColor, serviceName), "12", 0);
+                            to = new Node(toServiceName, id, serviceIdColor(serviceColor, toServiceName), "12", 0);
                             nodes.put(toServiceName, to);
                             id++;
                         }
