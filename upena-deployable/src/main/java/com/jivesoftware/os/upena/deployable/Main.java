@@ -158,6 +158,8 @@ public class Main {
         int multicastPort = Integer.parseInt(System.getProperty("amza.discovery.port", "1123"));
         String clusterName = (args.length > 1 ? args[1] : null);
 
+        String publicHostName = System.getProperty("public.host.name", hostname);
+
         final RingHost ringHost = new RingHost(hostname, port); // TODO include rackId
         // todo need a better way to create writter id.
         final TimestampedOrderIdProvider orderIdProvider = new OrderIdProviderImpl(new ConstantWriterIdProvider(new Random().nextInt(512)));
@@ -231,11 +233,11 @@ public class Main {
         System.out.println("-----------------------------------------------------------------------");
 
         String workingDir = System.getProperty("user.dir");
-        Host host = new Host(ringHost.getHost(), ringHost.getHost(), ringHost.getPort(), workingDir, null);
+        Host host = new Host(publicHostName, ringHost.getHost(), ringHost.getPort(), workingDir, null);
         HostKey hostKey = upenaStore.hosts.toKey(host);
         Host gotHost = upenaStore.hosts.get(hostKey);
-        if (gotHost == null) {
-            host = new Host(ringHost.getHost(), ringHost.getHost(), ringHost.getPort(), workingDir, null);
+        if (gotHost == null || !publicHostName.equals(gotHost.name)) {
+            host = new Host(publicHostName, ringHost.getHost(), ringHost.getPort(), workingDir, null);
             upenaStore.hosts.update(null, host);
         }
 
