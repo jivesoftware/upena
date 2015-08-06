@@ -314,7 +314,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegion.Top
                         nodes.put(value.releaseGroupKey.toString(), n);
 
                         String title = title(cluster, host, service, versions, null);
-                        n.focusHtml = title + "<br>" + healthPluginRegion.renderUIs(instanceKey) + "<br>" + releasesPluginRegion.renderSimple(user,
+                        n.focusHtml = title + "<br>" + releasesPluginRegion.renderSimple(user,
                             new ReleasesPluginRegionInput(value.releaseGroupKey.toString(), releaseGroup.name, "", "", "", "", "filter"));
                         fs -= 2;
 

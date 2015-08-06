@@ -358,7 +358,7 @@ upena.topology = {
     init: function () {
 
         upena.topology.height = $(document).height() / 2;
-        upena.topology.width = $(document).width() / 2;
+        upena.topology.width = $(document).width() - 100;
         var nodes = $('#upena-topology').data('nodes');
         var edges = $('#upena-topology').data('edges');
         var legend = $('#upena-topology').data('legend');
@@ -510,7 +510,7 @@ upena.connectivity = {
     init: function () {
 
         upena.connectivity.height = $(document).height() / 2;
-        upena.connectivity.width = $(document).width() / 2;
+        upena.connectivity.width = $(document).width() - 100;
         var nodes = $('#upena-connectivity').data('nodes');
         var edges = $('#upena-connectivity').data('edges');
         /* http://www.graphdracula.net/ */
