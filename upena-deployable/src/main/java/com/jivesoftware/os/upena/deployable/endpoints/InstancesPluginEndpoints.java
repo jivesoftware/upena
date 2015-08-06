@@ -1,6 +1,5 @@
 package com.jivesoftware.os.upena.deployable.endpoints;
 
-import com.google.common.base.Optional;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.deployable.region.InstancesPluginRegion;
@@ -42,7 +41,7 @@ public class InstancesPluginEndpoints {
     @Produces(MediaType.TEXT_HTML)
     public Response instances(@Context HttpServletRequest httpRequest) {
         String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-            Optional.of(new InstancesPluginRegionInput("", "", "", "", "", "", "", "", "", "", false, "")));
+            new InstancesPluginRegionInput("", "", "", "", "", "", "", "", "", "", false, ""));
         return Response.ok(rendered).build();
     }
 
@@ -64,8 +63,7 @@ public class InstancesPluginEndpoints {
         @FormParam("enabled") @DefaultValue("false") boolean enabled,
         @FormParam("action") @DefaultValue("") String action) {
         String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-            Optional.of(new InstancesPluginRegionInput(
-                    key, clusterKey, cluster, hostKey, host, serviceKey, service, instanceId, releaseKey, release, enabled, action)));
+            new InstancesPluginRegionInput(key, clusterKey, cluster, hostKey, host, serviceKey, service, instanceId, releaseKey, release, enabled, action));
         return Response.ok(rendered).build();
     }
 

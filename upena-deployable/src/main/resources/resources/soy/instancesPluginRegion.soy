@@ -27,211 +27,223 @@
                     </div>
 
                     <div class="panel-body">
-                        <table class="table table-striped">
-
-                            <thead>
-                                <tr>
-                                    <th>Status</th>
-                                    <th>Enabled</th>
-                                    <th>Cluster</th>
-                                    <th>Host</th>
-                                    <th>Service</th>
-                                    <th>Ports</th>
-                                    <th>Id</th>
-                                    <th>Release</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <form id="filter-form" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
-                                    data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="instance">
-                                    <tr style="background-color:#ddd;">
-                                        <td>
-                                        </td>
-                                        <td bgcolor>
-                                            <input class="form-control" type="checkbox" name="enabled" value="true" {if $filters.enabled}checked="checked"{/if}>
-                                        </td>
-                                        <td>
-                                            <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                                placeholder="Cluster" value="{$filters.cluster?:''}" name="cluster" id="clusterPicker"
-                                                class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/clusters">
-                                            <input type="hidden" name="clusterKey" value="{$filters.clusterKey?:''}" />
-                                        </td>
-                                        <td>
-                                            <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                                placeholder="Host" value="{$filters.host?:''}" name="host" id="hostPicker"
-                                                class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/hosts">
-                                            <input type="hidden" name="hostKey" value="{$filters.hostKey?:''}" />
-                                        </td>
-                                        <td>
-                                            <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                                placeholder="Service" value="{$filters.service?:''}" name="service" id="servicePicker"
-                                                class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/services">
-                                            <input type="hidden" name="serviceKey" value="{$filters.serviceKey?:''}" />
-                                        </td>
-                                        <td>
-                                        </td>
-                                        <td>
-                                            <input type="text" autocomplete="off" role="combobox" class="form-control" style="width:200px; padding-left:10px;"
-                                                placeholder="Id" value="{$filters.instanceId?:''}" name="instanceId" id="idPicker">
-                                        </td>
-                                        <td>
-                                            <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                                placeholder="Release" value="{$filters.release?:''}" name="release" id="releasePicker"
-                                                class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/releases">
-                                            <input type="hidden" name="releaseKey" value="{$filters.releaseKey?:''}" />
-                                        </td>
-                                        <td>
-                                            <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary"><span class="glyphicon glyphicon-search"></span></button>
-                                            <button title="Add" type="submit" name="action" value="add" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span></button>
-                                        </td>
-                                    </tr>
-                                </form>
-
-                                {foreach $i in $instances}
-                                    <form id="edit-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
-                                        data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="editInstance">
-                                        <tr>
-                                            <td>
-                                                <pre>{$i.status}</pre>
-                                            </td>
-                                            <td>
-                                                <input class="form-control" type="checkbox" name="enabled" value="true" {if $i.enabled}checked="checked"{/if}>
-                                            </td>
-                                            <td>
-                                                <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                                    placeholder="Cluster" value="{$i.cluster.name}" name="cluster" class="upena-hs-field form-control"
-                                                    data-upena-lookup="/ui/lookup/clusters" />
-                                                <input type="hidden" name="clusterKey" value="{$i.cluster.key}" />
-                                            </td>
-                                            <td>
-                                                <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                                    placeholder="Host" value="{$i.host.name}" name="host" class="upena-hs-field form-control"
-                                                    data-upena-lookup="/ui/lookup/hosts" />
-                                                <input type="hidden" name="hostKey" value="{$i.host.key}" />
-                                            </td>
-                                            <td>
-                                                <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                                    placeholder="Service" value="{$i.service.name}" name="service" class="upena-hs-field form-control"
-                                                    data-upena-lookup="/ui/lookup/services" />
-                                                <input type="hidden" name="serviceKey" value="{$i.service.key}" />
-                                            </td>
-                                            <td>
-                                                <a href="#" rel="popover" id="popoverAnchor-{$i.key}" data-popover-content="#portsPopover-{$i.key}" data-placement="left" class="btn btn-primary" title="Ports">
-                                                    <span class="glyphicon glyphicon-menu-down"></span>Ports
-                                                </a>
-                                                <div id="portsPopover-{$i.key}" class="hide" style="overflow:scroll; height:400px;">
-                                                    <table>
-                                                        <thead>
-                                                            <tr>
-                                                                <th>Name</th>
-                                                                <th>Port</th>
-                                                                <th></th>
-                                                                <th></th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            <tr class="well">
-                                                                <td>
-                                                                    <input type="text" id="portName-{$i.key}" style="width:200px; padding-left:10px;"
-                                                                        placeholder="port name" value="">
-                                                                </td>
-                                                                <td>
-                                                                    <input type="number" id="port-{$i.key}" style="width:200px; padding-left:10px;"
-                                                                        placeholder="port number" value="">
-                                                                </td>
-                                                                <td>
-                                                                </td>
-                                                                <td>
-                                                                    <button title="Add" onClick="upena.instancePorts.addPort('{$i.key}')" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span></button>
-                                                                </td>
-                                                            </tr>
-                                                            {foreach $p in $i.ports}
-                                                                <tr>
-                                                                    <td>
-                                                                        {$p.portName}
-                                                                    </td>
-                                                                    <td>
-                                                                        {$p.port}
-                                                                    </td>
-                                                                    <td class="well" colspan="3">
-                                                                        <a href="#" rel="popover" id="propertyPopoverAnchor-{$i.key}-{$p.portName}" data-popover-content="#propertyPopover-{$i.key}-{$p.portName}" data-placement="left" class="btn btn-primary" title="{$p.portName} Properties">
-                                                                            <span class="glyphicon glyphicon-menu-down"></span>Properties
-                                                                        </a>
-                                                                        <div id="propertyPopover-{$i.key}-{$p.portName}" class="hide" style="overflow:scroll; height:400px;">
-                                                                            <table>
-                                                                                <thead>
-                                                                                    <tr>
-                                                                                        <th>Property</th>
-                                                                                        <th>Value</th>
-                                                                                        <th></th>
-                                                                                    </tr>
-                                                                                </thead>
-                                                                                <tbody>
-                                                                                    {foreach $nv in $p.properties}
-                                                                                        <tr>
-                                                                                            <td>
-                                                                                                {$nv.name}
-                                                                                            </td>
-                                                                                            <td>
-                                                                                                {$nv.value}
-                                                                                            </td>
-                                                                                            <td>
-                                                                                                <button title="Remove" onClick="upena.instancePorts.removePortProperty('{$i.key}', '{$p.portName}', '{$nv.name}')" class="btn btn-default"><span class="glyphicon glyphicon-trash"></span></button>
-                                                                                            </td>
-                                                                                        </tr>
-                                                                                    {/foreach}
-                                                                                    <tr>
-                                                                                        <td>
-                                                                                            <input type="text" id="portPropertyName-{$i.key}-{$p.portName}" style="width:200px; padding-left:10px;"
-                                                                                                placeholder="property name" value="">
-                                                                                        </td>
-                                                                                        <td>
-                                                                                            <input type="number" id="portPropertyValue-{$i.key}-{$p.portName}" style="width:200px; padding-left:10px;"
-                                                                                                placeholder="property value" value="">
-                                                                                        </td>
-                                                                                        <td>
-                                                                                            <button title="Add" onClick="upena.instancePorts.addPortProperty('{$i.key}', '{$p.portName}')" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span></button>
-                                                                                        </td>
-                                                                                    </tr>
-                                                                                </tbody>
-                                                                            </table>
-                                                                        </div>
-                                                                    </td>
-                                                                    <td>
-                                                                        <button title="Remove" onClick="upena.instancePorts.removePort('{$i.key}', '{$p.portName}')" class="btn btn-default"><span class="glyphicon glyphicon-trash"></span></button>
-                                                                    </td>
-                                                                </tr>
-                                                            {/foreach}
-                                                        </tbody>
-                                                    </table>
-
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                                    placeholder="Id" value="{$i.instanceId}" name="instanceId" class="form-control">
-                                            </td>
-                                            <td>
-                                                <input type="text" style="width:200px; padding-left:10px;"
-                                                    placeholder="Release" value="{$i.release.name}" name="release" class="upena-hs-field form-control"
-                                                    data-upena-lookup="/ui/lookup/releases" />
-                                                <input type="hidden" name="releaseKey" value="{$i.release.key}" />
-                                            </td>
-                                            <td>
-                                                <input type="hidden" name="key" value="{$i.key}">
-                                                <button title="Update" type="submit" name="action" value="restart" class="btn btn-default"><span class="glyphicon glyphicon-repeat"></span></button>
-                                                <button title="Update" type="submit" name="action" value="update" class="btn btn-default"><span class="glyphicon glyphicon-save"></span></button>
-                                                <button onclick="return confirm('Are you sure you want to delete?')" title="Remove" type="submit" name="action" value="remove" class="btn btn-default"><span class="glyphicon glyphicon-trash"></span></button>
-                                            </td>
-                                        </tr>
-                                    </form>
-                                {/foreach}
-                            </tbody>
-                        </table>
+                        {call .instancesPluginRegionList}
+                            {param instances: $instances /}
+                            {param filters: $filters /}
+                        {/call}
                     </div>
                 </div>
             </div>
         </div>
     {/if}
+{/template}
+
+/**
+ * @param? instances
+ * @param? filters
+ */
+{template .instancesPluginRegionList}
+   <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Status</th>
+                <th>Enabled</th>
+                <th>Cluster</th>
+                <th>Host</th>
+                <th>Service</th>
+                <th>Ports</th>
+                <th>Id</th>
+                <th>Release</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <form id="filter-form" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="instance">
+                {if $filters}
+                    <tr style="background-color:#ddd;">
+                        <td>
+                        </td>
+                        <td bgcolor>
+                            <input class="form-control" type="checkbox" name="enabled" value="true" {if $filters.enabled}checked="checked"{/if}>
+                        </td>
+                        <td>
+                            <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                placeholder="Cluster" value="{$filters.cluster?:''}" name="cluster" id="clusterPicker"
+                                class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/clusters">
+                            <input type="hidden" name="clusterKey" value="{$filters.clusterKey?:''}" />
+                        </td>
+                        <td>
+                            <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                placeholder="Host" value="{$filters.host?:''}" name="host" id="hostPicker"
+                                class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/hosts">
+                            <input type="hidden" name="hostKey" value="{$filters.hostKey?:''}" />
+                        </td>
+                        <td>
+                            <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                placeholder="Service" value="{$filters.service?:''}" name="service" id="servicePicker"
+                                class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/services">
+                            <input type="hidden" name="serviceKey" value="{$filters.serviceKey?:''}" />
+                        </td>
+                        <td>
+                        </td>
+                        <td>
+                            <input type="text" autocomplete="off" role="combobox" class="form-control" style="width:200px; padding-left:10px;"
+                                placeholder="Id" value="{$filters.instanceId?:''}" name="instanceId" id="idPicker">
+                        </td>
+                        <td>
+                            <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                placeholder="Release" value="{$filters.release?:''}" name="release" id="releasePicker"
+                                class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/releases">
+                            <input type="hidden" name="releaseKey" value="{$filters.releaseKey?:''}" />
+                        </td>
+                        <td>
+                            <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary"><span class="glyphicon glyphicon-search"></span></button>
+                            <button title="Add" type="submit" name="action" value="add" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span></button>
+                        </td>
+                    </tr>
+                {/if}
+            </form>
+
+            {foreach $i in $instances}
+                <form id="edit-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                    data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="editInstance">
+                    <tr>
+                        <td>
+                            <pre>{$i.status}</pre>
+                        </td>
+                        <td>
+                            <input class="form-control" type="checkbox" name="enabled" value="true" {if $i.enabled}checked="checked"{/if}>
+                        </td>
+                        <td>
+                            <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                placeholder="Cluster" value="{$i.cluster.name}" name="cluster" class="upena-hs-field form-control"
+                                data-upena-lookup="/ui/lookup/clusters" />
+                            <input type="hidden" name="clusterKey" value="{$i.cluster.key}" />
+                        </td>
+                        <td>
+                            <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                placeholder="Host" value="{$i.host.name}" name="host" class="upena-hs-field form-control"
+                                data-upena-lookup="/ui/lookup/hosts" />
+                            <input type="hidden" name="hostKey" value="{$i.host.key}" />
+                        </td>
+                        <td>
+                            <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                placeholder="Service" value="{$i.service.name}" name="service" class="upena-hs-field form-control"
+                                data-upena-lookup="/ui/lookup/services" />
+                            <input type="hidden" name="serviceKey" value="{$i.service.key}" />
+                        </td>
+                        <td>
+                            <a href="#" rel="popover" id="popoverAnchor-{$i.key}" data-popover-content="#portsPopover-{$i.key}" data-placement="left" class="btn btn-primary" title="Ports">
+                                <span class="glyphicon glyphicon-menu-down"></span>Ports
+                            </a>
+                            <div id="portsPopover-{$i.key}" class="hide" style="overflow:scroll; height:400px;">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Port</th>
+                                            <th></th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr class="well">
+                                            <td>
+                                                <input type="text" id="portName-{$i.key}" style="width:200px; padding-left:10px;"
+                                                    placeholder="port name" value="">
+                                            </td>
+                                            <td>
+                                                <input type="number" id="port-{$i.key}" style="width:200px; padding-left:10px;"
+                                                    placeholder="port number" value="">
+                                            </td>
+                                            <td>
+                                            </td>
+                                            <td>
+                                                <button title="Add" onClick="upena.instancePorts.addPort('{$i.key}')" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span></button>
+                                            </td>
+                                        </tr>
+                                        {foreach $p in $i.ports}
+                                            <tr>
+                                                <td>
+                                                    {$p.portName}
+                                                </td>
+                                                <td>
+                                                    {$p.port}
+                                                </td>
+                                                <td class="well" colspan="3">
+                                                    <a href="#" rel="popover" id="propertyPopoverAnchor-{$i.key}-{$p.portName}" data-popover-content="#propertyPopover-{$i.key}-{$p.portName}" data-placement="left" class="btn btn-primary" title="{$p.portName} Properties">
+                                                        <span class="glyphicon glyphicon-menu-down"></span>Properties
+                                                    </a>
+                                                    <div id="propertyPopover-{$i.key}-{$p.portName}" class="hide" style="overflow:scroll; height:400px;">
+                                                        <table>
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>Property</th>
+                                                                    <th>Value</th>
+                                                                    <th></th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                {foreach $nv in $p.properties}
+                                                                    <tr>
+                                                                        <td>
+                                                                            {$nv.name}
+                                                                        </td>
+                                                                        <td>
+                                                                            {$nv.value}
+                                                                        </td>
+                                                                        <td>
+                                                                            <button title="Remove" onClick="upena.instancePorts.removePortProperty('{$i.key}', '{$p.portName}', '{$nv.name}')" class="btn btn-default"><span class="glyphicon glyphicon-trash"></span></button>
+                                                                        </td>
+                                                                    </tr>
+                                                                {/foreach}
+                                                                <tr>
+                                                                    <td>
+                                                                        <input type="text" id="portPropertyName-{$i.key}-{$p.portName}" style="width:200px; padding-left:10px;"
+                                                                            placeholder="property name" value="">
+                                                                    </td>
+                                                                    <td>
+                                                                        <input type="number" id="portPropertyValue-{$i.key}-{$p.portName}" style="width:200px; padding-left:10px;"
+                                                                            placeholder="property value" value="">
+                                                                    </td>
+                                                                    <td>
+                                                                        <button title="Add" onClick="upena.instancePorts.addPortProperty('{$i.key}', '{$p.portName}')" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span></button>
+                                                                    </td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <button title="Remove" onClick="upena.instancePorts.removePort('{$i.key}', '{$p.portName}')" class="btn btn-default"><span class="glyphicon glyphicon-trash"></span></button>
+                                                </td>
+                                            </tr>
+                                        {/foreach}
+                                    </tbody>
+                                </table>
+
+                            </div>
+                        </td>
+                        <td>
+                            <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                placeholder="Id" value="{$i.instanceId}" name="instanceId" class="form-control">
+                        </td>
+                        <td>
+                            <input type="text" style="width:200px; padding-left:10px;"
+                                placeholder="Release" value="{$i.release.name}" name="release" class="upena-hs-field form-control"
+                                data-upena-lookup="/ui/lookup/releases" />
+                            <input type="hidden" name="releaseKey" value="{$i.release.key}" />
+                        </td>
+                        <td>
+                            <input type="hidden" name="key" value="{$i.key}">
+                            <button title="Update" type="submit" name="action" value="restart" class="btn btn-default"><span class="glyphicon glyphicon-repeat"></span></button>
+                            <button title="Update" type="submit" name="action" value="update" class="btn btn-default"><span class="glyphicon glyphicon-save"></span></button>
+                            <button onclick="return confirm('Are you sure you want to delete?')" title="Remove" type="submit" name="action" value="remove" class="btn btn-default"><span class="glyphicon glyphicon-trash"></span></button>
+                        </td>
+                    </tr>
+                </form>
+            {/foreach}
+        </tbody>
+    </table>
 {/template}

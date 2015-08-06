@@ -122,11 +122,11 @@ Raphael.fn.connection = function (obj1, obj2, style) {
             } else {
                 edge.fg = selfRef.path(path).attr({
                     stroke: style && style.fill.split("|")[0],
-                    fill: "none",
-                    "stroke-width": 3,
-                    "stroke-dasharray": [". "]
-                }).toBack();
-            }
+                        fill: "none",
+                        "stroke-width": 3,
+                        "stroke-dasharray": [". "]
+                    }).toBack();
+                }
 
             if (edge.bg) {
                 edge.bg.attr({path: path});

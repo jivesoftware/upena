@@ -350,21 +350,23 @@ public class Main {
 
         HealthPluginRegion healthPluginRegion = new HealthPluginRegion("soy.page.healthPluginRegion", "soy.page.healthPluginRegionUIs", renderer, amzaService,
             upenaStore);
-        ReleasesPluginRegion releasesPluginRegion = new ReleasesPluginRegion("soy.page.releasesPluginRegion", renderer, upenaStore);
-
+        ReleasesPluginRegion releasesPluginRegion = new ReleasesPluginRegion("soy.page.releasesPluginRegion","soy.page.releasesPluginRegionList",
+            renderer, upenaStore);
+        HostsPluginRegion hostsPluginRegion = new HostsPluginRegion("soy.page.hostsPluginRegion", renderer, upenaStore);
+        InstancesPluginRegion instancesPluginRegion = new InstancesPluginRegion("soy.page.instancesPluginRegion",
+            "soy.page.instancesPluginRegionList", renderer, upenaStore);
 
         ManagePlugin health = new ManagePlugin("fire", "Health", "/ui/health",
             HealthPluginEndpoints.class, healthPluginRegion);
         ManagePlugin topology = new ManagePlugin("transfer", "Topology", "/ui/topology",
             TopologyPluginEndpoints.class,
             new TopologyPluginRegion("soy.page.topologyPluginRegion", "soy.page.connectionsHealth",
-                renderer, amzaService, upenaStore, healthPluginRegion, releasesPluginRegion, discoveredRoutes));
+                renderer, amzaService, upenaStore, healthPluginRegion, hostsPluginRegion, releasesPluginRegion, instancesPluginRegion, discoveredRoutes));
         ManagePlugin changes = new ManagePlugin("road", "Changes", "/ui/changeLog",
             ChangeLogPluginEndpoints.class,
             new ChangeLogPluginRegion("soy.page.changeLogPluginRegion", renderer, upenaStore));
         ManagePlugin instances = new ManagePlugin("pencil", "Instances", "/ui/instances",
-            InstancesPluginEndpoints.class,
-            new InstancesPluginRegion("soy.page.instancesPluginRegion", renderer, upenaStore));
+            InstancesPluginEndpoints.class, instancesPluginRegion);
         ManagePlugin config = new ManagePlugin("cog", "Config", "/ui/config",
             ConfigPluginEndpoints.class,
             new ConfigPluginRegion("soy.page.configPluginRegion", renderer, upenaStore, upenaConfigStore));
@@ -372,8 +374,7 @@ public class Main {
             ClustersPluginEndpoints.class,
             new ClustersPluginRegion("soy.page.clustersPluginRegion", renderer, upenaStore));
         ManagePlugin hosts = new ManagePlugin("hdd", "Hosts", "/ui/hosts",
-            HostsPluginEndpoints.class,
-            new HostsPluginRegion("soy.page.hostsPluginRegion", renderer, upenaStore));
+            HostsPluginEndpoints.class, hostsPluginRegion);
         ManagePlugin services = new ManagePlugin("flag", "Services", "/ui/services",
             ServicesPluginEndpoints.class,
             new ServicesPluginRegion("soy.page.servicesPluginRegion", renderer, amzaService, upenaStore, upenaService, ubaService, ringHost));
@@ -408,17 +409,17 @@ public class Main {
             final File directory = new File(workingDirectory, tableDomain);
             directory.mkdirs();
             File file = new File(directory, tableName.getTableName() + ".kvt");
-            
+
             BinaryRowMarshaller rowMarshaller = new BinaryRowMarshaller();
             RowsIndexProvider tableIndexProvider = new RowsIndexProvider() {
-                
+
                 @Override
                 public RowsIndex createRowsIndex(TableName tableName) throws Exception {
                     NavigableMap<RowIndexKey, RowIndexValue> navigableMap = new ConcurrentSkipListMap<>();
                     return new MemoryRowsIndex(navigableMap);
                 }
             };
-            
+
             return new RowTable(tableName,
                 orderIdProvider,
                 rowMarshaller,

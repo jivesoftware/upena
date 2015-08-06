@@ -26,13 +26,16 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegion.Rel
     private static final MetricLogger log = MetricLoggerFactory.getLogger();
 
     private final String template;
+    private final String simpleTemplate;
     private final SoyRenderer renderer;
     private final UpenaStore upenaStore;
 
     public ReleasesPluginRegion(String template,
+        String simpleTemplate,
         SoyRenderer renderer,
         UpenaStore upenaStore) {
         this.template = template;
+        this.simpleTemplate = simpleTemplate;
         this.renderer = renderer;
         this.upenaStore = upenaStore;
     }
@@ -61,8 +64,18 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegion.Rel
 
     @Override
     public String render(String user, ReleasesPluginRegionInput input) {
-        Map<String, Object> data = Maps.newHashMap();
+        Map<String, Object> data = renderData(input, user);
+        return renderer.render(template, data);
+    }
 
+    public String renderSimple(String user, ReleasesPluginRegionInput input) {
+        Map<String, Object> data = renderData(input, user);
+        data.put("filters", null);
+        return renderer.render(simpleTemplate, data);
+    }
+
+    private Map<String, Object> renderData(ReleasesPluginRegionInput input, String user) {
+        Map<String, Object> data = Maps.newHashMap();
         try {
 
             Map<String, String> filters = new HashMap<>();
@@ -171,7 +184,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegion.Rel
                 row.put("version", value.version);
                 row.put("description", value.description);
 
-                if (input.action.equals("latest")) {
+                //if (input.action.equals("latest")) {
                     boolean newerVersionAvailable = false;
                     StringBuilder newerVersion = new StringBuilder();
                     LinkedHashMap<String, String> latestRelease = new CheckForLatestRelease().isLatestRelease(value.repository, value.version);
@@ -190,7 +203,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegion.Rel
                     } else {
                         row.put("runningLatest", "true");
                     }
-                }
+                //}
 
                 rows.add(row);
             }
@@ -199,8 +212,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegion.Rel
         } catch (Exception e) {
             log.error("Unable to retrieve data", e);
         }
-
-        return renderer.render(template, data);
+        return data;
     }
 
     @Override

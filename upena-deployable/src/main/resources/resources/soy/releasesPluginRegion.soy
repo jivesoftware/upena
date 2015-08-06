@@ -15,94 +15,103 @@
                             <pre>{$message}</pre>
                         </div>
                     {/if}
-                    <form id="add-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
-                                data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="addHost">
-                        <div class="panel-body">
-                            <div class="btn-group" role="group" aria-label="...">
-                                <button type="submit" name="action" value="latest" class="btn btn-default">Updates</button>
-                            </div>
-                        </div>
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Description</th>
-                                <th>Version</th>
-                                <th>Repository</th>
-                                <th>Email</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                                <tr style="background-color:#ddd;">
-                                    <td>
-                                        <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                        placeholder="Name" value="{$filters.name?:''}" name="name" id="namePicker" class="form-control">
-                                    </td>
-                                    <td>
-                                        <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                        placeholder="Description" value="{$filters.description?:''}" name="description" id="descriptionPicker" class="form-control">
-                                    </td>
-                                    <td>
-                                        <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                        placeholder="Version" value="{$filters.version?:''}" name="version" id="descriptionPicker" class="form-control">
-                                    </td>
-                                    <td>
-                                        <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                        placeholder="Repository" value="{$filters.repository?:''}" name="repository" id="descriptionPicker" class="form-control">
-                                    </td>
-                                    <td>
-                                        <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                        placeholder="Email" value="{$filters.email?:''}" name="email" id="descriptionPicker" class="form-control">
-                                    </td>
-                                    <td>
-                                        <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary"><span class="glyphicon glyphicon-search"></span></button>
-                                        <button title="Add" type="submit" name="action" value="add" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span></button>
-                                    <td>
-                                </tr>
-                            </form>
-
-                            {foreach $r in $releases}
-                                <form id="edit-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
-                                    data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="editHost">
-                                    <tr>    
-                                        <td>
-                                            <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                            placeholder="Name" value="{$r.name}" name="name" id="namePicker" class="form-control">
-                                        </td>
-                                        <td>
-                                            <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                            placeholder="Description" value="{$r.description}" name="description" id="descriptionPicker" class="form-control">
-                                        </td>
-                                        <td>
-                                            {if $r.runningLatest} 
-                                                {if $r.runningLatest == 'true'} 
-                                                    <pre style="background-color:green">This is the latest version/s.</pre>
-                                                {else}
-                                                    <pre style="background-color:orange">{$r.newerVersion}</pre>
-                                                {/if}
-                                            {/if}
-                                            <textarea name="version" rows="4" cols="45" class="form-control">{$r.version?:''}</textarea>
-                                        </td>
-                                        <td>
-                                            <textarea name="repository" rows="4" cols="45" class="form-control">{$r.repository?:''}</textarea>
-                                        </td>
-                                        <td>
-                                            <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                            placeholder="Email" value="{$r.email}" name="email" id="descriptionPicker" class="form-control">
-                                        </td>
-                                        <td>
-                                            <input type="hidden" name="key" value="{$r.key}">
-                                            <button title="Update" type="submit" name="action" value="update" class="btn btn-default"><span class="glyphicon glyphicon-save"></span></button>
-                                            <button onclick="return confirm('Are you sure you want to delete?')" title="Remove" type="submit" name="action" value="remove" class="btn btn-default"><span class="glyphicon glyphicon-trash"></span></button>
-                                        <td>
-                                    </tr>
-                                </form>
-                            {/foreach}
-                        </tbody>
-                    </table>
+                    {call .releasesPluginRegionList}
+                        {param releases: $releases /}
+                        {param filters: $filters /}
+                    {/call}
                 </div>
             </div>
         </div>
     {/if}
+{/template}
+
+/**
+ * @param? releases
+ * @param? filters
+ */
+{template .releasesPluginRegionList}
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Version</th>
+                <th>Repository</th>
+                <th>Email</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {if $filters}
+                <form id="add-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                    data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="addHost">
+                    <tr style="background-color:#ddd;">
+                        <td>
+                            <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                            placeholder="Name" value="{$filters.name?:''}" name="name" id="namePicker" class="form-control">
+                        </td>
+                        <td>
+                            <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                            placeholder="Description" value="{$filters.description?:''}" name="description" id="descriptionPicker" class="form-control">
+                        </td>
+                        <td>
+                            <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                            placeholder="Version" value="{$filters.version?:''}" name="version" id="descriptionPicker" class="form-control">
+                        </td>
+                        <td>
+                            <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                            placeholder="Repository" value="{$filters.repository?:''}" name="repository" id="descriptionPicker" class="form-control">
+                        </td>
+                        <td>
+                            <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                            placeholder="Email" value="{$filters.email?:''}" name="email" id="descriptionPicker" class="form-control">
+                        </td>
+                        <td>
+                            <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary"><span class="glyphicon glyphicon-search"></span></button>
+                            <button title="Add" type="submit" name="action" value="add" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span></button>
+                            <button type="submit" name="action" value="latest" class="btn btn-default">Updates</button>
+                        <td>
+                    </tr>
+                </form>
+            {/if}
+
+            {foreach $r in $releases}
+                <form id="edit-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                    data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="editHost">
+                    <tr>    
+                        <td>
+                            <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                            placeholder="Name" value="{$r.name}" name="name" id="namePicker" class="form-control">
+                        </td>
+                        <td>
+                            <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                            placeholder="Description" value="{$r.description}" name="description" id="descriptionPicker" class="form-control">
+                        </td>
+                        <td>
+                            {if $r.runningLatest} 
+                                {if $r.runningLatest == 'true'} 
+                                    <pre style="background-color:green">This is the latest version/s.</pre>
+                                {else}
+                                    <pre style="background-color:orange">{$r.newerVersion}</pre>
+                                {/if}
+                            {/if}
+                            <textarea name="version" rows="4" cols="45" class="form-control">{$r.version?:''}</textarea>
+                        </td>
+                        <td>
+                            <textarea name="repository" rows="4" cols="45" class="form-control">{$r.repository?:''}</textarea>
+                        </td>
+                        <td>
+                            <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                            placeholder="Email" value="{$r.email}" name="email" id="descriptionPicker" class="form-control">
+                        </td>
+                        <td>
+                            <input type="hidden" name="key" value="{$r.key}">
+                            <button title="Update" type="submit" name="action" value="update" class="btn btn-default"><span class="glyphicon glyphicon-save"></span></button>
+                            <button onclick="return confirm('Are you sure you want to delete?')" title="Remove" type="submit" name="action" value="remove" class="btn btn-default"><span class="glyphicon glyphicon-trash"></span></button>
+                        <td>
+                    </tr>
+                </form>
+            {/foreach}
+        </tbody>
+    </table>
 {/template}

@@ -357,8 +357,8 @@ upena.topology = {
     width: null,
     init: function () {
 
-        upena.topology.height = $(document).height() - 200;
-        upena.topology.width = $(document).width() - 100;
+        upena.topology.height = $(document).height() / 2;
+        upena.topology.width = $(document).width() / 2;
         var nodes = $('#upena-topology').data('nodes');
         var edges = $('#upena-topology').data('edges');
         var legend = $('#upena-topology').data('legend');
@@ -407,14 +407,14 @@ upena.topology = {
                     opacity: 0.4,
                 });
                 /*
-                var health = r.circle(cx, cy - 2, s + 5).attr({
-                    stroke: "#111",
-                    fill: "270-#" + node.maxbgcolor + "-#" + node.minbgcolor,
-                    "stroke-width": "1px",
-                    opacity: 1.0,
-                });
-
-                health.toBack();*/
+                 var health = r.circle(cx, cy - 2, s + 5).attr({
+                 stroke: "#111",
+                 fill: "270-#" + node.maxbgcolor + "-#" + node.minbgcolor,
+                 "stroke-width": "1px",
+                 opacity: 1.0,
+                 });
+                 
+                 health.toBack();*/
 
                 var set = r.set();
                 set.push(rectbg);
@@ -481,7 +481,8 @@ upena.topology = {
                 var text = r.text(x, y, legend[i].name);
                 text.attr({"font-size": 16 + "px", opacity: 1.0, fill: "#000"});
                 var bb = text.getBBox(true);
-                var rect = r.rect(x - (bb.height * 2) - 10, y - (bb.height / 2), bb.height, bb.height);
+                var rect = r.rect(x - ((bb.height * 2)), y - (bb.height / 2), bb.height, bb.height);
+                text.attr({x: bb.x + bb.width});
                 rect.attr({
                     stroke: "#000",
                     fill: "#" + legend[i].color,
@@ -490,7 +491,7 @@ upena.topology = {
                     opacity: 0.4,
                 });
 
-                y += bb.height + 10;
+                y += bb.height + 5;
             }
         }
     },
@@ -508,9 +509,8 @@ upena.connectivity = {
     width: null,
     init: function () {
 
-        upena.connectivity.height = "600";
-        upena.connectivity.height = ($(document).height() / 3) * 2;
-        upena.connectivity.width = $(document).width() - 100;
+        upena.connectivity.height = $(document).height() / 2;
+        upena.connectivity.width = $(document).width() / 2;
         var nodes = $('#upena-connectivity').data('nodes');
         var edges = $('#upena-connectivity').data('edges');
         /* http://www.graphdracula.net/ */
@@ -582,7 +582,7 @@ upena.connectivity = {
 
 
 $(document).ready(function () {
-   
+
     if ($('.upena-hs-field').length) {
         upena.hs.init();
     }

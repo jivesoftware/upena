@@ -71,7 +71,9 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegion.Top
     private final AmzaInstance amzaInstance;
     private final UpenaStore upenaStore;
     private final HealthPluginRegion healthPluginRegion;
+    private final HostsPluginRegion hostsPluginRegion;
     private final ReleasesPluginRegion releasesPluginRegion;
+    private final InstancesPluginRegion instancesPluginRegion;
     private final DiscoveredRoutes discoveredRoutes;
     private final ExecutorService executorService = Executors.newCachedThreadPool();
 
@@ -81,7 +83,9 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegion.Top
         AmzaInstance amzaInstance,
         UpenaStore upenaStore,
         HealthPluginRegion healthPluginRegion,
+        HostsPluginRegion hostsPluginRegion,
         ReleasesPluginRegion releasesPluginRegion,
+        InstancesPluginRegion instancesPluginRegion,
         DiscoveredRoutes discoveredRoutes) {
 
         this.template = template;
@@ -90,7 +94,9 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegion.Top
         this.amzaInstance = amzaInstance;
         this.upenaStore = upenaStore;
         this.healthPluginRegion = healthPluginRegion;
+        this.hostsPluginRegion = hostsPluginRegion;
         this.releasesPluginRegion = releasesPluginRegion;
+        this.instancesPluginRegion = instancesPluginRegion;
         this.discoveredRoutes = discoveredRoutes;
     }
 
@@ -236,7 +242,9 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegion.Top
                         n = new Node(cluster.name, id, "ccc", String.valueOf(fs), 0);
                         id++;
                         nodes.put(value.clusterKey.toString(), n);
-                        n.focusHtml = healthPluginRegion.render("topology", new HealthPluginRegion.HealthPluginRegionInput(cluster.name, "", ""));
+                        String title = title(cluster, null, null, null, null);
+                        n.focusHtml = title + "<br>" + healthPluginRegion.render("topology",
+                            new HealthPluginRegion.HealthPluginRegionInput(cluster.name, "", ""));
                         fs -= 2;
 
                         n.maxHealth = Math.max(n.maxHealth, serviceHealth);
@@ -254,7 +262,13 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegion.Top
                         n.tooltip = host.hostName;
                         id++;
                         nodes.put(value.hostKey.toString(), n);
-                        n.focusHtml = "";
+                        String title = title(cluster, host, null, null, null);
+                        n.focusHtml = title + "<br>" + instancesPluginRegion.renderSimple(user, new InstancesPluginRegion.InstancesPluginRegionInput(
+                            "", "", "", value.hostKey.getKey(), host.name, "", "", "", "", "", false, "filter"));
+
+                        /*
+                         n.focusHtml = hostsPluginRegion.render(user,
+                         new HostsPluginRegion.HostsPluginRegionInput(value.hostKey.getKey(), host.name, host.hostName, "", "", "filter"));*/
                         fs -= 2;
 
                         n.maxHealth = Math.max(n.maxHealth, serviceHealth);
@@ -272,7 +286,9 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegion.Top
                         n = new Node(null, id, idColor, String.valueOf(fs), 0);
                         id++;
                         nodes.put(value.serviceKey.toString(), n);
-                        n.focusHtml = "";
+                        String title = title(cluster, host, service, null, null);
+                        n.focusHtml = title + "<br>" + instancesPluginRegion.renderSimple(user, new InstancesPluginRegion.InstancesPluginRegionInput(
+                            "", "", "", "", "", value.serviceKey.toString(), service.name, "", "", "", false, "filter"));
                         fs -= 2;
 
                         n.maxHealth = Math.max(n.maxHealth, serviceHealth);
@@ -282,19 +298,23 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegion.Top
                     }
                     linkable.add(n);
                 }
+
+                String versions = "";
+                for (String dep : releaseGroup.version.split(",")) {
+                    String[] coord = dep.split(":");
+                    versions += coord[3] + "\n";
+                }
+
                 if (linkType.contains("linkRelease")) {
                     Node n = nodes.get(value.releaseGroupKey.toString());
                     if (n == null) {
-                        String versions = "";
-                        for (String dep : releaseGroup.version.split(",")) {
-                            String[] coord = dep.split(":");
-                            versions += coord[3] + "\n";
-                        }
 
                         n = new Node(versions, id, idColor, String.valueOf(fs), 0);
                         id++;
                         nodes.put(value.releaseGroupKey.toString(), n);
-                        n.focusHtml = healthPluginRegion.renderUIs(instanceKey) + "<br>" + releasesPluginRegion.render(user,
+
+                        String title = title(cluster, host, service, versions, null);
+                        n.focusHtml = title + "<br>" + healthPluginRegion.renderUIs(instanceKey) + "<br>" + releasesPluginRegion.renderSimple(user,
                             new ReleasesPluginRegionInput(value.releaseGroupKey.toString(), releaseGroup.name, "", "", "", "", "filter"));
                         fs -= 2;
 
@@ -316,7 +336,8 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegion.Top
 
                         HtmlCanvas hc = new HtmlCanvas();
                         healthPluginRegion.serviceHealth(hc, nannyHealth);
-                        n.focusHtml = hc.toHtml();
+                        String title = title(cluster, host, service, versions, entrySet);
+                        n.focusHtml = title + "<br>" + healthPluginRegion.renderUIs(instanceKey) + "<br>" + hc.toHtml();
                         fs -= 2;
 
                         n.maxHealth = Math.max(n.maxHealth, serviceHealth);
@@ -385,6 +406,32 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegion.Top
 
     }
 
+    private String title(Cluster cluster, Host host, Service service, String versions, Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet) {
+        String title = "<label>";
+        if (cluster != null) {
+            title += "<img src=\"/static/img/cluster.png\" alt=\"Cluster\" style=\"width:24px;height:24px;\">&nbsp";
+            title += cluster.name + "&nbsp&nbsp&nbsp";
+        }
+        if (host != null) {
+            title += "<img src=\"/static/img/host.png\" alt=\"Host\" style=\"width:24px;height:24px;\">&nbsp";
+            title += host.name + "&nbsp&nbsp&nbsp";
+        }
+        if (service != null) {
+            title += "<img src=\"/static/img/service.png\" alt=\"Service\" style=\"width:24px;height:24px;\">&nbsp";
+            title += service.name + "&nbsp&nbsp&nbsp";
+        }
+        if (versions != null) {
+            title += "<img src=\"/static/img/release.png\" alt=\"Release\" style=\"width:24px;height:24px;\">&nbsp";
+            title += versions + "&nbsp&nbsp&nbsp";
+        }
+        if (entrySet != null) {
+            title += "<img src=\"/static/img/instance.png\" alt=\"Instance\" style=\"width:24px;height:24px;\">&nbsp";
+            title += entrySet.getValue().getValue().instanceId + "&nbsp&nbsp&nbsp";
+        }
+        title += "</lable>";
+        return title;
+    }
+
     private void connectivityGraph(String user, InstanceFilter filter,
         Map<String, Integer> serviceColor,
         Map<String, Object> data) throws Exception, JsonProcessingException {
@@ -428,7 +475,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegion.Top
                     String toServiceName = connectionHealth.connectionDescriptor.getInstanceDescriptor().serviceName;
                     Node to = nodes.get(toServiceName);
                     if (to == null) {
-                        to = new Node(toServiceName, id, serviceIdColor(serviceColor, serviceName), "12", 0);
+                        to = new Node(toServiceName, id, serviceIdColor(serviceColor, toServiceName), "12", 0);
                         id++;
                         nodes.put(toServiceName, to);
 

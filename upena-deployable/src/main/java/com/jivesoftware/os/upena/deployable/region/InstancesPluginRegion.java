@@ -1,7 +1,6 @@
 package com.jivesoftware.os.upena.deployable.region;
 
 import com.google.common.base.Joiner;
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.jivesoftware.os.jive.utils.ordered.id.JiveEpochTimestampProvider;
@@ -38,19 +37,22 @@ import org.apache.commons.lang.time.DurationFormatUtils;
  *
  */
 // soy.page.instancesPluginRegion
-public class InstancesPluginRegion implements PageRegion<Optional<InstancesPluginRegion.InstancesPluginRegionInput>> {
+public class InstancesPluginRegion implements PageRegion<InstancesPluginRegion.InstancesPluginRegionInput> {
 
     private static final MetricLogger log = MetricLoggerFactory.getLogger();
 
     private final String template;
+    private final String simpleTemplate;
     private final SoyRenderer renderer;
     private final UpenaStore upenaStore;
 
     public InstancesPluginRegion(String template,
+        String simpleTemplate,
         SoyRenderer renderer,
         UpenaStore upenaStore
     ) {
         this.template = template;
+        this.simpleTemplate = simpleTemplate;
         this.renderer = renderer;
         this.upenaStore = upenaStore;
     }
@@ -89,80 +91,88 @@ public class InstancesPluginRegion implements PageRegion<Optional<InstancesPlugi
     }
 
     @Override
-    public String render(String user, Optional<InstancesPluginRegionInput> optionalInput) {
+    public String render(String user, InstancesPluginRegionInput input) {
+        Map<String, Object> data = renderData(input, user);
+        return renderer.render(template, data);
+    }
+
+    public String renderSimple(String user, InstancesPluginRegionInput input) {
+        Map<String, Object> data = renderData(input, user);
+        data.put("filters", null);
+        return renderer.render(simpleTemplate, data);
+    }
+
+    private Map<String, Object> renderData(InstancesPluginRegionInput input, String user) {
         Map<String, Object> data = Maps.newHashMap();
-
         try {
-            if (optionalInput.isPresent()) {
-                InstancesPluginRegionInput input = optionalInput.get();
-                Map<String, Object> filters = new HashMap<>();
-                filters.put("clusterKey", input.clusterKey);
-                filters.put("cluster", input.cluster);
-                filters.put("hostKey", input.hostKey);
-                filters.put("host", input.host);
-                filters.put("serviceKey", input.serviceKey);
-                filters.put("service", input.service);
-                filters.put("instanceId", input.instanceId);
-                filters.put("releaseKey", input.releaseKey);
-                filters.put("release", input.release);
-                filters.put("enabled", input.enabled);
-                data.put("filters", filters);
 
-                InstanceFilter filter = new InstanceFilter(
-                    input.clusterKey.isEmpty() ? null : new ClusterKey(input.clusterKey),
-                    input.hostKey.isEmpty() ? null : new HostKey(input.hostKey),
-                    input.serviceKey.isEmpty() ? null : new ServiceKey(input.serviceKey),
-                    input.releaseKey.isEmpty() ? null : new ReleaseGroupKey(input.releaseKey),
-                    input.instanceId.isEmpty() ? null : Integer.parseInt(input.instanceId),
-                    0, 10000);
+            Map<String, Object> filters = new HashMap<>();
+            filters.put("clusterKey", input.clusterKey);
+            filters.put("cluster", input.cluster);
+            filters.put("hostKey", input.hostKey);
+            filters.put("host", input.host);
+            filters.put("serviceKey", input.serviceKey);
+            filters.put("service", input.service);
+            filters.put("instanceId", input.instanceId);
+            filters.put("releaseKey", input.releaseKey);
+            filters.put("release", input.release);
+            filters.put("enabled", input.enabled);
+            data.put("filters", filters);
 
-                if (input.action != null) {
-                    if (input.action.equals("filter")) {
-                        handleFilter(data, input);
-                    } else if (input.action.equals("add")) {
-                        handleAdd(user, filters, input, data);
-                    } else if (input.action.equals("update")) {
-                        handleUpdate(user, filters, input, data);
-                    } else if (input.action.equals("restart")) {
-                        handleRestart(user, filters, input, data);
-                    } else if (input.action.equals("remove")) {
-                        handleRemove(user, input, data);
-                    } else if (input.action.equals("restartAllNow")) {
-                        handleRestartAllNow(user, filter);
-                    } else if (input.action.equals("restartAll")) {
-                        handleRestartAll(user, filter);
-                    } else if (input.action.equals("cancelRestartAll")) {
-                        handleCancelRestartAll(user, filter);
-                    }
+            InstanceFilter filter = new InstanceFilter(
+                input.clusterKey.isEmpty() ? null : new ClusterKey(input.clusterKey),
+                input.hostKey.isEmpty() ? null : new HostKey(input.hostKey),
+                input.serviceKey.isEmpty() ? null : new ServiceKey(input.serviceKey),
+                input.releaseKey.isEmpty() ? null : new ReleaseGroupKey(input.releaseKey),
+                input.instanceId.isEmpty() ? null : Integer.parseInt(input.instanceId),
+                0, 10000);
+
+            if (input.action != null) {
+                if (input.action.equals("filter")) {
+                    handleFilter(data, input);
+                } else if (input.action.equals("add")) {
+                    handleAdd(user, filters, input, data);
+                } else if (input.action.equals("update")) {
+                    handleUpdate(user, filters, input, data);
+                } else if (input.action.equals("restart")) {
+                    handleRestart(user, filters, input, data);
+                } else if (input.action.equals("remove")) {
+                    handleRemove(user, input, data);
+                } else if (input.action.equals("restartAllNow")) {
+                    handleRestartAllNow(user, filter);
+                } else if (input.action.equals("restartAll")) {
+                    handleRestartAll(user, filter);
+                } else if (input.action.equals("cancelRestartAll")) {
+                    handleCancelRestartAll(user, filter);
                 }
-
-                List<Map<String, Object>> rows = new ArrayList<>();
-
-                Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(filter);
-                for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {
-                    InstanceKey key = entrySet.getKey();
-                    TimestampedValue<Instance> timestampedValue = entrySet.getValue();
-                    Instance value = timestampedValue.getValue();
-
-                    rows.add(clusterToMap(key, value, timestampedValue));
-                }
-
-                data.put("instances", rows);
             }
+
+            List<Map<String, Object>> rows = new ArrayList<>();
+
+            Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(filter);
+            for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {
+                InstanceKey key = entrySet.getKey();
+                TimestampedValue<Instance> timestampedValue = entrySet.getValue();
+                Instance value = timestampedValue.getValue();
+
+                rows.add(clusterToMap(key, value, timestampedValue));
+            }
+
+            data.put("instances", rows);
+
         } catch (Exception e) {
             log.error("Unable to retrieve data", e);
         }
-
-        return renderer.render(template, data);
+        return data;
     }
 
     private void handleFilter(Map<String, Object> data, InstancesPluginRegionInput input) {
         data.put("message", "Filtering: "
-                + "cluster.equals '" + input.cluster + "' "
-                + "host.equals '" + input.host + "' "
-                + "service.equals '" + input.service + "' "
-                + "release.equals '" + input.release + "'"
-                + "id.equals '" + input.instanceId + "'"
+            + "cluster.equals '" + input.cluster + "' "
+            + "host.equals '" + input.host + "' "
+            + "service.equals '" + input.service + "' "
+            + "release.equals '" + input.release + "'"
+            + "id.equals '" + input.instanceId + "'"
         );
     }
 
@@ -281,7 +291,7 @@ public class InstancesPluginRegion implements PageRegion<Optional<InstancesPlugi
                 upenaStore.instances.update(null, newInstance);
                 upenaStore.record(user, "added", System.currentTimeMillis(), "", "instance-ui",
                     instanceToHumanReadableString(newInstance) + "\n" + newInstance
-                        .toString());
+                    .toString());
 
                 data.put("message", "Created Instance.");
             }
@@ -358,7 +368,7 @@ public class InstancesPluginRegion implements PageRegion<Optional<InstancesPlugi
                     upenaStore.instances.update(new InstanceKey(input.key), updatedInstance);
 
                     upenaStore.record(user, "updated", System.currentTimeMillis(), "", "instance-ui", instanceToHumanReadableString(instance) + "\n"
-                            + updatedInstance.toString()
+                        + updatedInstance.toString()
                     );
                     data.put("message", "Updated Instance:" + input.key);
                 }

@@ -403,6 +403,9 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
     }
 
     public void serviceHealth(HtmlCanvas h, UpenaEndpoints.NannyHealth nannyHealth) throws IOException {
+        if (nannyHealth == null) {
+            return;
+        }
         InstanceDescriptor id = nannyHealth.instanceDescriptor;
         UpenaEndpoints.ServiceHealth serviceHealth = nannyHealth.serviceHealth;
 

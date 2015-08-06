@@ -1,6 +1,5 @@
 package com.jivesoftware.os.upena.deployable.endpoints;
 
-import com.google.common.base.Optional;
 import com.jivesoftware.os.upena.deployable.region.HostsPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.HostsPluginRegion.HostsPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
@@ -37,7 +36,7 @@ public class HostsPluginEndpoints {
     @Produces(MediaType.TEXT_HTML)
     public Response hosts(@Context HttpServletRequest httpRequest) {
         String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-            Optional.of(new HostsPluginRegionInput("", "", "", "", "", "")));
+            new HostsPluginRegionInput("", "", "", "", "", ""));
         return Response.ok(rendered).build();
     }
 
@@ -53,7 +52,7 @@ public class HostsPluginEndpoints {
         @FormParam("workingDirectory") @DefaultValue("") String workingDirectory,
         @FormParam("action") @DefaultValue("") String action) {
         String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-            Optional.of(new HostsPluginRegionInput(key, name, host, port, workingDirectory, action)));
+            new HostsPluginRegionInput(key, name, host, port, workingDirectory, action));
         return Response.ok(rendered).build();
     }
 }
