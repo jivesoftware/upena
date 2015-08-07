@@ -195,3 +195,7 @@ form#query-filters.query-show-advanced td.query-advanced { display: table-cell; 
     color: #111;
     background-color: #080808;
 }
+
+.table-hover tbody tr:hover td, .table-hover tbody tr:hover th {
+  background-color: #559cd9;
+}
