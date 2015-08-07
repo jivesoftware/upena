@@ -7,6 +7,7 @@ import com.jivesoftware.os.jive.utils.ordered.id.JiveEpochTimestampProvider;
 import com.jivesoftware.os.jive.utils.ordered.id.SnowflakeIdPacker;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
+import com.jivesoftware.os.upena.deployable.UpenaEndpoints;
 import com.jivesoftware.os.upena.deployable.region.InstancesPluginRegion.InstancesPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.service.UpenaStore;
@@ -25,6 +26,7 @@ import com.jivesoftware.os.upena.shared.ServiceKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -46,16 +48,19 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
     private final String simpleTemplate;
     private final SoyRenderer renderer;
     private final UpenaStore upenaStore;
+    private final HealthPluginRegion healthPluginRegion;
 
     public InstancesPluginRegion(String template,
         String simpleTemplate,
         SoyRenderer renderer,
-        UpenaStore upenaStore
+        UpenaStore upenaStore,
+        HealthPluginRegion healthPluginRegion
     ) {
         this.template = template;
         this.simpleTemplate = simpleTemplate;
         this.renderer = renderer;
         this.upenaStore = upenaStore;
+        this.healthPluginRegion = healthPluginRegion;
     }
 
     public static class InstancesPluginRegionInput implements PluginInput {
@@ -386,10 +391,33 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
         }
     }
 
+    private UpenaEndpoints.NannyHealth nannyHealth(String instanceId) throws Exception {
+        UpenaEndpoints.NannyHealth health = null;
+        Collection<UpenaEndpoints.NodeHealth> nodeHealths = healthPluginRegion.buildClusterHealth();
+        for (UpenaEndpoints.NodeHealth nodeHealth : nodeHealths) {
+            for (UpenaEndpoints.NannyHealth nannyHealth : nodeHealth.nannyHealths) {
+                if (nannyHealth.instanceDescriptor.instanceKey.equals(instanceId)) {
+                    health = nannyHealth;
+                    break;
+                }
+            }
+        }
+        return health;
+    }
+
     private Map<String, Object> clusterToMap(InstanceKey key, Instance value, TimestampedValue<Instance> timestampedValue) throws Exception {
         Map<String, Object> map = new HashMap<>();
         map.put("key", key.getKey());
         long now = System.currentTimeMillis();
+
+        UpenaEndpoints.NannyHealth nannyHealth = nannyHealth(key.getKey());
+        String color = "#666";
+        if (nannyHealth != null) {
+            color = "#" + healthPluginRegion.getHEXTrafficlightColor(nannyHealth.serviceHealth.health, 1f);
+        }
+
+        map.put("healthColor", color);
+
         if (value.restartTimestampGMTMillis > 0 && now < value.restartTimestampGMTMillis) {
             map.put("status", "Will restart in:" + DurationFormatUtils.formatDurationHMS(value.restartTimestampGMTMillis - now));
         } else {
