@@ -68,7 +68,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
         this.upenaStore = upenaStore;
     }
 
-    public static class HealthPluginRegionInput {
+    public static class HealthPluginRegionInput implements PluginInput{
 
         final String cluster;
         final String host;
@@ -78,6 +78,10 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
             this.cluster = cluster;
             this.host = host;
             this.service = service;
+        }
+
+        public String name() {
+            return "Health";
         }
     }
 
@@ -360,16 +364,16 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
     private final ConcurrentMap<RingHost, Boolean> currentlyExecuting = Maps.newConcurrentMap();
 
     Collection<UpenaEndpoints.NodeHealth> buildClusterHealth() throws Exception {
-//        for (RingHost ringHost : new RingHost[]{
-//            new RingHost("soa-prime-data5.phx1.jivehosted.com", 1175),
-//            new RingHost("soa-prime-data6.phx1.jivehosted.com", 1175),
-//            new RingHost("soa-prime-data7.phx1.jivehosted.com", 1175),
-//            new RingHost("soa-prime-data8.phx1.jivehosted.com", 1175),
-//            new RingHost("soa-prime-data9.phx1.jivehosted.com", 1175),
-//            new RingHost("soa-prime-data10.phx1.jivehosted.com", 1175)
-//        }) {
+        for (RingHost ringHost : new RingHost[]{
+            new RingHost("soa-prime-data5.phx1.jivehosted.com", 1175),
+            new RingHost("soa-prime-data6.phx1.jivehosted.com", 1175),
+            new RingHost("soa-prime-data7.phx1.jivehosted.com", 1175),
+            new RingHost("soa-prime-data8.phx1.jivehosted.com", 1175),
+            new RingHost("soa-prime-data9.phx1.jivehosted.com", 1175),
+            new RingHost("soa-prime-data10.phx1.jivehosted.com", 1175)
+        }) {
 
-        for (final RingHost ringHost : amzaInstance.getRing("MASTER")) {
+//        for (final RingHost ringHost : amzaInstance.getRing("MASTER")) {
             if (currentlyExecuting.putIfAbsent(ringHost, true) == null) {
                 executorService.submit(() -> {
                     try {

@@ -27,8 +27,8 @@ public class ReleaseGroupKeyProvider implements UpenaKeyProvider<ReleaseGroupKey
 
     @Override
     public ReleaseGroupKey getNodeKey(UpenaTable<ReleaseGroupKey, ReleaseGroup> table, ReleaseGroup value) {
-        String compositeKey = value.name + "|" + value.email;
-            String k = Long.toString(Math.abs(jenkinsHash.hash(compositeKey.getBytes(UTF8), 4)));
-            return new ReleaseGroupKey(k);
+        String compositeKey = value.name;
+        String k = Long.toString(Math.abs(jenkinsHash.hash(compositeKey.getBytes(UTF8), 4)));
+        return new ReleaseGroupKey(k);
     }
 }

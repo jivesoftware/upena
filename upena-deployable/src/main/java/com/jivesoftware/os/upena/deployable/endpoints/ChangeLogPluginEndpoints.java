@@ -1,6 +1,5 @@
 package com.jivesoftware.os.upena.deployable.endpoints;
 
-import com.google.common.base.Optional;
 import com.jivesoftware.os.upena.deployable.region.ChangeLogPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ChangeLogPluginRegion.ChangeLogPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
@@ -37,7 +36,7 @@ public class ChangeLogPluginEndpoints {
     @Produces(MediaType.TEXT_HTML)
     public Response hosts(@Context HttpServletRequest httpRequest) {
         String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-            Optional.of(new ChangeLogPluginRegionInput("", "", "", "", "", "", "")));
+            new ChangeLogPluginRegionInput("", "", "", "", "", "", ""));
         return Response.ok(rendered).build();
     }
 
@@ -54,7 +53,7 @@ public class ChangeLogPluginEndpoints {
         @FormParam("how") @DefaultValue("") String how,
         @FormParam("action") @DefaultValue("") String action) {
         String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-            Optional.of(new ChangeLogPluginRegionInput(who, what, when, where, why, how, action)));
+            new ChangeLogPluginRegionInput(who, what, when, where, why, how, action));
         return Response.ok(rendered).build();
     }
 }

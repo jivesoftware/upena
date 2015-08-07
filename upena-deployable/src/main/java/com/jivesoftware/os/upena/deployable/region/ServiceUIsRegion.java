@@ -48,9 +48,14 @@ public class ServiceUIsRegion implements PageRegion<ServiceUIsRegionInput> {
         this.upenaStore = upenaStore;
     }
 
-    public static class ServiceUIsRegionInput {
+    public static class ServiceUIsRegionInput implements PluginInput {
 
         public ServiceUIsRegionInput() {
+        }
+
+        @Override
+        public String name() {
+            return "UIs";
         }
 
     }

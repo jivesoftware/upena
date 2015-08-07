@@ -7,6 +7,7 @@ import com.jivesoftware.os.jive.utils.ordered.id.JiveEpochTimestampProvider;
 import com.jivesoftware.os.jive.utils.ordered.id.SnowflakeIdPacker;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
+import com.jivesoftware.os.upena.deployable.region.InstancesPluginRegion.InstancesPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.service.UpenaStore;
 import com.jivesoftware.os.upena.shared.Cluster;
@@ -37,7 +38,7 @@ import org.apache.commons.lang.time.DurationFormatUtils;
  *
  */
 // soy.page.instancesPluginRegion
-public class InstancesPluginRegion implements PageRegion<InstancesPluginRegion.InstancesPluginRegionInput> {
+public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionInput> {
 
     private static final MetricLogger log = MetricLoggerFactory.getLogger();
 
@@ -57,7 +58,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegion.I
         this.upenaStore = upenaStore;
     }
 
-    public static class InstancesPluginRegionInput {
+    public static class InstancesPluginRegionInput implements PluginInput {
 
         final String key;
         final String clusterKey;
@@ -86,6 +87,11 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegion.I
             this.release = release;
             this.enabled = enabled;
             this.action = action;
+        }
+
+        @Override
+        public String name() {
+            return "Instances";
         }
 
     }

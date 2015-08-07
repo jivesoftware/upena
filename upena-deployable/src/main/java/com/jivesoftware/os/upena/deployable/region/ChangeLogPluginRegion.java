@@ -1,9 +1,9 @@
 package com.jivesoftware.os.upena.deployable.region;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.Maps;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
+import com.jivesoftware.os.upena.deployable.region.ChangeLogPluginRegion.ChangeLogPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.service.UpenaStore;
 import com.jivesoftware.os.upena.shared.RecordedChange;
@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
  *
  */
 // soy.page.hostsPluginRegion
-public class ChangeLogPluginRegion implements PageRegion<Optional<ChangeLogPluginRegion.ChangeLogPluginRegionInput>> {
+public class ChangeLogPluginRegion implements PageRegion<ChangeLogPluginRegionInput> {
 
     private static final MetricLogger log = MetricLoggerFactory.getLogger();
 
@@ -33,7 +33,7 @@ public class ChangeLogPluginRegion implements PageRegion<Optional<ChangeLogPlugi
         this.upenaStore = upenaStore;
     }
 
-    public static class ChangeLogPluginRegionInput {
+    public static class ChangeLogPluginRegionInput implements PluginInput {
 
         final String who;
         final String what;
@@ -53,52 +53,54 @@ public class ChangeLogPluginRegion implements PageRegion<Optional<ChangeLogPlugi
             this.action = action;
         }
 
+        @Override
+        public String name() {
+            return "Changes";
+        }
+
     }
 
     @Override
-    public String render(String user, Optional<ChangeLogPluginRegionInput> optionalInput) {
+    public String render(String user, ChangeLogPluginRegionInput input) {
         Map<String, Object> data = Maps.newHashMap();
 
         try {
-            if (optionalInput.isPresent()) {
-                ChangeLogPluginRegionInput input = optionalInput.get();
 
-                Map<String, String> filters = new HashMap<>();
-                filters.put("who", input.who);
-                filters.put("what", input.what);
-                filters.put("when", String.valueOf(input.when));
-                filters.put("where", input.where);
-                filters.put("why", input.why);
-                filters.put("how", input.how);
+            Map<String, String> filters = new HashMap<>();
+            filters.put("who", input.who);
+            filters.put("what", input.what);
+            filters.put("when", String.valueOf(input.when));
+            filters.put("where", input.where);
+            filters.put("why", input.why);
+            filters.put("how", input.how);
 
-                final List<Map<String, String>> rows = new ArrayList<>();
-                upenaStore.log(TimeUnit.DAYS.toMillis(2), // TODO expose?
-                    0,
-                    100, // TODO expose?
-                    input.who,
-                    input.what,
-                    input.why,
-                    input.where,
-                    input.how,
-                    new UpenaStore.LogStream() {
+            final List<Map<String, String>> rows = new ArrayList<>();
+            upenaStore.log(TimeUnit.DAYS.toMillis(2), // TODO expose?
+                0,
+                100, // TODO expose?
+                input.who,
+                input.what,
+                input.why,
+                input.where,
+                input.how,
+                new UpenaStore.LogStream() {
 
-                        @Override
-                        public boolean stream(RecordedChange change) throws Exception {
-                            Map<String, String> row = new HashMap<>();
-                            row.put("who", change.who);
-                            row.put("what", change.what);
-                            row.put("when", String.valueOf(humanReadableUptime(System.currentTimeMillis() - change.when)));
-                            row.put("why", change.why);
-                            row.put("where", change.where);
-                            row.put("how", change.how);
-                            rows.add(row);
-                            return true;
-                        }
-                    });
+                    @Override
+                    public boolean stream(RecordedChange change) throws Exception {
+                        Map<String, String> row = new HashMap<>();
+                        row.put("who", change.who);
+                        row.put("what", change.what);
+                        row.put("when", String.valueOf(humanReadableUptime(System.currentTimeMillis() - change.when)));
+                        row.put("why", change.why);
+                        row.put("where", change.where);
+                        row.put("how", change.how);
+                        rows.add(row);
+                        return true;
+                    }
+                });
 
-                data.put("log", rows);
+            data.put("log", rows);
 
-            }
         } catch (Exception e) {
             log.error("Unable to retrieve data", e);
         }

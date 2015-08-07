@@ -1,11 +1,11 @@
 package com.jivesoftware.os.upena.deployable.region;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.Maps;
 import com.jivesoftware.os.amza.shared.AmzaInstance;
 import com.jivesoftware.os.amza.shared.RingHost;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
+import com.jivesoftware.os.upena.deployable.region.UpenaRingPluginRegion.UpenaRingPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.service.UpenaService;
 import com.jivesoftware.os.upena.service.UpenaStore;
@@ -19,7 +19,7 @@ import java.util.Map;
  *
  */
 // soy.page.upenaRingPluginRegion
-public class UpenaRingPluginRegion implements PageRegion<Optional<UpenaRingPluginRegion.UpenaRingPluginRegionInput>> {
+public class UpenaRingPluginRegion implements PageRegion<UpenaRingPluginRegionInput> {
 
     private static final MetricLogger log = MetricLoggerFactory.getLogger();
 
@@ -47,7 +47,7 @@ public class UpenaRingPluginRegion implements PageRegion<Optional<UpenaRingPlugi
         this.ringHost = ringHost;
     }
 
-    public static class UpenaRingPluginRegionInput {
+    public static class UpenaRingPluginRegionInput implements PluginInput {
 
         final String host;
         final String port;
@@ -59,34 +59,36 @@ public class UpenaRingPluginRegion implements PageRegion<Optional<UpenaRingPlugi
             this.action = action;
         }
 
+        @Override
+        public String name() {
+            return "Upena Ring";
+        }
+
     }
 
     @Override
-    public String render(String user, Optional<UpenaRingPluginRegionInput> optionalInput) {
+    public String render(String user, UpenaRingPluginRegionInput input) {
         Map<String, Object> data = Maps.newHashMap();
 
         try {
-            if (optionalInput.isPresent()) {
-                UpenaRingPluginRegionInput input = optionalInput.get();
 
-                if (input.action.equals("add")) {
-                    amzaInstance.addRingHost("master", new RingHost(input.host, Integer.parseInt(input.port)));
-                } else if (input.action.equals("remove")) {
-                    amzaInstance.removeRingHost("master", new RingHost(input.host, Integer.parseInt(input.port)));
-                }
-
-                List<Map<String, String>> rows = new ArrayList<>();
-                for (RingHost host : amzaInstance.getRing("master")) {
-
-                    Map<String, String> row = new HashMap<>();
-                    row.put("host", host.getHost());
-                    row.put("port", String.valueOf(host.getPort()));
-                    rows.add(row);
-                }
-
-                data.put("ring", rows);
-
+            if (input.action.equals("add")) {
+                amzaInstance.addRingHost("master", new RingHost(input.host, Integer.parseInt(input.port)));
+            } else if (input.action.equals("remove")) {
+                amzaInstance.removeRingHost("master", new RingHost(input.host, Integer.parseInt(input.port)));
             }
+
+            List<Map<String, String>> rows = new ArrayList<>();
+            for (RingHost host : amzaInstance.getRing("master")) {
+
+                Map<String, String> row = new HashMap<>();
+                row.put("host", host.getHost());
+                row.put("port", String.valueOf(host.getPort()));
+                rows.add(row);
+            }
+
+            data.put("ring", rows);
+
         } catch (Exception e) {
             log.error("Unable to retrieve data", e);
         }

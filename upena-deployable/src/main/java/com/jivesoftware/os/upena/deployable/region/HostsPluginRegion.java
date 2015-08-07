@@ -4,6 +4,7 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Maps;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
+import com.jivesoftware.os.upena.deployable.region.HostsPluginRegion.HostsPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.service.UpenaStore;
 import com.jivesoftware.os.upena.shared.Host;
@@ -19,7 +20,7 @@ import java.util.Map;
  *
  */
 // soy.page.hostsPluginRegion
-public class HostsPluginRegion implements PageRegion<HostsPluginRegion.HostsPluginRegionInput> {
+public class HostsPluginRegion implements PageRegion<HostsPluginRegionInput> {
 
     private static final MetricLogger log = MetricLoggerFactory.getLogger();
 
@@ -35,7 +36,7 @@ public class HostsPluginRegion implements PageRegion<HostsPluginRegion.HostsPlug
         this.upenaStore = upenaStore;
     }
 
-    public static class HostsPluginRegionInput {
+    public static class HostsPluginRegionInput implements PluginInput {
 
         final String key;
         final String name;
@@ -51,6 +52,11 @@ public class HostsPluginRegion implements PageRegion<HostsPluginRegion.HostsPlug
             this.port = port;
             this.workingDirectory = workingDirectory;
             this.action = action;
+        }
+
+        @Override
+        public String name() {
+            return "Hosts";
         }
 
     }

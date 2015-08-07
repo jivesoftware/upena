@@ -8,12 +8,9 @@
 {template .hostsPluginRegion}
     {if $hosts}
         <div class="panel panel-default">
-            <div class="panel-heading"><span class="glyphicon glyphicon-hdd"></span>{sp}Hosts</div>
                 <div class="panel-body">
                     {if $message}
-                        <div class="well">
-                            <pre>{$message}</pre>
-                        </div>
+                        <pre>{$message}</pre>
                     {/if}
                     <table class="table table-striped">
                         <thead>
@@ -21,7 +18,7 @@
                                 <th>Host</th>
                                 <th>Port</th>
                                 <th>Dir</th>
-                                <th>Name</th>
+                                <th>Public Address</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -43,7 +40,7 @@
                                     </td>
                                     <td>
                                         <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                        placeholder="Name" value="{$filters.name?:''}" name="name" id="namePicker" class="form-control">
+                                        placeholder="Public Address" value="{$filters.name?:''}" name="name" id="namePicker" class="form-control">
                                     </td>
                                     <td>
                                         <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary"><span class="glyphicon glyphicon-search"></span></button>

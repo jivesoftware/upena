@@ -1,6 +1,5 @@
 package com.jivesoftware.os.upena.deployable.region;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.Maps;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
@@ -33,7 +32,7 @@ import org.eclipse.aether.resolution.ArtifactResult;
  *
  */
 // soy.page.instancesPluginRegion
-public class DependenciesPluginRegion implements PageRegion<Optional<DependenciesPluginRegion.DependenciesPluginRegionInput>> {
+public class DependenciesPluginRegion implements PageRegion<DependenciesPluginRegion.DependenciesPluginRegionInput> {
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
@@ -50,7 +49,7 @@ public class DependenciesPluginRegion implements PageRegion<Optional<Dependencie
         this.upenaStore = upenaStore;
     }
 
-    public static class DependenciesPluginRegionInput {
+    public static class DependenciesPluginRegionInput implements PluginInput {
 
         final String releaseKey;
         final String release;
@@ -62,39 +61,42 @@ public class DependenciesPluginRegion implements PageRegion<Optional<Dependencie
             this.action = action;
         }
 
+        @Override
+        public String name() {
+            return "Deps";
+        }
+
     }
 
     @Override
-    public String render(String user, Optional<DependenciesPluginRegionInput> optionalInput) {
+    public String render(String user, DependenciesPluginRegionInput input) {
         Map<String, Object> data = Maps.newHashMap();
 
         try {
-            if (optionalInput.isPresent()) {
-                DependenciesPluginRegionInput input = optionalInput.get();
-                Map<String, Object> filters = new HashMap<>();
-                filters.put("releaseKey", input.releaseKey);
-                filters.put("release", input.release);
-                data.put("filters", filters);
+            Map<String, Object> filters = new HashMap<>();
+            filters.put("releaseKey", input.releaseKey);
+            filters.put("release", input.release);
+            data.put("filters", filters);
 
-                List<Map<String, Object>> rows = new ArrayList<>();
-                ReleaseGroup releaseGroup = upenaStore.releaseGroups.get(new ReleaseGroupKey(input.releaseKey));
-                if (releaseGroup != null) {
-                    deploy(releaseGroup, rows);
-                }
-
-                Collections.sort(rows, (Map<String, Object> o1, Map<String, Object> o2) -> {
-                    int c = ((String) o1.get("groupId")).compareTo((String) o2.get("groupId"));
-                    if (c != 0) {
-                        return c;
-                    }
-                    c = ((String) o1.get("artifactId")).compareTo((String) o2.get("artifactId"));
-                    if (c != 0) {
-                        return c;
-                    }
-                    return c;
-                });
-                data.put("dependencies", rows);
+            List<Map<String, Object>> rows = new ArrayList<>();
+            ReleaseGroup releaseGroup = upenaStore.releaseGroups.get(new ReleaseGroupKey(input.releaseKey));
+            if (releaseGroup != null) {
+                deploy(releaseGroup, rows);
             }
+
+            Collections.sort(rows, (Map<String, Object> o1, Map<String, Object> o2) -> {
+                int c = ((String) o1.get("groupId")).compareTo((String) o2.get("groupId"));
+                if (c != 0) {
+                    return c;
+                }
+                c = ((String) o1.get("artifactId")).compareTo((String) o2.get("artifactId"));
+                if (c != 0) {
+                    return c;
+                }
+                return c;
+            });
+            data.put("dependencies", rows);
+
         } catch (Exception e) {
             LOG.error("Unable to retrieve data", e);
         }
@@ -139,7 +141,7 @@ public class DependenciesPluginRegion implements PageRegion<Optional<Dependencie
             collectResult.getRoot().accept(gatherDependencies);
 
         } catch (DependencyCollectionException ex) {
-             LOG.warn("Failed resolving artifact:", ex);
+            LOG.warn("Failed resolving artifact:", ex);
         }
 
     }

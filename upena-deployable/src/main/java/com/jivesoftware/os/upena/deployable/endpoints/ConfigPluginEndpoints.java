@@ -1,6 +1,5 @@
 package com.jivesoftware.os.upena.deployable.endpoints;
 
-import com.google.common.base.Optional;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.deployable.region.ConfigPluginRegion;
@@ -47,8 +46,8 @@ public class ConfigPluginEndpoints {
     @Produces(MediaType.TEXT_HTML)
     public Response services(@Context HttpServletRequest httpRequest) {
         String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-            Optional.of(new ConfigPluginRegionInput("", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", false, true, false,
-                    "", -1, "", -1, "")));
+            new ConfigPluginRegionInput("", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", false, true, false,
+                    "", -1, "", -1, ""));
         return Response.ok(rendered).build();
     }
 
@@ -94,7 +93,7 @@ public class ConfigPluginEndpoints {
             return Response.ok(export, MediaType.TEXT_PLAIN_TYPE).build();
         } else {
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-                Optional.of(configPluginRegionInput));
+                configPluginRegionInput);
             return Response.ok(rendered, MediaType.TEXT_HTML).build();
         }
     }

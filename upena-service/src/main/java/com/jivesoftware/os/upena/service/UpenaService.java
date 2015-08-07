@@ -237,7 +237,7 @@ public class UpenaService {
         if (releaseGroup == null) {
             return null;
         }
-        String releaseGroupName = releaseGroup.email;
+        String releaseGroupName = releaseGroup.name;
 
         InstanceDescriptor instanceDescriptor = new InstanceDescriptor(clusterKey.getKey(),
             clusterName,

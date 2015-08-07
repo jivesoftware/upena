@@ -1,6 +1,5 @@
 package com.jivesoftware.os.upena.deployable.endpoints;
 
-import com.google.common.base.Optional;
 import com.jivesoftware.os.upena.deployable.region.UpenaRingPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.UpenaRingPluginRegion.UpenaRingPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
@@ -38,7 +37,7 @@ public class UpenaRingPluginEndpoints {
     @Produces(MediaType.TEXT_HTML)
     public Response ring(@Context HttpServletRequest httpRequest) {
         String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-            Optional.of(new UpenaRingPluginRegionInput("", "", "")));
+            new UpenaRingPluginRegionInput("", "", ""));
         return Response.ok(rendered).build();
     }
 
@@ -51,7 +50,7 @@ public class UpenaRingPluginEndpoints {
         @FormParam("port") @DefaultValue("") String port,
         @FormParam("action") @DefaultValue("") String action) {
         String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-            Optional.of(new UpenaRingPluginRegionInput(host, port, action)));
+            new UpenaRingPluginRegionInput(host, port, action));
         return Response.ok(rendered).build();
     }
 }

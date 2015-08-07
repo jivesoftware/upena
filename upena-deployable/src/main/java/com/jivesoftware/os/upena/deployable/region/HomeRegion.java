@@ -41,7 +41,7 @@ public class HomeRegion implements PageRegion<HomeInput> {
         this.ringHost = ringHost;
     }
 
-    public static class HomeInput {
+    public static class HomeInput implements PluginInput {
 
         final String wgetURL;
         final String upenaClusterName;
@@ -49,6 +49,11 @@ public class HomeRegion implements PageRegion<HomeInput> {
         public HomeInput(String wgetURL, String upenaClusterName) {
             this.wgetURL = wgetURL;
             this.upenaClusterName = upenaClusterName;
+        }
+
+        @Override
+        public String name() {
+            return "Home";
         }
 
     }

@@ -179,3 +179,19 @@ form#query-filters.query-advanced { display: none; }
 form#query-filters.query-show-advanced tr.query-advanced { display: table-row; }
 form#query-filters.query-show-advanced td.query-advanced { display: table-cell; }
 
+.navbar-inverse .navbar-nav>.active>a, .navbar-inverse .navbar-nav>.open>a {
+    background-image: -webkit-linear-gradient(top,#080808 0,#0f0f0f 100%);
+    background-image: -o-linear-gradient(top,#080808 0,#0f0f0f 100%);
+    background-image: -webkit-gradient(linear,left top,left bottom,from(#080808),to(#0f0f0f));
+    background-image: linear-gradient(to bottom,#EEE 0,#BBB 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff080808', endColorstr='#ff0f0f0f', GradientType=0);
+    background-repeat: repeat-x;
+    -webkit-box-shadow: inset 0 3px 9px rgba(0,0,0,.25);
+    box-shadow: inset 0 3px 9px rgba(0,0,0,.25);
+}
+
+
+.navbar-inverse .navbar-nav>.active>a, .navbar-inverse .navbar-nav>.active>a:focus, .navbar-inverse .navbar-nav>.active>a:hover {
+    color: #111;
+    background-color: #080808;
+}

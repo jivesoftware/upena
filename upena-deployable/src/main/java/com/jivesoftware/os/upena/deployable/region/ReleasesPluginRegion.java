@@ -4,6 +4,7 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Maps;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
+import com.jivesoftware.os.upena.deployable.region.ReleasesPluginRegion.ReleasesPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.service.UpenaStore;
 import com.jivesoftware.os.upena.shared.ReleaseGroup;
@@ -21,7 +22,7 @@ import java.util.Map.Entry;
  *
  */
 // soy.page.releasesPluginRegion
-public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegion.ReleasesPluginRegionInput> {
+public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInput> {
 
     private static final MetricLogger log = MetricLoggerFactory.getLogger();
 
@@ -40,7 +41,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegion.Rel
         this.upenaStore = upenaStore;
     }
 
-    public static class ReleasesPluginRegionInput {
+    public static class ReleasesPluginRegionInput implements PluginInput {
 
         final String key;
         final String name;
@@ -58,6 +59,11 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegion.Rel
             this.repository = repository;
             this.email = email;
             this.action = action;
+        }
+
+        @Override
+        public String name() {
+            return "Releases";
         }
 
     }
@@ -185,24 +191,24 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegion.Rel
                 row.put("description", value.description);
 
                 //if (input.action.equals("latest")) {
-                    boolean newerVersionAvailable = false;
-                    StringBuilder newerVersion = new StringBuilder();
-                    LinkedHashMap<String, String> latestRelease = new CheckForLatestRelease().isLatestRelease(value.repository, value.version);
-                    for (Entry<String, String> e : latestRelease.entrySet()) {
-                        if (newerVersion.length() > 0) {
-                            newerVersion.append(",");
-                        }
-                        newerVersion.append(e.getValue());
-                        if (!e.getKey().equals(e.getValue())) {
-                            newerVersionAvailable = true;
-                        }
+                boolean newerVersionAvailable = false;
+                StringBuilder newerVersion = new StringBuilder();
+                LinkedHashMap<String, String> latestRelease = new CheckForLatestRelease().isLatestRelease(value.repository, value.version);
+                for (Entry<String, String> e : latestRelease.entrySet()) {
+                    if (newerVersion.length() > 0) {
+                        newerVersion.append(",");
                     }
-                    if (newerVersionAvailable) {
-                        row.put("runningLatest", "false");
-                        row.put("newerVersion", newerVersion.toString());
-                    } else {
-                        row.put("runningLatest", "true");
+                    newerVersion.append(e.getValue());
+                    if (!e.getKey().equals(e.getValue())) {
+                        newerVersionAvailable = true;
                     }
+                }
+                if (newerVersionAvailable) {
+                    row.put("runningLatest", "false");
+                    row.put("newerVersion", newerVersion.toString());
+                } else {
+                    row.put("runningLatest", "true");
+                }
                 //}
 
                 rows.add(row);
