@@ -361,7 +361,12 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
 
                 System.out.println("linkable.size() = " + linkable.size());
                 for (int i = 0; i < linkable.size() - 1; i++) {
-                    addEdge(edges, linkable.get(i), linkable.get(i + 1));
+                    Node f = linkable.get(i);
+                    Node t = linkable.get(i + 1);
+                    Edge e = addEdge(edges, f, t);
+                    e.min = Math.min(e.min, t.minHealth);
+                    e.max = Math.min(e.max, t.maxHealth);
+
                 }
             }
         }
@@ -374,9 +379,11 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
             if (n.maxHealth == Double.MAX_VALUE) {
                 node.put("maxbgcolor", n.bgcolor);
                 node.put("minbgcolor", n.bgcolor);
+                node.put("healthRadius", "0");
             } else {
                 node.put("maxbgcolor", healthPluginRegion.getHEXTrafficlightColor(n.maxHealth, 1f));
                 node.put("minbgcolor", healthPluginRegion.getHEXTrafficlightColor(n.minHealth, 1f));
+                node.put("healthRadius", String.valueOf((int) (1d - n.minHealth) * 4));
             }
             if (n.tooltip != null) {
                 node.put("tooltip", n.tooltip);
@@ -405,7 +412,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
             edge.put("to", "id" + e.to);
             edge.put("color", "888");
             edge.put("minColor", "888");
-            edge.put("maxColor", "888");
+            edge.put("maxColor", healthPluginRegion.getHEXTrafficlightColor(e.min, 1f));
             renderEdges.add(edge);
         }
 

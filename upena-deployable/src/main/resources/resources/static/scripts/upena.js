@@ -591,6 +591,8 @@ upena.connectivity = {
 
 
 $(document).ready(function () {
+    
+    Ladda.bind( '.ladda-button button' );
 
     if ($('.upena-hs-field').length) {
         upena.hs.init();
