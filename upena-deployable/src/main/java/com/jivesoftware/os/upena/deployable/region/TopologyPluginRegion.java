@@ -383,7 +383,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
             } else {
                 node.put("maxbgcolor", healthPluginRegion.getHEXTrafficlightColor(n.maxHealth, 1f));
                 node.put("minbgcolor", healthPluginRegion.getHEXTrafficlightColor(n.minHealth, 1f));
-                node.put("healthRadius", String.valueOf((int) (1d - n.minHealth) * 4));
+                node.put("healthRadius", String.valueOf((int) (1d - Math.max(0d, Math.min(1d, n.minHealth))) * 3));
             }
             if (n.tooltip != null) {
                 node.put("tooltip", n.tooltip);
@@ -568,7 +568,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
             } else {
                 node.put("maxbgcolor", healthPluginRegion.getHEXTrafficlightColor(n.maxHealth, 1f));
                 node.put("minbgcolor", healthPluginRegion.getHEXTrafficlightColor(n.minHealth, 1f));
-                node.put("healthRadius", String.valueOf((int) (1d - n.minHealth) * 4));
+                node.put("healthRadius", String.valueOf((int) (1d - Math.max(0d, Math.min(1d, n.minHealth))) * 3));
             }
             node.put("fontSize", n.fontSize);
             node.put("label", n.label + " (" + n.count + ")");
