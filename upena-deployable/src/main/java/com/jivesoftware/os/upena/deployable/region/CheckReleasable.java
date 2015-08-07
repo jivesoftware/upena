@@ -42,7 +42,7 @@ class CheckReleasable {
         RepositorySystem system = RepositoryProvider.newRepositorySystem();
         RepositorySystemSession session = RepositoryProvider.newRepositorySystemSession(system);
         String[] repos = repository.split(",");
-        List<RemoteRepository> remoteRepos = RepositoryProvider.newRepositories(system, session, repos);
+        List<RemoteRepository> remoteRepos = RepositoryProvider.newRepositories(system, session, null, repos);
 
         String[] deployablecoordinates = coordinates.trim().split(",");
         List<String> errors = new ArrayList<>();

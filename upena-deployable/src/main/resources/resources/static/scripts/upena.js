@@ -538,7 +538,7 @@ upena.connectivity = {
                 var rect = r.rect(n.point[0] - (w / 2) - (hs / 2), n.point[1] - (h / 2), w, h).attr({
                     stroke: "#000",
                     fill: "#" + node.color,
-                    r: "6px",
+                    r: "12px",
                     "stroke-width": "1px",
                     opacity: 0.4,
                 });
