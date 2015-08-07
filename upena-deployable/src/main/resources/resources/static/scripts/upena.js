@@ -416,7 +416,7 @@ upena.topology = {
                     opacity: 0.4,
                 });
 
-                var health = r.circle(cx, cy - 2, s + node.healthRadius).attr({
+                var health = r.circle(cx, cy - 2, parseInt(s) + parseInt(node.healthRadius)).attr({
                     stroke: "#111",
                     fill: "270-#" + node.maxbgcolor + "-#" + node.minbgcolor,
                     "stroke-width": "1px",
