@@ -32,14 +32,14 @@
                 </table>
             </form>
             <hr>
-            <div class="well">
-                <table class="table">
+            <div>
+                <table class="table table-hover table-condensed">
                     <thead>
                         <tr>
                             <th></th>
                             {foreach $service in $gridServices}
-                                <th>
-                                    <a href="#" rel="popover" id="popoverAnchor-{$service.service}" data-popover-content="#popover-{$service.service}" data-placement="bottom" class="btn btn-primary" title="{$service.service}">
+                                <th style="width:100%">
+                                    <a href="#" rel="popover" id="popoverAnchor-{$service.service}" data-popover-content="#popover-{$service.service}" data-placement="bottom" class="btn btn-primary btn-sm" title="{$service.service}">
                                         <span class="glyphicon glyphicon-menu-down"></span>{$service.service}
                                     </a>
                                     <div id="popover-{$service.service}" class="hide">
