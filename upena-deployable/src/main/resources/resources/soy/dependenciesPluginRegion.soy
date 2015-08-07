@@ -13,67 +13,62 @@
                 {if $message}
                     <pre>{$message}</pre>
                 {/if}
-                <div class="panel panel-default">
-                    
-                    <div class="panel-body">
-                        <table class="table table-hover table-condensed">
+                <table class="table table-hover table-condensed">
 
-                            <thead>
+                    <thead>
+                        <tr>
+                            <th>Release</th>
+                            <th>Group Id</th>
+                            <th>Artifact Id</th>
+                            <th>Version</th>
+                            <th>Latest</th>
+                            <th>Classifier</th>
+                            <th>Extension</th>
+                            <th>Snapshot</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <form id="filter-form" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                            data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="instance">
+                            <tr style="background-color:#ddd;">
+                                <td>
+                                    <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                        placeholder="Release" value="{$filters.release?:''}" name="release" id="releasePicker"
+                                        class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/releases">
+                                    <input type="hidden" name="releaseKey" value="{$filters.releaseKey?:''}" />
+                                </td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td>
+                                    <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary"><span class="glyphicon glyphicon-search"></span></button>
+                                </td>
+                            </tr>
+                        </form>
+
+                        {foreach $d in $dependencies}
+                            <form id="edit-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                                data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="editInstance">
                                 <tr>
-                                    <th>Release</th>
-                                    <th>Group Id</th>
-                                    <th>Artifact Id</th>
-                                    <th>Version</th>
-                                    <th>Latest</th>
-                                    <th>Classifier</th>
-                                    <th>Extension</th>
-                                    <th>Snapshot</th>
-                                    <th>Actions</th>
+                                    <td></td>
+                                    <td>{$d.groupId}</td>
+                                    <td>{$d.artifactId}</td>
+                                    <td style="background:{$d.versionColor}">{$d.version}</td>
+                                    <td style="background:{$d.versionColor}">{$d.latestVersion}</td>
+                                    <td>{$d.classifier}</td>
+                                    <td>{$d.extension}</td>
+                                    <td>{$d.isSnapshot}</td>
+                                    <td></td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                <form id="filter-form" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
-                                    data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="instance">
-                                    <tr style="background-color:#ddd;">
-                                        <td>
-                                            <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                                placeholder="Release" value="{$filters.release?:''}" name="release" id="releasePicker"
-                                                class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/releases">
-                                            <input type="hidden" name="releaseKey" value="{$filters.releaseKey?:''}" />
-                                        </td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td>
-                                            <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary"><span class="glyphicon glyphicon-search"></span></button>
-                                        </td>
-                                    </tr>
-                                </form>
-
-                                {foreach $d in $dependencies}
-                                    <form id="edit-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
-                                        data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="editInstance">
-                                        <tr>
-                                            <td></td>
-                                            <td>{$d.groupId}</td>
-                                            <td>{$d.artifactId}</td>
-                                            <td style="background:{$d.versionColor}">{$d.version}</td>
-                                            <td style="background:{$d.versionColor}">{$d.latestVersion}</td>
-                                            <td>{$d.classifier}</td>
-                                            <td>{$d.extension}</td>
-                                            <td>{$d.isSnapshot}</td>
-                                            <td></td>
-                                        </tr>
-                                    </form>
-                                {/foreach}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                            </form>
+                        {/foreach}
+                    </tbody>
+                </table>
             </div>
         </div>
     {/if}
