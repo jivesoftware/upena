@@ -109,7 +109,7 @@ public class DependenciesPluginRegion implements PageRegion<DependenciesPluginRe
         RepositorySystem system = RepositoryProvider.newRepositorySystem();
         RepositorySystemSession session = RepositoryProvider.newRepositorySystemSession(system);
         String[] repos = releaseGroup.repository.split(",");
-        List<RemoteRepository> remoteRepos = RepositoryProvider.newRepositories(system, session, repos);
+        List<RemoteRepository> remoteRepos = RepositoryProvider.newRepositories(system, session, null, repos);
         String[] deployablecoordinates = releaseGroup.version.trim().split(",");
         gather(deployablecoordinates[0], remoteRepos, system, session, rows);
 

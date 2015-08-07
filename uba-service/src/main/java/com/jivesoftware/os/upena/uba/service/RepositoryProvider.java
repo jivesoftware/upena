@@ -11,6 +11,7 @@ import org.eclipse.aether.connector.basic.BasicRepositoryConnectorFactory;
 import org.eclipse.aether.impl.DefaultServiceLocator;
 import org.eclipse.aether.repository.LocalRepository;
 import org.eclipse.aether.repository.RemoteRepository;
+import org.eclipse.aether.repository.RepositoryPolicy;
 import org.eclipse.aether.spi.connector.RepositoryConnectorFactory;
 import org.eclipse.aether.spi.connector.transport.TransporterFactory;
 import org.eclipse.aether.transport.file.FileTransporterFactory;
@@ -55,13 +56,19 @@ public class RepositoryProvider {
     }
 
     public static List<RemoteRepository> newRepositories(RepositorySystem system,
-            RepositorySystemSession session, String... repoUrls) {
+        RepositorySystemSession session, RepositoryPolicy policy, String... repoUrls) {
 
         List<RemoteRepository> repos = new ArrayList<>();
         repos.add(newCentralRepository());
         if (repoUrls != null) {
             for (String repoUrl : repoUrls) {
-                repos.add(new RemoteRepository.Builder("internal", "default", repoUrl).build());
+
+                RemoteRepository.Builder builder = new RemoteRepository.Builder("internal", "default", repoUrl);
+                if (policy != null) {
+                    builder.setPolicy(policy);
+                }
+
+                repos.add(builder.build());
             }
         }
         return repos;

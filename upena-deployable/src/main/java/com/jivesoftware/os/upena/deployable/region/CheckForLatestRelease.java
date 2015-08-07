@@ -26,6 +26,7 @@ import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.repository.RemoteRepository;
+import org.eclipse.aether.repository.RepositoryPolicy;
 import org.eclipse.aether.resolution.ArtifactRequest;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.resolution.ArtifactResult;
@@ -42,7 +43,9 @@ class CheckForLatestRelease {
         RepositorySystem system = RepositoryProvider.newRepositorySystem();
         RepositorySystemSession session = RepositoryProvider.newRepositorySystemSession(system);
         String[] repos = repository.split(",");
-        List<RemoteRepository> remoteRepos = RepositoryProvider.newRepositories(system, session, repos);
+        RepositoryPolicy policy = new RepositoryPolicy(true, RepositoryPolicy.UPDATE_POLICY_ALWAYS, RepositoryPolicy.CHECKSUM_POLICY_WARN);
+        List<RemoteRepository> remoteRepos = RepositoryProvider.newRepositories(system, session, policy, repos);
+        
 
         String[] deployablecoordinates = coordinates.trim().split(",");
         LinkedHashMap<String, String> currentToLatestReleases = new LinkedHashMap<>();
