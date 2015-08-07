@@ -415,15 +415,15 @@ upena.topology = {
                     "stroke-width": "1px",
                     opacity: 0.4,
                 });
-                /*
-                 var health = r.circle(cx, cy - 2, s + 5).attr({
-                 stroke: "#111",
-                 fill: "270-#" + node.maxbgcolor + "-#" + node.minbgcolor,
-                 "stroke-width": "1px",
-                 opacity: 1.0,
-                 });
-                 
-                 health.toBack();*/
+
+                var health = r.circle(cx, cy - 2, s + node.healthRadius).attr({
+                    stroke: "#111",
+                    fill: "270-#" + node.maxbgcolor + "-#" + node.minbgcolor,
+                    "stroke-width": "1px",
+                    opacity: 1.0,
+                });
+
+                health.toBack();
 
                 var set = r.set();
                 set.push(rectbg);
