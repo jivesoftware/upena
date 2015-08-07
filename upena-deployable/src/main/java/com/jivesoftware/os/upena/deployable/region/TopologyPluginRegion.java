@@ -133,7 +133,6 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
             return "Topology";
         }
 
-
     }
 
     @Override
@@ -555,12 +554,14 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
             Map<String, String> node = new HashMap<>();
             node.put("id", "id" + n.id);
 
-            if (n.maxHealth == Double.MAX_VALUE) {
+            if (n.minHealth == Double.MAX_VALUE) {
                 node.put("maxbgcolor", n.bgcolor);
                 node.put("minbgcolor", n.bgcolor);
+                node.put("healthRadius", "0");
             } else {
                 node.put("maxbgcolor", healthPluginRegion.getHEXTrafficlightColor(n.maxHealth, 1f));
                 node.put("minbgcolor", healthPluginRegion.getHEXTrafficlightColor(n.minHealth, 1f));
+                node.put("healthRadius", String.valueOf((int) (1d - n.minHealth) * 4));
             }
             node.put("fontSize", n.fontSize);
             node.put("label", n.label + " (" + n.count + ")");
