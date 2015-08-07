@@ -152,6 +152,8 @@ upena.instances = {
     init: function () {
     }
 };
+
+
 upena.clusterReleaseGroups = {
     add: function (clusterId) {
         var serviceId = $('#serviceId-' + clusterId).val();
@@ -349,6 +351,13 @@ upena.query = {
     },
 };
 
+upena.latestRelease = {
+    change: function (inputId, value) {
+        $('#' + inputId).val(value);
+        return true;
+    },
+};
+
 
 upena.topology = {
     layouter: null,
@@ -357,7 +366,7 @@ upena.topology = {
     width: null,
     init: function () {
 
-        upena.topology.height = $(document).height() / 2;
+        upena.topology.height = ($(document).height() / 4) * 3;
         upena.topology.width = $(document).width() - 100;
         var nodes = $('#upena-topology').data('nodes');
         var edges = $('#upena-topology').data('edges');
@@ -509,7 +518,7 @@ upena.connectivity = {
     width: null,
     init: function () {
 
-        upena.connectivity.height = $(document).height() / 2;
+        upena.connectivity.height = ($(document).height() / 4) * 3;
         upena.connectivity.width = $(document).width() - 100;
         var nodes = $('#upena-connectivity').data('nodes');
         var edges = $('#upena-connectivity').data('edges');

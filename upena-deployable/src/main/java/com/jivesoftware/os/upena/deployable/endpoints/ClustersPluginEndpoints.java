@@ -1,6 +1,5 @@
 package com.jivesoftware.os.upena.deployable.endpoints;
 
-import com.google.common.base.Optional;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.deployable.region.ClustersPluginRegion;
@@ -42,7 +41,7 @@ public class ClustersPluginEndpoints {
     public Response clusters(@Context HttpServletRequest httpRequest) {
         String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(),
             pluginRegion,
-            Optional.of(new ClustersPluginRegionInput("", "", "", "")));
+            new ClustersPluginRegionInput("", "", "", ""));
         return Response.ok(rendered).build();
     }
 
@@ -56,7 +55,7 @@ public class ClustersPluginEndpoints {
         @FormParam("description") @DefaultValue("") String description,
         @FormParam("action") @DefaultValue("") String action) {
         String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-            Optional.of(new ClustersPluginRegionInput(key, name, description, action)));
+            new ClustersPluginRegionInput(key, name, description, action));
         return Response.ok(rendered).build();
     }
 

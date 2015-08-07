@@ -1,9 +1,8 @@
 package com.jivesoftware.os.upena.deployable.region;
 
-import com.google.common.base.Function;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.jivesoftware.os.upena.deployable.region.HeaderRegion.HeaderInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import java.util.HashMap;
 import java.util.List;
@@ -13,7 +12,7 @@ import java.util.Map;
  *
  */
 // soy.chrome.chromeRegion
-public class ChromeRegion<I, R extends PageRegion<I>> implements Region<I> {
+public class ChromeRegion<I extends PluginInput, R extends PageRegion<I>> implements Region<I> {
 
     private final String template;
     private final SoyRenderer renderer;
@@ -31,13 +30,17 @@ public class ChromeRegion<I, R extends PageRegion<I>> implements Region<I> {
 
     @Override
     public String render(String user, I input) {
-        List<Map<String, String>> p = Lists.transform(plugins, new Function<ManagePlugin, Map<String, String>>() {
-            @Override
-            public Map<String, String> apply(ManagePlugin input) {
-                return ImmutableMap.of("name", input.name, "path", input.path, "glyphicon", input.glyphicon);
+        List<Map<String, String>> p = Lists.transform(plugins, (input1) -> {
+            Map<String, String> map = new HashMap<>();
+            map.put("name", input1.name);
+            if (input.name().equals(input1.name)) {
+                map.put("active", String.valueOf(input.name().equals(input1.name)));
             }
+            map.put("path", input1.path);
+            map.put("glyphicon", input1.glyphicon);
+            return map;
         });
-        Map<String, Object> headerData = new HashMap<>();
+        HeaderInput headerData = new HeaderInput();
         headerData.put("plugins", p);
         headerData.put("user", user);
 

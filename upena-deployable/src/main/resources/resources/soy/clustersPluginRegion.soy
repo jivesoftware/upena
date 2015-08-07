@@ -10,18 +10,14 @@
 {template .clustersPluginRegion}
     {if $clusters}
         <div class="panel panel-default">
-            <div class="panel-heading"><span class="glyphicon glyphicon-cloud"></span>{sp}Clusters</div>
                 <div class="panel-body">
                     {if $message}
-                        <div class="well">
-                            <pre>{$message}</pre>
-                        </div>
+                        <pre>{$message}</pre>
                     {/if}
                     <table class="table table-striped">
                         <thead>
                             <tr>
                                 <th>Name</th>
-                                <th>Description</th>
                                 <th>Releases</th>
                                 <th>Actions</th>
                             </tr>
@@ -33,10 +29,6 @@
                                     <td>
                                         <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
                                         placeholder="Name" value="{$filters.name?:''}" name="name" id="namePicker" class="form-control">
-                                    </td>
-                                    <td>
-                                        <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                        placeholder="Description" value="{$filters.description?:''}" name="description" id="descriptionPicker" class="form-control">
                                     </td>
                                     <td>
                                     </td>
@@ -54,10 +46,6 @@
                                         <td>
                                             <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
                                             placeholder="Name" value="{$c.name}" name="name" id="namePicker" class="form-control">
-                                        </td>
-                                        <td>
-                                            <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                            placeholder="Description" value="{$c.description}" name="description" id="descriptionPicker" class="form-control">
                                         </td>
                                         <td>
                                             <a href="#" rel="popover" id="releaseGroupPopoverAnchor-{$c.key}" data-popover-content="#releaseGroupPopover-{$c.key}" data-placement="left" class="btn btn-primary" title="Use these releases for this cluster">

@@ -6,6 +6,7 @@ import com.jivesoftware.os.upena.deployable.region.HeaderRegion;
 import com.jivesoftware.os.upena.deployable.region.HomeRegion.HomeInput;
 import com.jivesoftware.os.upena.deployable.region.ManagePlugin;
 import com.jivesoftware.os.upena.deployable.region.PageRegion;
+import com.jivesoftware.os.upena.deployable.region.PluginInput;
 import java.util.List;
 
 /**
@@ -39,11 +40,11 @@ public class SoyService {
         plugins.add(plugin);
     }
 
-    private <I, R extends PageRegion<I>> ChromeRegion<I, R> chrome(R region) {
+    private <I extends PluginInput, R extends PageRegion<I>> ChromeRegion<I, R> chrome(R region) {
         return new ChromeRegion<>("soy.chrome.chromeRegion", renderer, headerRegion, plugins, region);
     }
 
-    public <I> String renderPlugin(String user, PageRegion<I> pluginRegion, I input) {
+    public <I extends PluginInput> String renderPlugin(String user, PageRegion<I> pluginRegion, I input) {
         return chrome(pluginRegion).render(user, input);
     }
 }

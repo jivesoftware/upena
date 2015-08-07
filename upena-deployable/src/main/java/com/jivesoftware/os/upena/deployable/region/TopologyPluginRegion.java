@@ -20,6 +20,7 @@ import com.jivesoftware.os.routing.bird.shared.InstanceConnectionHealth;
 import com.jivesoftware.os.upena.deployable.UpenaEndpoints.NannyHealth;
 import com.jivesoftware.os.upena.deployable.UpenaEndpoints.NodeHealth;
 import com.jivesoftware.os.upena.deployable.region.ReleasesPluginRegion.ReleasesPluginRegionInput;
+import com.jivesoftware.os.upena.deployable.region.TopologyPluginRegion.TopologyPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.service.DiscoveredRoutes;
 import com.jivesoftware.os.upena.service.DiscoveredRoutes.Route;
@@ -59,7 +60,7 @@ import org.rendersnake.HtmlCanvas;
  *
  */
 // soy.page.healthPluginRegion
-public class TopologyPluginRegion implements PageRegion<TopologyPluginRegion.TopologyPluginRegionInput> {
+public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInput> {
 
     private static final MetricLogger log = MetricLoggerFactory.getLogger();
     private static final ObjectMapper MAPPER = new ObjectMapper();
@@ -100,7 +101,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegion.Top
         this.discoveredRoutes = discoveredRoutes;
     }
 
-    public static class TopologyPluginRegionInput {
+    public static class TopologyPluginRegionInput implements PluginInput {
 
         final String clusterKey;
         final String cluster;
@@ -126,6 +127,13 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegion.Top
             this.linkType = linkType;
             this.graphType = graphType;
         }
+
+        @Override
+        public String name() {
+            return "Topology";
+        }
+
+
     }
 
     @Override

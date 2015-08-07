@@ -1,6 +1,5 @@
 package com.jivesoftware.os.upena.deployable.endpoints;
 
-import com.google.common.base.Optional;
 import com.jivesoftware.os.upena.deployable.region.DependenciesPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.DependenciesPluginRegion.DependenciesPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
@@ -37,7 +36,7 @@ public class DependenciesPluginEndpoints {
     @Produces(MediaType.TEXT_HTML)
     public Response dependencies(@Context HttpServletRequest httpRequest) {
         String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-            Optional.of(new DependenciesPluginRegionInput("", "", "")));
+            new DependenciesPluginRegionInput("", "", ""));
         return Response.ok(rendered).build();
     }
 
@@ -50,7 +49,7 @@ public class DependenciesPluginEndpoints {
         @FormParam("release") @DefaultValue("") String release,
         @FormParam("action") @DefaultValue("") String action) {
         String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-            Optional.of(new DependenciesPluginRegionInput(releaseKey, release, action)));
+            new DependenciesPluginRegionInput(releaseKey, release, action));
         return Response.ok(rendered).build();
     }
 

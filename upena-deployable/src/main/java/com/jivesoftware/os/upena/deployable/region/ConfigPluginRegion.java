@@ -1,7 +1,6 @@
 package com.jivesoftware.os.upena.deployable.region;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Optional;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
@@ -10,6 +9,7 @@ import com.jivesoftware.os.routing.bird.deployable.config.shared.DeployableConfi
 import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelper;
 import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelperUtils;
 import com.jivesoftware.os.upena.config.UpenaConfigStore;
+import com.jivesoftware.os.upena.deployable.region.ConfigPluginRegion.ConfigPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.service.UpenaStore;
 import com.jivesoftware.os.upena.shared.Cluster;
@@ -38,7 +38,7 @@ import java.util.concurrent.ConcurrentSkipListMap;
  *
  */
 // soy.page.configPluginRegion
-public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegion.ConfigPluginRegionInput>> {
+public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
 
     private static final MetricLogger log = MetricLoggerFactory.getLogger();
     private static final ObjectMapper mapper = new ObjectMapper();
@@ -57,7 +57,6 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
         this.upenaStore = upenaStore;
         this.configStore = configStore;
     }
-
 
     // TODO handle host and port
     public void modified(String user, Map<String, Map<String, String>> property_InstanceKey_Values) throws Exception {
@@ -238,7 +237,7 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
                     InstanceKey key = entrySet.getKey();
                     TimestampedValue<Instance> timestampedValue = entrySet.getValue();
                     Instance i = timestampedValue.getValue();
-                    
+
                     if (input.service) {
                         Map<String, String> overriddenServiceMap = configStore.get(key.getKey(), "override", null);
                         append(exportImportCluster.config, key, overriddenServiceMap);
@@ -267,7 +266,7 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
         }
     }
 
-    public static class ConfigPluginRegionInput {
+    public static class ConfigPluginRegionInput implements PluginInput {
 
         final String aClusterKey;
         final String aCluster;
@@ -346,135 +345,135 @@ public class ConfigPluginRegion implements PageRegion<Optional<ConfigPluginRegio
             this.action = action;
         }
 
+        @Override
+        public String name() {
+            return "Config";
+        }
     }
 
     @Override
-    public String render(String user, Optional<ConfigPluginRegionInput> optionalInput) {
+    public String render(String user, ConfigPluginRegionInput input) {
         Map<String, Object> data = Maps.newHashMap();
 
         try {
-            if (optionalInput.isPresent()) {
-                ConfigPluginRegionInput input = optionalInput.get();
+            Map<String, String> aFilters = new HashMap<>();
+            aFilters.put("clusterKey", input.aClusterKey);
+            aFilters.put("cluster", input.aCluster);
+            aFilters.put("hostKey", input.aHostKey);
+            aFilters.put("host", input.aHost);
+            aFilters.put("serviceKey", input.aServiceKey);
+            aFilters.put("service", input.aService);
+            aFilters.put("instance", input.aInstance);
+            aFilters.put("releaseKey", input.aReleaseKey);
+            aFilters.put("release", input.aRelease);
+            data.put("aFilters", aFilters);
 
-                Map<String, String> aFilters = new HashMap<>();
-                aFilters.put("clusterKey", input.aClusterKey);
-                aFilters.put("cluster", input.aCluster);
-                aFilters.put("hostKey", input.aHostKey);
-                aFilters.put("host", input.aHost);
-                aFilters.put("serviceKey", input.aServiceKey);
-                aFilters.put("service", input.aService);
-                aFilters.put("instance", input.aInstance);
-                aFilters.put("releaseKey", input.aReleaseKey);
-                aFilters.put("release", input.aRelease);
-                data.put("aFilters", aFilters);
+            Map<String, String> bFilters = new HashMap<>();
+            bFilters.put("clusterKey", input.bClusterKey);
+            bFilters.put("cluster", input.bCluster);
+            bFilters.put("hostKey", input.bHostKey);
+            bFilters.put("host", input.bHost);
+            bFilters.put("serviceKey", input.bServiceKey);
+            bFilters.put("service", input.bService);
+            bFilters.put("instance", input.bInstance);
+            bFilters.put("releaseKey", input.bReleaseKey);
+            bFilters.put("release", input.bRelease);
+            data.put("bFilters", bFilters);
 
-                Map<String, String> bFilters = new HashMap<>();
-                bFilters.put("clusterKey", input.bClusterKey);
-                bFilters.put("cluster", input.bCluster);
-                bFilters.put("hostKey", input.bHostKey);
-                bFilters.put("host", input.bHost);
-                bFilters.put("serviceKey", input.bServiceKey);
-                bFilters.put("service", input.bService);
-                bFilters.put("instance", input.bInstance);
-                bFilters.put("releaseKey", input.bReleaseKey);
-                bFilters.put("release", input.bRelease);
-                data.put("bFilters", bFilters);
+            data.put("property", input.property);
+            data.put("value", input.value);
+            data.put("overridden", input.overridden);
+            data.put("service", input.service);
+            data.put("health", input.health);
 
-                data.put("property", input.property);
-                data.put("value", input.value);
-                data.put("overridden", input.overridden);
-                data.put("service", input.service);
-                data.put("health", input.health);
+            data.put("aRemoteConfigHost", input.aRemoteConfigHost);
+            data.put("aRemoteConfigPort", String.valueOf(input.aRemoteConfigPort));
+            data.put("bRemoteConfigHost", input.bRemoteConfigHost);
+            data.put("bRemoteConfigPort", String.valueOf(input.bRemoteConfigPort));
 
-                data.put("aRemoteConfigHost", input.aRemoteConfigHost);
-                data.put("aRemoteConfigPort", String.valueOf(input.aRemoteConfigPort));
-                data.put("bRemoteConfigHost", input.bRemoteConfigHost);
-                data.put("bRemoteConfigPort", String.valueOf(input.bRemoteConfigPort));
+            ConcurrentSkipListMap<String, List<Map<String, String>>> as = packProperties(
+                input.aRemoteConfigHost, input.aRemoteConfigPort,
+                input.aClusterKey,
+                input.aHostKey, input.aServiceKey, input.aInstance, input.aReleaseKey, input.property, input.value,
+                input.overridden, input.service, input.health);
 
-                ConcurrentSkipListMap<String, List<Map<String, String>>> as = packProperties(
-                    input.aRemoteConfigHost, input.aRemoteConfigPort,
-                    input.aClusterKey,
+            if (input.action.equals("revert")) {
+                Map<String, Map<String, String>> property_instanceKey_revert = new HashMap<>();
+                for (String property : as.keySet()) {
+                    for (Map<String, String> occurence : as.get(property)) {
+                        String instanceKey = occurence.get("instanceKey");
+                        Map<String, String> revert = property_instanceKey_revert.get(property);
+                        if (revert == null) {
+                            revert = new HashMap<>();
+                            property_instanceKey_revert.put(property, revert);
+                        }
+                        revert.put(instanceKey, "OBSOLETE");
+                    }
+                }
+                if (!property_instanceKey_revert.isEmpty()) {
+                    modified(user, property_instanceKey_revert);
+                }
+
+                as = packProperties(input.aRemoteConfigHost, input.aRemoteConfigPort, input.aClusterKey,
                     input.aHostKey, input.aServiceKey, input.aInstance, input.aReleaseKey, input.property, input.value,
                     input.overridden, input.service, input.health);
-
-                if (input.action.equals("revert")) {
-                    Map<String, Map<String, String>> property_instanceKey_revert = new HashMap<>();
-                    for (String property : as.keySet()) {
-                        for (Map<String, String> occurence : as.get(property)) {
-                            String instanceKey = occurence.get("instanceKey");
-                            Map<String, String> revert = property_instanceKey_revert.get(property);
-                            if (revert == null) {
-                                revert = new HashMap<>();
-                                property_instanceKey_revert.put(property, revert);
-                            }
-                            revert.put(instanceKey, "OBSOLETE");
-                        }
-                    }
-                    if (!property_instanceKey_revert.isEmpty()) {
-                        modified(user, property_instanceKey_revert);
-                    }
-
-                    as = packProperties(input.aRemoteConfigHost, input.aRemoteConfigPort, input.aClusterKey,
-                        input.aHostKey, input.aServiceKey, input.aInstance, input.aReleaseKey, input.property, input.value,
-                        input.overridden, input.service, input.health);
-                }
-
-                ConcurrentSkipListMap<String, List<Map<String, String>>> bs = packProperties(
-                    input.bRemoteConfigHost, input.bRemoteConfigPort,
-                    input.bClusterKey,
-                    input.bHostKey, input.bServiceKey, input.bInstance, input.bReleaseKey, input.property, input.value,
-                    input.overridden, input.service, input.health);
-
-                Set<String> allProperties = Collections.newSetFromMap(new ConcurrentSkipListMap<String, Boolean>());
-                allProperties.addAll(as.keySet());
-                allProperties.addAll(bs.keySet());
-
-                String[] ks = new String[]{"instanceKey", "cluster", "host", "service", "instance", "override", "default"};
-                List<Map<String, Object>> rows = new ArrayList<>();
-                for (String property : allProperties) {
-
-                    Map<String, Object> propertyAndOccurrences = new HashMap<>();
-                    propertyAndOccurrences.put("property", property);
-
-                    List<Map<String, String>> al = as.get(property);
-                    List<Map<String, String>> bl = bs.get(property);
-
-                    List<Map<String, String>> hasProperty = new ArrayList<>();
-                    int s = Math.max((al == null) ? 0 : al.size(), (bl == null) ? 0 : bl.size());
-                    for (int i = 0; i < s; i++) {
-                        Map<String, String> has = new HashMap<>();
-
-                        if (al != null && i < al.size()) {
-                            Map<String, String> a = al.get(i);
-                            for (String k : ks) {
-                                has.put("a" + k, a.get(k));
-                            }
-                        } else {
-                            for (String k : ks) {
-                                has.put("a" + k, null);
-                            }
-                        }
-                        if (bl != null && i < bl.size()) {
-                            Map<String, String> b = bl.get(i);
-                            for (String k : ks) {
-                                has.put("b" + k, b.get(k));
-                            }
-                        } else {
-                            for (String k : ks) {
-                                has.put("b" + k, null);
-                            }
-                        }
-                        hasProperty.add(has);
-                    }
-                    propertyAndOccurrences.put("has", hasProperty);
-                    if (!hasProperty.isEmpty()) {
-                        rows.add(propertyAndOccurrences);
-                    }
-                }
-
-                data.put("properties", rows);
-
             }
+
+            ConcurrentSkipListMap<String, List<Map<String, String>>> bs = packProperties(
+                input.bRemoteConfigHost, input.bRemoteConfigPort,
+                input.bClusterKey,
+                input.bHostKey, input.bServiceKey, input.bInstance, input.bReleaseKey, input.property, input.value,
+                input.overridden, input.service, input.health);
+
+            Set<String> allProperties = Collections.newSetFromMap(new ConcurrentSkipListMap<String, Boolean>());
+            allProperties.addAll(as.keySet());
+            allProperties.addAll(bs.keySet());
+
+            String[] ks = new String[]{"instanceKey", "cluster", "host", "service", "instance", "override", "default"};
+            List<Map<String, Object>> rows = new ArrayList<>();
+            for (String property : allProperties) {
+
+                Map<String, Object> propertyAndOccurrences = new HashMap<>();
+                propertyAndOccurrences.put("property", property);
+
+                List<Map<String, String>> al = as.get(property);
+                List<Map<String, String>> bl = bs.get(property);
+
+                List<Map<String, String>> hasProperty = new ArrayList<>();
+                int s = Math.max((al == null) ? 0 : al.size(), (bl == null) ? 0 : bl.size());
+                for (int i = 0; i < s; i++) {
+                    Map<String, String> has = new HashMap<>();
+
+                    if (al != null && i < al.size()) {
+                        Map<String, String> a = al.get(i);
+                        for (String k : ks) {
+                            has.put("a" + k, a.get(k));
+                        }
+                    } else {
+                        for (String k : ks) {
+                            has.put("a" + k, null);
+                        }
+                    }
+                    if (bl != null && i < bl.size()) {
+                        Map<String, String> b = bl.get(i);
+                        for (String k : ks) {
+                            has.put("b" + k, b.get(k));
+                        }
+                    } else {
+                        for (String k : ks) {
+                            has.put("b" + k, null);
+                        }
+                    }
+                    hasProperty.add(has);
+                }
+                propertyAndOccurrences.put("has", hasProperty);
+                if (!hasProperty.isEmpty()) {
+                    rows.add(propertyAndOccurrences);
+                }
+            }
+
+            data.put("properties", rows);
+
         } catch (Exception e) {
             log.error("Unable to retrieve data", e);
         }

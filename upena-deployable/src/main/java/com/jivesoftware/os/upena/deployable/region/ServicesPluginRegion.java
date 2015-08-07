@@ -1,12 +1,12 @@
 package com.jivesoftware.os.upena.deployable.region;
 
 import com.google.common.base.Joiner;
-import com.google.common.base.Optional;
 import com.google.common.collect.Maps;
 import com.jivesoftware.os.amza.shared.AmzaInstance;
 import com.jivesoftware.os.amza.shared.RingHost;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
+import com.jivesoftware.os.upena.deployable.region.ServicesPluginRegion.ServicesPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.service.UpenaService;
 import com.jivesoftware.os.upena.service.UpenaStore;
@@ -24,7 +24,7 @@ import java.util.Map;
  *
  */
 // soy.page.servicesPluginRegion
-public class ServicesPluginRegion implements PageRegion<Optional<ServicesPluginRegion.ServicesPluginRegionInput>> {
+public class ServicesPluginRegion implements PageRegion<ServicesPluginRegionInput> {
 
     private static final MetricLogger log = MetricLoggerFactory.getLogger();
 
@@ -52,7 +52,7 @@ public class ServicesPluginRegion implements PageRegion<Optional<ServicesPluginR
         this.ringHost = ringHost;
     }
 
-    public static class ServicesPluginRegionInput {
+    public static class ServicesPluginRegionInput implements PluginInput {
 
         final String key;
         final String name;
@@ -66,51 +66,53 @@ public class ServicesPluginRegion implements PageRegion<Optional<ServicesPluginR
             this.action = action;
         }
 
+        @Override
+        public String name() {
+            return "Services";
+        }
+
     }
 
     @Override
-    public String render(String user, Optional<ServicesPluginRegionInput> optionalInput) {
+    public String render(String user, ServicesPluginRegionInput input) {
         Map<String, Object> data = Maps.newHashMap();
 
         try {
-            if (optionalInput.isPresent()) {
-                ServicesPluginRegionInput input = optionalInput.get();
 
-                Map<String, String> filters = new HashMap<>();
-                filters.put("name", input.name);
-                filters.put("description", input.description);
-                data.put("filters", filters);
+            Map<String, String> filters = new HashMap<>();
+            filters.put("name", input.name);
+            filters.put("description", input.description);
+            data.put("filters", filters);
 
-                ServiceFilter filter = new ServiceFilter(null, null, 0, 10000);
-                if (input.action != null) {
-                    if (input.action.equals("filter")) {
-                        filter = handleFilter(input, data);
-                    } else if (input.action.equals("add")) {
-                        handleAdd(user, filters, input, data);
-                    } else if (input.action.equals("update")) {
-                        handleUpdate(user, filters, input, data);
-                    } else if (input.action.equals("remove")) {
-                        handeRemove(user, input, data);
-                    }
+            ServiceFilter filter = new ServiceFilter(null, null, 0, 10000);
+            if (input.action != null) {
+                if (input.action.equals("filter")) {
+                    filter = handleFilter(input, data);
+                } else if (input.action.equals("add")) {
+                    handleAdd(user, filters, input, data);
+                } else if (input.action.equals("update")) {
+                    handleUpdate(user, filters, input, data);
+                } else if (input.action.equals("remove")) {
+                    handeRemove(user, input, data);
                 }
-
-                List<Map<String, String>> rows = new ArrayList<>();
-                Map<ServiceKey, TimestampedValue<Service>> found = upenaStore.services.find(filter);
-                for (Map.Entry<ServiceKey, TimestampedValue<Service>> entrySet : found.entrySet()) {
-
-                    ServiceKey key = entrySet.getKey();
-                    TimestampedValue<Service> timestampedValue = entrySet.getValue();
-                    Service value = timestampedValue.getValue();
-
-                    Map<String, String> row = new HashMap<>();
-                    row.put("key", key.getKey());
-                    row.put("name", value.name);
-                    row.put("description", value.description);
-                    rows.add(row);
-                }
-                data.put("services", rows);
-
             }
+
+            List<Map<String, String>> rows = new ArrayList<>();
+            Map<ServiceKey, TimestampedValue<Service>> found = upenaStore.services.find(filter);
+            for (Map.Entry<ServiceKey, TimestampedValue<Service>> entrySet : found.entrySet()) {
+
+                ServiceKey key = entrySet.getKey();
+                TimestampedValue<Service> timestampedValue = entrySet.getValue();
+                Service value = timestampedValue.getValue();
+
+                Map<String, String> row = new HashMap<>();
+                row.put("key", key.getKey());
+                row.put("name", value.name);
+                row.put("description", value.description);
+                rows.add(row);
+            }
+            data.put("services", rows);
+
         } catch (Exception e) {
             log.error("Unable to retrieve data", e);
         }
