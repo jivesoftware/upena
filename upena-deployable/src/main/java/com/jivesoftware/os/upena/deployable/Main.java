@@ -356,7 +356,7 @@ public class Main {
             renderer, upenaStore);
         HostsPluginRegion hostsPluginRegion = new HostsPluginRegion("soy.page.hostsPluginRegion", renderer, upenaStore);
         InstancesPluginRegion instancesPluginRegion = new InstancesPluginRegion("soy.page.instancesPluginRegion",
-            "soy.page.instancesPluginRegionList", renderer, upenaStore);
+            "soy.page.instancesPluginRegionList", renderer, upenaStore, healthPluginRegion);
 
         ManagePlugin health = new ManagePlugin("fire", "Health", "/ui/health",
             HealthPluginEndpoints.class, healthPluginRegion);
