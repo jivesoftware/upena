@@ -27,6 +27,7 @@ import com.jivesoftware.os.upena.shared.TimestampedValue;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -117,6 +118,8 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
         Map<String, Object> data = Maps.newHashMap();
         try {
 
+            Map<ServiceKey, String> serviceColor = ServiceColorUtil.serviceKeysColor(upenaStore);
+
             Map<String, Object> filters = new HashMap<>();
             filters.put("clusterKey", input.clusterKey);
             filters.put("cluster", input.cluster);
@@ -166,8 +169,45 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
                 TimestampedValue<Instance> timestampedValue = entrySet.getValue();
                 Instance value = timestampedValue.getValue();
 
-                rows.add(clusterToMap(key, value, timestampedValue));
+                rows.add(clusterToMap(key, value, timestampedValue, serviceColor));
             }
+
+            Collections.sort(rows, (o1, o2) -> {
+                String clusterName1 = (String) ((Map) o1.get("cluster")).get("name");
+                String clusterName2 = (String) ((Map) o2.get("cluster")).get("name");
+
+                int c = clusterName1.compareTo(clusterName2);
+                if (c != 0) {
+                    return c;
+                }
+
+                String release1 = (String) ((Map) o1.get("release")).get("name");
+                String release2 = (String) ((Map) o2.get("release")).get("name");
+
+                c = release1.compareTo(release2);
+                if (c != 0) {
+                    return c;
+                }
+
+                String serviceName1 = (String) ((Map) o1.get("service")).get("name");
+                String serviceName2 = (String) ((Map) o2.get("service")).get("name");
+                c = serviceName1.compareTo(serviceName2);
+                if (c != 0) {
+                    return c;
+                }
+
+                String hostName1 = (String) ((Map) o1.get("host")).get("name");
+                String hostName2 = (String) ((Map) o2.get("host")).get("name");
+                c = hostName1.compareTo(hostName2);
+                if (c != 0) {
+                    return c;
+                }
+
+                int instanceId1 = Integer.parseInt((String) o1.get("instanceId"));
+                int instanceId2 = Integer.parseInt((String) o1.get("instanceId"));
+
+                return Integer.compare(instanceId1, instanceId2);
+            });
 
             data.put("instances", rows);
 
@@ -405,7 +445,11 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
         return health;
     }
 
-    private Map<String, Object> clusterToMap(InstanceKey key, Instance value, TimestampedValue<Instance> timestampedValue) throws Exception {
+    private Map<String, Object> clusterToMap(InstanceKey key,
+        Instance value,
+        TimestampedValue<Instance> timestampedValue,
+        Map<ServiceKey, String> serviceColor) throws Exception {
+
         Map<String, Object> map = new HashMap<>();
         map.put("key", key.getKey());
         long now = System.currentTimeMillis();
@@ -457,6 +501,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
             "key", value.hostKey.getKey(),
             "name", host != null ? host.name : "unknownHost"));
         map.put("service", ImmutableMap.of(
+            "color", serviceColor.get(value.serviceKey),
             "key", value.serviceKey.getKey(),
             "name", service != null ? service.name : "unknownService"));
         map.put("instanceId", String.valueOf(value.instanceId));

@@ -15,6 +15,7 @@ import com.jivesoftware.os.upena.shared.ReleaseGroupKey;
 import com.jivesoftware.os.upena.shared.Service;
 import com.jivesoftware.os.upena.shared.ServiceKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import javax.inject.Singleton;
@@ -56,6 +57,13 @@ public class AsyncLookupEndpoints {
             for (Map.Entry<ClusterKey, TimestampedValue<Cluster>> entry : clusters.entrySet()) {
                 results.add(ImmutableMap.of("key", entry.getKey().getKey(), "name", entry.getValue().getValue().name));
             }
+            Collections.sort(results, (Map<String, String> o1, Map<String, String> o2) -> {
+                int c = o1.get("name").compareTo(o2.get("name"));
+                if (c != 0) {
+                    return c;
+                }
+                return o1.get("key").compareTo(o2.get("key"));
+            });
             return Response.ok(objectMapper.writeValueAsString(results)).build();
         } catch (Exception e) {
             LOG.error("find cluster.", e);
@@ -75,6 +83,13 @@ public class AsyncLookupEndpoints {
             for (Map.Entry<HostKey, TimestampedValue<Host>> entry : hosts.entrySet()) {
                 results.add(ImmutableMap.of("key", entry.getKey().getKey(), "name", entry.getValue().getValue().name));
             }
+            Collections.sort(results, (Map<String, String> o1, Map<String, String> o2) -> {
+                int c = o1.get("name").compareTo(o2.get("name"));
+                if (c != 0) {
+                    return c;
+                }
+                return o1.get("key").compareTo(o2.get("key"));
+            });
             return Response.ok(objectMapper.writeValueAsString(results)).build();
         } catch (Exception e) {
             LOG.error("find hosts.", e);
@@ -94,6 +109,13 @@ public class AsyncLookupEndpoints {
             for (Map.Entry<ServiceKey, TimestampedValue<Service>> entry : services.entrySet()) {
                 results.add(ImmutableMap.of("key", entry.getKey().getKey(), "name", entry.getValue().getValue().name));
             }
+            Collections.sort(results, (Map<String, String> o1, Map<String, String> o2) -> {
+                int c = o1.get("name").compareTo(o2.get("name"));
+                if (c != 0) {
+                    return c;
+                }
+                return o1.get("key").compareTo(o2.get("key"));
+            });
             return Response.ok(objectMapper.writeValueAsString(results)).build();
         } catch (Exception e) {
             LOG.error("find services.", e);
@@ -113,6 +135,13 @@ public class AsyncLookupEndpoints {
             for (Map.Entry<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> entry : services.entrySet()) {
                 results.add(ImmutableMap.of("key", entry.getKey().getKey(), "name", entry.getValue().getValue().name));
             }
+            Collections.sort(results, (Map<String, String> o1, Map<String, String> o2) -> {
+                int c = o1.get("name").compareTo(o2.get("name"));
+                if (c != 0) {
+                    return c;
+                }
+                return o1.get("key").compareTo(o2.get("key"));
+            });
             return Response.ok(objectMapper.writeValueAsString(results)).build();
         } catch (Exception e) {
             LOG.error("find releases.", e);

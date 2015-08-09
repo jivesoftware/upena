@@ -29,9 +29,9 @@
     <table class="table table-hover table-condensed">
         <thead>
             <tr>
+                <th>Instances</th>
                 <th>Name</th>
                 <th>Version</th>
-                <th>Repository</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -41,20 +41,20 @@
                     data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="addHost">
                     <tr style="background-color:#ddd;">
                         <td>
+                        </td>
+                        <td>
                             <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
                             placeholder="Name" value="{$filters.name?:''}" name="name" id="namePicker" class="form-control">
                         </td>
                         <td>
                             <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                            placeholder="Repository" value="{$filters.repository?:''}" name="repository" id="descriptionPicker" class="form-control">
+                            <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
                             placeholder="Version" value="{$filters.version?:''}" name="version" id="descriptionPicker" class="form-control">
                         </td>
                         <td>
-                            <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
-                            placeholder="Repository" value="{$filters.repository?:''}" name="repository" id="descriptionPicker" class="form-control">
-                        </td>
-                        <td>
-                            <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary"><span class="glyphicon glyphicon-search"></span></button>
-                            <button title="Add" type="submit" name="action" value="add" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span></button>
+                            <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary ladda-button" data-style="zoom-out"><span class="glyphicon glyphicon-search"></span></button>
+                            <button title="Add" type="submit" name="action" value="add" class="btn btn-default ladda-button" data-style="zoom-out"><span class="glyphicon glyphicon-plus"></span></button>
                         <td>
                     </tr>
                 </form>
@@ -63,7 +63,10 @@
             {foreach $r in $releases}
                 <form id="edit-{$r.key}" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
                     data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="editHost">
-                    <tr>    
+                    <tr>
+                        <td>
+                            {$r.instanceCount}
+                        </td>
                         <td>
                             <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
                             placeholder="Name" value="{$r.name}" name="name" id="namePicker" class="form-control">
@@ -71,24 +74,24 @@
                         <td>
                             {if $r.runningLatest} 
                                 {if $r.runningLatest == 'true'} 
-                                    <pre style="background-color:green; color:white">
+                                    <label>
+                                        <div class="coloredBox" style="background-color:green;"></div>
                                         This is the latest version/s.
-                                    </pre>
+                                    </label>
                                 {else}
-                                    <pre style="background-color:orange">
+                                    <label>
+                                        <div class="coloredBox" style="background-color:orange;"></div>
                                         {$r.newerVersion}&nbsp&nbsp
-                                        <button class="btn btn-sm" type="button" onclick="upena.latestRelease.change('{$r.key}', '{$r.newerVersion}');" value="update">Upgrade</button>
-                                    </pre>
+                                        <button class="btn btn-default btn-sm" type="button" onclick="upena.latestRelease.change('{$r.key}', '{$r.newerVersion}');" name="action" value="update">Upgrade</button>
+                                    </label>
                                 {/if}
                             {/if}
-                            <textarea id="{$r.key}" name="version" rows="4" cols="45" class="form-control">{$r.version?:''}</textarea>
-                        </td>
-                        <td>
-                            <textarea name="repository" rows="4" cols="45" class="form-control">{$r.repository?:''}</textarea>
+                            <input type="text" name="repository" class="form-control" value={$r.repository?:''}>
+                            <input type="text" name="version" class="form-control" value={$r.version?:''}>
                         </td>
                         <td>
                             <input type="hidden" name="key" value="{$r.key}">
-                            <button title="Update" type="submit" name="action" value="update" class="btn btn-default"><span class="glyphicon glyphicon-save"></span></button>
+                            <button title="Update" type="submit" name="action" value="update" class="btn btn-default"><span class="glyphicon glyphicon-save ladda-button" data-style="zoom-out"></span></button>
                             <button onclick="return confirm('Are you sure you want to delete?')" title="Remove" type="submit" name="action" value="remove" class="btn btn-default"><span class="glyphicon glyphicon-trash"></span></button>
                         <td>
                     </tr>

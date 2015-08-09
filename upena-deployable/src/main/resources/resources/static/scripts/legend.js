@@ -21,4 +21,4 @@ function legend(parent, data) {
         var text = document.createTextNode(d.label);
         title.appendChild(text);
     });
-}
+};

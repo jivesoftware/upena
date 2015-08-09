@@ -10,12 +10,16 @@ import com.jivesoftware.os.upena.service.UpenaStore;
 import com.jivesoftware.os.upena.shared.Cluster;
 import com.jivesoftware.os.upena.shared.ClusterFilter;
 import com.jivesoftware.os.upena.shared.ClusterKey;
+import com.jivesoftware.os.upena.shared.Instance;
+import com.jivesoftware.os.upena.shared.InstanceFilter;
+import com.jivesoftware.os.upena.shared.InstanceKey;
 import com.jivesoftware.os.upena.shared.ReleaseGroup;
 import com.jivesoftware.os.upena.shared.ReleaseGroupKey;
 import com.jivesoftware.os.upena.shared.Service;
 import com.jivesoftware.os.upena.shared.ServiceKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -158,13 +162,36 @@ public class ClustersPluginRegion implements PageRegion<ClustersPluginRegionInpu
                     defaultReleaseGroups.add(row);
                 }
 
+                InstanceFilter instanceFilter = new InstanceFilter(
+                    key,
+                    null,
+                    null,
+                    null,
+                    null,
+                    0, 10000);
+
+                Map<InstanceKey, TimestampedValue<Instance>> instances = upenaStore.instances.find(instanceFilter);
+
                 Map<String, Object> row = new HashMap<>();
+                row.put("instanceCount", String.valueOf(instances.size()));
                 row.put("key", key.getKey());
                 row.put("name", value.name);
                 row.put("description", value.description);
                 row.put("defaultReleaseGroups", defaultReleaseGroups);
                 rows.add(row);
             }
+
+            Collections.sort(rows, (Map<String, Object> o1, Map<String, Object> o2) -> {
+                String clusterName1 = (String) o1.get("name");
+                String clusterName2 = (String) o2.get("name");
+
+                int c = clusterName1.compareTo(clusterName2);
+                if (c != 0) {
+                    return c;
+                }
+                return c;
+            });
+
             data.put("clusters", rows);
 
         } catch (Exception e) {

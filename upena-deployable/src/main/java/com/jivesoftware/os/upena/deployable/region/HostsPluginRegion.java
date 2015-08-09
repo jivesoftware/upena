@@ -10,8 +10,12 @@ import com.jivesoftware.os.upena.service.UpenaStore;
 import com.jivesoftware.os.upena.shared.Host;
 import com.jivesoftware.os.upena.shared.HostFilter;
 import com.jivesoftware.os.upena.shared.HostKey;
+import com.jivesoftware.os.upena.shared.Instance;
+import com.jivesoftware.os.upena.shared.InstanceFilter;
+import com.jivesoftware.os.upena.shared.InstanceKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -156,7 +160,18 @@ public class HostsPluginRegion implements PageRegion<HostsPluginRegionInput> {
                 TimestampedValue<Host> timestampedValue = entrySet.getValue();
                 Host value = timestampedValue.getValue();
 
+                 InstanceFilter instanceFilter = new InstanceFilter(
+                    null,
+                    key,
+                    null,
+                    null,
+                    null,
+                    0, 10000);
+
+                Map<InstanceKey, TimestampedValue<Instance>> instances = upenaStore.instances.find(instanceFilter);
+
                 Map<String, String> row = new HashMap<>();
+                row.put("instanceCount", String.valueOf(instances.size()));
                 row.put("key", key.getKey());
                 row.put("host", value.hostName);
                 row.put("port", String.valueOf(value.port));
@@ -164,6 +179,18 @@ public class HostsPluginRegion implements PageRegion<HostsPluginRegionInput> {
                 row.put("name", value.name);
                 rows.add(row);
             }
+
+            Collections.sort(rows, (Map<String, String> o1, Map<String, String> o2) -> {
+                String hostName1 = o1.get("host");
+                String hostName2 = o2.get("host");
+
+                int c = hostName1.compareTo(hostName2);
+                if (c != 0) {
+                    return c;
+                }
+                return c;
+            });
+
             data.put("hosts", rows);
 
         } catch (Exception e) {

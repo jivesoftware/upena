@@ -51,6 +51,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentNavigableMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.apache.commons.lang.exception.ExceptionUtils;
@@ -172,9 +173,22 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
             data.put("filters", filter);
 
             ConcurrentNavigableMap<ServiceKey, TimestampedValue<Service>> services = upenaStore.services.find(new ServiceFilter(null, null, 0, 10000));
+
+            Map<ServiceKey, TimestampedValue<com.jivesoftware.os.upena.shared.Service>> sort = new ConcurrentSkipListMap<>((ServiceKey o1, ServiceKey o2) -> {
+                com.jivesoftware.os.upena.shared.Service so1 = services.get(o1).getValue();
+                com.jivesoftware.os.upena.shared.Service so2 = services.get(o2).getValue();
+                int c = so1.name.compareTo(so2.name);
+                if (c != 0) {
+                    return c;
+                }
+                return o1.compareTo(o2);
+            });
+            sort.putAll(services);
+
+
             int i = 0;
             Map<String, Integer> serviceColor = new HashMap<>();
-            for (Map.Entry<ServiceKey, TimestampedValue<Service>> entrySet : services.entrySet()) {
+            for (Map.Entry<ServiceKey, TimestampedValue<Service>> entrySet : sort.entrySet()) {
                 if (!entrySet.getValue().getTombstoned()) {
                     serviceColor.put(entrySet.getValue().getValue().name, i);
                     i++;
@@ -183,7 +197,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
 
             List<Map<String, String>> serviceNameLegend = new ArrayList<>();
             i = 0;
-            for (Map.Entry<ServiceKey, TimestampedValue<Service>> entrySet : services.entrySet()) {
+            for (Map.Entry<ServiceKey, TimestampedValue<Service>> entrySet : sort.entrySet()) {
                 if (!entrySet.getValue().getTombstoned()) {
                     String idColor = healthPluginRegion.getHEXIdColor((double) i / (double) serviceColor.size(), 1f);
                     serviceNameLegend.add(ImmutableMap.of("name", entrySet.getValue().getValue().name, "color", idColor));
@@ -364,8 +378,8 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
                     Node f = linkable.get(i);
                     Node t = linkable.get(i + 1);
                     Edge e = addEdge(edges, f, t);
-                    e.min = Math.min(e.min, t.minHealth);
-                    e.max = Math.min(e.max, t.maxHealth);
+                    e.min = serviceHealth;
+                    e.max = serviceHealth;
 
                 }
             }
@@ -383,7 +397,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
             } else {
                 node.put("maxbgcolor", healthPluginRegion.getHEXTrafficlightColor(n.maxHealth, 1f));
                 node.put("minbgcolor", healthPluginRegion.getHEXTrafficlightColor(n.minHealth, 1f));
-                node.put("healthRadius", String.valueOf((int) (1d - Math.max(0d, Math.min(1d, n.minHealth))) * 3));
+                node.put("healthRadius", String.valueOf((int) (1d - n.minHealth) * 4));
             }
             if (n.tooltip != null) {
                 node.put("tooltip", n.tooltip);
@@ -568,7 +582,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
             } else {
                 node.put("maxbgcolor", healthPluginRegion.getHEXTrafficlightColor(n.maxHealth, 1f));
                 node.put("minbgcolor", healthPluginRegion.getHEXTrafficlightColor(n.minHealth, 1f));
-                node.put("healthRadius", String.valueOf((int) (1d - Math.max(0d, Math.min(1d, n.minHealth))) * 3));
+                node.put("healthRadius", String.valueOf((int) (1d - n.minHealth) * 4));
             }
             node.put("fontSize", n.fontSize);
             node.put("label", n.label + " (" + n.count + ")");

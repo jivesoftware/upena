@@ -10,12 +10,16 @@ import com.jivesoftware.os.upena.deployable.region.ServicesPluginRegion.Services
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.service.UpenaService;
 import com.jivesoftware.os.upena.service.UpenaStore;
+import com.jivesoftware.os.upena.shared.Instance;
+import com.jivesoftware.os.upena.shared.InstanceFilter;
+import com.jivesoftware.os.upena.shared.InstanceKey;
 import com.jivesoftware.os.upena.shared.Service;
 import com.jivesoftware.os.upena.shared.ServiceFilter;
 import com.jivesoftware.os.upena.shared.ServiceKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
 import com.jivesoftware.os.upena.uba.service.UbaService;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -79,6 +83,8 @@ public class ServicesPluginRegion implements PageRegion<ServicesPluginRegionInpu
 
         try {
 
+            Map<ServiceKey, String> serviceColor = ServiceColorUtil.serviceKeysColor(upenaStore);
+
             Map<String, String> filters = new HashMap<>();
             filters.put("name", input.name);
             filters.put("description", input.description);
@@ -105,12 +111,36 @@ public class ServicesPluginRegion implements PageRegion<ServicesPluginRegionInpu
                 TimestampedValue<Service> timestampedValue = entrySet.getValue();
                 Service value = timestampedValue.getValue();
 
+                InstanceFilter instanceFilter = new InstanceFilter(
+                    null,
+                    null,
+                    key,
+                    null,
+                    null,
+                    0, 10000);
+
+                Map<InstanceKey, TimestampedValue<Instance>> instances = upenaStore.instances.find(instanceFilter);
+
                 Map<String, String> row = new HashMap<>();
+                row.put("instanceCount", String.valueOf(instances.size()));
+                row.put("color", serviceColor.get(key));
                 row.put("key", key.getKey());
                 row.put("name", value.name);
                 row.put("description", value.description);
                 rows.add(row);
             }
+
+            Collections.sort(rows, (Map<String, String> o1, Map<String, String> o2) -> {
+                String serviceName1 = o1.get("name");
+                String serviceName2 = o2.get("name");
+
+                int c = serviceName1.compareTo(serviceName2);
+                if (c != 0) {
+                    return c;
+                }
+                return c;
+            });
+
             data.put("services", rows);
 
         } catch (Exception e) {

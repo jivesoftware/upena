@@ -588,12 +588,10 @@ upena.connectivity = {
     }
 };
 
-
-
 $(document).ready(function () {
     
-    Ladda.bind( '.ladda-button button' );
-
+    Ladda.bind( '.ladda-button', { timeout: 60000 } );
+    
     if ($('.upena-hs-field').length) {
         upena.hs.init();
     }

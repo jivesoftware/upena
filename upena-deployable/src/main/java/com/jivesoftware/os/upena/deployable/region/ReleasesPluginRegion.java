@@ -7,6 +7,9 @@ import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.deployable.region.ReleasesPluginRegion.ReleasesPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.service.UpenaStore;
+import com.jivesoftware.os.upena.shared.Instance;
+import com.jivesoftware.os.upena.shared.InstanceFilter;
+import com.jivesoftware.os.upena.shared.InstanceKey;
 import com.jivesoftware.os.upena.shared.ReleaseGroup;
 import com.jivesoftware.os.upena.shared.ReleaseGroupFilter;
 import com.jivesoftware.os.upena.shared.ReleaseGroupKey;
@@ -182,7 +185,18 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
                 TimestampedValue<ReleaseGroup> timestampedValue = entrySet.getValue();
                 ReleaseGroup value = timestampedValue.getValue();
 
+                InstanceFilter instanceFilter = new InstanceFilter(
+                    null,
+                    null,
+                    null,
+                    key,
+                    null,
+                    0, 10000);
+
+                Map<InstanceKey, TimestampedValue<Instance>> instances = upenaStore.instances.find(instanceFilter);
+
                 Map<String, String> row = new HashMap<>();
+                row.put("instanceCount", String.valueOf(instances.size()));
                 row.put("key", key.getKey());
                 row.put("name", value.name);
                 row.put("email", value.email);
@@ -190,7 +204,6 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
                 row.put("version", value.version);
                 row.put("description", value.description);
 
-                //if (input.action.equals("latest")) {
                 boolean newerVersionAvailable = false;
                 StringBuilder newerVersion = new StringBuilder();
                 LinkedHashMap<String, String> latestRelease = new CheckForLatestRelease().isLatestRelease(value.repository, value.version);
@@ -209,8 +222,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
                 } else {
                     row.put("runningLatest", "true");
                 }
-                //}
-
+                
                 rows.add(row);
             }
             data.put("releases", rows);

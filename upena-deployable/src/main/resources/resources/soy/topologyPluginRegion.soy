@@ -47,7 +47,7 @@
                    
                 <hr>
                 
-                <label>
+                <label class="ladda-button" data-style="zoom-out" data-spinner-color="#000">
                     <span class="glyphicon glyphicon-transfer"></span>
                         &nbsp&nbspTopology&nbsp&nbsp
                         <input onclick="this.form.submit()" type="checkbox" name="graphType" value="topology" {if $filters.graphType.topology}checked="checked"{/if}>
@@ -57,35 +57,35 @@
                     <table class="table table-condensed">
                         <tr>
                             <td>
-                                <label>
+                                <label class="ladda-button" data-style="zoom-out" data-spinner-color="#000">
                                     <img src="/static/img/cluster.png" alt="Cluster" style="width:24px;height:24px;">&nbsp
                                     Cluster&nbsp
                                     <input onclick="this.form.submit()" type="checkbox" name="linkType" value="linkCluster" {if $filters.linkType.linkCluster}checked="checked"{/if}>
                                 </label>
                             </td>
                             <td>
-                                <label>
+                                <label class="ladda-button" data-style="zoom-out" data-spinner-color="#000">
                                     <img src="/static/img/host.png" alt="Cluster" style="width:24px;height:24px;">&nbsp
                                     Host&nbsp
                                     <input onclick="this.form.submit()" type="checkbox" name="linkType" value="linkHost" {if $filters.linkType.linkHost}checked="checked"{/if}>
                                 </label>
                             </td>
                             <td>
-                                <label>
+                                <label class="ladda-button" data-style="zoom-out" data-spinner-color="#000">
                                     <img src="/static/img/service.png" alt="Cluster" style="width:24px;height:24px;">&nbsp
                                     Service&nbsp
                                     <input onclick="this.form.submit()" type="checkbox" name="linkType" value="linkService" {if $filters.linkType.linkService}checked="checked"{/if}>
                                 </label>
                             </td>
                             <td>
-                                <label>
+                                <label class="ladda-button" data-style="zoom-out" data-spinner-color="#000">
                                     <img src="/static/img/release.png" alt="Cluster" style="width:24px;height:24px;">&nbsp
                                     Release&nbsp
                                     <input onclick="this.form.submit()" type="checkbox" name="linkType" value="linkRelease" {if $filters.linkType.linkRelease}checked="checked"{/if}>
                                 </label>
                             </td>
                             <td>
-                                <label>
+                                <label class="ladda-button" data-style="zoom-out" data-spinner-color="#000">
                                     <img src="/static/img/instance.png" alt="Cluster" style="width:24px;height:24px;">&nbsp
                                     Instance&nbsp
                                     <input onclick="this.form.submit()" type="checkbox" name="linkType" value="linkInstance" {if $filters.linkType.linkInstance}checked="checked"{/if}>
@@ -99,7 +99,7 @@
 
                 {/if}
                 
-                <label>Connectivity&nbsp
+                <label class="ladda-button" data-style="zoom-out" data-spinner-color="#000">Connectivity&nbsp
                     <input onclick="this.form.submit()" type="checkbox" name="graphType" value="connectivity" {if $filters.graphType.connectivity}checked="checked"{/if}>
                 </label>
                 {if $filters.graphType.connectivity}

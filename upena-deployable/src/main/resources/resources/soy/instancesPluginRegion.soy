@@ -17,9 +17,9 @@
                     <div class="panel-body">
                         <label>Restart:</label>
                         <div class="btn-group" role="group" aria-label="...">
-                            <button form="filter-form" type="submit" name="action" value="restartAllNow" class="btn btn-default">Now</button>
-                            <button form="filter-form" type="submit" name="action" value="restartAll" class="btn btn-default">Rolling</button>
-                            <button form="filter-form" type="submit" name="action" value="cancelRestartAll" class="btn btn-default">Cancel</button>
+                            <button form="filter-form" type="submit" name="action" value="restartAllNow" class="btn btn-default ladda-button" data-style="zoom-out">Now</button>
+                            <button form="filter-form" type="submit" name="action" value="restartAll" class="btn btn-default ladda-button" data-style="zoom-out">Rolling</button>
+                            <button form="filter-form" type="submit" name="action" value="cancelRestartAll" class="btn btn-default ladda-button" data-style="zoom-out">Cancel</button>
                         </div>
                     </div>
 
@@ -95,8 +95,8 @@
                             <input type="hidden" name="releaseKey" value="{$filters.releaseKey?:''}" />
                         </td>
                         <td>
-                            <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary"><span class="glyphicon glyphicon-search"></span></button>
-                            <button title="Add" type="submit" name="action" value="add" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span></button>
+                            <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary ladda-button" data-style="zoom-out"><span class="glyphicon glyphicon-search"></span></button>
+                            <button title="Add" type="submit" name="action" value="add" class="btn btn-default ladda-button" data-style="zoom-out"><span class="glyphicon glyphicon-plus"></span></button>
                         </td>
                     </tr>
                 {/if}
@@ -106,8 +106,11 @@
                 <form id="edit-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
                     data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="editInstance">
                     <tr>
-                        <td style="background-color:{$i.healthColor};">
-                            <pre>{$i.status}</pre>
+                        <td>
+                            <label>
+                                <div class="coloredBox" style="background-color:{$i.healthColor};"></div>
+                                {$i.status}
+                            </label>
                         </td>
                         <td>
                             <input class="form-control" type="checkbox" name="enabled" value="true" {if $i.enabled}checked="checked"{/if}>
@@ -125,7 +128,8 @@
                             <input type="hidden" name="hostKey" value="{$i.host.key}" />
                         </td>
                         <td>
-                            <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                           <div class="coloredBox" style="background-color:rgba({$i.service.color},0.4);"></div>
+                           <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
                                 placeholder="Service" value="{$i.service.name}" name="service" class="upena-hs-field form-control"
                                 data-upena-lookup="/ui/lookup/services" />
                             <input type="hidden" name="serviceKey" value="{$i.service.key}" />
@@ -234,8 +238,8 @@
                         </td>
                         <td>
                             <input type="hidden" name="key" value="{$i.key}">
-                            <button title="Update" type="submit" name="action" value="restart" class="btn btn-default"><span class="glyphicon glyphicon-repeat"></span></button>
-                            <button title="Update" type="submit" name="action" value="update" class="btn btn-default"><span class="glyphicon glyphicon-save"></span></button>
+                            <button title="Update" type="submit" name="action" value="restart" class="btn btn-default"><span class="glyphicon glyphicon-repeat ladda-button" data-style="zoom-out"></span></button>
+                            <button title="Update" type="submit" name="action" value="update" class="btn btn-default"><span class="glyphicon glyphicon-save ladda-button" data-style="zoom-out"></span></button>
                             <button onclick="return confirm('Are you sure you want to delete?')" title="Remove" type="submit" name="action" value="remove" class="btn btn-default"><span class="glyphicon glyphicon-trash"></span></button>
                         </td>
                     </tr>
