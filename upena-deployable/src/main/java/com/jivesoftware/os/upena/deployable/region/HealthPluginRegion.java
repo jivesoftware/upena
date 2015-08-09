@@ -24,6 +24,7 @@ import com.jivesoftware.os.upena.shared.Cluster;
 import com.jivesoftware.os.upena.shared.Host;
 import com.jivesoftware.os.upena.shared.Instance;
 import com.jivesoftware.os.upena.shared.InstanceKey;
+import com.jivesoftware.os.upena.shared.ServiceKey;
 import java.awt.Color;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -68,7 +69,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
         this.upenaStore = upenaStore;
     }
 
-    public static class HealthPluginRegionInput implements PluginInput{
+    public static class HealthPluginRegionInput implements PluginInput {
 
         final String cluster;
         final String host;
@@ -91,6 +92,8 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
 
         try {
 
+            Map<ServiceKey, String> serviceColor = ServiceColorUtil.serviceKeysColor(upenaStore);
+
             Map<String, String> filter = new HashMap<>();
             filter.put("cluster", input.cluster);
             filter.put("host", input.host);
@@ -112,7 +115,13 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
             }
 
             ConcurrentSkipListSet<String> hosts = new ConcurrentSkipListSet<>();
-            ConcurrentSkipListSet<Service> services = new ConcurrentSkipListSet<>();
+            ConcurrentSkipListSet<Service> services = new ConcurrentSkipListSet<>((Service o1, Service o2) -> {
+                int c = o1.serviceName.compareTo(o2.serviceName);
+                if (c != 0) {
+                    return c;
+                }
+                return o1.serviceKey.compareTo(o2.serviceKey);
+            });
 
             Map<String, Map<String, String>> instanceHealth = new HashMap<>();
 
@@ -281,6 +290,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                 Map<String, String> serviceCell = new HashMap<>();
                 serviceCell.put("service", service.serviceName);
                 serviceCell.put("serviceKey", service.serviceKey);
+                serviceCell.put("serviceColor", serviceColor.get(new ServiceKey(service.serviceKey)));
                 serviceData.add(serviceCell);
             }
             data.put("gridServices", serviceData);

@@ -43,9 +43,8 @@ class CheckForLatestRelease {
         RepositorySystem system = RepositoryProvider.newRepositorySystem();
         RepositorySystemSession session = RepositoryProvider.newRepositorySystemSession(system);
         String[] repos = repository.split(",");
-        RepositoryPolicy policy = new RepositoryPolicy(true, RepositoryPolicy.UPDATE_POLICY_ALWAYS, RepositoryPolicy.CHECKSUM_POLICY_WARN);
+        RepositoryPolicy policy = new RepositoryPolicy(true, RepositoryPolicy.UPDATE_POLICY_INTERVAL + ":1", RepositoryPolicy.CHECKSUM_POLICY_WARN);
         List<RemoteRepository> remoteRepos = RepositoryProvider.newRepositories(system, session, policy, repos);
-        
 
         String[] deployablecoordinates = coordinates.trim().split(",");
         LinkedHashMap<String, String> currentToLatestReleases = new LinkedHashMap<>();

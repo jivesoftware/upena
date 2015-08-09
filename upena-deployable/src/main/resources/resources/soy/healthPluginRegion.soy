@@ -26,7 +26,7 @@
                             placeholder="Service" value="{$filter.service?:''}" name="service" id="servicePicker" class="form-control">
                         </td>
                         <td>
-                            <button title="Filter" type="submit" name="filter" value="filter" class="btn btn-primary"><span class="glyphicon glyphicon-search"></span></button>
+                            <button title="Filter" type="submit" name="filter" value="filter" class="btn btn-primary ladda-button" data-style="zoom-out"><span class="glyphicon glyphicon-search"></span></button>
                         </td>
                     </tr>
                 </table>
@@ -39,7 +39,7 @@
                             <th></th>
                             {foreach $service in $gridServices}
                                 <th>
-                                    <a style="width:100%" href="#" rel="popover" id="popoverAnchor-{$service.service}" data-popover-content="#popover-{$service.service}" data-placement="bottom" class="btn btn-primary btn-sm" title="{$service.service}">
+                                    <a style="width:100%; background-color: rgba({$service.serviceColor}, 0.4);" href="#" rel="popover" id="popoverAnchor-{$service.service}" data-popover-content="#popover-{$service.service}" data-placement="bottom" class="btn" title="{$service.service}">
                                         <span class="glyphicon glyphicon-menu-down"></span>{$service.service}
                                     </a>
                                     <div id="popover-{$service.service}" class="hide">
@@ -120,15 +120,6 @@
                                                 </div>
                                             {else}
                                                 <div class="uis"></div>
-                                                {if $health.link}
-                                                    <div class="btn-group">
-                                                        <form id="serviceHealth" method="get" action="{$health.link}" name="serviceHealth">
-                                                            <button type="submit" class="btn btn-primary">
-                                                                Health
-                                                            </button>
-                                                        </form>
-                                                    </div>
-                                                {/if}
                                                 <div class="btn-group">
                                                     <form id="configService" method="post" action="/ui/config" name="configService">
                                                         {if $health.clusterKey}
