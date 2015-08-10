@@ -358,40 +358,48 @@ public class Main {
         InstancesPluginRegion instancesPluginRegion = new InstancesPluginRegion("soy.page.instancesPluginRegion",
             "soy.page.instancesPluginRegionList", renderer, upenaStore, healthPluginRegion);
 
-        ManagePlugin health = new ManagePlugin("fire", "Health", "/ui/health",
+        ManagePlugin health = new ManagePlugin("fire", null, "Health", "/ui/health",
             HealthPluginEndpoints.class, healthPluginRegion);
-        ManagePlugin topology = new ManagePlugin("transfer", "Topology", "/ui/topology",
+
+        ManagePlugin topology = new ManagePlugin("transfer", null, "Topology", "/ui/topology",
             TopologyPluginEndpoints.class,
             new TopologyPluginRegion("soy.page.topologyPluginRegion", "soy.page.connectionsHealth",
                 renderer, amzaService, upenaStore, healthPluginRegion, hostsPluginRegion, releasesPluginRegion, instancesPluginRegion, discoveredRoutes));
-        ManagePlugin changes = new ManagePlugin("road", "Changes", "/ui/changeLog",
+
+        ManagePlugin changes = new ManagePlugin("road", null, "Changes", "/ui/changeLog",
             ChangeLogPluginEndpoints.class,
             new ChangeLogPluginRegion("soy.page.changeLogPluginRegion", renderer, upenaStore));
-        ManagePlugin instances = new ManagePlugin("pencil", "Instances", "/ui/instances",
+
+        ManagePlugin instances = new ManagePlugin(null, "instance", "Instances", "/ui/instances",
             InstancesPluginEndpoints.class, instancesPluginRegion);
-        ManagePlugin config = new ManagePlugin("cog", "Config", "/ui/config",
+
+        ManagePlugin config = new ManagePlugin("cog", null, "Config", "/ui/config",
             ConfigPluginEndpoints.class,
             new ConfigPluginRegion("soy.page.configPluginRegion", renderer, upenaStore, upenaConfigStore));
-        ManagePlugin clusters = new ManagePlugin("cloud", "Clusters", "/ui/clusters",
+
+        ManagePlugin clusters = new ManagePlugin(null, "cluster", "Clusters", "/ui/clusters",
             ClustersPluginEndpoints.class,
             new ClustersPluginRegion("soy.page.clustersPluginRegion", renderer, upenaStore));
-        ManagePlugin hosts = new ManagePlugin("hdd", "Hosts", "/ui/hosts",
+
+        ManagePlugin hosts = new ManagePlugin(null, "host", "Hosts", "/ui/hosts",
             HostsPluginEndpoints.class, hostsPluginRegion);
-        ManagePlugin services = new ManagePlugin("flag", "Services", "/ui/services",
+
+        ManagePlugin services = new ManagePlugin(null, "service", "Services", "/ui/services",
             ServicesPluginEndpoints.class,
             new ServicesPluginRegion("soy.page.servicesPluginRegion", renderer, amzaService, upenaStore, upenaService, ubaService, ringHost));
-        ManagePlugin releases = new ManagePlugin("send", "Releases", "/ui/releases",
+
+        ManagePlugin releases = new ManagePlugin(null, "release", "Releases", "/ui/releases",
             ReleasesPluginEndpoints.class, releasesPluginRegion);
 
-        ManagePlugin dependencies = new ManagePlugin("list", "Deps", "/ui/dependencies",
+        ManagePlugin dependencies = new ManagePlugin("list", null, "Deps", "/ui/dependencies",
             DependenciesPluginEndpoints.class,
             new DependenciesPluginRegion("soy.page.dependenciesPluginRegion", renderer, upenaStore));
 
-        ManagePlugin ring = new ManagePlugin("leaf", "Upena Ring", "/ui/ring",
+        ManagePlugin ring = new ManagePlugin("leaf", null, "Upena Ring", "/ui/ring",
             UpenaRingPluginEndpoints.class,
             new UpenaRingPluginRegion("soy.page.upenaRingPluginRegion", renderer, amzaService, upenaStore, upenaService, ubaService, ringHost));
 
-        List<ManagePlugin> plugins = Lists.newArrayList(health, topology, changes, clusters, hosts, services, releases, dependencies, instances, config, ring);
+        List<ManagePlugin> plugins = Lists.newArrayList(health, topology, clusters, hosts, services, releases, instances, config, changes, dependencies, ring);
 
         jerseyEndpoints.addInjectable(SoyService.class, soyService);
         jerseyEndpoints.addEndpoint(AsyncLookupEndpoints.class);

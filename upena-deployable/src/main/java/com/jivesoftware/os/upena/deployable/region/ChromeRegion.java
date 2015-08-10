@@ -38,6 +38,7 @@ public class ChromeRegion<I extends PluginInput, R extends PageRegion<I>> implem
             }
             map.put("path", input1.path);
             map.put("glyphicon", input1.glyphicon);
+            map.put("icon", input1.icon);
             return map;
         });
         HeaderInput headerData = new HeaderInput();

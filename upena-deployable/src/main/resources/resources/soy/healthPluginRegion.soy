@@ -14,16 +14,31 @@
                 <table class="table table-condensed">
                     <tr style="background-color:#ddd;">
                         <td>
-                            <input type="text" autocomplete="off" role="combobox" style="width:280px; padding-left:10px;"
-                            placeholder="Cluster" value="{$filter.cluster?:''}" name="cluster" id="clusterPicker" class="form-control">
+                            <div class="input-group">
+                                <div class="input-group-addon" id="basic-addon1">
+                                    <img src="/static/img/cluster.png" alt="Release" style="width:20px;height:20px;">&nbsp
+                                </div>
+                                <input type="text" autocomplete="off" role="combobox" style="width:280px; padding-left:10px;"
+                                    placeholder="Cluster" value="{$filter.cluster?:''}" name="cluster" id="clusterPicker" class="form-control">
+                            </div>
                         </td>
                         <td>
-                            <input type="text" autocomplete="off" role="combobox" style="width:280px; padding-left:10px;"
-                            placeholder="Host" value="{$filter.host?:''}" name="host" id="hostPicker" class="form-control">
+                            <div class="input-group">
+                                <div class="input-group-addon" id="basic-addon1">
+                                    <img src="/static/img/host.png" alt="Release" style="width:20px;height:20px;">&nbsp
+                                </div>
+                                <input type="text" autocomplete="off" role="combobox" style="width:280px; padding-left:10px;"
+                                    placeholder="Host" value="{$filter.host?:''}" name="host" id="hostPicker" class="form-control">
+                            </div>
                         </td>
                         <td>
-                            <input type="text" autocomplete="off" role="combobox" style="width:280px; padding-left:10px;"
-                            placeholder="Service" value="{$filter.service?:''}" name="service" id="servicePicker" class="form-control">
+                            <div class="input-group">
+                                <div class="input-group-addon" id="basic-addon1">
+                                    <img src="/static/img/service.png" alt="Release" style="width:20px;height:20px;">&nbsp
+                                </div>
+                                <input type="text" autocomplete="off" role="combobox" style="width:280px; padding-left:10px;"
+                                    placeholder="Service" value="{$filter.service?:''}" name="service" id="servicePicker" class="form-control">
+                            </div>
                         </td>
                         <td>
                             <button title="Filter" type="submit" name="filter" value="filter" class="btn btn-primary ladda-button" data-style="zoom-out"><span class="glyphicon glyphicon-search"></span></button>

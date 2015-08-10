@@ -65,22 +65,37 @@
                             <input class="form-control" type="checkbox" name="enabled" value="true" {if $filters.enabled}checked="checked"{/if}>
                         </td>
                         <td>
-                            <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                placeholder="Cluster" value="{$filters.cluster?:''}" name="cluster" id="clusterPicker"
-                                class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/clusters">
-                            <input type="hidden" name="clusterKey" value="{$filters.clusterKey?:''}" />
+                            <div class="input-group">
+                                <div class="input-group-addon" id="basic-addon1">
+                                    <img src="/static/img/cluster.png" alt="Cluster" style="width:20px;height:20px;">&nbsp
+                                </div>
+                                <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                    placeholder="Cluster" value="{$filters.cluster?:''}" name="cluster" id="clusterPicker"
+                                    class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/clusters">
+                                <input type="hidden" name="clusterKey" value="{$filters.clusterKey?:''}" />
+                            </div>
                         </td>
                         <td>
-                            <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                placeholder="Host" value="{$filters.host?:''}" name="host" id="hostPicker"
-                                class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/hosts">
-                            <input type="hidden" name="hostKey" value="{$filters.hostKey?:''}" />
+                            <div class="input-group">
+                                <div class="input-group-addon" id="basic-addon1">
+                                    <img src="/static/img/host.png" alt="Host" style="width:20px;height:20px;">&nbsp
+                                </div>
+                                <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                    placeholder="Host" value="{$filters.host?:''}" name="host" id="hostPicker"
+                                    class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/hosts">
+                                <input type="hidden" name="hostKey" value="{$filters.hostKey?:''}" />
+                            </div>
                         </td>
                         <td>
-                            <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                placeholder="Service" value="{$filters.service?:''}" name="service" id="servicePicker"
-                                class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/services">
-                            <input type="hidden" name="serviceKey" value="{$filters.serviceKey?:''}" />
+                            <div class="input-group">
+                                <div class="input-group-addon" id="basic-addon1">
+                                    <img src="/static/img/service.png" alt="Service" style="width:20px;height:20px;">&nbsp
+                                </div>
+                                <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                    placeholder="Service" value="{$filters.service?:''}" name="service" id="servicePicker"
+                                    class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/services">
+                                <input type="hidden" name="serviceKey" value="{$filters.serviceKey?:''}" />
+                            </div>
                         </td>
                         <td>
                         </td>
@@ -89,10 +104,15 @@
                                 placeholder="Id" value="{$filters.instanceId?:''}" name="instanceId" id="idPicker">
                         </td>
                         <td>
-                            <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                placeholder="Release" value="{$filters.release?:''}" name="release" id="releasePicker"
-                                class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/releases">
-                            <input type="hidden" name="releaseKey" value="{$filters.releaseKey?:''}" />
+                            <div class="input-group">
+                                <div class="input-group-addon" id="basic-addon1">
+                                    <img src="/static/img/release.png" alt="Release" style="width:20px;height:20px;">&nbsp
+                                </div>
+                                <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                    placeholder="Release" value="{$filters.release?:''}" name="release" id="releasePicker"
+                                    class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/releases">
+                                <input type="hidden" name="releaseKey" value="{$filters.releaseKey?:''}" />
+                            </div>
                         </td>
                         <td>
                             <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary ladda-button" data-style="zoom-out"><span class="glyphicon glyphicon-search"></span></button>
