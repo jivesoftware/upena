@@ -88,11 +88,27 @@
                         <span><img style="float:left" src="/static/img/icon.png" alt="Fun with deployment" height="24px"><img></span>
                     </a></li>
                     {foreach $plugin in $plugins}
-                        <li {if $plugin.active}class="active"{/if} role="presentation">
-                            <a class="ladda-button" data-style="zoom-out" href="{$plugin.path}">
-                                <span class="ladda-label glyphicon glyphicon-{$plugin.glyphicon}">&nbsp{$plugin.name}</span>
-                            </a>
-                        </li>
+                        {if $plugin.active}
+                            <li class="active" role="presentation">
+                                <a class="ladda-button" data-style="zoom-out" href="{$plugin.path}">
+                                    {if $plugin.icon}
+                                        <span class="ladda-label"><img src="/static/img/{$plugin.icon}.png" alt="Release" style="width:20px;height:20px;">&nbsp{$plugin.name}</span>
+                                    {else}
+                                        <span class="ladda-label glyphicon glyphicon-{$plugin.glyphicon}">&nbsp{$plugin.name}</span>
+                                    {/if}
+                                </a>
+                            </li>
+                        {else}
+                            <li role="presentation">
+                                <a class="ladda-button" data-style="zoom-out" href="{$plugin.path}">
+                                    {if $plugin.icon}
+                                        <span class="ladda-label"><img src="/static/img/{$plugin.icon}-white.png" alt="Release" style="width:20px;height:20px;">&nbsp{$plugin.name}</span>
+                                    {else}
+                                        <span class="ladda-label glyphicon glyphicon-{$plugin.glyphicon}">&nbsp{$plugin.name}</span>
+                                    {/if}
+                                </a>
+                            </li>
+                        {/if}
                     {/foreach}
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
