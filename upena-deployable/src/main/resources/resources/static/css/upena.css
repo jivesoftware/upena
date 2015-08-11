@@ -81,10 +81,6 @@ table.shadow-property {
     background-color: #555555;
 }
 
-tr.grid-host:hover {
-    background-color: #369;
-}
-
 div.grid-host-panel {
     margin-bottom: 0;
 }
@@ -197,15 +193,24 @@ form#query-filters.query-show-advanced td.query-advanced { display: table-cell; 
 }
 
 .table-hover tbody tr:hover td, .table-hover tbody tr:hover th {
-  background-color: #559cd9;
+    background-color: #aaa;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    -khtml-border-radius: 5px;
+    border-radius: 5px;
 }
 
-.coloredBox {   
+.coloredBox {
+    text-align:center;
     float: left;
-    width: 20px;
-    height: 20px;
-    margin: 5px;
+    width: 28px;
+    height: 28px;
+    margin: 4px;
     border-width: 1px;
     border-style: solid;
     border-color: rgba(0,0,0,.2);
+    -moz-border-radius: 8px;
+    -webkit-border-radius: 8px;
+    -khtml-border-radius: 8px;
+    border-radius: 8px;
 }

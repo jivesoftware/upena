@@ -16,6 +16,33 @@ import java.util.concurrent.ConcurrentSkipListMap;
  */
 public class ServiceColorUtil {
 
+    public static Map<ServiceKey, Integer> serviceKeysOrder(UpenaStore upenaStore) throws Exception {
+        ConcurrentNavigableMap<ServiceKey, TimestampedValue<com.jivesoftware.os.upena.shared.Service>> listServices = upenaStore.services.find(
+            new ServiceFilter(null, null, 0, 10000));
+        int i = 0;
+
+        Map<ServiceKey, TimestampedValue<com.jivesoftware.os.upena.shared.Service>> sort = new ConcurrentSkipListMap<>((ServiceKey o1, ServiceKey o2) -> {
+            com.jivesoftware.os.upena.shared.Service so1 = listServices.get(o1).getValue();
+            com.jivesoftware.os.upena.shared.Service so2 = listServices.get(o2).getValue();
+            int c = so1.name.compareTo(so2.name);
+            if (c != 0) {
+                return c;
+            }
+            return o1.compareTo(o2);
+        });
+        sort.putAll(listServices);
+
+        Map<ServiceKey, Integer> serviceNumber = new HashMap<>();
+        for (Map.Entry<ServiceKey, TimestampedValue<com.jivesoftware.os.upena.shared.Service>> entrySet : sort.entrySet()) {
+            if (!entrySet.getValue().getTombstoned()) {
+                serviceNumber.put(entrySet.getKey(), i);
+                i++;
+            }
+        }
+        return serviceNumber;
+
+    }
+
     public static Map<ServiceKey, String> serviceKeysColor(UpenaStore upenaStore) throws Exception {
         ConcurrentNavigableMap<ServiceKey, TimestampedValue<com.jivesoftware.os.upena.shared.Service>> listServices = upenaStore.services.find(
             new ServiceFilter(null, null, 0, 10000));

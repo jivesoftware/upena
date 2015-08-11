@@ -1,6 +1,8 @@
 package com.jivesoftware.os.upena.deployable.region;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
@@ -13,9 +15,11 @@ import com.jivesoftware.os.upena.shared.InstanceKey;
 import com.jivesoftware.os.upena.shared.ReleaseGroup;
 import com.jivesoftware.os.upena.shared.ReleaseGroupFilter;
 import com.jivesoftware.os.upena.shared.ReleaseGroupKey;
+import com.jivesoftware.os.upena.shared.ServiceKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -86,7 +90,8 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
     private Map<String, Object> renderData(ReleasesPluginRegionInput input, String user) {
         Map<String, Object> data = Maps.newHashMap();
         try {
-
+            Map<ServiceKey, String> serviceColor = ServiceColorUtil.serviceKeysColor(upenaStore);
+            
             Map<String, String> filters = new HashMap<>();
             filters.put("name", input.name);
             filters.put("email", input.email);
@@ -178,7 +183,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
                 }
             }
 
-            List<Map<String, String>> rows = new ArrayList<>();
+            List<Map<String, Object>> rows = new ArrayList<>();
             Map<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> found = upenaStore.releaseGroups.find(filter);
             for (Map.Entry<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> entrySet : found.entrySet()) {
                 ReleaseGroupKey key = entrySet.getKey();
@@ -194,9 +199,23 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
                     0, 10000);
 
                 Map<InstanceKey, TimestampedValue<Instance>> instances = upenaStore.instances.find(instanceFilter);
+                HashMultiset<ServiceKey> serviceKeyCount = HashMultiset.create();
+                for (TimestampedValue<Instance> i : instances.values()) {
+                    if (!i.getTombstoned()) {
+                        serviceKeyCount.add(i.getValue().serviceKey);
+                    }
+                }
 
-                Map<String, String> row = new HashMap<>();
-                row.put("instanceCount", String.valueOf(instances.size()));
+                List<Map<String, String>> instanceCounts = new ArrayList<>();
+                for (ServiceKey sk : new HashSet<>(serviceKeyCount)) {
+                    instanceCounts.add(ImmutableMap.of(
+                        "count", String.valueOf(serviceKeyCount.count(sk)),
+                        "color", serviceColor.get(sk)
+                    ));
+                }
+
+                Map<String, Object> row = new HashMap<>();
+                row.put("instanceCounts", instanceCounts);
                 row.put("key", key.getKey());
                 row.put("name", value.name);
                 row.put("email", value.email);
