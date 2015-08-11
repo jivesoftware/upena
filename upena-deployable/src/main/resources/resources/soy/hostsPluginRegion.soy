@@ -29,9 +29,14 @@
                                 <tr style="background-color:#ddd;">
                                     <td>
                                     </td>
-                                    <td>
-                                        <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                        placeholder="Host" value="{$filters.host?:''}" name="host" id="hostPicker" class="form-control">
+                                    <td style="width:400px;">
+                                        <div class="input-group">
+                                            <div class="input-group-addon" id="basic-addon1">
+                                                <img src="/static/img/host.png" alt="Host" style="width:20px;height:20px;">&nbsp
+                                            </div>
+                                            <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                                    placeholder="Host" value="{$filters.host?:''}" name="host" id="hostPicker" class="form-control">
+                                        <div>
                                     </td>
                                     <td>
                                         <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
@@ -46,8 +51,8 @@
                                         placeholder="Public Address" value="{$filters.name?:''}" name="name" id="namePicker" class="form-control">
                                     </td>
                                     <td>
-                                        <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary"><span class="glyphicon glyphicon-search ladda-button" data-style="zoom-out"></span></button>
-                                        <button title="Add" type="submit" name="action" value="add" class="btn btn-default"><span class="glyphicon glyphicon-plus ladda-button" data-style="zoom-out"></span></button>
+                                        <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary"><span class="glyphicon glyphicon-search ladda-button" data-style="expand-right"></span></button>
+                                        <button title="Add" type="submit" name="action" value="add" class="btn btn-default"><span class="glyphicon glyphicon-plus ladda-button" data-style="expand-right"></span></button>
                                     <td>
                                 </tr>
                             </form>
@@ -56,14 +61,21 @@
                                 <form id="edit-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
                                     data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="editHost">
                                     <tr>
-                                        <td>
-                                            {$h.instanceCount}
+                                        <td style="width:100px;">
+                                            {foreach $ic in $h.instanceCounts}
+                                                <div title="ServiceName" class="coloredBox" style="background-color:rgba({$ic.color},0.4);">{$ic.count}</div>
+                                            {/foreach}
                                         </td>
-                                        <td>
-                                            <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                            placeholder="Host" value="{$h.host}" name="host" id="hostPicker" class="form-control">
+                                        <td style="width:400px;">
+                                            <div class="input-group">
+                                                <div class="input-group-addon" id="basic-addon1">
+                                                    <img src="/static/img/host.png" alt="Host" style="width:20px;height:20px;">&nbsp
+                                                </div>
+                                                <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                                    placeholder="Host" value="{$h.host}" name="host" id="hostPicker" class="form-control">
+                                            </div>
                                         </td>
-                                        <td>
+                                        <td style="width:100px;">
                                             <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
                                             placeholder="Port" value="{$h.port}" name="port" id="portPicker" class="form-control">
                                         </td>

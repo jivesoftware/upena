@@ -17,9 +17,11 @@
                     <div class="panel-body">
                         <label>Restart:</label>
                         <div class="btn-group" role="group" aria-label="...">
-                            <button form="filter-form" type="submit" name="action" value="restartAllNow" class="btn btn-default ladda-button" data-style="zoom-out">Now</button>
-                            <button form="filter-form" type="submit" name="action" value="restartAll" class="btn btn-default ladda-button" data-style="zoom-out">Rolling</button>
-                            <button form="filter-form" type="submit" name="action" value="cancelRestartAll" class="btn btn-default ladda-button" data-style="zoom-out">Cancel</button>
+                            <button form="filter-form" type="submit" name="action" value="disable" class="btn btn-default ladda-button" data-style="expand-right">Disable</button>
+                            <button form="filter-form" type="submit" name="action" value="enable" class="btn btn-default ladda-button" data-style="expand-right">Enable</button>
+                            <button form="filter-form" type="submit" name="action" value="restartAllNow" class="btn btn-default ladda-button" data-style="expand-right">Now</button>
+                            <button form="filter-form" type="submit" name="action" value="restartAll" class="btn btn-default ladda-button" data-style="expand-right">Rolling</button>
+                            <button form="filter-form" type="submit" name="action" value="cancelRestartAll" class="btn btn-default ladda-button" data-style="expand-right">Cancel</button>
                         </div>
                     </div>
 
@@ -69,7 +71,7 @@
                                 <div class="input-group-addon" id="basic-addon1">
                                     <img src="/static/img/cluster.png" alt="Cluster" style="width:20px;height:20px;">&nbsp
                                 </div>
-                                <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
                                     placeholder="Cluster" value="{$filters.cluster?:''}" name="cluster" id="clusterPicker"
                                     class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/clusters">
                                 <input type="hidden" name="clusterKey" value="{$filters.clusterKey?:''}" />
@@ -80,7 +82,7 @@
                                 <div class="input-group-addon" id="basic-addon1">
                                     <img src="/static/img/host.png" alt="Host" style="width:20px;height:20px;">&nbsp
                                 </div>
-                                <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
                                     placeholder="Host" value="{$filters.host?:''}" name="host" id="hostPicker"
                                     class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/hosts">
                                 <input type="hidden" name="hostKey" value="{$filters.hostKey?:''}" />
@@ -91,7 +93,7 @@
                                 <div class="input-group-addon" id="basic-addon1">
                                     <img src="/static/img/service.png" alt="Service" style="width:20px;height:20px;">&nbsp
                                 </div>
-                                <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
                                     placeholder="Service" value="{$filters.service?:''}" name="service" id="servicePicker"
                                     class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/services">
                                 <input type="hidden" name="serviceKey" value="{$filters.serviceKey?:''}" />
@@ -99,8 +101,8 @@
                         </td>
                         <td>
                         </td>
-                        <td>
-                            <input type="text" autocomplete="off" role="combobox" class="form-control" style="width:200px; padding-left:10px;"
+                        <td style="width:100px;">
+                            <input type="text" autocomplete="off" role="combobox" class="form-control" style="padding-left:10px;"
                                 placeholder="Id" value="{$filters.instanceId?:''}" name="instanceId" id="idPicker">
                         </td>
                         <td>
@@ -108,15 +110,15 @@
                                 <div class="input-group-addon" id="basic-addon1">
                                     <img src="/static/img/release.png" alt="Release" style="width:20px;height:20px;">&nbsp
                                 </div>
-                                <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                                <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
                                     placeholder="Release" value="{$filters.release?:''}" name="release" id="releasePicker"
                                     class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/releases">
                                 <input type="hidden" name="releaseKey" value="{$filters.releaseKey?:''}" />
                             </div>
                         </td>
                         <td>
-                            <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary ladda-button" data-style="zoom-out"><span class="glyphicon glyphicon-search"></span></button>
-                            <button title="Add" type="submit" name="action" value="add" class="btn btn-default ladda-button" data-style="zoom-out"><span class="glyphicon glyphicon-plus"></span></button>
+                            <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary ladda-button" data-style="expand-right"><span class="glyphicon glyphicon-search"></span></button>
+                            <button title="Add" type="submit" name="action" value="add" class="btn btn-default ladda-button" data-style="expand-right"><span class="glyphicon glyphicon-plus"></span></button>
                         </td>
                     </tr>
                 {/if}
@@ -125,10 +127,10 @@
             {foreach $i in $instances}
                 <form id="edit-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
                     data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="editInstance">
-                    <tr>
+                    <tr style="background-color:rgba({$i.service.color},0.4);">
                         <td>
                             <label>
-                                <div class="coloredBox" style="background-color:{$i.healthColor};"></div>
+                                <div class="coloredBox" style="background-color:{$i.healthColor};">{$i.health}</div>
                                 {$i.status}
                             </label>
                         </td>
@@ -136,23 +138,37 @@
                             <input class="form-control" type="checkbox" name="enabled" value="true" {if $i.enabled}checked="checked"{/if}>
                         </td>
                         <td>
-                            <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                placeholder="Cluster" value="{$i.cluster.name}" name="cluster" class="upena-hs-field form-control"
-                                data-upena-lookup="/ui/lookup/clusters" />
-                            <input type="hidden" name="clusterKey" value="{$i.cluster.key}" />
+                            <div class="input-group">
+                                <div class="input-group-addon" id="basic-addon1">
+                                    <img src="/static/img/cluster.png" alt="Cluster" style="width:20px;height:20px;">&nbsp
+                                </div>
+                                <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                    placeholder="Cluster" value="{$i.cluster.name}" name="cluster" class="upena-hs-field form-control"
+                                    data-upena-lookup="/ui/lookup/clusters" />
+                                <input type="hidden" name="clusterKey" value="{$i.cluster.key}" />
+                            </div>
                         </td>
                         <td>
-                            <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                placeholder="Host" value="{$i.host.name}" name="host" class="upena-hs-field form-control"
-                                data-upena-lookup="/ui/lookup/hosts" />
-                            <input type="hidden" name="hostKey" value="{$i.host.key}" />
+                            <div class="input-group">
+                                <div class="input-group-addon" id="basic-addon1">
+                                    <img src="/static/img/host.png" alt="Host" style="width:20px;height:20px;">&nbsp
+                                </div>
+                                <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                    placeholder="Host" value="{$i.host.name}" name="host" class="upena-hs-field form-control"
+                                    data-upena-lookup="/ui/lookup/hosts" />
+                                <input type="hidden" name="hostKey" value="{$i.host.key}" />
+                            </div>
                         </td>
                         <td>
-                           <div class="coloredBox" style="background-color:rgba({$i.service.color},0.4);"></div>
-                           <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                placeholder="Service" value="{$i.service.name}" name="service" class="upena-hs-field form-control"
-                                data-upena-lookup="/ui/lookup/services" />
-                            <input type="hidden" name="serviceKey" value="{$i.service.key}" />
+                           <div class="input-group">
+                                <div class="input-group-addon" id="basic-addon1">
+                                    <img src="/static/img/service.png" alt="Service" style="width:20px;height:20px;">&nbsp
+                                </div>
+                                <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                    placeholder="Service" value="{$i.service.name}" name="service" class="upena-hs-field form-control"
+                                    data-upena-lookup="/ui/lookup/services" />
+                                <input type="hidden" name="serviceKey" value="{$i.service.key}" />
+                            </div>
                         </td>
                         <td>
                             <a href="#" rel="popover" id="popoverAnchor-{$i.key}" data-popover-content="#portsPopover-{$i.key}" data-placement="left" class="btn btn-primary" title="Ports">
@@ -171,11 +187,11 @@
                                     <tbody>
                                         <tr class="well">
                                             <td>
-                                                <input type="text" id="portName-{$i.key}" style="width:200px; padding-left:10px;"
+                                                <input type="text" id="portName-{$i.key}" style="padding-left:10px;"
                                                     placeholder="port name" value="">
                                             </td>
                                             <td>
-                                                <input type="number" id="port-{$i.key}" style="width:200px; padding-left:10px;"
+                                                <input type="number" id="port-{$i.key}" style="padding-left:10px;"
                                                     placeholder="port number" value="">
                                             </td>
                                             <td>
@@ -221,11 +237,11 @@
                                                                 {/foreach}
                                                                 <tr>
                                                                     <td>
-                                                                        <input type="text" id="portPropertyName-{$i.key}-{$p.portName}" style="width:200px; padding-left:10px;"
+                                                                        <input type="text" id="portPropertyName-{$i.key}-{$p.portName}" style="padding-left:10px;"
                                                                             placeholder="property name" value="">
                                                                     </td>
                                                                     <td>
-                                                                        <input type="number" id="portPropertyValue-{$i.key}-{$p.portName}" style="width:200px; padding-left:10px;"
+                                                                        <input type="number" id="portPropertyValue-{$i.key}-{$p.portName}" style="padding-left:10px;"
                                                                             placeholder="property value" value="">
                                                                     </td>
                                                                     <td>
@@ -246,20 +262,25 @@
 
                             </div>
                         </td>
-                        <td>
-                            <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                        <td style="width:100px;">
+                            <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
                                 placeholder="Id" value="{$i.instanceId}" name="instanceId" class="form-control">
                         </td>
                         <td>
-                            <input type="text" style="width:200px; padding-left:10px;"
-                                placeholder="Release" value="{$i.release.name}" name="release" class="upena-hs-field form-control"
-                                data-upena-lookup="/ui/lookup/releases" />
-                            <input type="hidden" name="releaseKey" value="{$i.release.key}" />
+                            <div class="input-group">
+                                <div class="input-group-addon" id="basic-addon1">
+                                    <img src="/static/img/release.png" alt="Release" style="width:20px;height:20px;">&nbsp
+                                </div>
+                                <input type="text" style="padding-left:10px;"
+                                    placeholder="Release" value="{$i.release.name}" name="release" class="upena-hs-field form-control"
+                                    data-upena-lookup="/ui/lookup/releases" />
+                                <input type="hidden" name="releaseKey" value="{$i.release.key}" />
+                            </div>
                         </td>
                         <td>
                             <input type="hidden" name="key" value="{$i.key}">
-                            <button title="Update" type="submit" name="action" value="restart" class="btn btn-default"><span class="glyphicon glyphicon-repeat ladda-button" data-style="zoom-out"></span></button>
-                            <button title="Update" type="submit" name="action" value="update" class="btn btn-default"><span class="glyphicon glyphicon-save ladda-button" data-style="zoom-out"></span></button>
+                            <button title="Update" type="submit" name="action" value="restart" class="btn btn-default"><span class="glyphicon glyphicon-repeat ladda-button" data-style="expand-right"></span></button>
+                            <button title="Update" type="submit" name="action" value="update" class="btn btn-default"><span class="glyphicon glyphicon-save ladda-button" data-style="expand-right"></span></button>
                             <button onclick="return confirm('Are you sure you want to delete?')" title="Remove" type="submit" name="action" value="remove" class="btn btn-default"><span class="glyphicon glyphicon-trash"></span></button>
                         </td>
                     </tr>

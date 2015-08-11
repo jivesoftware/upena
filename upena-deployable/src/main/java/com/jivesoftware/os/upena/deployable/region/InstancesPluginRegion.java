@@ -154,6 +154,10 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
                     handleRemove(user, input, data);
                 } else if (input.action.equals("restartAllNow")) {
                     handleRestartAllNow(user, filter);
+                } else if (input.action.equals("enable")) {
+                    handleEnable(user, filter);
+                } else if (input.action.equals("disable")) {
+                    handleDisable(user, filter);
                 } else if (input.action.equals("restartAll")) {
                     handleRestartAll(user, filter);
                 } else if (input.action.equals("cancelRestartAll")) {
@@ -243,6 +247,42 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
         if (!canceled.isEmpty()) {
             upenaStore.record(user, "cancelRestart", System.currentTimeMillis(), "", "instance-ui", canceled.toString());
 
+        }
+    }
+
+    private void handleEnable(String user, InstanceFilter filter) throws Exception {
+        List<String> enable = new ArrayList<>();
+        Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(filter);
+        for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {
+            InstanceKey key = entrySet.getKey();
+            TimestampedValue<Instance> timestampedValue = entrySet.getValue();
+            Instance instance = timestampedValue.getValue();
+            if (!instance.enabled) {
+                instance.enabled = true;
+                upenaStore.instances.update(key, instance);
+                enable.add(instanceToHumanReadableString(instance));
+            }
+        }
+        if (!enable.isEmpty()) {
+            upenaStore.record(user, "enabled", System.currentTimeMillis(), "", "instance-ui", enable.toString());
+        }
+    }
+
+    private void handleDisable(String user, InstanceFilter filter) throws Exception {
+        List<String> enable = new ArrayList<>();
+        Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(filter);
+        for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {
+            InstanceKey key = entrySet.getKey();
+            TimestampedValue<Instance> timestampedValue = entrySet.getValue();
+            Instance instance = timestampedValue.getValue();
+            if (instance.enabled) {
+                instance.enabled = false;
+                upenaStore.instances.update(key, instance);
+                enable.add(instanceToHumanReadableString(instance));
+            }
+        }
+        if (!enable.isEmpty()) {
+            upenaStore.record(user, "disabled", System.currentTimeMillis(), "", "instance-ui", enable.toString());
         }
     }
 
@@ -456,10 +496,13 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
 
         UpenaEndpoints.NannyHealth nannyHealth = nannyHealth(key.getKey());
         String color = "#666";
+        double h = 0d;
         if (nannyHealth != null) {
             color = "#" + healthPluginRegion.getHEXTrafficlightColor(nannyHealth.serviceHealth.health, 1f);
+            h = nannyHealth.serviceHealth.health;
         }
-
+        
+        map.put("health", String.valueOf((int) (100 * Math.max(0d, Math.min(1d, h)))));
         map.put("healthColor", color);
 
         if (value.restartTimestampGMTMillis > 0 && now < value.restartTimestampGMTMillis) {
@@ -566,12 +609,10 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
                 port.properties.put(update.propertyName, update.propertyValue);
             }
             instance.ports.put(update.portName, port);
+        } else if (update.propertyName != null && !update.propertyName.isEmpty()) {
+            port.properties.put(update.propertyName, update.propertyValue);
         } else {
-            if (update.propertyName != null && !update.propertyName.isEmpty()) {
-                port.properties.put(update.propertyName, update.propertyValue);
-            } else {
-                port.port = update.port;
-            }
+            port.port = update.port;
         }
         upenaStore.record(user, "updated", System.currentTimeMillis(), "", "instance-ui", instanceToHumanReadableString(instance) + "\n" + instance
             .toString());

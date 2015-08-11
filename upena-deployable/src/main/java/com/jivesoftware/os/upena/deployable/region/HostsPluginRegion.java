@@ -1,6 +1,8 @@
 package com.jivesoftware.os.upena.deployable.region;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
@@ -13,10 +15,12 @@ import com.jivesoftware.os.upena.shared.HostKey;
 import com.jivesoftware.os.upena.shared.Instance;
 import com.jivesoftware.os.upena.shared.InstanceFilter;
 import com.jivesoftware.os.upena.shared.InstanceKey;
+import com.jivesoftware.os.upena.shared.ServiceKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -70,6 +74,8 @@ public class HostsPluginRegion implements PageRegion<HostsPluginRegionInput> {
         Map<String, Object> data = Maps.newHashMap();
 
         try {
+
+            Map<ServiceKey, String> serviceColor = ServiceColorUtil.serviceKeysColor(upenaStore);
 
             Map<String, String> filters = new HashMap<>();
             filters.put("name", input.name);
@@ -151,7 +157,7 @@ public class HostsPluginRegion implements PageRegion<HostsPluginRegionInput> {
                 }
             }
 
-            List<Map<String, String>> rows = new ArrayList<>();
+            List<Map<String, Object>> rows = new ArrayList<>();
 
             Map<HostKey, TimestampedValue<Host>> found = upenaStore.hosts.find(filter);
             for (Map.Entry<HostKey, TimestampedValue<Host>> entrySet : found.entrySet()) {
@@ -160,7 +166,7 @@ public class HostsPluginRegion implements PageRegion<HostsPluginRegionInput> {
                 TimestampedValue<Host> timestampedValue = entrySet.getValue();
                 Host value = timestampedValue.getValue();
 
-                 InstanceFilter instanceFilter = new InstanceFilter(
+                InstanceFilter instanceFilter = new InstanceFilter(
                     null,
                     key,
                     null,
@@ -169,9 +175,23 @@ public class HostsPluginRegion implements PageRegion<HostsPluginRegionInput> {
                     0, 10000);
 
                 Map<InstanceKey, TimestampedValue<Instance>> instances = upenaStore.instances.find(instanceFilter);
+                HashMultiset<ServiceKey> serviceKeyCount = HashMultiset.create();
+                for (TimestampedValue<Instance> i : instances.values()) {
+                    if (!i.getTombstoned()) {
+                        serviceKeyCount.add(i.getValue().serviceKey);
+                    }
+                }
 
-                Map<String, String> row = new HashMap<>();
-                row.put("instanceCount", String.valueOf(instances.size()));
+                List<Map<String, String>> instanceCounts = new ArrayList<>();
+                for (ServiceKey sk : new HashSet<>(serviceKeyCount)) {
+                    instanceCounts.add(ImmutableMap.of(
+                        "count", String.valueOf(serviceKeyCount.count(sk)),
+                        "color", serviceColor.get(sk)
+                    ));
+                }
+
+                Map<String, Object> row = new HashMap<>();
+                row.put("instanceCounts", instanceCounts);
                 row.put("key", key.getKey());
                 row.put("host", value.hostName);
                 row.put("port", String.valueOf(value.port));
@@ -180,9 +200,9 @@ public class HostsPluginRegion implements PageRegion<HostsPluginRegionInput> {
                 rows.add(row);
             }
 
-            Collections.sort(rows, (Map<String, String> o1, Map<String, String> o2) -> {
-                String hostName1 = o1.get("host");
-                String hostName2 = o2.get("host");
+            Collections.sort(rows, (Map<String, Object> o1, Map<String, Object> o2) -> {
+                String hostName1 = (String)o1.get("host");
+                String hostName2 = (String)o2.get("host");
 
                 int c = hostName1.compareTo(hostName2);
                 if (c != 0) {

@@ -1,6 +1,8 @@
 package com.jivesoftware.os.upena.deployable.region;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
@@ -21,6 +23,7 @@ import com.jivesoftware.os.upena.shared.TimestampedValue;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -72,6 +75,8 @@ public class ClustersPluginRegion implements PageRegion<ClustersPluginRegionInpu
         Map<String, Object> data = Maps.newHashMap();
 
         try {
+
+            Map<ServiceKey, String> serviceColor = ServiceColorUtil.serviceKeysColor(upenaStore);
 
             Map<String, String> filters = new HashMap<>();
             filters.put("name", input.name);
@@ -170,10 +175,26 @@ public class ClustersPluginRegion implements PageRegion<ClustersPluginRegionInpu
                     null,
                     0, 10000);
 
+
+                HashMultiset<ServiceKey> serviceKeyCount = HashMultiset.create();
                 Map<InstanceKey, TimestampedValue<Instance>> instances = upenaStore.instances.find(instanceFilter);
+                for (TimestampedValue<Instance> i : instances.values()) {
+                    if (!i.getTombstoned()) {
+                        serviceKeyCount.add(i.getValue().serviceKey);
+                    }
+                }
+
+                List<Map<String,String>> instanceCounts = new ArrayList<>();
+                for (ServiceKey sk : new HashSet<>(serviceKeyCount)) {
+                    instanceCounts.add(ImmutableMap.of(
+                        "count", String.valueOf(serviceKeyCount.count(sk)),
+                        "color", serviceColor.get(sk)
+                        ));
+                }
+
 
                 Map<String, Object> row = new HashMap<>();
-                row.put("instanceCount", String.valueOf(instances.size()));
+                row.put("instanceCounts", instanceCounts);
                 row.put("key", key.getKey());
                 row.put("name", value.name);
                 row.put("description", value.description);
