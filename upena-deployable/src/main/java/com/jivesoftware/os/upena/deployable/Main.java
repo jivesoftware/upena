@@ -406,16 +406,17 @@ public class Main {
             UpenaRingPluginEndpoints.class,
             new UpenaRingPluginRegion("soy.page.upenaRingPluginRegion", renderer, amzaService, upenaStore, upenaService, ubaService, ringHost));
 
-        List<ManagePlugin> plugins = Lists.newArrayList(health,
-            topology,
+        List<ManagePlugin> plugins = Lists.newArrayList(
+            build,
+            releases,
+            config,
             clusters,
             hosts,
             services,
-            releases,
             instances,
-            config,
+            health,
+            topology,
             changes,
-            build,
             ring);
 
 
