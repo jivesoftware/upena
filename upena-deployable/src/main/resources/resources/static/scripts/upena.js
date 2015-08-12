@@ -359,6 +359,126 @@ upena.latestRelease = {
 };
 
 
+
+upena.build = {
+    layouter: null,
+    renderer: null,
+    height: null,
+    width: null,
+    init: function () {
+
+        upena.build.height = ($(document).height() / 4) * 3;
+        upena.build.width = $(document).width() - 100;
+        var nodes = $('#upena-build').data('nodes');
+        var edges = $('#upena-build').data('edges');
+        /* http://www.graphdracula.net/ */
+        var g = new Graph();
+        $(nodes).each(function (key, node) {
+            var render = function (r, n) {
+
+
+                /* the Raphael set is obligatory, containing all you want to display */
+                var iconSize = parseInt(node.iconSize);
+                var halfIconSize = iconSize / 2;
+
+                var icon;
+                var text;
+                var bb;
+
+                var cx = n.point[0];
+                var cy = n.point[1];
+
+                if (node.label) {
+                    text = r.text(cx, cy + iconSize, node.label).attr({"font-size": node.fontSize + "px", opacity: 1.0, fill: "#000"});
+                    bb = text.getBBox(false);
+                }
+
+                if (node.icon) {
+                    icon = r.image("/static/img/" + node.icon + ".png", cx - halfIconSize, cy - halfIconSize, iconSize, iconSize);
+                    bb = {x: cx - halfIconSize, y: cy - halfIconSize, x2: cx + iconSize, y2: cy + iconSize, width: iconSize, height: iconSize};
+                }
+
+                var w = bb.width;
+                var h = bb.height;
+                var s = (Math.max(w, h) / 2) + 2;
+
+                var rectbg = r.circle(cx, cy - 2, s).attr({
+                    stroke: "none",
+                    fill: "#fff",
+                    "stroke-width": "1px",
+                    opacity: 1,
+                });
+                var rectfg = r.circle(cx, cy - 2, s).attr({
+                    stroke: "#000",
+                    fill: "#" + node.color,
+                    "stroke-width": "1px",
+                    opacity: 1,
+                });
+
+                var set = r.set();
+                set.push(rectbg);
+                set.push(rectfg);
+                if (icon) {
+                    set.push(icon);
+                    icon.toFront();
+                }
+                if (text) {
+                    set.push(text);
+                    text.toFront();
+                }
+
+                if (node.tooltip) {
+
+                    set.items.forEach(function (el) {
+
+                        var tts = r.set();
+                        var text = r.text(-70, -100, node.tooltip).attr({"font-size": "16px", opacity: 1.0, fill: "#000"});
+                        var bb = text.getBBox(true);
+                        bb.width += 10;
+                        bb.height += 10;
+
+                        var ttr = r.rect(-70 - (bb.width / 2), -100 - (bb.height / 2), bb.width, bb.height).attr({"fill": "#999", "stroke-width": 1, r: "4px"});
+                        var tt = tts.push(ttr).push(text);
+                        text.toFront();
+                        el.tooltip(tt);
+                    });
+                }
+                return set;
+            };
+            var clicked = function () {
+                $("#build-details").html(node.focusHtml);
+            };
+            g.addNode(node.id, {label: node.label, render: render, clicked: clicked});
+        });
+        $(edges).each(function (key, edge) {
+
+            g.addEdge(edge.from, edge.to, {
+                label: edge.label,
+                straight: false,
+                directed: true,
+                stroke: "#" + edge.color,
+                fill: "#" + edge.color
+            });
+        });
+        /* layout the graph using the Spring layout implementation */
+        upena.build.layouter = new Graph.Layout.Spring(g);
+        upena.build.layouter.layout();
+        /* draw the graph using the RaphaelJS draw implementation */
+        upena.build.renderer = new Graph.Renderer.Raphael('upena-build', g, upena.build.width, upena.build.height);
+
+        upena.build.renderer.draw();
+
+
+
+    },
+    redraw: function () {
+        dracula_graph_seed = 1;
+        upena.topology.layouter.layout();
+        upena.topology.renderer.draw();
+    }
+};
+
+
 upena.topology = {
     layouter: null,
     renderer: null,
@@ -600,6 +720,10 @@ $(document).ready(function () {
     }
     if ($('#upena-cfg').length) {
         upena.cfg.init();
+    }
+    
+    if ($('#upena-build').length) {
+        upena.build.init();
     }
 
     if ($('#upena-topology').length) {
