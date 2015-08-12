@@ -65,6 +65,7 @@ import com.jivesoftware.os.upena.deployable.endpoints.DependenciesPluginEndpoint
 import com.jivesoftware.os.upena.deployable.endpoints.HealthPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.HostsPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.InstancesPluginEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.ModulesPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ReleasesPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ServicesPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.TopologyPluginEndpoints;
@@ -80,6 +81,7 @@ import com.jivesoftware.os.upena.deployable.region.HomeRegion;
 import com.jivesoftware.os.upena.deployable.region.HostsPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.InstancesPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ManagePlugin;
+import com.jivesoftware.os.upena.deployable.region.ModulesPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ReleasesPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ServicesPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.TopologyPluginRegion;
@@ -337,6 +339,7 @@ public class Main {
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/connectionsHealth.soy"), "connectionsHealth.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/instancesPluginRegion.soy"), "instances.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/dependenciesPluginRegion.soy"), "dependencies.soy");
+        soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/modulesPluginRegion.soy"), "modules.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/clustersPluginRegion.soy"), "clusters.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/hostsPluginRegion.soy"), "hosts.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/servicesPluginRegion.soy"), "services.soy");
@@ -395,11 +398,26 @@ public class Main {
             DependenciesPluginEndpoints.class,
             new DependenciesPluginRegion("soy.page.dependenciesPluginRegion", renderer, upenaStore));
 
+         ManagePlugin build = new ManagePlugin("wrench", null, "Build", "/ui/modules",
+            ModulesPluginEndpoints.class,
+            new ModulesPluginRegion("soy.page.modulesPluginRegion", renderer, upenaStore));
+
         ManagePlugin ring = new ManagePlugin("leaf", null, "Upena Ring", "/ui/ring",
             UpenaRingPluginEndpoints.class,
             new UpenaRingPluginRegion("soy.page.upenaRingPluginRegion", renderer, amzaService, upenaStore, upenaService, ubaService, ringHost));
 
-        List<ManagePlugin> plugins = Lists.newArrayList(health, topology, clusters, hosts, services, releases, instances, config, changes, dependencies, ring);
+        List<ManagePlugin> plugins = Lists.newArrayList(health,
+            topology,
+            clusters,
+            hosts,
+            services,
+            releases,
+            instances,
+            config,
+            changes,
+            build,
+            ring);
+
 
         jerseyEndpoints.addInjectable(SoyService.class, soyService);
         jerseyEndpoints.addEndpoint(AsyncLookupEndpoints.class);
