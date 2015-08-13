@@ -45,17 +45,6 @@
                                 <input type="hidden" name="serviceKey" value="{$filters.serviceKey?:''}" />
                             </div>
                         </td>
-                        <td>
-                            <div class="input-group">
-                                <div class="input-group-addon" id="basic-addon1">
-                                    <img src="/static/img/release.png" alt="Release" style="width:20px;height:20px;">&nbsp
-                                </div>
-                                <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
-                                    placeholder="Release" value="{$filters.release?:''}" name="release" id="releasePicker"
-                                    class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/releases">
-                                <input type="hidden" name="releaseKey" value="{$filters.releaseKey?:''}" />
-                            </div>
-                        </td>
                         <td style="width:100%">
                             <button title="Filter" type="submit" name="filter" value="filter" class="btn btn-primary btn-sm"><span class="glyphicon glyphicon-search"></span></button>
                         </td>

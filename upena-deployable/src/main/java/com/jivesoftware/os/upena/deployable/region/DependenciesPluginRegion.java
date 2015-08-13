@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.Artifact;
@@ -25,8 +26,8 @@ import org.eclipse.aether.graph.DependencyNode;
 import org.eclipse.aether.graph.DependencyVisitor;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.resolution.ArtifactRequest;
-import org.eclipse.aether.resolution.ArtifactResolutionException;
-import org.eclipse.aether.resolution.ArtifactResult;
+import org.eclipse.aether.resolution.VersionRequest;
+import org.eclipse.aether.resolution.VersionResult;
 
 /**
  *
@@ -78,10 +79,12 @@ public class DependenciesPluginRegion implements PageRegion<DependenciesPluginRe
             filters.put("release", input.release);
             data.put("filters", filters);
 
+            Map<Artifact, String> latestCache = new ConcurrentHashMap<>();
+
             List<Map<String, Object>> rows = new ArrayList<>();
             ReleaseGroup releaseGroup = upenaStore.releaseGroups.get(new ReleaseGroupKey(input.releaseKey));
             if (releaseGroup != null) {
-                deploy(releaseGroup, rows);
+                deploy(latestCache, releaseGroup, rows);
             }
 
             Collections.sort(rows, (Map<String, Object> o1, Map<String, Object> o2) -> {
@@ -104,18 +107,19 @@ public class DependenciesPluginRegion implements PageRegion<DependenciesPluginRe
         return renderer.render(template, data);
     }
 
-    private void deploy(ReleaseGroup releaseGroup, List<Map<String, Object>> rows) {
+    private void deploy(Map<Artifact, String> latestCache, ReleaseGroup releaseGroup, List<Map<String, Object>> rows) {
 
         RepositorySystem system = RepositoryProvider.newRepositorySystem();
         RepositorySystemSession session = RepositoryProvider.newRepositorySystemSession(system);
         String[] repos = releaseGroup.repository.split(",");
         List<RemoteRepository> remoteRepos = RepositoryProvider.newRepositories(system, session, null, repos);
         String[] deployablecoordinates = releaseGroup.version.trim().split(",");
-        gather(deployablecoordinates[0], remoteRepos, system, session, rows);
+        gather(latestCache, deployablecoordinates[0], remoteRepos, system, session, rows);
 
     }
 
-    private void gather(String deployablecoordinate,
+    private void gather(Map<Artifact, String> latestCache,
+        String deployablecoordinate,
         List<RemoteRepository> remoteRepos,
         RepositorySystem system,
         RepositorySystemSession session,
@@ -137,7 +141,7 @@ public class DependenciesPluginRegion implements PageRegion<DependenciesPluginRe
             collectRequest.setRoot(new Dependency(artifact, ""));
             collectRequest.setRepositories(remoteRepos);
             CollectResult collectResult = system.collectDependencies(session, collectRequest);
-            GatherDependencies gatherDependencies = new GatherDependencies(system, session, remoteRepos, rows);
+            GatherDependencies gatherDependencies = new GatherDependencies(latestCache, system, session, remoteRepos, rows);
             collectResult.getRoot().accept(gatherDependencies);
 
         } catch (DependencyCollectionException ex) {
@@ -153,15 +157,18 @@ public class DependenciesPluginRegion implements PageRegion<DependenciesPluginRe
 
     public class GatherDependencies implements DependencyVisitor {
 
+        private final Map<Artifact, String> latestCache;
         private final RepositorySystem system;
         private final RepositorySystemSession session;
         private final List<RemoteRepository> remoteRepos;
         private final List<Map<String, Object>> rows;
 
-        public GatherDependencies(RepositorySystem system,
+        public GatherDependencies(Map<Artifact, String> latestCache,
+            RepositorySystem system,
             RepositorySystemSession session,
             List<RemoteRepository> remoteRepos,
             List<Map<String, Object>> rows) {
+            this.latestCache = latestCache;
             this.system = system;
             this.session = session;
             this.remoteRepos = remoteRepos;
@@ -176,39 +183,45 @@ public class DependenciesPluginRegion implements PageRegion<DependenciesPluginRe
             artifactRequest.setRepositories(remoteRepos);
 
             try {
-                ArtifactResult artifactResult = system.resolveArtifact(session, artifactRequest);
-                if (artifactResult != null) {
-                    artifact = artifactResult.getArtifact();
 
-                    String latest = latest(artifact);
-                    Map<String, Object> row = new HashMap<>();
-                    row.put("groupId", artifact.getGroupId());
-                    row.put("artifactId", artifact.getArtifactId());
-                    row.put("versionColor", artifact.getVersion().equals(latest) ? "#75f471" : "#fdda99");
-                    row.put("version", artifact.getVersion());
-                    row.put("latestVersion", latest);
-                    row.put("classifier", artifact.getClassifier());
-                    row.put("extension", artifact.getExtension());
-                    row.put("isSnapshot", artifact.isSnapshot());
+                String latest = latest(latestCache, artifact);
+                Map<String, Object> row = new HashMap<>();
+                row.put("groupId", artifact.getGroupId());
+                row.put("artifactId", artifact.getArtifactId());
+                row.put("versionColor", artifact.getVersion().equals(latest) ? "#75f471" : "#fdda99");
+                row.put("version", artifact.getVersion());
+                row.put("latestVersion", latest);
+                row.put("classifier", artifact.getClassifier());
+                row.put("extension", artifact.getExtension());
+                row.put("isSnapshot", artifact.isSnapshot());
 
-                    rows.add(row);
-                }
-            } catch (ArtifactResolutionException ex) {
+                rows.add(row);
+
+            } catch (Exception ex) {
                 LOG.warn("Failed to resolve artifact.", ex);
             }
             return true;
         }
 
-        public String latest(Artifact a) throws ArtifactResolutionException {
+        public String latest(Map<Artifact, String> latestCache, Artifact a) throws Exception {
+
+            String latest = latestCache.get(a);
+            if (latest != null) {
+                return latest;
+            }
 
             Artifact artifact = new DefaultArtifact(a.getGroupId(), a.getArtifactId(), a.getExtension(), "RELEASE");
             ArtifactRequest artifactRequest = new ArtifactRequest();
             artifactRequest.setArtifact(artifact);
             artifactRequest.setRepositories(remoteRepos);
 
-            ArtifactResult artifactResult = system.resolveArtifact(session, artifactRequest);
-            artifact = artifactResult.getArtifact();
-            return artifact.getVersion();
+            VersionResult resolveVersion = system.resolveVersion(session, new VersionRequest(artifact, remoteRepos, null));
+            latestCache.put(a, resolveVersion.getVersion());
+
+            return resolveVersion.getVersion();
+            //ArtifactResult artifactResult = system.resolveArtifact(session, artifactRequest);
+            //artifact = artifactResult.getArtifact();
+            //return artifact.getVersion();
         }
 
         @Override

@@ -367,7 +367,7 @@ upena.build = {
     width: null,
     init: function () {
 
-        upena.build.height = ($(document).height() / 4) * 3;
+        upena.build.height = $(document).height() - 100;
         upena.build.width = $(document).width() - 100;
         var nodes = $('#upena-build').data('nodes');
         var edges = $('#upena-build').data('edges');
@@ -709,9 +709,9 @@ upena.connectivity = {
 };
 
 $(document).ready(function () {
-    
-    Ladda.bind( '.ladda-button', { timeout: 60000 } );
-    
+
+    Ladda.bind('.ladda-button', {timeout: 60000});
+
     if ($('.upena-hs-field').length) {
         upena.hs.init();
     }
@@ -721,7 +721,7 @@ $(document).ready(function () {
     if ($('#upena-cfg').length) {
         upena.cfg.init();
     }
-    
+
     if ($('#upena-build').length) {
         upena.build.init();
     }

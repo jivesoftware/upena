@@ -28,7 +28,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -501,7 +500,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
             color = "#" + healthPluginRegion.getHEXTrafficlightColor(nannyHealth.serviceHealth.health, 1f);
             h = nannyHealth.serviceHealth.health;
         }
-        
+
         map.put("health", String.valueOf((int) (100 * Math.max(0d, Math.min(1d, h)))));
         map.put("healthColor", color);
 
@@ -512,8 +511,8 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
             simpleDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
             long snowflakeTime = timestampedValue.getTimestamp();
             long time = JiveEpochTimestampProvider.JIVE_EPOCH + new SnowflakeIdPacker().unpack(snowflakeTime)[0];
-            String gmtTimeString = simpleDateFormat.format(new Date(time));
-            map.put("status", "Last Modified:" + gmtTimeString);
+            //String gmtTimeString = simpleDateFormat.format(new Date(time));
+            map.put("status", "Modified:" + DurationFormatUtils.formatDurationHMS(System.currentTimeMillis() - time)+" ago.");
         }
 
         List<Map<String, Object>> ports = new ArrayList<>();

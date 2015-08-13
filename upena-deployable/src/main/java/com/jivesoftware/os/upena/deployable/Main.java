@@ -408,15 +408,16 @@ public class Main {
 
         List<ManagePlugin> plugins = Lists.newArrayList(
             build,
+            dependencies,
             releases,
             config,
+            changes,
             clusters,
             hosts,
             services,
             instances,
-            health,
             topology,
-            changes,
+            health,
             ring);
 
 

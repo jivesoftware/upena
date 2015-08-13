@@ -7,9 +7,15 @@ import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.deployable.region.ModulesPluginRegion.ModulesPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.service.UpenaStore;
+import com.jivesoftware.os.upena.shared.ClusterKey;
+import com.jivesoftware.os.upena.shared.HostKey;
+import com.jivesoftware.os.upena.shared.Instance;
+import com.jivesoftware.os.upena.shared.InstanceFilter;
+import com.jivesoftware.os.upena.shared.InstanceKey;
 import com.jivesoftware.os.upena.shared.ReleaseGroup;
 import com.jivesoftware.os.upena.shared.ReleaseGroupFilter;
 import com.jivesoftware.os.upena.shared.ReleaseGroupKey;
+import com.jivesoftware.os.upena.shared.ServiceKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
 import com.jivesoftware.os.upena.uba.service.RepositoryProvider;
 import java.util.ArrayList;
@@ -20,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentNavigableMap;
 import org.eclipse.aether.RepositorySystem;
@@ -142,38 +149,70 @@ public class ModulesPluginRegion implements PageRegion<ModulesPluginRegionInput>
 
         try {
             Map<String, Object> filters = new HashMap<>();
+            filters.put("clusterKey", input.clusterKey);
+            filters.put("cluster", input.cluster);
+            filters.put("hostKey", input.hostKey);
+            filters.put("host", input.host);
+            filters.put("serviceKey", input.serviceKey);
+            filters.put("service", input.service);
             filters.put("releaseKey", input.releaseKey);
             filters.put("release", input.release);
             data.put("filters", filters);
 
+            InstanceFilter filter = new InstanceFilter(
+                input.clusterKey.isEmpty() ? null : new ClusterKey(input.clusterKey),
+                input.hostKey.isEmpty() ? null : new HostKey(input.hostKey),
+                input.serviceKey.isEmpty() ? null : new ServiceKey(input.serviceKey),
+                input.releaseKey.isEmpty() ? null : new ReleaseGroupKey(input.releaseKey),
+                null,
+                0, 10000);
+
+            Set<ReleaseGroup> releaseGroups = new HashSet<>();
+
+            Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(filter);
+            for (Map.Entry<InstanceKey, TimestampedValue<Instance>> f : found.entrySet()) {
+                if (!f.getValue().getTombstoned()) {
+                    Instance instance = f.getValue().getValue();
+                    ReleaseGroup got = upenaStore.releaseGroups.get(instance.releaseGroupKey);
+                    if (got != null) {
+                        releaseGroups.add(got);
+                    }
+                }
+            }
+
+            if (releaseGroups.isEmpty()) {
+
+                ReleaseGroupFilter releaseGroupFilter = new ReleaseGroupFilter(null, null, null, null, null, 0, 10000);
+                ConcurrentNavigableMap<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> foundGroups = upenaStore.releaseGroups.find(releaseGroupFilter);
+                for (Map.Entry<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> fg : foundGroups.entrySet()) {
+                    if (!fg.getValue().getTombstoned()) {
+                        releaseGroups.add(fg.getValue().getValue());
+                    }
+                }
+            }
+
             RepositorySystem system = RepositoryProvider.newRepositorySystem();
             RepositorySystemSession session = RepositoryProvider.newRepositorySystemSession(system);
 
-            ReleaseGroupFilter filter = new ReleaseGroupFilter(null, null, null, null, null, 0, 10000);
-            ConcurrentNavigableMap<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> releaseGroups = upenaStore.releaseGroups.find(filter);
             HashSet<Artifact> gathered = new HashSet<>();
-            for (Map.Entry<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> entry : releaseGroups.entrySet()) {
-                if (!entry.getValue().getTombstoned()) {
-                    System.out.println("-------------------------------------");
-                    System.out.println(entry.getValue().getValue());
+            for (ReleaseGroup releaseGroup : releaseGroups) {
+                
+                String[] repos = releaseGroup.repository.split(",");
+                List<RemoteRepository> remoteRepos = RepositoryProvider.newRepositories(system, session, null, repos);
+                String[] deployablecoordinates = releaseGroup.version.trim().split(",");
 
-                    ReleaseGroup releaseGroup = entry.getValue().getValue();
-                    String[] repos = releaseGroup.repository.split(",");
-                    List<RemoteRepository> remoteRepos = RepositoryProvider.newRepositories(system, session, null, repos);
-                    String[] deployablecoordinates = releaseGroup.version.trim().split(",");
-
-                    HashSet<Artifact> gatherable = new HashSet<>();
-                    for (String deployablecoordinate : deployablecoordinates) {
-                        gather(gathered,
-                            gatherable,
-                            deployablecoordinate,
-                            true,
-                            Arrays.asList(new String[]{"com.jivesoftware"}),
-                            remoteRepos,
-                            system,
-                            session,
-                            graph);
-                    }
+                HashSet<Artifact> gatherable = new HashSet<>();
+                for (String deployablecoordinate : deployablecoordinates) {
+                    gather(gathered,
+                        gatherable,
+                        deployablecoordinate,
+                        true,
+                        Arrays.asList(new String[]{"com.jivesoftware"}),
+                        remoteRepos,
+                        system,
+                        session,
+                        graph);
+                }
 
 //                    for (Artifact artifact : gatherable) {
 //                        gather(gathered,
@@ -186,7 +225,6 @@ public class ModulesPluginRegion implements PageRegion<ModulesPluginRegionInput>
 //                            session,
 //                            graph);
 //                    }
-                }
             }
 
             List<Map<String, String>> renderNodes = new ArrayList<>();
