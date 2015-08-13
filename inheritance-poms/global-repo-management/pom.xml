@@ -16,10 +16,14 @@
     </licenses>
     <distributionManagement>
         <repository>
-            <id>aws</id>
-            <name>libs-release-local</name>
-            <url>http://54.149.118.124/artifactory/libs-release-local</url>
+            <id>modified-thirdparty</id>
+            <name>Jive Internal Repository</name>
+            <url>http://nexus-int.eng.jiveland.com/content/repositories/modified-thirdparty</url>
         </repository>
+        <snapshotRepository>
+            <id>snapshots</id>
+            <url>http://nexus-int-qa.eng.jiveland.com/content/repositories/snapshots</url>
+        </snapshotRepository>
     </distributionManagement>
 
 
