@@ -48,4 +48,14 @@ public class HealthPluginEndpoints {
         return Response.ok(pluginRegion.renderUIs(instanceKey)).build();
     }
 
+    @GET
+    @Path("/live")
+    @Produces(MediaType.TEXT_HTML)
+    public Response live(@Context HttpServletRequest httpRequest,
+        @QueryParam("cluster") @DefaultValue("") String cluster,
+        @QueryParam("host") @DefaultValue("") String host,
+        @QueryParam("service") @DefaultValue("") String service) {
+        return Response.ok(pluginRegion.renderLive(httpRequest.getRemoteUser(), new HealthPluginRegionInput(cluster, host, service))).build();
+    }
+
 }

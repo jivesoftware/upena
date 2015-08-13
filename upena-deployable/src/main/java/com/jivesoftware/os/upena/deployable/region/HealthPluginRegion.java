@@ -49,6 +49,7 @@ import org.rendersnake.HtmlCanvas;
 public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthPluginRegionInput> {
 
     private static final MetricLogger log = MetricLoggerFactory.getLogger();
+    private static final ObjectMapper mapper = new ObjectMapper();
 
     private final String template;
     private final String uisTemplate;
@@ -84,6 +85,43 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
         public String name() {
             return "Health";
         }
+    }
+
+    public String renderLive(String user, HealthPluginRegionInput input) {
+
+        String live = "[]";
+        try {
+
+            List<Map<String, String>> healths = new ArrayList<>();
+            Collection<UpenaEndpoints.NodeHealth> nodeHealths = buildClusterHealth();
+
+            Map<String, Double> minClusterHealth = new HashMap<>();
+            for (UpenaEndpoints.NodeHealth nodeHealth : nodeHealths) {
+                for (UpenaEndpoints.NannyHealth nannyHealth : nodeHealth.nannyHealths) {
+                    if (nannyHealth.serviceHealth != null) {
+                        Double got = minClusterHealth.get(nannyHealth.instanceDescriptor.clusterKey);
+                        if (got == null || got > nannyHealth.serviceHealth.health) {
+                            minClusterHealth.put(nannyHealth.instanceDescriptor.clusterKey, nannyHealth.serviceHealth.health);
+                        }
+                        if (nannyHealth.serviceHealth != null) {
+                            healths.add(ImmutableMap.of("id", nannyHealth.instanceDescriptor.instanceKey, "color", trafficlightColorRGB(
+                                nannyHealth.serviceHealth.health, 1f)));
+                        }
+                    }
+                }
+            }
+
+            for (Map.Entry<String, Double> m : minClusterHealth.entrySet()) {
+                healths.add(ImmutableMap.of("id", m.getKey(), "color", trafficlightColorRGB(m.getValue(), 1f)));
+            }
+
+            live = mapper.writeValueAsString(healths);
+        } catch (Exception x) {
+            log.warn("failed to generate live results", x);
+        }
+
+        return live;
+
     }
 
     @Override
