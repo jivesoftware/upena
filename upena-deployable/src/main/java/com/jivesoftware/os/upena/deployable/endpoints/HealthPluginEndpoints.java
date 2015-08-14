@@ -50,7 +50,7 @@ public class HealthPluginEndpoints {
 
     @GET
     @Path("/live")
-    @Produces(MediaType.TEXT_HTML)
+    @Produces(MediaType.APPLICATION_JSON)
     public Response live(@Context HttpServletRequest httpRequest,
         @QueryParam("cluster") @DefaultValue("") String cluster,
         @QueryParam("host") @DefaultValue("") String host,
