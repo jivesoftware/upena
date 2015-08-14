@@ -741,7 +741,7 @@ upena.health = {
         for (var i = 0; i < data.length; i++) {
             var id = data[i].id;
             if (!upena.health.color[id]) {
-                var $cell = $('[data-popover-instance-key="' + id + '"');
+                var $cell = $('[data-health-hook="' + id + '"');
                 upena.health.color[id] = $cell.find('.health-color');
                 upena.health.text[id] = $cell.find('.health-text');
                 upena.health.age[id] = $cell.find('.health-age');
