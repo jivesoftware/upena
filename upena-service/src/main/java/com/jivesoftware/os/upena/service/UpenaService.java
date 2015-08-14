@@ -241,7 +241,7 @@ public class UpenaService {
         }
         String releaseGroupName = releaseGroup.name;
 
-        InstanceDescriptor instanceDescriptor = new InstanceDescriptor(publicHost,
+        InstanceDescriptor instanceDescriptor = new InstanceDescriptor(host.name,
             clusterKey.getKey(),
             clusterName,
             serviceKey.getKey(),
