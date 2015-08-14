@@ -11,20 +11,13 @@
         {if $uis}
                 <div class="panel-heading">
                     <table class="table table-hover table-condensed">
-                        {foreach $ui in $uis}
-                            <tr>
+                        <tr>
+                            {foreach $ui in $uis}
                                 <td>
-                                    <a class="btn btn-primary" href="http://{$ui.uis[0].host}:{$ui.uis[0].port}{$ui.uis[0].url}">{$ui.name}</a>
+                                    <a class="btn btn-primary" href="http://{$ui.host}:{$ui.port}{$ui.url}">{$ui.name}</a>
                                 </td>
-                                <td>
-                                    <div class="btn-group" role="group">
-                                        {foreach $u in $ui.uis}
-                                            <a class="btn btn-default" href="http://{$u.host}:{$u.port}{$u.url}">{$u.name} - {$u.host}/{$u.instance}</a>
-                                        {/foreach}
-                                    </div>
-                                </td>
-                            </tr>
-                        {/foreach}
+                            {/foreach}
+                        </tr>
                     </table>
                 </div>
             </div> 
