@@ -747,7 +747,7 @@ upena.health = {
                 upena.health.age[id] = $cell.find('.health-age');
             }
             upena.health.color[id].css('background-color', "rgb(" + data[i].color + ")");
-            upena.health.text[id].html(data[i].text);
+            upena.health.text[id].html(data[i].text || '&nbsp;&nbsp;&nbsp;');
             upena.health.age[id].html(data[i].age);
         }
     }
