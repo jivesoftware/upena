@@ -2,34 +2,84 @@
 
 /**
 * @param uis
+* @param ports
+* @param log
 */
 {template .serviceUIsPluginRegion}
-    {if $uis}
-        <div class="panel panel-default">
-            <div class="panel-heading">
+    <div class="panel panel-default">
+        {if $uis}
+                <div class="panel-heading">
+                    <table class="table table-hover table-condensed">
+                        {foreach $ui in $uis}
+                            <tr>
+                                <td>
+                                    <a class="btn btn-primary" href="http://{$ui.uis[0].host}:{$ui.uis[0].port}{$ui.uis[0].url}">{$ui.name}</a>
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        {foreach $u in $ui.uis}
+                                            <a class="btn btn-default" href="http://{$u.host}:{$u.port}{$u.url}">{$u.name} - {$u.host}/{$u.instance}</a>
+                                        {/foreach}
+                                    </div>
+                                </td>
+                            </tr>
+                        {/foreach}
+                    </table>
+                </div>
+            </div> 
+        {else}
+            <pre>
+                None of the deployed service conform to the hasUI rest api.
+            </pre>
+        {/if}
+        <div class="panel-body">
+            {if $ports}
+                <table class="table table-condensed">
+                    <tr>
+                        {foreach $p in $ports}
+                            <td>
+                                {$p}
+                            </td>
+                        {/foreach}
+                    </tr>
+                </table>
+            {/if}
+            {if $log}
                 <table class="table table-hover table-condensed">
-                    {foreach $ui in $uis}
+                    {foreach $l in $log}
                         <tr>
                             <td>
-                                <a class="btn btn-primary" href="http://{$ui.uis[0].host}:{$ui.uis[0].port}{$ui.uis[0].url}">{$ui.name}</a>
-                            </td>
-                            <td>
-                                <div class="btn-group" role="group">
-                                    {foreach $u in $ui.uis}
-                                        <a class="btn btn-default" href="http://{$u.host}:{$u.port}{$u.url}">{$u.name} - {$u.host}/{$u.instance}</a>
-                                    {/foreach}
-                                </div>
+                                {$l}
                             </td>
                         </tr>
                     {/foreach}
                 </table>
-            </div>
-        </div> 
-    {else}
-        <div class="panel-body">
-            <pre>
-                Non of the deployed service conform to the hasUI rest api.
-            </pre>
+            {/if}
+            {if $healths}
+                <table class="table table-hover table-condensed table-striped">
+                    <thead>
+                        <tr styel="background-color:#bbbbbb;">
+                            <th>Health</th>
+                            <th>Name</th>
+                            <th>Status</th>
+                            <th>Description</th>
+                            <th>Resolution</th>
+                            <th>Age</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {foreach $h in $healths}
+                            <tr>
+                                <td style="background-color:rgb({$h.color})>{$h.name}</td>
+                                <td><pre>{$h.status}</pre></td>
+                                <td><pre>{$h.description}</pre></td>
+                                <td><pre>{$h.resolution}</pre></td>
+                                <td><pre>{$h.age}</pre></td>
+                            </tr>
+                        {/foreach}
+                    </tbody>
+                </table>
+            {/if}
         </div>
-    {/if}
+    </div>
 {/template}

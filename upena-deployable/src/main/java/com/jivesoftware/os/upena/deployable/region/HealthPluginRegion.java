@@ -1,7 +1,6 @@
 package com.jivesoftware.os.upena.deployable.region;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.jivesoftware.os.amza.shared.AmzaInstance;
@@ -29,7 +28,6 @@ import java.awt.Color;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,9 +36,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import org.rendersnake.HtmlAttributes;
-import org.rendersnake.HtmlAttributesFactory;
-import org.rendersnake.HtmlCanvas;
 
 /**
  *
@@ -51,6 +46,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
     private static final MetricLogger log = MetricLoggerFactory.getLogger();
     private static final ObjectMapper mapper = new ObjectMapper();
 
+    private final RingHost ringHost;
     private final String template;
     private final String uisTemplate;
     private final SoyRenderer renderer;
@@ -58,11 +54,14 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
     private final UpenaStore upenaStore;
     private final ExecutorService executorService = Executors.newCachedThreadPool();
 
-    public HealthPluginRegion(String template,
+    public HealthPluginRegion(RingHost ringHost,
+        String template,
         String uisTemplate,
         SoyRenderer renderer,
         AmzaInstance amzaInstance,
         UpenaStore upenaStore) {
+
+        this.ringHost = ringHost;
         this.template = template;
         this.uisTemplate = uisTemplate;
         this.renderer = renderer;
@@ -95,7 +94,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
             List<Map<String, String>> healths = new ArrayList<>();
 
             Map<String, Double> minHostHealth = new HashMap<>();
-            for (UpenaEndpoints.NodeHealth nodeHealth : buildClusterHealth()) {
+            for (UpenaEndpoints.NodeHealth nodeHealth : buildClusterHealth().values()) {
 
                 for (UpenaEndpoints.NannyHealth nannyHealth : nodeHealth.nannyHealths) {
                     if (nannyHealth.serviceHealth != null) {
@@ -127,7 +126,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
 
                 String[] parts = m.getKey().split(":");
                 Long recency = nodeRecency.get(parts[1] + ":" + parts[2]);
-                String age = recency != null ? UpenaEndpoints.humanReadableLatency(System.currentTimeMillis() - recency) : "unknown";
+                String age = recency != null ? UpenaEndpoints.humanReadableUptime(System.currentTimeMillis() - recency) : "unknown";
 
                 healths.add(ImmutableMap.of("id", m.getKey(),
                     "color", trafficlightColorRGB(Math.max(m.getValue(), 0d), 1f),
@@ -158,10 +157,10 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
             filter.put("service", input.service);
             data.put("filter", filter);
 
-            Collection<UpenaEndpoints.NodeHealth> nodeHealths = buildClusterHealth();
+            ConcurrentMap<RingHost, UpenaEndpoints.NodeHealth> nodeHealths = buildClusterHealth();
 
             Map<String, Double> minClusterHealth = new HashMap<>();
-            for (UpenaEndpoints.NodeHealth nodeHealth : nodeHealths) {
+            for (UpenaEndpoints.NodeHealth nodeHealth : nodeHealths.values()) {
                 for (UpenaEndpoints.NannyHealth nannyHealth : nodeHealth.nannyHealths) {
                     if (nannyHealth.serviceHealth != null) {
                         Double got = minClusterHealth.get(nannyHealth.instanceDescriptor.clusterKey);
@@ -183,7 +182,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
 
             Map<String, Map<String, String>> instanceHealth = new HashMap<>();
 
-            for (UpenaEndpoints.NodeHealth nodeHealth : nodeHealths) {
+            for (UpenaEndpoints.NodeHealth nodeHealth : nodeHealths.values()) {
                 if (nodeHealth.nannyHealths.isEmpty()) {
                     hosts.add("UNREACHABLE:" + nodeHealth.host + ":" + nodeHealth.port);
                 }
@@ -226,9 +225,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                         h.put("port", String.valueOf(nannyHealth.instanceDescriptor.ports.get("main").port));
                         h.put("hostName", nodeHealth.host);
 
-                        HtmlCanvas hc = new HtmlCanvas();
-                        serviceHealth(hc, nannyHealth);
-                        h.put("details", hc.toHtml());
+                        h.put("details", "");
 
                         instanceHealth.put(nannyHealth.instanceDescriptor.instanceKey, h);
                     }
@@ -266,14 +263,14 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                 hostRows.add(hostRow);
             }
 
-            for (UpenaEndpoints.NodeHealth nodeHealth : nodeHealths) {
+            for (UpenaEndpoints.NodeHealth nodeHealth : nodeHealths.values()) {
                 if (nodeHealth.nannyHealths.isEmpty()) {
                     String host = "UNREACHABLE:" + nodeHealth.host + ":" + nodeHealth.port;
                     Integer hi = hostIndexs.get(host);
                     if (hi != null) {
 
                         Long recency = nodeRecency.get(nodeHealth.host + ":" + nodeHealth.port);
-                        String age = recency != null ? UpenaEndpoints.humanReadableLatency(System.currentTimeMillis() - recency) : "unknown";
+                        String age = recency != null ? UpenaEndpoints.humanReadableUptime(System.currentTimeMillis() - recency) : "unknown";
 
                         float hh = (float) Math.max(0, nodeHealth.health);
                         hostRows.get(hi).get(0).put("color", "#" + getHEXTrafficlightColor(hh, 1f));
@@ -298,7 +295,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                         if (hi != null && si != null) {
 
                             Long recency = nodeRecency.get(nodeHealth.host + ":" + nodeHealth.port);
-                            String age = recency != null ? UpenaEndpoints.humanReadableLatency(System.currentTimeMillis() - recency) : "unknown";
+                            String age = recency != null ? UpenaEndpoints.humanReadableUptime(System.currentTimeMillis() - recency) : "unknown";
 
                             float hh = (float) Math.max(0, nodeHealth.health);
                             hostRows.get(hi).get(0).put("color", "#" + getHEXTrafficlightColor(hh, 1f));
@@ -437,7 +434,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
     private final ConcurrentMap<String, Long> nodeRecency = Maps.newConcurrentMap();
     private final ConcurrentMap<RingHost, Boolean> currentlyExecuting = Maps.newConcurrentMap();
 
-    Collection<UpenaEndpoints.NodeHealth> buildClusterHealth() throws Exception {
+    ConcurrentMap<RingHost, UpenaEndpoints.NodeHealth> buildClusterHealth() throws Exception {
 //        for (RingHost ringHost : new RingHost[]{
 //            new RingHost("soa-prime-data5.phx1.jivehosted.com", 1175),
 //            new RingHost("soa-prime-data6.phx1.jivehosted.com", 1175),
@@ -468,7 +465,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                 });
             }
         }
-        return nodeHealths.values();
+        return nodeHealths;
     }
 
     HttpRequestHelper buildRequestHelper(String host, int port) {
@@ -478,73 +475,6 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
         HttpClient httpClient = httpClientFactory.createClient(host, port);
         HttpRequestHelper requestHelper = new HttpRequestHelper(httpClient, new ObjectMapper());
         return requestHelper;
-    }
-
-    public void serviceHealth(HtmlCanvas h, UpenaEndpoints.NannyHealth nannyHealth) throws IOException {
-        if (nannyHealth == null) {
-            return;
-        }
-        InstanceDescriptor id = nannyHealth.instanceDescriptor;
-        UpenaEndpoints.ServiceHealth serviceHealth = nannyHealth.serviceHealth;
-
-        HtmlAttributes border = HtmlAttributesFactory.style("border: 1px solid  gray;");
-        h.table();
-        h.tr();
-        for (Map.Entry<String, InstanceDescriptor.InstanceDescriptorPort> port : id.ports.entrySet()) {
-            h.td().content(port.getKey() + "=" + port.getValue().port);
-        }
-        h._tr();
-        h._table();
-
-        h.table();
-        h.tr();
-        h.td().pre().content(Joiner.on("\n").join(nannyHealth.log))._td();
-        h._tr();
-        h._table();
-
-        h.table(border);
-
-        h.tr(HtmlAttributesFactory.style("background-color:#bbbbbb;"));
-        h.td()
-            .content(String.valueOf("Health"));
-        h.td()
-            .content(String.valueOf("Name"));
-        h.td()
-            .content(String.valueOf("Status"));
-        h.td()
-            .content(String.valueOf("Description"));
-        h.td()
-            .content(String.valueOf("Resolution"));
-        h.td()
-            .content(String.valueOf("Age in millis"));
-        h._tr();
-
-        if (serviceHealth
-            != null) {
-            for (UpenaEndpoints.Health health : serviceHealth.healthChecks) {
-                if (-Double.MAX_VALUE != health.health) {
-                    h.tr();
-                    h.td(colorStyle("background-color", health.health, 0.0f)).content(String.valueOf(health.health));
-                    h.td(border).content(String.valueOf(health.name));
-                    h.td(border).content(String.valueOf(health.status));
-                    h.td(border).content(String.valueOf(health.description));
-                    h.td(border).content(String.valueOf(health.resolution));
-                    long ageInMillis = System.currentTimeMillis() - health.timestamp;
-                    double ageHealth = 0.0d;
-                    if (health.checkIntervalMillis > 0) {
-                        ageHealth = 1d - (ageInMillis / health.checkIntervalMillis);
-                    }
-                    h.td(colorStyle("background-color", ageHealth, 0.0f)).content(String.valueOf(ageInMillis));
-                    h._tr();
-                }
-            }
-        }
-
-        h._table();
-    }
-
-    HtmlAttributes colorStyle(String key, double health, float alpha) {
-        return HtmlAttributesFactory.style(key + ":#" + getHEXTrafficlightColor(health, 1.0F) + ";padding: 2px;margin: 2px;" + shadow);
     }
 
     String getHEXTrafficlightColor(double value, float sat) {
@@ -585,38 +515,87 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
         Cluster cluster = upenaStore.clusters.get(instance.clusterKey);
         com.jivesoftware.os.upena.shared.Service service = upenaStore.services.get(instance.serviceKey);
 
-        Instance.Port port = instance.ports.get("manage");
-        if (port == null) {
-            return "No manage port for instanceKey:" + instanceKey;
-        }
+        Map<String, Object> data = Maps.newHashMap();
         try {
-            HttpRequestHelper requestHelper = buildRequestHelper(host.hostName, port.port);
-            HasUI hasUI = requestHelper.executeGetRequest("/manage/hasUI", HasUI.class, null);
-            if (hasUI == null) {
-                return host.hostName + ":" + port.port + " has no UIs.";
-            }
-            List<Map<String, String>> namedUIs = new ArrayList<>();
-            for (UI ui : hasUI.uis) {
+            Instance.Port port = instance.ports.get("manage");
+            if (port != null) {
+                HttpRequestHelper requestHelper = buildRequestHelper(host.hostName, port.port);
+                HasUI hasUI = requestHelper.executeGetRequest("/manage/hasUI", HasUI.class, null);
+                if (hasUI == null) {
+                    return host.hostName + ":" + port.port + " has no UIs.";
+                }
+                List<Map<String, String>> namedUIs = new ArrayList<>();
+                for (UI ui : hasUI.uis) {
 
-                Instance.Port uiPort = instance.ports.get(ui.portName);
-                if (uiPort != null) {
-                    Map<String, String> uiMap = new HashMap<>();
-                    uiMap.put("cluster", cluster.name);
-                    uiMap.put("host", host.name);
-                    uiMap.put("port", String.valueOf(uiPort.port));
-                    uiMap.put("service", service.name);
-                    uiMap.put("instance", String.valueOf(instance.instanceId));
-                    uiMap.put("name", ui.name);
-                    uiMap.put("url", ui.url);
-                    namedUIs.add(uiMap);
+                    Instance.Port uiPort = instance.ports.get(ui.portName);
+                    if (uiPort != null) {
+                        Map<String, String> uiMap = new HashMap<>();
+                        uiMap.put("cluster", cluster.name);
+                        uiMap.put("host", host.name);
+                        uiMap.put("port", String.valueOf(uiPort.port));
+                        uiMap.put("service", service.name);
+                        uiMap.put("instance", String.valueOf(instance.instanceId));
+                        uiMap.put("name", ui.name);
+                        uiMap.put("url", ui.url);
+                        namedUIs.add(uiMap);
+                    }
+                }
+                data.put("uis", namedUIs);
+            }
+
+            ConcurrentMap<RingHost, UpenaEndpoints.NodeHealth> nodeHealths = buildClusterHealth();
+            UpenaEndpoints.NodeHealth localNodeHealth = nodeHealths.get(ringHost);
+            if (localNodeHealth != null) {
+                for (UpenaEndpoints.NannyHealth nannyHealth : localNodeHealth.nannyHealths) {
+                    if (nannyHealth.instanceDescriptor.instanceKey.equals(instanceKey)) {
+                        serviceHealth(nannyHealth, data);
+                        break;
+                    }
                 }
             }
 
-            return renderer.render(uisTemplate, ImmutableMap.of("uis", namedUIs));
+            serviceHealth(null, data);
 
         } catch (Exception x) {
-            log.debug("instance doens't have a ui.", x);
-            return "Encountered the following error getting UIs. " + x.getMessage();
+            log.debug("Failed to render instance health.", x);
         }
+        return renderer.render(uisTemplate, data);
+
+    }
+
+    public void serviceHealth(UpenaEndpoints.NannyHealth nannyHealth, Map<String, Object> data) throws IOException {
+        if (nannyHealth == null) {
+            return;
+        }
+        InstanceDescriptor id = nannyHealth.instanceDescriptor;
+        UpenaEndpoints.ServiceHealth serviceHealth = nannyHealth.serviceHealth;
+
+        List<String> ports = new ArrayList<>();
+        for (Map.Entry<String, InstanceDescriptor.InstanceDescriptorPort> port : id.ports.entrySet()) {
+            ports.add(port.getKey() + "=" + port.getValue().port);
+        }
+        data.put("ports", ports);
+        data.put("log", nannyHealth.log);
+
+        if (serviceHealth != null) {
+
+            List<Map<String, String>> instanceHealths = new ArrayList<>();
+            for (UpenaEndpoints.Health health : serviceHealth.healthChecks) {
+                if (-Double.MAX_VALUE != health.health) {
+                    Map<String, String> healthData = new HashMap<>();
+                    healthData.put("color", trafficlightColorRGB(health.health, 1f));
+                    healthData.put("name", String.valueOf(health.name));
+                    healthData.put("status", String.valueOf(health.status));
+                    healthData.put("description", String.valueOf(health.description));
+                    healthData.put("resolution", String.valueOf(health.resolution));
+
+                    long ageInMillis = System.currentTimeMillis() - health.timestamp;
+                    healthData.put("age", UpenaEndpoints.humanReadableUptime(ageInMillis));
+                }
+            }
+
+            data.put("healths", instanceHealths);
+        }
+
     }
 }

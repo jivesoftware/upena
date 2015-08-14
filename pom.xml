@@ -13,7 +13,6 @@
         <relativePath>inheritance-poms/global-repo-management/pom.xml</relativePath>
     </parent>
     <modules>
-        <module>upena-ui</module>
         <module>upena-status</module>
         <module>upena-service</module>
         <module>upena-shared</module>

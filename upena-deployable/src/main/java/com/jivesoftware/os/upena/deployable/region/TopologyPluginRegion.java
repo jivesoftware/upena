@@ -55,7 +55,6 @@ import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.rendersnake.HtmlCanvas;
 
 /**
  *
@@ -355,10 +354,8 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
                         id++;
                         nodes.put(instanceKey, n);
 
-                        HtmlCanvas hc = new HtmlCanvas();
-                        healthPluginRegion.serviceHealth(hc, nannyHealth);
                         String title = title(cluster, host, service, versions, entrySet);
-                        n.focusHtml = title + "<br>" + healthPluginRegion.renderUIs(instanceKey) + "<br>" + hc.toHtml();
+                        n.focusHtml = title;
                         fs -= 2;
 
                         n.maxHealth = Math.max(n.maxHealth, serviceHealth);
@@ -625,7 +622,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
 
     private NannyHealth nannyHealth(String instanceId) throws Exception {
         NannyHealth health = null;
-        Collection<NodeHealth> nodeHealths = healthPluginRegion.buildClusterHealth();
+        Collection<NodeHealth> nodeHealths = healthPluginRegion.buildClusterHealth().values();
         for (NodeHealth nodeHealth : nodeHealths) {
             for (NannyHealth nannyHealth : nodeHealth.nannyHealths) {
                 if (nannyHealth.instanceDescriptor.instanceKey.equals(instanceId)) {

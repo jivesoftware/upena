@@ -472,7 +472,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
 
     private UpenaEndpoints.NannyHealth nannyHealth(String instanceId) throws Exception {
         UpenaEndpoints.NannyHealth health = null;
-        Collection<UpenaEndpoints.NodeHealth> nodeHealths = healthPluginRegion.buildClusterHealth();
+        Collection<UpenaEndpoints.NodeHealth> nodeHealths = healthPluginRegion.buildClusterHealth().values();
         for (UpenaEndpoints.NodeHealth nodeHealth : nodeHealths) {
             for (UpenaEndpoints.NannyHealth nannyHealth : nodeHealth.nannyHealths) {
                 if (nannyHealth.instanceDescriptor.instanceKey.equals(instanceId)) {

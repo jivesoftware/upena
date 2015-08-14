@@ -189,10 +189,10 @@ public class Main {
             Optional.<SendFailureListener>absent(),
             Optional.<TakeFailureListener>absent(),
             new RowChanges() {
-                @Override
-                public void changes(RowsChanged changes) throws Exception {
-                }
-            });
+            @Override
+            public void changes(RowsChanged changes) throws Exception {
+            }
+        });
 
         amzaService.start(ringHost, amzaServiceConfig.resendReplicasIntervalInMillis,
             amzaServiceConfig.applyReplicasIntervalInMillis,
@@ -353,9 +353,12 @@ public class Main {
         SoyService soyService = new SoyService(renderer, new HeaderRegion("soy.chrome.headerRegion", renderer),
             new HomeRegion("soy.page.homeRegion", renderer, amzaService, ringHost));
 
-        HealthPluginRegion healthPluginRegion = new HealthPluginRegion("soy.page.healthPluginRegion", "soy.page.healthPluginRegionUIs", renderer, amzaService,
+        HealthPluginRegion healthPluginRegion = new HealthPluginRegion(ringHost, "soy.page.healthPluginRegion",
+            "soy.page.healthPluginRegionUIs",
+            renderer,
+            amzaService,
             upenaStore);
-        ReleasesPluginRegion releasesPluginRegion = new ReleasesPluginRegion("soy.page.releasesPluginRegion","soy.page.releasesPluginRegionList",
+        ReleasesPluginRegion releasesPluginRegion = new ReleasesPluginRegion("soy.page.releasesPluginRegion", "soy.page.releasesPluginRegionList",
             renderer, upenaStore);
         HostsPluginRegion hostsPluginRegion = new HostsPluginRegion("soy.page.hostsPluginRegion", renderer, upenaStore);
         InstancesPluginRegion instancesPluginRegion = new InstancesPluginRegion("soy.page.instancesPluginRegion",
@@ -398,7 +401,7 @@ public class Main {
             DependenciesPluginEndpoints.class,
             new DependenciesPluginRegion("soy.page.dependenciesPluginRegion", renderer, upenaStore));
 
-         ManagePlugin build = new ManagePlugin("wrench", null, "Build", "/ui/modules",
+        ManagePlugin build = new ManagePlugin("wrench", null, "Build", "/ui/modules",
             ModulesPluginEndpoints.class,
             new ModulesPluginRegion("soy.page.modulesPluginRegion", renderer, upenaStore));
 
@@ -419,7 +422,6 @@ public class Main {
             topology,
             health,
             ring);
-
 
         jerseyEndpoints.addInjectable(SoyService.class, soyService);
         jerseyEndpoints.addEndpoint(AsyncLookupEndpoints.class);
