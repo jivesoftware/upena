@@ -7,69 +7,62 @@
 * @param healths
 */
 {template .instanceHealthPluginRegion}
-    <div class="panel panel-default">
-        <div class="panel-body">
-            {if $uis}
-                <table width="800px" class="tabletable-condensed">
-                    <tr>
-                        {foreach $ui in $uis}
-                            <td>
-                                <a class="btn btn-primary" href="http://{$ui.host}:{$ui.port}{$ui.url}">{$ui.name}</a>
-                            </td>
-                        {/foreach}
-                    </tr>
-                </table>
-            {else}
-                <pre>
-                    None of the deployed service conform to the hasUI rest api.
-                </pre>
-            {/if}
-            {if $ports}
-                <table width="800px" class="table table-condensed">
-                    <tr>
-                        {foreach $p in $ports}
-                            <td>
-                                {$p}
-                            </td>
-                        {/foreach}
-                    </tr>
-                </table>
-            {/if}
-            {if $log}
-                <table width="800px" class="table table-hover table-condensed">
-                    {foreach $l in $log}
-                        <tr>
-                            <td>
-                                {$l}
-                            </td>
-                        </tr>
-                    {/foreach}
-                </table>
-            {/if}
-            {if $healths}
-                <table width="800px" class="table table-hover table-condensed table-striped">
-                    <thead>
-                        <tr style="background-color:#bbbbbb;">
-                            <th>Name</th>
-                            <th>Status</th>
-                            <th>Description</th>
-                            <th>Resolution</th>
-                            <th>Age</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {foreach $h in $healths}
-                            <tr>
-                                <td style="background-color:rgb({$h.color})">{$h.name}</td>
-                                <td>{$h.status}</td>
-                                <td>{$h.description}</td>
-                                <td>{$h.resolution}</td>
-                                <td>{$h.age}</td>
-                            </tr>
-                        {/foreach}
-                    </tbody>
-                </table>
-            {/if}
+    {if $uis}
+        <div class="btn-group" role="group">
+            {foreach $u in $uis}
+                <a class="btn btn-default" href="http://{$u.host}:{$u.port}{$u.url}">{$u.name}</a>
+            {/foreach}
         </div>
-    </div>
+        <hr>
+    {else}
+        <pre>
+            None of the deployed service conform to the hasUI rest api.
+        </pre>
+    {/if}
+    {if $ports}
+        <table width="800px" class="table table-condensed">
+            <tr>
+                {foreach $p in $ports}
+                    <td>
+                        {$p}
+                    </td>
+                {/foreach}
+            </tr>
+        </table>
+    {/if}
+    {if $log}
+        <table width="800px" class="table table-hover table-condensed">
+            {foreach $l in $log}
+                <tr>
+                    <td>
+                        {$l}
+                    </td>
+                </tr>
+            {/foreach}
+        </table>
+    {/if}
+    {if $healths}
+        <table width="800px" class="table table-hover table-condensed table-striped table-bordered">
+            <thead>
+                <tr style="background-color:#bbbbbb;">
+                    <th>Name</th>
+                    <th>Status</th>
+                    <th>Description</th>
+                    <th>Resolution</th>
+                    <th>Age</th>
+                </tr>
+            </thead>
+            <tbody>
+                {foreach $h in $healths}
+                    <tr>
+                        <td style="background-color:rgb({$h.color})">{$h.name}</td>
+                        <td>{$h.status}</td>
+                        <td>{$h.description}</td>
+                        <td>{$h.resolution}</td>
+                        <td>{$h.age}</td>
+                    </tr>
+                {/foreach}
+            </tbody>
+        </table>
+    {/if}
 {/template}
