@@ -86,10 +86,10 @@
                                         <div class="panel panel-default grid-host-panel popover-health" id="popoverAnchor-{$health.uid}"
                                             {if $health.instanceKey} data-popover-instance-key="{$health.instanceKey}" {/if}
                                             data-popover-content="#popover-{$health.uid}" data-placement="bottom">
-                                            <div style="float:left; background-color:{$health.color}; color:#fff; width:20px; height:20px; text-align:center;">
+                                            <div style="float:left; background-color:{$health.color}; color:#fff; width:20px; height:20px; text-align:center; margin-right:4px; border-radius:4px 0 0 4px;">
                                                 <span class="glyphicon glyphicon-menu-down"></span>
                                             </div>
-                                            {if $health.age}<div style="float:right; background-color: #eee; color:#999; padding:0 8px; height:20px">{$health.age}</div>{/if}
+                                            {if $health.age}<div style="float:right; background-color:#eee; color:#999; padding:0 8px; height:20px; margin-left:4px; border-radius:0 4px 4px 0;">{$health.age}</div>{/if}
                                             {if $health.health == null}
                                                 &nbsp;&nbsp;&nbsp;
                                             {else}
