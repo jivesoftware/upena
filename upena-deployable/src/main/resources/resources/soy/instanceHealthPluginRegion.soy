@@ -8,27 +8,24 @@
 */
 {template .instanceHealthPluginRegion}
     <div class="panel panel-default">
-        {if $uis}
-                <div class="panel-heading">
-                    <table class="table table-hover table-condensed">
-                        <tr>
-                            {foreach $ui in $uis}
-                                <td>
-                                    <a class="btn btn-primary" href="http://{$ui.host}:{$ui.port}{$ui.url}">{$ui.name}</a>
-                                </td>
-                            {/foreach}
-                        </tr>
-                    </table>
-                </div>
-            </div> 
-        {else}
-            <pre>
-                None of the deployed service conform to the hasUI rest api.
-            </pre>
-        {/if}
         <div class="panel-body">
+            {if $uis}
+                <table width="800px" class="tabletable-condensed">
+                    <tr>
+                        {foreach $ui in $uis}
+                            <td>
+                                <a class="btn btn-primary" href="http://{$ui.host}:{$ui.port}{$ui.url}">{$ui.name}</a>
+                            </td>
+                        {/foreach}
+                    </tr>
+                </table>
+            {else}
+                <pre>
+                    None of the deployed service conform to the hasUI rest api.
+                </pre>
+            {/if}
             {if $ports}
-                <table class="table table-condensed">
+                <table width="800px" class="table table-condensed">
                     <tr>
                         {foreach $p in $ports}
                             <td>
@@ -39,7 +36,7 @@
                 </table>
             {/if}
             {if $log}
-                <table class="table table-hover table-condensed">
+                <table width="800px" class="table table-hover table-condensed">
                     {foreach $l in $log}
                         <tr>
                             <td>
@@ -50,10 +47,9 @@
                 </table>
             {/if}
             {if $healths}
-                <table class="table table-hover table-condensed table-striped">
+                <table width="800px" class="table table-hover table-condensed table-striped">
                     <thead>
-                        <tr styel="background-color:#bbbbbb;">
-                            <th>Health</th>
+                        <tr style="background-color:#bbbbbb;">
                             <th>Name</th>
                             <th>Status</th>
                             <th>Description</th>
@@ -64,11 +60,11 @@
                     <tbody>
                         {foreach $h in $healths}
                             <tr>
-                                <td style="background-color:rgb({$h.color})>{$h.name}</td>
-                                <td><pre>{$h.status}</pre></td>
-                                <td><pre>{$h.description}</pre></td>
-                                <td><pre>{$h.resolution}</pre></td>
-                                <td><pre>{$h.age}</pre></td>
+                                <td style="background-color:rgb({$h.color})">{$h.name}</td>
+                                <td>{$h.status}</td>
+                                <td>{$h.description}</td>
+                                <td>{$h.resolution}</td>
+                                <td>{$h.age}</td>
                             </tr>
                         {/foreach}
                     </tbody>
