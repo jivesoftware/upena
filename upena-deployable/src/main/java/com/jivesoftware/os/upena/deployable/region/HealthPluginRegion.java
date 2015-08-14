@@ -542,10 +542,11 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                 }
             }
 
+
+            // TODO fix this brute force crap
             ConcurrentMap<RingHost, UpenaEndpoints.NodeHealth> nodeHealths = buildClusterHealth();
-            UpenaEndpoints.NodeHealth localNodeHealth = nodeHealths.get(ringHost);
-            if (localNodeHealth != null) {
-                for (UpenaEndpoints.NannyHealth nannyHealth : localNodeHealth.nannyHealths) {
+            for (UpenaEndpoints.NodeHealth nodeHealth : nodeHealths.values()) {
+                for (UpenaEndpoints.NannyHealth nannyHealth : nodeHealth.nannyHealths) {
                     if (nannyHealth.instanceDescriptor.instanceKey.equals(instanceKey)) {
                         serviceHealth(nannyHealth, data);
                         break;
@@ -588,6 +589,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
 
                     long ageInMillis = System.currentTimeMillis() - health.timestamp;
                     healthData.put("age", UpenaEndpoints.humanReadableUptime(ageInMillis));
+                    instanceHealths.add(healthData);
                 }
             }
 
