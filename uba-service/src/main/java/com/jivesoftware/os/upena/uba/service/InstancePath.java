@@ -73,7 +73,8 @@ public class InstancePath {
             enabled = "true";
         }
 
-        InstanceDescriptor id = new InstanceDescriptor(properties.get(instancePrefix + "publicHost").toString(),
+        Object publicHost = properties.get(instancePrefix + "publicHost");
+        InstanceDescriptor id = new InstanceDescriptor((publicHost == null) ? "unknown" : publicHost.toString(),
             properties.get(instancePrefix + "clusterKey").toString(),
             properties.get(instancePrefix + "clusterName").toString(),
             properties.get(instancePrefix + "serviceKey").toString(),
