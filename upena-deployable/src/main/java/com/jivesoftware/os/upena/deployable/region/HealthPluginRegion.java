@@ -95,24 +95,34 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
             List<Map<String, String>> healths = new ArrayList<>();
             Collection<UpenaEndpoints.NodeHealth> nodeHealths = buildClusterHealth();
 
-            Map<String, Double> minClusterHealth = new HashMap<>();
+            Map<String, Double> minHostHealth = new HashMap<>();
             for (UpenaEndpoints.NodeHealth nodeHealth : nodeHealths) {
+
                 for (UpenaEndpoints.NannyHealth nannyHealth : nodeHealth.nannyHealths) {
                     if (nannyHealth.serviceHealth != null) {
-                        Double got = minClusterHealth.get(nannyHealth.instanceDescriptor.clusterKey);
-                        if (got == null || got > nannyHealth.serviceHealth.health) {
-                            minClusterHealth.put(nannyHealth.instanceDescriptor.clusterKey, nannyHealth.serviceHealth.health);
-                        }
+                        Double got = minHostHealth.get(nodeHealth.host + ":" + nodeHealth.port);
                         if (nannyHealth.serviceHealth != null) {
-                            healths.add(ImmutableMap.of("id", nannyHealth.instanceDescriptor.instanceKey, "color", trafficlightColorRGB(
-                                nannyHealth.serviceHealth.health, 1f)));
+                            if (got == null || got > nannyHealth.serviceHealth.health) {
+                                minHostHealth.put(nannyHealth.instanceDescriptor.clusterKey, nannyHealth.serviceHealth.health);
+                            }
+                            healths.add(ImmutableMap.of("id", nannyHealth.instanceDescriptor.instanceKey,
+                                "color", trafficlightColorRGB(nannyHealth.serviceHealth.health, 1f),
+                                "text", String.valueOf((int) (nannyHealth.serviceHealth.health * 100)),
+                                "age", nannyHealth.uptime));
                         }
                     }
                 }
             }
 
-            for (Map.Entry<String, Double> m : minClusterHealth.entrySet()) {
-                healths.add(ImmutableMap.of("id", m.getKey(), "color", trafficlightColorRGB(m.getValue(), 1f)));
+            for (Map.Entry<String, Double> m : minHostHealth.entrySet()) {
+
+                Long recency = nodeRecency.get(m.getKey());
+                String age = recency != null ? UpenaEndpoints.humanReadableLatency(System.currentTimeMillis() - recency) : "unknown";
+
+                healths.add(ImmutableMap.of("id", m.getKey(),
+                    "color", trafficlightColorRGB(m.getValue(), 1f),
+                    "text", String.valueOf((int) (m.getValue() * 100)),
+                    "age", age));
             }
 
             live = mapper.writeValueAsString(healths);
