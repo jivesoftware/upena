@@ -105,9 +105,10 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                                     return ev == null ? nannyHealth.serviceHealth.health : Math.min(ev, nannyHealth.serviceHealth.health);
                                 });
 
+                            double h = Math.max(0d, nannyHealth.serviceHealth.health);
                             healths.add(ImmutableMap.of("id", nannyHealth.instanceDescriptor.instanceKey,
-                                "color", trafficlightColorRGB(nannyHealth.serviceHealth.health, 1f),
-                                "text", String.valueOf((int) (nannyHealth.serviceHealth.health * 100)),
+                                "color", trafficlightColorRGB(h, 1f),
+                                "text", String.valueOf((int) (h * 100)),
                                 "age", nannyHealth.uptime));
                         }
                     }
@@ -121,8 +122,8 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                 String age = recency != null ? UpenaEndpoints.humanReadableLatency(System.currentTimeMillis() - recency) : "unknown";
 
                 healths.add(ImmutableMap.of("id", m.getKey(),
-                    "color", trafficlightColorRGB(m.getValue(), 1f),
-                    "text", String.valueOf((int) (m.getValue() * 100)),
+                    "color", trafficlightColorRGB(Math.max(m.getValue(), 0d), 1f),
+                    "text", m.getKey(),
                     "age", age));
             }
 
