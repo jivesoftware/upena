@@ -29,20 +29,20 @@ import java.util.Arrays;
 
 public class UbaServiceInitializer {
 
-    public UbaService initialize(String hostKey, String workingDir, String composerHost, int composerPort, UbaLog ubaLog) throws Exception {
+    public UbaService initialize(String hostKey, String workingDir, String publicHostName, String host, int port, UbaLog ubaLog) throws Exception {
 
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
-        UpenaClient conductorClient = new UpenaClient(buildRequestHelper(composerHost, composerPort, mapper));
+        UpenaClient client = new UpenaClient(buildRequestHelper(host, port, mapper));
         File root = new File(new File(workingDir), "services/");
         if (!root.exists() && !root.mkdirs()) {
             throw new RuntimeException("Failed trying to mkdirs for " + root);
         }
         UbaTree tree = new UbaTree(root, new String[]{"cluster", "service", "release", "instance"});
-        Uba uba = new Uba(composerHost, composerHost, composerPort, tree, ubaLog);
-        UbaService conductorService = new UbaService(conductorClient, uba, hostKey);
+        Uba uba = new Uba(publicHostName, host, host, port, tree, ubaLog);
+        UbaService conductorService = new UbaService(client, uba, hostKey);
         return conductorService;
     }
 

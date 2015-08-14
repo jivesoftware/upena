@@ -147,7 +147,7 @@ public class UbaService {
 
     public List<String> nanny() throws Exception {
         for (Nanny nanny : rollCall().values()) {
-            nanny.nanny(uba.host, uba.upenaHost, uba.upenaPort);
+            nanny.nanny(uba.publicHost, uba.host, uba.upenaHost, uba.upenaPort);
         }
         return new ArrayList<>();
     }
@@ -156,7 +156,7 @@ public class UbaService {
         UbaReport report = new UbaReport();
         for (Nanny nanny : rollCall().values()) {
             report.nannyReports.add(nanny.report());
-            nanny.nanny(uba.host, uba.upenaHost, uba.upenaPort);
+            nanny.nanny(uba.publicHost, uba.host, uba.upenaHost, uba.upenaPort);
         }
         return report;
     }

@@ -46,13 +46,11 @@ public class UpenaConfigRestEndpoints {
     public Response set(DeployableConfig config) {
         try {
             LOG.debug("Attempting to get: " + config);
-            upenaConfigStore.putAll(config.instanceKey, config.context,
-                config.properties);
-            Map<String, String> got = upenaConfigStore.get(config.instanceKey, config.context,
-                    new ArrayList<>(config.properties.keySet()));
+            upenaConfigStore.putAll(config.instanceKey, config.context, config.properties);
+            Map<String, String> got = upenaConfigStore.get(config.instanceKey, config.context, new ArrayList<>(config.properties.keySet()));
             LOG.info("Set " + got.size() + " properties");
             return ResponseHelper.INSTANCE.jsonResponse(new DeployableConfig(config.context,
-                    config.instanceKey, got));
+                config.instanceKey, config.instanceVersion, got));
         } catch (Exception x) {
             LOG.warn("Failed to get: " + config, x);
             return ResponseHelper.INSTANCE.errorResponse("Failed to get " + config, x);
@@ -66,10 +64,10 @@ public class UpenaConfigRestEndpoints {
         try {
             LOG.debug("Attempting to get: " + config);
             Map<String, String> got = upenaConfigStore.get(config.instanceKey, config.context,
-                    new ArrayList<>(config.properties.keySet()));
+                new ArrayList<>(config.properties.keySet()));
             LOG.info("Got " + got.size() + " properties for " + config);
             return ResponseHelper.INSTANCE.jsonResponse(new DeployableConfig(config.context,
-                    config.instanceKey, got));
+                config.instanceKey, config.instanceVersion, got));
         } catch (Exception x) {
             LOG.warn("Failed to get: " + config, x);
             return ResponseHelper.INSTANCE.errorResponse("Failed to get " + config, x);
@@ -83,12 +81,12 @@ public class UpenaConfigRestEndpoints {
         try {
             LOG.debug("Attempting to remove: " + config);
             upenaConfigStore.remove(config.instanceKey, config.context,
-                    config.properties.keySet());
+                config.properties.keySet());
             Map<String, String> got = upenaConfigStore.get(config.instanceKey, config.context,
-                    new ArrayList<>(config.properties.keySet()));
+                new ArrayList<>(config.properties.keySet()));
             LOG.info("Removed " + got.size() + " properties");
             return ResponseHelper.INSTANCE.jsonResponse(new DeployableConfig(config.context,
-                    config.instanceKey, got));
+                config.instanceKey, config.instanceVersion, got));
         } catch (Exception x) {
             LOG.warn("Failed to remove: " + config, x);
             return ResponseHelper.INSTANCE.errorResponse("Failed to get " + config, x);

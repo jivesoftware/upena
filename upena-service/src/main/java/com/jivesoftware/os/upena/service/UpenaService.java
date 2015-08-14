@@ -48,9 +48,11 @@ import java.util.concurrent.ConcurrentNavigableMap;
 
 public class UpenaService {
 
+    private final String publicHost;
     private final UpenaStore upenaStore;
 
-    public UpenaService(UpenaStore upenaStore) throws Exception {
+    public UpenaService(String publicHost, UpenaStore upenaStore) throws Exception {
+        this.publicHost = publicHost;
         this.upenaStore = upenaStore;
     }
 
@@ -239,7 +241,8 @@ public class UpenaService {
         }
         String releaseGroupName = releaseGroup.name;
 
-        InstanceDescriptor instanceDescriptor = new InstanceDescriptor(clusterKey.getKey(),
+        InstanceDescriptor instanceDescriptor = new InstanceDescriptor(publicHost,
+            clusterKey.getKey(),
             clusterName,
             serviceKey.getKey(),
             serviceName,

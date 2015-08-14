@@ -20,13 +20,13 @@ import java.net.SocketException;
 
 public class UpenaInitializer {
 
-    public UpenaService initialize(InstanceChanges instanceChanges,
+    public UpenaService initialize(String publicHost, InstanceChanges instanceChanges,
             InstanceChanges instanceRemoved,
             TenantChanges tenantChanges,
             AmzaService amzaService) throws SocketException, Exception {
         UpenaStore upenaStore = new UpenaStore(amzaService, instanceChanges, instanceRemoved, tenantChanges);
         upenaStore.attachWatchers();
-        UpenaService composerService = new UpenaService(upenaStore);
+        UpenaService composerService = new UpenaService(publicHost, upenaStore);
         return composerService;
     }
 }

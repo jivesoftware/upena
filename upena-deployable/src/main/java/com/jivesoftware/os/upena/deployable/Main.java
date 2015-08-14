@@ -160,7 +160,7 @@ public class Main {
         int multicastPort = Integer.parseInt(System.getProperty("amza.discovery.port", "1123"));
         String clusterName = (args.length > 1 ? args[1] : null);
 
-        String publicHostName = System.getProperty("public.host.name", hostname);
+        String publicHost = System.getProperty("public.host.name", hostname);
 
         final RingHost ringHost = new RingHost(hostname, port); // TODO include rackId
         // todo need a better way to create writter id.
@@ -228,18 +228,18 @@ public class Main {
         });
         upenaStore.attachWatchers();
 
-        UpenaService upenaService = new UpenaService(upenaStore);
+        UpenaService upenaService = new UpenaService(publicHost, upenaStore);
 
         System.out.println("-----------------------------------------------------------------------");
         System.out.println("|      Upena Service Online");
         System.out.println("-----------------------------------------------------------------------");
 
         String workingDir = System.getProperty("user.dir");
-        Host host = new Host(publicHostName, ringHost.getHost(), ringHost.getPort(), workingDir, null);
+        Host host = new Host(publicHost, ringHost.getHost(), ringHost.getPort(), workingDir, null);
         HostKey hostKey = upenaStore.hosts.toKey(host);
         Host gotHost = upenaStore.hosts.get(hostKey);
-        if (gotHost == null || !publicHostName.equals(gotHost.name)) {
-            host = new Host(publicHostName, ringHost.getHost(), ringHost.getPort(), workingDir, null);
+        if (gotHost == null || !publicHost.equals(gotHost.name)) {
+            host = new Host(publicHost, ringHost.getHost(), ringHost.getPort(), workingDir, null);
             upenaStore.hosts.update(null, host);
         }
 
@@ -253,6 +253,7 @@ public class Main {
 
         final UbaService ubaService = new UbaServiceInitializer().initialize(hostKey.getKey(),
             workingDir,
+            publicHost,
             ringHost.getHost(),
             ringHost.getPort(),
             ubaLog);

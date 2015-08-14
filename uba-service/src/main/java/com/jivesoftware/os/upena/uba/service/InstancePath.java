@@ -73,7 +73,8 @@ public class InstancePath {
             enabled = "true";
         }
 
-        InstanceDescriptor id = new InstanceDescriptor(properties.get(instancePrefix + "clusterKey").toString(),
+        InstanceDescriptor id = new InstanceDescriptor(properties.get(instancePrefix + "publicHost").toString(),
+            properties.get(instancePrefix + "clusterKey").toString(),
             properties.get(instancePrefix + "clusterName").toString(),
             properties.get(instancePrefix + "serviceKey").toString(),
             properties.get(instancePrefix + "serviceName").toString(),
@@ -99,8 +100,9 @@ public class InstancePath {
         return id;
     }
 
-    void writeInstanceDescriptor(String host, String upenaHost, int upenaPort, InstanceDescriptor id) throws IOException {
+    void writeInstanceDescriptor(String publicHostName, String host, String upenaHost, int upenaPort, InstanceDescriptor id) throws IOException {
         List<String> properties = new ArrayList<>();
+        properties.add(instancePrefix + "publicHost=" + publicHostName);
         properties.add(instancePrefix + "host=" + host);
         properties.add(instancePrefix + "routesHost=" + upenaHost); // inject upena
         properties.add(instancePrefix + "routesPort=" + upenaPort);

@@ -392,10 +392,18 @@ public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
             data.put("bRemoteConfigPort", String.valueOf(input.bRemoteConfigPort));
 
             ConcurrentSkipListMap<String, List<Map<String, String>>> as = packProperties(
-                input.aRemoteConfigHost, input.aRemoteConfigPort,
+                input.aRemoteConfigHost,
+                input.aRemoteConfigPort,
                 input.aClusterKey,
-                input.aHostKey, input.aServiceKey, input.aInstance, input.aReleaseKey, input.property, input.value,
-                input.overridden, input.service, input.health);
+                input.aHostKey,
+                input.aServiceKey,
+                input.aInstance,
+                input.aReleaseKey,
+                input.property,
+                input.value,
+                input.overridden,
+                input.service,
+                input.health);
 
             if (input.action.equals("revert")) {
                 Map<String, Map<String, String>> property_instanceKey_revert = new HashMap<>();
@@ -497,10 +505,6 @@ public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
         boolean service,
         boolean health) throws Exception {
 
-        System.out.println(
-            remoteConfigHost + " " + remoteConfigPort + " " + clusterKey + " " + hostKey + " " + serviceKey + " "
-            + instance + " " + releaseKey + " " + propertyContains + " " + valueContains + " " + overridden + " " + service + " " + health);
-
         ConcurrentSkipListMap<String, List<Map<String, String>>> properties = new ConcurrentSkipListMap<>();
         InstanceFilter filter = new InstanceFilter(
             clusterKey.isEmpty() ? null : new ClusterKey(clusterKey),
@@ -527,14 +531,20 @@ public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
             for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {
                 InstanceKey key = entrySet.getKey();
                 TimestampedValue<Instance> timestampedValue = entrySet.getValue();
+                if (timestampedValue.getTombstoned()) {
+                    continue;
+                }
                 Instance i = timestampedValue.getValue();
                 if (remoteConfigPort > -1) {
 
+                    ReleaseGroup releaseGroup = upenaStore.releaseGroups.get(i.releaseGroupKey);
+                    String version = releaseGroup.version;
+
                     HttpRequestHelper requestHelper = HttpRequestHelperUtils.buildRequestHelper(remoteConfigHost, remoteConfigPort);
                     if (service) {
-                        DeployableConfig get = new DeployableConfig("default", key.getKey(), new HashMap<>());
+                        DeployableConfig get = new DeployableConfig("default", key.getKey(), version, new HashMap<>());
                         DeployableConfig gotDefault = requestHelper.executeRequest(get, "/upenaConfig/get", DeployableConfig.class, null);
-                        DeployableConfig getOverride = new DeployableConfig("override", key.getKey(), new HashMap<>());
+                        DeployableConfig getOverride = new DeployableConfig("override", key.getKey(), version, new HashMap<>());
                         DeployableConfig gotOverride = requestHelper.executeRequest(getOverride, "/upenaConfig/get", DeployableConfig.class, null);
 
                         filterProperties(requestHelper, key, i, properties,
@@ -544,9 +554,9 @@ public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
                     }
 
                     if (health) {
-                        DeployableConfig get = new DeployableConfig("default-health", key.getKey(), new HashMap<>());
+                        DeployableConfig get = new DeployableConfig("default-health", key.getKey(), version, new HashMap<>());
                         DeployableConfig gotDefault = requestHelper.executeRequest(get, "/upenaConfig/get", DeployableConfig.class, null);
-                        DeployableConfig getOverride = new DeployableConfig("override-health", key.getKey(), new HashMap<>());
+                        DeployableConfig getOverride = new DeployableConfig("override-health", key.getKey(), version, new HashMap<>());
                         DeployableConfig gotOverride = requestHelper.executeRequest(getOverride, "/upenaConfig/get", DeployableConfig.class, null);
 
                         filterProperties(requestHelper, key, i, properties,
@@ -609,10 +619,8 @@ public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
                     if (!defaultValue.contains(valueContains)) {
                         continue;
                     }
-                } else {
-                    if (!overiddenValue.contains(valueContains)) {
-                        continue;
-                    }
+                } else if (!overiddenValue.contains(valueContains)) {
+                    continue;
                 }
             }
             if (isOverridden && overiddenValue == null) {
