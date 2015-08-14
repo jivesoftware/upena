@@ -84,9 +84,11 @@ public class UbaService {
             Map<InstanceDescriptor, InstancePath> onDiskInstances = uba.getOnDiskInstances();
             for (Map.Entry<InstanceDescriptor, InstancePath> entry : onDiskInstances.entrySet()) {
                 InstanceDescriptor instanceDescriptor = entry.getKey();
-                String nanneyKey = uba.instanceDescriptorKey(instanceDescriptor);
+                InstancePath instancePath = entry.getValue();
+
+                String nanneyKey = uba.instanceDescriptorKey(instanceDescriptor, instancePath);
                 if (!nannies.containsKey(nanneyKey)) {
-                    nannies.put(nanneyKey, uba.newNanny(instanceDescriptor));
+                    nannies.put(nanneyKey, uba.newNanny(instanceDescriptor, instancePath));
                 }
             }
 
@@ -94,16 +96,17 @@ public class UbaService {
             List<Nanny> newPlayers = new ArrayList<>();
 
             for (InstanceDescriptor instanceDescriptor : declaredInstances.instanceDescriptors) {
-                String nannyKey = uba.instanceDescriptorKey(instanceDescriptor);
+                InstancePath path = uba.instancePath(instanceDescriptor);
+                String nannyKey = uba.instanceDescriptorKey(instanceDescriptor, path);
                 Nanny currentNanny = nannies.get(nannyKey);
                 if (currentNanny == null) {
                     LOG.debug("New nanny:" + nannyKey);
-                    Nanny nanny = uba.newNanny(instanceDescriptor);
+                    Nanny nanny = uba.newNanny(instanceDescriptor, path);
                     newPlayers.add(nanny);
                 } else {
                     LOG.debug("Existing nanny:" + nannyKey);
                     currentNanny.setInstanceDescriptor(instanceDescriptor);
-                    expectedPlayer.add(uba.instanceDescriptorKey(currentNanny.getInstanceDescriptor()));
+                    expectedPlayer.add(uba.instanceDescriptorKey(currentNanny.getInstanceDescriptor(), path));
                 }
             }
 
@@ -125,7 +128,8 @@ public class UbaService {
 
             for (Nanny newPlayer : newPlayers) {
                 LOG.info("Deploying newPlayer:" + newPlayer);
-                nannies.put(uba.instanceDescriptorKey(newPlayer.getInstanceDescriptor()), newPlayer);
+                InstancePath path = uba.instancePath(newPlayer.getInstanceDescriptor());
+                nannies.put(uba.instanceDescriptorKey(newPlayer.getInstanceDescriptor(), path), newPlayer);
             }
             return nannies;
         }

@@ -41,7 +41,7 @@ public class UbaTree {
     }
 
     public void build(ConductorPathCallback orchestraPathCallback) {
-        walkTree(new ArrayList<NameAndKey>(), treeLevels, 0, root, orchestraPathCallback);
+        walkTree(new ArrayList<>(), treeLevels, 0, root, orchestraPathCallback);
     }
 
     void walkTree(ArrayList<NameAndKey> path, String[] levelNames, int depth, File directory, ConductorPathCallback orchestraPathCallback) {

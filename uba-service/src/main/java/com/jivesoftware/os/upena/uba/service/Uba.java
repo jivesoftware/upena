@@ -51,40 +51,41 @@ public class Uba {
 
     public Map<InstanceDescriptor, InstancePath> getOnDiskInstances() {
         final Map<InstanceDescriptor, InstancePath> instances = new ConcurrentHashMap<>();
-        ubaTree.build(new UbaTree.ConductorPathCallback() {
-            @Override
-            public void conductorPath(NameAndKey[] path) {
-                InstancePath instancePath = new InstancePath(ubaTree.getRoot(), path);
-                try {
-                    if (instancePath.instanceProperties().exists()) {
-                        InstanceDescriptor id = instancePath.readInstanceDescriptor();
-                        instances.put(id, instancePath);
-                    }
-                } catch (IOException ex) {
-                    ex.printStackTrace(); //hmmm
+        ubaTree.build((NameAndKey[] path) -> {
+            InstancePath instancePath = new InstancePath(ubaTree.getRoot(), path);
+            try {
+                if (instancePath.instanceProperties().exists()) {
+                    InstanceDescriptor id = instancePath.readInstanceDescriptor();
+                    instances.put(id, instancePath);
                 }
+            } catch (IOException ex) {
+                ex.printStackTrace(); //hmmm
             }
         });
         return instances;
     }
 
-    public String instanceDescriptorKey(InstanceDescriptor instanceDescriptor) {
+    public String instanceDescriptorKey(InstanceDescriptor instanceDescriptor, InstancePath instancePath) {
         StringBuilder key = new StringBuilder();
         key.append(instanceDescriptor.clusterKey).append('|');
         key.append(instanceDescriptor.serviceKey).append('|');
         key.append(instanceDescriptor.releaseGroupKey).append('|');
-        key.append(instanceDescriptor.instanceKey);
+        key.append(instanceDescriptor.instanceKey).append('-');
+        key.append(instancePath.toHumanReadableName());
         return key.toString();
     }
 
-    Nanny newNanny(InstanceDescriptor instanceDescriptor) {
-        InstancePath instancePath = new InstancePath(ubaTree.getRoot(), new NameAndKey[]{
+    InstancePath instancePath(InstanceDescriptor instanceDescriptor) {
+        return new InstancePath(ubaTree.getRoot(), new NameAndKey[]{
             new NameAndKey(instanceDescriptor.clusterName, instanceDescriptor.clusterKey),
             new NameAndKey(instanceDescriptor.serviceName, instanceDescriptor.serviceKey),
             new NameAndKey(instanceDescriptor.releaseGroupName, instanceDescriptor.releaseGroupKey),
             new NameAndKey(Integer.toString(instanceDescriptor.instanceName), instanceDescriptor.instanceKey)
         });
+    }
 
+    Nanny newNanny(InstanceDescriptor instanceDescriptor, InstancePath instancePath) {
+        
         DeployLog deployLog = new DeployLog();
         HealthLog healthLog = new HealthLog(deployLog);
         return new Nanny(instanceDescriptor, instancePath, new DeployableValidator(), new DeployLog(), healthLog, invokeScript, ubaLog);

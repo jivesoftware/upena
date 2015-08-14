@@ -116,7 +116,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                                 healths.add(ImmutableMap.of("id", nannyHealth.instanceDescriptor.instanceKey,
                                     "color", "64,64,64",
                                     "text", "",
-                                    "age", "disable"));
+                                    "age", "disabled"));
                             }
                         }
                     }
@@ -325,9 +325,15 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                             hostRows.get(hi).get(si + 1).put("releaseKey", nannyHealth.instanceDescriptor.releaseGroupKey);
                             hostRows.get(hi).get(si + 1).put("release", nannyHealth.instanceDescriptor.releaseGroupName);
                             hostRows.get(hi).get(si + 1).put("instance", String.valueOf(nannyHealth.instanceDescriptor.instanceName));
-                            hostRows.get(hi).get(si + 1).put("color", "#" + getHEXTrafficlightColor(sh, 1f));
-                            hostRows.get(hi).get(si + 1).put("health", d2f(sh));
-                            hostRows.get(hi).get(si + 1).put("age", nannyHealth.uptime);
+                            if (nannyHealth.instanceDescriptor.enabled) {
+                                hostRows.get(hi).get(si + 1).put("color", "#" + getHEXTrafficlightColor(sh, 1f));
+                                hostRows.get(hi).get(si + 1).put("health", d2f(sh));
+                                hostRows.get(hi).get(si + 1).put("age", nannyHealth.uptime);
+                            } else {
+                                hostRows.get(hi).get(si + 1).put("color", "#404040");
+                                hostRows.get(hi).get(si + 1).put("health", "");
+                                hostRows.get(hi).get(si + 1).put("age", "disabled");
+                            }
                             hostRows.get(hi).get(si + 1).put("link",
                                 "http://" + nodeHealth.host + ":" + nannyHealth.instanceDescriptor.ports.get("manage").port + "/manage/ui");
 
