@@ -350,14 +350,14 @@ upena.query = {
         } else {
             $('#query-filters').removeClass('query-show-advanced');
         }
-    },
+    }
 };
 
 upena.latestRelease = {
     change: function (inputId, value) {
         $('#' + inputId).val(value);
         return true;
-    },
+    }
 };
 
 
@@ -719,17 +719,22 @@ upena.health = {
     },
 
     poll: function () {
-        $.ajax("/ui/health/live", {
-            method: "get",
-            data: {},
-            success: function (data) {
-                upena.health.redraw(data);
-                setTimeout(upena.health.poll, 1000);
-            },
-            error: function () {
-                setTimeout(upena.health.poll, 5000);
-            }
-        });
+        if (upena.windowFocused) {
+            $.ajax("/ui/health/live", {
+                method: "get",
+                data: {},
+                contentType: "application/json",
+                success: function (data) {
+                    upena.health.redraw(data);
+                    setTimeout(upena.health.poll, 1000);
+                },
+                error: function () {
+                    setTimeout(upena.health.poll, 5000);
+                }
+            });
+        } else {
+            setTimeout(upena.health.poll, 1000);
+        }
     },
 
     redraw: function (data) {
@@ -749,6 +754,10 @@ upena.health = {
 };
 
 $(document).ready(function () {
+
+    upena.windowFocused = true;
+    upena.onWindowFocus = [];
+    upena.onWindowBlur = [];
 
     Ladda.bind('.ladda-button', {timeout: 60000});
 
@@ -835,4 +844,16 @@ $(document).ready(function () {
             }
         });
     })();
+});
+
+$(window).focus(function () {
+    upena.windowFocused = true;
+    for (var i = 0; i < upena.onWindowFocus.length; i++) {
+        upena.onWindowFocus[i]();
+    }
+}).blur(function () {
+    upena.windowFocused = false;
+    for (var i = 0; i < upena.onWindowBlur.length; i++) {
+        upena.onWindowBlur[i]();
+    }
 });
