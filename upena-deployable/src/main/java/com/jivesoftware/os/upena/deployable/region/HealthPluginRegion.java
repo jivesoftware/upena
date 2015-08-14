@@ -100,16 +100,24 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                 for (UpenaEndpoints.NannyHealth nannyHealth : nodeHealth.nannyHealths) {
                     if (nannyHealth.serviceHealth != null) {
                         if (nannyHealth.serviceHealth != null) {
-                            minHostHealth.compute(nannyHealth.instanceDescriptor.clusterName + ":" + nodeHealth.host + ":" + nodeHealth.port,
-                                (String k, Double ev) -> {
-                                    return ev == null ? nannyHealth.serviceHealth.health : Math.min(ev, nannyHealth.serviceHealth.health);
-                                });
 
                             double h = Math.max(0d, nannyHealth.serviceHealth.health);
-                            healths.add(ImmutableMap.of("id", nannyHealth.instanceDescriptor.instanceKey,
-                                "color", trafficlightColorRGB(h, 1f),
-                                "text", String.valueOf((int) (h * 100)),
-                                "age", nannyHealth.uptime));
+                            if (nannyHealth.instanceDescriptor.enabled) {
+                                minHostHealth.compute(nannyHealth.instanceDescriptor.clusterName + ":" + nodeHealth.host + ":" + nodeHealth.port,
+                                    (String k, Double ev) -> {
+                                        return ev == null ? nannyHealth.serviceHealth.health : Math.min(ev, nannyHealth.serviceHealth.health);
+                                    });
+
+                                healths.add(ImmutableMap.of("id", nannyHealth.instanceDescriptor.instanceKey,
+                                    "color", trafficlightColorRGB(h, 1f),
+                                    "text", String.valueOf((int) (h * 100)),
+                                    "age", nannyHealth.uptime));
+                            } else {
+                                healths.add(ImmutableMap.of("id", nannyHealth.instanceDescriptor.instanceKey,
+                                    "color", "64,64,64",
+                                    "text", "",
+                                    "age", "disable"));
+                            }
                         }
                     }
                 }
