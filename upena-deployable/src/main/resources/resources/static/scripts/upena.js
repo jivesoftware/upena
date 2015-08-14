@@ -102,7 +102,6 @@ upena.hs = {
     lookup: function (endpoint, ab, contains) {
 
 
-
         var host = "#" + ab + "RemoteHostPicker";
         var port = "#" + ab + "RemotePortPicker";
 
@@ -111,30 +110,33 @@ upena.hs = {
         console.log($(host).attr('value') + " " + $(port).attr('value'));
 
         var $selector = upena.hs.installed.selector;
-        $.ajax(endpoint, {data: {'contains': contains,
+        $.ajax(endpoint, {
+            data: {
+                'contains': contains,
                 'remoteHost': $(host).attr('value'),
                 'remotePort': $(port).attr('value')
-            }})
-                .done(function (data) {
-                    if (!upena.hs.installed || upena.hs.installed.selector != $selector) {
-                        // selector changed during the query
-                        return;
+            }
+        })
+            .done(function (data) {
+                if (!upena.hs.installed || upena.hs.installed.selector != $selector) {
+                    // selector changed during the query
+                    return;
+                }
+                if (data.length) {
+                    $selector.empty();
+                    for (var i = 0; i < data.length; i++) {
+                        $selector.append(
+                            "<a href='#'" +
+                            " class='upena-hs-choice'" +
+                            " data-upena-key='" + data[i].key + "'" +
+                            " data-upena-name='" + data[i].name + "'>" + data[i].name + "</a><br/>");
                     }
-                    if (data.length) {
-                        $selector.empty();
-                        for (var i = 0; i < data.length; i++) {
-                            $selector.append(
-                                    "<a href='#'" +
-                                    " class='upena-hs-choice'" +
-                                    " data-upena-key='" + data[i].key + "'" +
-                                    " data-upena-name='" + data[i].name + "'>" + data[i].name + "</a><br/>");
-                        }
-                        upena.hs.link($selector);
-                        upena.hs.installed.ready = true;
-                    } else {
-                        $selector.html("<em>No matches</em>");
-                    }
-                });
+                    upena.hs.link($selector);
+                    upena.hs.installed.ready = true;
+                } else {
+                    $selector.html("<em>No matches</em>");
+                }
+            });
     },
     link: function ($selector) {
         $selector.find('a').each(function (i) {
@@ -359,7 +361,6 @@ upena.latestRelease = {
 };
 
 
-
 upena.build = {
     layouter: null,
     renderer: null,
@@ -467,7 +468,6 @@ upena.build = {
         upena.build.renderer = new Graph.Renderer.Raphael('upena-build', g, upena.build.width, upena.build.height);
 
         upena.build.renderer.draw();
-
 
 
     },
@@ -708,6 +708,46 @@ upena.connectivity = {
     }
 };
 
+upena.health = {
+
+    color: {},
+    text: {},
+    age: {},
+
+    init: function () {
+        setTimeout(upena.health.poll, 1000);
+    },
+
+    poll: function () {
+        $.ajax("/ui/health/live", {
+            method: "get",
+            data: {},
+            success: function (data) {
+                upena.health.redraw(data);
+                setTimeout(upena.health.poll, 1000);
+            },
+            error: function () {
+                setTimeout(upena.health.poll, 5000);
+            }
+        });
+    },
+
+    redraw: function (data) {
+        for (var i = 0; i < data.length; i++) {
+            var id = data[i].id;
+            if (!upena.health.color[id]) {
+                var $cell = $('[data-popover-instance-key="' + id + '"');
+                upena.health.color[id] = $cell.find('.health-color');
+                upena.health.text[id] = $cell.find('.health-text');
+                upena.health.age[id] = $cell.find('.health-age');
+            }
+            upena.health.color[id].css('background-color', "rgb(" + data[i].color + ")");
+            upena.health.text[id].html(data[i].text);
+            upena.health.age[id].html(data[i].age);
+        }
+    }
+};
+
 $(document).ready(function () {
 
     Ladda.bind('.ladda-button', {timeout: 60000});
@@ -721,17 +761,17 @@ $(document).ready(function () {
     if ($('#upena-cfg').length) {
         upena.cfg.init();
     }
-
     if ($('#upena-build').length) {
         upena.build.init();
     }
-
     if ($('#upena-topology').length) {
         upena.topology.init();
     }
-
     if ($('#upena-connectivity').length) {
         upena.connectivity.init();
+    }
+    if ($('#upena-health').length) {
+        upena.health.init();
     }
 
     (function () {
