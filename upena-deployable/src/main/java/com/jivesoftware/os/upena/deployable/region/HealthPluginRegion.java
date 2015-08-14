@@ -43,12 +43,12 @@ import java.util.concurrent.Executors;
 // soy.page.healthPluginRegion
 public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthPluginRegionInput> {
 
-    private static final MetricLogger log = MetricLoggerFactory.getLogger();
-    private static final ObjectMapper mapper = new ObjectMapper();
+    private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     private final RingHost ringHost;
     private final String template;
-    private final String uisTemplate;
+    private final String instanceTemplate;
     private final SoyRenderer renderer;
     private final AmzaInstance amzaInstance;
     private final UpenaStore upenaStore;
@@ -56,14 +56,14 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
 
     public HealthPluginRegion(RingHost ringHost,
         String template,
-        String uisTemplate,
+        String instanceTemplate,
         SoyRenderer renderer,
         AmzaInstance amzaInstance,
         UpenaStore upenaStore) {
 
         this.ringHost = ringHost;
         this.template = template;
-        this.uisTemplate = uisTemplate;
+        this.instanceTemplate = instanceTemplate;
         this.renderer = renderer;
         this.amzaInstance = amzaInstance;
         this.upenaStore = upenaStore;
@@ -134,9 +134,9 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                     "age", age));
             }
 
-            live = mapper.writeValueAsString(healths);
+            live = MAPPER.writeValueAsString(healths);
         } catch (Exception x) {
-            log.warn("failed to generate live results", x);
+            LOG.warn("failed to generate live results", x);
         }
 
         return live;
@@ -358,7 +358,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
             data.put("gridHost", hostRows);
 
         } catch (Exception e) {
-            log.error("Unable to retrieve data", e);
+            LOG.error("Unable to retrieve data", e);
         }
 
         return renderer.render(template, data);
@@ -505,12 +505,13 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
         return color.getRed() + "," + color.getGreen() + "," + color.getBlue();
     }
 
-    public String renderUIs(String instanceKey) throws Exception {
+    public String renderInstanceHealth(String instanceKey) throws Exception {
 
         Instance instance = upenaStore.instances.get(new InstanceKey(instanceKey));
         if (instance == null) {
             return "No instance for instanceKey:" + instanceKey;
         }
+
         Host host = upenaStore.hosts.get(instance.hostKey);
         Cluster cluster = upenaStore.clusters.get(instance.clusterKey);
         com.jivesoftware.os.upena.shared.Service service = upenaStore.services.get(instance.serviceKey);
@@ -521,26 +522,24 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
             if (port != null) {
                 HttpRequestHelper requestHelper = buildRequestHelper(host.hostName, port.port);
                 HasUI hasUI = requestHelper.executeGetRequest("/manage/hasUI", HasUI.class, null);
-                if (hasUI == null) {
-                    return host.hostName + ":" + port.port + " has no UIs.";
-                }
-                List<Map<String, String>> namedUIs = new ArrayList<>();
-                for (UI ui : hasUI.uis) {
-
-                    Instance.Port uiPort = instance.ports.get(ui.portName);
-                    if (uiPort != null) {
-                        Map<String, String> uiMap = new HashMap<>();
-                        uiMap.put("cluster", cluster.name);
-                        uiMap.put("host", host.name);
-                        uiMap.put("port", String.valueOf(uiPort.port));
-                        uiMap.put("service", service.name);
-                        uiMap.put("instance", String.valueOf(instance.instanceId));
-                        uiMap.put("name", ui.name);
-                        uiMap.put("url", ui.url);
-                        namedUIs.add(uiMap);
+                if (hasUI != null) {
+                    List<Map<String, String>> namedUIs = new ArrayList<>();
+                    for (UI ui : hasUI.uis) {
+                        Instance.Port uiPort = instance.ports.get(ui.portName);
+                        if (uiPort != null) {
+                            Map<String, String> uiMap = new HashMap<>();
+                            uiMap.put("cluster", cluster.name);
+                            uiMap.put("host", host.name);
+                            uiMap.put("port", String.valueOf(uiPort.port));
+                            uiMap.put("service", service.name);
+                            uiMap.put("instance", String.valueOf(instance.instanceId));
+                            uiMap.put("name", ui.name);
+                            uiMap.put("url", ui.url);
+                            namedUIs.add(uiMap);
+                        }
                     }
+                    data.put("uis", namedUIs);
                 }
-                data.put("uis", namedUIs);
             }
 
             ConcurrentMap<RingHost, UpenaEndpoints.NodeHealth> nodeHealths = buildClusterHealth();
@@ -554,12 +553,10 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                 }
             }
 
-            serviceHealth(null, data);
-
         } catch (Exception x) {
-            log.debug("Failed to render instance health.", x);
+            LOG.debug("Failed to render instance health.", x);
         }
-        return renderer.render(uisTemplate, data);
+        return renderer.render(instanceTemplate, data);
 
     }
 

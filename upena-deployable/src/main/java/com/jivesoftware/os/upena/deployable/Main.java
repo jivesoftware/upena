@@ -333,7 +333,7 @@ public class Main {
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/chrome.soy"), "chome.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/homeRegion.soy"), "home.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/changeLogPluginRegion.soy"), "changeLog.soy");
-        soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/serviceUIsPluginRegion.soy"), "serviceUIsPluginRegion.soy");
+        soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/instanceHealthPluginRegion.soy"), "instanceHealthPluginRegion.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/healthPluginRegion.soy"), "health.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/topologyPluginRegion.soy"), "topology.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/connectionsHealth.soy"), "connectionsHealth.soy");
@@ -354,7 +354,7 @@ public class Main {
             new HomeRegion("soy.page.homeRegion", renderer, amzaService, ringHost));
 
         HealthPluginRegion healthPluginRegion = new HealthPluginRegion(ringHost, "soy.page.healthPluginRegion",
-            "soy.page.healthPluginRegionUIs",
+            "soy.page.instanceHealthPluginRegion",
             renderer,
             amzaService,
             upenaStore);
