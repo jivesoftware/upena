@@ -93,18 +93,18 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
         try {
 
             List<Map<String, String>> healths = new ArrayList<>();
-            Collection<UpenaEndpoints.NodeHealth> nodeHealths = buildClusterHealth();
-
+            
             Map<String, Double> minHostHealth = new HashMap<>();
-            for (UpenaEndpoints.NodeHealth nodeHealth : nodeHealths) {
+            for (UpenaEndpoints.NodeHealth nodeHealth : buildClusterHealth()) {
 
                 for (UpenaEndpoints.NannyHealth nannyHealth : nodeHealth.nannyHealths) {
                     if (nannyHealth.serviceHealth != null) {
-                        Double got = minHostHealth.get(nodeHealth.host + ":" + nodeHealth.port);
                         if (nannyHealth.serviceHealth != null) {
-                            if (got == null || got > nannyHealth.serviceHealth.health) {
-                                minHostHealth.put(nannyHealth.instanceDescriptor.clusterKey, nannyHealth.serviceHealth.health);
-                            }
+
+                            minHostHealth.compute(nodeHealth.host + ":" + nodeHealth.port, (String k, Double ev) -> {
+                                return ev == null ? nannyHealth.serviceHealth.health : Math.min(ev, nannyHealth.serviceHealth.health);
+                            });
+                            
                             healths.add(ImmutableMap.of("id", nannyHealth.instanceDescriptor.instanceKey,
                                 "color", trafficlightColorRGB(nannyHealth.serviceHealth.health, 1f),
                                 "text", String.valueOf((int) (nannyHealth.serviceHealth.health * 100)),
