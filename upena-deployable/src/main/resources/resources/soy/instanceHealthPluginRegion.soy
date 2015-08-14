@@ -13,56 +13,61 @@
                 <a class="btn btn-default" href="http://{$u.host}:{$u.port}{$u.url}">{$u.name}</a>
             {/foreach}
         </div>
-        <hr>
     {else}
         <pre>
             None of the deployed service conform to the hasUI rest api.
         </pre>
     {/if}
     {if $ports}
-        <table width="800px" class="table table-condensed">
-            <tr>
-                {foreach $p in $ports}
-                    <td>
-                        {$p}
-                    </td>
-                {/foreach}
-            </tr>
-        </table>
+        <div style="width:1000px">
+            <table class="table table-condensed">
+                <tr>
+                    {foreach $p in $ports}
+                        <td>
+                            {$p}
+                        </td>
+                    {/foreach}
+                </tr>
+            </table>
+        </div>
     {/if}
     {if $log}
-        <table width="800px" class="table table-hover table-condensed">
-            {foreach $l in $log}
-                <tr>
-                    <td>
-                        {$l}
-                    </td>
-                </tr>
-            {/foreach}
-        </table>
-    {/if}
-    {if $healths}
-        <table width="800px" class="table table-hover table-condensed table-striped table-bordered">
-            <thead>
-                <tr style="background-color:#bbbbbb;">
-                    <th>Name</th>
-                    <th>Status</th>
-                    <th>Description</th>
-                    <th>Resolution</th>
-                    <th>Age</th>
-                </tr>
-            </thead>
-            <tbody>
-                {foreach $h in $healths}
+        <div style="width:1000px">
+            <table class="table table-hover table-condensed">
+                {foreach $l in $log}
                     <tr>
-                        <td style="background-color:rgb({$h.color})">{$h.name}</td>
-                        <td>{$h.status}</td>
-                        <td>{$h.description}</td>
-                        <td>{$h.resolution}</td>
-                        <td>{$h.age}</td>
+                        <td>
+                            {$l}
+                        </td>
                     </tr>
                 {/foreach}
-            </tbody>
-        </table>
+            </table>
+        </div>
+    {/if}
+    {if $healths}
+        <div style="width:1000px">
+            <table class="table table-hover table-condensed table-striped table-bordered">
+                <thead>
+                    <tr style="background-color:#bbbbbb;">
+                        <th>Name</th>
+                        <th>Status</th>
+                        <th>Description</th>
+                        <th>Resolution</th>
+                        <th>Age</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {foreach $h in $healths}
+                        <tr>
+                            <td style="background-color:rgb({$h.color})">{$h.name}</td>
+                            <td>{$h.status}</td>
+                            <td>{$h.description}</td>
+                            <td>{$h.resolution}</td>
+                            <td>{$h.age}</td>
+                        </tr>
+                    {/foreach}
+                </tbody>
+            </table>
+        </div>
     {/if}
 {/template}
