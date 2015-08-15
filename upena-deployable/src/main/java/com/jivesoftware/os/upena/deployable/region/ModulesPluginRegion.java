@@ -68,6 +68,11 @@ public class ModulesPluginRegion implements PageRegion<ModulesPluginRegionInput>
         this.upenaStore = upenaStore;
     }
 
+    @Override
+    public String getRootPath() {
+        return "/ui/modules";
+    }
+
     public static class ModulesPluginRegionInput implements PluginInput {
 
         final String clusterKey;
@@ -196,7 +201,7 @@ public class ModulesPluginRegion implements PageRegion<ModulesPluginRegionInput>
 
             HashSet<Artifact> gathered = new HashSet<>();
             for (ReleaseGroup releaseGroup : releaseGroups) {
-                
+
                 String[] repos = releaseGroup.repository.split(",");
                 List<RemoteRepository> remoteRepos = RepositoryProvider.newRepositories(system, session, null, repos);
                 String[] deployablecoordinates = releaseGroup.version.trim().split(",");

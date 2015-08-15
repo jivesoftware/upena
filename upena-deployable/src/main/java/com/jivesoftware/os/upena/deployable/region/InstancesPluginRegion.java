@@ -63,6 +63,11 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
         this.healthPluginRegion = healthPluginRegion;
     }
 
+    @Override
+    public String getRootPath() {
+        return "/ui/instances";
+    }
+
     public static class InstancesPluginRegionInput implements PluginInput {
 
         final String key;
@@ -512,7 +517,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
             long snowflakeTime = timestampedValue.getTimestamp();
             long time = JiveEpochTimestampProvider.JIVE_EPOCH + new SnowflakeIdPacker().unpack(snowflakeTime)[0];
             //String gmtTimeString = simpleDateFormat.format(new Date(time));
-            map.put("status", "Modified:" + DurationFormatUtils.formatDurationHMS(System.currentTimeMillis() - time)+" ago.");
+            map.put("status", "Modified:" + DurationFormatUtils.formatDurationHMS(System.currentTimeMillis() - time) + " ago.");
         }
 
         List<Map<String, Object>> ports = new ArrayList<>();

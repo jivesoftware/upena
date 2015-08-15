@@ -47,6 +47,12 @@ public class UpenaRingPluginRegion implements PageRegion<UpenaRingPluginRegionIn
         this.ringHost = ringHost;
     }
 
+
+    @Override
+    public String getRootPath() {
+        return "/ui/ring";
+    }
+
     public static class UpenaRingPluginRegionInput implements PluginInput {
 
         final String host;

@@ -49,6 +49,12 @@ public class ClustersPluginRegion implements PageRegion<ClustersPluginRegionInpu
         this.upenaStore = upenaStore;
     }
 
+
+    @Override
+    public String getRootPath() {
+        return "/ui/clusters";
+    }
+
     public static class ClustersPluginRegionInput implements PluginInput {
 
         final String key;

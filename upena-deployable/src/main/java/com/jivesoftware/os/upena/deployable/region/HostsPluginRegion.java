@@ -44,6 +44,11 @@ public class HostsPluginRegion implements PageRegion<HostsPluginRegionInput> {
         this.upenaStore = upenaStore;
     }
 
+    @Override
+    public String getRootPath() {
+        return "/ui/hosts";
+    }
+
     public static class HostsPluginRegionInput implements PluginInput {
 
         final String key;
@@ -201,8 +206,8 @@ public class HostsPluginRegion implements PageRegion<HostsPluginRegionInput> {
             }
 
             Collections.sort(rows, (Map<String, Object> o1, Map<String, Object> o2) -> {
-                String hostName1 = (String)o1.get("host");
-                String hostName2 = (String)o2.get("host");
+                String hostName1 = (String) o1.get("host");
+                String hostName2 = (String) o2.get("host");
 
                 int c = hostName1.compareTo(hostName2);
                 if (c != 0) {

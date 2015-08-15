@@ -58,6 +58,12 @@ public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
         this.configStore = configStore;
     }
 
+
+    @Override
+    public String getRootPath() {
+        return "/ui/config";
+    }
+
     // TODO handle host and port
     public void modified(String user, Map<String, Map<String, String>> property_InstanceKey_Values) throws Exception {
 

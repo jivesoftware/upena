@@ -33,6 +33,12 @@ public class ChangeLogPluginRegion implements PageRegion<ChangeLogPluginRegionIn
         this.upenaStore = upenaStore;
     }
 
+    @Override
+    public String getRootPath() {
+        return "/ui/changeLog";
+    }
+
+
     public static class ChangeLogPluginRegionInput implements PluginInput {
 
         final String who;

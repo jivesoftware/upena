@@ -69,6 +69,11 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
         this.upenaStore = upenaStore;
     }
 
+    @Override
+    public String getRootPath() {
+        return "/ui/health";
+    }
+
     public static class HealthPluginRegionInput implements PluginInput {
 
         final String cluster;
@@ -541,7 +546,6 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                     data.put("uis", namedUIs);
                 }
             }
-
 
             // TODO fix this brute force crap
             ConcurrentMap<RingHost, UpenaEndpoints.NodeHealth> nodeHealths = buildClusterHealth();

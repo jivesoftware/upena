@@ -48,6 +48,11 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
         this.upenaStore = upenaStore;
     }
 
+    @Override
+    public String getRootPath() {
+        return "/ui/releases";
+    }
+
     public static class ReleasesPluginRegionInput implements PluginInput {
 
         final String key;

@@ -5,4 +5,6 @@ public interface PageRegion<T extends PluginInput> extends Region<T> {
 
     String getTitle();
 
+    String getRootPath();
+
 }

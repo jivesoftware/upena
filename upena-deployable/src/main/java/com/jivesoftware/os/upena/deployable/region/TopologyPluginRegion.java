@@ -101,6 +101,12 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
         this.discoveredRoutes = discoveredRoutes;
     }
 
+
+    @Override
+    public String getRootPath() {
+        return "/ui/topology";
+    }
+
     public static class TopologyPluginRegionInput implements PluginInput {
 
         final String clusterKey;

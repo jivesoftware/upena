@@ -50,6 +50,12 @@ public class DependenciesPluginRegion implements PageRegion<DependenciesPluginRe
         this.upenaStore = upenaStore;
     }
 
+
+    @Override
+    public String getRootPath() {
+        return "/ui/dependencies";
+    }
+
     public static class DependenciesPluginRegionInput implements PluginInput {
 
         final String releaseKey;

@@ -41,6 +41,12 @@ public class HomeRegion implements PageRegion<HomeInput> {
         this.ringHost = ringHost;
     }
 
+    @Override
+    public String getRootPath() {
+        return "/";
+    }
+
+
     public static class HomeInput implements PluginInput {
 
         final String wgetURL;

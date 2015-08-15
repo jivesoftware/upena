@@ -76,7 +76,7 @@ public class ChromeRegion<I extends PluginInput, R extends PageRegion<I>> implem
                 instances.add(ImmutableMap.of("host", value.name,
                     "name", String.valueOf("upena-" + i[0]),
                     "port", String.valueOf(value.port),
-                    "path", "/"));
+                    "path", region.getRootPath()));
                 if (key.equals(hostKey)) {
                     instance[0] = i[0];
                 }

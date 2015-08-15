@@ -56,6 +56,12 @@ public class ServicesPluginRegion implements PageRegion<ServicesPluginRegionInpu
         this.ringHost = ringHost;
     }
 
+    @Override
+    public String getRootPath() {
+        return "/ui/services";
+    }
+
+
     public static class ServicesPluginRegionInput implements PluginInput {
 
         final String key;
