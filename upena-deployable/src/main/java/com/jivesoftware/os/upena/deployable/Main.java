@@ -67,6 +67,7 @@ import com.jivesoftware.os.upena.deployable.endpoints.HostsPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.InstancesPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ModulesPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ReleasesPluginEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.SARPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ServicesPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.TopologyPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.UpenaRingPluginEndpoints;
@@ -83,6 +84,7 @@ import com.jivesoftware.os.upena.deployable.region.InstancesPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ManagePlugin;
 import com.jivesoftware.os.upena.deployable.region.ModulesPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ReleasesPluginRegion;
+import com.jivesoftware.os.upena.deployable.region.SARPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ServicesPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.TopologyPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.UpenaRingPluginRegion;
@@ -348,13 +350,14 @@ public class Main {
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/releasesPluginRegion.soy"), "releases.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/upenaRingPluginRegion.soy"), "upenaRing.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/configPluginRegion.soy"), "config.soy");
+        soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/sarPluginRegion.soy"), "sarPluginRegion.soy");
 
         SoyFileSet sfs = soyFileSetBuilder.build();
         SoyTofu tofu = sfs.compileToTofu();
         SoyRenderer renderer = new SoyRenderer(tofu, new SoyDataUtils());
         SoyService soyService = new SoyService(renderer,
             new HeaderRegion("soy.chrome.headerRegion", renderer),
-            new HomeRegion("soy.page.homeRegion", renderer, amzaService, ringHost),
+            new HomeRegion("soy.page.homeRegion", renderer),
             clusterName,
             hostKey,
             upenaStore
@@ -416,6 +419,10 @@ public class Main {
             UpenaRingPluginEndpoints.class,
             new UpenaRingPluginRegion("soy.page.upenaRingPluginRegion", renderer, amzaService, upenaStore, upenaService, ubaService, ringHost));
 
+        ManagePlugin sar = new ManagePlugin("dashboard", null, "SAR", "/ui/sar",
+            SARPluginEndpoints.class,
+            new SARPluginRegion("soy.page.sarPluginRegion", renderer, amzaService, ringHost));
+
         List<ManagePlugin> plugins = Lists.newArrayList(
             build,
             dependencies,
@@ -428,6 +435,7 @@ public class Main {
             instances,
             topology,
             health,
+            sar,
             ring);
 
         jerseyEndpoints.addInjectable(SoyService.class, soyService);
