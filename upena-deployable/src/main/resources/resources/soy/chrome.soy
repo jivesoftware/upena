@@ -76,6 +76,10 @@
 
 /**
  *
+ * @param cluster
+ * @param instance
+ * @param total
+ * @param instances
  * @param plugins
  * @param user
  */
@@ -84,9 +88,18 @@
         <div class="container">
             <div id="navbar" class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
-                    <li role="presentation"><a class="navbar-brand" href="/">
-                        <span><img style="float:left" src="/static/img/icon.png" alt="Fun with deployment" height="24px"><img></span>
-                    </a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                            {$cluster}
+                            <img style="float:left" src="/static/img/icon.png" alt="Fun with deployment" height="24px"><img>
+                            {$instance}/{$total}
+                            <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            {foreach $i in $instances}
+                                <li><a href="http://{$i.host}:{$i.port}{$i.path}">{$i.name}</a></li>
+                            {/foreach}
+                        </ul>
+                    </li>
                     {foreach $plugin in $plugins}
                         {if $plugin.active}
                             <li class="active" role="presentation">
@@ -136,6 +149,6 @@
 {template .footer}
    <div class="footer navbar-fixed-bottom">
         <a class="btn btn-default btn-xs aria-expanded="false"" href="https://github.com/jivesoftware/upena">Upena on GitHub</a>
-    </div>
+   </div>
 {/template}
 

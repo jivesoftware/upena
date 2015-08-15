@@ -7,6 +7,8 @@ import com.jivesoftware.os.upena.deployable.region.HomeRegion.HomeInput;
 import com.jivesoftware.os.upena.deployable.region.ManagePlugin;
 import com.jivesoftware.os.upena.deployable.region.PageRegion;
 import com.jivesoftware.os.upena.deployable.region.PluginInput;
+import com.jivesoftware.os.upena.service.UpenaStore;
+import com.jivesoftware.os.upena.shared.HostKey;
 import java.util.List;
 
 /**
@@ -17,17 +19,26 @@ public class SoyService {
     private final SoyRenderer renderer;
     private final HeaderRegion headerRegion;
     private final PageRegion<HomeInput> homeRegion;
+    private final String cluster;
+    private final HostKey hostKey;
+    private final UpenaStore upenaStore;
 
     private final List<ManagePlugin> plugins = Lists.newCopyOnWriteArrayList();
 
     public SoyService(
         SoyRenderer renderer,
         HeaderRegion headerRegion,
-        PageRegion<HomeInput> homeRegion
+        PageRegion<HomeInput> homeRegion,
+        String cluster,
+        HostKey hostKey,
+        UpenaStore upenaStore
     ) {
         this.renderer = renderer;
         this.headerRegion = headerRegion;
         this.homeRegion = homeRegion;
+        this.cluster = cluster;
+        this.hostKey = hostKey;
+        this.upenaStore = upenaStore;
 
     }
 
@@ -41,7 +52,14 @@ public class SoyService {
     }
 
     private <I extends PluginInput, R extends PageRegion<I>> ChromeRegion<I, R> chrome(R region) {
-        return new ChromeRegion<>("soy.chrome.chromeRegion", renderer, headerRegion, plugins, region);
+        return new ChromeRegion<>("soy.chrome.chromeRegion",
+            renderer,
+            headerRegion,
+            plugins,
+            region,
+            cluster,
+            hostKey,
+            upenaStore);
     }
 
     public <I extends PluginInput> String renderPlugin(String user, PageRegion<I> pluginRegion, I input) {

@@ -274,7 +274,7 @@ public class Main {
             .addInjectable(DiscoveredRoutes.class, discoveredRoutes)
             .addInjectable(RingHost.class, ringHost);
 
-        injectUI(amzaService, ringHost, upenaStore, upenaConfigStore, upenaService, ubaService, jerseyEndpoints, clusterName, discoveredRoutes);
+        injectUI(amzaService, hostKey, ringHost, upenaStore, upenaConfigStore, upenaService, ubaService, jerseyEndpoints, clusterName, discoveredRoutes);
 
         InitializeRestfulServer initializeRestfulServer = new InitializeRestfulServer(port, "UpenaNode", 128, 10000);
         initializeRestfulServer.addClasspathResource("/resources");
@@ -318,6 +318,7 @@ public class Main {
     }
 
     private void injectUI(AmzaService amzaService,
+        HostKey hostKey,
         RingHost ringHost,
         UpenaStore upenaStore,
         UpenaConfigStore upenaConfigStore,
@@ -351,8 +352,13 @@ public class Main {
         SoyFileSet sfs = soyFileSetBuilder.build();
         SoyTofu tofu = sfs.compileToTofu();
         SoyRenderer renderer = new SoyRenderer(tofu, new SoyDataUtils());
-        SoyService soyService = new SoyService(renderer, new HeaderRegion("soy.chrome.headerRegion", renderer),
-            new HomeRegion("soy.page.homeRegion", renderer, amzaService, ringHost));
+        SoyService soyService = new SoyService(renderer,
+            new HeaderRegion("soy.chrome.headerRegion", renderer),
+            new HomeRegion("soy.page.homeRegion", renderer, amzaService, ringHost),
+            clusterName,
+            hostKey,
+            upenaStore
+        );
 
         HealthPluginRegion healthPluginRegion = new HealthPluginRegion(ringHost, "soy.page.healthPluginRegion",
             "soy.page.instanceHealthPluginRegion",
