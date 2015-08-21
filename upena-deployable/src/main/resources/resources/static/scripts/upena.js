@@ -642,6 +642,7 @@ upena.connectivity = {
         upena.connectivity.width = $(document).width() - 100;
         var nodes = $('#upena-connectivity').data('nodes');
         var edges = $('#upena-connectivity').data('edges');
+        var legend = $('#upena-topology').data('legend');
         /* http://www.graphdracula.net/ */
         var g = new Graph();
         $(nodes).each(function (key, node) {
@@ -700,6 +701,29 @@ upena.connectivity = {
         /* draw the graph using the RaphaelJS draw implementation */
         upena.connectivity.renderer = new Graph.Renderer.Raphael('upena-connectivity', g, upena.connectivity.width, upena.connectivity.height);
         upena.connectivity.renderer.draw();
+        
+        var r = upena.connectivity.renderer.r;
+        if (legend) {
+            var x = 48;
+            var y = 10;
+            for (i = 0; i < legend.length; i++) {
+
+                var text = r.text(x, y, legend[i].name);
+                text.attr({"font-size": 16 + "px", opacity: 1.0, fill: "#000"});
+                var bb = text.getBBox(true);
+                var rect = r.rect(x - ((bb.height * 2)), y - (bb.height / 2), bb.height, bb.height);
+                text.attr({x: bb.x + bb.width});
+                rect.attr({
+                    stroke: "#000",
+                    fill: "#" + legend[i].color,
+                    r: "6px",
+                    "stroke-width": "1px",
+                    opacity: 0.4,
+                });
+
+                y += bb.height + 5;
+            }
+        }
     },
     redraw: function () {
         dracula_graph_seed = 1;
