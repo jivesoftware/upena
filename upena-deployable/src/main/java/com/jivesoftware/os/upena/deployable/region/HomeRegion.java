@@ -39,7 +39,7 @@ public class HomeRegion implements PageRegion<HomeInput> {
 
         @Override
         public String name() {
-            return "Upana";
+            return "Upena";
         }
 
     }
@@ -54,7 +54,7 @@ public class HomeRegion implements PageRegion<HomeInput> {
 
     @Override
     public String getTitle() {
-        return "Upana";
+        return "Upena";
     }
 
 }
