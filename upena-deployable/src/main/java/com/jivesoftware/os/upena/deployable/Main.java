@@ -340,6 +340,7 @@ public class Main {
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/instanceHealthPluginRegion.soy"), "instanceHealthPluginRegion.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/healthPluginRegion.soy"), "health.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/topologyPluginRegion.soy"), "topology.soy");
+        soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/connectivityPluginRegion.soy"), "connectivity.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/connectionsHealth.soy"), "connectionsHealth.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/instancesPluginRegion.soy"), "instances.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/dependenciesPluginRegion.soy"), "dependencies.soy");
@@ -377,9 +378,14 @@ public class Main {
         ManagePlugin health = new ManagePlugin("fire", null, "Health", "/ui/health",
             HealthPluginEndpoints.class, healthPluginRegion);
 
-        ManagePlugin topology = new ManagePlugin("transfer", null, "Topology", "/ui/topology",
+        ManagePlugin topology = new ManagePlugin("th", null, "Topology", "/ui/topology",
             TopologyPluginEndpoints.class,
             new TopologyPluginRegion("soy.page.topologyPluginRegion", "soy.page.connectionsHealth",
+                renderer, amzaService, upenaStore, healthPluginRegion, hostsPluginRegion, releasesPluginRegion, instancesPluginRegion, discoveredRoutes));
+
+         ManagePlugin connectivity = new ManagePlugin("transfer", null, "Connectivity", "/ui/connectivity",
+            TopologyPluginEndpoints.class,
+            new TopologyPluginRegion("soy.page.connectivityPluginRegion", "soy.page.connectionsHealth",
                 renderer, amzaService, upenaStore, healthPluginRegion, hostsPluginRegion, releasesPluginRegion, instancesPluginRegion, discoveredRoutes));
 
         ManagePlugin changes = new ManagePlugin("road", null, "Changes", "/ui/changeLog",
@@ -434,6 +440,7 @@ public class Main {
             services,
             instances,
             topology,
+            connectivity,
             health,
             sar,
             ring);

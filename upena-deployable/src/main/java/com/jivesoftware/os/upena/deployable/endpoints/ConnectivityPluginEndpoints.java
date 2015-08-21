@@ -23,13 +23,13 @@ import javax.ws.rs.core.Response;
  *
  */
 @Singleton
-@Path("/ui/topology")
-public class TopologyPluginEndpoints {
+@Path("/ui/connectivity")
+public class ConnectivityPluginEndpoints {
 
     private final SoyService soyService;
     private final TopologyPluginRegion pluginRegion;
 
-    public TopologyPluginEndpoints(@Context SoyService soyService, @Context TopologyPluginRegion pluginRegion) {
+    public ConnectivityPluginEndpoints(@Context SoyService soyService, @Context TopologyPluginRegion pluginRegion) {
         this.soyService = soyService;
         this.pluginRegion = pluginRegion;
     }

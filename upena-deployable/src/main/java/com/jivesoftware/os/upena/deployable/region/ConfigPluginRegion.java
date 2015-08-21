@@ -40,8 +40,8 @@ import java.util.concurrent.ConcurrentSkipListMap;
 // soy.page.configPluginRegion
 public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
 
-    private static final MetricLogger log = MetricLoggerFactory.getLogger();
-    private static final ObjectMapper mapper = new ObjectMapper();
+    private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     private final String template;
     private final SoyRenderer renderer;
@@ -110,20 +110,20 @@ public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
                         } else {
                             if (value == null || value.isEmpty() || value.equals(serviceDefaults.get(property))) {
                                 removeServiceOverrides.add(property);
-                                log.info("Reverting to default for property:" + property + " for instance:" + instanceKey);
+                                LOG.info("Reverting to default for property:" + property + " for instance:" + instanceKey);
                             } else {
                                 serviceOverrides.put(property, value);
                                 modifiedServiceOverrides = true;
-                                log.info("Setting property:" + property + "=" + value + " for instance:" + instanceKey);
+                                LOG.info("Setting property:" + property + "=" + value + " for instance:" + instanceKey);
                             }
 
                             if (value == null || value.isEmpty() || value.equals(healthDefaults.get(property))) {
                                 removeHealthOverrides.add(property);
-                                log.info("Reverting to default for property:" + property + " for instance:" + instanceKey);
+                                LOG.info("Reverting to default for property:" + property + " for instance:" + instanceKey);
                             } else {
                                 healthOverrides.put(property, value);
                                 modifiedHealthOverrides = true;
-                                log.info("Setting property:" + property + "=" + value + " for instance:" + instanceKey);
+                                LOG.info("Setting property:" + property + "=" + value + " for instance:" + instanceKey);
                             }
                         }
                     }
@@ -151,7 +151,7 @@ public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
                 }
 
             } else {
-                log.warn("Failed to load instance for key:" + instanceKey + " when trying to modify properties.");
+                LOG.warn("Failed to load instance for key:" + instanceKey + " when trying to modify properties.");
             }
         }
 
@@ -203,7 +203,7 @@ public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
                         if (!exportImportCluster.clusters.containsKey(instance.clusterKey)) {
                             Cluster got = upenaStore.clusters.get(instance.clusterKey);
                             if (got == null) {
-                                return "Export failed no cluster for clusterKey:" + instance.clusterKey + "\n" + mapper.writerWithDefaultPrettyPrinter()
+                                return "Export failed no cluster for clusterKey:" + instance.clusterKey + "\n" + MAPPER.writerWithDefaultPrettyPrinter()
                                     .writeValueAsString(instance);
                             }
                             exportImportCluster.clusters.put(instance.clusterKey, got);
@@ -212,7 +212,7 @@ public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
                         if (!exportImportCluster.hosts.containsKey(instance.hostKey)) {
                             Host got = upenaStore.hosts.get(instance.hostKey);
                             if (got == null) {
-                                return "Export failed no host for hostKey:" + instance.hostKey + "\n" + mapper.writerWithDefaultPrettyPrinter()
+                                return "Export failed no host for hostKey:" + instance.hostKey + "\n" + MAPPER.writerWithDefaultPrettyPrinter()
                                     .writeValueAsString(instance);
                             }
                             exportImportCluster.hosts.put(instance.hostKey, got);
@@ -221,7 +221,7 @@ public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
                         if (!exportImportCluster.services.containsKey(instance.serviceKey)) {
                             Service got = upenaStore.services.get(instance.serviceKey);
                             if (got == null) {
-                                return "Export failed no serivce for serviceKey:" + instance.serviceKey + "\n" + mapper.writerWithDefaultPrettyPrinter()
+                                return "Export failed no serivce for serviceKey:" + instance.serviceKey + "\n" + MAPPER.writerWithDefaultPrettyPrinter()
                                     .writeValueAsString(instance);
                             }
                             exportImportCluster.services.put(instance.serviceKey, got);
@@ -230,7 +230,7 @@ public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
                         if (!exportImportCluster.release.containsKey(instance.releaseGroupKey)) {
                             ReleaseGroup got = upenaStore.releaseGroups.get(instance.releaseGroupKey);
                             if (got == null) {
-                                return "Export failed no release group for releaseGroupKey:" + instance.releaseGroupKey + "\n" + mapper
+                                return "Export failed no release group for releaseGroupKey:" + instance.releaseGroupKey + "\n" + MAPPER
                                     .writerWithDefaultPrettyPrinter()
                                     .writeValueAsString(instance);
                             }
@@ -257,7 +257,7 @@ public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
             }
         }
 
-        return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(exportImportCluster);
+        return MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(exportImportCluster);
 
     }
 
@@ -489,7 +489,7 @@ public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
             data.put("properties", rows);
 
         } catch (Exception e) {
-            log.error("Unable to retrieve data", e);
+            LOG.error("Unable to retrieve data", e);
         }
 
         return renderer.render(template, data);

@@ -101,7 +101,7 @@
                     </li>
                     {foreach $plugin in $plugins}
                         {if $plugin.active}
-                            <li class="active" role="presentation">
+                            <li style="border-radius: 10px 10px 0 0;" class="active" role="presentation">
                                 <a class="ladda-button" data-style="expand-right" href="{$plugin.path}">
                                     {if $plugin.icon}
                                         <span class="ladda-label"><img src="/static/img/{$plugin.icon}.png" alt="Release" style="width:20px;height:20px;">&nbsp;{$plugin.name}</span>
@@ -112,7 +112,7 @@
                             </li>
                         {else}
                             <li role="presentation">
-                                <a class="ladda-button" data-style="expand-right" href="{$plugin.path}">
+                                <a style="border-radius: 10px 10px 0 0;" class="ladda-button" data-style="expand-right" href="{$plugin.path}">
                                     {if $plugin.icon}
                                         <span class="ladda-label"><img src="/static/img/{$plugin.icon}-white.png" alt="Release" style="width:20px;height:20px;">&nbsp;{$plugin.name}</span>
                                     {else}
