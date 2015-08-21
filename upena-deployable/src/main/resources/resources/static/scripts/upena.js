@@ -642,7 +642,7 @@ upena.connectivity = {
         upena.connectivity.width = $(document).width() - 100;
         var nodes = $('#upena-connectivity').data('nodes');
         var edges = $('#upena-connectivity').data('edges');
-        var legend = $('#upena-topology').data('legend');
+        var legend = $('#upena-connectivity').data('legend');
         /* http://www.graphdracula.net/ */
         var g = new Graph();
         $(nodes).each(function (key, node) {
