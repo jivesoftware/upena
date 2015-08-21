@@ -75,6 +75,7 @@ import com.jivesoftware.os.upena.deployable.lookup.AsyncLookupService;
 import com.jivesoftware.os.upena.deployable.region.ChangeLogPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ClustersPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ConfigPluginRegion;
+import com.jivesoftware.os.upena.deployable.region.ConnectivityPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.DependenciesPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.HeaderRegion;
 import com.jivesoftware.os.upena.deployable.region.HealthPluginRegion;
@@ -385,7 +386,7 @@ public class Main {
 
          ManagePlugin connectivity = new ManagePlugin("transfer", null, "Connectivity", "/ui/connectivity",
             TopologyPluginEndpoints.class,
-            new TopologyPluginRegion("soy.page.connectivityPluginRegion", "soy.page.connectionsHealth",
+            new ConnectivityPluginRegion("soy.page.connectivityPluginRegion", "soy.page.connectionsHealth",
                 renderer, amzaService, upenaStore, healthPluginRegion, hostsPluginRegion, releasesPluginRegion, instancesPluginRegion, discoveredRoutes));
 
         ManagePlugin changes = new ManagePlugin("road", null, "Changes", "/ui/changeLog",
