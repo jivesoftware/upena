@@ -1,7 +1,7 @@
 package com.jivesoftware.os.upena.deployable.endpoints;
 
-import com.jivesoftware.os.upena.deployable.region.TopologyPluginRegion;
-import com.jivesoftware.os.upena.deployable.region.TopologyPluginRegion.TopologyPluginRegionInput;
+import com.jivesoftware.os.upena.deployable.region.ConnectivityPluginRegion;
+import com.jivesoftware.os.upena.deployable.region.ConnectivityPluginRegion.ConnectivityPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -27,9 +27,9 @@ import javax.ws.rs.core.Response;
 public class ConnectivityPluginEndpoints {
 
     private final SoyService soyService;
-    private final TopologyPluginRegion pluginRegion;
+    private final ConnectivityPluginRegion pluginRegion;
 
-    public ConnectivityPluginEndpoints(@Context SoyService soyService, @Context TopologyPluginRegion pluginRegion) {
+    public ConnectivityPluginEndpoints(@Context SoyService soyService, @Context ConnectivityPluginRegion pluginRegion) {
         this.soyService = soyService;
         this.pluginRegion = pluginRegion;
     }
@@ -38,7 +38,7 @@ public class ConnectivityPluginEndpoints {
     @Path("/")
     @Produces(MediaType.TEXT_HTML)
     public Response render(@Context HttpServletRequest httpRequest) {
-        String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion, new TopologyPluginRegionInput("", "", "", "", "", "", "", "",
+        String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion, new ConnectivityPluginRegionInput("", "", "", "", "", "", "", "",
             new HashSet<>(Arrays.asList("linkCluster", "linkService", "linkInstance"))));
         return Response.ok(rendered).build();
     }
@@ -59,7 +59,7 @@ public class ConnectivityPluginEndpoints {
         @FormParam("linkType") @DefaultValue("linkCluster,linkService,linkInstance") List<String> linkType) {
 
         String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-            new TopologyPluginRegionInput(clusterKey, cluster, hostKey, host, serviceKey, service, releaseKey, release, new HashSet<>(linkType)));
+            new ConnectivityPluginRegionInput(clusterKey, cluster, hostKey, host, serviceKey, service, releaseKey, release, new HashSet<>(linkType)));
         return Response.ok(rendered).build();
     }
 

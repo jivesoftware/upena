@@ -99,7 +99,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
 
     @Override
     public String getRootPath() {
-        return "/ui/connetivity";
+        return "/ui/connectivity";
     }
 
     public static class ConnectivityPluginRegionInput implements PluginInput {
