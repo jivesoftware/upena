@@ -18,6 +18,7 @@ import com.jivesoftware.os.upena.shared.ReleaseGroupKey;
 import com.jivesoftware.os.upena.shared.ServiceKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -96,7 +97,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
         Map<String, Object> data = Maps.newHashMap();
         try {
             Map<ServiceKey, String> serviceColor = ServiceColorUtil.serviceKeysColor(upenaStore);
-            
+
             Map<String, String> filters = new HashMap<>();
             filters.put("name", input.name);
             filters.put("email", input.email);
@@ -246,9 +247,21 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
                 } else {
                     row.put("runningLatest", "true");
                 }
-                
+
                 rows.add(row);
             }
+
+            Collections.sort(rows, (Map<String, Object> o1, Map<String, Object> o2) -> {
+                String aIsLatest = (String) o1.get("runningLatest");
+                String bIsLatest = (String) o2.get("runningLatest");
+                if (aIsLatest.equals(bIsLatest)) {
+                    String aName = (String) o1.get("name");
+                    String bName = (String) o2.get("name");
+                    return aName.compareTo(bName);
+                }
+                return Boolean.valueOf(aIsLatest).compareTo(Boolean.valueOf(bIsLatest));
+            });
+
             data.put("releases", rows);
 
         } catch (Exception e) {
