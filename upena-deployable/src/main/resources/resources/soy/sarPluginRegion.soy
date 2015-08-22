@@ -7,7 +7,7 @@
 * @param sarData
 */
 {template .sarPluginRegion}
-    <div class="panel panel-default panel-transparent">
+    <div class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.33);">
         <div class="panel-body text-center">
             <div class="btn-group" role="group">
                 <button type="button" class="btn btn-default ladda-button" data-style="expand-right" onclick="location.href='http://{$priorHost}'">
@@ -25,7 +25,7 @@
 
     {if $sarData}
         {foreach $s in $sarData}
-            <div class="panel panel-default panel-transparent">
+            <div class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.33);">
                 <div class="panel-heading">
                     {$s.title}
                 </div>
