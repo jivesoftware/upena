@@ -9,27 +9,25 @@
  */
 {template .instancesPluginRegion}
     {if $instances}
-        <div class="panel panel-default">
+        <div class="panel panel-default panel-transparent">
                 {if $message}
                     <pre>{$message}</pre>
                 {/if}
-                <div class="panel panel-default">
-                    <div class="panel-body">
-                        <div class="btn-group" role="group" aria-label="...">
-                            <button form="filter-form" type="submit" name="action" value="disable" class="btn btn-default ladda-button" data-style="expand-right">Disable</button>
-                            <button form="filter-form" type="submit" name="action" value="enable" class="btn btn-default ladda-button" data-style="expand-right">Enable</button>
-                            <button form="filter-form" type="submit" name="action" value="restartAllNow" class="btn btn-default ladda-button" data-style="expand-right">Now</button>
-                            <button form="filter-form" type="submit" name="action" value="restartAll" class="btn btn-default ladda-button" data-style="expand-right">Rolling</button>
-                            <button form="filter-form" type="submit" name="action" value="cancelRestartAll" class="btn btn-default ladda-button" data-style="expand-right">Cancel</button>
-                        </div>
+                <div class="panel-body">
+                    <div class="btn-group" role="group" aria-label="...">
+                        <button form="filter-form" type="submit" name="action" value="disable" class="btn btn-default ladda-button" data-style="expand-right">Disable</button>
+                        <button form="filter-form" type="submit" name="action" value="enable" class="btn btn-default ladda-button" data-style="expand-right">Enable</button>
+                        <button form="filter-form" type="submit" name="action" value="restartAllNow" class="btn btn-default ladda-button" data-style="expand-right">Now</button>
+                        <button form="filter-form" type="submit" name="action" value="restartAll" class="btn btn-default ladda-button" data-style="expand-right">Rolling</button>
+                        <button form="filter-form" type="submit" name="action" value="cancelRestartAll" class="btn btn-default ladda-button" data-style="expand-right">Cancel</button>
                     </div>
+                </div>
 
-                    <div class="panel-body">
-                        {call .instancesPluginRegionList}
-                            {param instances: $instances /}
-                            {param filters: $filters /}
-                        {/call}
-                    </div>
+                <div class="panel-body">
+                    {call .instancesPluginRegionList}
+                        {param instances: $instances /}
+                        {param filters: $filters /}
+                    {/call}
                 </div>
             </div>
         </div>
