@@ -7,7 +7,7 @@
  *
  */
 {template .healthPluginRegion}
-    <div id="upena-health" class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.33);">
+    <div id="upena-health" class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.5);">
         <div class="panel-body">
             <form id="filter-health" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
                 data-jive-ui="jive/ui/typeahead/request_typeahead" method="get" name="filter-health">
@@ -83,7 +83,7 @@
                             <tr class="grid-host">
                                 {foreach $health in $host}
                                     <td>
-                                        <div class="panel panel-default grid-host-panel popover-health" " style="background-color: rgba(255, 255, 255, 0.33);" id="popoverAnchor-{$health.uid}"
+                                        <div class="panel panel-default grid-host-panel popover-health" " style="background-color: rgba(255, 255, 255, 0.5);" id="popoverAnchor-{$health.uid}"
                                             {if $health.instanceKey} data-popover-instance-key="{$health.instanceKey}" {/if}
                                             data-health-hook="{$health.instanceKey ? $health.instanceKey : $health.health ? $health.health : ''}"
                                             data-popover-content="#popover-{$health.uid}" data-placement="bottom">
@@ -97,10 +97,10 @@
                                                 <span class="health-text" style="color:#666;">{$health.health|noAutoescape}</span>
                                             {/if}
                                         </div>
-                                        <div id="popover-{$health.uid}" class="hide">
+                                        <div id="popover-{$health.uid}" class="hide" style="background-color: rgba(255, 255, 255, 0.5);">
                                             {if $health.instances}
                                                 {foreach $i in $health.instances}
-                                                    <div class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.33);">
+                                                    <div class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.5);">
                                                         <div class="panel-heading">
                                                             <span class="glyphicon glyphicon-fire"></span>{sp}
                                                             {$i.clusterName}&nbsp;-&nbsp;{$i.serviceName|noAutoescape}
@@ -248,7 +248,7 @@
                                                                 </div>
                                                             {/if}
                                                         </div>
-                                                        <div class="panel-body">
+                                                        <div class="panel-body" style="background-color: rgba(255, 255, 255, 0.5);">
                                                             <div>{$i.details|noAutoescape}</div>
                                                             <div style="width:1000px" class="uis" ></div>
                                                         </div>
