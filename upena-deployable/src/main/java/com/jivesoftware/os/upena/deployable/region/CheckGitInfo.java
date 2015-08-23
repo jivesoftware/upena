@@ -94,7 +94,7 @@ class CheckGitInfo {
             if (!latestRelease.equals(deployablecoordinate)) {
                 LOG.info("There is a newer version of " + deployablecoordinate + " which is " + latestRelease);
             }
-            artifact = new DefaultArtifact(artifact.getGroupId(), artifact.getArtifactId(), "git", "jar", artifact.getVersion());
+            artifact = new DefaultArtifact(artifact.getGroupId(), artifact.getArtifactId(), "git", "properties", artifact.getVersion());
             artifactRequest = new ArtifactRequest();
             artifactRequest.setArtifact(artifact);
             artifactRequest.setRepositories(Arrays.asList(remoteRepos));
