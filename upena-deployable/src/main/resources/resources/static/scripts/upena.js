@@ -548,7 +548,7 @@ upena.topology = {
                 var set = r.set();
                 set.push(rectbg);
                 set.push(rectfg);
-                //set.push(health);
+                set.push(health);
                 if (icon) {
                     set.push(icon);
                     icon.toFront();
