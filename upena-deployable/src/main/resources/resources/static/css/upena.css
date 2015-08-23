@@ -225,4 +225,390 @@ form#query-filters.query-show-advanced td.query-advanced { display: table-cell; 
 .panel > .panel-transparent {
    background-color: rgba(255, 255, 255, 0.33);
 }
+
+#seeweed {
+    position: fixed;
+    bottom: 0px;
+    width: 100%;
+}
+
+
+.bubble_wrap{
+	height: 100%;
+	left: 7px;
+	position: absolute;
+	top: 30px;
+	width: 200px;
+}
+.bubbles{
+	background-color: rgba(255, 255, 255, 0.16);
+	border: 1px solid #585858;
+	border-radius: 10px 10px 10px 10px;
+	-moz-border-radius: 10px 10px 10px 10px;
+	-webkit-border-radius: 10px 10px 10px 10px;
+	-o-border-radius: 10px 10px 10px 10px;
+	-ms-border-radius: 10px 10px 10px 10px;
+	height: 20px;
+	left: 33px;
+	position: absolute;
+	top: 260px;
+	width: 20px;
+}
+.b2{
+	left: 50px;
+	top: 100%;
+	
+}
+.b3{
+	left: 60px;
+	top: 100%;
+}
+.b4{
+	left: 80px;
+	top: 100%;
+}
+.b5{
+	left: 90px;
+	top: 100%;
+}
+
+
+
+
+
+
+
+/*start of bubble animations*/
+.b0{
+	animation-name:bubbles;
+	animation-delay:2s;
+	animation-duration:4s;
+	animation-iteration-count:infinite;
+	animation-timing-function: linear;
+	
+	-moz-animation-name:bubbles;
+	-moz-animation-delay:2s;
+	-moz-animation-duration:4s;
+	-moz-animation-iteration-count:infinite;
+	-moz-animation-timing-function: linear;
+	
+	-webkit-animation-name:bubbles;
+	-webkit-animation-delay:2s;
+	-webkit-animation-duration:4s;
+	-webkit-animation-iteration-count:infinite;
+	-webkit-animation-timing-function: linear;
+}
+@keyframes bubbles{
+	from{
+		top:100%;
+		left:33px;
+	}
+	50%{
+		left:39px;
+	}
+	to{
+		top:0px;
+		left:33px;
+	}
+}
+@-moz-keyframes bubbles{
+	from{
+		top:100%;
+		left:33px;
+	}
+	50%{
+		left:39px;
+	}
+	to{
+		top:0px;
+		left:33px;
+	}
+}
+@-webkit-keyframes bubbles{
+	from{
+		top:100%;
+		left:33px;
+	}
+	50%{
+		left:39px;
+	}
+	to{
+		top:0px;
+		left:33px;
+	}
+}
+.b1{
+	animation-name:bubbles;
+	animation-duration:7s;
+	animation-iteration-count:infinite;
+	animation-timing-function: linear;
+	
+	-moz-animation-name:bubbles;
+	-moz-animation-duration:7s;
+	-moz-animation-iteration-count:infinite;
+	-moz-animation-timing-function: linear;
+	
+	-webkit-animation-name:bubbles;
+	-webkit-animation-duration:7s;
+	-webkit-animation-iteration-count:infinite;
+	-webkit-animation-timing-function: linear;
+}
+@keyframes bubbles{
+	from{
+		top:100%;
+	}
+	to{
+		top:0px;
+	}
+}
+@-moz-keyframes bubbles{
+	from{
+		top:100%;
+	}
+	to{
+		top:0px;
+	}
+}
+@-webkit-keyframes bubbles{
+	from{
+		top:100%;
+	}
+	to{
+		top:0px;
+	}
+}
+.b2{
+	animation-name:bubbles;
+	animation-delay:1s;
+	animation-duration:4s;
+	animation-iteration-count:infinite;
+	animation-timing-function: linear;
+	
+	-moz-animation-name:bubbles;
+	-moz-animation-delay:1s;
+	-moz-animation-duration:4s;
+	-moz-animation-iteration-count:infinite;
+	-moz-animation-timing-function: linear;
+	
+	-webkit-animation-name:bubbles;
+	-webkit-animation-delay:1s;
+	-webkit-animation-duration:4s;
+	-webkit-animation-iteration-count:infinite;
+	-webkit-animation-timing-function: linear;
+}
+@keyframes bubbles{
+	from{
+		top:100%;
+	}
+	to{
+		top:0px;
+	}
+}
+@-moz-keyframes bubbles{
+	from{
+		top:100%;
+	}
+	to{
+		top:0px;
+	}
+}
+@-webkit-keyframes bubbles{
+	from{
+		top:100%;
+	}
+	to{
+		top:0px;
+	}
+}
+.b3{
+	animation-name:bubbles;
+	animation-delay:500s;
+	animation-duration:3s;
+	animation-iteration-count:infinite;
+	animation-timing-function: linear;
+	
+	-moz-animation-name:bubbles;
+	-moz-animation-delay:500s;
+	-moz-animation-duration:3s;
+	-moz-animation-iteration-count:infinite;
+	-moz-animation-timing-function: linear;
+	
+	-webkit-animation-name:bubbles;
+	-webkit-animation-delay:500s;
+	-webkit-animation-duration:3s;
+	-webkit-animation-iteration-count:infinite;
+	-webkit-animation-timing-function: linear;
+}
+@keyframes bubbles{
+	from{
+		top:100%;
+		left:60px;
+	}
+	25%{
+		left:30px;
+	}
+	50%{
+		left:58px;
+	}
+	75%{
+		left:37px;
+	}
+	to{
+		top:0px;
+		left:60px;
+	}
+}
+@-moz-keyframes bubbles{
+	from{
+		top:100%;
+		left:60px;
+	}
+	25%{
+		left:30px;
+	}
+	50%{
+		left:58px;
+	}
+	75%{
+		left:37px;
+	}
+	to{
+		top:0px;
+		left:60px;
+	}
+}
+@-webkit-keyframes bubbles{
+	from{
+		top:100%;
+		left:60px;
+	}
+	25%{
+		left:30px;
+	}
+	50%{
+		left:58px;
+	}
+	75%{
+		left:37px;
+	}
+	to{
+		top:0px;
+		left:60px;
+	}
+}
+.b4{
+	animation-name:bubbles;
+	animation-duration:6s;
+	animation-iteration-count:infinite;
+	animation-timing-function: linear;
+	
+	-moz-animation-name:bubbles;
+	-moz-animation-duration:6s;
+	-moz-animation-iteration-count:infinite;
+	-moz-animation-timing-function: linear;
+	
+	-webkit-animation-name:bubbles;
+	-webkit-animation-duration:6s;
+	-webkit-animation-iteration-count:infinite;
+	-webkit-animation-timing-function: linear;
+}
+@keyframes bubbles{
+	from{
+		top:100%;
+	}
+	to{
+		top:0px;
+	}
+}
+@-moz-keyframes bubbles{
+	from{
+		top:260px;
+	}
+	to{
+		top:0px;
+	}
+}
+@-webkit-keyframes bubbles{
+	from{
+		top:100%;
+	}
+	to{
+		top:0px;
+	}
+}
+.b5{
+	animation-name:bubbles;
+	animation-duration:5s;
+	animation-iteration-count:infinite;
+	animation-timing-function: linear;
+	
+	-moz-animation-name:bubbles;
+	-moz-animation-duration:5s;
+	-moz-animation-iteration-count:infinite;
+	-moz-animation-timing-function: linear;
+	
+	-webkit-animation-name:bubbles;
+	-webkit-animation-duration:5s;
+	-webkit-animation-iteration-count:infinite;
+	-webkit-animation-timing-function: linear;
+}
+@keyframes bubbles{
+	from{
+		top:100%;
+	}
+	to{
+		top:0px;
+	}
+}
+@-moz-keyframes bubbles{
+	from{
+		top:100%;
+	}
+	to{
+		top:0px;
+	}
+}
+@-webkit-keyframes bubbles{
+	from{
+		top:100%;
+	}
+	to{
+		top:0px;
+	}
+}
+/*tail bubbles*/
+.b6,.b7,.b8{
+	opacity:0;
+}
+.b6,.b8{
+	transform:scale(0.5);
+	-moz-transform:scale(0.5);
+	-webkit-transform:scale(0.5);
+	-ms-transform:scale(0.5);
+	-o-transform:scale(0.5);
+}
+.b7{
+	transform:scale(0.8);
+	-moz-transform:scale(0.8);
+	-webkit-transform:scale(0.8);
+	-o-transform:scale(0.8);
+	-ms-transform:scale(0.8);
+}
+.bw2{
+	width:80px;
+	animation-name:tail_bubbles;
+	animation-duration:30s;
+	animation-iteration-count:infinite;
+	animation-timing-function: linear;
+	
+	-moz-animation-name:tail_bubbles;
+	-moz-animation-duration:30s;
+	-moz-animation-iteration-count:infinite;
+	-moz-animation-timing-function: linear;
+	
+	-webkit-animation-name:tail_bubbles;
+	-webkit-animation-duration:30s;
+	-webkit-animation-iteration-count:infinite;
+	-webkit-animation-timing-function: linear;
+}
     
