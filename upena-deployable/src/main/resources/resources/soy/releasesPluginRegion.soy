@@ -88,9 +88,17 @@
                                     <button class="btn btn-default btn-sm" type="button" onclick="upena.latestRelease.change('{$r.key}', '{$r.newerVersion}');" name="action" value="update">Upgrade</button>
 
                                     {if $r.scm}
-                                        {foreach $l in $r.scm}
-                                            <pre>{$l}</pre>
-                                        {/foreach}
+                                        <button class="btn btn-default btn-sm" type="button"  name="action" value="changelog">
+                                            {if $r.scm.git-remote-origin-url}
+                                                {$r.scm.git-remote-origin-url}&nbsp&nbsp&nbsp
+                                            {/if}
+                                            {if $r.scm.git-branch}
+                                                {$r.scm.git-branch}&nbsp&nbsp&nbsp
+                                            {/if}
+                                            {if $r.scm.git-commit-id}
+                                                {$r.scm.git-commit-id}&nbsp&nbsp&nbsp
+                                            {/if}
+                                        </button>
                                     {/if}
                                 {/if}
                             {/if}

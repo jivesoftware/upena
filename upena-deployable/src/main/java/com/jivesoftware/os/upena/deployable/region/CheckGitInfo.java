@@ -22,8 +22,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -44,7 +44,7 @@ class CheckGitInfo {
     public CheckGitInfo() {
     }
 
-    public List<String> gitInfo(String repository, String coordinates) {
+    public Map<String, String> gitInfo(String repository, String coordinates) {
 
         RepositorySystem system = RepositoryProvider.newRepositorySystem();
         RepositorySystemSession session = RepositoryProvider.newRepositorySystemSession(system);
@@ -53,21 +53,21 @@ class CheckGitInfo {
         List<RemoteRepository> remoteRepos = RepositoryProvider.newRepositories(system, session, policy, repos);
 
         String[] deployablecoordinates = coordinates.trim().split(",");
-        List<String> lines = new ArrayList<>();
+        HashMap<String, String> gitInfos = new HashMap<>();
         for (String coordinate : deployablecoordinates) {
 
             for (RemoteRepository repo : remoteRepos) {
-                List<String> gitInfo = gitInfo(coordinate, repo, system, session);
+                Map<String, String> gitInfo = gitInfo(coordinate, repo, system, session);
                 if (gitInfo != null) {
-                    lines.addAll(gitInfo);
+                    gitInfos.putAll(gitInfo);
                 }
             }
         }
 
-        return lines;
+        return gitInfos;
     }
 
-    private List<String> gitInfo(String deployablecoordinate,
+    private Map<String, String> gitInfo(String deployablecoordinate,
         RemoteRepository remoteRepos,
         RepositorySystem system,
         RepositorySystemSession session) {
@@ -113,21 +113,21 @@ class CheckGitInfo {
                     // load a properties file
                     prop.load(input);
 
-                    List<String> lines = new ArrayList<>();
+                    Map<String, String> gitInfo = new HashMap<>();
                     for (Map.Entry<Object, Object> e : prop.entrySet()) {
                         if (e.getKey() instanceof String) {
                             if (((String) e.getKey()).equals("git.remote.origin.url")) {
-                                lines.add(e.getKey() + "=" + e.getValue());
+                                gitInfo.put(e.getKey().toString().replace('.', '-'), e.getValue().toString());
                             }
                             if (((String) e.getKey()).equals("git.branch")) {
-                                lines.add(e.getKey() + "=" + e.getValue());
+                                gitInfo.put(e.getKey().toString().replace('.', '-'), e.getValue().toString());
                             }
                             if (((String) e.getKey()).equals("git.commit.id")) {
-                                lines.add(e.getKey() + "=" + e.getValue());
+                                gitInfo.put(e.getKey().toString().replace('.', '-'), e.getValue().toString());
                             }
                         }
                     }
-                    return lines;
+                    return gitInfo;
 
                 } catch (IOException ex) {
                     ex.printStackTrace();
