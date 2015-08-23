@@ -200,7 +200,7 @@ form#query-filters.query-show-advanced td.query-advanced { display: table-cell; 
 }
 
 .table-hover tbody tr:hover td, .table-hover tbody tr:hover th {
-    background-color: #aaa;
+    background-color: #ddd;
     -moz-border-radius: 5px;
     -webkit-border-radius: 5px;
     -khtml-border-radius: 5px;

@@ -89,14 +89,14 @@
 
                                     {if $r.scm}
                                         <button class="btn btn-default btn-sm" type="button"  name="action" value="changelog">
-                                            {if $r.scm.git-remote-origin-url}
-                                                {$r.scm.git-remote-origin-url}&nbsp&nbsp&nbsp
+                                            {if $r.scm.gitRemoteOriginUrl}
+                                                {$r.scm.gitRemoteOriginUrl}&nbsp&nbsp&nbsp
                                             {/if}
-                                            {if $r.scm.git-branch}
-                                                {$r.scm.git-branch}&nbsp&nbsp&nbsp
+                                            {if $r.scm.gitBranch}
+                                                {$r.scm.gitBranch}&nbsp&nbsp&nbsp
                                             {/if}
-                                            {if $r.scm.git-commit-id}
-                                                {$r.scm.git-commit-id}&nbsp&nbsp&nbsp
+                                            {if $r.scm.gitCommitId}
+                                                {$r.scm.gitCommitId}&nbsp&nbsp&nbsp
                                             {/if}
                                         </button>
                                     {/if}

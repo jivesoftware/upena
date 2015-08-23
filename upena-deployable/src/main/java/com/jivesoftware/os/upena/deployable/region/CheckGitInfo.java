@@ -117,13 +117,13 @@ class CheckGitInfo {
                     for (Map.Entry<Object, Object> e : prop.entrySet()) {
                         if (e.getKey() instanceof String) {
                             if (((String) e.getKey()).equals("git.remote.origin.url")) {
-                                gitInfo.put(e.getKey().toString().replace('.', '-'), e.getValue().toString());
+                                gitInfo.put("gitCommitId", e.getValue().toString());
                             }
                             if (((String) e.getKey()).equals("git.branch")) {
-                                gitInfo.put(e.getKey().toString().replace('.', '-'), e.getValue().toString());
+                                gitInfo.put("gitBranch", e.getValue().toString());
                             }
                             if (((String) e.getKey()).equals("git.commit.id")) {
-                                gitInfo.put(e.getKey().toString().replace('.', '-'), e.getValue().toString());
+                                gitInfo.put("gitCommitId", e.getValue().toString());
                             }
                         }
                     }
