@@ -86,6 +86,12 @@
                                     <div class="coloredBox" style="background-color:orange;"></div>
                                     <span style="font-weight: bold;">{$r.newerVersion}&nbsp&nbsp</span>
                                     <button class="btn btn-default btn-sm" type="button" onclick="upena.latestRelease.change('{$r.key}', '{$r.newerVersion}');" name="action" value="update">Upgrade</button>
+
+                                    {if $r.scm}
+                                        {foreach $l in $r.scm}
+                                            <pre>{$l}</pre>
+                                        {/foreach}
+                                    {/if}
                                 {/if}
                             {/if}
                             <input type="text" name="repository" class="form-control" value={$r.repository?:''}>
