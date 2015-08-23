@@ -116,7 +116,13 @@ class CheckGitInfo {
                     List<String> lines = new ArrayList<>();
                     for (Map.Entry<Object, Object> e : prop.entrySet()) {
                         if (e.getKey() instanceof String) {
-                            if (((String) e.getKey()).startsWith("git.")) {
+                            if (((String) e.getKey()).startsWith("git.remote.origin.url")) {
+                                lines.add(e.getKey() + "=" + e.getValue());
+                            }
+                            if (((String) e.getKey()).startsWith("git.branch")) {
+                                lines.add(e.getKey() + "=" + e.getValue());
+                            }
+                            if (((String) e.getKey()).startsWith("git.commit.id")) {
                                 lines.add(e.getKey() + "=" + e.getValue());
                             }
                         }
