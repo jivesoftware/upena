@@ -201,7 +201,7 @@ class NannyDeployCallable implements Callable<Boolean> {
                     return false;
                 }
             }
-            artifact = new DefaultArtifact(groupId + ":" + artifactId + ":" + version);
+            //artifact = new DefaultArtifact(groupId + ":" + artifactId + ":" + version);
             artifactRequest = new ArtifactRequest();
             artifactRequest.setArtifact(artifact);
             artifactRequest.setRepositories(remoteRepos);
