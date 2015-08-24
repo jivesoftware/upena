@@ -201,8 +201,7 @@ class NannyDeployCallable implements Callable<Boolean> {
                     return false;
                 }
             }
-            //artifact = new DefaultArtifact(groupId + ":" + artifactId + ":" + version);
-            artifact = new DefaultArtifact(artifact.getGroupId(), artifact.getArtifactId(), "jar", artifact.getVersion());
+            artifact = new DefaultArtifact(groupId + ":" + artifactId + ":" + version);
             artifactRequest = new ArtifactRequest();
             artifactRequest.setArtifact(artifact);
             artifactRequest.setRepositories(remoteRepos);
@@ -215,13 +214,6 @@ class NannyDeployCallable implements Callable<Boolean> {
             collectRequest.setRoot(new Dependency(artifact, ""));
             collectRequest.setRepositories(remoteRepos);
             CollectResult collectResult = system.collectDependencies(session, collectRequest);
-            if (collectRequest.getDependencies().isEmpty()) {
-                System.out.println("collectDependencies is empty for " + artifact + " " + artifactRequest);
-            }
-            for (Dependency dependency : collectRequest.getDependencies()) {
-                System.out.println("WTF:" + dependency);
-            }
-
             DeployArtifactDependencies deployArtifactDependencies = new DeployArtifactDependencies(deployLog, system, session, remoteRepos, dir);
             collectResult.getRoot().accept(deployArtifactDependencies);
             boolean successfulDeploy = deployArtifactDependencies.successfulDeploy();
