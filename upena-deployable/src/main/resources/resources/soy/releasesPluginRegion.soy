@@ -88,17 +88,19 @@
                                     <button class="btn btn-default btn-sm" type="button" onclick="upena.latestRelease.change('{$r.key}', '{$r.newerVersion}');" name="action" value="update">Upgrade</button>
 
                                     {if $r.scm}
-                                        <button class="btn btn-default btn-sm" type="button"  name="action" value="changelog">
-                                            {if $r.scm.gitRemoteOriginUrl}
-                                                {$r.scm.gitRemoteOriginUrl}&nbsp&nbsp&nbsp
-                                            {/if}
-                                            {if $r.scm.gitBranch}
-                                                {$r.scm.gitBranch}&nbsp&nbsp&nbsp
-                                            {/if}
-                                            {if $r.scm.gitCommitId}
-                                                {$r.scm.gitCommitId}&nbsp&nbsp&nbsp
-                                            {/if}
-                                        </button>
+                                        {foreach $scm in $r.scm}
+                                            <button class="btn btn-default btn-sm" type="button"  name="action" value="changelog">
+                                                {if $scm.gitRemoteOriginUrl}
+                                                    {$scm.gitRemoteOriginUrl}&nbsp&nbsp&nbsp
+                                                {/if}
+                                                {if $scm.gitBranch}
+                                                    {$scm.gitBranch}&nbsp&nbsp&nbsp
+                                                {/if}
+                                                {if $scm.gitCommitId}
+                                                    {$scm.gitCommitId}&nbsp&nbsp&nbsp
+                                                {/if}
+                                            </button>
+                                        {/foreach}
                                     {/if}
                                 {/if}
                             {/if}

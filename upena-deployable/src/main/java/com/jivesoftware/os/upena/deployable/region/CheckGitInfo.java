@@ -22,11 +22,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.Artifact;
@@ -41,10 +43,14 @@ class CheckGitInfo {
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
-    public CheckGitInfo() {
+    public static final CheckGitInfo SINGLETON = new CheckGitInfo();
+
+    private final Map<String, Map<String, String>> cache = new ConcurrentHashMap<>();
+
+    private CheckGitInfo() {
     }
 
-    public Map<String, String> gitInfo(String repository, String coordinates) {
+    public List<Map<String, String>> gitInfo(String repository, String coordinates) {
 
         RepositorySystem system = RepositoryProvider.newRepositorySystem();
         RepositorySystemSession session = RepositoryProvider.newRepositorySystemSession(system);
@@ -53,24 +59,30 @@ class CheckGitInfo {
         List<RemoteRepository> remoteRepos = RepositoryProvider.newRepositories(system, session, policy, repos);
 
         String[] deployablecoordinates = coordinates.trim().split(",");
-        HashMap<String, String> gitInfos = new HashMap<>();
+        List<Map<String, String>> list = new ArrayList<>();
         for (String coordinate : deployablecoordinates) {
 
             for (RemoteRepository repo : remoteRepos) {
                 Map<String, String> gitInfo = gitInfo(coordinate, repo, system, session);
                 if (gitInfo != null) {
-                    gitInfos.putAll(gitInfo);
+                    list.add(gitInfo);
                 }
             }
         }
 
-        return gitInfos;
+        return list;
     }
 
     private Map<String, String> gitInfo(String deployablecoordinate,
         RemoteRepository remoteRepos,
         RepositorySystem system,
         RepositorySystemSession session) {
+
+        Map<String, String> had = cache.get(deployablecoordinate);
+        if (had != null) {
+            return had;
+        }
+
         String[] versionParts = deployablecoordinate.trim().split(":");
         if (versionParts.length != 4) {
             LOG.warn("deployable coordinates must be of the following form: groupId:artifactId:packaging:version");
@@ -80,7 +92,7 @@ class CheckGitInfo {
             String groupId = versionParts[0];
             String artifactId = versionParts[1];
             String packaging = versionParts[2];
-            String version = "RELEASE";
+            String version = versionParts[3];
 
             Artifact artifact = new DefaultArtifact(groupId, artifactId, packaging, version);
             ArtifactRequest artifactRequest = new ArtifactRequest();
@@ -127,6 +139,7 @@ class CheckGitInfo {
                             }
                         }
                     }
+                    cache.put(deployablecoordinate, gitInfo);
                     return gitInfo;
 
                 } catch (IOException ex) {

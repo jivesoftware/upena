@@ -244,7 +244,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
                 if (newerVersionAvailable) {
                     row.put("runningLatest", "false");
                     row.put("newerVersion", newerVersion.toString());
-                    row.put("scm", new CheckGitInfo().gitInfo(value.repository, value.version));
+                    row.put("scm", CheckGitInfo.SINGLETON.gitInfo(value.repository, newerVersion.toString()));
                 } else {
                     row.put("runningLatest", "true");
                 }
