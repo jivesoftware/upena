@@ -46,7 +46,6 @@ public class SARPluginRegion implements PageRegion<SARInput> {
         return "/ui/sar";
     }
 
-
     public static class SARInput implements PluginInput {
 
         public SARInput() {
@@ -85,13 +84,13 @@ public class SARPluginRegion implements PageRegion<SARInput> {
         List<Map<String, Object>> sarData = new ArrayList<>();
         data.put("sarData", sarData);
 
-        sarData.add(capture(new String[]{"-q", "1", "1"}, "Load"));
-        sarData.add(capture(new String[]{"-u", "1", "1"}, "CPU"));
-        sarData.add(capture(new String[]{"-d", "1", "1"}, "I/O"));
-        sarData.add(capture(new String[]{"-r", "1", "1"}, "Memory"));
-        sarData.add(capture(new String[]{"-B", "1", "1"}, "Paging"));
-        sarData.add(capture(new String[]{"-w", "1", "1"}, "Context Switch"));
-        sarData.add(capture(new String[]{"-n", "DEV", "1", "1"}, "Network"));
+        sarData.add(capture(new String[]{"-q"}, "Load")); // "1", "1"
+        sarData.add(capture(new String[]{"-u"}, "CPU"));
+        sarData.add(capture(new String[]{"-d"}, "I/O"));
+        sarData.add(capture(new String[]{"-r"}, "Memory"));
+        sarData.add(capture(new String[]{"-B"}, "Paging"));
+        sarData.add(capture(new String[]{"-w"}, "Context Switch"));
+        sarData.add(capture(new String[]{"-n", "DEV"}, "Network"));
 
         return renderer.render(template, data);
     }
@@ -125,14 +124,23 @@ public class SARPluginRegion implements PageRegion<SARInput> {
             this.sarInvoker = sarInvoker;
             this.args = args;
             this.title = title;
-            captured.set(ImmutableMap.<String, Object>of("title", title, "error", "Loading", "lines", new ArrayList<String>()));
+            captured.set(ImmutableMap.<String, Object>of("title", title, "error", "Loading", "lines", new ArrayList<>()));
 
         }
+
+        String lastTimestamp = null;
 
         @Override
         public void line(String line) {
             if (!line.isEmpty() && !line.startsWith("Average")) {
-                lines.add(Arrays.asList(line.split("\\s+")));
+                String[] parts = line.split("\\s+");
+                if (parts.length > 0) {
+                    if (lastTimestamp != null && lastTimestamp.equals(parts[0])) {
+                        return;
+                    }
+                    lastTimestamp = parts[0];
+                    lines.add(Arrays.asList(parts));
+                }
             }
         }
 
