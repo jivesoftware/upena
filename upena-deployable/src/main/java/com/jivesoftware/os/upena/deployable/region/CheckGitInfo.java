@@ -25,9 +25,11 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
@@ -60,12 +62,15 @@ class CheckGitInfo {
 
         String[] deployablecoordinates = coordinates.trim().split(",");
         List<Map<String, String>> list = new ArrayList<>();
+        Set<String> found = new HashSet<>();
         for (String coordinate : deployablecoordinates) {
-
-            for (RemoteRepository repo : remoteRepos) {
-                Map<String, String> gitInfo = gitInfo(coordinate, repo, system, session);
-                if (gitInfo != null) {
-                    list.add(gitInfo);
+            if (!found.contains(coordinate)) {
+                for (RemoteRepository repo : remoteRepos) {
+                    Map<String, String> gitInfo = gitInfo(coordinate, repo, system, session);
+                    if (gitInfo != null) {
+                        found.add(coordinate);
+                        list.add(gitInfo);
+                    }
                 }
             }
         }
@@ -128,13 +133,13 @@ class CheckGitInfo {
                     Map<String, String> gitInfo = new HashMap<>();
                     for (Map.Entry<Object, Object> e : prop.entrySet()) {
                         if (e.getKey() instanceof String) {
-                            if (((String) e.getKey()).equals("git.remote.origin.url")) {
+                            if ("git.remote.origin.url".equals(e.getKey())) {
                                 gitInfo.put("gitCommitId", e.getValue().toString());
                             }
-                            if (((String) e.getKey()).equals("git.branch")) {
+                            if ("git.branch".equals(e.getKey())) {
                                 gitInfo.put("gitBranch", e.getValue().toString());
                             }
-                            if (((String) e.getKey()).equals("git.commit.id")) {
+                            if ("git.commit.id".equals(e.getKey())) {
                                 gitInfo.put("gitCommitId", e.getValue().toString());
                             }
                         }
