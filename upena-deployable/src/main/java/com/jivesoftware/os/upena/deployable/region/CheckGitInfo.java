@@ -57,18 +57,18 @@ class CheckGitInfo {
         RepositorySystem system = RepositoryProvider.newRepositorySystem();
         RepositorySystemSession session = RepositoryProvider.newRepositorySystemSession(system);
         String[] repos = repository.split(",");
-        RepositoryPolicy policy = new RepositoryPolicy(true, RepositoryPolicy.UPDATE_POLICY_INTERVAL + ":1", RepositoryPolicy.CHECKSUM_POLICY_WARN);
+        RepositoryPolicy policy = new RepositoryPolicy(true, RepositoryPolicy.UPDATE_POLICY_DAILY, RepositoryPolicy.CHECKSUM_POLICY_WARN);
         List<RemoteRepository> remoteRepos = RepositoryProvider.newRepositories(system, session, policy, repos);
 
         String[] deployablecoordinates = coordinates.trim().split(",");
         List<Map<String, String>> list = new ArrayList<>();
         Set<String> found = new HashSet<>();
         for (String coordinate : deployablecoordinates) {
-            if (!found.contains(coordinate)) {
-                for (RemoteRepository repo : remoteRepos) {
+            for (RemoteRepository repo : remoteRepos) {
+                if (!found.contains(coordinate.trim())) {
                     Map<String, String> gitInfo = gitInfo(coordinate, repo, system, session);
                     if (gitInfo != null) {
-                        found.add(coordinate);
+                        found.add(coordinate.trim());
                         list.add(gitInfo);
                     }
                 }
