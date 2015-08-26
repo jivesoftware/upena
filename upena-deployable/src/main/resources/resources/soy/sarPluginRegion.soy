@@ -48,18 +48,18 @@
                     </div>
                 </div>
                 {if $s.error}
+                    <pre>{$s.error}</pre>
                 {else}
                     <div style="width:1000px; height:425px; overflow-x:scroll; overflow-y:hidden;">
-                        <canvas class="sar-wave" id="values" height="400px" width="{$s.width}"
-                            data-sar-wave-id="{$s.id}" data-sar-wave-type="{$s.graphType}">
-                        </canvas>
-                        <script>
-                            upena.sar.data['{$s.id}'] = {$s.waveform|noAutoescape};
-                        </script>
+                        <div>
+                            <canvas class="sar-wave" id="values" height="400px" width="{$s.width}"
+                                data-sar-wave-id="{$s.id}" data-sar-wave-type="{$s.graphType}">
+                            </canvas>
+                            <script>
+                                upena.sar.data['{$s.id}'] = {$s.waveform|noAutoescape};
+                            </script>
+                        </div>
                     </div>
-                    
-                        
-                    
                 {/if}
             </div> 
         {/foreach}
