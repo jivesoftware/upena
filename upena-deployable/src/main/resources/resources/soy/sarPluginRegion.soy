@@ -31,7 +31,7 @@
                     <a  href="#" rel="popover" id="popoverAnchor-{$s.id}" data-popover-content="#popover-{$s.id}" data-placement="bottom" class="btn" title="{$s.id}">
                         <span class="glyphicon glyphicon-menu-down"></span>{$s.title}
                     </a>
-                    <div style="background-color: rgba(255, 255, 255, 0.6);" id="popover-{$s.title}" class="hide">
+                    <div style="background-color: rgba(255, 255, 255, 0.6);" id="popover-{$s.id}" class="hide">
                         {if $s.lines}
                            <table class="table table-striped">
                                 {foreach $l in $s.lines}
