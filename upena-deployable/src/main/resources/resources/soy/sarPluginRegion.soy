@@ -27,11 +27,29 @@
         {foreach $s in $sarData}
             <div class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.6);">
                 <div class="panel-heading">
-                    {$s.title}
+                    
+                    <a  href="#" rel="popover" id="popoverAnchor-{s.id}" data-popover-content="#popover-{s.id}" data-placement="bottom" class="btn" title="{s.id}">
+                        <span class="glyphicon glyphicon-menu-down"></span>{$s.title}
+                    </a>
+                    <div style="background-color: rgba(255, 255, 255, 0.6);" id="popover-{{$s.title}}" class="hide">
+                        {if $s.lines}
+                           <table class="table table-striped">
+                                {foreach $l in $s.lines}
+                                    <tr>
+                                        {foreach $v in $l}
+                                            <td>
+                                                {$v}
+                                            </td>
+                                        {/foreach}
+                                    </tr>
+                                {/foreach}
+                            </table>
+                        {/if}
+                    </div>
                 </div>
                 {if $s.error}
                 {else}
-                    <div=style="width:1000px; overflow-x:scroll; overflow-y:hidden;">
+                    <div style="width:1000px; height:425px; overflow-x:scroll; overflow-y:hidden;">
                         <canvas class="sar-wave" id="values" height="400px" width="{$s.width}"
                             data-sar-wave-id="{$s.id}" data-sar-wave-type="{$s.graphType}">
                         </canvas>
@@ -39,21 +57,9 @@
                             upena.sar.data['{$s.id}'] = {$s.waveform|noAutoescape};
                         </script>
                     </div>
-                    /**
-                    *    {if $s.lines}
-                    *       <table class="table table-striped">
-                    *            {foreach $l in $s.lines}
-                    *                <tr>
-                    *                    {foreach $v in $l}
-                    *                        <td>
-                    *                            {$v}
-                    *                        </td>
-                    *                    {/foreach}
-                    *                </tr>
-                    *            {/foreach}
-                    *        </table>
-                    *    {/if}
-                    */
+                    
+                        
+                    
                 {/if}
             </div> 
         {/foreach}

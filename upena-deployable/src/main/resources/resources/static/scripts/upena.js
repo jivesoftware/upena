@@ -836,6 +836,10 @@ $(document).ready(function () {
     if ($('#upena-health').length) {
         upena.health.init();
     }
+    
+    if ($('.sar-wave').length) {
+        upena.sar.init();
+    }
 
     (function () {
         var hack = {};
@@ -900,9 +904,6 @@ $(document).ready(function () {
     })();
 
 
-    if ($('#sar-wave').length) {
-        upena.sar.init();
-    }
 
 });
 

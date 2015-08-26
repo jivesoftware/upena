@@ -123,6 +123,7 @@ public class SARPluginRegion implements PageRegion<SARInput> {
         }
         Map<String, Object> map = new HashMap<>();
         map.put("title", title);
+        map.put("lines", lines);
         map.put("error", error);
         map.put("width", (labels.size() * 32) + "px");
         map.put("id", "sar" + title);
