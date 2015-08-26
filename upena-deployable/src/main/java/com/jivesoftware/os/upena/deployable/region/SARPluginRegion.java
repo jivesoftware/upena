@@ -1,5 +1,6 @@
 package com.jivesoftware.os.upena.deployable.region;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.jivesoftware.os.amza.shared.AmzaInstance;
@@ -9,8 +10,10 @@ import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.deployable.SARInvoker;
 import com.jivesoftware.os.upena.deployable.region.SARPluginRegion.SARInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -82,17 +85,63 @@ public class SARPluginRegion implements PageRegion<SARInput> {
         }
 
         List<Map<String, Object>> sarData = new ArrayList<>();
+
+        sarData.add(pack(capture(new String[]{"-q"}, "Load"), 3)); // "1", "1"
+        sarData.add(pack(capture(new String[]{"-u"}, "CPU"), 3));
+        sarData.add(pack(capture(new String[]{"-d"}, "I/O"), 3));
+        sarData.add(pack(capture(new String[]{"-r"}, "Memory"), 2));
+        sarData.add(pack(capture(new String[]{"-B"}, "Paging"), 2));
+        sarData.add(pack(capture(new String[]{"-w"}, "Context Switch"), 2));
+        sarData.add(pack(capture(new String[]{"-n", "DEV"}, "Network"), 3));
+
         data.put("sarData", sarData);
 
-        sarData.add(capture(new String[]{"-q"}, "Load")); // "1", "1"
-        sarData.add(capture(new String[]{"-u"}, "CPU"));
-        sarData.add(capture(new String[]{"-d"}, "I/O"));
-        sarData.add(capture(new String[]{"-r"}, "Memory"));
-        sarData.add(capture(new String[]{"-B"}, "Paging"));
-        sarData.add(capture(new String[]{"-w"}, "Context Switch"));
-        sarData.add(capture(new String[]{"-n", "DEV"}, "Network"));
-
         return renderer.render(template, data);
+    }
+
+    Map<String, Object> pack(Map<String, Object> capture, int labelColumnCount) {
+        List<String> labels = new ArrayList<>();
+        List<Map<String, Object>> valueDatasets = new ArrayList<>();
+
+        String title = (String) capture.get("title");
+        String error = (String) capture.get("error");
+        List<List<String>> lines = (List<List<String>>) capture.get("lines");
+
+        if (lines.size() > 1) {
+            int numWaveforms = lines.get(0).size() - labelColumnCount;
+            for (int w = labelColumnCount; w < numWaveforms; w++) {
+                List<String> values = new ArrayList<>();
+                for (int i = 1; i < lines.size(); i++) {
+                    labels.add(Joiner.on(" ").join(lines.get(i).subList(0, labelColumnCount)));
+                    values.add(lines.get(i).get(w));
+                }
+                valueDatasets.add(waveform(title, getIndexColor((double) w / (double) numWaveforms, 1f), 1f, values));
+            }
+
+            for (int i = 1; i < lines.size(); i++) {
+                labels.add(Joiner.on(" ").join(lines.get(i).subList(0, labelColumnCount)));
+            }
+        }
+        return ImmutableMap.of("title", title, "error", error, "id", "sar"+title, "waveform", ImmutableMap.of("labels", labels, "datasets", valueDatasets));
+    }
+
+    Color getIndexColor(double value, float sat) {
+        float hue = (float) value / 3f;
+        hue = (1f / 3f) + (hue * 2);
+        return new Color(Color.HSBtoRGB(hue, sat, 1f));
+    }
+
+    public Map<String, Object> waveform(String label, Color color, float alpha, List<String> values) {
+        Map<String, Object> waveform = new HashMap<>();
+        waveform.put("label", "\"" + label + "\"");
+        waveform.put("fillColor", "\"rgba(" + color.getRed() + "," + color.getGreen() + "," + color.getBlue() + "," + String.valueOf(alpha) + ")\"");
+        waveform.put("strokeColor", "\"rgba(" + color.getRed() + "," + color.getGreen() + "," + color.getBlue() + ",1)\"");
+        waveform.put("pointColor", "\"rgba(" + color.getRed() + "," + color.getGreen() + "," + color.getBlue() + ",1)\"");
+        waveform.put("pointStrokeColor", "\"rgba(" + color.getRed() + "," + color.getGreen() + "," + color.getBlue() + ",1)\"");
+        waveform.put("pointHighlightFill", "\"rgba(" + color.getRed() + "," + color.getGreen() + "," + color.getBlue() + ",1)\"");
+        waveform.put("pointHighlightStroke", "\"rgba(" + color.getRed() + "," + color.getGreen() + "," + color.getBlue() + ",1)\"");
+        waveform.put("data", values);
+        return waveform;
     }
 
     private Map<String, Object> capture(String[] args, String key) {
@@ -102,6 +151,7 @@ public class SARPluginRegion implements PageRegion<SARInput> {
             latestSAR.put(key, sar);
         }
         executor.submit(sar);
+
         return sar.captured.get();
 
     }
@@ -124,7 +174,9 @@ public class SARPluginRegion implements PageRegion<SARInput> {
             this.sarInvoker = sarInvoker;
             this.args = args;
             this.title = title;
-            captured.set(ImmutableMap.<String, Object>of("title", title, "error", "Loading", "lines", new ArrayList<>()));
+            captured.set(ImmutableMap.<String, Object>of("title", title,
+                "error", "Loading",
+                "lines", new ArrayList<>()));
 
         }
 
@@ -146,14 +198,19 @@ public class SARPluginRegion implements PageRegion<SARInput> {
 
         @Override
         public void error(Throwable t) {
-            captured.set(ImmutableMap.<String, Object>of("title", title, "error", t.toString(), "lines", new ArrayList<String>()));
+            captured.set(ImmutableMap.<String, Object>of("title", title,
+                "error", t.toString(),
+                "lines", new ArrayList<>()
+            ));
             lines.clear();
             running.set(false);
         }
 
         @Override
         public void success(boolean success) {
-            captured.set(ImmutableMap.<String, Object>of("title", title, "error", "", "lines", new ArrayList<>(lines.subList(1, lines.size()))));
+            captured.set(ImmutableMap.<String, Object>of("title", title,
+                "error", "",
+                "lines", new ArrayList<>(lines.subList(1, lines.size()))));
             lines.clear();
             running.set(false);
         }

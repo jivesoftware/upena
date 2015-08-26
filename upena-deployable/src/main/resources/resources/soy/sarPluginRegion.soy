@@ -30,19 +30,32 @@
                     {$s.title}
                 </div>
                 {if $s.error}
-                {/if}
-                {if $s.lines}
-                    <table class="table table-striped">
-                        {foreach $l in $s.lines}
-                            <tr>
-                                {foreach $v in $l}
-                                    <td>
-                                        {$v}
-                                    </td>
-                                {/foreach}
-                            </tr>
-                        {/foreach}
-                    </table>
+                {else}
+                    <div id="my-tab-content" class="tab-content" style="width:1070px">
+                        <div id="value-tab" style="width:1070px">
+                            <canvas id="values" height="400" width="1070px"
+                                data-sar-wave-id="{$s.id}" data-sar-wave-type="{$s.graphType}">
+                            </canvas>
+                            <script>
+                                sar.waveform.data['{$s.id}'] = {$s.waveform|noAutoescape};
+                            </script>
+                        </div>
+                    </div>
+                    /**
+                    *    {if $s.lines}
+                    *       <table class="table table-striped">
+                    *            {foreach $l in $s.lines}
+                    *                <tr>
+                    *                    {foreach $v in $l}
+                    *                        <td>
+                    *                            {$v}
+                    *                        </td>
+                    *                    {/foreach}
+                    *                </tr>
+                    *            {/foreach}
+                    *        </table>
+                    *    {/if}
+                    */
                 {/if}
             </div> 
         {/foreach}

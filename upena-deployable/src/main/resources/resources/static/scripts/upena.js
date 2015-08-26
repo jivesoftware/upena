@@ -777,7 +777,43 @@ upena.health = {
     }
 };
 
+
+sar.waveform = {
+
+    waves: {},
+    data: {},
+
+    initChart: function (which) {
+        var $canvas = $(which);
+        var ctx = which.getContext("2d");
+        var id = $canvas.data('sarWaveId');
+        if (!sar.waveform.waves[id]) {
+            var type = $canvas.data('sarWaveType');
+            var data = sar.waveform.data[id];
+            sar.waveform.waves[id] = (new Chart(ctx))[type](data, {
+                multiTooltipTemplate: "<%= datasetLabel %> - <%= value %>",
+                scaleLineColor: "rgba(128,128,128,0.5)",
+                tooltipFillColor: "rgba(0,0,0,1)",
+                pointDot: false,
+                bezierCurve: false,
+                datasetFill: true,
+                responsive: true,
+                animation: false
+            });
+        }
+        sar.waveform.waves[id].update();
+    }
+};
+
 $(document).ready(function () {
+    
+});
+
+$(document).ready(function () {
+    
+    if ($('#sar-waveform').length) {
+        sar.waveform.init();
+    }
 
     upena.windowFocused = true;
     upena.onWindowFocus = [];
