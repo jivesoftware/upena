@@ -86,20 +86,20 @@ public class SARPluginRegion implements PageRegion<SARInput> {
 
         List<Map<String, Object>> sarData = new ArrayList<>();
 
-        sarData.add(pack(capture(new String[]{"-q"}, "Load"), 3)); // "1", "1"
-        sarData.add(pack(capture(new String[]{"-u"}, "CPU"), 3));
-        sarData.add(pack(capture(new String[]{"-d"}, "I/O"), 3));
-        sarData.add(pack(capture(new String[]{"-r"}, "Memory"), 2));
-        sarData.add(pack(capture(new String[]{"-B"}, "Paging"), 2));
-        sarData.add(pack(capture(new String[]{"-w"}, "Context Switch"), 2));
-        sarData.add(pack(capture(new String[]{"-n", "DEV"}, "Network"), 3));
+        sarData.add(pack(capture(new String[]{"-q"}, "Load"), 3, "load")); // "1", "1"
+        sarData.add(pack(capture(new String[]{"-u"}, "CPU"), 3, "cpu"));
+        sarData.add(pack(capture(new String[]{"-d"}, "I/O"), 3, "io"));
+        sarData.add(pack(capture(new String[]{"-r"}, "Memory"), 2, "mem"));
+        sarData.add(pack(capture(new String[]{"-B"}, "Paging"), 2, "page"));
+        sarData.add(pack(capture(new String[]{"-w"}, "Context Switch"), 2, "context"));
+        sarData.add(pack(capture(new String[]{"-n", "DEV"}, "Network"), 3, "net"));
 
         data.put("sarData", sarData);
 
         return renderer.render(template, data);
     }
 
-    Map<String, Object> pack(Map<String, Object> capture, int labelColumnCount) {
+    Map<String, Object> pack(Map<String, Object> capture, int labelColumnCount,String id) {
         List<String> labels = new ArrayList<>();
         List<Map<String, Object>> valueDatasets = new ArrayList<>();
 
@@ -126,7 +126,7 @@ public class SARPluginRegion implements PageRegion<SARInput> {
         map.put("lines", lines);
         map.put("error", error);
         map.put("width", String.valueOf(labels.size() * 32));
-        map.put("id", "sar" + title);
+        map.put("id", "sar" + id);
         map.put("graphType", "Line");
         map.put("waveform", ImmutableMap.of("labels", labels, "datasets", valueDatasets));
         return map;
