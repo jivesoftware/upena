@@ -778,7 +778,7 @@ upena.health = {
 };
 
 
-sar.waveform = {
+upena.sar.waveform = {
 
     waves: {},
     data: {},
@@ -787,10 +787,10 @@ sar.waveform = {
         var $canvas = $(which);
         var ctx = which.getContext("2d");
         var id = $canvas.data('sarWaveId');
-        if (!sar.waveform.waves[id]) {
+        if (!upena.sar.waveform.waves[id]) {
             var type = $canvas.data('sarWaveType');
-            var data = sar.waveform.data[id];
-            sar.waveform.waves[id] = (new Chart(ctx))[type](data, {
+            var data = upena.sar.waveform.data[id];
+            upena.sar.waveform.waves[id] = (new Chart(ctx))[type](data, {
                 multiTooltipTemplate: "<%= datasetLabel %> - <%= value %>",
                 scaleLineColor: "rgba(128,128,128,0.5)",
                 tooltipFillColor: "rgba(0,0,0,1)",
@@ -801,18 +801,15 @@ sar.waveform = {
                 animation: false
             });
         }
-        sar.waveform.waves[id].update();
+        upena.sar.waveform.waves[id].update();
     }
 };
 
-$(document).ready(function () {
-    
-});
 
 $(document).ready(function () {
     
     if ($('#sar-waveform').length) {
-        sar.waveform.init();
+        upena.sar.waveform.init();
     }
 
     upena.windowFocused = true;
