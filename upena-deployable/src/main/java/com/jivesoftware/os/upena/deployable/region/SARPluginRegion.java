@@ -124,7 +124,7 @@ public class SARPluginRegion implements PageRegion<SARInput> {
         return ImmutableMap.of("title", title,
             "error", error,
             "id", "sar" + title,
-            "graphType", "line",
+            "graphType", "Line",
             "waveform", ImmutableMap.of("labels", labels, "datasets", valueDatasets));
     }
 
