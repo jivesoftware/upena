@@ -28,8 +28,8 @@
             <div class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.6);">
                 <div class="panel-heading">
                     
-                    <a  href="#" rel="popover" id="popoverAnchor-{$s.id}" data-popover-content="#popover-{$s.id}" data-placement="bottom" class="btn" title="{$s.id}">
-                        <span class="glyphicon glyphicon-menu-down"></span>{$s.title}
+                    <a href="#" rel="popover" id="popoverAnchor-{$s.id}" data-popover-content="#popover-{$s.id}" data-placement="bottom" class="btn" title="{$s.id}">
+                        <span class="glyphicon glyphicon-menu-down"></span>&nbsp{$s.title}
                     </a>
                     <div style="background-color: rgba(255, 255, 255, 0.6);" id="popover-{$s.id}" class="hide">
                         {if $s.lines}
@@ -51,7 +51,7 @@
                     <pre>{$s.error}</pre>
                 {else}
                     <div style="width:1000px; height:425px; overflow-x:scroll; overflow-y:hidden;">
-                        <div>
+                        <div style="width:{$s.width}px; height:400px;">
                             <canvas class="sar-wave" id="values" height="400" width="{$s.width}"
                                 data-sar-wave-id="{$s.id}" data-sar-wave-type="{$s.graphType}">
                             </canvas>
