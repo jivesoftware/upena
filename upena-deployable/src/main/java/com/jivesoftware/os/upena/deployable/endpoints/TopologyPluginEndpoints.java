@@ -39,7 +39,7 @@ public class TopologyPluginEndpoints {
     @Produces(MediaType.TEXT_HTML)
     public Response render(@Context HttpServletRequest httpRequest) {
         String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion, new TopologyPluginRegionInput("", "", "", "", "", "", "", "",
-            new HashSet<>(Arrays.asList("linkCluster", "linkService", "linkInstance"))));
+            new HashSet<>(Arrays.asList("linkCluster", "linkService", "linkInstance", "linkHost", "linkRelease"))));
         return Response.ok(rendered).build();
     }
 
@@ -56,7 +56,7 @@ public class TopologyPluginEndpoints {
         @FormParam("service") @DefaultValue("") String service,
         @FormParam("releaseKey") @DefaultValue("") String releaseKey,
         @FormParam("release") @DefaultValue("") String release,
-        @FormParam("linkType") @DefaultValue("linkCluster,linkService,linkInstance") List<String> linkType) {
+        @FormParam("linkType") @DefaultValue("linkCluster,linkService,linkInstance,linkHost,linkRelease") List<String> linkType) {
 
         String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
             new TopologyPluginRegionInput(clusterKey, cluster, hostKey, host, serviceKey, service, releaseKey, release, new HashSet<>(linkType)));
