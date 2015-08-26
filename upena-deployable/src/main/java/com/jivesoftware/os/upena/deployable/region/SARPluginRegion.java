@@ -124,7 +124,7 @@ public class SARPluginRegion implements PageRegion<SARInput> {
         Map<String, Object> map = new HashMap<>();
         map.put("title", title);
         map.put("error", error);
-        map.put("width", "" + (labels.size() * 32));
+        map.put("width", (labels.size() * 32) + "px");
         map.put("id", "sar" + title);
         map.put("graphType", "Line");
         map.put("waveform", ImmutableMap.of("labels", labels, "datasets", valueDatasets));
