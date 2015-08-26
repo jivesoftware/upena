@@ -86,7 +86,7 @@ public class SARPluginRegion implements PageRegion<SARInput> {
 
         List<Map<String, Object>> sarData = new ArrayList<>();
 
-        sarData.add(pack(capture(new String[]{"-q"}, "Load"), 3, "load")); // "1", "1"
+        sarData.add(pack(capture(new String[]{"-q"}, "Load"), 2, "load")); // "1", "1"
         sarData.add(pack(capture(new String[]{"-u"}, "CPU"), 3, "cpu"));
         sarData.add(pack(capture(new String[]{"-d"}, "I/O"), 3, "io"));
         sarData.add(pack(capture(new String[]{"-r"}, "Memory"), 2, "mem"));
@@ -99,7 +99,7 @@ public class SARPluginRegion implements PageRegion<SARInput> {
         return renderer.render(template, data);
     }
 
-    Map<String, Object> pack(Map<String, Object> capture, int labelColumnCount,String id) {
+    Map<String, Object> pack(Map<String, Object> capture, int labelColumnCount, String id) {
         List<String> labels = new ArrayList<>();
         List<Map<String, Object>> valueDatasets = new ArrayList<>();
 
@@ -109,12 +109,12 @@ public class SARPluginRegion implements PageRegion<SARInput> {
 
         if (lines.size() > 1) {
             int numWaveforms = lines.get(0).size() - labelColumnCount;
-            for (int w = labelColumnCount; w < numWaveforms; w++) {
+            for (int w = 0; w < numWaveforms; w++) {
                 List<String> values = new ArrayList<>();
                 for (int i = 1; i < lines.size(); i++) {
-                    values.add(lines.get(i).get(w));
+                    values.add(lines.get(i).get(labelColumnCount + w));
                 }
-                valueDatasets.add(waveform(lines.get(0).get(w), getIndexColor((double) w / (double) numWaveforms, 1f), 1f, values));
+                valueDatasets.add(waveform(lines.get(0).get(labelColumnCount + w), getIndexColor((double) w / (double) numWaveforms, 1f), 1f, values));
             }
 
             for (int i = 1; i < lines.size(); i++) {
