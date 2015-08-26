@@ -121,11 +121,14 @@ public class SARPluginRegion implements PageRegion<SARInput> {
                 labels.add("\"" + Joiner.on(" ").join(lines.get(i).subList(0, labelColumnCount)) + "\"");
             }
         }
-        return ImmutableMap.of("title", title,
-            "error", error,
-            "id", "sar" + title,
-            "graphType", "Line",
-            "waveform", ImmutableMap.of("labels", labels, "datasets", valueDatasets));
+        Map<String, Object> map = new HashMap<>();
+        map.put("title", title);
+        map.put("error", error);
+        map.put("width", "" + (labels.size() * 32));
+        map.put("id", "sar" + title);
+        map.put("graphType", "Line");
+        map.put("waveform", ImmutableMap.of("labels", labels, "datasets", valueDatasets));
+        return map;
     }
 
     Color getIndexColor(double value, float sat) {

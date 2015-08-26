@@ -782,7 +782,7 @@ upena.sar = {
         var ctx = which.getContext("2d");
         var id = $canvas.data('sarWaveId');
         if (!upena.sar.waves[id]) {
-            var type = $canvas.data('sarWaveType');
+            var type = "Line"; //$canvas.data('sarWaveType');
             var data = upena.sar.data[id];
             upena.sar.waves[id] = (new Chart(ctx))[type](data, {
                 multiTooltipTemplate: "<%= datasetLabel %> - <%= value %>",
@@ -790,7 +790,7 @@ upena.sar = {
                 tooltipFillColor: "rgba(0,0,0,1)",
                 pointDot: false,
                 bezierCurve: false,
-                datasetFill: true,
+                datasetFill: false,
                 responsive: true,
                 animation: false
             });

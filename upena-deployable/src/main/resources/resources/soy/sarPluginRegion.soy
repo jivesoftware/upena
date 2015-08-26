@@ -31,15 +31,13 @@
                 </div>
                 {if $s.error}
                 {else}
-                    <div style="width:100%">
-                        <div id="value-tab" style="width:100%">
-                            <canvas class="sar-wave" id="values" height="400" width="100%"
-                                data-sar-wave-id="{$s.id}" data-sar-wave-type="{$s.graphType}">
-                            </canvas>
-                            <script>
-                                upena.sar.data['{$s.id}'] = {$s.waveform|noAutoescape};
-                            </script>
-                        </div>
+                    <div id="value-tab" style="width:100%; overflow-x:hidden; overflow-y: scroll;">
+                        <canvas class="sar-wave" id="values" height="400" width="{$s.width}"
+                            data-sar-wave-id="{$s.id}" data-sar-wave-type="{$s.graphType}">
+                        </canvas>
+                        <script>
+                            upena.sar.data['{$s.id}'] = {$s.waveform|noAutoescape};
+                        </script>
                     </div>
                     /**
                     *    {if $s.lines}
