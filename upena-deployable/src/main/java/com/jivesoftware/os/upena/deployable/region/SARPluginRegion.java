@@ -112,7 +112,6 @@ public class SARPluginRegion implements PageRegion<SARInput> {
             for (int w = labelColumnCount; w < numWaveforms; w++) {
                 List<String> values = new ArrayList<>();
                 for (int i = 1; i < lines.size(); i++) {
-                    labels.add(Joiner.on(" ").join(lines.get(i).subList(0, labelColumnCount)));
                     values.add(lines.get(i).get(w));
                 }
                 valueDatasets.add(waveform(title, getIndexColor((double) w / (double) numWaveforms, 1f), 1f, values));
