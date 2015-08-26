@@ -117,26 +117,26 @@ upena.hs = {
                 'remotePort': $(port).attr('value')
             }
         })
-            .done(function (data) {
-                if (!upena.hs.installed || upena.hs.installed.selector != $selector) {
-                    // selector changed during the query
-                    return;
-                }
-                if (data.length) {
-                    $selector.empty();
-                    for (var i = 0; i < data.length; i++) {
-                        $selector.append(
-                            "<a href='#'" +
-                            " class='upena-hs-choice'" +
-                            " data-upena-key='" + data[i].key + "'" +
-                            " data-upena-name='" + data[i].name + "'>" + data[i].name + "</a><br/>");
+                .done(function (data) {
+                    if (!upena.hs.installed || upena.hs.installed.selector != $selector) {
+                        // selector changed during the query
+                        return;
                     }
-                    upena.hs.link($selector);
-                    upena.hs.installed.ready = true;
-                } else {
-                    $selector.html("<em>No matches</em>");
-                }
-            });
+                    if (data.length) {
+                        $selector.empty();
+                        for (var i = 0; i < data.length; i++) {
+                            $selector.append(
+                                    "<a href='#'" +
+                                    " class='upena-hs-choice'" +
+                                    " data-upena-key='" + data[i].key + "'" +
+                                    " data-upena-name='" + data[i].name + "'>" + data[i].name + "</a><br/>");
+                        }
+                        upena.hs.link($selector);
+                        upena.hs.installed.ready = true;
+                    } else {
+                        $selector.html("<em>No matches</em>");
+                    }
+                });
     },
     link: function ($selector) {
         $selector.find('a').each(function (i) {
@@ -701,7 +701,7 @@ upena.connectivity = {
         /* draw the graph using the RaphaelJS draw implementation */
         upena.connectivity.renderer = new Graph.Renderer.Raphael('upena-connectivity', g, upena.connectivity.width, upena.connectivity.height);
         upena.connectivity.renderer.draw();
-        
+
         var r = upena.connectivity.renderer.r;
         if (legend) {
             var x = 48;
@@ -733,15 +733,12 @@ upena.connectivity = {
 };
 
 upena.health = {
-
     color: {},
     text: {},
     age: {},
-
     init: function () {
         setTimeout(upena.health.poll, 1000);
     },
-
     poll: function () {
         if (upena.windowFocused) {
             $.ajax("/ui/health/live", {
@@ -760,7 +757,6 @@ upena.health = {
             setTimeout(upena.health.poll, 1000);
         }
     },
-
     redraw: function (data) {
         for (var i = 0; i < data.length; i++) {
             var id = data[i].id;
@@ -778,19 +774,17 @@ upena.health = {
 };
 
 
-upena.sar.waveform = {
-
+upena.sar = {
     waves: {},
     data: {},
-
     initChart: function (which) {
         var $canvas = $(which);
         var ctx = which.getContext("2d");
         var id = $canvas.data('sarWaveId');
-        if (!upena.sar.waveform.waves[id]) {
+        if (!upena.sar.waves[id]) {
             var type = $canvas.data('sarWaveType');
             var data = upena.sar.waveform.data[id];
-            upena.sar.waveform.waves[id] = (new Chart(ctx))[type](data, {
+            upena.sar.waves[id] = (new Chart(ctx))[type](data, {
                 multiTooltipTemplate: "<%= datasetLabel %> - <%= value %>",
                 scaleLineColor: "rgba(128,128,128,0.5)",
                 tooltipFillColor: "rgba(0,0,0,1)",
@@ -801,16 +795,13 @@ upena.sar.waveform = {
                 animation: false
             });
         }
-        upena.sar.waveform.waves[id].update();
+        upena.sar.waves[id].update();
     }
 };
 
 
 $(document).ready(function () {
-    
-    if ($('#sar-waveform').length) {
-        upena.sar.waveform.init();
-    }
+
 
     upena.windowFocused = true;
     upena.onWindowFocus = [];
@@ -901,6 +892,12 @@ $(document).ready(function () {
             }
         });
     })();
+
+
+    if ($('#sar-waveform').length) {
+        upena.sar.init();
+    }
+
 });
 
 $(window).focus(function () {
