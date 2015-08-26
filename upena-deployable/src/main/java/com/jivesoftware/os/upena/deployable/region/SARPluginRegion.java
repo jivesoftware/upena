@@ -91,8 +91,8 @@ public class SARPluginRegion implements PageRegion<SARInput> {
         sarData.add(pack(capture(new String[]{"-d"}, "I/O"), 3, "io"));
         sarData.add(pack(capture(new String[]{"-r"}, "Memory"), 2, "mem"));
         sarData.add(pack(capture(new String[]{"-B"}, "Paging"), 2, "page"));
-        sarData.add(pack(capture(new String[]{"-w"}, "Context Switch"), 2, "context"));
-        sarData.add(pack(capture(new String[]{"-n", "DEV"}, "Network"), 3, "net"));
+        //sarData.add(pack(capture(new String[]{"-w"}, "Context Switch"), 1, "context"));
+        //sarData.add(pack(capture(new String[]{"-n", "DEV"}, "Network"), 3, "net"));
 
         data.put("sarData", sarData);
 
@@ -114,7 +114,7 @@ public class SARPluginRegion implements PageRegion<SARInput> {
                 for (int i = 1; i < lines.size(); i++) {
                     values.add(lines.get(i).get(w));
                 }
-                valueDatasets.add(waveform(title, getIndexColor((double) w / (double) numWaveforms, 1f), 1f, values));
+                valueDatasets.add(waveform(lines.get(0).get(w), getIndexColor((double) w / (double) numWaveforms, 1f), 1f, values));
             }
 
             for (int i = 1; i < lines.size(); i++) {
