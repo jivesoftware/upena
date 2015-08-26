@@ -900,7 +900,7 @@ $(document).ready(function () {
     })();
 
 
-    if ($('#sar-waveform').length) {
+    if ($('#sar-wave').length) {
         upena.sar.init();
     }
 
