@@ -119,7 +119,7 @@ public class SARPluginRegion implements PageRegion<SARInput> {
             }
 
             for (int i = 1; i < lines.size(); i++) {
-                labels.add(Joiner.on(" ").join(lines.get(i).subList(0, labelColumnCount)));
+                labels.add("\"" + Joiner.on(" ").join(lines.get(i).subList(0, labelColumnCount)) + "\"");
             }
         }
         return ImmutableMap.of("title", title,
@@ -155,7 +155,6 @@ public class SARPluginRegion implements PageRegion<SARInput> {
             latestSAR.put(key, sar);
         }
         executor.submit(sar);
-
         return sar.captured.get();
 
     }
