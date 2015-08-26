@@ -783,7 +783,7 @@ upena.sar = {
         var id = $canvas.data('sarWaveId');
         if (!upena.sar.waves[id]) {
             var type = $canvas.data('sarWaveType');
-            var data = upena.sar.waveform.data[id];
+            var data = upena.sar.data[id];
             upena.sar.waves[id] = (new Chart(ctx))[type](data, {
                 multiTooltipTemplate: "<%= datasetLabel %> - <%= value %>",
                 scaleLineColor: "rgba(128,128,128,0.5)",
