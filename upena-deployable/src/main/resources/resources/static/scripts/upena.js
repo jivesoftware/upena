@@ -796,6 +796,12 @@ upena.sar = {
             });
         }
         upena.sar.waves[id].update();
+    },
+    init: function () {
+        
+        $('.sar-wave').each(function (i) {
+            upena.sar.initChart(this);
+        });
     }
 };
 
