@@ -91,13 +91,17 @@ public class SARPluginRegion implements PageRegion<SARInput> {
 
         sarData.add(pack(capture(new String[]{"-u"}, "CPU"), 3, new int[]{3, 4, 5, 6, 7, 8}, "cpu"));
         sarData.add(pack(capture(new String[]{"-d"}, "I/O"), 3, new int[]{3, 4, 5, 6, 7, 8, 9, 10}, "io"));
+        
         Map<String, Object> captureMemory = capture(new String[]{"-r"}, "Memory");
         sarData.add(pack(captureMemory, 2, new int[]{2, 3, 5, 6, 7}, "mem"));
         sarData.add(pack(captureMemory, 2, new int[]{4, 8}, "memPercent"));
 
         sarData.add(pack(capture(new String[]{"-B"}, "Paging"), 2, new int[]{2, 3, 4, 6, 7, 8, 9, 10}, "page"));
-        sarData.add(pack(capture(new String[]{"-w"}, "Context Switch"), 1, new int[]{2}, "context"));
-        sarData.add(pack(capture(new String[]{"-n", "DEV"}, "Network"), 3, new int[]{4}, "net"));
+        
+        Map<String, Object> captureContextSwitches = capture(new String[]{"-w"}, "Context Switch");
+        sarData.add(pack(captureContextSwitches, 1, new int[]{2}, "contextProcs"));
+        sarData.add(pack(captureContextSwitches, 1, new int[]{3}, "contextCswch"));
+        sarData.add(pack(capture(new String[]{"-n", "DEV"}, "Network"), 3, new int[]{3, 4, 5, 6, 7, 8, 9}, "net"));
 
         data.put("sarData", sarData);
 
