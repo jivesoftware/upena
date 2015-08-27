@@ -842,18 +842,19 @@ $(document).ready(function () {
     }
 
     if ($('.sar-scroll-wave').length) {
-        $('.sar-scroll-wave').each(function (i, va) {
-            va.on('scroll', function () {
-
-                $('.sar-scroll-wave').each(function (i, vb) {
-                    if (va !== vb) {
-                        vb.scrollLeft(va.scrollLeft());
+        
+        $('.sar-scroll-wave').each(function (j,va) {
+            $(va).on('scroll', function () {
+                $('.sar-scroll-wave').each(function (j, vb) {
+                    if ($(va) !== $(vb)) {
+                        $(vb).scrollTop($(va).scrollTop());
                     }
                 });
             });
-        });    
+        });
     }
-
+    
+    
     $('#bottom').on('scroll', function () {
         $('#top').scrollTop($(this).scrollTop());
     });
