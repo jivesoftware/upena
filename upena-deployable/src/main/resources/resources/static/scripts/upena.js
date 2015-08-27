@@ -798,7 +798,7 @@ upena.sar = {
         upena.sar.waves[id].update();
     },
     init: function () {
-        
+
         $('.sar-wave').each(function (i) {
             upena.sar.initChart(this);
         });
@@ -836,10 +836,27 @@ $(document).ready(function () {
     if ($('#upena-health').length) {
         upena.health.init();
     }
-    
+
     if ($('.sar-wave').length) {
         upena.sar.init();
     }
+
+    if ($('.sar-scroll-wave').length) {
+        $('.sar-scroll-wave').each(function (i, va) {
+            va.on('scroll', function () {
+
+                $('.sar-scroll-wave').each(function (i, vb) {
+                    if (va !== vb) {
+                        vb.scrollLeft(va.scrollLeft());
+                    }
+                });
+            });
+        });    
+    }
+
+    $('#bottom').on('scroll', function () {
+        $('#top').scrollTop($(this).scrollTop());
+    });
 
     (function () {
         var hack = {};
