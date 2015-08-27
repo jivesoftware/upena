@@ -134,7 +134,7 @@ class CheckGitInfo {
                     for (Map.Entry<Object, Object> e : prop.entrySet()) {
                         if (e.getKey() instanceof String) {
                             if ("git.remote.origin.url".equals(e.getKey())) {
-                                gitInfo.put("gitCommitId", e.getValue().toString());
+                                gitInfo.put("gitRemoteOriginUrl", e.getValue().toString());
                             }
                             if ("git.branch".equals(e.getKey())) {
                                 gitInfo.put("gitBranch", e.getValue().toString());

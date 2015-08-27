@@ -74,6 +74,10 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
         return "/ui/health";
     }
 
+    public Map<String, Object> poll(HealthPluginRegionInput healthPluginRegionInput) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
     public static class HealthPluginRegionInput implements PluginInput {
 
         final String cluster;
