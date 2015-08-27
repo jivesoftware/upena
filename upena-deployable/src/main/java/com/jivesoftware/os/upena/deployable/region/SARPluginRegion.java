@@ -110,14 +110,17 @@ public class SARPluginRegion implements PageRegion<SARInput> {
         List<List<String>> lines = (List<List<String>>) capture.get("lines");
 
         if (lines.size() > 1) {
-            int numWaveforms = lines.get(0).size() - labelColumnCount;
             for (int vi = 0; vi < valueColumnIndex.length; vi++) {
-                List<String> values = new ArrayList<>();
-                for (int i = 1; i < lines.size(); i++) {
-                    values.add(lines.get(i).get(valueColumnIndex[vi]));
+                if (lines.get(0).size() > vi) {
+                    List<String> values = new ArrayList<>();
+                    for (int i = 1; i < lines.size(); i++) {
+                        values.add(lines.get(i).get(valueColumnIndex[vi]));
+                    }
+                    valueDatasets.add(
+                        waveform(lines.get(0).get(valueColumnIndex[vi]), getIndexColor((double) vi / (double) valueColumnIndex.length, 1f), 1f, values));
+                } else {
+                    LOG.warn("Invalid value index:{} for id:{}", valueColumnIndex[vi], id);
                 }
-                valueDatasets.add(
-                    waveform(lines.get(0).get(valueColumnIndex[vi]), getIndexColor((double) vi / (double) valueColumnIndex.length, 1f), 1f, values));
             }
 
             for (int i = 1; i < lines.size(); i++) {
