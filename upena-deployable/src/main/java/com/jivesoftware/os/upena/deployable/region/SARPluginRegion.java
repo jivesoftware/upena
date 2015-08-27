@@ -111,7 +111,7 @@ public class SARPluginRegion implements PageRegion<SARInput> {
 
         if (lines.size() > 1) {
             for (int vi = 0; vi < valueColumnIndex.length; vi++) {
-                if (lines.get(0).size() > vi) {
+                if (lines.get(0).size() > valueColumnIndex[vi]) {
                     List<String> values = new ArrayList<>();
                     for (int i = 1; i < lines.size(); i++) {
                         values.add(lines.get(i).get(valueColumnIndex[vi]));
