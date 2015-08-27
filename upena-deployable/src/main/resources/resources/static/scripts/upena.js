@@ -847,7 +847,7 @@ $(document).ready(function () {
             $(va).on('scroll', function () {
                 $('.sar-scroll-wave').each(function (j, vb) {
                     if ($(va) !== $(vb)) {
-                        $(vb).scrollTop($(va).scrollTop());
+                        $(vb).scrollLeft($(va).scrollLeft());
                     }
                 });
             });
