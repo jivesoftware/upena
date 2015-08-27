@@ -86,20 +86,22 @@ public class SARPluginRegion implements PageRegion<SARInput> {
 
         List<Map<String, Object>> sarData = new ArrayList<>();
 
-        sarData.add(pack(capture(new String[]{"-q"}, "Load"), 2, "load")); // "1", "1"
-        sarData.add(pack(capture(new String[]{"-u"}, "CPU"), 3, "cpu"));
-        sarData.add(pack(capture(new String[]{"-d"}, "I/O"), 3, "io"));
-        sarData.add(pack(capture(new String[]{"-r"}, "Memory"), 2, "mem"));
-        sarData.add(pack(capture(new String[]{"-B"}, "Paging"), 2, "page"));
-        //sarData.add(pack(capture(new String[]{"-w"}, "Context Switch"), 1, "context"));
-        //sarData.add(pack(capture(new String[]{"-n", "DEV"}, "Network"), 3, "net"));
+        Map<String, Object> captureLoad = capture(new String[]{"-q"}, "Load");
+        sarData.add(pack(captureLoad, 2, new int[]{4, 5, 6}, "load")); // "1", "1"
+
+        sarData.add(pack(capture(new String[]{"-u"}, "CPU"), 3, new int[]{3, 4, 5, 6, 7, 8}, "cpu"));
+        sarData.add(pack(capture(new String[]{"-d"}, "I/O"), 3, new int[]{3, 4, 5, 6, 7, 8, 9, 10}, "io"));
+        sarData.add(pack(capture(new String[]{"-r"}, "Memory"), 2, new int[]{3, 4, 6, 7, 8, 9, 10}, "mem"));
+        sarData.add(pack(capture(new String[]{"-B"}, "Paging"), 2, new int[]{2, 3, 4, 6, 7, 8, 9, 10}, "page"));
+        sarData.add(pack(capture(new String[]{"-w"}, "Context Switch"), 1, new int[]{2}, "context"));
+        sarData.add(pack(capture(new String[]{"-n", "DEV"}, "Network"), 3, new int[]{4}, "net"));
 
         data.put("sarData", sarData);
 
         return renderer.render(template, data);
     }
 
-    Map<String, Object> pack(Map<String, Object> capture, int labelColumnCount, String id) {
+    Map<String, Object> pack(Map<String, Object> capture, int labelColumnCount, int[] valueColumnIndex, String id) {
         List<String> labels = new ArrayList<>();
         List<Map<String, Object>> valueDatasets = new ArrayList<>();
 
@@ -109,12 +111,13 @@ public class SARPluginRegion implements PageRegion<SARInput> {
 
         if (lines.size() > 1) {
             int numWaveforms = lines.get(0).size() - labelColumnCount;
-            for (int w = 0; w < numWaveforms; w++) {
+            for (int vi = 0; vi < valueColumnIndex.length; vi++) {
                 List<String> values = new ArrayList<>();
                 for (int i = 1; i < lines.size(); i++) {
-                    values.add(lines.get(i).get(labelColumnCount + w));
+                    values.add(lines.get(i).get(valueColumnIndex[vi]));
                 }
-                valueDatasets.add(waveform(lines.get(0).get(labelColumnCount + w), getIndexColor((double) w / (double) numWaveforms, 1f), 1f, values));
+                valueDatasets.add(
+                    waveform(lines.get(0).get(valueColumnIndex[vi]), getIndexColor((double) vi / (double) valueColumnIndex.length, 1f), 1f, values));
             }
 
             for (int i = 1; i < lines.size(); i++) {
