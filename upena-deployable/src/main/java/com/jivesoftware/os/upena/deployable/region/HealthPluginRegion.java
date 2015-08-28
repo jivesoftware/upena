@@ -115,13 +115,13 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
 
     public Map<String, Object> waveform(String label, String color, float alpha, List<String> values) {
         Map<String, Object> waveform = new HashMap<>();
-        waveform.put("label", "\"" + label + "\"");
-        waveform.put("fillColor", "\"rgba(" + color + "," + String.valueOf(alpha) + ")\"");
-        waveform.put("strokeColor", "\"rgba(" + color + ",1)\"");
-        waveform.put("pointColor", "\"rgba(" + color + ",1)\"");
-        waveform.put("pointStrokeColor", "\"rgba(" + color + ",1)\"");
-        waveform.put("pointHighlightFill", "\"rgba(" + color + ",1)\"");
-        waveform.put("pointHighlightStroke", "\"rgba(" + color + ",1)\"");
+        waveform.put("label",  label );
+        waveform.put("fillColor", "rgba(" + color + "," + String.valueOf(alpha) + ")");
+        waveform.put("strokeColor", "rgba(" + color + ",1)");
+        waveform.put("pointColor", "rgba(" + color + ",1)");
+        waveform.put("pointStrokeColor", "rgba(" + color + ",1)");
+        waveform.put("pointHighlightFill", "rgba(" + color + ",1)");
+        waveform.put("pointHighlightStroke", "rgba(" + color + ",1)");
         waveform.put("data", values);
         return waveform;
     }
@@ -138,6 +138,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
             this.service = service;
         }
 
+        @Override
         public String name() {
             return "Health";
         }
