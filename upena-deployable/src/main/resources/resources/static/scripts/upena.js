@@ -852,8 +852,8 @@ upena.livehealth = {
     update: function (data) {
 
         if (data.waveforms) {
-
-            if (!upena.livehealth.chart) {
+            if (!upena.livehealth.chart || chartData.datasets.length != data.waveforms.datasets.length) {
+                
                 var ctx = $('#health-rt-canvas')[0].getContext("2d");
                 var chartData = {
                     labels: data.waveforms.labels,
@@ -872,8 +872,16 @@ upena.livehealth = {
                 });
             } else {
 
-                upena.livehealth.chart.datasets = data.waveforms.datasets;
-                upena.livehealth.chart.labels = data.waveforms.labels;
+                var i = 0;
+                $.each(data.waveforms, function (key, value) {
+                    if (i < miru.realwave.chart.datasets.length) {
+                        for (var j = 0; j < value.length; j++) {
+                            miru.realwave.chart.datasets[i]["Line"][j].value = value[j];
+                        }
+                    }
+                    i++;
+                });
+
                 upena.livehealth.chart.update();
             }
 

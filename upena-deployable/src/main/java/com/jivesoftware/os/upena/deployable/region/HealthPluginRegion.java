@@ -101,7 +101,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
             valueDatasets.add(w);
         }
 
-        for(int i=0;i<labelCount;i++) {
+        for (int i = 0; i < labelCount; i++) {
             labels.add("");
         }
 
@@ -462,13 +462,13 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
 
     public Map<String, Object> waveform(String label, Color color, List<Integer> values) {
         Map<String, Object> waveform = new HashMap<>();
-        waveform.put("label", "\"" + label + "\"");
-        waveform.put("fillColor", "\"rgba(" + color.getRed() + "," + color.getGreen() + "," + color.getBlue() + ",0.2)\"");
-        waveform.put("strokeColor", "\"rgba(" + color.getRed() + "," + color.getGreen() + "," + color.getBlue() + ",1)\"");
-        waveform.put("pointColor", "\"rgba(" + color.getRed() + "," + color.getGreen() + "," + color.getBlue() + ",1)\"");
-        waveform.put("pointStrokeColor", "\"rgba(" + color.getRed() + "," + color.getGreen() + "," + color.getBlue() + ",1)\"");
-        waveform.put("pointHighlightFill", "\"rgba(" + color.getRed() + "," + color.getGreen() + "," + color.getBlue() + ",1)\"");
-        waveform.put("pointHighlightStroke", "\"rgba(" + color.getRed() + "," + color.getGreen() + "," + color.getBlue() + ",1)\"");
+        waveform.put("label", label);
+        waveform.put("fillColor", "rgba(" + color.getRed() + "," + color.getGreen() + "," + color.getBlue() + ",0.2)");
+        waveform.put("strokeColor", "rgba(" + color.getRed() + "," + color.getGreen() + "," + color.getBlue() + ",1)");
+        waveform.put("pointColor", "rgba(" + color.getRed() + "," + color.getGreen() + "," + color.getBlue() + ",1)");
+        waveform.put("pointStrokeColor", "rgba(" + color.getRed() + "," + color.getGreen() + "," + color.getBlue() + ",1)");
+        waveform.put("pointHighlightFill", "rgba(" + color.getRed() + "," + color.getGreen() + "," + color.getBlue() + ",1)");
+        waveform.put("pointHighlightStroke", "rgba(" + color.getRed() + "," + color.getGreen() + "," + color.getBlue() + ",1)");
         waveform.put("data", values);
         return waveform;
     }
@@ -482,10 +482,6 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
 
         return String.valueOf((int) (val * 100));
     }
-
-    private final String shadow = "-moz-box-shadow:    2px 2px 4px 5px #ccc;"
-        + "  -webkit-box-shadow: 2px 2px 4px 5px #ccc;"
-        + "  box-shadow:         2px 2px 4px 5px #ccc;";
 
     private final ConcurrentMap<RingHost, UpenaEndpoints.NodeHealth> nodeHealths = Maps.newConcurrentMap();
     private final ConcurrentMap<String, Long> nodeRecency = Maps.newConcurrentMap();
