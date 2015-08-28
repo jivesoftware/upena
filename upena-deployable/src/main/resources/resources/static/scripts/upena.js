@@ -844,7 +844,7 @@ upena.livehealth = {
             },
             //contentType: "application/json",
             success: function (data) {
-                stump.realtime.update(data);
+                upena.livehealth.update(data);
             },
             error: function () {
                 //TODO error message
