@@ -814,7 +814,7 @@ upena.livehealth = {
     chart: null,
     requireFocus: true,
     init: function () {
-    
+
         $waveform = $('#health-rt-poll');
 
         upena.livehealth.graphType = $waveform.data('graphType');
@@ -850,14 +850,14 @@ upena.livehealth = {
         });
     },
     update: function (data) {
-        
+
         if (data.waveforms) {
-            
+
             if (!upena.livehealth.chart) {
                 var ctx = $('#health-rt-canvas')[0].getContext("2d");
                 var chartData = {
-                    labels: [],
-                    datasets: []
+                    labels: ["",""],
+                    datasets: [{ data:[0,0]}]
                 };
 
                 upena.livehealth.chart = (new Chart(ctx))["Line"](chartData, {
@@ -873,8 +873,9 @@ upena.livehealth = {
                     animation: false
                 });
             }
-            
+
             upena.livehealth.chart.datasets = data.waveforms.datasets;
+             upena.livehealth.chart.labels = data.waveforms.labels;
 
             if (!upena.livehealth.requireFocus || upena.windowFocused) {
                 upena.livehealth.chart.update();

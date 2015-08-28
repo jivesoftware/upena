@@ -2,7 +2,6 @@ package com.jivesoftware.os.upena.deployable.region;
 
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
-import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 /**
@@ -20,11 +19,11 @@ public class SparseCircularHitsBucketBuffer {
     private long mostRecentTimeStamp = Long.MIN_VALUE;
     private long oldestBucketNumber = Long.MIN_VALUE;
     private long youngestBucketNumber;
-    private long utcOffset; // shifts alignment of buckets as offset from UTC, e.g. aligning with start of work day in PST
-    private long bucketWidthMillis;
+    private final long utcOffset; // shifts alignment of buckets as offset from UTC, e.g. aligning with start of work day in PST
+    private final long bucketWidthMillis;
     private int cursor; // always points oldest bucket. cursor -1 is the newestBucket
-    private int numberOfBuckets;
-    private double[] hits;
+    private final int numberOfBuckets;
+    private final double[] hits;
 
     public SparseCircularHitsBucketBuffer(int numberOfBuckets, long utcOffset, long bucketWidthMillis) {
         this.numberOfBuckets = numberOfBuckets;
@@ -41,35 +40,6 @@ public class SparseCircularHitsBucketBuffer {
         return bucketWidthMillis * numberOfBuckets;
     }
 
-    public byte[] toBytes() throws Exception {
-        ByteBuffer bb = ByteBuffer.allocate((8 * 5) + (4 * 2) + (8 * numberOfBuckets));
-        bb.putLong(mostRecentTimeStamp);
-        bb.putLong(oldestBucketNumber);
-        bb.putLong(youngestBucketNumber);
-        bb.putLong(utcOffset);
-        bb.putLong(bucketWidthMillis);
-        bb.putInt(cursor);
-        bb.putInt(numberOfBuckets);
-        for (int i = 0; i < numberOfBuckets; i++) {
-            bb.putDouble(hits[i]);
-        }
-        return bb.array();
-    }
-
-    public void fromBytes(byte[] raw) throws Exception {
-        ByteBuffer bb = ByteBuffer.wrap(raw);
-        mostRecentTimeStamp = bb.getLong();
-        oldestBucketNumber = bb.getLong();
-        youngestBucketNumber = bb.getLong();
-        utcOffset = bb.getLong();
-        bucketWidthMillis = bb.getLong();
-        cursor = bb.getInt();
-        numberOfBuckets = bb.getInt();
-        hits = new double[numberOfBuckets];
-        for (int i = 0; i < numberOfBuckets; i++) {
-            hits[i] = bb.getDouble();
-        }
-    }
 
     public void push(long time, double hit) {
         if (time > mostRecentTimeStamp) {

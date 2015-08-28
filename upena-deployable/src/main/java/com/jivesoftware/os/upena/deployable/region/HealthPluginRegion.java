@@ -84,11 +84,14 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
         List<String> labels = new ArrayList<>();
         List<Map<String, Object>> valueDatasets = new ArrayList<>();
 
+        int labelCount = 0;
         for (Map.Entry<InstanceDescriptor, SparseCircularHitsBucketBuffer> waveforms : instanceHealthHistory.entrySet()) {
             InstanceDescriptor id = waveforms.getKey();
             List<String> values = new ArrayList<>();
             SparseCircularHitsBucketBuffer buffer = waveforms.getValue();
-            for (double d : buffer.rawSignal()) {
+            double[] rawSignal = buffer.rawSignal();
+            labelCount = Math.max(labelCount, rawSignal.length);
+            for (double d : rawSignal) {
                 values.add(String.valueOf(d));
             }
             Map<String, Object> w = waveform(id.serviceName + "-" + id.instanceName,
@@ -98,8 +101,11 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
             valueDatasets.add(w);
         }
 
+        for(int i=0;i<labelCount;i++) {
+            labels.add("\"\"");
+        }
+
         Map<String, Object> map = new HashMap<>();
-        //map.put("width", String.valueOf(labels.size() * 32));
         map.put("id", "health-waveform");
         map.put("graphType", "Line");
         map.put("waveforms", ImmutableMap.of("labels", labels, "datasets", valueDatasets));
