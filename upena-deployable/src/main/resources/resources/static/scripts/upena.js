@@ -852,7 +852,9 @@ upena.livehealth = {
     update: function (data) {
 
         if (data.waveforms) {
-            if (!upena.livehealth.chart || chartData.datasets.length != data.waveforms.datasets.length) {
+            if (!upena.livehealth.chart || (chartData &&  chartData.datasets && chartData.datasets.length != data.waveforms.datasets.length)) {
+                
+                upena.livehealth.chart = null;
                 
                 var ctx = $('#health-rt-canvas')[0].getContext("2d");
                 var chartData = {
