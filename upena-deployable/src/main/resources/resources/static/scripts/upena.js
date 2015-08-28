@@ -811,13 +811,10 @@ upena.sar = {
 
 upena.livehealth = {
     input: {},
-    lastBucketIndex: -1,
     chart: null,
     requireFocus: true,
-    eventsBody: null,
     init: function () {
-        upena.livehealth.eventsBody = $('#health-rt-events > tbody');
-
+    
         $waveform = $('#health-rt-poll');
 
         upena.livehealth.graphType = $waveform.data('graphType');
@@ -869,7 +866,7 @@ upena.livehealth = {
                         data: value
                     });
                 });
-                upena.livehealth.chart = (new Chart(ctx))[upena.livehealth.graphType](chartData, {
+                upena.livehealth.chart = (new Chart(ctx))["Line"](chartData, {
                     multiTooltipTemplate: "<%= datasetLabel %> - <%= value %>",
                     legendTemplate: "<ul style=\"list-style-type:none; margin:20px 0 0 0;\"><% for (var i=0; i<datasets.length; i++){%><li style=\"display:inline-block;\"><span style=\"background-color:<%=datasets[i].strokeColor%>; width:16px; height:16px; display:inline-block; margin:4px; vertical-align:middle;\"></span><%if(datasets[i].label){%><%=datasets[i].label%><%}%></li><%}%></ul>",
                     scaleLineColor: "rgba(128,128,128,0.5)",
@@ -882,17 +879,9 @@ upena.livehealth = {
                     animation: false
                 });
             }
-            //data.startBucketIndex;
-            //data.elapse;
-            i = 0;
-            $.each(data.waveforms, function (key, value) {
-                if (i < upena.livehealth.chart.datasets.length) {
-                    for (var j = 0; j < value.length; j++) {
-                        upena.livehealth.chart.datasets[i][upena.livehealth.graphProp][j].value = value[j];
-                    }
-                }
-                i++;
-            });
+            
+            upena.livehealth.chart.datasets = data.waveforms.datasets;
+
             if (!upena.livehealth.requireFocus || upena.windowFocused) {
                 upena.livehealth.chart.update();
             }
