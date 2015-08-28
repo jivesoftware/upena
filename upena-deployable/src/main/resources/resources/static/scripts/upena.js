@@ -809,6 +809,104 @@ upena.sar = {
     }
 };
 
+upena.livehealth = {
+
+    input: {},
+    lastBucketIndex: -1,
+    chart: null,
+    requireFocus: true,
+    eventsBody: null,
+
+    init: function () {
+        upena.livehealth.eventsBody = $('#health-rt-events > tbody');
+
+        $waveform = $('#health-rt-poll');
+
+        upena.livehealth.graphType = $waveform.data('graphType');
+        upena.livehealth.graphProp = (upena.livehealth.graphType == 'Line' || upena.livehealth.graphType == 'Radar') ? 'points'
+            : (upena.livehealth.graphType == 'Bar' || upena.livehealth.graphType == 'StackedBar') ? 'bars'
+            : 'unknown';
+
+        if (upena.livehealth.requireFocus) {
+            upena.onWindowFocus.push(function () {
+                if (upena.livehealth.chart) {
+                    upena.livehealth.chart.update();
+                }
+            });
+        }
+
+        upena.livehealth.poll();
+    },
+
+    poll: function () {
+        $.ajax({
+            type: "POST",
+            url: "/ui/health/poll",
+            data: {
+                line: upena.livehealth.graphType,
+            },
+            //contentType: "application/json",
+            success: function (data) {
+                stump.realtime.update(data);
+            },
+            error: function () {
+                //TODO error message
+                console.log("error!");
+            }
+        });
+    },
+
+    update: function (data) {
+        var i;
+        if (data.waveforms) {
+
+            if (!upena.livehealth.chart) {
+                var ctx = $('#health-rt-canvas')[0].getContext("2d");
+                var chartData = {
+                    labels: [],
+                    datasets: []
+                };
+               
+                $.each(data.waveforms, function (key, value) {
+                    chartData.datasets.push({
+                        label: key,
+                        data: value
+                    });
+                });
+                upena.livehealth.chart = (new Chart(ctx))[upena.livehealth.graphType](chartData, {
+                    multiTooltipTemplate: "<%= datasetLabel %> - <%= value %>",
+                    legendTemplate: "<ul style=\"list-style-type:none; margin:20px 0 0 0;\"><% for (var i=0; i<datasets.length; i++){%><li style=\"display:inline-block;\"><span style=\"background-color:<%=datasets[i].strokeColor%>; width:16px; height:16px; display:inline-block; margin:4px; vertical-align:middle;\"></span><%if(datasets[i].label){%><%=datasets[i].label%><%}%></li><%}%></ul>",
+                    scaleLineColor: "rgba(128,128,128,0.5)",
+                    tooltipFillColor: "rgba(0,0,0,1)",
+                    pointDot: false,
+                    bezierCurve: true,
+                    bezierCurveTension: 0.4,
+                    datasetFill: false,
+                    responsive: true,
+                    animation: false
+                });
+                $('#health-rt-legend').html(upena.livehealth.chart.generateLegend());
+            }
+            //data.startBucketIndex;
+            //data.elapse;
+            i = 0;
+            $.each(data.waveforms, function (key, value) {
+                if (i < upena.livehealth.chart.datasets.length) {
+                    for (var j = 0; j < value.length; j++) {
+                        upena.livehealth.chart.datasets[i][upena.livehealth.graphProp][j].value = value[j];
+                    }
+                }
+                i++;
+            });
+            if (!upena.livehealth.requireFocus || upena.windowFocused) {
+                upena.livehealth.chart.update();
+            }
+        }
+        setTimeout(upena.livehealth.poll, 1000);
+    }
+
+};
+
 
 $(document).ready(function () {
 
@@ -816,6 +914,8 @@ $(document).ready(function () {
     upena.windowFocused = true;
     upena.onWindowFocus = [];
     upena.onWindowBlur = [];
+    
+    upena.livehealth.initEvents();
 
     Ladda.bind('.ladda-button', {timeout: 60000});
 

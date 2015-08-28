@@ -46,7 +46,11 @@
                     </tr>
                 </table>
             </form>
-            <hr>
+            <div id="health-rt-poll" data-graph-type="{$graphType?:''}" style="width:100%;">
+                <div>
+                    <canvas id="health-rt-canvas" height="80" width="480"></canvas>
+                </div>
+            </div>
             <div>
                 <table class="table table-hover table-condensed">
                     <thead>

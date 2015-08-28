@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ExecutorService;
@@ -54,6 +55,8 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
     private final UpenaStore upenaStore;
     private final ExecutorService executorService = Executors.newCachedThreadPool();
 
+    private final Map<InstanceDescriptor, SparseCircularHitsBucketBuffer> instanceHealthHistory = new ConcurrentHashMap<>();
+
     public HealthPluginRegion(RingHost ringHost,
         String template,
         String instanceTemplate,
@@ -74,8 +77,47 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
         return "/ui/health";
     }
 
-    public Map<String, Object> poll(HealthPluginRegionInput healthPluginRegionInput) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public Map<String, Object> poll(HealthPluginRegionInput healthPluginRegionInput) throws Exception {
+
+        Map<ServiceKey, String> serviceColor = ServiceColorUtil.serviceKeysColor(upenaStore);
+
+        List<String> labels = new ArrayList<>();
+        List<Map<String, Object>> valueDatasets = new ArrayList<>();
+
+        for (Map.Entry<InstanceDescriptor, SparseCircularHitsBucketBuffer> waveforms : instanceHealthHistory.entrySet()) {
+            InstanceDescriptor id = waveforms.getKey();
+            List<String> values = new ArrayList<>();
+            SparseCircularHitsBucketBuffer buffer = waveforms.getValue();
+            for (double d : buffer.rawSignal()) {
+                values.add(String.valueOf(d));
+            }
+            Map<String, Object> w = waveform(id.serviceName + "-" + id.instanceName,
+                serviceColor.getOrDefault(new ServiceKey(id.serviceKey), "127,127,127"),
+                1f,
+                values);
+            valueDatasets.add(w);
+        }
+
+        Map<String, Object> map = new HashMap<>();
+        //map.put("width", String.valueOf(labels.size() * 32));
+        map.put("id", "health-waveform");
+        map.put("graphType", "Line");
+        map.put("waveform", ImmutableMap.of("labels", labels, "datasets", valueDatasets));
+        return map;
+
+    }
+
+    public Map<String, Object> waveform(String label, String color, float alpha, List<String> values) {
+        Map<String, Object> waveform = new HashMap<>();
+        waveform.put("label", "\"" + label + "\"");
+        waveform.put("fillColor", "\"rgba(" + color + "," + String.valueOf(alpha) + ")\"");
+        waveform.put("strokeColor", "\"rgba(" + color + ",1)\"");
+        waveform.put("pointColor", "\"rgba(" + color + ",1)\"");
+        waveform.put("pointStrokeColor", "\"rgba(" + color + ",1)\"");
+        waveform.put("pointHighlightFill", "\"rgba(" + color + ",1)\"");
+        waveform.put("pointHighlightStroke", "\"rgba(" + color + ",1)\"");
+        waveform.put("data", values);
+        return waveform;
     }
 
     public static class HealthPluginRegionInput implements PluginInput {
@@ -458,9 +500,18 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                 executorService.submit(() -> {
                     try {
                         HttpRequestHelper requestHelper = buildRequestHelper(ringHost.getHost(), ringHost.getPort());
-                        UpenaEndpoints.NodeHealth nodeHealth = requestHelper.executeGetRequest("/health/instance", UpenaEndpoints.NodeHealth.class,
-                            null);
+                        UpenaEndpoints.NodeHealth nodeHealth = requestHelper.executeGetRequest("/health/instance", UpenaEndpoints.NodeHealth.class, null);
                         nodeHealths.put(ringHost, nodeHealth);
+
+                        for (UpenaEndpoints.NannyHealth nannyHealth : nodeHealth.nannyHealths) {
+                            instanceHealthHistory.compute(nannyHealth.instanceDescriptor, (instanceKey, buffer) -> {
+                                if (buffer == null) {
+                                    buffer = new SparseCircularHitsBucketBuffer(60, 0, 1000);
+                                }
+                                buffer.push(System.currentTimeMillis(), nannyHealth.serviceHealth.health);
+                                return buffer;
+                            });
+                        }
                     } catch (Exception x) {
                         UpenaEndpoints.NodeHealth nodeHealth = new UpenaEndpoints.NodeHealth("", ringHost.getHost(), ringHost.getPort());
                         nodeHealth.health = 0.0d;
