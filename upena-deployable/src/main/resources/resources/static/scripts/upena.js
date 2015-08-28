@@ -788,15 +788,15 @@ upena.sar = {
                 multiTooltipTemplate: "<%= datasetLabel %> - <%= value %>",
                 scaleLineColor: "rgba(128,128,128,0.5)",
                 tooltipFillColor: "rgba(0,0,0,1)",
-                pointDot : true,
-                pointDotRadius : 4,
+                pointDot: true,
+                pointDotRadius: 4,
                 bezierCurve: false,
                 datasetFill: false,
                 responsive: true,
                 animation: false,
-                legendTemplate : "<ul class=\"<%=name.toLowerCase()%>-legend\"><% for (var i=0; i<datasets.length; i++){%><li><span style=\"background-color:<%=datasets[i].strokeColor%>\"></span><%if(datasets[i].label){%><%=datasets[i].label%><%}%></li><%}%></ul>"
+                legendTemplate: "<ul class=\"<%=name.toLowerCase()%>-legend\"><% for (var i=0; i<datasets.length; i++){%><li><span style=\"background-color:<%=datasets[i].strokeColor%>\"></span><%if(datasets[i].label){%><%=datasets[i].label%><%}%></li><%}%></ul>"
             });
-            
+
             upena.sar.waves[id].generateLegend();
         }
         upena.sar.waves[id].update();
@@ -810,13 +810,11 @@ upena.sar = {
 };
 
 upena.livehealth = {
-
     input: {},
     lastBucketIndex: -1,
     chart: null,
     requireFocus: true,
     eventsBody: null,
-
     init: function () {
         upena.livehealth.eventsBody = $('#health-rt-events > tbody');
 
@@ -824,8 +822,8 @@ upena.livehealth = {
 
         upena.livehealth.graphType = $waveform.data('graphType');
         upena.livehealth.graphProp = (upena.livehealth.graphType == 'Line' || upena.livehealth.graphType == 'Radar') ? 'points'
-            : (upena.livehealth.graphType == 'Bar' || upena.livehealth.graphType == 'StackedBar') ? 'bars'
-            : 'unknown';
+                : (upena.livehealth.graphType == 'Bar' || upena.livehealth.graphType == 'StackedBar') ? 'bars'
+                : 'unknown';
 
         if (upena.livehealth.requireFocus) {
             upena.onWindowFocus.push(function () {
@@ -837,7 +835,6 @@ upena.livehealth = {
 
         upena.livehealth.poll();
     },
-
     poll: function () {
         $.ajax({
             type: "POST",
@@ -855,7 +852,6 @@ upena.livehealth = {
             }
         });
     },
-
     update: function (data) {
         var i;
         if (data.waveforms) {
@@ -866,7 +862,7 @@ upena.livehealth = {
                     labels: [],
                     datasets: []
                 };
-               
+
                 $.each(data.waveforms, function (key, value) {
                     chartData.datasets.push({
                         label: key,
@@ -885,7 +881,6 @@ upena.livehealth = {
                     responsive: true,
                     animation: false
                 });
-                $('#health-rt-legend').html(upena.livehealth.chart.generateLegend());
             }
             //data.startBucketIndex;
             //data.elapse;
@@ -914,8 +909,7 @@ $(document).ready(function () {
     upena.windowFocused = true;
     upena.onWindowFocus = [];
     upena.onWindowBlur = [];
-    
-    upena.livehealth.initEvents();
+
 
     Ladda.bind('.ladda-button', {timeout: 60000});
 
@@ -946,8 +940,8 @@ $(document).ready(function () {
     }
 
     if ($('.sar-scroll-wave').length) {
-        
-        $('.sar-scroll-wave').each(function (j,va) {
+
+        $('.sar-scroll-wave').each(function (j, va) {
             $(va).on('scroll', function () {
                 $('.sar-scroll-wave').each(function (j, vb) {
                     if ($(va) !== $(vb)) {
@@ -957,8 +951,8 @@ $(document).ready(function () {
             });
         });
     }
-    
-    
+
+
     $('#bottom').on('scroll', function () {
         $('#top').scrollTop($(this).scrollTop());
     });
@@ -1025,7 +1019,7 @@ $(document).ready(function () {
         });
     })();
 
-
+    upena.livehealth.init();
 
 });
 
