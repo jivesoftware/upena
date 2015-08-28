@@ -850,9 +850,9 @@ upena.livehealth = {
         });
     },
     update: function (data) {
-        var i;
+        
         if (data.waveforms) {
-
+            
             if (!upena.livehealth.chart) {
                 var ctx = $('#health-rt-canvas')[0].getContext("2d");
                 var chartData = {

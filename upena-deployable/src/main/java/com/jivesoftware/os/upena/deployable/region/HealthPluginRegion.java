@@ -102,7 +102,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
         //map.put("width", String.valueOf(labels.size() * 32));
         map.put("id", "health-waveform");
         map.put("graphType", "Line");
-        map.put("waveform", ImmutableMap.of("labels", labels, "datasets", valueDatasets));
+        map.put("waveforms", ImmutableMap.of("labels", labels, "datasets", valueDatasets));
         return map;
 
     }
