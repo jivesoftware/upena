@@ -102,7 +102,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
         }
 
         for(int i=0;i<labelCount;i++) {
-            labels.add("\"\"");
+            labels.add("");
         }
 
         Map<String, Object> map = new HashMap<>();

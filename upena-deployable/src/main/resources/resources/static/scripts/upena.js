@@ -856,13 +856,11 @@ upena.livehealth = {
             if (!upena.livehealth.chart) {
                 var ctx = $('#health-rt-canvas')[0].getContext("2d");
                 var chartData = {
-                    labels: ["",""],
-                    datasets: [{ data:[0,0]}]
+                    labels: data.waveforms.labels,
+                    datasets: data.waveforms.datasets
                 };
 
                 upena.livehealth.chart = (new Chart(ctx))["Line"](chartData, {
-                    multiTooltipTemplate: "<%= datasetLabel %> - <%= value %>",
-                    legendTemplate: "<ul style=\"list-style-type:none; margin:20px 0 0 0;\"><% for (var i=0; i<datasets.length; i++){%><li style=\"display:inline-block;\"><span style=\"background-color:<%=datasets[i].strokeColor%>; width:16px; height:16px; display:inline-block; margin:4px; vertical-align:middle;\"></span><%if(datasets[i].label){%><%=datasets[i].label%><%}%></li><%}%></ul>",
                     scaleLineColor: "rgba(128,128,128,0.5)",
                     tooltipFillColor: "rgba(0,0,0,1)",
                     pointDot: false,
@@ -872,14 +870,13 @@ upena.livehealth = {
                     responsive: true,
                     animation: false
                 });
-            }
+            } else {
 
-            upena.livehealth.chart.datasets = data.waveforms.datasets;
-             upena.livehealth.chart.labels = data.waveforms.labels;
-
-            if (!upena.livehealth.requireFocus || upena.windowFocused) {
+                upena.livehealth.chart.datasets = data.waveforms.datasets;
+                upena.livehealth.chart.labels = data.waveforms.labels;
                 upena.livehealth.chart.update();
             }
+
         }
         setTimeout(upena.livehealth.poll, 1000);
     }
