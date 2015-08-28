@@ -852,10 +852,10 @@ upena.livehealth = {
     update: function (data) {
 
         if (data.waveforms) {
-            if (!upena.livehealth.chart || (chartData &&  chartData.datasets && chartData.datasets.length != data.waveforms.datasets.length)) {
-                
+            if (!upena.livehealth.chart || (chartData && chartData.datasets && chartData.datasets.length != data.waveforms.datasets.length)) {
+
                 upena.livehealth.chart = null;
-                
+
                 var ctx = $('#health-rt-canvas')[0].getContext("2d");
                 var chartData = {
                     labels: data.waveforms.labels,
@@ -876,9 +876,9 @@ upena.livehealth = {
 
                 var i = 0;
                 $.each(data.waveforms, function (key, value) {
-                    if (i < miru.realwave.chart.datasets.length) {
+                    if (i < upena.livehealth.chart.datasets.length) {
                         for (var j = 0; j < value.length; j++) {
-                            miru.realwave.chart.datasets[i]["Line"][j].value = value[j];
+                            upena.livehealth.chart.datasets[i].points[j].value = value[j];
                         }
                     }
                     i++;
