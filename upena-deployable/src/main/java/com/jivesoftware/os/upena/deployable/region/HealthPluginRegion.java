@@ -514,7 +514,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                                 if (buffer == null) {
                                     buffer = new SparseCircularHitsBucketBuffer(60, 0, 1000);
                                 }
-                                buffer.push(System.currentTimeMillis(), nannyHealth.serviceHealth.health);
+                                buffer.set(System.currentTimeMillis(), nannyHealth.serviceHealth.health);
                                 return buffer;
                             });
                         }

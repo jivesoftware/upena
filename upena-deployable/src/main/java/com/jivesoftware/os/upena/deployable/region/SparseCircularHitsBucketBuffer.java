@@ -41,7 +41,7 @@ public class SparseCircularHitsBucketBuffer {
     }
 
 
-    public void push(long time, double hit) {
+    public void set(long time, double value) {
         if (time > mostRecentTimeStamp) {
             mostRecentTimeStamp = time;
         }
@@ -66,7 +66,7 @@ public class SparseCircularHitsBucketBuffer {
             }
         }
         int delta = (int) (absBucketNumber - oldestBucketNumber);
-        hits[nextCursor(cursor, delta)] += hit;
+        hits[nextCursor(cursor, delta)] = value;
 
     }
 
@@ -97,16 +97,6 @@ public class SparseCircularHitsBucketBuffer {
             c = nextCursor(c, 1);
         }
         return copy;
-    }
-
-    public long[] bucketTimes() {
-        long[] times = new long[numberOfBuckets];
-        long t = mostRecentTimeStamp - (numberOfBuckets - 1) * bucketWidthMillis;
-        for (int i = cursor, j = 0; j < numberOfBuckets; i = (i + 1) % numberOfBuckets, j++) {
-            times[i] = t;
-            t += bucketWidthMillis;
-        }
-        return times;
     }
 
     @Override
