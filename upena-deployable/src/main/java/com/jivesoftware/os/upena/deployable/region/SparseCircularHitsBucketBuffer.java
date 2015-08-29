@@ -30,6 +30,7 @@ public class SparseCircularHitsBucketBuffer {
         this.utcOffset = utcOffset;
         this.bucketWidthMillis = bucketWidthMillis;
         hits = new double[numberOfBuckets];
+        Arrays.fill(hits, Double.NaN);
     }
 
     public long mostRecentTimestamp() {
@@ -92,8 +93,11 @@ public class SparseCircularHitsBucketBuffer {
     public double[] rawSignal() {
         double[] copy = new double[numberOfBuckets];
         int c = cursor;
+        double lastH = 0d;
         for (int i = 0; i < numberOfBuckets; i++) {
-            copy[i] = hits[c];
+            double h = hits[c];
+            copy[i] = Double.isNaN(h) ? lastH : h ;
+            lastH = h;
             c = nextCursor(c, 1);
         }
         return copy;
