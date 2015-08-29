@@ -41,7 +41,6 @@ public class SparseCircularHitsBucketBuffer {
         return bucketWidthMillis * numberOfBuckets;
     }
 
-
     public void set(long time, double value) {
         if (time > mostRecentTimeStamp) {
             mostRecentTimeStamp = time;
@@ -96,8 +95,8 @@ public class SparseCircularHitsBucketBuffer {
         double lastH = 0d;
         for (int i = 0; i < numberOfBuckets; i++) {
             double h = hits[c];
-            copy[i] = Double.isNaN(h) ? lastH : h ;
-            lastH = h;
+            copy[i] = Double.isNaN(h) ? lastH : h;
+            lastH = copy[i];
             c = nextCursor(c, 1);
         }
         return copy;
@@ -105,15 +104,15 @@ public class SparseCircularHitsBucketBuffer {
 
     @Override
     public String toString() {
-        return "SparseCircularHitsBucketBuffer{" +
-            "mostRecentTimeStamp=" + mostRecentTimeStamp +
-            ", oldestBucketNumber=" + oldestBucketNumber +
-            ", youngestBucketNumber=" + youngestBucketNumber +
-            ", utcOffset=" + utcOffset +
-            ", bucketWidthMillis=" + bucketWidthMillis +
-            ", cursor=" + cursor +
-            ", numberOfBuckets=" + numberOfBuckets +
-            ", hits=" + Arrays.toString(hits) +
-            '}';
+        return "SparseCircularHitsBucketBuffer{"
+            + "mostRecentTimeStamp=" + mostRecentTimeStamp
+            + ", oldestBucketNumber=" + oldestBucketNumber
+            + ", youngestBucketNumber=" + youngestBucketNumber
+            + ", utcOffset=" + utcOffset
+            + ", bucketWidthMillis=" + bucketWidthMillis
+            + ", cursor=" + cursor
+            + ", numberOfBuckets=" + numberOfBuckets
+            + ", hits=" + Arrays.toString(hits)
+            + '}';
     }
 }
