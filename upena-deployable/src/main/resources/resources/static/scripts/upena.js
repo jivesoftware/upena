@@ -874,16 +874,12 @@ upena.livehealth = {
                 });
             } else {
 
-                var i = 0;
-                $.each(data.waveforms, function (key, value) {
-                    if (i < upena.livehealth.chart.datasets.length) {
-                        for (var j = 0; j < value.length; j++) {
-                            upena.livehealth.chart.datasets[i].points[j].value = value[j];
-                        }
+                for (var i = 0; i < upena.livehealth.chart.datasets.length; i++) {
+                    var values = data.waveforms.datasets[i].data;
+                    for (var j = 0; j < values.length; j++) {
+                        upena.livehealth.chart.datasets[i].points[j].value = values[j];
                     }
-                    i++;
-                });
-
+                }
                 upena.livehealth.chart.update();
             }
 
