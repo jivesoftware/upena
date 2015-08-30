@@ -443,7 +443,7 @@ public class Main {
         ServicesCallDepthStack servicesCallDepthStack = new ServicesCallDepthStack();
         PerfService perfService = new PerfService(servicesCallDepthStack);
 
-        ManagePlugin profiler = new ManagePlugin("dashboard", null, "Profiler", "/ui/profiler",
+        ManagePlugin profiler = new ManagePlugin("hourglass", null, "Profiler", "/ui/profiler",
             ProfilerPluginEndpoints.class,
             new ProfilerPluginRegion("soy.page.profilerPluginRegion", renderer, new VisualizeProfile(new NameUtils(), servicesCallDepthStack)));
 
