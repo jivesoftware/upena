@@ -31,6 +31,11 @@ public class AsyncLookupService {
     }
 
     public static class ClusterResults extends ConcurrentSkipListMap<ClusterKey, TimestampedValue<Cluster>> {
+
+        @Override
+        public ConcurrentSkipListMap<ClusterKey, TimestampedValue<Cluster>> clone() {
+            return super.clone(); //To change body of generated methods, choose Tools | Templates.
+        }
     }
 
     public Map<ClusterKey, TimestampedValue<Cluster>> findClusters(String remoteHost,
@@ -47,6 +52,11 @@ public class AsyncLookupService {
     }
 
     public static class HostResults extends ConcurrentSkipListMap<HostKey, TimestampedValue<Host>> {
+
+        @Override
+        public ConcurrentSkipListMap<HostKey, TimestampedValue<Host>> clone() {
+            return super.clone(); //To change body of generated methods, choose Tools | Templates.
+        }
     }
 
     public Map<HostKey, TimestampedValue<Host>> findHosts(String remoteHost,
@@ -61,6 +71,11 @@ public class AsyncLookupService {
     }
 
     public static class ServiceResults extends ConcurrentSkipListMap<ServiceKey, TimestampedValue<Service>> {
+
+        @Override
+        public ConcurrentSkipListMap<ServiceKey, TimestampedValue<Service>> clone() {
+            return super.clone(); //To change body of generated methods, choose Tools | Templates.
+        }
     }
 
     public Map<ServiceKey, TimestampedValue<Service>> findServices(String remoteHost,
@@ -75,6 +90,11 @@ public class AsyncLookupService {
     }
 
     public static class ReleaseGroupResults extends ConcurrentSkipListMap<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> {
+
+        @Override
+        public ConcurrentSkipListMap<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> clone() {
+            return super.clone(); //To change body of generated methods, choose Tools | Templates.
+        }
     }
 
     public Map<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> findReleases(String remoteHost,

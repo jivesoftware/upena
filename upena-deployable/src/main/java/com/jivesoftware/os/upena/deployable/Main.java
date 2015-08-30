@@ -67,12 +67,18 @@ import com.jivesoftware.os.upena.deployable.endpoints.HealthPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.HostsPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.InstancesPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ModulesPluginEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.ProfilerPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ReleasesPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.SARPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ServicesPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.TopologyPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.UpenaRingPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.lookup.AsyncLookupService;
+import com.jivesoftware.os.upena.deployable.profiler.model.ServicesCallDepthStack;
+import com.jivesoftware.os.upena.deployable.profiler.server.endpoints.PerfService;
+import com.jivesoftware.os.upena.deployable.profiler.server.endpoints.PerfServiceEndpoint;
+import com.jivesoftware.os.upena.deployable.profiler.visualize.NameUtils;
+import com.jivesoftware.os.upena.deployable.profiler.visualize.VisualizeProfile;
 import com.jivesoftware.os.upena.deployable.region.ChangeLogPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ClustersPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ConfigPluginRegion;
@@ -85,6 +91,7 @@ import com.jivesoftware.os.upena.deployable.region.HostsPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.InstancesPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ManagePlugin;
 import com.jivesoftware.os.upena.deployable.region.ModulesPluginRegion;
+import com.jivesoftware.os.upena.deployable.region.ProfilerPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ReleasesPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.SARPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ServicesPluginRegion;
@@ -354,6 +361,7 @@ public class Main {
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/upenaRingPluginRegion.soy"), "upenaRing.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/configPluginRegion.soy"), "config.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/sarPluginRegion.soy"), "sarPluginRegion.soy");
+        soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/profilerPluginRegion.soy"), "profilerPluginRegion.soy");
 
         SoyFileSet sfs = soyFileSetBuilder.build();
         SoyTofu tofu = sfs.compileToTofu();
@@ -431,6 +439,14 @@ public class Main {
             SARPluginEndpoints.class,
             new SARPluginRegion("soy.page.sarPluginRegion", renderer, amzaService, ringHost));
 
+
+        ServicesCallDepthStack servicesCallDepthStack = new ServicesCallDepthStack();
+        PerfService perfService = new PerfService(servicesCallDepthStack);
+
+        ManagePlugin profiler = new ManagePlugin("dashboard", null, "Profiler", "/ui/profiler",
+            ProfilerPluginEndpoints.class,
+            new ProfilerPluginRegion("soy.page.profilerPluginRegion", renderer, new VisualizeProfile(new NameUtils(), servicesCallDepthStack)));
+
         List<ManagePlugin> plugins = Lists.newArrayList(
             build,
             dependencies,
@@ -444,12 +460,17 @@ public class Main {
             topology,
             connectivity,
             health,
+            profiler,
             sar,
             ring);
 
         jerseyEndpoints.addInjectable(SoyService.class, soyService);
         jerseyEndpoints.addEndpoint(AsyncLookupEndpoints.class);
         jerseyEndpoints.addInjectable(AsyncLookupService.class, new AsyncLookupService(upenaStore));
+
+        jerseyEndpoints.addEndpoint(PerfServiceEndpoint.class);
+        jerseyEndpoints.addInjectable(PerfService.class, perfService);
+
 
         for (ManagePlugin plugin : plugins) {
             soyService.registerPlugin(plugin);

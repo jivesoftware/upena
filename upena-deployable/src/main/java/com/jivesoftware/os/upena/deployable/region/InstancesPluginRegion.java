@@ -608,7 +608,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
         Instance instance = upenaStore.instances.get(instanceKey);
         Port port = instance.ports.get(update.portName);
         if (port == null) {
-            port = new Port(update.port, new HashMap<String, String>());
+            port = new Port(update.port, new HashMap<>());
             if (update.propertyName != null && !update.propertyName.isEmpty()) {
                 port.properties.put(update.propertyName, update.propertyValue);
             }

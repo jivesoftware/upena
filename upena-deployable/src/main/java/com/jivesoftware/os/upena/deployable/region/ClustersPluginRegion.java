@@ -101,7 +101,7 @@ public class ClustersPluginRegion implements PageRegion<ClustersPluginRegionInpu
                     filters.clear();
                     try {
                         Cluster newCluster = new Cluster(input.name, input.description,
-                            new HashMap<ServiceKey, ReleaseGroupKey>());
+                            new HashMap<>());
                         upenaStore.clusters.update(null, newCluster);
                         upenaStore.record(user, "added", System.currentTimeMillis(), "", "clusters-ui", newCluster.toString());
 

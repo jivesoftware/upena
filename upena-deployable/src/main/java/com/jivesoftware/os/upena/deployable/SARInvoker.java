@@ -60,13 +60,7 @@ public class SARInvoker {
                 }
             };
             final ShellOut shellOut = new ShellOut(new File("./"), Arrays.asList(command), shellOutput, shellOutput);
-            Future<Integer> future = execThreads.submit(new Callable<Integer>() {
-
-                @Override
-                public Integer call() throws Exception {
-                    return shellOut.exec();
-                }
-            });
+            Future<Integer> future = execThreads.submit(shellOut::exec);
             boolean succes = future.get() == 0;
             saro.success(succes);
             return succes;

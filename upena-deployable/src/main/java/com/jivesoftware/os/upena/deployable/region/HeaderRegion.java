@@ -21,6 +21,11 @@ public class HeaderRegion implements Region<HeaderInput> {
         public String name() {
             return "Upena";
         }
+
+        @Override
+        public Object clone() {
+            return super.clone(); //To change body of generated methods, choose Tools | Templates.
+        }
     }
 
     @Override

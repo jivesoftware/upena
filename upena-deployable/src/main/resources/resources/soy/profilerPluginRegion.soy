@@ -1,0 +1,99 @@
+{namespace soy.page}
+
+/**
+ * 
+ * @param? serviceName
+ * @param? serviceNames
+ * @param? valueStrategy
+ * @param? valueStrategies
+ * @param? stackStrategy
+ * @param? stackStrategies
+ * @param? barStrategy
+ * @param? barStrategies
+ * @param? coloring
+ * @param? colorings
+ * @param? stackOrder
+ * @param? stackOrders
+ * @param? profile
+ *
+ */
+{template .profilerPluginRegion}
+    <div class="panel panel-default">
+            <div class="panel-body">
+                <div class="well">
+                    <form id="requestPickerForm" class="j-form" data-active-class="btn-default" method="post" name="profilerForm">
+                        <table>
+                            <tr>
+                                <td>Service Name</td>
+                                <td>
+                                    <select style="width:280px; padding-left:10px;"
+                                        class="j-tenant-autocomplete j-autocomplete-input j-ui-elem" placeholder="Service Name"
+                                        name="serviceName" id="serviceNamePicker" data-original-title="" title="">
+                                        {foreach $sn in $serviceNames}
+                                            <option value="{$sn}" {if $sn == $serviceName}selected="selected"{/if}>{$sn}</option>
+                                        {/foreach}
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Value Strategy</td>
+                                <td>
+                                    {foreach $vs in $valueStrategies}
+                                        <input type="radio" class="j-ui-elem" value="false" name="{$vs}" id="inboxPicker" {if $vs == $valueStrategy}checked{/if}>
+                                        &nbsp; {$vs}
+                                        &nbsp; &nbsp;
+                                    {/foreach}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Stack Strategy</td>
+                                <td>
+                                    {foreach $ss in $stackStrategies}
+                                        <input type="radio" class="j-ui-elem" value="false" name="{$ss}" id="inboxPicker" {if $ss == $stackStrategy}checked{/if}>
+                                        &nbsp; {$ss}
+                                        &nbsp; &nbsp;
+                                    {/foreach}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Bar Strategy</td>
+                                <td>
+                                    {foreach $bs in $barStrategies}
+                                        <input type="radio" class="j-ui-elem" value="false" name="{$bs}" id="inboxPicker" {if $bs == $barStrategy}checked{/if}>
+                                        &nbsp; {$bs}
+                                        &nbsp; &nbsp;
+                                    {/foreach}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Bar Strategy</td>
+                                <td>
+                                    {foreach $c in $colorings}
+                                        <input type="radio" class="j-ui-elem" value="false" name="{$c}" id="inboxPicker" {if $c == $coloring}checked{/if}>
+                                        &nbsp; {$c}
+                                        &nbsp; &nbsp;
+                                    {/foreach}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Order</td>
+                                <td>
+                                    {foreach $so in $stackOrders}
+                                        <input type="radio" class="j-ui-elem" value="false" name="{$so}" id="inboxPicker" {if $so == $stackOrder}checked{/if}>
+                                        &nbsp; {$so}
+                                        &nbsp; &nbsp;
+                                    {/foreach}
+                                </td>
+                            </tr>
+                        </table>
+                     </form>
+                </div>
+                <div>
+                    {if $profile}
+                        <img alt="waveform" src="{$profile}">
+                    {if}
+                </div>
+            </div>
+        </div>
+    </div>
+{/template}

@@ -863,14 +863,14 @@ upena.livehealth = {
                 };
 
                 upena.livehealth.chart = (new Chart(ctx))["Line"](chartData, {
-                    scaleLineColor: "rgba(128,128,128,0.5)",
-                    tooltipFillColor: "rgba(0,0,0,1)",
-                    pointDot: false,
-                    bezierCurve: true,
-                    bezierCurveTension: 0.4,
+                    pointDot: true,
+                    pointDotRadius: 4,
+                    bezierCurve: false,
                     datasetFill: false,
                     responsive: true,
-                    animation: false
+                    animation: false,
+                    multiTooltipTemplate: "<%= datasetLabel %> - <%= value %>",
+                    legendTemplate: "<ul class=\"<%=name.toLowerCase()%>-legend\"><% for (var i=0; i<datasets.length; i++){%><li><span style=\"background-color:<%=datasets[i].strokeColor%>\"></span><%if(datasets[i].label){%><%=datasets[i].label%><%}%></li><%}%></ul>"
                 });
             } else {
 

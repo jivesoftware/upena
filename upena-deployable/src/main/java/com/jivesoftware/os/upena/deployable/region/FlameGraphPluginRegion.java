@@ -138,7 +138,7 @@ public class FlameGraphPluginRegion implements PageRegion<SARInput> {
 
         @Override
         public void error(Throwable t) {
-            captured.set(ImmutableMap.<String, Object>of("title", title, "error", t.toString(), "lines", new ArrayList<String>()));
+            captured.set(ImmutableMap.<String, Object>of("title", title, "error", t.toString(), "lines", new ArrayList<>()));
             lines.clear();
             running.set(false);
         }

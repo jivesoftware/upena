@@ -88,22 +88,17 @@ public class ChangeLogPluginRegion implements PageRegion<ChangeLogPluginRegionIn
                 input.what,
                 input.why,
                 input.where,
-                input.how,
-                new UpenaStore.LogStream() {
-
-                    @Override
-                    public boolean stream(RecordedChange change) throws Exception {
-                        Map<String, String> row = new HashMap<>();
-                        row.put("who", change.who);
-                        row.put("what", change.what);
-                        row.put("when", String.valueOf(humanReadableUptime(System.currentTimeMillis() - change.when)));
-                        row.put("why", change.why);
-                        row.put("where", change.where);
-                        row.put("how", change.how);
-                        rows.add(row);
-                        return true;
-                    }
-                });
+                input.how, (RecordedChange change) -> {
+                    Map<String, String> row = new HashMap<>();
+                    row.put("who", change.who);
+                    row.put("what", change.what);
+                    row.put("when", String.valueOf(humanReadableUptime(System.currentTimeMillis() - change.when)));
+                    row.put("why", change.why);
+                    row.put("where", change.where);
+                    row.put("how", change.how);
+                    rows.add(row);
+                    return true;
+            });
 
             data.put("log", rows);
 

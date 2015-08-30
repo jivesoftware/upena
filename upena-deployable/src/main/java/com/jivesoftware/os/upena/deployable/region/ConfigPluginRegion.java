@@ -496,6 +496,11 @@ public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
     }
 
     public static class InstanceResults extends ConcurrentSkipListMap<InstanceKey, TimestampedValue<Instance>> {
+
+        @Override
+        public ConcurrentSkipListMap<InstanceKey, TimestampedValue<Instance>> clone() {
+            return super.clone(); //To change body of generated methods, choose Tools | Templates.
+        }
     }
 
     private ConcurrentSkipListMap<String, List<Map<String, String>>> packProperties(String remoteConfigHost,

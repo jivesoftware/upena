@@ -58,7 +58,7 @@ public class SparseCircularHitsBucketBuffer {
                 // we need to slide the buffer to accommodate younger values
                 long delta = absBucketNumber - youngestBucketNumber;
                 for (int i = 0; i < delta; i++) {
-                    hits[cursor] = 0; // zero out oldest
+                    hits[cursor] = Double.NaN; // zero out oldest
                     cursor = nextCursor(cursor, 1); // move cursor
                 }
                 oldestBucketNumber += delta;
