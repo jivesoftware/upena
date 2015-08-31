@@ -21,5 +21,6 @@
         <module>uba-shared</module>
         <module>upena-config</module>
         <module>inheritance-poms</module>
+        <module>latent-profiler-agent</module>
     </modules>
 </project>

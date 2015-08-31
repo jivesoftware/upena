@@ -219,7 +219,7 @@ public class VisualizeProfile {
 
         _x -= (shift * ((callDepthAreas.length * (widthPerDepth + gap)) - _w));
         int x = _x;
-        if (stackOrder == StackOrder.ascending) {
+        if (stackOrder == StackOrder.desending) {
             for (int i = 0; i < callDepthAreas.length; i++) {
                 callDepthAreas[i].assignArea(x, _y, widthPerDepth, _h);
                 x += widthPerDepth + gap;

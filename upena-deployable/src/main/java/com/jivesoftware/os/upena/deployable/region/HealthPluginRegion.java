@@ -115,7 +115,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
 
     public Map<String, Object> waveform(String label, String color, float alpha, List<String> values) {
         Map<String, Object> waveform = new HashMap<>();
-        waveform.put("label",  label );
+        waveform.put("label", label);
         waveform.put("fillColor", "rgba(" + color + "," + String.valueOf(alpha) + ")");
         waveform.put("strokeColor", "rgba(" + color + ",1)");
         waveform.put("pointColor", "rgba(" + color + ",1)");
@@ -511,7 +511,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                                 if (buffer == null) {
                                     buffer = new SparseCircularHitsBucketBuffer(60, 0, 1000);
                                 }
-                                buffer.set(System.currentTimeMillis(), nannyHealth.serviceHealth.health);
+                                buffer.set(System.currentTimeMillis(), Math.max(0d, nannyHealth.serviceHealth.health));
                                 return buffer;
                             });
                         }
