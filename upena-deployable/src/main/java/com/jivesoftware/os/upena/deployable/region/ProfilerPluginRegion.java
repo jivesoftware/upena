@@ -117,6 +117,7 @@ public class ProfilerPluginRegion implements PageRegion<ProfilerPluginRegionInpu
                 StackOrder.valueOf(input.stackOrder),
                 new XY_I(input.mouseX, input.mouseY));
 
+            System.out.println("II:" + ii);
             if (ii != null) {
 
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -127,7 +128,7 @@ public class ProfilerPluginRegion implements PageRegion<ProfilerPluginRegionInpu
                 }
 
                 String base64ii = Base64.encodeBase64String(baos.toByteArray());
-                data.put("profile", base64ii);
+                data.put("profile", "data:image/png;base64," + base64ii);
             }
 
         } catch (Exception e) {

@@ -20,13 +20,14 @@
 {template .profilerPluginRegion}
     <div class="panel panel-default">
             <div class="panel-body">
-                <div class="well">
-                    <form id="requestPickerForm" class="j-form" data-active-class="btn-default" method="post" name="profilerForm">
+                <form id="profiler" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm" method="post">
+                     
+                    <div class="well">
                         <table>
                             <tr>
                                 <td>Service Name</td>
                                 <td>
-                                    <select style="width:280px; padding-left:10px;"
+                                    <select onChange='this.form.submit();' style="width:280px; padding-left:10px;"
                                         class="j-tenant-autocomplete j-autocomplete-input j-ui-elem" placeholder="Service Name"
                                         name="serviceName" id="serviceNamePicker" data-original-title="" title="">
                                         {foreach $sn in $serviceNames}
@@ -35,11 +36,20 @@
                                     </select>
                                 </td>
                             </tr>
+                        </table>
+                    </div>
+                    <div style="overflow-y: hidden; to overflow-x: auto;">
+                        {if $profile}
+                            <input onChange='this.form.submit();' type="image" src="{$profile}" alt="Submit">
+                        {/if}
+                    </div>
+                    <div class="well">
+                        <table>
                             <tr>
                                 <td>Value Strategy</td>
                                 <td>
                                     {foreach $vs in $valueStrategies}
-                                        <input type="radio" class="j-ui-elem" value="false" name="{$vs}" id="inboxPicker" {if $vs == $valueStrategy}checked{/if}>
+                                        <input onChange='this.form.submit();' type="radio" class="j-ui-elem" value="{$vs}" name="valueStrategy" {if $vs == $valueStrategy}checked{/if}>
                                         &nbsp; {$vs}
                                         &nbsp; &nbsp;
                                     {/foreach}
@@ -49,7 +59,7 @@
                                 <td>Stack Strategy</td>
                                 <td>
                                     {foreach $ss in $stackStrategies}
-                                        <input type="radio" class="j-ui-elem" value="false" name="{$ss}" id="inboxPicker" {if $ss == $stackStrategy}checked{/if}>
+                                        <input onChange='this.form.submit();' type="radio" class="j-ui-elem" value="{$ss}" name="stackStrategy" {if $ss == $stackStrategy}checked{/if}>
                                         &nbsp; {$ss}
                                         &nbsp; &nbsp;
                                     {/foreach}
@@ -59,17 +69,17 @@
                                 <td>Bar Strategy</td>
                                 <td>
                                     {foreach $bs in $barStrategies}
-                                        <input type="radio" class="j-ui-elem" value="false" name="{$bs}" id="inboxPicker" {if $bs == $barStrategy}checked{/if}>
+                                        <input onChange='this.form.submit();' type="radio" class="j-ui-elem" value="{$bs}" name="barStrategy" {if $bs == $barStrategy}checked{/if}>
                                         &nbsp; {$bs}
                                         &nbsp; &nbsp;
                                     {/foreach}
                                 </td>
                             </tr>
                             <tr>
-                                <td>Bar Strategy</td>
+                                <td>Bar Coloring</td>
                                 <td>
                                     {foreach $c in $colorings}
-                                        <input type="radio" class="j-ui-elem" value="false" name="{$c}" id="inboxPicker" {if $c == $coloring}checked{/if}>
+                                        <input onChange='this.form.submit();' type="radio" class="j-ui-elem" value="{$c}" name="coloring"  {if $c == $coloring}checked{/if}>
                                         &nbsp; {$c}
                                         &nbsp; &nbsp;
                                     {/foreach}
@@ -79,7 +89,7 @@
                                 <td>Order</td>
                                 <td>
                                     {foreach $so in $stackOrders}
-                                        <input type="radio" class="j-ui-elem" value="false" name="{$so}" id="inboxPicker" {if $so == $stackOrder}checked{/if}>
+                                        <input onChange='this.form.submit();' type="radio" class="j-ui-elem" value="{$so}" name="stackOrder"  {if $so == $stackOrder}checked{/if}>
                                         &nbsp; {$so}
                                         &nbsp; &nbsp;
                                     {/foreach}
@@ -87,12 +97,7 @@
                             </tr>
                         </table>
                      </form>
-                </div>
-                <div>
-                    {if $profile}
-                        <img alt="waveform" src="{$profile}">
-                    {if}
-                </div>
+                </form>
             </div>
         </div>
     </div>

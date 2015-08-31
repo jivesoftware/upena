@@ -20,7 +20,7 @@ import javax.ws.rs.core.Response;
 /**
  *
  */
-@Path("/ui/profile")
+@Path("/profile")
 public class PerfServiceEndpoint {
 
     static ObjectMapper mapper = new ObjectMapper();

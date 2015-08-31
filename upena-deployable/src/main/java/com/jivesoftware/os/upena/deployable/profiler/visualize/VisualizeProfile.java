@@ -99,6 +99,8 @@ public class VisualizeProfile {
         StackOrder stackOrder,
         XY_I mp) {
 
+        
+
         int _x = 0;
         int _y = 0;
         //super.paintBorder(_g, _x, _y, _w, _h); //To change body of generated methods, choose Tools | Templates.
@@ -195,10 +197,18 @@ public class VisualizeProfile {
 
         int widthPerDepth = 32;
         CallDepthAreas[] callDepthAreas = bars.toArray(new CallDepthAreas[bars.size()]);
-        int _w = callDepthAreas.length * (widthPerDepth + 96);
+        int _w = (16 * 40) + (callDepthAreas.length * (widthPerDepth + 96));
 
         IImage ii = VS.systemImage(_w, _h, c32BitARGB);
         ICanvas canvas = ii.canvas(0);
+        if (false) {
+            ViewColor.onBlack();
+            canvas.setColor(AColor.darkGray);
+            canvas.rect(true, 0, 0, _w, _h);
+        } else {
+            ViewColor.onWhite();
+        }
+
 
         _x += (16 * 20);
         _y += (16 * 10);

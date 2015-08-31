@@ -62,8 +62,8 @@ public class ProfilerPluginEndpoints {
         @FormParam("barStrategy") @DefaultValue("calledBy") String barStrategy,
         @FormParam("coloring") @DefaultValue("heat") String coloring,
         @FormParam("stackOrder") @DefaultValue("ascending") String stackOrder,
-        @FormParam("mouseX") @DefaultValue("0") int mouseX,
-        @FormParam("mouseY") @DefaultValue("0") int mouseY) {
+        @FormParam("x") @DefaultValue("0") int mouseX,
+        @FormParam("y") @DefaultValue("0") int mouseY) {
         String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
             new ProfilerPluginRegionInput(serviceName,
                 height,
