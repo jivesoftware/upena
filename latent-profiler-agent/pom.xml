@@ -4,12 +4,10 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.jivesoftware.os.upena.inheritance.poms</groupId>
-        <artifactId>global-build-management</artifactId>
+        <artifactId>shared-lib-build-management</artifactId>
         <version>0.325</version>
-        <relativePath>../inheritance-poms/executable-build-management/pom.xml</relativePath>
+        <relativePath>../inheritance-poms/shared-lib-build-management/pom.xml</relativePath>
     </parent>
-    
-    
     <groupId>com.jonathancolt.nicity</groupId>
     <artifactId>latent-profiler-agent</artifactId>
     <packaging>jar</packaging>

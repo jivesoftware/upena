@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <parent>
-    <artifactId>global-build-management</artifactId>
+    <artifactId>shared-lib-build-management</artifactId>
     <groupId>com.jivesoftware.os.upena.inheritance.poms</groupId>
-    <version>0.325-SNAPSHOT</version>
-    <relativePath>../global-build-management/pom.xml/pom.xml</relativePath>
+    <version>0.325</version>
+    <relativePath>../inheritance-poms/shared-lib-build-management/pom.xml</relativePath>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.jonathancolt.nicity</groupId>
   <artifactId>latent-profiler-agent</artifactId>
-  <version>0.325-SNAPSHOT</version>
+  <version>0.325</version>
   <build>
     <plugins>
       <plugin>
