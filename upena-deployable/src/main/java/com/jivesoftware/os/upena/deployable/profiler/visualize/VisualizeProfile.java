@@ -155,11 +155,7 @@ public class VisualizeProfile {
         Map<String, Long> names = new HashMap<>();
         long maxAvg = 0;
         for (InterfaceArea area : unique.values()) {
-            Object cn = classNameStrat.getStrategy().value(area);
-            Object v = cn;
-            if (v != null) {
-                v += " " + barStrategy.getStrategy().value(area);
-            }
+            Object v = barStrategy.getStrategy().value(area);
             if (v instanceof Long) {
                 maxAvg = Math.max(maxAvg, (Long) v);
             } else {
@@ -183,11 +179,7 @@ public class VisualizeProfile {
 
         for (InterfaceArea area : unique.values()) {
             long depth;
-            Object cn = classNameStrat.getStrategy().value(area);
-            Object v = cn;
-            if (v != null) {
-                v += " " + barStrategy.getStrategy().value(area);
-            }
+            Object v = barStrategy.getStrategy().value(area);
             if (v instanceof Long) {
                 depth = maxAvg - (Long) v;
             } else {
@@ -195,7 +187,9 @@ public class VisualizeProfile {
             }
             CallDepthAreas callDepthAreas = bars.get((int) depth);
             callDepthAreas.add(area.getName(), area);
-            callDepthAreas.name = barStrategy.getStrategy().name(v);
+
+            Object cn = classNameStrat.getStrategy().value(area);
+            callDepthAreas.name = ((cn == null) ? "" : cn + " ") + barStrategy.getStrategy().name(v);
         }
 
         for (Iterator<CallDepthAreas> it = bars.iterator(); it.hasNext();) {
