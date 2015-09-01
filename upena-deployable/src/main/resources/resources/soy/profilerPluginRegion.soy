@@ -82,7 +82,7 @@
                             <tr>
                                 <td>Class Name Strategy</td>
                                 <td>
-                                    {foreach $cns in $classNameStrategy}
+                                    {foreach $cns in $classNameStrategies}
                                         <input onChange='this.form.submit();' type="radio" class="j-ui-elem" value="{$cns}" name="classNameStrategy" {if $cns == $classNameStrategy}checked{/if}>
                                         &nbsp; {$cns}
                                         &nbsp; &nbsp;
