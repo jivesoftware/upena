@@ -10,8 +10,12 @@
  * @param? stackStrategies
  * @param? barStrategy
  * @param? barStrategies
+ * @param? classNameStrategy
+ * @param? classNameStrategies
  * @param? coloring
  * @param? colorings
+ * @param? background
+ * @param? backgrounds
  * @param? stackOrder
  * @param? stackOrders
  * @param? profile
@@ -76,11 +80,31 @@
                                 </td>
                             </tr>
                             <tr>
+                                <td>Class Name Strategy</td>
+                                <td>
+                                    {foreach $cns in $classNameStrategy}
+                                        <input onChange='this.form.submit();' type="radio" class="j-ui-elem" value="{$cns}" name="classNameStrategy" {if $cns == $classNameStrategy}checked{/if}>
+                                        &nbsp; {$cns}
+                                        &nbsp; &nbsp;
+                                    {/foreach}
+                                </td>
+                            </tr>
+                            <tr>
                                 <td>Bar Coloring</td>
                                 <td>
                                     {foreach $c in $colorings}
                                         <input onChange='this.form.submit();' type="radio" class="j-ui-elem" value="{$c}" name="coloring"  {if $c == $coloring}checked{/if}>
                                         &nbsp; {$c}
+                                        &nbsp; &nbsp;
+                                    {/foreach}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Background</td>
+                                <td>
+                                    {foreach $b in $backgrounds}
+                                        <input onChange='this.form.submit();' type="radio" class="j-ui-elem" value="{$b}" name="background"  {if $b == $background}checked{/if}>
+                                        &nbsp; {$b}
                                         &nbsp; &nbsp;
                                     {/foreach}
                                 </td>
@@ -96,7 +120,18 @@
                                 </td>
                             </tr>
                         </table>
-                     </form>
+                    </div>
+                    <div>                     
+Example Usage:<br>
+In the Releases tab add the agent as a plugin by including it on the end of the artifacts coordinates.<br>
+<br>
+GroupId:ArtifactId:Packaging:Version,com.jonathancolt.nicity:latent-profiler-agent:jar:&lt;UpenaVersion&gt;<br>
+<br>
+In Config for the service you want to profile add this line to its "flags" property.<br>
+<br>
+-javaagent:./plugin-lib/latent-profiler-agent-&lt;version&gt;.jar=localhost:&lt;cluster&gt;:&lt;service&gt;:&lt;version&gt;:&lt;packageContains,packageContains&gt;<br>
+                        
+                    </div>
                 </form>
             </div>
         </div>

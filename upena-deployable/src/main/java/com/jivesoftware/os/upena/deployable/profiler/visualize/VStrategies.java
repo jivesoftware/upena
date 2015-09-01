@@ -343,9 +343,61 @@ public class VStrategies {
 
     }
 
+    public static enum ClassNameStrat {
+
+        none(new BarStrategy() {
+            @Override
+            public Object value(VisualizeProfile.InterfaceArea callArea) {
+                return null;
+            }
+
+            @Override
+            public String name(Object value) {
+                return null;
+            }
+        }),
+        className(new BarStrategy() {
+            @Override
+            public Object value(VisualizeProfile.InterfaceArea callArea) {
+                return callArea.getName();
+            }
+
+            @Override
+            public String name(Object value) {
+                return nameUtils.shortName(value.toString());
+            }
+        }),
+        fullClassName(new BarStrategy() {
+            @Override
+            public Object value(VisualizeProfile.InterfaceArea callArea) {
+                return callArea.getName();
+            }
+
+            @Override
+            public String name(Object value) {
+                return value.toString();
+            }
+        });
+
+        private final BarStrategy strategy;
+
+        private ClassNameStrat(BarStrategy strategy) {
+            this.strategy = strategy;
+        }
+
+        public BarStrategy getStrategy() {
+            return strategy;
+        }
+    }
+
     public static enum StackOrder {
 
         ascending, desending;
+    }
+
+    public static enum Background {
+
+        alpha, white, black;
     }
 
 }

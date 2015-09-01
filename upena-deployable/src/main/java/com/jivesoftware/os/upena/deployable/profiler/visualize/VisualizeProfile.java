@@ -21,7 +21,9 @@ import com.jivesoftware.os.upena.deployable.profiler.model.CallClass;
 import com.jivesoftware.os.upena.deployable.profiler.model.CallDepth;
 import com.jivesoftware.os.upena.deployable.profiler.model.ClassMethod;
 import com.jivesoftware.os.upena.deployable.profiler.model.ServicesCallDepthStack;
+import com.jivesoftware.os.upena.deployable.profiler.visualize.VStrategies.Background;
 import com.jivesoftware.os.upena.deployable.profiler.visualize.VStrategies.BarStrat;
+import com.jivesoftware.os.upena.deployable.profiler.visualize.VStrategies.ClassNameStrat;
 import com.jivesoftware.os.upena.deployable.profiler.visualize.VStrategies.Colorings;
 import com.jivesoftware.os.upena.deployable.profiler.visualize.VStrategies.StackOrder;
 import com.jivesoftware.os.upena.deployable.profiler.visualize.VStrategies.StackStrat;
@@ -95,11 +97,11 @@ public class VisualizeProfile {
         ValueStrat valueStrategy,
         StackStrat stackStrategy,
         BarStrat barStrategy,
+        ClassNameStrat classNameStrat,
         Colorings coloring,
+        Background background,
         StackOrder stackOrder,
         XY_I mp) {
-
-        
 
         int _x = 0;
         int _y = 0;
@@ -185,7 +187,8 @@ public class VisualizeProfile {
             }
             CallDepthAreas callDepthAreas = bars.get((int) depth);
             callDepthAreas.add(area.getName(), area);
-            callDepthAreas.name = barStrategy.getStrategy().name(v);
+            String className = classNameStrat.getStrategy().name(v);
+            callDepthAreas.name = ((className != null) ? className + " " : "") + barStrategy.getStrategy().name(v);
         }
 
         for (Iterator<CallDepthAreas> it = bars.iterator(); it.hasNext();) {
@@ -201,14 +204,16 @@ public class VisualizeProfile {
 
         IImage ii = VS.systemImage(_w, _h, c32BitARGB);
         ICanvas canvas = ii.canvas(0);
-        if (false) {
+        if (background == Background.black) {
             ViewColor.onBlack();
-            canvas.setColor(AColor.darkGray);
+            canvas.setColor(AColor.black);
+            canvas.rect(true, 0, 0, _w, _h);
+        } else if (background == Background.white) {
+            ViewColor.onWhite();
+            canvas.setColor(AColor.white);
             canvas.rect(true, 0, 0, _w, _h);
         } else {
-            ViewColor.onWhite();
         }
-
 
         _x += (16 * 20);
         _y += (16 * 10);

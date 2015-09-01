@@ -4,7 +4,9 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
+import com.jivesoftware.os.upena.deployable.profiler.visualize.VStrategies.Background;
 import com.jivesoftware.os.upena.deployable.profiler.visualize.VStrategies.BarStrat;
+import com.jivesoftware.os.upena.deployable.profiler.visualize.VStrategies.ClassNameStrat;
 import com.jivesoftware.os.upena.deployable.profiler.visualize.VStrategies.Colorings;
 import com.jivesoftware.os.upena.deployable.profiler.visualize.VStrategies.StackOrder;
 import com.jivesoftware.os.upena.deployable.profiler.visualize.VStrategies.StackStrat;
@@ -54,7 +56,9 @@ public class ProfilerPluginRegion implements PageRegion<ProfilerPluginRegionInpu
         String valueStrategy;
         String stackStrategy;
         String barStrategy;
+        String classNameStrategy;
         String coloring;
+        String background;
         String stackOrder;
         int mouseX;
         int mouseY;
@@ -64,7 +68,9 @@ public class ProfilerPluginRegion implements PageRegion<ProfilerPluginRegionInpu
             String valueStrategy,
             String stackStrategy,
             String barStrategy,
+            String classNameStrategy,
             String coloring,
+            String background,
             String stackOrder,
             int mouseX,
             int mouseY) {
@@ -73,7 +79,9 @@ public class ProfilerPluginRegion implements PageRegion<ProfilerPluginRegionInpu
             this.valueStrategy = valueStrategy;
             this.stackStrategy = stackStrategy;
             this.barStrategy = barStrategy;
+            this.classNameStrategy = classNameStrategy;
             this.coloring = coloring;
+            this.background = background;
             this.stackOrder = stackOrder;
             this.mouseX = mouseX;
             this.mouseY = mouseY;
@@ -101,8 +109,12 @@ public class ProfilerPluginRegion implements PageRegion<ProfilerPluginRegionInpu
             data.put("stackStrategies", Lists.transform(Arrays.asList(StackStrat.values()), Enum::name));
             data.put("barStrategy", String.valueOf(input.barStrategy));
             data.put("barStrategies", Lists.transform(Arrays.asList(BarStrat.values()), Enum::name));
+            data.put("classNameStrategy", String.valueOf(input.classNameStrategy));
+            data.put("classNameStrategies", Lists.transform(Arrays.asList(ClassNameStrat.values()), Enum::name));
             data.put("coloring", String.valueOf(input.coloring));
             data.put("colorings", Lists.transform(Arrays.asList(Colorings.values()), Enum::name));
+            data.put("background", String.valueOf(input.background));
+            data.put("backgrounds", Lists.transform(Arrays.asList(Background.values()), Enum::name));
             data.put("stackOrder", String.valueOf(input.stackOrder));
             data.put("stackOrders", Lists.transform(Arrays.asList(StackOrder.values()), Enum::name));
             data.put("mouseX", String.valueOf(input.mouseX));
@@ -113,7 +125,9 @@ public class ProfilerPluginRegion implements PageRegion<ProfilerPluginRegionInpu
                 ValueStrat.valueOf(input.valueStrategy),
                 StackStrat.valueOf(input.stackStrategy),
                 BarStrat.valueOf(input.barStrategy),
+                ClassNameStrat.valueOf(input.classNameStrategy),
                 Colorings.valueOf(input.coloring),
+                Background.valueOf(input.background),
                 StackOrder.valueOf(input.stackOrder),
                 new XY_I(input.mouseX, input.mouseY));
 

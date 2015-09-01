@@ -43,7 +43,9 @@ public class ProfilerPluginEndpoints {
                 VStrategies.ValueStrat.constant.name(),
                 VStrategies.StackStrat.constant.name(),
                 VStrategies.BarStrat.calledBy.name(),
+                VStrategies.ClassNameStrat.none.name(),
                 VStrategies.Colorings.heat.name(),
+                VStrategies.Background.alpha.name(),
                 VStrategies.StackOrder.ascending.name(),
                 0,
                 0));
@@ -60,7 +62,9 @@ public class ProfilerPluginEndpoints {
         @FormParam("valueStrategy") @DefaultValue("constant") String valueStrategy,
         @FormParam("stackStrategy") @DefaultValue("constant") String stackStrategy,
         @FormParam("barStrategy") @DefaultValue("calledBy") String barStrategy,
+        @FormParam("classNameStrategy") @DefaultValue("none") String classNameStrategy,
         @FormParam("coloring") @DefaultValue("heat") String coloring,
+        @FormParam("background") @DefaultValue("alpha") String background,
         @FormParam("stackOrder") @DefaultValue("ascending") String stackOrder,
         @FormParam("x") @DefaultValue("0") int mouseX,
         @FormParam("y") @DefaultValue("0") int mouseY) {
@@ -70,7 +74,9 @@ public class ProfilerPluginEndpoints {
                 valueStrategy,
                 stackStrategy,
                 barStrategy,
+                classNameStrategy,
                 coloring,
+                background,
                 stackOrder,
                 mouseX,
                 mouseY));
