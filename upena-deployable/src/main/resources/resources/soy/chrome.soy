@@ -29,11 +29,15 @@
         <link rel="stylesheet" href="/static/vendor/ladda-bootstrap/dist/ladda-themeless.min.css">
 	</head>
 	<body style="padding-top: 50px;">
-        {$header|noAutoescape}
         
         <div class="container">
             <div class="row">
-                <div class="col-lg-12">
+                <div class="col-lg-2">
+                    <div class="sidebar-nav">
+                        {$header|noAutoescape}
+                    </div>
+                </div>
+                <div class="col-lg-10">
                     {$region|noAutoescape}
                 </div>
             </div>
