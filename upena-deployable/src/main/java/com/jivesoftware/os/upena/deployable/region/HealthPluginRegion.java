@@ -91,10 +91,13 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
             SparseCircularHitsBucketBuffer buffer = waveforms.getValue();
             double[] rawSignal = buffer.rawSignal();
             labelCount = Math.max(labelCount, rawSignal.length);
+            double lastValue = 0d;
             for (double d : rawSignal) {
                 values.add(String.valueOf(d));
+                lastValue = d;
             }
             Map<String, Object> w = waveform(id.serviceName + "-" + id.instanceName,
+                trafficlightColorRGB(lastValue, 1f),
                 serviceColor.getOrDefault(new ServiceKey(id.serviceKey), "127,127,127"),
                 1f,
                 values);
@@ -113,13 +116,17 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
 
     }
 
-    public Map<String, Object> waveform(String label, String color, float alpha, List<String> values) {
+    public Map<String, Object> waveform(String label,
+        String color,
+        String pointColor,
+        float alpha,
+        List<String> values) {
         Map<String, Object> waveform = new HashMap<>();
         waveform.put("label", label);
         waveform.put("fillColor", "rgba(" + color + "," + String.valueOf(alpha) + ")");
         waveform.put("strokeColor", "rgba(" + color + ",1)");
-        waveform.put("pointColor", "rgba(" + color + ",1)");
-        waveform.put("pointStrokeColor", "rgba(" + color + ",1)");
+        waveform.put("pointColor", "rgba(" + pointColor + ",1)");
+        waveform.put("pointStrokeColor", "rgba(" + pointColor + ",1)");
         waveform.put("pointHighlightFill", "rgba(" + color + ",1)");
         waveform.put("pointHighlightStroke", "rgba(" + color + ",1)");
         waveform.put("data", values);
@@ -461,15 +468,18 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
 
     }
 
-    public Map<String, Object> waveform(String label, Color color, List<Integer> values) {
+    public Map<String, Object> waveform(String label,
+        Color color,
+        Color pointColor,
+        List<Integer> values) {
         Map<String, Object> waveform = new HashMap<>();
         waveform.put("label", label);
         waveform.put("fillColor", "rgba(" + color.getRed() + "," + color.getGreen() + "," + color.getBlue() + ",0.2)");
         waveform.put("strokeColor", "rgba(" + color.getRed() + "," + color.getGreen() + "," + color.getBlue() + ",1)");
-        waveform.put("pointColor", "rgba(" + color.getRed() + "," + color.getGreen() + "," + color.getBlue() + ",1)");
-        waveform.put("pointStrokeColor", "rgba(" + color.getRed() + "," + color.getGreen() + "," + color.getBlue() + ",1)");
-        waveform.put("pointHighlightFill", "rgba(" + color.getRed() + "," + color.getGreen() + "," + color.getBlue() + ",1)");
-        waveform.put("pointHighlightStroke", "rgba(" + color.getRed() + "," + color.getGreen() + "," + color.getBlue() + ",1)");
+        waveform.put("pointColor", "rgba(" + pointColor.getRed() + "," + pointColor.getGreen() + "," + pointColor.getBlue() + ",1)");
+        waveform.put("pointStrokeColor", "rgba(" + pointColor.getRed() + "," + pointColor.getGreen() + "," + pointColor.getBlue() + ",1)");
+        waveform.put("pointHighlightFill", "rgba(" + pointColor.getRed() + "," + pointColor.getGreen() + "," + pointColor.getBlue() + ",1)");
+        waveform.put("pointHighlightStroke", "rgba(" + pointColor.getRed() + "," + pointColor.getGreen() + "," + pointColor.getBlue() + ",1)");
         waveform.put("data", values);
         return waveform;
     }
