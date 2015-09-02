@@ -93,13 +93,12 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
             labelCount = Math.max(labelCount, rawSignal.length);
             double lastValue = 0d;
             for (double d : rawSignal) {
-                values.add(String.valueOf(d));
+                values.add(String.valueOf(1d - d));
                 lastValue = d;
             }
             Map<String, Object> w = waveform(id.serviceName + "-" + id.instanceName,
                 trafficlightColorRGB(lastValue, 1f),
                 serviceColor.getOrDefault(new ServiceKey(id.serviceKey), "127,127,127"),
-                1f,
                 values);
             valueDatasets.add(w);
         }
@@ -119,16 +118,15 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
     public Map<String, Object> waveform(String label,
         String color,
         String pointColor,
-        float alpha,
         List<String> values) {
         Map<String, Object> waveform = new HashMap<>();
         waveform.put("label", label);
-        waveform.put("fillColor", "rgba(" + color + "," + String.valueOf(alpha) + ")");
-        waveform.put("strokeColor", "rgba(" + color + ",1)");
-        waveform.put("pointColor", "rgba(" + pointColor + ",1)");
-        waveform.put("pointStrokeColor", "rgba(" + pointColor + ",1)");
-        waveform.put("pointHighlightFill", "rgba(" + color + ",1)");
-        waveform.put("pointHighlightStroke", "rgba(" + color + ",1)");
+        waveform.put("fillColor", "rgba(" + color + ",0.4)");
+        waveform.put("strokeColor", "rgba(" + color + ",0.4)");
+        waveform.put("pointColor", "rgba(" + pointColor + ",0.4)");
+        waveform.put("pointStrokeColor", "rgba(" + pointColor + ",0.4)");
+        waveform.put("pointHighlightFill", "rgba(" + color + ",0.4)");
+        waveform.put("pointHighlightStroke", "rgba(" + color + ",0.4)");
         waveform.put("data", values);
         return waveform;
     }

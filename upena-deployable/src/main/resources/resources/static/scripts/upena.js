@@ -879,6 +879,8 @@ upena.livehealth = {
                     var values = data.waveforms.datasets[i].data;
                     for (var j = 0; j < values.length; j++) {
                         upena.livehealth.chart.datasets[i].points[j].value = values[j];
+                        upena.livehealth.chart.datasets[i].fillColor = data.waveforms.datasets[i].fillColor;
+                        upena.livehealth.chart.datasets[i].strokeColor = data.waveforms.datasets[i].strokeColor;
                     }
                 }
                 upena.livehealth.chart.update();
