@@ -896,6 +896,14 @@ upena.livehealth = {
 $(document).ready(function () {
 
 
+
+    $('.float-table-head').each(function (j, table) {
+        $(table).floatThead({
+            scrollingTop: 50
+        });
+    });
+
+
     upena.windowFocused = true;
     upena.onWindowFocus = [];
     upena.onWindowBlur = [];

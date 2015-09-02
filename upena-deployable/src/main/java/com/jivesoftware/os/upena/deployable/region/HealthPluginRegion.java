@@ -414,7 +414,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                 Map<String, String> serviceCell = new HashMap<>();
                 serviceCell.put("service", service.serviceName);
                 serviceCell.put("serviceKey", service.serviceKey);
-                serviceCell.put("serviceColor", serviceColor.get(new ServiceKey(service.serviceKey)));
+                serviceCell.put("serviceColor", serviceColor.getOrDefault(new ServiceKey(service.serviceKey), "127,127,127"));
                 serviceData.add(serviceCell);
             }
             data.put("gridServices", serviceData);
