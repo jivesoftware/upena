@@ -93,7 +93,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
             labelCount = Math.max(labelCount, rawSignal.length);
             double lastValue = 0d;
             for (double d : rawSignal) {
-                values.add(String.valueOf(1d - d));
+                values.add(String.valueOf(d));
                 lastValue = d;
             }
             Map<String, Object> w = waveform(id.serviceName + "-" + id.instanceName,
