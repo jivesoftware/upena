@@ -157,22 +157,22 @@ public class NameUtils {
         if (called < 100) {
             return 1L;
         }
-        if (called < 1000) {
+        if (called < 1_000) {
             return 2L;
         }
-        if (called < 10000) {
+        if (called < 10_000) {
             return 3L;
         }
-        if (called < 100000) {
+        if (called < 100_000) {
             return 4L;
         }
-        if (called < 1000000) {
+        if (called < 1_000_000) {
             return 5L;
         }
-        if (called < 10000000) {
+        if (called < 10_000_000) {
             return 6L;
         }
-        if (called < 100000000) {
+        if (called < 100_000_000) {
             return 7L;
         }
         return 8L;
@@ -189,7 +189,7 @@ public class NameUtils {
             return "< 1,000 times";
         }
         if (calledIndex == 3L) {
-            return "< 10,0000 times";
+            return "< 10,000 times";
         }
         if (calledIndex == 4L) {
             return "< 100,000 times";

@@ -1017,7 +1017,7 @@ $(document).ready(function () {
         });
     })();
 
-    upena.livehealth.init();
+    //upena.livehealth.init();
 
 });
 
