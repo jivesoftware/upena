@@ -343,7 +343,7 @@ public class VisualizeProfile {
                     m.put("failedLatency", String.valueOf(method.getFailedlatency()));
                     methods.add(m);
                 }
-                over.put("methods", methods)
+                over.put("methods", methods);
 
 
                 over.put("name", callClass.getName());
