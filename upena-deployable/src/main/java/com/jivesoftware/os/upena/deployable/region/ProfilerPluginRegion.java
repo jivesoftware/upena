@@ -122,6 +122,7 @@ public class ProfilerPluginRegion implements PageRegion<ProfilerPluginRegionInpu
             data.put("stackOrders", Lists.transform(Arrays.asList(StackOrder.values()), Enum::name));
             data.put("mouseX", String.valueOf(input.mouseX));
             data.put("mouseY", String.valueOf(input.mouseY));
+            data.put("age", "");
 
             visualizeProfile.setServicName(input.serviceName);
             IImage ii = visualizeProfile.render(data,
