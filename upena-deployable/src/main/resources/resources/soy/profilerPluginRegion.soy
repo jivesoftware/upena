@@ -38,7 +38,7 @@
                                         name="serviceName" id="serviceNamePicker" data-original-title="" title="">
                                         {foreach $sn in $serviceNames}
                                             <option value="{$sn.name}" {if $sn.name == $serviceName}selected="selected"{/if}>{$sn.name}&nbsp age:{$age}</option>
-                                            <input onChange='this.form.submit();' type="checkbox" name="enabled"  {if $sn.name == $serviceName}checked{/if}>
+                                            <input onChange='this.form.submit();' type="checkbox" name="enabled"  {if $enabled == true}checked{/if}>
                                         {/foreach}
                                     </select>
                                 </td>
