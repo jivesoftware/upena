@@ -10,13 +10,14 @@ package colt.nicity.performance.agent;
 
 import colt.nicity.performance.latent.Latency;
 import colt.nicity.performance.latent.LatentDepth;
-import colt.nicity.performance.latent.LatentDepthCallback;
 import colt.nicity.performance.latent.http.ApacheHttpClient;
+import colt.nicity.performance.latent.http.HttpResponse;
 import colt.nicity.performance.latent.http.json.JSONObject;
 import java.util.HashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.commons.httpclient.HostConfiguration;
 import org.apache.commons.httpclient.HttpConnectionManager;
 import org.apache.commons.httpclient.HttpVersion;
@@ -40,28 +41,24 @@ public class LatentHttpPump {
         this.clusterName = clusterName;
         this.serviceName = serviceName;
         this.serviceVersion = serviceVersion;
-        httpClient = new ApacheHttpClient(createApacheClient(hostName, 1175, 10, 30000), new HashMap<String, String>());
+        httpClient = new ApacheHttpClient(createApacheClient(hostName, 1175, 10, 30000), new HashMap<>());
     }
 
     private org.apache.commons.httpclient.HttpClient createApacheClient(String host, int port, int maxConnections, int socketTimeoutInMillis) {
 
-
-
-
         HttpConnectionManager connectionManager = createConnectionManager(maxConnections);
 
         org.apache.commons.httpclient.HttpClient client =
-                new org.apache.commons.httpclient.HttpClient(connectionManager);
+            new org.apache.commons.httpclient.HttpClient(connectionManager);
         client.getParams().setParameter(HttpMethodParams.COOKIE_POLICY, CookiePolicy.RFC_2109);
         client.getParams().setParameter(HttpMethodParams.PROTOCOL_VERSION, HttpVersion.HTTP_1_1);
         client.getParams().setParameter(HttpMethodParams.HTTP_CONTENT_CHARSET, "UTF-8");
         client.getParams().setBooleanParameter(HttpMethodParams.USE_EXPECT_CONTINUE, false);
         client.getParams().setBooleanParameter(HttpConnectionParams.STALE_CONNECTION_CHECK, true);
         client.getParams().setParameter(HttpConnectionParams.CONNECTION_TIMEOUT,
-                socketTimeoutInMillis > 0 ? socketTimeoutInMillis : 0);
+            socketTimeoutInMillis > 0 ? socketTimeoutInMillis : 0);
         client.getParams().setParameter(HttpConnectionParams.SO_TIMEOUT,
-                socketTimeoutInMillis > 0 ? socketTimeoutInMillis : 0);
-
+            socketTimeoutInMillis > 0 ? socketTimeoutInMillis : 0);
 
         HostConfiguration hostConfiguration = new HostConfiguration();
         configureSsl(hostConfiguration, host, port);
@@ -110,36 +107,44 @@ public class LatentHttpPump {
         return connectionManager;
     }
 
+    private final AtomicBoolean enabled = new AtomicBoolean(true);
+
     public void start() {
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
-        scheduledExecutorService.scheduleWithFixedDelay(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    final long now = System.currentTimeMillis();
-                    latency.getLatentGraph().latentDepths(new LatentDepthCallback() {
-                        @Override
-                        public void calls(LatentDepth from, LatentDepth to) { // TODO batching
-                            try {
-                                JSONObject sample = new JSONObject();
-                                sample.put("clusterName", clusterName);
-                                sample.put("serviceName", serviceName);
-                                sample.put("serviceVersion", serviceVersion);
-                                sample.put("sampleTimestampEpochMillis", now);
-                                sample.put("from", latentJson(from));
-                                sample.put("to", latentJson(to));
-                                httpClient.postJson("/profile/latents", sample.toJSONString());
-                            } catch (Exception x) {
-                                //if (verbose) {
-                                //System.out.println("Latent Service is inaccessible. "+x.getMessage());
-                                //}
-                            }
+        scheduledExecutorService.scheduleWithFixedDelay(() -> {
+            try {
+                final long now = System.currentTimeMillis();
+                Boolean enabled = latency.getLatentGraph(this.enabled.get()).latentDepths((from, to) -> {
+                    // TODO batching
+                    try {
+                        JSONObject sample = new JSONObject();
+                        sample.put("clusterName", clusterName);
+                        sample.put("serviceName", serviceName);
+                        sample.put("serviceVersion", serviceVersion);
+                        sample.put("sampleTimestampEpochMillis", now);
+                        sample.put("from", latentJson(from));
+                        sample.put("to", latentJson(to));
+                        HttpResponse postJson = httpClient.postJson("/profile/latents", sample.toJSONString());
+                        if (postJson.getStatusCode() >= 200 && postJson.getStatusCode() < 300) {
+                            return Boolean.getBoolean(new String(postJson.getResponseBody()));
+                        } else {
+                            return null;
                         }
-                    });
-                } catch (Throwable t) {
-                    t.printStackTrace();
+                    } catch (Exception x) {
+                        //if (verbose) {
+                        //System.out.println("Latent Service is inaccessible. "+x.getMessage());
+                        //}
+                        return null;
+                    }
+
+                });
+
+                if (enabled != null) {
+                    this.enabled.set(enabled);
                 }
 
+            } catch (Throwable t) {
+                t.printStackTrace();
             }
         }, 5, 5, TimeUnit.SECONDS);
     }

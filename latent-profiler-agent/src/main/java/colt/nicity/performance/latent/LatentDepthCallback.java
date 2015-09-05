@@ -25,5 +25,5 @@ public interface LatentDepthCallback {
      * @param from
      * @param to maybe null
      */
-    void calls(LatentDepth from,LatentDepth to);
+    Boolean calls(LatentDepth from,LatentDepth to);
 }

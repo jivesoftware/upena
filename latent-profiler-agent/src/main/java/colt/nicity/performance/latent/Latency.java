@@ -33,15 +33,12 @@ public class Latency {
     }
     private final ThreadLocal<LatentStack> latentStacks;
     private final LatentGraph latentGraph;
+    private final Enabled enable = new Enabled(true);
 
     private Latency(final LatentGraph latentGraph, final int maxDepth) {
         this.latentGraph = latentGraph;
 
         latentStacks = new ThreadLocal<LatentStack>() {
-
-            /*
-             * initialValue() is called
-             */
             @Override
             protected LatentStack initialValue() {
                 return new LatentStack(latentGraph, maxDepth);
@@ -49,18 +46,21 @@ public class Latency {
         };
     }
 
-    public LatentGraph getLatentGraph() {
+    public LatentGraph getLatentGraph(boolean enabled) {
+        if (!this.enable.enabled != enabled) {
+            singleton.clear();
+        }
+        this.enable.enabled = enabled;
         return latentGraph;
     }
-    private ConcurrentHashMap<String, Latent> singleton = new ConcurrentHashMap<String, Latent>();
 
-    public Latent enter(Latent latent,String interfaceName, String className,String methodName, String tracerId) {
+    private ConcurrentHashMap<String, Latent> singleton = new ConcurrentHashMap<>();
+    public Latent enter(Latent latent, String interfaceName, String className, String methodName, String tracerId) {
         if (latent == null) {
-            StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
             String key = className + "." + methodName;
             Latent got = singleton.get(key);
             if (got == null) {
-                got = new Latent(latentStacks,interfaceName, className, methodName);
+                got = new Latent(enable, latentStacks, interfaceName, className, methodName);
                 Latent had = singleton.putIfAbsent(key, got);
                 if (had != null) {
                     got = had;
@@ -70,5 +70,14 @@ public class Latency {
         }
         latent.enter(tracerId);
         return latent;
+    }
+
+    public static class Enabled {
+
+        public boolean enabled;
+
+        public Enabled(boolean enabled) {
+            this.enabled = enabled;
+        }
     }
 }

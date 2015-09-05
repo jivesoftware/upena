@@ -15,27 +15,38 @@
  */
 package colt.nicity.performance.latent;
 
+import colt.nicity.performance.latent.Latency.Enabled;
+
 /**
  *
  */
 public class Latent {
 
+    private final Enabled enabled;
     private final ThreadLocal<LatentStack> latentStacks;
     private final String interfaceName;
     private final String className;
     private final String methodName;
+    private final int hashCode;
     private long called;
     private long successlatency;
     private long failed;
     private long failedlatency;
-    private final int hashCode;
 
-    Latent(ThreadLocal<LatentStack> latentStacks, String interfaceName, String className, String methodName) {
+    Latent(Enabled enabled, ThreadLocal<LatentStack> latentStacks, String interfaceName, String className, String methodName) {
+        this.enabled = enabled;
         this.latentStacks = latentStacks;
         this.interfaceName = interfaceName;
         this.className = className;
         this.methodName = methodName;
         hashCode = interfaceName.hashCode() + className.hashCode() + methodName.hashCode();
+    }
+
+    public void clear() {
+        called = 0;
+        successlatency = 0;
+        failed = 0;
+        failedlatency = 0;
     }
 
     public String getInterfaceName() {
@@ -67,19 +78,24 @@ public class Latent {
     }
 
     void enter(String tracerId) {
-        latentStacks.get().enter(this, tracerId);
+        if (enabled.enabled) {
+            latentStacks.get().enter(this, tracerId);
+        }
     }
 
     public void exit() {
-        called++;
-        successlatency = latentStacks.get().exit(this, successlatency);
+        if (enabled.enabled) {
+            called++;
+            successlatency = latentStacks.get().exit(this, successlatency);
+        }
     }
 
     public void failed() {
-        failed++;
-        failedlatency = latentStacks.get().failed(this,failedlatency);
+        if (enabled.enabled) {
+            failed++;
+            failedlatency = latentStacks.get().failed(this, failedlatency);
+        }
     }
-
 
     @Override
     public String toString() {

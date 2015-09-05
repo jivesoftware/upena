@@ -38,17 +38,20 @@ public class LatentGraph {
         }
     }
 
-    public void latentDepths(LatentDepthCallback latentDepthCallback) {
+    public Boolean latentDepths(LatentDepthCallback latentDepthCallback) {
         for (LatentEdge edge : graph) {
-            latentDepthCallback.calls(edge.getFrom(), edge.getTo());
+            boolean enabled = latentDepthCallback.calls(edge.getFrom(), edge.getTo());
+            if (!enabled) {
+                return false;
+            }
         }
+        return true;
     }
 
-    public void print() {
-        for (LatentEdge edge : graph) {
-            System.out.println(edge.getFrom() + "->" + edge.getTo());
-        }
+    public void clear() {
+        graph.clear();
     }
+
 
     static class LatentEdge {
 

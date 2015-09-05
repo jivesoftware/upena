@@ -34,9 +34,8 @@ public class PerfServiceEndpoint {
     @POST
     @Path("/latents")
     public String ingressLatents(String latents) throws IOException {
-        //System.out.println(latents);
-        perfService.getCallDepthStack().call(mapper.readValue(latents, LatentSample.class));
-        return "yo";
+        boolean enabled = perfService.getCallDepthStack().call(mapper.readValue(latents, LatentSample.class));
+        return String.valueOf(enabled);
     }
 
     @Path("/render")

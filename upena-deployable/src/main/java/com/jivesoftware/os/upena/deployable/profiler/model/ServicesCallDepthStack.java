@@ -16,10 +16,13 @@
 package com.jivesoftware.os.upena.deployable.profiler.model;
 
 import com.jivesoftware.os.upena.deployable.profiler.sample.LatentSample;
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  *
@@ -33,15 +36,29 @@ public class ServicesCallDepthStack {
         this.depthStacks = new ConcurrentHashMap<>();
     }
 
-    public List<String> getServiceNames() {
-        LinkedList<String> serviceNames = new LinkedList<>(depthStacks.keySet());
-        Collections.sort(serviceNames);
+    public CallStack callStackForServiceName(String serviceName) {
+        return depthStacks.get(serviceName);
+    }
+
+    public List<Map<String, String>> getServiceNames() {
+        List<Map<String, String>> serviceNames = new ArrayList<>();
+        for (Map.Entry<String, CallStack> e : depthStacks.entrySet()) {
+            Map<String, String> serviceProperties = new HashMap<>();
+            serviceProperties.put("name", e.getKey());
+            serviceProperties.put("enabled", String.valueOf(e.getValue().enabled.get()));
+            serviceProperties.put("age", String.valueOf(System.currentTimeMillis() - e.getValue().lastSampleTimestampMillis.get()));
+            serviceNames.add(serviceProperties);
+        }
+
+        Collections.sort(serviceNames, (Map<String, String> o1, Map<String, String> o2) -> {
+            return o1.get("name").compareTo(o2.get("name"));
+        });
         return serviceNames;
     }
 
-    public void call(LatentSample latentSample) {
+    public boolean call(LatentSample latentSample) {
         String key = latentSample.clusterName + " " + latentSample.serviceName + " " + latentSample.serviceVersion;
-        getOrCreateCallStack(key).call(latentSample);
+        return getOrCreateCallStack(key).call(latentSample);
     }
 
     public CallDepth[] getCopy(String serviceName) {
@@ -54,7 +71,7 @@ public class ServicesCallDepthStack {
     private CallStack getOrCreateCallStack(String key) {
         CallStack got = depthStacks.get(key);
         if (got == null) {
-            got = new CallStack();
+            got = new CallStack(new AtomicBoolean(true));
             CallStack had = depthStacks.putIfAbsent(key, got);
             if (had != null) {
                 got = had;

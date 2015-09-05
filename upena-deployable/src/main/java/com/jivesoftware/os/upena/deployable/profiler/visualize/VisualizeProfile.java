@@ -19,6 +19,7 @@ import com.jivesoftware.os.mlogger.core.MinMaxInt;
 import com.jivesoftware.os.upena.deployable.profiler.model.Call;
 import com.jivesoftware.os.upena.deployable.profiler.model.CallClass;
 import com.jivesoftware.os.upena.deployable.profiler.model.CallDepth;
+import com.jivesoftware.os.upena.deployable.profiler.model.CallStack;
 import com.jivesoftware.os.upena.deployable.profiler.model.ClassMethod;
 import com.jivesoftware.os.upena.deployable.profiler.model.ServicesCallDepthStack;
 import com.jivesoftware.os.upena.deployable.profiler.visualize.VStrategies.Background;
@@ -83,7 +84,7 @@ public class VisualizeProfile {
         this.servicesCallDepthStack = callDepthStack;
     }
 
-    public List<String> getPossibleServiceNames() {
+    public List<Map<String, String>> getPossibleServiceNames() {
         return servicesCallDepthStack.getServiceNames();
     }
 
@@ -92,7 +93,8 @@ public class VisualizeProfile {
         selectedServiceNames.add(serviceName);
     }
 
-    public IImage render(
+    public IImage render(Map<String, Object> data,
+        boolean enabled,
         int _h,
         ValueStrat valueStrategy,
         StackStrat stackStrategy,
@@ -103,12 +105,15 @@ public class VisualizeProfile {
         StackOrder stackOrder,
         XY_I mp) {
 
-        int _x = 0;
-        int _y = 0;
-        //super.paintBorder(_g, _x, _y, _w, _h); //To change body of generated methods, choose Tools | Templates.
+        for (String serviceName : selectedServiceNames) {
+            CallStack callStack = servicesCallDepthStack.callStackForServiceName(serviceName);
+            if (callStack != null) {
+                callStack.enabled.set(enabled);
+                data.put("age", String.valueOf(callStack.lastSampleTimestampMillis.get()));
+            }
+        }
+
         valuesHistogram.reset();
-        int ox = _x;
-        int oy = _y;
 
         Iterator<String> iterator = selectedServiceNames.iterator();
         if (!iterator.hasNext()) {
@@ -216,8 +221,8 @@ public class VisualizeProfile {
         } else {
         }
 
-        _x += (16 * 20);
-        _y += (16 * 10);
+        int _x = (16 * 20);
+        int _y = (16 * 10);
         _w -= (16 * 40);
         _h -= (16 * 20);
 
@@ -339,8 +344,8 @@ public class VisualizeProfile {
         }
 
         int bh = widthPerDepth;
-        int bx = ox + bh;
-        int by = oy + bh;
+        int bx = _x + bh;
+        int by = _y + bh;
         int bw = 160;
 
         for (int i = 0; i < valuesHistogram.histogram.length; i++) {

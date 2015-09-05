@@ -14,42 +14,53 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  *
  */
-class CallStack {
+public class CallStack {
 
     private final ConcurrentHashMap<Integer, CallDepth> callsAtDepth;
+    public final AtomicBoolean enabled;
+    public final AtomicLong lastSampleTimestampMillis = new AtomicLong();
 
-    CallStack() {
+    public CallStack(AtomicBoolean enabled) {
         this.callsAtDepth = new ConcurrentHashMap<>();
+        this.enabled = enabled;
     }
 
-    public void call(LatentSample latentSample) {
-        LatentNode from = latentSample.from;
-        LatentNode to = latentSample.to;
+    public boolean call(LatentSample latentSample) {
+        lastSampleTimestampMillis.set(System.currentTimeMillis());
+        if (enabled.get()) {
+            LatentNode from = latentSample.from;
+            LatentNode to = latentSample.to;
 
-        CallDepth fromDepth = getCallDepth(from.stackDepth);
-        CallClass fromClass = fromDepth.getOrCreateCallClass(getClassName(from));
-        ClassMethod fromMethod = fromClass.getOrCreateClassMethod(from.methodName);
-        fromMethod.update(from.stackDepth,
-            from.callCount,
-            from.callLatency,
-            from.failedCount,
-            from.failedLatency);
+            CallDepth fromDepth = getCallDepth(from.stackDepth);
+            CallClass fromClass = fromDepth.getOrCreateCallClass(getClassName(from));
+            ClassMethod fromMethod = fromClass.getOrCreateClassMethod(from.methodName);
+            fromMethod.update(from.stackDepth,
+                from.callCount,
+                from.callLatency,
+                from.failedCount,
+                from.failedLatency);
 
-        if (to != null) {
-            fromClass.calls(getClassName(to), to.methodName);
+            if (to != null) {
+                fromClass.calls(getClassName(to), to.methodName);
 
-            CallDepth toDepth = getCallDepth(to.stackDepth);
-            CallClass toClass = toDepth.getOrCreateCallClass(getClassName(to));
-            ClassMethod toMethod = toClass.getOrCreateClassMethod(to.methodName);
-            toMethod.update(to.stackDepth,
-                to.callCount,
-                to.callLatency,
-                to.failedCount,
-                to.failedLatency);
+                CallDepth toDepth = getCallDepth(to.stackDepth);
+                CallClass toClass = toDepth.getOrCreateCallClass(getClassName(to));
+                ClassMethod toMethod = toClass.getOrCreateClassMethod(to.methodName);
+                toMethod.update(to.stackDepth,
+                    to.callCount,
+                    to.callLatency,
+                    to.failedCount,
+                    to.failedLatency);
+            }
+            return true;
+        } else {
+            return false;
         }
     }
 

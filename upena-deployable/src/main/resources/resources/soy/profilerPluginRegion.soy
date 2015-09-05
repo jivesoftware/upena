@@ -2,6 +2,8 @@
 
 /**
  * 
+ * @param? enabled
+ * @param? age
  * @param? serviceName
  * @param? serviceNames
  * @param? valueStrategy
@@ -35,7 +37,8 @@
                                         class="j-tenant-autocomplete j-autocomplete-input j-ui-elem" placeholder="Service Name"
                                         name="serviceName" id="serviceNamePicker" data-original-title="" title="">
                                         {foreach $sn in $serviceNames}
-                                            <option value="{$sn}" {if $sn == $serviceName}selected="selected"{/if}>{$sn}</option>
+                                            <option value="{$sn.name}" {if $sn.name == $serviceName}selected="selected"{/if}>{$sn.name}&nbsp age:{$age}</option>
+                                            <input onChange='this.form.submit();' type="checkbox" name="enabled"  {if $sn.name == $serviceName}checked{/if}>
                                         {/foreach}
                                     </select>
                                 </td>
@@ -121,7 +124,7 @@
                             </tr>
                         </table>
                     </div>
-                    <div>                     
+                    <div class="well">                     
 Example Usage:<br>
 In the Releases tab add the agent as a plugin by including it on the end of the artifacts coordinates.<br>
 <br>

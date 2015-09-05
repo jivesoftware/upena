@@ -245,7 +245,7 @@
                                     <td bgcolor="#C2D9EF"><div style="max-width: 100px; word-wrap:break-word;">{$h.adefault?:''}</div></td>
                                     <td bgcolor="#D2E9FF">
                                         {if ($h.acluster != null or $h.ahost != null or $h.aservice != null or $h.ainstance != null)}
-                                            <input type="text" style="width:200px; padding-left:10px;"
+                                            <input type="text" style="width:100%; padding-left:10px;"
                                                 placeholder="override" value="{$h.aoverride?:''}" name="override" class="upena-cfg-field-a"
                                                 data-upena-cfg-prop="{$p.property}" data-upena-cfg-link="{$p.property}:{index($h)}"
                                                 data-upena-cfg-instance-key="{$h.ainstanceKey?:''}" data-upena-cfg-override="{$h.aoverride?:''}"
@@ -269,7 +269,7 @@
                                     </td>
                                     <td bgcolor="#E7E7EF">
                                         {if $h.boverride != null}
-                                            <input type="text" style="width:200px; padding-left:10px;"
+                                            <input type="text" style="width:100%; padding-left:10px;"
                                                 placeholder="override" value="{$h.boverride?:''}" name="override" class="upena-cfg-field-b"
                                                 data-upena-cfg-prop="{$p.property}" data-upena-cfg-copy="{$p.property}:{index($h)}">
                                         {/if}

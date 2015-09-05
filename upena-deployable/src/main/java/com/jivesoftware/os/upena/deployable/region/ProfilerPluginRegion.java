@@ -51,6 +51,7 @@ public class ProfilerPluginRegion implements PageRegion<ProfilerPluginRegionInpu
 
     public static class ProfilerPluginRegionInput implements PluginInput {
 
+        boolean enabled;
         String serviceName;
         int height;
         String valueStrategy;
@@ -63,7 +64,8 @@ public class ProfilerPluginRegion implements PageRegion<ProfilerPluginRegionInpu
         int mouseX;
         int mouseY;
 
-        public ProfilerPluginRegionInput(String serviceName,
+        public ProfilerPluginRegionInput(boolean enabled,
+            String serviceName,
             int height,
             String valueStrategy,
             String stackStrategy,
@@ -74,6 +76,7 @@ public class ProfilerPluginRegion implements PageRegion<ProfilerPluginRegionInpu
             String stackOrder,
             int mouseX,
             int mouseY) {
+            this.enabled = enabled;
             this.serviceName = serviceName;
             this.height = height;
             this.valueStrategy = valueStrategy;
@@ -91,7 +94,6 @@ public class ProfilerPluginRegion implements PageRegion<ProfilerPluginRegionInpu
         public String name() {
             return "Profiler";
         }
-
     }
 
     @Override
@@ -100,6 +102,7 @@ public class ProfilerPluginRegion implements PageRegion<ProfilerPluginRegionInpu
 
         try {
 
+            data.put("enabled", String.valueOf(input.enabled));
             data.put("serviceName", String.valueOf(input.serviceName));
             data.put("serviceNames", visualizeProfile.getPossibleServiceNames());
             data.put("height", String.valueOf(input.height));
@@ -121,7 +124,9 @@ public class ProfilerPluginRegion implements PageRegion<ProfilerPluginRegionInpu
             data.put("mouseY", String.valueOf(input.mouseY));
 
             visualizeProfile.setServicName(input.serviceName);
-            IImage ii = visualizeProfile.render(input.height,
+            IImage ii = visualizeProfile.render(data,
+                input.enabled,
+                input.height,
                 ValueStrat.valueOf(input.valueStrategy),
                 StackStrat.valueOf(input.stackStrategy),
                 BarStrat.valueOf(input.barStrategy),
@@ -131,7 +136,6 @@ public class ProfilerPluginRegion implements PageRegion<ProfilerPluginRegionInpu
                 StackOrder.valueOf(input.stackOrder),
                 new XY_I(input.mouseX, input.mouseY));
 
-            System.out.println("II:" + ii);
             if (ii != null) {
 
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();

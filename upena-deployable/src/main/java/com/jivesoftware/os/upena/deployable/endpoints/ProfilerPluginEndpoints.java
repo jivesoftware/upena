@@ -38,7 +38,8 @@ public class ProfilerPluginEndpoints {
     @Produces(MediaType.TEXT_HTML)
     public Response ring(@Context HttpServletRequest httpRequest) {
         String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-            new ProfilerPluginRegionInput("",
+            new ProfilerPluginRegionInput(true,
+                "",
                 800,
                 VStrategies.ValueStrat.constant.name(),
                 VStrategies.StackStrat.constant.name(),
@@ -57,6 +58,7 @@ public class ProfilerPluginEndpoints {
     @Produces(MediaType.TEXT_HTML)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response action(@Context HttpServletRequest httpRequest,
+        @FormParam("enabled") @DefaultValue("true") boolean enabled,
         @FormParam("serviceName") @DefaultValue("") String serviceName,
         @FormParam("height") @DefaultValue("800") int height,
         @FormParam("valueStrategy") @DefaultValue("constant") String valueStrategy,
@@ -69,7 +71,8 @@ public class ProfilerPluginEndpoints {
         @FormParam("x") @DefaultValue("0") int mouseX,
         @FormParam("y") @DefaultValue("0") int mouseY) {
         String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-            new ProfilerPluginRegionInput(serviceName,
+            new ProfilerPluginRegionInput(enabled,
+                serviceName,
                 height,
                 valueStrategy,
                 stackStrategy,
