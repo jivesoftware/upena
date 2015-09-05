@@ -58,7 +58,7 @@ public class ProfilerPluginEndpoints {
     @Produces(MediaType.TEXT_HTML)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response action(@Context HttpServletRequest httpRequest,
-        @FormParam("enabled") @DefaultValue("true") boolean enabled,
+        @FormParam("enabled") @DefaultValue("false") boolean enabled,
         @FormParam("serviceName") @DefaultValue("") String serviceName,
         @FormParam("height") @DefaultValue("800") int height,
         @FormParam("valueStrategy") @DefaultValue("constant") String valueStrategy,
@@ -70,6 +70,9 @@ public class ProfilerPluginEndpoints {
         @FormParam("stackOrder") @DefaultValue("ascending") String stackOrder,
         @FormParam("x") @DefaultValue("0") int mouseX,
         @FormParam("y") @DefaultValue("0") int mouseY) {
+
+        System.out.println("enabled:" + enabled);
+
         String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
             new ProfilerPluginRegionInput(enabled,
                 serviceName,

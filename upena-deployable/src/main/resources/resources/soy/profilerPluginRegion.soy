@@ -21,6 +21,7 @@
  * @param? stackOrder
  * @param? stackOrders
  * @param? profile
+ * @param? over
  *
  */
 {template .profilerPluginRegion}
@@ -37,10 +38,11 @@
                                         class="j-tenant-autocomplete j-autocomplete-input j-ui-elem" placeholder="Service Name"
                                         name="serviceName" id="serviceNamePicker" data-original-title="" title="">
                                         {foreach $sn in $serviceNames}
-                                            <option value="{$sn.name}" {if $sn.name == $serviceName}selected="selected"{/if}>{$sn.name}&nbsp age:{$age}</option>
-                                            <input onChange='this.form.submit();' type="checkbox" name="enabled"  {if $enabled == true}checked{/if}>
+                                            <option value="{$sn.name}" {if $sn.name == $serviceName}selected="selected"{/if}>{$sn.name} {$sn.enabled}</option>
                                         {/foreach}
                                     </select>
+                                    &nbsp age:{$age}
+                                    <input onChange='this.form.submit();' type="checkbox" name="enabled" value="true" {if $enabled == 'true'}checked="checked"{/if}>
                                 </td>
                             </tr>
                         </table>
@@ -50,6 +52,50 @@
                             <input onChange='this.form.submit();' type="image" src="{$profile}" alt="Submit">
                         {/if}
                     </div>
+                    {if $over}
+                        <table>
+                            <tr>
+                                <td>
+                                    {if $over.methods}
+                                        <table>
+                                             {foreach $m in $over.methods}
+                                                <tr>
+                                                    <td>
+                                                        Method:{$m.name}<br>
+                                                        Success:{$m.success}<br>
+                                                        Success Latency:{$m.successLatency}<br>
+                                                        Failed:{$m.failed}<br>
+                                                        Failed Latency:{$m.failedLatency}<br>
+                                                    </td>
+                                                </tr>
+                                             {/foreach}
+                                        </table>
+                                    {/if}
+                                </td>
+                                <td>
+                                    Interface:{$over.name}<br>
+                                    Success:{$over.success}<br>
+                                    Success Latency:{$over.successLatency}<br>
+                                    Failed:{$over.failed}<br>
+                                    Failed Latency:{$over.failedLatency}<br>
+                                </td>
+                                <td>
+                                    {if $over.calls}
+                                        <table>
+                                            {foreach $c in $over.calls}
+                                                <tr>
+                                                    <td>
+                                                        Class:{$c.className}<br>
+                                                        Method:{$c.methodName}<br>
+                                                    </td>
+                                                </tr>
+                                             {/foreach}
+                                        </table>
+                                    {/if}
+                                </td>
+                            </tr>
+                        </table>
+                    {/if}
                     <div class="well">
                         <table>
                             <tr>

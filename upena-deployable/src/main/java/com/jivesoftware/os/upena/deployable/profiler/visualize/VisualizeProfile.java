@@ -53,6 +53,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static com.jivesoftware.os.upena.deployable.profiler.visualize.paint.VS.c32BitARGB;
 
@@ -64,7 +65,7 @@ public class VisualizeProfile {
 
     static BarFlavor interfaceBar = new BarFlavor(8);
     static BarFlavor methodBar = new BarFlavor(3);
-    Set<String> selectedServiceNames = new HashSet<>();
+    AtomicReference<String> selectedServiceName = new AtomicReference<>();
     final ServicesCallDepthStack servicesCallDepthStack;
     InterfaceArea over;
     InterfaceArea lastOver;
@@ -89,8 +90,7 @@ public class VisualizeProfile {
     }
 
     public void setServicName(String serviceName) {
-        selectedServiceNames.clear();
-        selectedServiceNames.add(serviceName);
+        selectedServiceName.set(serviceName);
     }
 
     public IImage render(Map<String, Object> data,
@@ -105,22 +105,25 @@ public class VisualizeProfile {
         StackOrder stackOrder,
         XY_I mp) {
 
-        for (String serviceName : selectedServiceNames) {
-            CallStack callStack = servicesCallDepthStack.callStackForServiceName(serviceName);
-            if (callStack != null) {
-                callStack.enabled.set(enabled);
-                data.put("age", String.valueOf(callStack.lastSampleTimestampMillis.get()));
-            }
+        String serviceName = selectedServiceName.get();
+        CallStack callStack = servicesCallDepthStack.callStackForServiceName(serviceName);
+        if (callStack != null) {
+            callStack.enabled.set(enabled);
+            data.put("age", String.valueOf(System.currentTimeMillis() - callStack.lastSampleTimestampMillis.get()));
         }
 
         valuesHistogram.reset();
 
-        Iterator<String> iterator = selectedServiceNames.iterator();
-        if (!iterator.hasNext()) {
+        int _x = 0;
+        int _y = 0;
+        int ox = _x;
+        int oy = _y;
+
+        if (selectedServiceName.get() == null) {
             return null;
         }
 
-        CallDepth[] copy = servicesCallDepthStack.getCopy(iterator.next());
+        CallDepth[] copy = servicesCallDepthStack.getCopy(serviceName);
         int totalDepth = copy.length;
         if (totalDepth == 0) {
             return null;
@@ -221,8 +224,8 @@ public class VisualizeProfile {
         } else {
         }
 
-        int _x = (16 * 20);
-        int _y = (16 * 10);
+        _x += (16 * 20);
+        _y += (16 * 10);
         _w -= (16 * 40);
         _h -= (16 * 20);
 
@@ -324,6 +327,44 @@ public class VisualizeProfile {
                 paint = lastOver;
             }
 
+            if (paint != null) {
+                Map<String, Object> over = new HashMap<>();
+                
+                CallClass callClass = paint.callClass;
+                List<Map<String, Object>> methods = new ArrayList<>();
+                for (String methodName : callClass.getMethods()) {
+
+                    ClassMethod method = callClass.getMethod(methodName);
+                    Map<String, Object> m = new HashMap<>();
+                    m.put("name", method.getMethodName());
+                    m.put("success", String.valueOf(method.getCalled()));
+                    m.put("successLatency", String.valueOf(method.getSuccesslatency()));
+                    m.put("failed", String.valueOf(method.getFailed()));
+                    m.put("failedLatency", String.valueOf(method.getFailedlatency()));
+                    methods.add(m);
+                }
+                over.put("methods", methods)
+
+
+                over.put("name", callClass.getName());
+                over.put("success", String.valueOf(callClass.getCalled()));
+                over.put("successLatency", String.valueOf(callClass.getSuccesslatency()));
+                over.put("failed", String.valueOf(callClass.getFailed()));
+                over.put("failedLatency", String.valueOf(callClass.getFailedlatency()));
+
+                List<Map<String, Object>> callsTo = new ArrayList<>();
+                for (Call call : callClass.getCalls()) {
+
+                    Map<String, Object> c = new HashMap<>();
+                    c.put("className", call.getClassName());
+                    c.put("methodName", call.getMethodName());
+                    callsTo.add(c);
+                }
+                over.put("calls", callsTo);
+                
+                data.put("over", over);
+            }
+
             XY_I op = new XY_I(paint.x + ((paint.w / 4) * 3), paint.y + (paint.h / 2));
             if (overMethod != null) {
                 op = new XY_I(overMethod.x + (overMethod.w / 2), overMethod.y + (overMethod.h / 2));
@@ -336,7 +377,7 @@ public class VisualizeProfile {
 
             if (overMethod != null) {
                 paint(canvas, new XY_I(rect.x + rect.w, rect.y + rect.h - 8),
-                    new XY_I(rect.x + rect.w + 16, rect.y + rect.h - 8),
+                    new XY_I(rect.x + rect.w + 32, rect.y + rect.h - 8),
                     nameUtils.simpleMethodName(overMethod),
                     UV.fonts[UV.cText], AColor.gray);
             }
@@ -344,8 +385,8 @@ public class VisualizeProfile {
         }
 
         int bh = widthPerDepth;
-        int bx = _x + bh;
-        int by = _y + bh;
+        int bx = ox + bh;
+        int by = oy + bh;
         int bw = 160;
 
         for (int i = 0; i < valuesHistogram.histogram.length; i++) {
@@ -358,7 +399,7 @@ public class VisualizeProfile {
                     1f - (float) (i + 1) / (float) valuesHistogram.histogram.length));
 
             canvas.setFont(UV.fonts[UV.cText]);
-            canvas.setColor(ViewColor.cThemeFont);
+            canvas.setColor(AColor.white);
             string(canvas, "" + valuesHistogram.histogram[i], UV.fonts[UV.cText], bx + 8, by - 4, UV.cWW, 0);
 
             by += bh;
@@ -380,11 +421,11 @@ public class VisualizeProfile {
 
         _g.setColor(background);
         _g.setAlpha(0.9f, 0);
-        _g.roundRect(true, at.x - 8, at.y - (int) (mh) - 8, (int) mw, 16 + (int) mh, 8, 8);
-        _g.roundRect(false, at.x - 8, at.y - (int) (mh) - 8, (int) mw, 16 + (int) mh, 8, 8);
+        _g.roundRect(true, at.x - 8, at.y - (int) (mh) - 8, (int) mw + 16, 16 + (int) mh, 8, 8);
+        _g.roundRect(false, at.x - 8, at.y - (int) (mh) - 8, (int) mw + 16, 16 + (int) mh, 8, 8);
         _g.setAlpha(1f, 0);
 
-        _g.setColor(ViewColor.cThemeFont);
+        _g.setColor(AColor.white); //ViewColor.cThemeFont);
         float _y = at.y;
         for (String m : message) {
             float sh = font.getH(m);
@@ -392,6 +433,7 @@ public class VisualizeProfile {
             _y += sh;
         }
 
+        _g.setColor(ViewColor.cThemeFont);
         _g.line(from.x, from.y, at.x, at.y);
 
         _g.setColor(AColor.orange);
@@ -428,7 +470,7 @@ public class VisualizeProfile {
                 _g.setColor(toArea.interfaceArea.color.brighter());
             } else {
                 _g.setColor(AColor.gray);
-                _g.setAlpha(0.25f, 0);
+                _g.setAlpha(0.5f, 0);
             }
 
             IPath path = VS.path();

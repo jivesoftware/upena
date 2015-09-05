@@ -40,9 +40,13 @@ public class LatentGraph {
 
     public Boolean latentDepths(LatentDepthCallback latentDepthCallback) {
         for (LatentEdge edge : graph) {
-            boolean enabled = latentDepthCallback.calls(edge.getFrom(), edge.getTo());
-            if (!enabled) {
-                return false;
+            if (latentDepthCallback != null && edge != null) {
+                LatentDepth from = edge.getFrom();
+                LatentDepth to = edge.getTo();
+                Boolean enabled = latentDepthCallback.calls(from, to);
+                if (enabled != null && !enabled) {
+                    return false;
+                }
             }
         }
         return true;
@@ -51,7 +55,6 @@ public class LatentGraph {
     public void clear() {
         graph.clear();
     }
-
 
     static class LatentEdge {
 

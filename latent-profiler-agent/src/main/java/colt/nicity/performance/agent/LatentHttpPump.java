@@ -126,7 +126,8 @@ public class LatentHttpPump {
                         sample.put("to", latentJson(to));
                         HttpResponse postJson = httpClient.postJson("/profile/latents", sample.toJSONString());
                         if (postJson.getStatusCode() >= 200 && postJson.getStatusCode() < 300) {
-                            return Boolean.getBoolean(new String(postJson.getResponseBody()));
+                            String response = new String(postJson.getResponseBody());
+                            return Boolean.getBoolean(response);
                         } else {
                             return null;
                         }

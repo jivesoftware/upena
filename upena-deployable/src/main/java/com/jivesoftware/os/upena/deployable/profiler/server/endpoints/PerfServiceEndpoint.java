@@ -15,6 +15,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 /**
@@ -33,9 +34,9 @@ public class PerfServiceEndpoint {
 
     @POST
     @Path("/latents")
-    public String ingressLatents(String latents) throws IOException {
+    public Response ingressLatents(String latents) throws IOException {
         boolean enabled = perfService.getCallDepthStack().call(mapper.readValue(latents, LatentSample.class));
-        return String.valueOf(enabled);
+        return Response.ok(String.valueOf(enabled), MediaType.TEXT_PLAIN_TYPE).build();
     }
 
     @Path("/render")

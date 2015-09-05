@@ -23,7 +23,7 @@ public class NameUtils {
         String shortClassName = shortName(callArea.getName());
         String[] ls = new String[]{
             shortClassName,
-            Joiner.on(",").join(callArea.depths.toArray()),
+            "depths: " + Joiner.on(",").join(callArea.depths.toArray()),
             "latency: " + latencyString(callArea.callClass.getSuccesslatency()),
             "called: " + callArea.callClass.getCalled(),
             "total: " + latencyString(callArea.callClass.getCalled() * callArea.callClass.getSuccesslatency()),
