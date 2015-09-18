@@ -1,4 +1,4 @@
-Upena
+![Upena](https://github.com/jivesoftware/upena/wiki/images/upena/logo-large.png)
 =========
 
 #### What It Is
