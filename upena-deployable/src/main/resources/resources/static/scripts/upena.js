@@ -895,7 +895,7 @@ upena.livehealth = {
 
 $(document).ready(function () {
 
-
+    $('[data-toggle="tooltip"]').tooltip();
 
     $('.float-table-head').each(function (j, table) {
         $(table).floatThead({

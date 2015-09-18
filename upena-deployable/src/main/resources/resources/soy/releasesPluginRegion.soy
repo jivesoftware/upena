@@ -55,8 +55,8 @@
                             placeholder="Version" value="{$filters.version?:''}" name="version" id="descriptionPicker" class="form-control">
                         </td>
                         <td>
-                            <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary ladda-button" data-style="expand-right"><span class="glyphicon glyphicon-search"></span></button>
-                            <button title="Add" type="submit" name="action" value="add" class="btn btn-default ladda-button" data-style="expand-right"><span class="glyphicon glyphicon-plus"></span></button>
+                            <button data-toggle="tooltip" title="Filter" type="submit" name="action" value="filter" class="btn btn-primary ladda-button" data-style="expand-right"><span class="glyphicon glyphicon-search"></span></button>
+                            <button data-toggle="tooltip" title="Add" type="submit" name="action" value="add" class="btn btn-default ladda-button" data-style="expand-right"><span class="glyphicon glyphicon-plus"></span></button>
                         <td>
                     </tr>
                 </form>
@@ -85,7 +85,7 @@
                                 {else}
                                     <div class="coloredBox" style="background-color:orange;"></div>
                                     <span style="font-weight: bold;">{$r.newerVersion}&nbsp&nbsp</span>
-                                    <button class="btn btn-default btn-sm" type="button" onclick="upena.latestRelease.change('{$r.key}', '{$r.newerVersion}');" name="action" value="update">Upgrade</button>
+                                    <button data-toggle="tooltip" title="Hooray!" class="btn btn-default btn-sm" type="button" onclick="upena.latestRelease.change('{$r.key}', '{$r.newerVersion}');" name="action" value="update">Upgrade</button>
 
                                     {if $r.scm}
                                         {foreach $scm in $r.scm}
