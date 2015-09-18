@@ -10,8 +10,8 @@ package com.jivesoftware.os.upena.deployable.profiler.model;
 
 import com.jivesoftware.os.upena.deployable.profiler.sample.LatentSample;
 import com.jivesoftware.os.upena.deployable.profiler.sample.LatentSample.LatentNode;
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -66,6 +66,7 @@ public class CallStack {
 
     private String getClassName(LatentNode node) {
         return node.interfaceName;
+        
     }
 
     private CallDepth getCallDepth(int depth) {
@@ -81,7 +82,7 @@ public class CallStack {
     }
 
     CallDepth[] getCopy() {
-        List<Integer> keySet = new LinkedList<>(callsAtDepth.keySet());
+        List<Integer> keySet = new ArrayList<>(callsAtDepth.keySet());
         Collections.sort(keySet);
         CallDepth[] callDepths = new CallDepth[keySet.size()];
         for (int i = 0; i < callDepths.length; i++) {

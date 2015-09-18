@@ -48,7 +48,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -180,7 +179,7 @@ public class VisualizeProfile {
             names.put(keys.get(i), (long) i);
         }
 
-        List<CallDepthAreas> bars = new LinkedList<>();
+        List<CallDepthAreas> bars = new ArrayList<>();
         for (int i = 0; i < maxAvg + 1; i++) {
             bars.add(new CallDepthAreas(valueStrategy, stackStrategy));
         }
@@ -280,12 +279,12 @@ public class VisualizeProfile {
             callArea.paint(canvas);
         }
 
-        List<Line> lines = new LinkedList<>();
+        List<Line> lines = new ArrayList<>();
         for (InterfaceArea area : unique.values()) {
             if (hideClass.contains(area.getName())) {
                 continue;
             }
-            List<InterfaceArea.MethodArea> toAreas = new LinkedList<>();
+            List<InterfaceArea.MethodArea> toAreas = new ArrayList<>();
             int totalH = 0;
             for (Call call : area.callsTo) {
                 InterfaceArea called = unique.get(call.getClassName());

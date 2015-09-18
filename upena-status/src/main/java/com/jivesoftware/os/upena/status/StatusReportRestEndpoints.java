@@ -2,7 +2,8 @@ package com.jivesoftware.os.upena.status;
 
 import com.jivesoftware.os.routing.bird.deployable.reporter.shared.StatusReport;
 import com.jivesoftware.os.routing.bird.shared.ResponseHelper;
-import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
@@ -33,7 +34,7 @@ public class StatusReportRestEndpoints {
     @Consumes("application/json")
     @Path("/status/list")
     public Response listAnnouncements(@QueryParam("callback") @DefaultValue("") String callback) {
-        LinkedList<StatusReport> linkedList = new LinkedList<>();
+        List<StatusReport> linkedList = new ArrayList<>();
         for (StatusReport entry : statusReports.active()) {
             linkedList.add(entry);
         }

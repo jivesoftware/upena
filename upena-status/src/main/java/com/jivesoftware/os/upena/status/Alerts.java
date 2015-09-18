@@ -8,7 +8,7 @@
  */
 package com.jivesoftware.os.upena.status;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -17,7 +17,7 @@ import java.util.List;
 public class Alerts {
 
     public int timestampInSeconds;
-    public List<Alert> alerts = new LinkedList<>();
+    public List<Alert> alerts = new ArrayList<>();
 
     public Alerts() {
     }
