@@ -91,13 +91,13 @@ public class SARPluginRegion implements PageRegion<SARInput> {
 
         sarData.add(pack(capture(new String[]{"-u"}, "CPU"), 3, new int[]{3, 4, 5, 6, 7, 8}, "cpu"));
         sarData.add(pack(capture(new String[]{"-d"}, "I/O"), 3, new int[]{3, 4, 5, 6, 7, 8, 9, 10}, "io"));
-        
+
         Map<String, Object> captureMemory = capture(new String[]{"-r"}, "Memory");
         sarData.add(pack(captureMemory, 2, new int[]{2, 3, 5, 6, 7}, "mem"));
         sarData.add(pack(captureMemory, 2, new int[]{4, 8}, "memPercent"));
 
         sarData.add(pack(capture(new String[]{"-B"}, "Paging"), 2, new int[]{2, 3, 4, 6, 7, 8, 9, 10}, "page"));
-        
+
         Map<String, Object> captureContextSwitches = capture(new String[]{"-w"}, "Context Switch");
         sarData.add(pack(captureContextSwitches, 1, new int[]{2}, "contextProcs"));
         sarData.add(pack(captureContextSwitches, 1, new int[]{3}, "contextCswch"));
@@ -117,10 +117,17 @@ public class SARPluginRegion implements PageRegion<SARInput> {
         List<List<String>> lines = (List<List<String>>) capture.get("lines");
 
         if (lines.size() > 1) {
+            int step = lines.size() / 100;
             for (int vi = 0; vi < valueColumnIndex.length; vi++) {
                 if (lines.get(0).size() > valueColumnIndex[vi]) {
                     List<String> values = new ArrayList<>();
                     for (int i = 1; i < lines.size(); i++) {
+                        double v = 0;
+                        int s = 0;
+                        for (; s < step && i + s < lines.size(); s++) {
+                            v += Double.valueOf(lines.get(i + s).get(valueColumnIndex[vi]));
+                        }
+                        v /= s;
                         values.add(lines.get(i).get(valueColumnIndex[vi]));
                     }
                     valueDatasets.add(
@@ -132,6 +139,7 @@ public class SARPluginRegion implements PageRegion<SARInput> {
 
             for (int i = 1; i < lines.size(); i++) {
                 labels.add("\"" + Joiner.on(" ").join(lines.get(i).subList(0, labelColumnCount)) + "\"");
+                i += step;
             }
         }
         Map<String, Object> map = new HashMap<>();
