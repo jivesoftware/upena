@@ -425,8 +425,11 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
                 ConnectionHealth value = familyHealth.getValue();
 
                 Map<String, Object> health = new HashMap<>();
-                health.put("from", from);
                 Node fromNode = nodes.get(from);
+                if (fromNode == null) {
+                    continue;
+                }
+                health.put("from", from);
                 health.put("fromColor", healthPluginRegion.idColorRGB(((float) fromNode.id / (float) nodes.size()), 1f));
 
                 health.put("to", value.connectionDescriptor.getInstanceDescriptor().serviceName);
@@ -436,9 +439,11 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
                 health.put("family", familyHealth.getKey());
 
                 health.put("success", numberFormat.format(value.success));
+                health.put("failure", numberFormat.format(value.failure));
                 health.put("successPerSecond", numberFormat.format(value.successPerSecond));
+                health.put("failurePerSecond", numberFormat.format(value.failurePerSecond));
 
-                health.put("inflight", numberFormat.format(value.attempt - value.success));
+                health.put("inflight", numberFormat.format(value.attempt - value.success - value.failure));
 
                 health.put("min", numberFormat.format(value.latencyStats.latencyMin));
                 health.put("minColor", healthPluginRegion.trafficlightColorRGB(1d - mmd.zeroToOne(value.latencyStats.latencyMin), 1f));

@@ -13,6 +13,8 @@
                 <th>connection</th>
                 <th>success</th>
                 <th>success/sec</th>
+                <th>failure</th>
+                <th>failure/sec</th>
                 <th>inflight</th>
                 <th>min</th>
                 <th>mean</th>
@@ -35,6 +37,8 @@
                     <td>{$h.family}</td>
                     <td>{$h.success}</td>
                     <td>{$h.successPerSecond}</td>
+                    <td>{$h.failure}</td>
+                    <td>{$h.failurePerSecond}</td>
                     <td>{$h.inflight}</td>
                     <td style="background:rgba({$h.minColor},  0.4);">{$h.min}</td>
                     <td style="background:rgba({$h.meanColor},  0.4)">{$h.mean}</td>
