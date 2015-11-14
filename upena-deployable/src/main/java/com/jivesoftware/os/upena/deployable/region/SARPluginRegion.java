@@ -117,7 +117,7 @@ public class SARPluginRegion implements PageRegion<SARInput> {
         List<List<String>> lines = (List<List<String>>) capture.get("lines");
 
         if (lines.size() > 1) {
-            int step = lines.size() / 100;
+            int step = lines.size() / 64;
             for (int vi = 0; vi < valueColumnIndex.length; vi++) {
                 if (lines.get(0).size() > valueColumnIndex[vi]) {
                     List<String> values = new ArrayList<>();
