@@ -214,6 +214,8 @@ public class HostsPluginRegion implements PageRegion<HostsPluginRegionInput> {
                 Map<String, Object> row = new HashMap<>();
                 row.put("instanceCounts", instanceCounts);
                 row.put("key", key.getKey());
+                row.put("datacenter", value.datacenterName);
+                row.put("rack", value.rackName);
                 row.put("host", value.hostName);
                 row.put("port", String.valueOf(value.port));
                 row.put("workingDirectory", value.workingDirectory);
@@ -247,7 +249,4 @@ public class HostsPluginRegion implements PageRegion<HostsPluginRegionInput> {
 
     }
 
-    static class ServiceStatus {
-
-    }
 }

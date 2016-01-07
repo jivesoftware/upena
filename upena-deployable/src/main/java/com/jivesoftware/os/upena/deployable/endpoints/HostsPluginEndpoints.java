@@ -1,5 +1,8 @@
 package com.jivesoftware.os.upena.deployable.endpoints;
 
+import com.jivesoftware.os.mlogger.core.MetricLogger;
+import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
+import com.jivesoftware.os.routing.bird.shared.ResponseHelper;
 import com.jivesoftware.os.upena.deployable.region.HostsPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.HostsPluginRegion.HostsPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
@@ -23,8 +26,11 @@ import javax.ws.rs.core.Response;
 @Path("/ui/hosts")
 public class HostsPluginEndpoints {
 
+    private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
+
     private final SoyService soyService;
     private final HostsPluginRegion pluginRegion;
+    private final ResponseHelper responseHelper = ResponseHelper.INSTANCE;
 
     public HostsPluginEndpoints(@Context SoyService soyService, @Context HostsPluginRegion pluginRegion) {
         this.soyService = soyService;
@@ -35,9 +41,14 @@ public class HostsPluginEndpoints {
     @Path("/")
     @Produces(MediaType.TEXT_HTML)
     public Response hosts(@Context HttpServletRequest httpRequest) {
-        String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-            new HostsPluginRegionInput("", "", "", "", "", "", "", ""));
-        return Response.ok(rendered).build();
+        try {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+                new HostsPluginRegionInput("", "", "", "", "", "", "", ""));
+            return Response.ok(rendered).build();
+        } catch (Exception e) {
+            LOG.error("hosts", e);
+            return responseHelper.errorResponse("hosts failed", e);
+        }
     }
 
     @POST
@@ -53,8 +64,13 @@ public class HostsPluginEndpoints {
         @FormParam("port") @DefaultValue("") String port,
         @FormParam("workingDirectory") @DefaultValue("") String workingDirectory,
         @FormParam("action") @DefaultValue("") String action) {
-        String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-            new HostsPluginRegionInput(key, name, datacenter, rack, host, port, workingDirectory, action));
-        return Response.ok(rendered).build();
+        try {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+                new HostsPluginRegionInput(key, name, datacenter, rack, host, port, workingDirectory, action));
+            return Response.ok(rendered).build();
+        } catch (Exception e) {
+            LOG.error("action", e);
+            return responseHelper.errorResponse("action failed", e);
+        }
     }
 }
