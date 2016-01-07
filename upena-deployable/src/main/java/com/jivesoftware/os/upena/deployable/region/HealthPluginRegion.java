@@ -337,6 +337,8 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                     hostInfo.put("publicHost", com.google.common.base.Objects.firstNonNull(upenaHost.name, "unknownPublicHost"));
                     hostInfo.put("datacenter", com.google.common.base.Objects.firstNonNull(upenaHost.datacenterName, "unknownDatacenter"));
                     hostInfo.put("rack", com.google.common.base.Objects.firstNonNull(upenaHost.rackName, "unknownRack"));
+                } else {
+                    LOG.warn("Failed to locate host for " + nodeHealth.hostKey + " " + nodeHealth.host);
                 }
 
                 if (nodeHealth.nannyHealths.isEmpty()) {
@@ -379,10 +381,13 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                                 });
 
                             serviceStats.numberInstance.incrementAndGet();
-                            serviceStats.datacenters.computeIfAbsent(com.google.common.base.Objects.firstNonNull(upenaHost.datacenterName, "unknownDatacenter"),
-                                (key) -> new AtomicInteger()).incrementAndGet();
-                            serviceStats.racks.computeIfAbsent(com.google.common.base.Objects.firstNonNull(upenaHost.rackName, "unknownRack"),
-                                (key) -> new AtomicInteger()).incrementAndGet();
+                            if (upenaHost != null) {
+                                serviceStats.datacenters.computeIfAbsent(com.google.common.base.Objects.firstNonNull(upenaHost.datacenterName,
+                                    "unknownDatacenter"),
+                                    (key) -> new AtomicInteger()).incrementAndGet();
+                                serviceStats.racks.computeIfAbsent(com.google.common.base.Objects.firstNonNull(upenaHost.rackName, "unknownRack"),
+                                    (key) -> new AtomicInteger()).incrementAndGet();
+                            }
 
                             int si = service.index;
                             Long recency = nodeRecency.get(nodeHealth.host + ":" + nodeHealth.port);
