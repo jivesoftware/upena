@@ -46,16 +46,26 @@ public class HealthPluginEndpoints {
         @QueryParam("cluster") @DefaultValue("") String cluster,
         @QueryParam("host") @DefaultValue("") String host,
         @QueryParam("service") @DefaultValue("") String service) {
-        String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-            new HealthPluginRegionInput(cluster, host, service));
-        return Response.ok(rendered).build();
+        try {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+                new HealthPluginRegionInput(cluster, host, service));
+            return Response.ok(rendered).build();
+        } catch (Exception e) {
+            LOG.error("filter", e);
+            return responseHelper.errorResponse("filter failed", e);
+        }
     }
 
     @GET
     @Produces(MediaType.TEXT_HTML)
     @Path("/uis")
     public Response uis(@QueryParam("instanceKey") @DefaultValue("") String instanceKey) throws Exception {
-        return Response.ok(pluginRegion.renderInstanceHealth(instanceKey)).build();
+        try {
+            return Response.ok(pluginRegion.renderInstanceHealth(instanceKey)).build();
+        } catch (Exception e) {
+            LOG.error("uis", e);
+            return responseHelper.errorResponse("uis failed", e);
+        }
     }
 
     @GET
@@ -65,9 +75,13 @@ public class HealthPluginEndpoints {
         @QueryParam("cluster") @DefaultValue("") String cluster,
         @QueryParam("host") @DefaultValue("") String host,
         @QueryParam("service") @DefaultValue("") String service) {
-        return Response.ok(pluginRegion.renderLive(httpRequest.getRemoteUser(), new HealthPluginRegionInput(cluster, host, service))).build();
+        try {
+            return Response.ok(pluginRegion.renderLive(httpRequest.getRemoteUser(), new HealthPluginRegionInput(cluster, host, service))).build();
+        } catch (Exception e) {
+            LOG.error("live", e);
+            return responseHelper.errorResponse("live failed", e);
+        }
     }
-
 
     @POST
     @Path("/poll")
@@ -83,8 +97,8 @@ public class HealthPluginEndpoints {
                 service));
             return responseHelper.jsonResponse(result != null ? result : "");
         } catch (Exception e) {
-            LOG.error("Health poll failed", e);
-            return responseHelper.errorResponse("Health poll failed", e);
+            LOG.error("poll failed", e);
+            return responseHelper.errorResponse("poll failed", e);
         }
     }
 
