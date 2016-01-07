@@ -109,7 +109,12 @@ public class Nanny {
         return new NannyReport(deployLog.getState(), instanceDescriptor.get(), deployLog.commitedLog());
     }
 
-    synchronized public String nanny(String publicHostName, String host, String upenaHost, int upenaPort) throws InterruptedException, ExecutionException {
+    synchronized public String nanny(String datacenter,
+        String rack,
+        String publicHostName,
+        String host,
+        String upenaHost,
+        int upenaPort) throws InterruptedException, ExecutionException {
 
         long now = System.currentTimeMillis();
         if (restartAtTimestamp.get() > 0 && restartAtTimestamp.get() < now) {
@@ -138,7 +143,7 @@ public class Nanny {
                         Future<Boolean> detroyedFuture = threadPoolExecutor.submit(destroyTask);
                         if (detroyedFuture.get()) {
 
-                            NannyDeployCallable deployTask = new NannyDeployCallable(publicHostName, host, upenaHost, upenaPort,
+                            NannyDeployCallable deployTask = new NannyDeployCallable(datacenter, rack, publicHostName, host, upenaHost, upenaPort,
                                 instanceDescriptor.get(),
                                 instancePath,
                                 deployLog,

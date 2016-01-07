@@ -139,6 +139,9 @@ public class Main {
                 System.out.println("");
                 System.out.println("Overridable properties:");
                 System.out.println("");
+                System.out.println("    -Dhost.rack=<rackId>");
+                System.out.println("    -Dhost.datacenter=<datacenterId>");
+                System.out.println("");
                 System.out.println("    -Damza.port=1175");
                 System.out.println("         (change the port upena uses to interact with other upena nodes.) ");
                 System.out.println("");
@@ -171,7 +174,9 @@ public class Main {
         int multicastPort = Integer.parseInt(System.getProperty("amza.discovery.port", "1123"));
         String clusterName = (args.length > 1 ? args[1] : null);
 
-        String publicHost = System.getProperty("public.host.name", hostname);
+        String datacenter = System.getProperty("host.datacenter", "unknownDatacenter");
+        String rack = System.getProperty("host.name", "unknownRack");
+        String publicHost = System.getProperty("public.host.name", "");
 
         final RingHost ringHost = new RingHost(hostname, port); // TODO include rackId
         // todo need a better way to create writter id.
@@ -239,18 +244,18 @@ public class Main {
         });
         upenaStore.attachWatchers();
 
-        UpenaService upenaService = new UpenaService(publicHost, upenaStore);
+        UpenaService upenaService = new UpenaService(datacenter, rack, publicHost, upenaStore);
 
         System.out.println("-----------------------------------------------------------------------");
         System.out.println("|      Upena Service Online");
         System.out.println("-----------------------------------------------------------------------");
 
         String workingDir = System.getProperty("user.dir");
-        Host host = new Host(publicHost, ringHost.getHost(), ringHost.getPort(), workingDir, null);
+        Host host = new Host(publicHost, datacenter, rack, ringHost.getHost(), ringHost.getPort(), workingDir, null);
+
         HostKey hostKey = upenaStore.hosts.toKey(host);
         Host gotHost = upenaStore.hosts.get(hostKey);
-        if (gotHost == null || !publicHost.equals(gotHost.name)) {
-            host = new Host(publicHost, ringHost.getHost(), ringHost.getPort(), workingDir, null);
+        if (gotHost == null || !gotHost.equals(host)) {
             upenaStore.hosts.update(null, host);
         }
 
@@ -264,6 +269,8 @@ public class Main {
 
         final UbaService ubaService = new UbaServiceInitializer().initialize(hostKey.getKey(),
             workingDir,
+            datacenter,
+            rack,
             publicHost,
             ringHost.getHost(),
             ringHost.getPort(),
@@ -393,8 +400,8 @@ public class Main {
             new TopologyPluginRegion("soy.page.topologyPluginRegion", "soy.page.connectionsHealth",
                 renderer, amzaService, upenaStore, healthPluginRegion, hostsPluginRegion, releasesPluginRegion, instancesPluginRegion, discoveredRoutes));
 
-         ManagePlugin connectivity = new ManagePlugin("transfer", null, "Connectivity", "/ui/connectivity",
-             ConnectivityPluginEndpoints.class,
+        ManagePlugin connectivity = new ManagePlugin("transfer", null, "Connectivity", "/ui/connectivity",
+            ConnectivityPluginEndpoints.class,
             new ConnectivityPluginRegion("soy.page.connectivityPluginRegion", "soy.page.connectionsHealth",
                 renderer, amzaService, upenaStore, healthPluginRegion, hostsPluginRegion, releasesPluginRegion, instancesPluginRegion, discoveredRoutes));
 
@@ -439,7 +446,6 @@ public class Main {
             SARPluginEndpoints.class,
             new SARPluginRegion("soy.page.sarPluginRegion", renderer, amzaService, ringHost));
 
-
         ServicesCallDepthStack servicesCallDepthStack = new ServicesCallDepthStack();
         PerfService perfService = new PerfService(servicesCallDepthStack);
 
@@ -470,7 +476,6 @@ public class Main {
 
         jerseyEndpoints.addEndpoint(PerfServiceEndpoint.class);
         jerseyEndpoints.addInjectable(PerfService.class, perfService);
-
 
         for (ManagePlugin plugin : plugins) {
             soyService.registerPlugin(plugin);

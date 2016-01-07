@@ -40,6 +40,8 @@ import org.eclipse.aether.resolution.ArtifactResult;
 
 class NannyDeployCallable implements Callable<Boolean> {
 
+    private final String datacenter;
+    private final String rack;
     private final String publicHostName;
     private final String host;
     private final String upenaHost;
@@ -52,13 +54,15 @@ class NannyDeployCallable implements Callable<Boolean> {
     private final DeployableScriptInvoker invokeScript;
     private final UbaLog ubaLog;
 
-    public NannyDeployCallable(String publicHostName, String host, String upenaHost, int upenaPort,
+    public NannyDeployCallable(String datacenter, String rack, String publicHostName, String host, String upenaHost, int upenaPort,
         InstanceDescriptor id, InstancePath instancePath,
         DeployLog deployLog,
         HealthLog healthLog,
         DeployableValidator deployableValidator,
         DeployableScriptInvoker invokeScript,
         UbaLog ubaLog) {
+        this.datacenter = datacenter;
+        this.rack = rack;
         this.publicHostName = publicHostName;
         this.host = host;
         this.upenaHost = upenaHost;
@@ -75,7 +79,7 @@ class NannyDeployCallable implements Callable<Boolean> {
     @Override
     public Boolean call() throws Exception {
         try {
-            instancePath.writeInstanceDescriptor(publicHostName, host, upenaHost, upenaPort, id);
+            instancePath.writeInstanceDescriptor(datacenter, rack, publicHostName, host, upenaHost, upenaPort, id);
             if (deploy()) {
                 if (!invokeScript.invoke(deployLog, instancePath, "init")) {
                     deployLog.log("Nanny", "failed to init service.", null);

@@ -36,7 +36,7 @@ public class HostsPluginEndpoints {
     @Produces(MediaType.TEXT_HTML)
     public Response hosts(@Context HttpServletRequest httpRequest) {
         String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-            new HostsPluginRegionInput("", "", "", "", "", ""));
+            new HostsPluginRegionInput("", "", "", "", "", "", "", ""));
         return Response.ok(rendered).build();
     }
 
@@ -47,12 +47,14 @@ public class HostsPluginEndpoints {
     public Response action(@Context HttpServletRequest httpRequest,
         @FormParam("key") @DefaultValue("") String key,
         @FormParam("name") @DefaultValue("") String name,
+        @FormParam("datacenter") @DefaultValue("") String datacenter,
+        @FormParam("rack") @DefaultValue("") String rack,
         @FormParam("host") @DefaultValue("") String host,
         @FormParam("port") @DefaultValue("") String port,
         @FormParam("workingDirectory") @DefaultValue("") String workingDirectory,
         @FormParam("action") @DefaultValue("") String action) {
         String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-            new HostsPluginRegionInput(key, name, host, port, workingDirectory, action));
+            new HostsPluginRegionInput(key, name, datacenter, rack, host, port, workingDirectory, action));
         return Response.ok(rendered).build();
     }
 }

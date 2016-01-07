@@ -48,10 +48,14 @@ import java.util.concurrent.ConcurrentNavigableMap;
 
 public class UpenaService {
 
+    private final String datacenter;
+    private final String rack;
     private final String publicHost;
     private final UpenaStore upenaStore;
 
-    public UpenaService(String publicHost, UpenaStore upenaStore) throws Exception {
+    public UpenaService(String datacenter, String rack, String publicHost, UpenaStore upenaStore) throws Exception {
+        this.datacenter = datacenter;
+        this.rack = rack;
         this.publicHost = publicHost;
         this.upenaStore = upenaStore;
     }
@@ -241,7 +245,9 @@ public class UpenaService {
         }
         String releaseGroupName = releaseGroup.name;
 
-        InstanceDescriptor instanceDescriptor = new InstanceDescriptor(host.name,
+        InstanceDescriptor instanceDescriptor = new InstanceDescriptor(host.datacenterName,
+            host.rackName,
+            host.name,
             clusterKey.getKey(),
             clusterName,
             serviceKey.getKey(),

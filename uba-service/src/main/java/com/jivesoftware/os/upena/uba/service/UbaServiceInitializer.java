@@ -29,7 +29,14 @@ import java.util.Arrays;
 
 public class UbaServiceInitializer {
 
-    public UbaService initialize(String hostKey, String workingDir, String publicHostName, String host, int port, UbaLog ubaLog) throws Exception {
+    public UbaService initialize(String hostKey,
+        String workingDir,
+        String datacenter,
+        String rack,
+        String publicHostName,
+        String host,
+        int port,
+        UbaLog ubaLog) throws Exception {
 
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
@@ -41,7 +48,7 @@ public class UbaServiceInitializer {
             throw new RuntimeException("Failed trying to mkdirs for " + root);
         }
         UbaTree tree = new UbaTree(root, new String[]{"cluster", "service", "release", "instance"});
-        Uba uba = new Uba(publicHostName, host, host, port, tree, ubaLog);
+        Uba uba = new Uba(datacenter, rack, publicHostName, host, host, port, tree, ubaLog);
         UbaService conductorService = new UbaService(client, uba, hostKey);
         return conductorService;
     }

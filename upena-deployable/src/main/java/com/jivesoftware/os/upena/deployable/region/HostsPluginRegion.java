@@ -53,14 +53,26 @@ public class HostsPluginRegion implements PageRegion<HostsPluginRegionInput> {
 
         final String key;
         final String name;
+        final String datacenter;
+        final String rack;
         final String host;
         final String port;
         final String workingDirectory;
         final String action;
 
-        public HostsPluginRegionInput(String key, String name, String host, String port, String workingDirectory, String action) {
+        public HostsPluginRegionInput(String key,
+            String name,
+            String datacenter,
+            String rack,
+            String host,
+            String port,
+            String workingDirectory,
+            String action) {
+
             this.key = key;
             this.name = name;
+            this.datacenter = datacenter;
+            this.rack = rack;
             this.host = host;
             this.port = port;
             this.workingDirectory = workingDirectory;
@@ -108,6 +120,8 @@ public class HostsPluginRegion implements PageRegion<HostsPluginRegionInput> {
                     filters.clear();
                     try {
                         Host newHost = new Host(input.name,
+                            input.datacenter,
+                            input.rack,
                             input.host,
                             Integer.parseInt(input.port),
                             input.workingDirectory,
@@ -130,6 +144,8 @@ public class HostsPluginRegion implements PageRegion<HostsPluginRegionInput> {
                             data.put("message", "Couldn't update no existent Host. Someone else likely just removed it since your last refresh.");
                         } else {
                             Host updatedHost = new Host(input.name,
+                                input.datacenter,
+                                input.rack,
                                 input.host,
                                 Integer.parseInt(input.port),
                                 input.workingDirectory,

@@ -21,6 +21,7 @@ import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.service.UpenaStore;
 import com.jivesoftware.os.upena.shared.Cluster;
 import com.jivesoftware.os.upena.shared.Host;
+import com.jivesoftware.os.upena.shared.HostKey;
 import com.jivesoftware.os.upena.shared.Instance;
 import com.jivesoftware.os.upena.shared.InstanceKey;
 import com.jivesoftware.os.upena.shared.ServiceKey;
@@ -37,6 +38,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  *
@@ -235,7 +237,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
             }
 
             ConcurrentSkipListSet<String> hosts = new ConcurrentSkipListSet<>();
-            ConcurrentSkipListSet<Service> services = new ConcurrentSkipListSet<>((Service o1, Service o2) -> {
+            ConcurrentSkipListSet<GridService> services = new ConcurrentSkipListSet<>((GridService o1, GridService o2) -> {
                 int c = o1.serviceName.compareTo(o2.serviceName);
                 if (c != 0) {
                     return c;
@@ -258,7 +260,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                         if (!hosts.contains(nannyHealth.instanceDescriptor.clusterName + ":" + nodeHealth.host + ":" + nodeHealth.port)) {
                             hosts.add(nannyHealth.instanceDescriptor.clusterName + ":" + nodeHealth.host + ":" + nodeHealth.port);
                         }
-                        Service service = new Service(nannyHealth.instanceDescriptor.serviceKey, nannyHealth.instanceDescriptor.serviceName);
+                        GridService service = new GridService(nannyHealth.instanceDescriptor.serviceKey, nannyHealth.instanceDescriptor.serviceName);
                         if (!services.contains(service)) {
                             services.add(service);
                         }
@@ -295,10 +297,11 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                 }
             }
 
-            Map<Service, Integer> serviceIndexs = new HashMap<>();
+            Map<GridServiceKey, GridService> serviceIndexs = new HashMap<>();
             int serviceIndex = 0;
-            for (Service service : services) {
-                serviceIndexs.put(service, serviceIndex);
+            for (GridService service : services) {
+                service.index = serviceIndex;
+                serviceIndexs.put(new GridServiceKey(service.serviceKey, service.serviceName), service);
                 serviceIndex++;
             }
             Map<String, Integer> hostIndexs = new HashMap<>();
@@ -327,6 +330,15 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
             }
 
             for (UpenaEndpoints.NodeHealth nodeHealth : nodeHealths.values()) {
+
+                Host upenaHost = upenaStore.hosts.get(new HostKey(nodeHealth.hostKey));
+                Map<String, String> hostInfo = new HashMap<>();
+                if (upenaHost != null) {
+                    hostInfo.put("publicHost", upenaHost.name);
+                    hostInfo.put("datacenter", upenaHost.datacenterName);
+                    hostInfo.put("rack", upenaHost.rackName);
+                }
+
                 if (nodeHealth.nannyHealths.isEmpty()) {
                     String host = "UNREACHABLE:" + nodeHealth.host + ":" + nodeHealth.port;
                     Integer hi = hostIndexs.get(host);
@@ -343,6 +355,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                         hostRows.get(hi).get(0).put("age", age);
                         hostRows.get(hi).get(0).put("uid", "uid-" + uid);
                         hostRows.get(hi).get(0).put("instanceKey", "");
+                        hostRows.get(hi).get(0).put("hostInfo", hostInfo);
                         uid++;
                     }
                 }
@@ -354,9 +367,21 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                     if ((!input.cluster.isEmpty() == cshow) && (!input.host.isEmpty() == hshow) && (!input.service.isEmpty() == sshow)) {
                         String host = nannyHealth.instanceDescriptor.clusterName + ":" + nodeHealth.host + ":" + nodeHealth.port;
                         Integer hi = hostIndexs.get(host);
-                        Integer si = serviceIndexs.get(new Service(nannyHealth.instanceDescriptor.serviceKey, nannyHealth.instanceDescriptor.serviceName));
-                        if (hi != null && si != null) {
 
+                        GridServiceKey serviceIndexKey = new GridServiceKey(nannyHealth.instanceDescriptor.serviceKey, nannyHealth.instanceDescriptor.serviceName);
+                        GridService service = serviceIndexs.get(serviceIndexKey);
+                        if (hi != null && service != null) {
+
+                            ServiceStats serviceStats = service.clusterToServiceStats.computeIfAbsent(nannyHealth.instanceDescriptor.clusterName,
+                                (String clusterName) -> {
+                                    return new ServiceStats();
+                                });
+
+                            serviceStats.numberInstance.incrementAndGet();
+                            serviceStats.datacenters.computeIfAbsent(upenaHost.datacenterName, (key) -> new AtomicInteger()).incrementAndGet();
+                            serviceStats.racks.computeIfAbsent(upenaHost.rackName, (key) -> new AtomicInteger()).incrementAndGet();
+
+                            int si = service.index;
                             Long recency = nodeRecency.get(nodeHealth.host + ":" + nodeHealth.port);
                             String age = recency != null ? UpenaEndpoints.humanReadableUptime(System.currentTimeMillis() - recency) : "unknown";
 
@@ -368,6 +393,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                             hostRows.get(hi).get(0).put("age", age);
                             hostRows.get(hi).get(0).put("uid", "uid-" + uid);
                             hostRows.get(hi).get(0).put("instanceKey", "");
+                            hostRows.get(hi).get(0).put("hostInfo", hostInfo);
                             uid++;
 
                             double h = 0d;
@@ -409,10 +435,15 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                 }
             }
 
-            List<Map<String, String>> serviceData = new ArrayList<>();
-            for (Service service : services) {
-                Map<String, String> serviceCell = new HashMap<>();
+            List<Map<String, Object>> serviceData = new ArrayList<>();
+            for (GridService service : services) {
+                Map<String, Object> serviceCell = new HashMap<>();
                 serviceCell.put("service", service.serviceName);
+
+                addWarning(service);
+                if (!service.warnings.isEmpty()) {
+                    serviceCell.put("warnings", service.warnings);
+                }
                 serviceCell.put("serviceKey", service.serviceKey);
                 serviceCell.put("serviceColor", serviceColor.getOrDefault(new ServiceKey(service.serviceKey), "127,127,127"));
                 serviceData.add(serviceCell);
@@ -427,12 +458,37 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
         return renderer.render(template, data);
     }
 
-    static class Service implements Comparable<Service> {
+    public static void addWarning(GridService service) {
+        for (String clusterName : service.clusterToServiceStats.keySet()) {
+            ServiceStats stats = service.clusterToServiceStats.get(clusterName);
+            if (stats.numberInstance.get() < 2) {
+                service.warnings.add(clusterName + " is not HA.");
+            }
+            if (stats.racks.size() == 1 && stats.numberInstance.get() > 1) {
+                service.warnings.add(clusterName + " is vulnerable to switch/rack failure.");
+            }
+            if (stats.racks.size() > 1) {
+                long score = 1;
+                for (AtomicInteger value : stats.racks.values()) {
+                    score *= value.get();
+                }
+
+                int idealPerRack = stats.numberInstance.get() / stats.racks.size();
+                double ratio = score / Math.pow(idealPerRack, stats.racks.size());
+
+                if (ratio < 0.8) {
+                    service.warnings.add(clusterName + " has a poor rack distribution.");
+                }
+            }
+        }
+    }
+
+    static class GridServiceKey implements Comparable<GridService> {
 
         String serviceKey;
         String serviceName;
 
-        public Service(String serviceKey, String serviceName) {
+        public GridServiceKey(String serviceKey, String serviceName) {
             this.serviceKey = serviceKey;
             this.serviceName = serviceName;
         }
@@ -452,7 +508,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
             if (getClass() != obj.getClass()) {
                 return false;
             }
-            final Service other = (Service) obj;
+            final GridService other = (GridService) obj;
             if (!Objects.equals(this.serviceKey, other.serviceKey)) {
                 return false;
             }
@@ -460,7 +516,35 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
         }
 
         @Override
-        public int compareTo(Service o) {
+        public int compareTo(GridService o) {
+            return (serviceName + ":" + serviceKey).compareTo(o.serviceName + ":" + o.serviceKey);
+        }
+
+    }
+
+    static class ServiceStats {
+
+        AtomicInteger numberInstance = new AtomicInteger(0);
+        Map<String, AtomicInteger> racks = new HashMap<>();
+        Map<String, AtomicInteger> datacenters = new HashMap<>();
+    }
+
+    static class GridService implements Comparable<GridService> {
+
+        String serviceKey;
+        String serviceName;
+        List<String> warnings = new ArrayList<>();
+
+        Map<String, ServiceStats> clusterToServiceStats = new HashMap<>();
+        private int index;
+
+        public GridService(String serviceKey, String serviceName) {
+            this.serviceKey = serviceKey;
+            this.serviceName = serviceName;
+        }
+
+        @Override
+        public int compareTo(GridService o) {
             return (serviceName + ":" + serviceKey).compareTo(o.serviceName + ":" + o.serviceKey);
         }
 

@@ -73,8 +73,12 @@ public class InstancePath {
             enabled = "true";
         }
 
+        Object datacenter = properties.get(instancePrefix + "datacenter");
+        Object rack = properties.get(instancePrefix + "rack");
         Object publicHost = properties.get(instancePrefix + "publicHost");
-        InstanceDescriptor id = new InstanceDescriptor((publicHost == null) ? "unknown" : publicHost.toString(),
+        InstanceDescriptor id = new InstanceDescriptor((datacenter == null) ? "unknownDatacenter" : datacenter.toString(),
+            (rack == null) ? "unknownRack" : rack.toString(),
+            (publicHost == null) ? "unknown" : publicHost.toString(),
             properties.get(instancePrefix + "clusterKey").toString(),
             properties.get(instancePrefix + "clusterName").toString(),
             properties.get(instancePrefix + "serviceKey").toString(),
@@ -101,8 +105,11 @@ public class InstancePath {
         return id;
     }
 
-    void writeInstanceDescriptor(String publicHostName, String host, String upenaHost, int upenaPort, InstanceDescriptor id) throws IOException {
+    void writeInstanceDescriptor(String datacenter, String rack, String publicHostName, String host, String upenaHost, int upenaPort, InstanceDescriptor id)
+        throws IOException {
         List<String> properties = new ArrayList<>();
+        properties.add(instancePrefix + "datacenter=" + datacenter);
+        properties.add(instancePrefix + "rack=" + rack);
         properties.add(instancePrefix + "publicHost=" + publicHostName);
         properties.add(instancePrefix + "host=" + host);
         properties.add(instancePrefix + "routesHost=" + upenaHost); // inject upena

@@ -19,11 +19,14 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
+import java.util.Objects;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Host implements Stored<Host>, Serializable {
 
     public final String name;
+    public final String datacenterName;
+    public final String rackName;
     public final String hostName;
     public final int port;
     public final String workingDirectory;
@@ -31,11 +34,15 @@ public class Host implements Stored<Host>, Serializable {
 
     @JsonCreator
     public Host(@JsonProperty("name") String name,
+        @JsonProperty("datacenterName") String datacenterName,
+        @JsonProperty("rackName") String rackName,
         @JsonProperty("hostName") String hostName,
         @JsonProperty("port") int port,
         @JsonProperty("workingDirectory") String workingDirectory,
         @JsonProperty("clusterKey") ClusterKey clusterKey) {
         this.name = name;
+        this.datacenterName = datacenterName;
+        this.rackName = rackName;
         this.hostName = hostName;
         this.port = port;
         this.workingDirectory = workingDirectory;
@@ -46,6 +53,8 @@ public class Host implements Stored<Host>, Serializable {
     public String toString() {
         return "Host{"
             + "name=" + name
+            + ", datacenterName=" + datacenterName
+            + ", rackName=" + rackName
             + ", hostName=" + hostName
             + ", port=" + port
             + ", workingDirectory=" + workingDirectory
@@ -64,4 +73,54 @@ public class Host implements Stored<Host>, Serializable {
         }
         return i;
     }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 19 * hash + Objects.hashCode(this.name);
+        hash = 19 * hash + Objects.hashCode(this.datacenterName);
+        hash = 19 * hash + Objects.hashCode(this.rackName);
+        hash = 19 * hash + Objects.hashCode(this.hostName);
+        hash = 19 * hash + this.port;
+        hash = 19 * hash + Objects.hashCode(this.workingDirectory);
+        hash = 19 * hash + Objects.hashCode(this.clusterKey);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Host other = (Host) obj;
+        if (this.port != other.port) {
+            return false;
+        }
+        if (!Objects.equals(this.name, other.name)) {
+            return false;
+        }
+        if (!Objects.equals(this.datacenterName, other.datacenterName)) {
+            return false;
+        }
+        if (!Objects.equals(this.rackName, other.rackName)) {
+            return false;
+        }
+        if (!Objects.equals(this.hostName, other.hostName)) {
+            return false;
+        }
+        if (!Objects.equals(this.workingDirectory, other.workingDirectory)) {
+            return false;
+        }
+        if (!Objects.equals(this.clusterKey, other.clusterKey)) {
+            return false;
+        }
+        return true;
+    }
+
 }

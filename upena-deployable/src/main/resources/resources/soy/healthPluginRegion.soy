@@ -60,6 +60,9 @@
                                 <th>
                                     <a style="width:100%; background-color: rgba({$service.serviceColor}, 0.4);" href="#" rel="popover" id="popoverAnchor-{$service.service}" data-popover-content="#popover-{$service.service}" data-placement="bottom" class="btn" title="{$service.service}">
                                         <span class="glyphicon glyphicon-menu-down"></span>{$service.service}
+                                        {if $service.warnings}
+                                            <span class="glyphicon glyphicon-warning-sign">
+                                        {/if}
                                     </a>
                                     <div style="background-color: rgba(255, 255, 255, 0.6);" id="popover-{$service.service}" class="hide">
                                         <div class="btn-group">
@@ -77,6 +80,13 @@
                                                 </button>
                                             </form>
                                         </div>
+                                        {if $service.warnings}
+                                            <ul>
+                                                {foreach $warning in $service.warnings}
+                                                    <li>{$warning}</li>
+                                                {/foreach}
+                                            </ul>
+                                        {/if}
                                     </div>
                                 </th>
                             {/foreach}
@@ -102,6 +112,18 @@
                                             {/if}
                                         </div>
                                         <div id="popover-{$health.uid}" class="hide" style="background-color: rgba(255, 255, 255, 0.6);">
+                                            {if $health.hostInfo}
+                                                <div class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.6);">
+                                                    <div class="panel-heading">Host Info</div>
+                                                    <div class="panel-body">
+                                                        <ul>
+                                                            <li>datacenter:{$health.hostInfo.datacenter}</li>
+                                                            <li>rack:{$health.hostInfo.rack}</li>
+                                                            <li>publicHost:{$health.hostInfo.publicHost}</li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            {/if}
                                             {if $health.instances}
                                                 {foreach $i in $health.instances}
                                                     <div class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.6);">

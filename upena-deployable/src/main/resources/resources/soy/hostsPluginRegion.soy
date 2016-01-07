@@ -20,6 +20,8 @@
                                 <th>Port</th>
                                 <th>Dir</th>
                                 <th>Public Address</th>
+                                <th>Datacenter</th>
+                                <th>Rack</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -46,6 +48,14 @@
                                     <td>
                                         <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
                                         placeholder="Public Address" value="{$filters.name?:''}" name="name" id="namePicker" class="form-control">
+                                    </td>
+                                    <td>
+                                        <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                        placeholder="Datacenter" value="{$filters.datacenter?:''}" name="datacenter" id="namePicker" class="form-control">
+                                    </td>
+                                    <td>
+                                        <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                        placeholder="Rack" value="{$filters.rack?:''}" name="rack" id="namePicker" class="form-control">
                                     </td>
                                     <td>
                                         <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary"><span class="glyphicon glyphicon-search ladda-button"  data-spinner-color="#222" data-style="expand-right">&nbspFilter</span></button>
@@ -80,6 +90,14 @@
                                         <td>
                                             <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
                                             placeholder="Name" value="{$h.name}" name="name" id="namePicker" class="form-control">
+                                        </td>
+                                        <td>
+                                            <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                            placeholder="Name" value="{$h.datacenter}" name="datacenter" id="namePicker" class="form-control">
+                                        </td>
+                                        <td>
+                                            <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                            placeholder="Name" value="{$h.rack}" name="rack" id="namePicker" class="form-control">
                                         </td>
                                         <td>
                                             <input type="hidden" name="key" value="{$h.key}">

@@ -25,6 +25,8 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class Uba {
 
+    final String datacenter;
+    final String rack;
     final String publicHost;
     final String host;
     final String upenaHost;
@@ -33,13 +35,17 @@ public class Uba {
     private final DeployableScriptInvoker invokeScript;
     private final UbaLog ubaLog;
 
-    public Uba(String publicHostName,
+    public Uba(String datacenter,
+        String rack,
+        String publicHostName,
         String host,
         String upenaHost,
         int upenaPort,
         UbaTree ubaTree,
         UbaLog ubaLog) {
 
+        this.datacenter = datacenter;
+        this.rack = rack;
         this.publicHost = publicHostName;
         this.host = host;
         this.upenaHost = upenaHost;
