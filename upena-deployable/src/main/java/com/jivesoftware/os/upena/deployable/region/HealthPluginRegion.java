@@ -332,8 +332,9 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
             for (UpenaEndpoints.NodeHealth nodeHealth : nodeHealths.values()) {
 
                 Host upenaHost = upenaStore.hosts.get(new HostKey(nodeHealth.hostKey));
-                Map<String, String> hostInfo = new HashMap<>();
+                Map<String, String> hostInfo = null;
                 if (upenaHost != null) {
+                    hostInfo = new HashMap<>();
                     hostInfo.put("publicHost", com.google.common.base.Objects.firstNonNull(upenaHost.name, "unknownPublicHost"));
                     hostInfo.put("datacenter", com.google.common.base.Objects.firstNonNull(upenaHost.datacenterName, "unknownDatacenter"));
                     hostInfo.put("rack", com.google.common.base.Objects.firstNonNull(upenaHost.rackName, "unknownRack"));
