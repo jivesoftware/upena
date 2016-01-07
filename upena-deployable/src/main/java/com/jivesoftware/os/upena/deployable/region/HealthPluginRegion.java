@@ -368,7 +368,8 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                         String host = nannyHealth.instanceDescriptor.clusterName + ":" + nodeHealth.host + ":" + nodeHealth.port;
                         Integer hi = hostIndexs.get(host);
 
-                        GridServiceKey serviceIndexKey = new GridServiceKey(nannyHealth.instanceDescriptor.serviceKey, nannyHealth.instanceDescriptor.serviceName);
+                        GridServiceKey serviceIndexKey = new GridServiceKey(nannyHealth.instanceDescriptor.serviceKey,
+                            nannyHealth.instanceDescriptor.serviceName);
                         GridService service = serviceIndexs.get(serviceIndexKey);
                         if (hi != null && service != null) {
 
@@ -483,7 +484,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
         }
     }
 
-    static class GridServiceKey implements Comparable<GridService> {
+    static class GridServiceKey implements Comparable<GridServiceKey> {
 
         String serviceKey;
         String serviceName;
@@ -508,7 +509,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
             if (getClass() != obj.getClass()) {
                 return false;
             }
-            final GridService other = (GridService) obj;
+            final GridServiceKey other = (GridServiceKey) obj;
             if (!Objects.equals(this.serviceKey, other.serviceKey)) {
                 return false;
             }
@@ -516,7 +517,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
         }
 
         @Override
-        public int compareTo(GridService o) {
+        public int compareTo(GridServiceKey o) {
             return (serviceName + ":" + serviceKey).compareTo(o.serviceName + ":" + o.serviceKey);
         }
 
