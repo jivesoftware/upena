@@ -334,9 +334,9 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                 Host upenaHost = upenaStore.hosts.get(new HostKey(nodeHealth.hostKey));
                 Map<String, String> hostInfo = new HashMap<>();
                 if (upenaHost != null) {
-                    hostInfo.put("publicHost", upenaHost.name);
-                    hostInfo.put("datacenter", upenaHost.datacenterName);
-                    hostInfo.put("rack", upenaHost.rackName);
+                    hostInfo.put("publicHost", com.google.common.base.Objects.firstNonNull(upenaHost.name, "unknownPublicHost"));
+                    hostInfo.put("datacenter", com.google.common.base.Objects.firstNonNull(upenaHost.datacenterName, "unknownDatacenter"));
+                    hostInfo.put("rack", com.google.common.base.Objects.firstNonNull(upenaHost.rackName, "unknownRack"));
                 }
 
                 if (nodeHealth.nannyHealths.isEmpty()) {
@@ -379,8 +379,10 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                                 });
 
                             serviceStats.numberInstance.incrementAndGet();
-                            serviceStats.datacenters.computeIfAbsent(upenaHost.datacenterName, (key) -> new AtomicInteger()).incrementAndGet();
-                            serviceStats.racks.computeIfAbsent(upenaHost.rackName, (key) -> new AtomicInteger()).incrementAndGet();
+                            serviceStats.datacenters.computeIfAbsent(com.google.common.base.Objects.firstNonNull(upenaHost.datacenterName, "unknownDatacenter"),
+                                (key) -> new AtomicInteger()).incrementAndGet();
+                            serviceStats.racks.computeIfAbsent(com.google.common.base.Objects.firstNonNull(upenaHost.rackName, "unknownRack"),
+                                (key) -> new AtomicInteger()).incrementAndGet();
 
                             int si = service.index;
                             Long recency = nodeRecency.get(nodeHealth.host + ":" + nodeHealth.port);
