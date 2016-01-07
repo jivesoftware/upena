@@ -290,7 +290,8 @@ public class Main {
             .addInjectable(AmzaInstance.class, amzaService)
             .addEndpoint(UpenaEndpoints.class)
             .addInjectable(DiscoveredRoutes.class, discoveredRoutes)
-            .addInjectable(RingHost.class, ringHost);
+            .addInjectable(RingHost.class, ringHost)
+            .addInjectable(HostKey.class, hostKey);
 
         injectUI(amzaService, hostKey, ringHost, upenaStore, upenaConfigStore, upenaService, ubaService, jerseyEndpoints, clusterName, discoveredRoutes);
 
