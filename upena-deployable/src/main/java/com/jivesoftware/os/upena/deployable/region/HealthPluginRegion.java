@@ -620,7 +620,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                         nodeHealth.health = 0.0d;
                         nodeHealth.nannyHealths = new ArrayList<>();
                         nodeHealths.put(ringHost, nodeHealth);
-                        System.out.println("Failed getting cluster health for " + ringHost + " " + x);
+                        LOG.warn("Failed getting cluster health for " + ringHost + " " + x);
                     } finally {
                         nodeRecency.put(ringHost.getHost() + ":" + ringHost.getPort(), System.currentTimeMillis());
                         currentlyExecuting.remove(ringHost);

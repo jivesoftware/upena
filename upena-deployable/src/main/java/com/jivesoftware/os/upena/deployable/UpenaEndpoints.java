@@ -291,7 +291,7 @@ public class UpenaEndpoints {
     }
 
     private NodeHealth buildNodeHealth() throws Exception {
-        NodeHealth nodeHealth = new NodeHealth("", ringHost.getHost(), ringHost.getPort());
+        NodeHealth nodeHealth = new NodeHealth(ringHostKey.getKey(), ringHost.getHost(), ringHost.getPort());
         for (Entry<String, Nanny> nanny : ubaService.iterateNannies()) {
             Nanny n = nanny.getValue();
             InstanceDescriptor id = n.getInstanceDescriptor();
