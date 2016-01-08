@@ -8,6 +8,10 @@ li.j-listitem {
     list-style: none;
 }
 
+.icon-warn {
+    color: #F0AD4E;
+}
+
 /* theme */
 body {
     background-image: url(/static/img/bkg.jpg);

@@ -41,7 +41,7 @@
                             </div>
                         </td>
                         <td>
-                            <button title="Filter" type="submit" name="filter" value="filter" class="btn btn-primary ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-search">&nbspFilter</span></button>
+                            <button title="Filter" type="submit" name="filter" value="filter" class="btn btn-primary ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-search">&nbsp;Filter</span></button>
                         </td>
                     </tr>
                 </table>
@@ -61,7 +61,7 @@
                                     <a style="width:100%; background-color: rgba({$service.serviceColor}, 0.4);" href="#" rel="popover" id="popoverAnchor-{$service.service}" data-popover-content="#popover-{$service.service}" data-placement="bottom" class="btn" title="{$service.service}">
                                         <span class="glyphicon glyphicon-menu-down"></span>{$service.service}
                                         {if $service.warnings}
-                                            <span class="glyphicon glyphicon-warning-sign">
+                                            &nbsp;&nbsp;<span class="glyphicon glyphicon-warning-sign icon-warn">
                                         {/if}
                                     </a>
                                     <div style="background-color: rgba(255, 255, 255, 0.6);" id="popover-{$service.service}" class="hide">
@@ -128,7 +128,7 @@
                                                 {foreach $i in $health.instances}
                                                     <div class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.6);">
                                                         <div class="panel-heading">
-                                                            <span class="glyphicon glyphicon-fire"></span>{sp}
+                                                            <span class="glyphicon glyphicon-apple"></span>{sp}
                                                             {$i.clusterName}&nbsp;-&nbsp;{$i.serviceName|noAutoescape}
                                                                             &nbsp;&nbsp;&nbsp;&nbsp;port={$i.port}
                                                                             &nbsp;&nbsp;&nbsp;&nbsp;host={$i.hostName}
@@ -276,7 +276,7 @@
                                                         </div>
                                                         <div class="panel-body" style="background-color: rgba(255, 255, 255, 0.6);">
                                                             <div>{$i.details|noAutoescape}</div>
-                                                            <div style="width:1000px" class="uis" ></div>
+                                                            <div style="width:1200px" class="uis" ></div>
                                                         </div>
                                                     </div>
                                                 {/foreach}

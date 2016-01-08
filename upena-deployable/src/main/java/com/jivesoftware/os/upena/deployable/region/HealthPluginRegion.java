@@ -471,10 +471,10 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
         for (String clusterName : service.clusterToServiceStats.keySet()) {
             ServiceStats stats = service.clusterToServiceStats.get(clusterName);
             if (stats.numberInstance.get() < 2) {
-                service.warnings.add(clusterName + " is not HA.");
+                service.warnings.add("WARNING cluster:" + clusterName + "service:" + service.serviceName + " is not HA.");
             }
             if (stats.racks.size() == 1 && stats.numberInstance.get() > 1) {
-                service.warnings.add(clusterName + " is vulnerable to switch/rack failure.");
+                service.warnings.add("WARNING cluster:" + clusterName + "service:" + service.serviceName + " is vulnerable to switch/rack failure.");
             }
             if (stats.racks.size() > 1) {
                 long score = 1;
@@ -486,7 +486,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                 double ratio = score / Math.pow(idealPerRack, stats.racks.size());
 
                 if (ratio < 0.8) {
-                    service.warnings.add(clusterName + " has a poor rack distribution.");
+                    service.warnings.add("WARNING cluster:" + clusterName + "service:" + service.serviceName + " has a poor rack distribution.");
                 }
             }
         }

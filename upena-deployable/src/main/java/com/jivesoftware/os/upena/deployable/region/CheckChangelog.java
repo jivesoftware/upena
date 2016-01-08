@@ -97,23 +97,11 @@ class CheckChangelog {
             String packaging = versionParts[2];
             String version = versionParts[3];
 
-            Artifact artifact = new DefaultArtifact(groupId, artifactId, packaging, version);
+            Artifact artifact = new DefaultArtifact(groupId, artifactId, "changelog", "html", version);
             ArtifactRequest artifactRequest = new ArtifactRequest();
             artifactRequest.setArtifact(artifact);
             artifactRequest.setRepositories(Arrays.asList(remoteRepos));
-
-            LOG.info(" Resolving: " + deployablecoordinate);
             ArtifactResult artifactResult = system.resolveArtifact(session, artifactRequest);
-            artifact = artifactResult.getArtifact();
-            String latestRelease = artifact.getGroupId() + ":" + artifact.getArtifactId() + ":" + packaging + ":" + artifact.getVersion();
-            if (!latestRelease.equals(deployablecoordinate)) {
-                LOG.info("There is a newer version of " + deployablecoordinate + " which is " + latestRelease);
-            }
-            artifact = new DefaultArtifact(artifact.getGroupId(), artifact.getArtifactId(), "changelog", "html", artifact.getVersion());
-            artifactRequest = new ArtifactRequest();
-            artifactRequest.setArtifact(artifact);
-            artifactRequest.setRepositories(Arrays.asList(remoteRepos));
-            artifactResult = system.resolveArtifact(session, artifactRequest);
             artifact = artifactResult.getArtifact();
 
             File file = artifact.getFile();

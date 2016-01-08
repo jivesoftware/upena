@@ -89,23 +89,15 @@
                         </td>
                         <td>
                             {if $r.changelog}
-                                <button data-toggle="tooltip" title="" class="btn btn-default btn-sm" type="button"  name="action" value="changelog">
-                                <span class="glyphicon glyphicon-eye-open>SCM</span>
-                                </button>
-
                                 <a  href="#" rel="popover" id="popoverAnchor-changelog-{$r.key}" data-popover-content="#popover-changelog-{$r.key}" data-placement="bottom" class="btn"
                                     title="{$r.name}">
                                     <span class="glyphicon glyphicon-list"></span>Changelog
                                 </a>
                                 <div style="background-color: rgba(255, 255, 255, 0.6);" id="popover-changelog-{$r.key}" class="hide">
-                                    {$r.changelog}
+                                    {$r.changelog|noAutoescape}
                                 </div>
                             {/if}
                             {if $r.scm}
-                                <button data-toggle="tooltip" title="" class="btn btn-default btn-sm" type="button"  name="action" value="changelog">
-                                <span class="glyphicon glyphicon-eye-open>SCM</span>
-                                </button>
-
                                 <a  href="#" rel="popover" id="popoverAnchor-scm-{$r.key}" data-popover-content="#popover-scm-{$r.key}" data-placement="bottom" class="btn"
                                     title="{$r.name}">
                                     <span class="glyphicon glyphicon-menu-down"></span>SCM
@@ -128,7 +120,7 @@
                             {/if}
                             {if $r.runningLatest != 'true'} 
                                 <button data-toggle="tooltip" title="Hooray!" class="btn btn-default btn-sm" type="button" onclick="upena.latestRelease.change('{$r.key}', '{$r.newerVersion}');" name="action" value="update">
-                                <span class="glyphicon glyphicon-play-circle>Upgrade</span></button>
+                                Upgrade</button>
                             {/if}
                             <input type="hidden" name="key" value="{$r.key}">
                             <button title="Update" type="submit" name="action" value="update" class="btn btn-default"><span class="glyphicon glyphicon-save ladda-button"  data-spinner-color="#222" data-style="expand-right">&nbspUpdate</span></button>
