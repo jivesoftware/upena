@@ -242,10 +242,13 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
                     }
                 }
                 if (newerVersionAvailable) {
+                    row.put("changelog", CheckChangelog.SINGLETON.changelog(value.repository, newerVersion.toString()));
+                    row.put("scm", CheckGitInfo.SINGLETON.gitInfo(value.repository, newerVersion.toString()));
                     row.put("runningLatest", "false");
                     row.put("newerVersion", newerVersion.toString());
-                    row.put("scm", CheckGitInfo.SINGLETON.gitInfo(value.repository, newerVersion.toString()));
                 } else {
+                    row.put("changelog", CheckChangelog.SINGLETON.changelog(value.repository, value.version));
+                    row.put("scm", CheckGitInfo.SINGLETON.gitInfo(value.repository, value.version));
                     row.put("runningLatest", "true");
                 }
 
