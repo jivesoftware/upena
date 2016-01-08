@@ -81,9 +81,9 @@
                                             </form>
                                         </div>
                                         {if $service.warnings}
-                                            <ul>
+                                            <ul class="list-group">
                                                 {foreach $warning in $service.warnings}
-                                                    <li>{$warning}</li>
+                                                    <li class="list-group-item list-group-item-warning">{$warning}</li>
                                                 {/foreach}
                                             </ul>
                                         {/if}
