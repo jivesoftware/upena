@@ -176,7 +176,7 @@ public class Main {
 
         String datacenter = System.getProperty("host.datacenter", "unknownDatacenter");
         String rack = System.getProperty("host.rack", "unknownRack");
-        String publicHost = System.getProperty("public.host.name", "");
+        String publicHost = System.getProperty("public.host.name", hostname);
 
         final RingHost ringHost = new RingHost(hostname, port); // TODO include rackId
         // todo need a better way to create writter id.
@@ -256,7 +256,7 @@ public class Main {
         HostKey hostKey = upenaStore.hosts.toKey(host);
         Host gotHost = upenaStore.hosts.get(hostKey);
         if (gotHost == null || !gotHost.equals(host)) {
-            upenaStore.hosts.update(null, host);
+            upenaStore.hosts.update(hostKey, host);
         }
 
         UbaLog ubaLog = (String what, String why, String how) -> {

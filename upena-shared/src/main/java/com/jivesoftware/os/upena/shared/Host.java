@@ -76,15 +76,7 @@ public class Host implements Stored<Host>, Serializable {
 
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 19 * hash + Objects.hashCode(this.name);
-        hash = 19 * hash + Objects.hashCode(this.datacenterName);
-        hash = 19 * hash + Objects.hashCode(this.rackName);
-        hash = 19 * hash + Objects.hashCode(this.hostName);
-        hash = 19 * hash + this.port;
-        hash = 19 * hash + Objects.hashCode(this.workingDirectory);
-        hash = 19 * hash + Objects.hashCode(this.clusterKey);
-        return hash;
+        throw new RuntimeException("NOPE");
     }
 
     @Override
