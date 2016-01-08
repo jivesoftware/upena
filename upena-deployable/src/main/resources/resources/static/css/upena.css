@@ -12,6 +12,14 @@ li.j-listitem {
     color: #F0AD4E;
 }
 
+.changelog {
+  border-spacing: 0;
+  border: 1px solid #ddd;
+  border-bottom-width: 2px;
+  border-collapse: collapse;
+}
+
+
 /* theme */
 body {
     background-image: url(/static/img/bkg.jpg);

@@ -267,6 +267,26 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
                     }
                     linkable.add(n);
                 }
+                if (linkType.contains("linkRack")) {
+
+                    Node n = nodes.get(host.rackName);
+                    if (n == null) {
+                        n = new Node(host.rackName, id, "ccc", String.valueOf(fs), 0);
+                        id++;
+                        nodes.put(host.rackName, n);
+                        String title = title(cluster, null, null, null, null); //TODO fix to include rack
+                        n.focusHtml = title + "<br>" + healthPluginRegion.render("topology",
+                            new HealthPluginRegion.HealthPluginRegionInput(cluster.name, "", "")); //TODO fix to include rack
+                        //fs -= 2;
+
+                        n.maxHealth = Math.max(n.maxHealth, serviceHealth);
+                        n.minHealth = Math.min(n.minHealth, serviceHealth);
+
+                        n.tooltip = host.rackName;
+                        n.icon = "rack";
+                    }
+                    linkable.add(n);
+                }
                 if (linkType.contains("linkHost")) {
                     Node n = nodes.get(value.hostKey.toString());
                     if (n == null) {
