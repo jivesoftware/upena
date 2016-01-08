@@ -175,7 +175,7 @@ public class Main {
         String clusterName = (args.length > 1 ? args[1] : null);
 
         String datacenter = System.getProperty("host.datacenter", "unknownDatacenter");
-        String rack = System.getProperty("host.name", "unknownRack");
+        String rack = System.getProperty("host.rack", "unknownRack");
         String publicHost = System.getProperty("public.host.name", "");
 
         final RingHost ringHost = new RingHost(hostname, port); // TODO include rackId
