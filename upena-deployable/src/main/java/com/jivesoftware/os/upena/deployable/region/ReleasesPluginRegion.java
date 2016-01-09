@@ -55,11 +55,30 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
     }
 
     public Object renderChangelog(String releaseKey) throws Exception {
+
         ReleaseGroup releaseGroup = upenaStore.releaseGroups.get(new ReleaseGroupKey(releaseKey));
         if (releaseGroup == null) {
             return "No release group for " + releaseKey;
         }
-        return CheckChangelog.SINGLETON.changelog(releaseGroup.repository, releaseGroup.version);
+
+        boolean newerVersionAvailable = false;
+        StringBuilder newerVersion = new StringBuilder();
+        LinkedHashMap<String, String> latestRelease = new CheckForLatestRelease().isLatestRelease(releaseGroup.repository, releaseGroup.version);
+        for (Entry<String, String> e : latestRelease.entrySet()) {
+            if (newerVersion.length() > 0) {
+                newerVersion.append(",");
+            }
+            newerVersion.append(e.getValue());
+            if (!e.getKey().equals(e.getValue())) {
+                newerVersionAvailable = true;
+            }
+        }
+        if (newerVersionAvailable) {
+            return CheckChangelog.SINGLETON.changelog(releaseGroup.repository, newerVersion.toString());
+        } else {
+            return CheckChangelog.SINGLETON.changelog(releaseGroup.repository, releaseGroup.version);
+        }
+
     }
 
     public Object renderScm(String releaseKey) throws Exception {
@@ -67,7 +86,25 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
         if (releaseGroup == null) {
             return "No release group for " + releaseKey;
         }
-        return CheckGitInfo.SINGLETON.gitInfo(releaseGroup.repository, releaseGroup.version);
+
+        boolean newerVersionAvailable = false;
+        StringBuilder newerVersion = new StringBuilder();
+        LinkedHashMap<String, String> latestRelease = new CheckForLatestRelease().isLatestRelease(releaseGroup.repository, releaseGroup.version);
+        for (Entry<String, String> e : latestRelease.entrySet()) {
+            if (newerVersion.length() > 0) {
+                newerVersion.append(",");
+            }
+            newerVersion.append(e.getValue());
+            if (!e.getKey().equals(e.getValue())) {
+                newerVersionAvailable = true;
+            }
+        }
+        if (newerVersionAvailable) {
+            return CheckGitInfo.SINGLETON.gitInfo(releaseGroup.repository, newerVersion.toString());
+        } else {
+            return CheckGitInfo.SINGLETON.gitInfo(releaseGroup.repository, releaseGroup.version);
+        }
+
     }
 
     public static class ReleasesPluginRegionInput implements PluginInput {
