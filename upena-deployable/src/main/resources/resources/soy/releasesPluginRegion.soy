@@ -88,16 +88,14 @@
                             <input id="{$r.key}" type="text" name="version" class="form-control" value={$r.version?:''}>
                         </td>
                         <td>
-                            <a  href="#" rel="popover" id="popoverAnchor-changelog-{$r.key}" data-popover-content="#popover-changelog-{$r.key}" data-placement="bottom" class="btn btn-default popover-health"
-                                title="{$r.name}" data-popover-changelog-release-key="{$r.key}">
+                            <div class="btn btn-default popover-health" " id="popoverAnchor-changelog-{$r.key}" data-popover-content="#popover-changelog-{$r.key}" data-popover-changelog-release-key="{$r.key}">
                                 <span class="glyphicon glyphicon-list"></span>Changelog
-                            </a>
+                            </div>
                             <div style="background-color: rgba(255, 255, 255, 0.6);" id="popover-changelog-{$r.key}" class="hide">
                                 <div style="width:1200px" class="changelog" ></div>
                             </div>
 
-                            <a  href="#" rel="popover" id="popoverAnchor-scm-{$r.key}" data-popover-content="#popover-scm-{$r.key}" data-placement="bottom" class="btn btn-defaul popover-health"
-                                title="{$r.name}" data-popover-scm-release-key="{$r.key}">
+                            <div class="btn btn-default popover-health" " id="popoverAnchor-scm-{$r.key}" data-popover-content="#popover-scm-{$r.key}" data-popover-scm-release-key="{$r.key}">
                                 <span class="glyphicon glyphicon-list"></span>SCM
                             </a>
                             <div style="background-color: rgba(255, 255, 255, 0.6);" id="popover-scm-{$r.key}" class="hide">
