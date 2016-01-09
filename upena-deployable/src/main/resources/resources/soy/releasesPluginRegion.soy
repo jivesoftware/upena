@@ -32,6 +32,8 @@
                 <th>Instances</th>
                 <th>Name</th>
                 <th>Version</th>
+                <th>SCM</th>
+                <th>Changelog</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -88,21 +90,23 @@
                             <input id="{$r.key}" type="text" name="version" class="form-control" value={$r.version?:''}>
                         </td>
                         <td>
-                            <div class="btn btn-default popover-health" " id="popoverAnchor-changelog-{$r.key}" data-popover-content="#popover-changelog-{$r.key}" data-popover-changelog-release-key="{$r.key}">
+                            <div class="btn btn-default popover-health" " id="popoverAnchor-changelog-{$r.key}" data-popover-content="#popover-changelog-{$r.key}" data-popover-changelog-release-key="{$r.key}" data-placement="bottom">
                                 <span class="glyphicon glyphicon-list"></span>Changelog
                             </div>
                             <div style="background-color: rgba(255, 255, 255, 0.6);" id="popover-changelog-{$r.key}" class="hide">
                                 <div style="width:1200px" class="changelog" ></div>
                             </div>
-
-                            <div class="btn btn-default popover-health" " id="popoverAnchor-scm-{$r.key}" data-popover-content="#popover-scm-{$r.key}" data-popover-scm-release-key="{$r.key}">
+                        </td>
+                        <td>
+                            <div class="btn btn-default popover-health" " id="popoverAnchor-scm-{$r.key}" data-popover-content="#popover-scm-{$r.key}" data-popover-scm-release-key="{$r.key}" data-placement="bottom">
                                 <span class="glyphicon glyphicon-list"></span>SCM
                             </a>
                             <div style="background-color: rgba(255, 255, 255, 0.6);" id="popover-scm-{$r.key}" class="hide">
                                 <div style="width:1200px" class="scm" ></div>
                             </div>
-
-                            {if $r.runningLatest != 'true'} 
+                        </td>
+                        <td>
+                            {if $r.runningLatest != 'true'}
                                 <button data-toggle="tooltip" title="Hooray!" class="btn btn-default btn-sm" type="button" onclick="upena.latestRelease.change('{$r.key}', '{$r.newerVersion}');" name="action" value="update">
                                 Upgrade</button>
                             {/if}
