@@ -54,6 +54,22 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
         return "/ui/releases";
     }
 
+    public Object renderChangelog(String releaseKey) throws Exception {
+        ReleaseGroup releaseGroup = upenaStore.releaseGroups.get(new ReleaseGroupKey(releaseKey));
+        if (releaseGroup == null) {
+            return "No release group for " + releaseKey;
+        }
+        return CheckChangelog.SINGLETON.changelog(releaseGroup.repository, releaseGroup.version);
+    }
+
+    public Object renderScm(String releaseKey) throws Exception {
+        ReleaseGroup releaseGroup = upenaStore.releaseGroups.get(new ReleaseGroupKey(releaseKey));
+        if (releaseGroup == null) {
+            return "No release group for " + releaseKey;
+        }
+        return CheckGitInfo.SINGLETON.gitInfo(releaseGroup.repository, releaseGroup.version);
+    }
+
     public static class ReleasesPluginRegionInput implements PluginInput {
 
         final String key;
@@ -242,13 +258,9 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
                     }
                 }
                 if (newerVersionAvailable) {
-                    row.put("changelog", CheckChangelog.SINGLETON.changelog(value.repository, newerVersion.toString()));
-                    row.put("scm", CheckGitInfo.SINGLETON.gitInfo(value.repository, newerVersion.toString()));
                     row.put("runningLatest", "false");
                     row.put("newerVersion", newerVersion.toString());
                 } else {
-                    row.put("changelog", CheckChangelog.SINGLETON.changelog(value.repository, value.version));
-                    row.put("scm", CheckGitInfo.SINGLETON.gitInfo(value.repository, value.version));
                     row.put("runningLatest", "true");
                 }
 

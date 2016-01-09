@@ -1006,6 +1006,35 @@ $(document).ready(function () {
                     }
                 });
             }
+            var changelogReleaseKey = $(this).data('popoverChangelogReleaseKey');
+            if (changelogReleaseKey) {
+                var h = hack[$(this).attr('id')];
+                $.ajax("/ui/releases/changelog", {
+                    method: "get",
+                    data: {"releaseKey": changelogReleaseKey},
+                    success: function (data) {
+                        $(h).find(".changelog").html(data);
+                    },
+                    error: function () {
+                        $(h).find(".changelog").html("Failed to load Changelog");
+                    }
+                });
+            }
+
+            var scmReleaseKey = $(this).data('popoverScmReleaseKey');
+            if (scmReleaseKey) {
+                var h = hack[$(this).attr('id')];
+                $.ajax("/ui/releases/scm", {
+                    method: "get",
+                    data: {"releaseKey": scmReleaseKey},
+                    success: function (data) {
+                        $(h).find(".scm").html(data);
+                    },
+                    error: function () {
+                        $(h).find(".scm").html("Failed to load SCM info");
+                    }
+                });
+            }
 
         }).on('hidden.bs.popover', function () {
             var h = hack[$(this).attr('id')];

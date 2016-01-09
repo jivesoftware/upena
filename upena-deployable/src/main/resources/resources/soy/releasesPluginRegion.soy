@@ -88,36 +88,22 @@
                             <input id="{$r.key}" type="text" name="version" class="form-control" value={$r.version?:''}>
                         </td>
                         <td>
-                            {if $r.changelog}
-                                <a  href="#" rel="popover" id="popoverAnchor-changelog-{$r.key}" data-popover-content="#popover-changelog-{$r.key}" data-placement="bottom" class="btn btn-default"
-                                    title="{$r.name}">
-                                    <span class="glyphicon glyphicon-list"></span>Changelog
-                                </a>
-                                <div style="background-color: rgba(255, 255, 255, 0.6);" id="popover-changelog-{$r.key}" class="hide">
-                                    {$r.changelog|noAutoescape}
-                                </div>
-                            {/if}
-                            {if $r.scm}
-                                <a  href="#" rel="popover" id="popoverAnchor-scm-{$r.key}" data-popover-content="#popover-scm-{$r.key}" data-placement="bottom" class="btn btn-default"
-                                    title="{$r.name}">
-                                    <span class="glyphicon glyphicon-menu-down"></span>SCM
-                                </a>
-                                <div style="background-color: rgba(255, 255, 255, 0.6);" id="popover-scm-{$r.key}" class="hide">
-                                    <ul>
-                                    {foreach $scm in $r.scm}
-                                        {if $scm.gitRemoteOriginUrl}
-                                            <li><a  href="{$scm.gitRemoteOriginUrl}">{$scm.gitRemoteOriginUrl}</a></li>
-                                        {/if}
-                                        {if $scm.gitBranch}
-                                            <li>{$scm.gitBranch}</li>
-                                        {/if}
-                                        {if $scm.gitCommitId}
-                                            <li>{$scm.gitCommitId}</li>
-                                        {/if}
-                                    {/foreach}
-                                    </ul>
-                                </div>
-                            {/if}
+                            <a  href="#" rel="popover" id="popoverAnchor-changelog-{$r.key}" data-popover-content="#popover-changelog-{$r.key}" data-placement="bottom" class="btn btn-default"
+                                title="{$r.name}" data-popover-changelog-release-key="{$r.key}">
+                                <span class="glyphicon glyphicon-list"></span>Changelog
+                            </a>
+                            <div style="background-color: rgba(255, 255, 255, 0.6);" id="popover-changelog-{$r.key}" class="hide">
+                                <div style="width:1200px" class="changelog" ></div>
+                            </div>
+
+                            <a  href="#" rel="popover" id="popoverAnchor-scm-{$r.key}" data-popover-content="#popover-scm-{$r.key}" data-placement="bottom" class="btn btn-default"
+                                title="{$r.name}" data-popover-scm-release-key="{$r.key}">
+                                <span class="glyphicon glyphicon-list"></span>SCM
+                            </a>
+                            <div style="background-color: rgba(255, 255, 255, 0.6);" id="popover-scm-{$r.key}" class="hide">
+                                <div style="width:1200px" class="scm" ></div>
+                            </div>
+
                             {if $r.runningLatest != 'true'} 
                                 <button data-toggle="tooltip" title="Hooray!" class="btn btn-default btn-sm" type="button" onclick="upena.latestRelease.change('{$r.key}', '{$r.newerVersion}');" name="action" value="update">
                                 Upgrade</button>
