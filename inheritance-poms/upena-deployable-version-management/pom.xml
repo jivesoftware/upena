@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.jivesoftware.os.upena.inheritance.poms</groupId>
         <artifactId>global-build-management</artifactId>
-        <version>0.375</version>
+        <version>0.376-SNAPSHOT</version>
         <relativePath>../global-build-management/pom.xml</relativePath>
     </parent>
     <artifactId>upena-deployable-version-management</artifactId>
