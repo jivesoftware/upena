@@ -1,6 +1,5 @@
 package com.jivesoftware.os.upena.deployable.region;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
@@ -347,10 +346,11 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                         && (!input.cluster.isEmpty() == cshow)
                         && (!input.host.isEmpty() == hshow)
                         && (!input.service.isEmpty() == sshow)) {
-
-                        if (!gridHosts.contains(nannyHealth.instanceDescriptor.clusterName + ":" + nodeHealth.host + ":" + nodeHealth.port)) {
-                            gridHosts.add(new GridHost(nannyHealth.instanceDescriptor.datacenter, nannyHealth.instanceDescriptor.rack,
-                                nannyHealth.instanceDescriptor.clusterName, nodeHealth.host, nodeHealth.port));
+                        
+                        GridHost gridHost = new GridHost(nannyHealth.instanceDescriptor.datacenter, nannyHealth.instanceDescriptor.rack,
+                                nannyHealth.instanceDescriptor.clusterName, nodeHealth.host, nodeHealth.port);
+                        if (!gridHosts.contains(gridHost)) {
+                            gridHosts.add(gridHost);
                         }
                         GridService service = new GridService(nannyHealth.instanceDescriptor.serviceKey, nannyHealth.instanceDescriptor.serviceName);
                         if (!services.contains(service)) {
@@ -585,12 +585,6 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
 
         } catch (Exception e) {
             LOG.error("Unable to retrieve data", e);
-        }
-
-        try {
-            System.out.println(new ObjectMapper().writeValueAsString(data));
-        } catch (JsonProcessingException ex) {
-
         }
 
         return renderer.render(template, data);
