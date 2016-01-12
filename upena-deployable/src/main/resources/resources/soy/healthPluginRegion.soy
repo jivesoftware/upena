@@ -98,7 +98,7 @@
                                 {foreach $health in $host}
                                     <td>
                                         {if $health.datacenter}
-                                            <div class="datacenter-and-rack>{$health.datacenter}:{$health.rack}</div>
+                                            <div class="datacenter-and-rack">{$health.datacenter}:{$health.rack}</div>
                                         {elseif $health.uid}
                                             <div class="panel panel-default grid-host-panel popover-health" " style="background-color: rgba(255, 255, 255, 0.6);" id="popoverAnchor-{$health.uid}"
                                                 {if $health.instanceKey} data-popover-instance-key="{$health.instanceKey}" {/if}

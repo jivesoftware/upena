@@ -362,7 +362,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                     lastDatacenter = currentDatacenter;
                     lastRack = currentRack;
 
-                    hostRow.add(ImmutableMap.<String, Object>builder().put("datacenter", lastDatacenter).put("rack", lastDatacenter).build());
+                    hostRow.add(ImmutableMap.<String, Object>builder().put("datacenter", lastDatacenter).put("rack", lastRack).build());
                     for (int s = 0; s < services.size(); s++) {
                         HashMap<String, Object> cell = new HashMap<>();
                         hostRow.add(cell);
