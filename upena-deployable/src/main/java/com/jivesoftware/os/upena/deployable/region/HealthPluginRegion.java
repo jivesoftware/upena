@@ -208,7 +208,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
 
     }
 
-    static class GidHost implements Comparable<GidHost> {
+    static class GridHost implements Comparable<GridHost> {
 
         private final String datacenter;
         private final String rack;
@@ -216,7 +216,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
         private final String hostName;
         private final int port;
 
-        public GidHost(String datacenter, String rack, String clusterName, String hostName, int port) {
+        public GridHost(String datacenter, String rack, String clusterName, String hostName, int port) {
             this.datacenter = datacenter;
             this.rack = rack;
             this.clusterName = clusterName;
@@ -225,7 +225,12 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
         }
 
         @Override
-        public int compareTo(GidHost o) {
+        public String toString() {
+            return clusterName + ":" + hostName + ":" + port;
+        }
+
+        @Override
+        public int compareTo(GridHost o) {
             int c = datacenter.compareTo(o.datacenter);
             if (c != 0) {
                 return c;
@@ -243,6 +248,39 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                 return c;
             }
             return Integer.compare(port, o.port);
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 79 * hash + Objects.hashCode(this.clusterName);
+            hash = 79 * hash + Objects.hashCode(this.hostName);
+            hash = 79 * hash + this.port;
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final GridHost other = (GridHost) obj;
+            if (this.port != other.port) {
+                return false;
+            }
+            if (!Objects.equals(this.clusterName, other.clusterName)) {
+                return false;
+            }
+            if (!Objects.equals(this.hostName, other.hostName)) {
+                return false;
+            }
+            return true;
         }
 
     }
@@ -275,7 +313,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                 }
             }
 
-            ConcurrentSkipListSet<GidHost> gridHosts = new ConcurrentSkipListSet<>();
+            ConcurrentSkipListSet<GridHost> gridHosts = new ConcurrentSkipListSet<>();
             ConcurrentSkipListSet<GridService> services = new ConcurrentSkipListSet<>((GridService o1, GridService o2) -> {
                 int c = o1.serviceName.compareTo(o2.serviceName);
                 if (c != 0) {
@@ -288,7 +326,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
 
             for (UpenaEndpoints.NodeHealth nodeHealth : nodeHealths.values()) {
                 if (nodeHealth.nannyHealths.isEmpty()) {
-                    gridHosts.add(new GidHost("UNREACHABLE", "UNREACHABLE", "UNREACHABLE", nodeHealth.host, nodeHealth.port));
+                    gridHosts.add(new GridHost("UNREACHABLE", "UNREACHABLE", "UNREACHABLE", nodeHealth.host, nodeHealth.port));
                 }
                 for (UpenaEndpoints.NannyHealth nannyHealth : nodeHealth.nannyHealths) {
                     boolean cshow = input.cluster.isEmpty() ? false : nannyHealth.instanceDescriptor.clusterName.contains(input.cluster);
@@ -297,7 +335,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
 
                     if ((!input.cluster.isEmpty() == cshow) && (!input.host.isEmpty() == hshow) && (!input.service.isEmpty() == sshow)) {
                         if (!gridHosts.contains(nannyHealth.instanceDescriptor.clusterName + ":" + nodeHealth.host + ":" + nodeHealth.port)) {
-                            gridHosts.add(new GidHost(nannyHealth.instanceDescriptor.datacenter, nannyHealth.instanceDescriptor.rack,
+                            gridHosts.add(new GridHost(nannyHealth.instanceDescriptor.datacenter, nannyHealth.instanceDescriptor.rack,
                                 nannyHealth.instanceDescriptor.clusterName, nodeHealth.host, nodeHealth.port));
                         }
                         GridService service = new GridService(nannyHealth.instanceDescriptor.serviceKey, nannyHealth.instanceDescriptor.serviceName);
@@ -344,13 +382,13 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                 serviceIndexs.put(new GridServiceKey(service.serviceKey, service.serviceName), service);
                 serviceIndex++;
             }
-            Map<GidHost, Integer> hostIndexs = new HashMap<>();
+            Map<GridHost, Integer> hostIndexs = new HashMap<>();
             int hostIndex = 0;
             int uid = 0;
             List<List<Map<String, Object>>> hostRows = new ArrayList<>();
             String lastDatacenter = null;
             String lastRack = null;
-            for (GidHost gridHost : gridHosts) {
+            for (GridHost gridHost : gridHosts) {
                 hostIndexs.put(gridHost, hostIndex);
                 hostIndex++;
                 List<Map<String, Object>> hostRow = new ArrayList<>();
@@ -402,7 +440,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                 }
 
                 if (nodeHealth.nannyHealths.isEmpty()) {
-                    String host = "UNREACHABLE:" + nodeHealth.host + ":" + nodeHealth.port;
+                    GridHost host = new GridHost("UNREACHABLE", "UNREACHABLE", "UNREACHABLE", nodeHealth.host, nodeHealth.port);
                     Integer hi = hostIndexs.get(host);
                     if (hi != null) {
 
@@ -413,7 +451,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                         hostRows.get(hi).get(0).put("color", "#" + getHEXTrafficlightColor(hh, 1f));
                         hostRows.get(hi).get(0).put("host", nodeHealth.host); // TODO change to hostKey
                         hostRows.get(hi).get(0).put("hostKey", nodeHealth.host); // TODO change to hostKey
-                        hostRows.get(hi).get(0).put("health", host);
+                        hostRows.get(hi).get(0).put("health", host.toString());
                         hostRows.get(hi).get(0).put("age", age);
                         hostRows.get(hi).get(0).put("uid", "uid-" + uid);
                         hostRows.get(hi).get(0).put("instanceKey", "");
@@ -427,7 +465,8 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                     boolean sshow = input.service.isEmpty() ? false : nannyHealth.instanceDescriptor.serviceName.contains(input.service);
 
                     if ((!input.cluster.isEmpty() == cshow) && (!input.host.isEmpty() == hshow) && (!input.service.isEmpty() == sshow)) {
-                        String host = nannyHealth.instanceDescriptor.clusterName + ":" + nodeHealth.host + ":" + nodeHealth.port;
+                        GridHost host = new GridHost(nannyHealth.instanceDescriptor.datacenter, nannyHealth.instanceDescriptor.rack,
+                            nannyHealth.instanceDescriptor.clusterName, nodeHealth.host, nodeHealth.port);
                         Integer hi = hostIndexs.get(host);
 
                         GridServiceKey serviceIndexKey = new GridServiceKey(nannyHealth.instanceDescriptor.serviceKey,
@@ -457,7 +496,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                             hostRows.get(hi).get(0).put("color", "#" + getHEXTrafficlightColor(hh, 1f));
                             hostRows.get(hi).get(0).put("host", nodeHealth.host); // TODO change to hostKey
                             hostRows.get(hi).get(0).put("hostKey", nodeHealth.host); // TODO change to hostKey
-                            hostRows.get(hi).get(0).put("health", host);
+                            hostRows.get(hi).get(0).put("health", host.toString());
                             hostRows.get(hi).get(0).put("age", age);
                             hostRows.get(hi).get(0).put("uid", "uid-" + uid);
                             hostRows.get(hi).get(0).put("instanceKey", "");
