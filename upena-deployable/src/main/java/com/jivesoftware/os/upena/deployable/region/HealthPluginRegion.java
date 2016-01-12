@@ -492,12 +492,10 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                         && (!input.host.isEmpty() == hshow)
                         && (!input.service.isEmpty() == sshow)) {
 
-                        GridHost host = new GridHost(id.datacenter, id.rack,
-                            id.clusterName, nodeHealth.host, nodeHealth.port);
+                        GridHost host = new GridHost(id.datacenter, id.rack, id.clusterName, nodeHealth.host, nodeHealth.port);
                         Integer hi = hostIndexs.get(host);
 
-                        GridServiceKey serviceIndexKey = new GridServiceKey(id.serviceKey,
-                            id.serviceName);
+                        GridServiceKey serviceIndexKey = new GridServiceKey(id.serviceKey, id.serviceName);
                         GridService service = serviceIndexs.get(serviceIndexKey);
                         if (hi != null && service != null) {
 
@@ -554,8 +552,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                                 hostRows.get(hi).get(si + 1).put("health", "");
                                 hostRows.get(hi).get(si + 1).put("age", "disabled");
                             }
-                            hostRows.get(hi).get(si + 1).put("link",
-                                "http://" + nodeHealth.host + ":" + id.ports.get("manage").port + "/manage/ui");
+                            hostRows.get(hi).get(si + 1).put("link", "http://" + nodeHealth.host + ":" + id.ports.get("manage").port + "/manage/ui");
 
                             List<Map<String, String>> got = (List<Map<String, String>>) hostRows.get(hi).get(si + 1).get("instances");
                             if (got == null) {
