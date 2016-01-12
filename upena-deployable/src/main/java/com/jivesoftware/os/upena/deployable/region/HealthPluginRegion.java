@@ -1,5 +1,6 @@
 package com.jivesoftware.os.upena.deployable.region;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
@@ -584,6 +585,12 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
 
         } catch (Exception e) {
             LOG.error("Unable to retrieve data", e);
+        }
+
+        try {
+            System.out.println(new ObjectMapper().writeValueAsString(data));
+        } catch (JsonProcessingException ex) {
+
         }
 
         return renderer.render(template, data);

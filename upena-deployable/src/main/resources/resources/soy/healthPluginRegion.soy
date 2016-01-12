@@ -71,36 +71,36 @@
                             <th></th>
                             {foreach $service in $gridServices}
                                 <th>
-                                    //<a style="width:100%; background-color: rgba({$service.serviceColor}, 0.4);" href="#" rel="popover" id="popoverAnchor-{$service.service}" data-popover-content="#popover-{$service.service}" data-placement="bottom" class="btn" title="{$service.service}">
-                                    //    <span class="glyphicon glyphicon-menu-down"></span>{$service.service}
-                                    //    {if $service.warnings}
-                                    //        &nbsp;&nbsp;<span class="glyphicon glyphicon-warning-sign icon-warn">
-                                    //    {/if}
-                                    //</a>
-                                    //<div style="background-color: rgba(255, 255, 255, 0.6);" id="popover-{$service.service}" class="hide">
-                                    //    <div class="btn-group">
-                                    //        <form id="configService" method="post" action="/ui/config" name="configService">
-                                    //            <input type="hidden" name="serviceKey" value="{$service.serviceKey}">
-                                    //            <button type="submit" class="btn btn-primary">
-                                    //                Config
-                                    //            </button>
-                                    //        </form>
-                                    //    </div>
-                                    //    <div class="btn-group">
-                                    //        <form id="restartService" method="post" action="/ui/restart" name="restartService">
-                                    //            <button type="submit" class="btn btn-primary">
-                                    //                Restart
-                                    //            </button>
-                                    //        </form>
-                                    //    </div>
-                                    //    {if $service.warnings}
-                                    //        <ul class="list-group">
-                                    //            {foreach $warning in $service.warnings}
-                                    //                <li class="list-group-item list-group-item-warning">{$warning}</li>
-                                    //            {/foreach}
-                                    //        </ul>
-                                    //    {/if}
-                                    //</div>
+                                    <a style="width:100%; background-color: rgba({$service.serviceColor}, 0.4);" href="#" rel="popover" id="popoverAnchor-{$service.service}" data-popover-content="#popover-{$service.service}" data-placement="bottom" class="btn" title="{$service.service}">
+                                        <span class="glyphicon glyphicon-menu-down"></span>{$service.service}
+                                        {if $service.warnings}
+                                            &nbsp;&nbsp;<span class="glyphicon glyphicon-warning-sign icon-warn">
+                                        {/if}
+                                    </a>
+                                    <div style="background-color: rgba(255, 255, 255, 0.6);" id="popover-{$service.service}" class="hide">
+                                        <div class="btn-group">
+                                            <form id="configService" method="post" action="/ui/config" name="configService">
+                                                <input type="hidden" name="serviceKey" value="{$service.serviceKey}">
+                                                <button type="submit" class="btn btn-primary">
+                                                    Config
+                                                </button>
+                                            </form>
+                                        </div>
+                                        <div class="btn-group">
+                                            <form id="restartService" method="post" action="/ui/restart" name="restartService">
+                                                <button type="submit" class="btn btn-primary">
+                                                    Restart
+                                                </button>
+                                            </form>
+                                        </div>
+                                        {if $service.warnings}
+                                            <ul class="list-group">
+                                                {foreach $warning in $service.warnings}
+                                                    <li class="list-group-item list-group-item-warning">{$warning}</li>
+                                                {/foreach}
+                                            </ul>
+                                        {/if}
+                                    </div>
                                 </th>
                             {/foreach}
                         </tr>
@@ -110,7 +110,9 @@
                             <tr class="grid-host">
                                 {foreach $health in $host}
                                     <td>
-                                        
+                                        {if $health.datacenter}
+                                            <div class="datacenter-and-rack>{$health.datacenter}:{$health.rack}</div>
+                                        {/if}
                                         {if $health.uid}
                                             <div class="panel panel-default grid-host-panel popover-health" " style="background-color: rgba(255, 255, 255, 0.6);" id="popoverAnchor-{$health.uid}"
                                                 {if $health.instanceKey} data-popover-instance-key="{$health.instanceKey}" {/if}
