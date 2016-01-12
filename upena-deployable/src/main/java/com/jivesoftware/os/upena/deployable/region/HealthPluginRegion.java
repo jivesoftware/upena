@@ -208,6 +208,45 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
 
     }
 
+    static class GidHost implements Comparable<GidHost> {
+
+        private final String datacenter;
+        private final String rack;
+        private final String clusterName;
+        private final String hostName;
+        private final int port;
+
+        public GidHost(String datacenter, String rack, String clusterName, String hostName, int port) {
+            this.datacenter = datacenter;
+            this.rack = rack;
+            this.clusterName = clusterName;
+            this.hostName = hostName;
+            this.port = port;
+        }
+
+        @Override
+        public int compareTo(GidHost o) {
+            int c = datacenter.compareTo(o.datacenter);
+            if (c != 0) {
+                return c;
+            }
+            c = rack.compareTo(o.rack);
+            if (c != 0) {
+                return c;
+            }
+            c = clusterName.compareTo(o.clusterName);
+            if (c != 0) {
+                return c;
+            }
+            c = hostName.compareTo(o.hostName);
+            if (c != 0) {
+                return c;
+            }
+            return Integer.compare(port, o.port);
+        }
+
+    }
+
     @Override
     public String render(String user, HealthPluginRegionInput input) {
         Map<String, Object> data = Maps.newHashMap();
@@ -236,7 +275,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                 }
             }
 
-            ConcurrentSkipListSet<String> hosts = new ConcurrentSkipListSet<>();
+            ConcurrentSkipListSet<GidHost> gridHosts = new ConcurrentSkipListSet<>();
             ConcurrentSkipListSet<GridService> services = new ConcurrentSkipListSet<>((GridService o1, GridService o2) -> {
                 int c = o1.serviceName.compareTo(o2.serviceName);
                 if (c != 0) {
@@ -249,7 +288,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
 
             for (UpenaEndpoints.NodeHealth nodeHealth : nodeHealths.values()) {
                 if (nodeHealth.nannyHealths.isEmpty()) {
-                    hosts.add("UNREACHABLE:" + nodeHealth.host + ":" + nodeHealth.port);
+                    gridHosts.add(new GidHost("UNREACHABLE", "UNREACHABLE", "UNREACHABLE", nodeHealth.host, nodeHealth.port));
                 }
                 for (UpenaEndpoints.NannyHealth nannyHealth : nodeHealth.nannyHealths) {
                     boolean cshow = input.cluster.isEmpty() ? false : nannyHealth.instanceDescriptor.clusterName.contains(input.cluster);
@@ -257,8 +296,9 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                     boolean sshow = input.service.isEmpty() ? false : nannyHealth.instanceDescriptor.serviceName.contains(input.service);
 
                     if ((!input.cluster.isEmpty() == cshow) && (!input.host.isEmpty() == hshow) && (!input.service.isEmpty() == sshow)) {
-                        if (!hosts.contains(nannyHealth.instanceDescriptor.clusterName + ":" + nodeHealth.host + ":" + nodeHealth.port)) {
-                            hosts.add(nannyHealth.instanceDescriptor.clusterName + ":" + nodeHealth.host + ":" + nodeHealth.port);
+                        if (!gridHosts.contains(nannyHealth.instanceDescriptor.clusterName + ":" + nodeHealth.host + ":" + nodeHealth.port)) {
+                            gridHosts.add(new GidHost(nannyHealth.instanceDescriptor.datacenter, nannyHealth.instanceDescriptor.rack,
+                                nannyHealth.instanceDescriptor.clusterName, nodeHealth.host, nodeHealth.port));
                         }
                         GridService service = new GridService(nannyHealth.instanceDescriptor.serviceKey, nannyHealth.instanceDescriptor.serviceName);
                         if (!services.contains(service)) {
@@ -304,14 +344,33 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                 serviceIndexs.put(new GridServiceKey(service.serviceKey, service.serviceName), service);
                 serviceIndex++;
             }
-            Map<String, Integer> hostIndexs = new HashMap<>();
+            Map<GidHost, Integer> hostIndexs = new HashMap<>();
             int hostIndex = 0;
             int uid = 0;
             List<List<Map<String, Object>>> hostRows = new ArrayList<>();
-            for (String host : hosts) {
-                hostIndexs.put(host, hostIndex);
+            String lastDatacenter = null;
+            String lastRack = null;
+            for (GidHost gridHost : gridHosts) {
+                hostIndexs.put(gridHost, hostIndex);
                 hostIndex++;
                 List<Map<String, Object>> hostRow = new ArrayList<>();
+                String currentDatacenter = com.google.common.base.Objects.firstNonNull(gridHost.datacenter, "");
+                String currentRack = com.google.common.base.Objects.firstNonNull(gridHost.rack, "");
+                if (lastDatacenter == null || !lastDatacenter.equals(currentDatacenter)
+                    || lastRack == null || !lastRack.equals(currentRack)) {
+
+                    lastDatacenter = currentDatacenter;
+                    lastRack = currentRack;
+
+                    hostRow.add(ImmutableMap.<String, Object>builder().put("datacenter", lastDatacenter).put("rack", lastDatacenter).build());
+                    for (int s = 0; s < services.size(); s++) {
+                        HashMap<String, Object> cell = new HashMap<>();
+                        hostRow.add(cell);
+                    }
+                    hostRows.add(hostRow);
+                    hostRow = new ArrayList<>();
+                }
+
                 Map<String, Object> healthCell = new HashMap<>();
                 healthCell.put("uid", "uid-" + uid);
                 uid++;

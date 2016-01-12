@@ -34,6 +34,11 @@ div.pad {
     padding: 3px;
 }
 
+div.datacenter-and-rack {
+    font-style: italic;
+    color: #000;
+}
+
 /* Used by event stream and view inspection to allow for links in JSON dumps */
 div.pre-ish {
     font-family: courier, "courier new", monospace;

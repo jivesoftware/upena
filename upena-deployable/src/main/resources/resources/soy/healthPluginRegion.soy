@@ -97,191 +97,195 @@
                             <tr class="grid-host">
                                 {foreach $health in $host}
                                     <td>
-                                        <div class="panel panel-default grid-host-panel popover-health" " style="background-color: rgba(255, 255, 255, 0.6);" id="popoverAnchor-{$health.uid}"
-                                            {if $health.instanceKey} data-popover-instance-key="{$health.instanceKey}" {/if}
-                                            data-health-hook="{$health.instanceKey ? $health.instanceKey : $health.health ? $health.health : ''}"
-                                            data-popover-content="#popover-{$health.uid}" data-placement="bottom">
-                                            <div class="health-color" style="float:left; background-color:{$health.color}; color:#fff; width:20px; height:20px; text-align:center; margin-right:4px; border-radius:4px 0 0 4px;">
-                                                <span class="glyphicon glyphicon-menu-down"></span>
-                                            </div>
-                                            {if $health.age}<div class="health-age" style="float:right; background-color:#eee; color:#999; padding:0 8px; height:20px; margin-left:4px; border-radius:0 4px 4px 0;">{$health.age}</div>{/if}
-                                            {if $health.health == null}
-                                                &nbsp;&nbsp;&nbsp;
-                                            {else}
-                                                <span class="health-text" style="color:#666;">{$health.health|noAutoescape}</span>
-                                            {/if}
-                                        </div>
-                                        <div id="popover-{$health.uid}" class="hide" style="background-color: rgba(255, 255, 255, 0.6);">
-                                            {if $health.hostInfo}
-                                                <div class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.6);">
-                                                    <div class="panel-heading">Host Info</div>
-                                                    <div class="panel-body">
-                                                        <ul>
-                                                            <li>datacenter:{$health.hostInfo.datacenter}</li>
-                                                            <li>rack:{$health.hostInfo.rack}</li>
-                                                            <li>publicHost:{$health.hostInfo.publicHost}</li>
-                                                        </ul>
-                                                    </div>
+                                        {if $health.datacenter}
+                                            <div class="datacenter-and-rack>{$health.datacenter}:{$health.rack}</div>
+                                        {else if $health.uid}
+                                            <div class="panel panel-default grid-host-panel popover-health" " style="background-color: rgba(255, 255, 255, 0.6);" id="popoverAnchor-{$health.uid}"
+                                                {if $health.instanceKey} data-popover-instance-key="{$health.instanceKey}" {/if}
+                                                data-health-hook="{$health.instanceKey ? $health.instanceKey : $health.health ? $health.health : ''}"
+                                                data-popover-content="#popover-{$health.uid}" data-placement="bottom">
+                                                <div class="health-color" style="float:left; background-color:{$health.color}; color:#fff; width:20px; height:20px; text-align:center; margin-right:4px; border-radius:4px 0 0 4px;">
+                                                    <span class="glyphicon glyphicon-menu-down"></span>
                                                 </div>
-                                            {/if}
-                                            {if $health.instances}
-                                                {foreach $i in $health.instances}
+                                                {if $health.age}<div class="health-age" style="float:right; background-color:#eee; color:#999; padding:0 8px; height:20px; margin-left:4px; border-radius:0 4px 4px 0;">{$health.age}</div>{/if}
+                                                {if $health.health == null}
+                                                    &nbsp;&nbsp;&nbsp;
+                                                {else}
+                                                    <span class="health-text" style="color:#666;">{$health.health|noAutoescape}</span>
+                                                {/if}
+                                            </div>
+                                            <div id="popover-{$health.uid}" class="hide" style="background-color: rgba(255, 255, 255, 0.6);">
+                                                {if $health.hostInfo}
                                                     <div class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.6);">
-                                                        <div class="panel-heading">
-                                                            <span class="glyphicon glyphicon-apple"></span>{sp}
-                                                            {$i.clusterName}&nbsp;-&nbsp;{$i.serviceName|noAutoescape}
-                                                                            &nbsp;&nbsp;&nbsp;&nbsp;port={$i.port}
-                                                                            &nbsp;&nbsp;&nbsp;&nbsp;host={$i.hostName}
-                                                                            &nbsp;&nbsp;&nbsp;&nbsp;
-                                                            
-                                                            {if $health.health == null}
-                                                                <div class="btn-group">
-                                                                    <form id="addService" method="post" action="/ui/instances" name="addService">
-                                                                        {if $health.clusterKey}
-                                                                            <input type="hidden" name="clusterKey" value="{$health.clusterKey}">
-                                                                        {/if}
-                                                                        {if $health.cluster}
-                                                                            <input type="hidden" name="cluster" value="{$health.cluster}">
-                                                                        {/if}
-                                                                        {if $health.hostKey}
-                                                                            <input type="hidden" name="hostKey" value="{$health.hostKey}">
-                                                                        {/if}
-                                                                        {if $health.host}
-                                                                            <input type="hidden" name="host" value="{$health.host}">
-                                                                        {/if}
-                                                                        {if $health.serviceKey}
-                                                                            <input type="hidden" name="serviceKey" value="{$health.serviceKey}">
-                                                                        {/if}
-                                                                        {if $health.service}
-                                                                            <input type="hidden" name="service" value="{$health.service}">
-                                                                        {/if}
-                                                                        {if $health.releaseKey}
-                                                                            <input type="hidden" name="releaseKey" value="{$health.releaseKey}">
-                                                                        {/if}
-                                                                        {if $health.release}
-                                                                            <input type="hidden" name="release" value="{$health.release}">
-                                                                        {/if}
-                                                                        {if $health.instance}
-                                                                            <input type="hidden" name="instance" value="{$health.instance}">
-                                                                        {/if}
-                                                                        <button type="submit" class="btn btn-primary">
-                                                                            Add
-                                                                        </button>
-                                                                    </form>
-                                                                </div>
-                                                            {else}
-                                                                <div class="btn-group">
-                                                                    <form id="configService" method="post" action="/ui/config" name="configService">
-                                                                        {if $health.clusterKey}
-                                                                            <input type="hidden" name="clusterKey" value="{$health.clusterKey}">
-                                                                        {/if}
-                                                                        {if $health.cluster}
-                                                                            <input type="hidden" name="cluster" value="{$health.cluster}">
-                                                                        {/if}
-                                                                        {if $health.hostKey}
-                                                                            <input type="hidden" name="hostKey" value="{$health.hostKey}">
-                                                                        {/if}
-                                                                        {if $health.host}
-                                                                            <input type="hidden" name="host" value="{$health.host}">
-                                                                        {/if}
-                                                                        {if $health.serviceKey}
-                                                                            <input type="hidden" name="serviceKey" value="{$health.serviceKey}">
-                                                                        {/if}
-                                                                        {if $health.service}
-                                                                            <input type="hidden" name="service" value="{$health.service}">
-                                                                        {/if}
-                                                                        {if $health.releaseKey}
-                                                                            <input type="hidden" name="releaseKey" value="{$health.releaseKey}">
-                                                                        {/if}
-                                                                        {if $health.release}
-                                                                            <input type="hidden" name="release" value="{$health.release}">
-                                                                        {/if}
-                                                                        {if $health.instance}
-                                                                            <input type="hidden" name="instance" value="{$health.instance}">
-                                                                        {/if}
-                                                                        <button type="submit" class="btn btn-primary">
-                                                                            Config
-                                                                        </button>
-                                                                    </form>
-                                                                </div>
-                                                                <div class="btn-group">
-                                                                    <form id="restartService" method="post" action="/ui/instances" name="restartService">
-                                                                        {if $health.clusterKey}
-                                                                            <input type="hidden" name="clusterKey" value="{$health.clusterKey}">
-                                                                        {/if}
-                                                                        {if $health.cluster}
-                                                                            <input type="hidden" name="cluster" value="{$health.cluster}">
-                                                                        {/if}
-                                                                        {if $health.hostKey}
-                                                                            <input type="hidden" name="hostKey" value="{$health.hostKey}">
-                                                                        {/if}
-                                                                        {if $health.host}
-                                                                            <input type="hidden" name="host" value="{$health.host}">
-                                                                        {/if}
-                                                                        {if $health.serviceKey}
-                                                                            <input type="hidden" name="serviceKey" value="{$health.serviceKey}">
-                                                                        {/if}
-                                                                        {if $health.service}
-                                                                            <input type="hidden" name="service" value="{$health.service}">
-                                                                        {/if}
-                                                                        {if $health.releaseKey}
-                                                                            <input type="hidden" name="releaseKey" value="{$health.releaseKey}">
-                                                                        {/if}
-                                                                        {if $health.release}
-                                                                            <input type="hidden" name="release" value="{$health.release}">
-                                                                        {/if}
-                                                                        {if $health.instance}
-                                                                            <input type="hidden" name="instance" value="{$health.instance}">
-                                                                        {/if}
-                                                                        <button type="submit" class="btn btn-primary">
-                                                                            Restart
-                                                                        </button>
-                                                                    </form>
-                                                                </div>
-                                                                <div class="btn-group">
-                                                                    <form id="removeService" method="post" action="/ui/instances" name="removeService">
-                                                                        {if $health.clusterKey}
-                                                                            <input type="hidden" name="clusterKey" value="{$health.clusterKey}">
-                                                                        {/if}
-                                                                        {if $health.cluster}
-                                                                            <input type="hidden" name="cluster" value="{$health.cluster}">
-                                                                        {/if}
-                                                                        {if $health.hostKey}
-                                                                            <input type="hidden" name="hostKey" value="{$health.hostKey}">
-                                                                        {/if}
-                                                                        {if $health.host}
-                                                                            <input type="hidden" name="host" value="{$health.host}">
-                                                                        {/if}
-                                                                        {if $health.serviceKey}
-                                                                            <input type="hidden" name="serviceKey" value="{$health.serviceKey}">
-                                                                        {/if}
-                                                                        {if $health.service}
-                                                                            <input type="hidden" name="service" value="{$health.service}">
-                                                                        {/if}
-                                                                        {if $health.releaseKey}
-                                                                            <input type="hidden" name="releaseKey" value="{$health.releaseKey}">
-                                                                        {/if}
-                                                                        {if $health.release}
-                                                                            <input type="hidden" name="release" value="{$health.release}">
-                                                                        {/if}
-                                                                        {if $health.instance}
-                                                                            <input type="hidden" name="instance" value="{$health.instance}">
-                                                                        {/if}
-                                                                        <button type="submit" class="btn btn-primary">
-                                                                            Remove
-                                                                        </button>
-                                                                    </form>
-                                                                </div>
-                                                            {/if}
-                                                        </div>
-                                                        <div class="panel-body" style="background-color: rgba(255, 255, 255, 0.6);">
-                                                            <div>{$i.details|noAutoescape}</div>
-                                                            <div style="width:1200px" class="uis" ></div>
+                                                        <div class="panel-heading">Host Info</div>
+                                                        <div class="panel-body">
+                                                            <ul>
+                                                                <li>datacenter:{$health.hostInfo.datacenter}</li>
+                                                                <li>rack:{$health.hostInfo.rack}</li>
+                                                                <li>publicHost:{$health.hostInfo.publicHost}</li>
+                                                            </ul>
                                                         </div>
                                                     </div>
-                                                {/foreach}
-                                            {/if}
-                                        </div>
+                                                {/if}
+                                                {if $health.instances}
+                                                    {foreach $i in $health.instances}
+                                                        <div class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.6);">
+                                                            <div class="panel-heading">
+                                                                <span class="glyphicon glyphicon-apple"></span>{sp}
+                                                                {$i.clusterName}&nbsp;-&nbsp;{$i.serviceName|noAutoescape}
+                                                                                &nbsp;&nbsp;&nbsp;&nbsp;port={$i.port}
+                                                                                &nbsp;&nbsp;&nbsp;&nbsp;host={$i.hostName}
+                                                                                &nbsp;&nbsp;&nbsp;&nbsp;
+
+                                                                {if $health.health == null}
+                                                                    <div class="btn-group">
+                                                                        <form id="addService" method="post" action="/ui/instances" name="addService">
+                                                                            {if $health.clusterKey}
+                                                                                <input type="hidden" name="clusterKey" value="{$health.clusterKey}">
+                                                                            {/if}
+                                                                            {if $health.cluster}
+                                                                                <input type="hidden" name="cluster" value="{$health.cluster}">
+                                                                            {/if}
+                                                                            {if $health.hostKey}
+                                                                                <input type="hidden" name="hostKey" value="{$health.hostKey}">
+                                                                            {/if}
+                                                                            {if $health.host}
+                                                                                <input type="hidden" name="host" value="{$health.host}">
+                                                                            {/if}
+                                                                            {if $health.serviceKey}
+                                                                                <input type="hidden" name="serviceKey" value="{$health.serviceKey}">
+                                                                            {/if}
+                                                                            {if $health.service}
+                                                                                <input type="hidden" name="service" value="{$health.service}">
+                                                                            {/if}
+                                                                            {if $health.releaseKey}
+                                                                                <input type="hidden" name="releaseKey" value="{$health.releaseKey}">
+                                                                            {/if}
+                                                                            {if $health.release}
+                                                                                <input type="hidden" name="release" value="{$health.release}">
+                                                                            {/if}
+                                                                            {if $health.instance}
+                                                                                <input type="hidden" name="instance" value="{$health.instance}">
+                                                                            {/if}
+                                                                            <button type="submit" class="btn btn-primary">
+                                                                                Add
+                                                                            </button>
+                                                                        </form>
+                                                                    </div>
+                                                                {else}
+                                                                    <div class="btn-group">
+                                                                        <form id="configService" method="post" action="/ui/config" name="configService">
+                                                                            {if $health.clusterKey}
+                                                                                <input type="hidden" name="clusterKey" value="{$health.clusterKey}">
+                                                                            {/if}
+                                                                            {if $health.cluster}
+                                                                                <input type="hidden" name="cluster" value="{$health.cluster}">
+                                                                            {/if}
+                                                                            {if $health.hostKey}
+                                                                                <input type="hidden" name="hostKey" value="{$health.hostKey}">
+                                                                            {/if}
+                                                                            {if $health.host}
+                                                                                <input type="hidden" name="host" value="{$health.host}">
+                                                                            {/if}
+                                                                            {if $health.serviceKey}
+                                                                                <input type="hidden" name="serviceKey" value="{$health.serviceKey}">
+                                                                            {/if}
+                                                                            {if $health.service}
+                                                                                <input type="hidden" name="service" value="{$health.service}">
+                                                                            {/if}
+                                                                            {if $health.releaseKey}
+                                                                                <input type="hidden" name="releaseKey" value="{$health.releaseKey}">
+                                                                            {/if}
+                                                                            {if $health.release}
+                                                                                <input type="hidden" name="release" value="{$health.release}">
+                                                                            {/if}
+                                                                            {if $health.instance}
+                                                                                <input type="hidden" name="instance" value="{$health.instance}">
+                                                                            {/if}
+                                                                            <button type="submit" class="btn btn-primary">
+                                                                                Config
+                                                                            </button>
+                                                                        </form>
+                                                                    </div>
+                                                                    <div class="btn-group">
+                                                                        <form id="restartService" method="post" action="/ui/instances" name="restartService">
+                                                                            {if $health.clusterKey}
+                                                                                <input type="hidden" name="clusterKey" value="{$health.clusterKey}">
+                                                                            {/if}
+                                                                            {if $health.cluster}
+                                                                                <input type="hidden" name="cluster" value="{$health.cluster}">
+                                                                            {/if}
+                                                                            {if $health.hostKey}
+                                                                                <input type="hidden" name="hostKey" value="{$health.hostKey}">
+                                                                            {/if}
+                                                                            {if $health.host}
+                                                                                <input type="hidden" name="host" value="{$health.host}">
+                                                                            {/if}
+                                                                            {if $health.serviceKey}
+                                                                                <input type="hidden" name="serviceKey" value="{$health.serviceKey}">
+                                                                            {/if}
+                                                                            {if $health.service}
+                                                                                <input type="hidden" name="service" value="{$health.service}">
+                                                                            {/if}
+                                                                            {if $health.releaseKey}
+                                                                                <input type="hidden" name="releaseKey" value="{$health.releaseKey}">
+                                                                            {/if}
+                                                                            {if $health.release}
+                                                                                <input type="hidden" name="release" value="{$health.release}">
+                                                                            {/if}
+                                                                            {if $health.instance}
+                                                                                <input type="hidden" name="instance" value="{$health.instance}">
+                                                                            {/if}
+                                                                            <button type="submit" class="btn btn-primary">
+                                                                                Restart
+                                                                            </button>
+                                                                        </form>
+                                                                    </div>
+                                                                    <div class="btn-group">
+                                                                        <form id="removeService" method="post" action="/ui/instances" name="removeService">
+                                                                            {if $health.clusterKey}
+                                                                                <input type="hidden" name="clusterKey" value="{$health.clusterKey}">
+                                                                            {/if}
+                                                                            {if $health.cluster}
+                                                                                <input type="hidden" name="cluster" value="{$health.cluster}">
+                                                                            {/if}
+                                                                            {if $health.hostKey}
+                                                                                <input type="hidden" name="hostKey" value="{$health.hostKey}">
+                                                                            {/if}
+                                                                            {if $health.host}
+                                                                                <input type="hidden" name="host" value="{$health.host}">
+                                                                            {/if}
+                                                                            {if $health.serviceKey}
+                                                                                <input type="hidden" name="serviceKey" value="{$health.serviceKey}">
+                                                                            {/if}
+                                                                            {if $health.service}
+                                                                                <input type="hidden" name="service" value="{$health.service}">
+                                                                            {/if}
+                                                                            {if $health.releaseKey}
+                                                                                <input type="hidden" name="releaseKey" value="{$health.releaseKey}">
+                                                                            {/if}
+                                                                            {if $health.release}
+                                                                                <input type="hidden" name="release" value="{$health.release}">
+                                                                            {/if}
+                                                                            {if $health.instance}
+                                                                                <input type="hidden" name="instance" value="{$health.instance}">
+                                                                            {/if}
+                                                                            <button type="submit" class="btn btn-primary">
+                                                                                Remove
+                                                                            </button>
+                                                                        </form>
+                                                                    </div>
+                                                                {/if}
+                                                            </div>
+                                                            <div class="panel-body" style="background-color: rgba(255, 255, 255, 0.6);">
+                                                                <div>{$i.details|noAutoescape}</div>
+                                                                <div style="width:1200px" class="uis" ></div>
+                                                            </div>
+                                                        </div>
+                                                    {/foreach}
+                                                {/if}
+                                            </div>
+                                        {/if}
                                     </td>
                                 {/foreach}
                             </tr>
