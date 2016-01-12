@@ -100,7 +100,6 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
         this.discoveredRoutes = discoveredRoutes;
     }
 
-
     @Override
     public String getRootPath() {
         return "/ui/topology";
@@ -117,7 +116,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
         final String releaseKey;
         final String release;
         final Set<String> linkType;
-        
+
         public TopologyPluginRegionInput(String clusterKey, String cluster, String hostKey, String host, String serviceKey, String service,
             String releaseKey, String release, Set<String> linkType) {
             this.clusterKey = clusterKey;
@@ -182,7 +181,6 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
             });
             sort.putAll(services);
 
-
             int i = 0;
             Map<String, Integer> serviceColor = new HashMap<>();
             for (Map.Entry<ServiceKey, TimestampedValue<Service>> entrySet : sort.entrySet()) {
@@ -205,7 +203,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
             data.put("serviceLegend", MAPPER.writeValueAsString(serviceNameLegend));
 
             topologyGraph(user, instanceFilter, input.linkType, serviceColor, data);
-            
+
             for (String ensure : new String[]{"topologyNodes", "topologyEdges"}) {
                 if (!data.containsKey(ensure)) {
                     data.put(ensure, Collections.emptyList());
@@ -256,7 +254,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
                         nodes.put(value.clusterKey.toString(), n);
                         String title = title(cluster, null, null, null, null);
                         n.focusHtml = title + "<br>" + healthPluginRegion.render("topology",
-                            new HealthPluginRegion.HealthPluginRegionInput(cluster.name, "", ""));
+                            new HealthPluginRegion.HealthPluginRegionInput("", "", cluster.name, "", ""));
                         fs -= 2;
 
                         n.maxHealth = Math.max(n.maxHealth, serviceHealth);
@@ -276,7 +274,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
                         nodes.put(host.rackName, n);
                         String title = title(cluster, null, null, null, null); //TODO fix to include rack
                         n.focusHtml = title + "<br>" + healthPluginRegion.render("topology",
-                            new HealthPluginRegion.HealthPluginRegionInput(cluster.name, "", "")); //TODO fix to include rack
+                            new HealthPluginRegion.HealthPluginRegionInput("", "", cluster.name, "", "")); //TODO fix to include rack
                         //fs -= 2;
 
                         n.maxHealth = Math.max(n.maxHealth, serviceHealth);

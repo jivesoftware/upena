@@ -43,12 +43,14 @@ public class HealthPluginEndpoints {
     @Path("/")
     @Produces(MediaType.TEXT_HTML)
     public Response filter(@Context HttpServletRequest httpRequest,
+        @QueryParam("datacenter") @DefaultValue("") String datacenter,
+        @QueryParam("rack") @DefaultValue("") String rack,
         @QueryParam("cluster") @DefaultValue("") String cluster,
         @QueryParam("host") @DefaultValue("") String host,
         @QueryParam("service") @DefaultValue("") String service) {
         try {
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-                new HealthPluginRegionInput(cluster, host, service));
+                new HealthPluginRegionInput(datacenter, rack, cluster, host, service));
             return Response.ok(rendered).build();
         } catch (Exception e) {
             LOG.error("filter", e);
@@ -72,11 +74,14 @@ public class HealthPluginEndpoints {
     @Path("/live")
     @Produces(MediaType.APPLICATION_JSON)
     public Response live(@Context HttpServletRequest httpRequest,
+        @QueryParam("datacenter") @DefaultValue("") String datacenter,
+        @QueryParam("rack") @DefaultValue("") String rack,
         @QueryParam("cluster") @DefaultValue("") String cluster,
         @QueryParam("host") @DefaultValue("") String host,
         @QueryParam("service") @DefaultValue("") String service) {
         try {
-            return Response.ok(pluginRegion.renderLive(httpRequest.getRemoteUser(), new HealthPluginRegionInput(cluster, host, service))).build();
+            return Response.ok(pluginRegion.renderLive(httpRequest.getRemoteUser(), new HealthPluginRegionInput(datacenter, rack, cluster, host, service)))
+                .build();
         } catch (Exception e) {
             LOG.error("live", e);
             return responseHelper.errorResponse("live failed", e);
@@ -88,13 +93,13 @@ public class HealthPluginEndpoints {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response poll(
+        @FormParam("datacenter") @DefaultValue("") String datacenter,
+        @FormParam("rack") @DefaultValue("") String rack,
         @FormParam("cluster") @DefaultValue("dev") String cluster,
         @FormParam("host") @DefaultValue("") String host,
         @FormParam("service") @DefaultValue("") String service) {
         try {
-            Map<String, Object> result = pluginRegion.poll(new HealthPluginRegionInput(cluster,
-                host,
-                service));
+            Map<String, Object> result = pluginRegion.poll(new HealthPluginRegionInput(datacenter, rack, cluster, host, service));
             return responseHelper.jsonResponse(result != null ? result : "");
         } catch (Exception e) {
             LOG.error("poll failed", e);

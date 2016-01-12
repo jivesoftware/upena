@@ -135,11 +135,15 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
 
     public static class HealthPluginRegionInput implements PluginInput {
 
+        final String datacenter;
+        final String rack;
         final String cluster;
         final String host;
         final String service;
 
-        public HealthPluginRegionInput(String cluster, String host, String service) {
+        public HealthPluginRegionInput(String datacenter, String rack, String cluster, String host, String service) {
+            this.datacenter = datacenter;
+            this.rack = rack;
             this.cluster = cluster;
             this.host = host;
             this.service = service;
@@ -294,6 +298,8 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
             Map<ServiceKey, String> serviceColor = ServiceColorUtil.serviceKeysColor(upenaStore);
 
             Map<String, String> filter = new HashMap<>();
+            filter.put("datacenter", input.datacenter);
+            filter.put("rack", input.rack);
             filter.put("cluster", input.cluster);
             filter.put("host", input.host);
             filter.put("service", input.service);
@@ -329,11 +335,18 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                     gridHosts.add(new GridHost("UNREACHABLE", "UNREACHABLE", "UNREACHABLE", nodeHealth.host, nodeHealth.port));
                 }
                 for (UpenaEndpoints.NannyHealth nannyHealth : nodeHealth.nannyHealths) {
+                    boolean dshow = input.datacenter.isEmpty() ? false : nannyHealth.instanceDescriptor.datacenter.contains(input.datacenter);
+                    boolean rshow = input.rack.isEmpty() ? false : nannyHealth.instanceDescriptor.rack.contains(input.rack);
                     boolean cshow = input.cluster.isEmpty() ? false : nannyHealth.instanceDescriptor.clusterName.contains(input.cluster);
                     boolean hshow = input.host.isEmpty() ? false : nodeHealth.host.contains(input.host);
                     boolean sshow = input.service.isEmpty() ? false : nannyHealth.instanceDescriptor.serviceName.contains(input.service);
 
-                    if ((!input.cluster.isEmpty() == cshow) && (!input.host.isEmpty() == hshow) && (!input.service.isEmpty() == sshow)) {
+                    if ((!input.datacenter.isEmpty() == dshow)
+                        && (!input.rack.isEmpty() == rshow)
+                        && (!input.cluster.isEmpty() == cshow)
+                        && (!input.host.isEmpty() == hshow)
+                        && (!input.service.isEmpty() == sshow)) {
+
                         if (!gridHosts.contains(nannyHealth.instanceDescriptor.clusterName + ":" + nodeHealth.host + ":" + nodeHealth.port)) {
                             gridHosts.add(new GridHost(nannyHealth.instanceDescriptor.datacenter, nannyHealth.instanceDescriptor.rack,
                                 nannyHealth.instanceDescriptor.clusterName, nodeHealth.host, nodeHealth.port));
@@ -389,8 +402,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
             String lastDatacenter = null;
             String lastRack = null;
             for (GridHost gridHost : gridHosts) {
-                hostIndexs.put(gridHost, hostIndex);
-                hostIndex++;
+
                 List<Map<String, Object>> hostRow = new ArrayList<>();
                 String currentDatacenter = com.google.common.base.Objects.firstNonNull(gridHost.datacenter, "");
                 String currentRack = com.google.common.base.Objects.firstNonNull(gridHost.rack, "");
@@ -400,14 +412,21 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                     lastDatacenter = currentDatacenter;
                     lastRack = currentRack;
 
-                    hostRow.add(ImmutableMap.<String, Object>builder().put("datacenter", lastDatacenter).put("rack", lastRack).build());
+                    Map<String, Object> healthCell = new HashMap<>();
+                    healthCell.put("datacenter", lastDatacenter);
+                    healthCell.put("rack", lastRack);
+                    hostRow.add(healthCell);
                     for (int s = 0; s < services.size(); s++) {
                         HashMap<String, Object> cell = new HashMap<>();
                         hostRow.add(cell);
                     }
                     hostRows.add(hostRow);
                     hostRow = new ArrayList<>();
+                    hostIndex++;
                 }
+
+                hostIndexs.put(gridHost, hostIndex);
+                hostIndex++;
 
                 Map<String, Object> healthCell = new HashMap<>();
                 healthCell.put("uid", "uid-" + uid);
@@ -460,21 +479,29 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                     }
                 }
                 for (UpenaEndpoints.NannyHealth nannyHealth : nodeHealth.nannyHealths) {
-                    boolean cshow = input.cluster.isEmpty() ? false : nannyHealth.instanceDescriptor.clusterName.contains(input.cluster);
+                    InstanceDescriptor id = nannyHealth.instanceDescriptor;
+                    boolean dshow = input.datacenter.isEmpty() ? false : id.datacenter.contains(input.datacenter);
+                    boolean rshow = input.rack.isEmpty() ? false : id.rack.contains(input.rack);
+                    boolean cshow = input.cluster.isEmpty() ? false : id.clusterName.contains(input.cluster);
                     boolean hshow = input.host.isEmpty() ? false : nodeHealth.host.contains(input.host);
-                    boolean sshow = input.service.isEmpty() ? false : nannyHealth.instanceDescriptor.serviceName.contains(input.service);
+                    boolean sshow = input.service.isEmpty() ? false : id.serviceName.contains(input.service);
 
-                    if ((!input.cluster.isEmpty() == cshow) && (!input.host.isEmpty() == hshow) && (!input.service.isEmpty() == sshow)) {
-                        GridHost host = new GridHost(nannyHealth.instanceDescriptor.datacenter, nannyHealth.instanceDescriptor.rack,
-                            nannyHealth.instanceDescriptor.clusterName, nodeHealth.host, nodeHealth.port);
+                    if ((!input.cluster.isEmpty() == dshow)
+                        && (!input.cluster.isEmpty() == rshow)
+                        && (!input.cluster.isEmpty() == cshow)
+                        && (!input.host.isEmpty() == hshow)
+                        && (!input.service.isEmpty() == sshow)) {
+
+                        GridHost host = new GridHost(id.datacenter, id.rack,
+                            id.clusterName, nodeHealth.host, nodeHealth.port);
                         Integer hi = hostIndexs.get(host);
 
-                        GridServiceKey serviceIndexKey = new GridServiceKey(nannyHealth.instanceDescriptor.serviceKey,
-                            nannyHealth.instanceDescriptor.serviceName);
+                        GridServiceKey serviceIndexKey = new GridServiceKey(id.serviceKey,
+                            id.serviceName);
                         GridService service = serviceIndexs.get(serviceIndexKey);
                         if (hi != null && service != null) {
 
-                            ServiceStats serviceStats = service.clusterToServiceStats.computeIfAbsent(nannyHealth.instanceDescriptor.clusterName,
+                            ServiceStats serviceStats = service.clusterToServiceStats.computeIfAbsent(id.clusterName,
                                 (String clusterName) -> {
                                     return new ServiceStats();
                                 });
@@ -510,15 +537,15 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                             float sh = (float) Math.max(0, h);
                             hostRows.get(hi).get(si + 1).put("uid", "uid-" + uid);
                             uid++;
-                            hostRows.get(hi).get(si + 1).put("instanceKey", nannyHealth.instanceDescriptor.instanceKey);
-                            hostRows.get(hi).get(si + 1).put("clusterKey", nannyHealth.instanceDescriptor.clusterKey);
-                            hostRows.get(hi).get(si + 1).put("cluster", nannyHealth.instanceDescriptor.clusterName);
-                            hostRows.get(hi).get(si + 1).put("serviceKey", nannyHealth.instanceDescriptor.serviceKey);
-                            hostRows.get(hi).get(si + 1).put("service", nannyHealth.instanceDescriptor.serviceName);
-                            hostRows.get(hi).get(si + 1).put("releaseKey", nannyHealth.instanceDescriptor.releaseGroupKey);
-                            hostRows.get(hi).get(si + 1).put("release", nannyHealth.instanceDescriptor.releaseGroupName);
-                            hostRows.get(hi).get(si + 1).put("instance", String.valueOf(nannyHealth.instanceDescriptor.instanceName));
-                            if (nannyHealth.instanceDescriptor.enabled) {
+                            hostRows.get(hi).get(si + 1).put("instanceKey", id.instanceKey);
+                            hostRows.get(hi).get(si + 1).put("clusterKey", id.clusterKey);
+                            hostRows.get(hi).get(si + 1).put("cluster", id.clusterName);
+                            hostRows.get(hi).get(si + 1).put("serviceKey", id.serviceKey);
+                            hostRows.get(hi).get(si + 1).put("service", id.serviceName);
+                            hostRows.get(hi).get(si + 1).put("releaseKey", id.releaseGroupKey);
+                            hostRows.get(hi).get(si + 1).put("release", id.releaseGroupName);
+                            hostRows.get(hi).get(si + 1).put("instance", String.valueOf(id.instanceName));
+                            if (id.enabled) {
                                 hostRows.get(hi).get(si + 1).put("color", "#" + getHEXTrafficlightColor(sh, 1f));
                                 hostRows.get(hi).get(si + 1).put("health", d2f(sh));
                                 hostRows.get(hi).get(si + 1).put("age", nannyHealth.uptime);
@@ -528,14 +555,14 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                                 hostRows.get(hi).get(si + 1).put("age", "disabled");
                             }
                             hostRows.get(hi).get(si + 1).put("link",
-                                "http://" + nodeHealth.host + ":" + nannyHealth.instanceDescriptor.ports.get("manage").port + "/manage/ui");
+                                "http://" + nodeHealth.host + ":" + id.ports.get("manage").port + "/manage/ui");
 
                             List<Map<String, String>> got = (List<Map<String, String>>) hostRows.get(hi).get(si + 1).get("instances");
                             if (got == null) {
                                 got = new ArrayList<>();
                                 hostRows.get(hi).get(si + 1).put("instances", got);
                             }
-                            got.add(instanceHealth.get(nannyHealth.instanceDescriptor.instanceKey));
+                            got.add(instanceHealth.get(id.instanceKey));
                         }
 
                     }

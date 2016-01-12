@@ -16,7 +16,25 @@
                         <td>
                             <div class="input-group">
                                 <div class="input-group-addon" id="basic-addon1">
-                                    <img src="/static/img/cluster.png" alt="Release" style="width:20px;height:20px;">&nbsp;
+                                    <img src="/static/img/datacenter.png" alt="Datacenter" style="width:20px;height:20px;">&nbsp;
+                                </div>
+                                <input type="text" autocomplete="off" role="combobox" style="width:280px; padding-left:10px;"
+                                    placeholder="Datacenter" value="{$filter.datacenter?:''}" name="datacenter" id="datacenterPicker" class="form-control">
+                            </div>
+                        </td>
+                        <td>
+                            <div class="input-group">
+                                <div class="input-group-addon" id="basic-addon1">
+                                    <img src="/static/img/rack.png" alt="Rack" style="width:20px;height:20px;">&nbsp;
+                                </div>
+                                <input type="text" autocomplete="off" role="combobox" style="width:280px; padding-left:10px;"
+                                    placeholder="Rack" value="{$filter.rack?:''}" name="rack" id="rackPicker" class="form-control">
+                            </div>
+                        </td>
+                        <td>
+                            <div class="input-group">
+                                <div class="input-group-addon" id="basic-addon1">
+                                    <img src="/static/img/cluster.png" alt="Cluster" style="width:20px;height:20px;">&nbsp;
                                 </div>
                                 <input type="text" autocomplete="off" role="combobox" style="width:280px; padding-left:10px;"
                                     placeholder="Cluster" value="{$filter.cluster?:''}" name="cluster" id="clusterPicker" class="form-control">
@@ -25,7 +43,7 @@
                         <td>
                             <div class="input-group">
                                 <div class="input-group-addon" id="basic-addon1">
-                                    <img src="/static/img/host.png" alt="Release" style="width:20px;height:20px;">&nbsp;
+                                    <img src="/static/img/host.png" alt="Host" style="width:20px;height:20px;">&nbsp;
                                 </div>
                                 <input type="text" autocomplete="off" role="combobox" style="width:280px; padding-left:10px;"
                                     placeholder="Host" value="{$filter.host?:''}" name="host" id="hostPicker" class="form-control">
@@ -46,11 +64,6 @@
                     </tr>
                 </table>
             </form>
-//            <div id="health-rt-poll" data-graph-type="{$graphType?:''}" style="width:100%;">
-//                <div>
-//                    <canvas id="health-rt-canvas" height="40" width="480"></canvas>
-//                </div>
-//            </div>
             <div>
                 <table class="table table-hover table-condensed  float-table-head">
                     <thead>
