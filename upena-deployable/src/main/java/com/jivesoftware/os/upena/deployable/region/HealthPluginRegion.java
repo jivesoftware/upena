@@ -39,6 +39,7 @@ import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.apache.commons.lang.time.DurationFormatUtils;
 
 /**
  *
@@ -171,20 +172,33 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
 
                             double h = Math.max(0d, nannyHealth.serviceHealth.health);
                             if (nannyHealth.instanceDescriptor.enabled) {
+
+                                Instance instance = upenaStore.instances.get(new InstanceKey(nannyHealth.instanceDescriptor.instanceKey));
+
+                                String age = nannyHealth.uptime;
+                                long now = System.currentTimeMillis();
+                                if (instance != null && instance.restartTimestampGMTMillis > 0 && System.currentTimeMillis() < instance.restartTimestampGMTMillis) {
+                                    age = DurationFormatUtils.formatDurationHMS(instance.restartTimestampGMTMillis - now) + "|" + nannyHealth.uptime;
+                                }
+
                                 minHostHealth.compute(nannyHealth.instanceDescriptor.clusterName + ":" + nodeHealth.host + ":" + nodeHealth.port,
                                     (String k, Double ev) -> {
                                         return ev == null ? nannyHealth.serviceHealth.health : Math.min(ev, nannyHealth.serviceHealth.health);
                                     });
 
-                                healths.add(ImmutableMap.of("id", nannyHealth.instanceDescriptor.instanceKey,
-                                    "color", trafficlightColorRGB(h, 1f),
-                                    "text", String.valueOf((int) (h * 100)),
-                                    "age", nannyHealth.uptime));
+                                healths.add(ImmutableMap.<String, String>builder()
+                                    .put("id", nannyHealth.instanceDescriptor.instanceKey)
+                                    .put("color", trafficlightColorRGB(h, 1f))
+                                    .put("text", String.valueOf((int) (h * 100)))
+                                    .put("age", nannyHealth.uptime)
+                                    .build());
                             } else {
-                                healths.add(ImmutableMap.of("id", nannyHealth.instanceDescriptor.instanceKey,
-                                    "color", "64,64,64",
-                                    "text", "",
-                                    "age", "disabled"));
+                                healths.add(ImmutableMap.<String, String>builder()
+                                    .put("id", nannyHealth.instanceDescriptor.instanceKey)
+                                    .put("color", "64,64,64")
+                                    .put("text", "")
+                                    .put("age", "disabled")
+                                    .build());
                             }
                         }
                     }
@@ -197,10 +211,12 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                 Long recency = nodeRecency.get(parts[1] + ":" + parts[2]);
                 String age = recency != null ? UpenaEndpoints.humanReadableUptime(System.currentTimeMillis() - recency) : "unknown";
 
-                healths.add(ImmutableMap.of("id", m.getKey(),
-                    "color", trafficlightColorRGB(Math.max(m.getValue(), 0d), 1f),
-                    "text", m.getKey(),
-                    "age", age));
+                healths.add(ImmutableMap.<String, String>builder()
+                    .put("id", m.getKey())
+                    .put("color", trafficlightColorRGB(Math.max(m.getValue(), 0d), 1f))
+                    .put("text", m.getKey())
+                    .put("age", age)
+                    .build());
             }
 
             live = MAPPER.writeValueAsString(healths);
@@ -346,9 +362,9 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                         && (!input.cluster.isEmpty() == cshow)
                         && (!input.host.isEmpty() == hshow)
                         && (!input.service.isEmpty() == sshow)) {
-                        
+
                         GridHost gridHost = new GridHost(nannyHealth.instanceDescriptor.datacenter, nannyHealth.instanceDescriptor.rack,
-                                nannyHealth.instanceDescriptor.clusterName, nodeHealth.host, nodeHealth.port);
+                            nannyHealth.instanceDescriptor.clusterName, nodeHealth.host, nodeHealth.port);
                         if (!gridHosts.contains(gridHost)) {
                             gridHosts.add(gridHost);
                         }
