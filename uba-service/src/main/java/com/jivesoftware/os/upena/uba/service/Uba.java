@@ -15,12 +15,15 @@
  */
 package com.jivesoftware.os.upena.uba.service;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.jivesoftware.os.routing.bird.shared.InstanceDescriptor;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class Uba {
@@ -34,6 +37,7 @@ public class Uba {
     private final UbaTree ubaTree;
     private final DeployableScriptInvoker invokeScript;
     private final UbaLog ubaLog;
+    private final Cache<InstanceDescriptor, Boolean> haveRunConfigExtractionCache;
 
     public Uba(String datacenter,
         String rack,
@@ -61,6 +65,7 @@ public class Uba {
             }
         }));
         this.ubaLog = ubaLog;
+        this.haveRunConfigExtractionCache = CacheBuilder.newBuilder().expireAfterAccess(1, TimeUnit.DAYS).build();
     }
 
     public Map<InstanceDescriptor, InstancePath> getOnDiskInstances() {
@@ -101,7 +106,14 @@ public class Uba {
     Nanny newNanny(InstanceDescriptor instanceDescriptor, InstancePath instancePath) {
         DeployLog deployLog = new DeployLog();
         HealthLog healthLog = new HealthLog(deployLog);
-        return new Nanny(instanceDescriptor, instancePath, new DeployableValidator(), new DeployLog(), healthLog, invokeScript, ubaLog);
+        return new Nanny(instanceDescriptor,
+            instancePath,
+            new DeployableValidator(),
+            new DeployLog(),
+            healthLog,
+            invokeScript,
+            ubaLog,
+            haveRunConfigExtractionCache);
     }
 
 }

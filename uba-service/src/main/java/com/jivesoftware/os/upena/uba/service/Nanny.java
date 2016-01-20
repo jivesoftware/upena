@@ -15,6 +15,7 @@
  */
 package com.jivesoftware.os.upena.uba.service;
 
+import com.google.common.cache.Cache;
 import com.jivesoftware.os.jive.utils.shell.utils.Curl;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
@@ -47,6 +48,7 @@ public class Nanny {
     private final AtomicLong restartAtTimestamp = new AtomicLong(-1);
     private final AtomicLong startupTimestamp = new AtomicLong(-1);
     private final UbaLog ubaLog;
+    private final Cache<InstanceDescriptor, Boolean> haveRunConfigExtractionCache;
 
     public Nanny(InstanceDescriptor instanceDescriptor,
         InstancePath instancePath,
@@ -54,7 +56,8 @@ public class Nanny {
         DeployLog deployLog,
         HealthLog healthLog,
         DeployableScriptInvoker invokeScript,
-        UbaLog ubaLog) {
+        UbaLog ubaLog,
+        Cache<InstanceDescriptor, Boolean> haveRunConfigExtractionCache) {
         this.instanceDescriptor = new AtomicReference<>(instanceDescriptor);
         this.instancePath = instancePath;
         this.deployableValidator = deployableValidator;
@@ -68,6 +71,7 @@ public class Nanny {
         System.out.println("Stats script for " + instanceDescriptor + " exists ==" + exists);
         redeploy = new AtomicBoolean(!exists);
         destroyed = new AtomicBoolean(false);
+        this.haveRunConfigExtractionCache = haveRunConfigExtractionCache;
     }
 
     public InstanceDescriptor getInstanceDescriptor() {
@@ -166,7 +170,8 @@ public class Nanny {
                         deployLog,
                         healthLog,
                         invokeScript,
-                        ubaLog);
+                        ubaLog,
+                        haveRunConfigExtractionCache);
                     if (nannyTask.callable()) {
                         threadPoolExecutor.submit(nannyTask);
                     } else {

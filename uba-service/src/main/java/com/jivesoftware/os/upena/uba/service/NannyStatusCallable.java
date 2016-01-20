@@ -15,6 +15,8 @@
  */
 package com.jivesoftware.os.upena.uba.service;
 
+import com.google.common.base.Objects;
+import com.google.common.cache.Cache;
 import com.jivesoftware.os.routing.bird.shared.InstanceDescriptor;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicLong;
@@ -28,6 +30,7 @@ class NannyStatusCallable implements Callable<Boolean> {
     private final HealthLog healthLog;
     private final DeployableScriptInvoker invokeScript;
     private final UbaLog ubaLog;
+    private final Cache<InstanceDescriptor, Boolean> haveRunConfigExtractionCache;
 
     public NannyStatusCallable(AtomicLong startupTimestamp,
         InstanceDescriptor id,
@@ -35,7 +38,8 @@ class NannyStatusCallable implements Callable<Boolean> {
         DeployLog deployLog,
         HealthLog healthLog,
         DeployableScriptInvoker invokeScript,
-        UbaLog ubaLog) {
+        UbaLog ubaLog,
+        Cache<InstanceDescriptor, Boolean> haveRunConfigExtractionCache) {
 
         this.startupTimestamp = startupTimestamp;
         this.id = id;
@@ -44,6 +48,7 @@ class NannyStatusCallable implements Callable<Boolean> {
         this.healthLog = healthLog;
         this.invokeScript = invokeScript;
         this.ubaLog = ubaLog;
+        this.haveRunConfigExtractionCache = haveRunConfigExtractionCache;
     }
 
     boolean callable() {
@@ -53,6 +58,10 @@ class NannyStatusCallable implements Callable<Boolean> {
     @Override
     public Boolean call() throws Exception {
         try {
+            if (!id.enabled && Objects.firstNonNull(haveRunConfigExtractionCache.getIfPresent(id), Boolean.FALSE)) {
+                return true;
+            }
+
             if (invokeScript.invoke(deployLog, instancePath, "status")) {
                 deployLog.log("Service:" + instancePath.toHumanReadableName() + " 'status'", "ONLINE", null);
                 if (!invokeScript.invoke(healthLog, instancePath, "health")) {
@@ -77,6 +86,7 @@ class NannyStatusCallable implements Callable<Boolean> {
             if (!id.enabled) {
                 healthLog.forcedHealthState("Service Startup",
                     "Service is not enabled. Phase: stop...", "Enable when ready");
+                haveRunConfigExtractionCache.put(id, Boolean.TRUE);
                 return true;
             }
 
