@@ -94,7 +94,7 @@ class NannyDeployCallable implements Callable<Boolean> {
             healthLog.forcedHealthState("Service deployed", "Service will be consider unhealthy until first health check is successful.", "");
             ubaLog.record("deployed", id.toString(), instancePath.lib().getParent());
             return true;
-        } catch (IOException x) {
+        } catch (Exception x) {
             deployLog.log("Nanny", "failed.", x);
             healthLog.forcedHealthState("Service startup", "Nanny failed." + Joiner.on("\n").join(deployLog.peek()), "Check logs.");
             return false;
@@ -104,6 +104,8 @@ class NannyDeployCallable implements Callable<Boolean> {
     private boolean deploy() {
         File libDir = null;
         try {
+            instancePath.deployLog().delete();
+            
             libDir = instancePath.lib();
             System.out.println("Clearing:" + libDir);
             FileUtils.deleteDirectory(libDir);
@@ -111,7 +113,7 @@ class NannyDeployCallable implements Callable<Boolean> {
             if (!libDir.exists() && !libDir.mkdirs()) {
                 throw new RuntimeException("Failed trying to mkdirs for " + libDir);
             }
-        } catch (IOException x) {
+        } catch (Exception x) {
             deployLog.log("Nanny", "failed to cleanup '" + libDir + "'.", x);
             return false;
         }
@@ -125,7 +127,7 @@ class NannyDeployCallable implements Callable<Boolean> {
             if (!pluginlibDir.exists() && !pluginlibDir.mkdirs()) {
                 throw new RuntimeException("Failed trying to mkdirs for " + pluginlibDir);
             }
-        } catch (IOException x) {
+        } catch (Exception x) {
             deployLog.log("Nanny", "failed to cleanup '" + pluginlibDir + "'.", x);
             return false;
         }

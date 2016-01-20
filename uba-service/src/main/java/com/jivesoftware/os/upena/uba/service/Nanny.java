@@ -21,6 +21,7 @@ import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.routing.bird.shared.InstanceDescriptor;
 import com.jivesoftware.os.uba.shared.NannyReport;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -67,8 +68,8 @@ public class Nanny {
         this.ubaLog = ubaLog;
         linkedBlockingQueue = new LinkedBlockingQueue<>(10);
         threadPoolExecutor = new ThreadPoolExecutor(1, 1, 1000, TimeUnit.MILLISECONDS, linkedBlockingQueue);
-        boolean exists = instancePath.script("status").exists();
-        System.out.println("Stats script for " + instanceDescriptor + " exists ==" + exists);
+        boolean exists = instancePath.deployLog().exists();
+        LOG.info("Stats script for {} exists == {}", instanceDescriptor, exists);
         redeploy = new AtomicBoolean(!exists);
         destroyed = new AtomicBoolean(false);
         this.haveRunConfigExtractionCache = haveRunConfigExtractionCache;
@@ -157,9 +158,22 @@ public class Nanny {
                                 ubaLog);
                             deployLog.log("Nanny", "redeploying. " + this, null);
                             Future<Boolean> deployedFuture = threadPoolExecutor.submit(deployTask);
-                            if (deployedFuture.get()) {
-                                redeploy.set(false);
-                                deployLog.log("Nanny", " successfully redeployed. " + this, null);
+                            try {
+                                if (deployedFuture.get()) {
+                                    try {
+                                        try (FileWriter writer = new FileWriter(instancePath.deployLog())) {
+                                            for (String line : deployLog.peek()) {
+                                                writer.write(line);
+                                            }
+                                        }
+                                        redeploy.set(false);
+                                        deployLog.log("Nanny", " successfully redeployed. " + this, null);
+                                    } catch (Exception x) {
+                                        deployLog.log("Nanny", " failed to redeployed. " + this, x);
+                                    }
+                                }
+                            } catch (ExecutionException ee) {
+                                deployLog.log("Nanny", " Encountered an unexpected condition. " + this, ee);
                             }
                         }
                     }

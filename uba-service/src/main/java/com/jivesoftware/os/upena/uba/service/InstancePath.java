@@ -133,6 +133,10 @@ public class InstancePath {
         FileUtils.writeLines(instanceProperties(), "UTF-8", properties, "\n", false);
     }
 
+    File deployLog() {
+        return new File(path(path, -1), "lib/deploy.log");
+    }
+
     File script(String scriptName) {
         return new File(path(path, -1), "bin/" + scriptName);
     }
