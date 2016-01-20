@@ -8,8 +8,8 @@
  */
 package com.jivesoftware.os.upena.deployable.profiler.visualize;
 
-import com.jivesoftware.os.upena.deployable.profiler.visualize.paint.MinMaxLong;
 import com.jivesoftware.os.upena.deployable.profiler.visualize.paint.AColor;
+import com.jivesoftware.os.upena.deployable.profiler.visualize.paint.MinMaxLong;
 
 
 /**
@@ -17,6 +17,7 @@ import com.jivesoftware.os.upena.deployable.profiler.visualize.paint.AColor;
  */
 public class Heat implements Coloring {
 
+    @Override
     public AColor value(VisualizeProfile.InterfaceArea callArea, long maxV) {
         double rank = 1d - (MinMaxLong.zeroToOne(0, maxV, callArea.value));
         return AColor.getWarmToCool(rank);

@@ -23,8 +23,9 @@ public class VStrategies {
 
             @Override
             public long value(VisualizeProfile.InterfaceArea callArea) {
-                return TimeUnit.MILLISECONDS.toNanos(1) + (Math.max(callArea.callClass.getSuccesslatency(), callArea.callClass.getFailedlatency()) * callArea.callClass
-                    .getCalled());
+                return TimeUnit.MILLISECONDS.toNanos(1)
+                    + (Math.max(callArea.callClass.getSuccesslatency(), callArea.callClass.getFailedlatency())
+                    * callArea.callClass.getCalled());
             }
 
             @Override
@@ -123,8 +124,9 @@ public class VStrategies {
 
             @Override
             public long value(VisualizeProfile.InterfaceArea callArea) {
-                return TimeUnit.MILLISECONDS.toNanos(1) + (Math.max(callArea.callClass.getSuccesslatency(), callArea.callClass.getFailedlatency()) * callArea.callClass
-                    .getCalled());
+                return TimeUnit.MILLISECONDS.toNanos(1)
+                    + (Math.max(callArea.callClass.getSuccesslatency(), callArea.callClass.getFailedlatency())
+                    * callArea.callClass.getCalled());
             }
 
             @Override

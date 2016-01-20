@@ -51,7 +51,7 @@ public class UpenaPropagatorEndpoints {
         return (OutputStream os) -> {
             try {
                 File f = new File(System.getProperty("user.dir"), "upena.jar");
-                
+
                 try {
                     byte[] buf = new byte[8192];
                     InputStream is = new FileInputStream(f);

@@ -20,10 +20,11 @@ package colt.nicity.performance.latent;
  * @author jonathan.colt
  */
 public interface LatentDepthCallback {
+
     /**
-     * 
+     *
      * @param from
      * @param to maybe null
      */
-    Boolean calls(LatentDepth from,LatentDepth to);
+    Boolean calls(LatentDepth from, LatentDepth to);
 }

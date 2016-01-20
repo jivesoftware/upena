@@ -177,7 +177,9 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
 
                                 String age = nannyHealth.uptime;
                                 long now = System.currentTimeMillis();
-                                if (instance != null && instance.restartTimestampGMTMillis > 0 && System.currentTimeMillis() < instance.restartTimestampGMTMillis) {
+                                if (instance != null
+                                    && instance.restartTimestampGMTMillis > 0
+                                    && System.currentTimeMillis() < instance.restartTimestampGMTMillis) {
                                     age = DurationFormatUtils.formatDurationHMS(instance.restartTimestampGMTMillis - now) + "|" + nannyHealth.uptime;
                                 }
 

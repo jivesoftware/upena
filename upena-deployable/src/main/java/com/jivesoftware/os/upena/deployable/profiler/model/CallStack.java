@@ -66,7 +66,7 @@ public class CallStack {
 
     private String getClassName(LatentNode node) {
         return node.interfaceName;
-        
+
     }
 
     private CallDepth getCallDepth(int depth) {

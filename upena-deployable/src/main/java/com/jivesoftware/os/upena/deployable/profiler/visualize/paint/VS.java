@@ -58,7 +58,6 @@ public class VS {
         return new Font(_name, _style, _size);
     }
 
-
     /**
      *
      * @param _color

@@ -20,11 +20,12 @@
 package com.jivesoftware.os.upena.deployable.profiler.visualize.paint;
 
 /**
- * 
+ *
  * @author Administrator
  * @param <E>
  */
 abstract public class ASetObject<E> {
+
     /**
      *
      * @return
@@ -42,15 +43,19 @@ abstract public class ASetObject<E> {
         }
         return object.toString();
     }
+
     @Override
     public int hashCode() {
         E object = hashObject();
         if (object == this) {
             return super.hashCode();
         }
-        if (object == null) return 0;
+        if (object == null) {
+            return 0;
+        }
         return object.hashCode();
     }
+
     @Override
     public boolean equals(Object b) {
         E a = hashObject();

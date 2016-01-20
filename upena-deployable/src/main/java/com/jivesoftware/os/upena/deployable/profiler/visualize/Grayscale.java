@@ -8,15 +8,16 @@
  */
 package com.jivesoftware.os.upena.deployable.profiler.visualize;
 
-import com.jivesoftware.os.upena.deployable.profiler.visualize.paint.MinMaxLong;
 import com.jivesoftware.os.upena.deployable.profiler.visualize.paint.AColor;
 import com.jivesoftware.os.upena.deployable.profiler.visualize.paint.MinMaxFloat;
+import com.jivesoftware.os.upena.deployable.profiler.visualize.paint.MinMaxLong;
 
 /**
  *
  */
 public class Grayscale implements Coloring {
 
+    @Override
     public AColor value(VisualizeProfile.InterfaceArea callArea, long maxV) {
         double rank = 1d - (MinMaxLong.zeroToOne(0, maxV, callArea.value));
         return new AColor(1f - MinMaxFloat.zeroToOne(-0.5f, 1.5f, (float) rank));

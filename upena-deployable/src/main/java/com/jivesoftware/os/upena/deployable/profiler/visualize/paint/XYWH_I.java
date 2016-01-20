@@ -225,7 +225,7 @@ public class XYWH_I {
      * @param _h
      */
     public void union(int _x, int _y, int _w, int _h) {
-        if (x == Integer.MIN_VALUE) {//!! hack boandary condition for painting
+        if (x == Integer.MIN_VALUE) { //!! hack boandary condition for painting
             x = _x;
             y = _y;
             w = _w;

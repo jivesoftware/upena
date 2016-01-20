@@ -54,14 +54,14 @@ public class LatentStack {
     }
 
     public long failed(Latent latent, long latency) {
-        return exit(latent,latency);
+        return exit(latent, latency);
     }
 
-    public long failed(Latent latent,long latency, Throwable t) {
-        return exit(latent,latency);
+    public long failed(Latent latent, long latency, Throwable t) {
+        return exit(latent, latency);
     }
-    
-    private long sample(long latency,long entered) {
+
+    private long sample(long latency, long entered) {
         if (latency > 0) {
             latency /= 2;
         } // decay

@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.jivesoftware.os.upena.deployable.profiler.visualize.paint;
 
 /**
@@ -9,7 +5,7 @@ package com.jivesoftware.os.upena.deployable.profiler.visualize.paint;
  * @author jonathan
  */
 public interface IFontConstants {
-    
+
     final public static String cDefaultFontName = "System";
 
     public static final String cDialog = "Dialog";

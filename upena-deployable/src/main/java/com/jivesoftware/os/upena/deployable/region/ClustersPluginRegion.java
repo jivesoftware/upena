@@ -49,7 +49,6 @@ public class ClustersPluginRegion implements PageRegion<ClustersPluginRegionInpu
         this.upenaStore = upenaStore;
     }
 
-
     @Override
     public String getRootPath() {
         return "/ui/clusters";
@@ -181,7 +180,6 @@ public class ClustersPluginRegion implements PageRegion<ClustersPluginRegionInpu
                     null,
                     0, 10000);
 
-
                 HashMultiset<ServiceKey> serviceKeyCount = HashMultiset.create();
                 Map<InstanceKey, TimestampedValue<Instance>> instances = upenaStore.instances.find(instanceFilter);
                 for (TimestampedValue<Instance> i : instances.values()) {
@@ -190,14 +188,13 @@ public class ClustersPluginRegion implements PageRegion<ClustersPluginRegionInpu
                     }
                 }
 
-                List<Map<String,String>> instanceCounts = new ArrayList<>();
+                List<Map<String, String>> instanceCounts = new ArrayList<>();
                 for (ServiceKey sk : new HashSet<>(serviceKeyCount)) {
                     instanceCounts.add(ImmutableMap.of(
                         "count", String.valueOf(serviceKeyCount.count(sk)),
                         "color", serviceColor.get(sk)
-                        ));
+                    ));
                 }
-
 
                 Map<String, Object> row = new HashMap<>();
                 row.put("instanceCounts", instanceCounts);

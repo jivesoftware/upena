@@ -137,9 +137,8 @@ public class SARPluginRegion implements PageRegion<SARInput> {
                 }
             }
 
-            for (int i = 1; i < lines.size(); i++) {
+            for (int i = 1; i < lines.size(); i += step + 1) {
                 labels.add("\"" + Joiner.on(" ").join(lines.get(i).subList(0, labelColumnCount)) + "\"");
-                i += step;
             }
         }
         Map<String, Object> map = new HashMap<>();

@@ -54,12 +54,12 @@ public class GlueAWTGraphicsToCanvas implements ICanvas {
         who = _who;
         g = _g;
         ((Graphics2D) g).setRenderingHint(
-                RenderingHints.KEY_INTERPOLATION,
-                RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+            RenderingHints.KEY_INTERPOLATION,
+            RenderingHints.VALUE_INTERPOLATION_BICUBIC);
 
         ((Graphics2D) g).setRenderingHint(
-                RenderingHints.KEY_ANTIALIASING,
-                RenderingHints.VALUE_ANTIALIAS_ON);
+            RenderingHints.KEY_ANTIALIASING,
+            RenderingHints.VALUE_ANTIALIAS_ON);
     }
 
     /**
@@ -236,7 +236,7 @@ public class GlueAWTGraphicsToCanvas implements ICanvas {
      */
     @Override
     public void setFont(AFont _font) {
-        g.setFont((Font)_font.getFont().getNativeFont());
+        g.setFont((Font) _font.getFont().getNativeFont());
     }
 
     /**
@@ -304,9 +304,9 @@ public class GlueAWTGraphicsToCanvas implements ICanvas {
      */
     @Override
     public void drawImage(Object _image,
-            int _dx1, int _dy1, int _dx2, int _dy2,
-            int _sx1, int _sy1, int _sx2, int _sy2,
-            Object _observer) {
+        int _dx1, int _dy1, int _dx2, int _dy2,
+        int _sx1, int _sy1, int _sx2, int _sy2,
+        Object _observer) {
         if (_image instanceof IImage) {
             _image = (Image) ((IImage) _image).data(0);
         }
@@ -320,7 +320,7 @@ public class GlueAWTGraphicsToCanvas implements ICanvas {
     @Override
     public void fill(Object _fill) {
         if (_fill instanceof IPath) {
-            _fill = ((IPath)_fill).getRawPath();
+            _fill = ((IPath) _fill).getRawPath();
         }
         ((Graphics2D) g).fill((Shape) _fill);
     }
@@ -332,7 +332,7 @@ public class GlueAWTGraphicsToCanvas implements ICanvas {
     @Override
     public void draw(Object _draw) {
         if (_draw instanceof IPath) {
-            _draw = ((IPath)_draw).getRawPath();
+            _draw = ((IPath) _draw).getRawPath();
         }
         ((Graphics2D) g).draw((Shape) _draw);
     }
@@ -344,7 +344,7 @@ public class GlueAWTGraphicsToCanvas implements ICanvas {
     @Override
     public void setPaint(Object _draw) {
         if (_draw instanceof IPath) {
-            _draw = ((IPath)_draw).getRawPath();
+            _draw = ((IPath) _draw).getRawPath();
         }
         ((Graphics2D) g).setPaint((Paint) _draw);
     }
@@ -359,7 +359,7 @@ public class GlueAWTGraphicsToCanvas implements ICanvas {
     }
 
     /**
-     * 
+     *
      * @return
      */
     @Override

@@ -67,7 +67,7 @@ public class LatentAgent implements ClassFileTransformer {
         }
 
         try {
-            String javassistClassName = className.replace('/', '.');// first modify the class name for javassist. convert slashes to dots:
+            String javassistClassName = className.replace('/', '.'); // first modify the class name for javassist. convert slashes to dots:
             ClassPool cp = ClassPool.getDefault();
             cp.insertClassPath(new ByteArrayClassPath(javassistClassName, classfileBuffer));
             CtClass cc = cp.get(javassistClassName);

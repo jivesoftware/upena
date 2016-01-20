@@ -99,7 +99,6 @@ public class Uba {
     }
 
     Nanny newNanny(InstanceDescriptor instanceDescriptor, InstancePath instancePath) {
-        
         DeployLog deployLog = new DeployLog();
         HealthLog healthLog = new HealthLog(deployLog);
         return new Nanny(instanceDescriptor, instancePath, new DeployableValidator(), new DeployLog(), healthLog, invokeScript, ubaLog);

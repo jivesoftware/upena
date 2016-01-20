@@ -37,7 +37,7 @@ public class ApacheHttpClient {
     private static final int JSON_POST_LOG_LENGTH_LIMIT = 2048;
 
     public ApacheHttpClient(org.apache.commons.httpclient.HttpClient client,
-            Map<String, String> headersForEveryRequest) {
+        Map<String, String> headersForEveryRequest) {
         this.client = client;
         this.headersForEveryRequest = headersForEveryRequest;
     }
@@ -48,7 +48,7 @@ public class ApacheHttpClient {
             return execute(get);
         } catch (Exception e) {
             throw new RuntimeException("Error executing GET request to: " + client.getHostConfiguration().getHostURL()
-                    + " path: " + path, e);
+                + " path: " + path, e);
         }
     }
 
@@ -59,9 +59,11 @@ public class ApacheHttpClient {
             post.setRequestHeader(CONTENT_TYPE_HEADER_NAME, APPLICATION_JSON_CONTENT_TYPE);
             return execute(post);
         } catch (Exception e) {
-            String trimmedPostBody = (postJsonBody.length() > JSON_POST_LOG_LENGTH_LIMIT) ? postJsonBody.substring(0, JSON_POST_LOG_LENGTH_LIMIT) : postJsonBody;
+            String trimmedPostBody = (postJsonBody.length() > JSON_POST_LOG_LENGTH_LIMIT)
+                ? postJsonBody.substring(0, JSON_POST_LOG_LENGTH_LIMIT)
+                : postJsonBody;
             throw new RuntimeException("Error executing POST request to: "
-                    + client.getHostConfiguration().getHostURL() + " path: " + path + " JSON body: " + trimmedPostBody, e);
+                + client.getHostConfiguration().getHostURL() + " path: " + path + " JSON body: " + trimmedPostBody, e);
         }
     }
 
@@ -93,7 +95,7 @@ public class ApacheHttpClient {
     }
 
     public static long copyLarge(InputStream input, OutputStream output, byte[] buffer)
-            throws IOException {
+        throws IOException {
         long count = 0;
         int n = 0;
         while (-1 != (n = input.read(buffer))) {

@@ -25,20 +25,18 @@ package com.jivesoftware.os.upena.deployable.profiler.visualize.paint;
  */
 public class UV {
 
-
-
     /**
      *
      */
-    public static final float cS = -1.0f;// S = shrink = -1;
+    public static final float cS = -1.0f; // S = shrink = -1;
     /**
      *
      */
-    public static final float cI = 0.0f;// I = ignore = 0;
+    public static final float cI = 0.0f; // I = ignore = 0;
     /**
      *
      */
-    public static final float cG = 1.0f;// G = grow = 1;
+    public static final float cG = 1.0f; // G = grow = 1;
 
     /**
      *
@@ -151,7 +149,7 @@ public class UV {
         new AFont(IFontConstants.cDefaultFontName, IFontConstants.cPlain, 21),
         new AFont(IFontConstants.cDefaultFontName, IFontConstants.cPlain, 22),
         new AFont(IFontConstants.cDefaultFontName, IFontConstants.cPlain, 23),
-        new AFont(IFontConstants.cDefaultFontName, IFontConstants.cPlain, 24),};
+        new AFont(IFontConstants.cDefaultFontName, IFontConstants.cPlain, 24)};
 
     public static final Place cWW = new Place(0.0f, 0.5f, 0.0f, 0.5f, 0, 0);
 

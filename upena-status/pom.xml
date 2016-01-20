@@ -15,6 +15,10 @@
     </properties>
     <dependencies>
         <dependency>
+            <groupId>com.jivesoftware.os.routing.bird</groupId>
+            <artifactId>routing-bird-shared</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
         </dependency>
@@ -30,10 +34,6 @@
         <dependency>
             <groupId>javax.ws.rs</groupId>
             <artifactId>javax.ws.rs-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.jivesoftware.os.routing.bird</groupId>
-            <artifactId>routing-bird-http-client</artifactId>
         </dependency>
         <dependency>
             <groupId>com.jivesoftware.os.routing.bird</groupId>

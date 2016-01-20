@@ -20,6 +20,7 @@ package colt.nicity.performance.latent;
  * @author jonathan.colt
  */
 public class LatentDepth {
+
     private final Latent latent;
     private final int depth;
 
@@ -35,7 +36,6 @@ public class LatentDepth {
     public int getDepth() {
         return depth;
     }
-    
 
     @Override
     public String toString() {
@@ -67,5 +67,5 @@ public class LatentDepth {
         }
         return true;
     }
-    
+
 }

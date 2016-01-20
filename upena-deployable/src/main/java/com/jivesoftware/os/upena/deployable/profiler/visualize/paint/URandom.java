@@ -23,17 +23,18 @@ package com.jivesoftware.os.upena.deployable.profiler.visualize.paint;
  *
  * @author Administrator
  */
-public abstract class URandom {// holder for static utility methods; do not instantiate
-//	vars for fastRand
+public abstract class URandom {
 
     /**
      *
      */
     static public class Seed {
+
         /**
          *
          */
         public long randSeed;
+
         /**
          *
          * @param _seed
@@ -52,7 +53,6 @@ public abstract class URandom {// holder for static utility methods; do not inst
      */
     public static Seed defaultSeed = new Seed((System.currentTimeMillis() ^ randMult) & randMask);
 
-
     /**
      *
      * @param _longSeed
@@ -70,16 +70,17 @@ public abstract class URandom {// holder for static utility methods; do not inst
      * @param max
      * @return
      */
-    public static int rand(int max) {// 0 <= return < max
+    public static int rand(int max) { // 0 <= return < max
         return rand(defaultSeed, max);
     }
+
     /**
      *
      * @param _longSeed
      * @param max
      * @return
      */
-    public static int rand(Seed _longSeed,int max) {// 0 <= return < max
+    public static int rand(Seed _longSeed, int max) { // 0 <= return < max
         long x = (_longSeed.randSeed * randMult + randAdd) & randMask;
         _longSeed.randSeed = x;
         int rand = (int) (x >>> (16));
@@ -89,7 +90,5 @@ public abstract class URandom {// holder for static utility methods; do not inst
         }
         return rand;
     }
-
-
 
 }

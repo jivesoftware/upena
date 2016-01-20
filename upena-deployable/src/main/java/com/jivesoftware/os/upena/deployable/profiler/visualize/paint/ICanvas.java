@@ -236,7 +236,7 @@ public interface ICanvas {
         Object _observer);
 
     /**
-     * 
+     *
      */
     public void drawImage(File _image, int _x, int _y, int _w, int _h);
 

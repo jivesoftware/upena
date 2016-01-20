@@ -31,10 +31,10 @@ public class Place implements Cloneable {
     float cy = 0.0f;
     float ox = 0.0f;
     float oy = 0.0f;
-    float ifx = 1.0f;//interior
-    float ify = 1.0f;//interior
-    float efx = 1.0f;//exterior
-    float efy = 1.0f;//exterior
+    float ifx = 1.0f; //interior
+    float ify = 1.0f; //interior
+    float efx = 1.0f; //exterior
+    float efy = 1.0f; //exterior
 
     /**
      *

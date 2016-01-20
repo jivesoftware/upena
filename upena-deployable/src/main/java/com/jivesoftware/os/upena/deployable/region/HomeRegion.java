@@ -16,7 +16,7 @@ public class HomeRegion implements PageRegion<HomeInput> {
 
     private final String template;
     private final SoyRenderer renderer;
-    
+
     public HomeRegion(String template, SoyRenderer renderer) {
         this.template = template;
         this.renderer = renderer;

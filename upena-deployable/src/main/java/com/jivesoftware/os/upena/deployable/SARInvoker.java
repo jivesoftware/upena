@@ -18,7 +18,6 @@ package com.jivesoftware.os.upena.deployable;
 import com.jivesoftware.os.upena.uba.service.ShellOut;
 import java.io.File;
 import java.util.Arrays;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;

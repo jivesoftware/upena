@@ -165,11 +165,9 @@ public class VisualizeProfile {
             Object v = barStrategy.getStrategy().value(area);
             if (v instanceof Long) {
                 maxAvg = Math.max(maxAvg, (Long) v);
-            } else {
-                if (!names.containsKey(area.getName())) {
-                    names.put(v.toString(), maxAvg);
-                    maxAvg++;
-                }
+            } else if (!names.containsKey(area.getName())) {
+                names.put(v.toString(), maxAvg);
+                maxAvg++;
             }
         }
 
@@ -328,7 +326,7 @@ public class VisualizeProfile {
 
             if (paint != null) {
                 Map<String, Object> over = new HashMap<>();
-                
+
                 CallClass callClass = paint.callClass;
                 List<Map<String, Object>> methods = new ArrayList<>();
                 for (String methodName : callClass.getMethods()) {
@@ -343,7 +341,6 @@ public class VisualizeProfile {
                     methods.add(m);
                 }
                 over.put("methods", methods);
-
 
                 over.put("name", callClass.getName());
                 over.put("success", String.valueOf(callClass.getCalled()));
@@ -360,7 +357,7 @@ public class VisualizeProfile {
                     callsTo.add(c);
                 }
                 over.put("calls", callsTo);
-                
+
                 data.put("over", over);
             }
 
@@ -395,7 +392,7 @@ public class VisualizeProfile {
             interfaceBar.paintFlavor(canvas, bx, by, bw, bh, AColor.darkGray);
             interfaceBar.paintFlavor(canvas, bx + 4, by + 4,
                 bh + (int) ((bw - bh) * (MinMaxInt.zeroToOne(0, valuesHistogram.max, valuesHistogram.histogram[i]))) - 8, bh - 8, AColor.getWarmToCool(
-                    1f - (float) (i + 1) / (float) valuesHistogram.histogram.length));
+                1f - (float) (i + 1) / (float) valuesHistogram.histogram.length));
 
             canvas.setFont(UV.fonts[UV.cText]);
             canvas.setColor(AColor.white);
@@ -573,79 +570,7 @@ public class VisualizeProfile {
         }
     }
 
-    /*
-     @Override
-     public void mouseReleased(MouseReleased _e) {
-     XY_I rp = _e.getPoint();
-     for (InterfaceArea callArea : unique.values()) {
-     if (new XYWH_I(callArea.x, callArea.y, callArea.w, callArea.h).contains(rp)) {
-     if (_e.getClickCount() == 2) {
-     hideClass.add(callArea.getName());
-     return;
-     } else {
-     UV.popup(this, _e, new VPicked(callArea), true, true);
-     return;
-     }
-     }
-     }
-     }
 
-     class VPicked extends Viewer {
-
-     public VPicked(final InterfaceArea callArea) {
-     VChain c = new VChain(UV.cSWNW);
-     if (pinnedClass.contains(callArea.getName())) {
-     c.add(new VItem("un-pin") {
-     @Override
-     public void picked(IEvent _e) {
-     super.picked(_e); //To change body of generated methods, choose Tools | Templates.
-     pinnedClass.remove(callArea.getName());
-     getRootView().dispose();
-     }
-     });
-     } else {
-     c.add(new VItem("pin") {
-     @Override
-     public void picked(IEvent _e) {
-     super.picked(_e); //To change body of generated methods, choose Tools | Templates.
-     pinnedClass.add(callArea.getName());
-     getRootView().dispose();
-     }
-     });
-     }
-
-     c.add(new VItem("hide") {
-     @Override
-     public void picked(IEvent _e) {
-     super.picked(_e); //To change body of generated methods, choose Tools | Templates.
-     hideClass.add(callArea.getName());
-     pinnedClass.remove(callArea.getName());
-     getRootView().dispose();
-     }
-     });
-
-     c.add(new VItem("showall") {
-     @Override
-     public void picked(IEvent _e) {
-     super.picked(_e); //To change body of generated methods, choose Tools | Templates.
-     hideClass.clear();
-     getRootView().dispose();
-     }
-     });
-     setContent(c);
-     }
-     }
-
-   
-
-     @Override
-     public void mouseMoved(MouseMoved _e) {
-     super.mouseMoved(_e); //To change body of generated methods, choose Tools | Templates.
-     mp = _e.getPoint();
-     repair();
-     paint();
-     }
-     */
     class CallDepthAreas {
 
         private final ValueStrat valueStrategy;
@@ -841,7 +766,7 @@ public class VisualizeProfile {
             public MethodArea(InterfaceArea interfaceArea, ClassMethod classMethod) {
                 this.interfaceArea = interfaceArea;
                 this.classMethod = classMethod;
-                this.value = 1;//classMethod.getSuccesslatency();
+                this.value = 1; //classMethod.getSuccesslatency();
             }
 
             public void paint(ICanvas _g) {
