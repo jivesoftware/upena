@@ -63,14 +63,16 @@ class UpenaStoreChanges<K, V> implements RowChanges {
                         try {
                             k = rawKey.getKey() == null ? null : mapper.readValue(rawKey.getKey(), keyClass);
                         } catch (Exception x) {
-                            LOG.warn("Failed converting key {} of class to class {}", new Object[]{k, k != null ? k.getClass() : "null", valueClass}, x);
+                            LOG.warn("Failed converting key {} of class to class {}",
+                                new Object[]{rawKey.getKey(), k != null ? k.getClass() : "null", keyClass}, x);
                             throw x;
                         }
                         V v = null;
                         try {
                             v = g.getValue() == null ? null : mapper.readValue(g.getValue(), valueClass);
                         } catch (Exception x) {
-                            LOG.warn("Failed converting value {} of class to class {}", new Object[]{v, v != null ? v.getClass() : "null", valueClass}, x);
+                            LOG.warn("Failed converting value {} of class to class {}",
+                                new Object[]{g.getValue(), v != null ? v.getClass() : "null", valueClass}, x);
                             throw x;
                         }
                         removes.change(k, new BasicTimestampedValue<>(v, g.getTimestampId(), g.getTombstoned()));
@@ -81,14 +83,16 @@ class UpenaStoreChanges<K, V> implements RowChanges {
                 try {
                     k = rawKey.getKey() == null ? null : mapper.readValue(rawKey.getKey(), keyClass);
                 } catch (Exception x) {
-                    LOG.warn("Failed converting key {} of class to class {}", new Object[]{k, k != null ? k.getClass() : "null", valueClass}, x);
+                    LOG.warn("Failed converting key {} of class to class {}",
+                        new Object[]{rawKey.getKey(), k != null ? k.getClass() : "null", keyClass}, x);
                     throw x;
                 }
                 V v = null;
                 try {
                     v = rawValue.getValue() == null ? null : mapper.readValue(rawValue.getValue(), valueClass);
                 } catch (Exception x) {
-                    LOG.warn("Failed converting value {} of class to class {}", new Object[]{v, v != null ? v.getClass() : "null", valueClass}, x);
+                    LOG.warn("Failed converting value {} of class to class {}",
+                        new Object[]{rawValue.getValue(), v != null ? v.getClass() : "null", valueClass}, x);
                     throw x;
                 }
                 adds.change(k, new BasicTimestampedValue<>(v, rawValue.getTimestampId(), rawValue.getTombstoned()));
