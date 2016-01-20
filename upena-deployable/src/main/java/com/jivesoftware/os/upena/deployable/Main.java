@@ -48,6 +48,8 @@ import com.jivesoftware.os.jive.utils.ordered.id.ConstantWriterIdProvider;
 import com.jivesoftware.os.jive.utils.ordered.id.OrderIdProvider;
 import com.jivesoftware.os.jive.utils.ordered.id.OrderIdProviderImpl;
 import com.jivesoftware.os.jive.utils.ordered.id.TimestampedOrderIdProvider;
+import com.jivesoftware.os.mlogger.core.MetricLogger;
+import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.config.UpenaConfigRestEndpoints;
 import com.jivesoftware.os.upena.config.UpenaConfigStore;
 import com.jivesoftware.os.upena.deployable.UpenaEndpoints.AmzaClusterName;
@@ -119,6 +121,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class Main {
+
+    private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
     public static void main(String[] args) {
         try {
@@ -208,15 +212,15 @@ public class Main {
             amzaServiceConfig.checkIfCompactionIsNeededIntervalInMillis,
             amzaServiceConfig.compactTombstoneIfOlderThanNMillis);
 
-        System.out.println("-----------------------------------------------------------------------");
-        System.out.println("|      Amza Service Online");
-        System.out.println("-----------------------------------------------------------------------");
+        LOG.info("-----------------------------------------------------------------------");
+        LOG.info("|      Amza Service Online");
+        LOG.info("-----------------------------------------------------------------------");
 
         final UpenaConfigStore upenaConfigStore = new UpenaConfigStore(amzaService);
 
-        System.out.println("-----------------------------------------------------------------------");
-        System.out.println("|      Upena Config Store Online");
-        System.out.println("-----------------------------------------------------------------------");
+        LOG.info("-----------------------------------------------------------------------");
+        LOG.info("|      Upena Config Store Online");
+        LOG.info("-----------------------------------------------------------------------");
 
         final AtomicReference<UbaService> conductor = new AtomicReference<>();
         final UpenaStore upenaStore = new UpenaStore(mapper, amzaService, (instanceChanges) -> {
@@ -232,15 +236,15 @@ public class Main {
             });
         }, (changes) -> {
         }, (change) -> {
-            System.out.println("TODO: tie into conductor. " + change);
+            LOG.info("TODO: tie into conductor. " + change);
         });
         upenaStore.attachWatchers();
 
         UpenaService upenaService = new UpenaService(datacenter, rack, publicHost, upenaStore);
 
-        System.out.println("-----------------------------------------------------------------------");
-        System.out.println("|      Upena Service Online");
-        System.out.println("-----------------------------------------------------------------------");
+        LOG.info("-----------------------------------------------------------------------");
+        LOG.info("|      Upena Service Online");
+        LOG.info("-----------------------------------------------------------------------");
 
         String workingDir = System.getProperty("user.dir");
         Host host = new Host(publicHost, datacenter, rack, ringHost.getHost(), ringHost.getPort(), workingDir, null);
@@ -338,7 +342,7 @@ public class Main {
 
         SoyFileSet.Builder soyFileSetBuilder = new SoyFileSet.Builder();
 
-        System.out.println("Add....");
+        LOG.info("Add....");
 
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/chrome.soy"), "chome.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/homeRegion.soy"), "home.soy");

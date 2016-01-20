@@ -71,8 +71,6 @@ public class ProfilerPluginEndpoints {
         @FormParam("x") @DefaultValue("0") int mouseX,
         @FormParam("y") @DefaultValue("0") int mouseY) {
 
-        System.out.println("enabled:" + enabled);
-
         String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
             new ProfilerPluginRegionInput(enabled,
                 serviceName,

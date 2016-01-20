@@ -61,7 +61,7 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 // soy.page.healthPluginRegion
 public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInput> {
 
-    private static final MetricLogger log = MetricLoggerFactory.getLogger();
+    private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
     private static final ObjectMapper MAPPER = new ObjectMapper();
     private final NumberFormat numberFormat = NumberFormat.getNumberInstance();
 
@@ -213,7 +213,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
             return renderer.render(template, data);
 
         } catch (Exception e) {
-            log.error("Unable to retrieve data", e);
+            LOG.error("Unable to retrieve data", e);
             return "Oops:" + ExceptionUtils.getStackTrace(e);
         }
 
@@ -294,7 +294,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
                         nodes.put(value.hostKey.toString(), n);
                         String title = title(cluster, host, null, null, null);
                         n.focusHtml = title + "<br>" + instancesPluginRegion.renderSimple(user, new InstancesPluginRegion.InstancesPluginRegionInput(
-                            "", "", "", value.hostKey.getKey(), host.name, "", "", "", "", "", false, "filter"));
+                            "", "", "", value.hostKey.getKey(), host.name, "", "", "", "", "", false, "", "", "filter"));
 
                         /*
                          n.focusHtml = hostsPluginRegion.render(user,
@@ -318,7 +318,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
                         nodes.put(value.serviceKey.toString(), n);
                         String title = title(cluster, host, service, null, null);
                         n.focusHtml = title + "<br>" + instancesPluginRegion.renderSimple(user, new InstancesPluginRegion.InstancesPluginRegionInput(
-                            "", "", "", "", "", value.serviceKey.toString(), service.name, "", "", "", false, "filter"));
+                            "", "", "", "", "", value.serviceKey.toString(), service.name, "", "", "", false, "", "", "filter"));
                         fs -= 2;
 
                         n.maxHealth = Math.max(n.maxHealth, serviceHealth);
@@ -380,7 +380,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
 
                 }
 
-                System.out.println("linkable.size() = " + linkable.size());
+                //System.out.println("linkable.size() = " + linkable.size());
                 for (int i = 0; i < linkable.size() - 1; i++) {
                     Node f = linkable.get(i);
                     Node t = linkable.get(i + 1);
@@ -499,7 +499,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
         if (edge == null) {
             edge = new Edge(from.id, to.id, "");
             edges.put(from.id + "->" + to.id, edge);
-            System.out.println("edge:" + edge);
+            //System.out.println("edge:" + edge);
         }
         return edge;
     }
@@ -628,7 +628,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
                             discoveredRoutes.connectionHealth(routeHealth);
                         }
                     } catch (Exception x) {
-                        System.out.println("Failed getting route health for instances " + ringHost + " " + x);
+                        LOG.warn("Failed getting route health for instances {} {}", ringHost, x);
                     }
 
                     try {
@@ -638,7 +638,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
                     } catch (Exception x) {
                         Routes routes = new Routes(Collections.emptyList());
                         nodeRoutes.put(ringHost, routes);
-                        System.out.println("Failed getting routes for instances " + ringHost + " " + x);
+                        LOG.warn("Failed getting routes for instances {} {}", ringHost, x);
                     } finally {
                         nodeRecency.put(nodeKey, start);
                         currentlyExecuting.remove(ringHost);

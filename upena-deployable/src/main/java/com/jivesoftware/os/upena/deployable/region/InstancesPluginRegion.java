@@ -81,10 +81,12 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
         final String releaseKey;
         final String release;
         final boolean enabled;
+        final String intervalUnits;
+        final String interval;
         final String action;
 
         public InstancesPluginRegionInput(String key, String clusterKey, String cluster, String hostKey, String host, String serviceKey, String service,
-            String instanceId, String releaseKey, String release, boolean enabled, String action) {
+            String instanceId, String releaseKey, String release, boolean enabled, String intervalUnits, String interval, String action) {
             this.key = key;
             this.clusterKey = clusterKey;
             this.cluster = cluster;
@@ -96,6 +98,8 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
             this.releaseKey = releaseKey;
             this.release = release;
             this.enabled = enabled;
+            this.intervalUnits = intervalUnits;
+            this.interval = interval;
             this.action = action;
         }
 

@@ -50,7 +50,6 @@ public class DependenciesPluginRegion implements PageRegion<DependenciesPluginRe
         this.upenaStore = upenaStore;
     }
 
-
     @Override
     public String getRootPath() {
         return "/ui/dependencies";
@@ -133,7 +132,7 @@ public class DependenciesPluginRegion implements PageRegion<DependenciesPluginRe
 
         String[] versionParts = deployablecoordinate.trim().split(":");
         if (versionParts.length != 4) {
-            System.out.println("deployable coordinates must be of the following form: groupId:artifactId:packaging:version");
+            LOG.warn("deployable coordinates must be of the following form: groupId:artifactId:packaging:version {}", deployablecoordinate);
             return;
         }
         String groupId = versionParts[0];

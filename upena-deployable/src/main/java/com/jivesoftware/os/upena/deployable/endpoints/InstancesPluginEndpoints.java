@@ -41,7 +41,7 @@ public class InstancesPluginEndpoints {
     @Produces(MediaType.TEXT_HTML)
     public Response instances(@Context HttpServletRequest httpRequest) {
         String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-            new InstancesPluginRegionInput("", "", "", "", "", "", "", "", "", "", false, ""));
+            new InstancesPluginRegionInput("", "", "", "", "", "", "", "", "", "", false, "", "", ""));
         return Response.ok(rendered).build();
     }
 
@@ -61,9 +61,24 @@ public class InstancesPluginEndpoints {
         @FormParam("releaseKey") @DefaultValue("") String releaseKey,
         @FormParam("release") @DefaultValue("") String release,
         @FormParam("enabled") @DefaultValue("false") boolean enabled,
+        @FormParam("intervalUnits") @DefaultValue("SECONDS") String intervalUnits,
+        @FormParam("interval") @DefaultValue("30") String interval,
         @FormParam("action") @DefaultValue("") String action) {
         String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-            new InstancesPluginRegionInput(key, clusterKey, cluster, hostKey, host, serviceKey, service, instanceId, releaseKey, release, enabled, action));
+            new InstancesPluginRegionInput(key,
+                clusterKey,
+                cluster,
+                hostKey,
+                host,
+                serviceKey,
+                service,
+                instanceId,
+                releaseKey,
+                release,
+                enabled,
+                intervalUnits,
+                interval,
+                action));
         return Response.ok(rendered).build();
     }
 

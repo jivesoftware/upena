@@ -263,7 +263,7 @@ public class ModulesPluginRegion implements PageRegion<ModulesPluginRegionInput>
                 edge.put("to", "id" + e.to);
                 edge.put("color", e.edgeColor);
                 renderEdges.add(edge);
-                System.out.println("edge:" + edge);
+                //System.out.println("edge:" + edge);
             }
 
             data.put("moduleEdges", MAPPER.writeValueAsString(renderEdges));
@@ -287,7 +287,7 @@ public class ModulesPluginRegion implements PageRegion<ModulesPluginRegionInput>
 
         String[] versionParts = deployablecoordinate.trim().split(":");
         if (versionParts.length != 4) {
-            System.out.println("deployable coordinates must be of the following form: groupId:artifactId:packaging:version");
+            LOG.warn("deployable coordinates must be of the following form: groupId:artifactId:packaging:version {}", deployablecoordinate);
             return;
         }
         String groupId = versionParts[0];
@@ -325,7 +325,7 @@ public class ModulesPluginRegion implements PageRegion<ModulesPluginRegionInput>
             if (artifact.equals(d)) {
                 continue;
             }
-            System.out.println(artifact + "->" + d);
+            //System.out.println(artifact + "->" + d);
             if (groupIdPrefixes.isEmpty()) {
                 //Node an = graph.artifact(d, false);
                 Node gn = graph.group(d);

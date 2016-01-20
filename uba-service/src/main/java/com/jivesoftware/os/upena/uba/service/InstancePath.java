@@ -67,7 +67,6 @@ public class InstancePath {
         Properties properties = new Properties();
         properties.load(new FileInputStream(instanceProperties()));
 
-        System.out.println("readInstanceDescriptor:" + properties);
         Object enabled = properties.get(instancePrefix + "enabled");
         if (enabled == null) {
             enabled = "true";
