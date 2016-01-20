@@ -63,14 +63,14 @@ class UpenaStoreChanges<K, V> implements RowChanges {
                         try {
                             k = mapper.readValue(rawKey.getKey(), keyClass);
                         } catch (Exception x) {
-                            LOG.warn("Failed converting key {} to class {}", new Object[]{k, keyClass}, x);
+                            LOG.warn("Failed converting value {} of class to class {}", new Object[]{k, k != null ? k.getClass() : "null", valueClass}, x);
                             throw x;
                         }
                         V v = null;
                         try {
                             v = mapper.readValue(g.getValue(), valueClass);
                         } catch (Exception x) {
-                            LOG.warn("Failed converting value {} to class {}", new Object[]{k, keyClass}, x);
+                            LOG.warn("Failed converting value {} of class to class {}", new Object[]{v, v != null ? v.getClass() : "null", valueClass}, x);
                             throw x;
                         }
                         removes.change(k, new BasicTimestampedValue<>(v, g.getTimestampId(), g.getTombstoned()));
@@ -81,19 +81,18 @@ class UpenaStoreChanges<K, V> implements RowChanges {
                 try {
                     k = mapper.readValue(rawKey.getKey(), keyClass);
                 } catch (Exception x) {
-                    LOG.warn("Failed converting key {} to class {}", new Object[]{k, keyClass}, x);
+                    LOG.warn("Failed converting value {} of class to class {}", new Object[]{k, k != null ? k.getClass() : "null", valueClass}, x);
                     throw x;
                 }
                 V v = null;
                 try {
                     v = mapper.readValue(rawValue.getValue(), valueClass);
                 } catch (Exception x) {
-                    LOG.warn("Failed converting value {} to class {}", new Object[]{k, keyClass}, x);
+                    LOG.warn("Failed converting value {} of class to class {}", new Object[]{v, v != null ? v.getClass() : "null", valueClass}, x);
                     throw x;
                 }
                 adds.change(k, new BasicTimestampedValue<>(v, rawValue.getTimestampId(), rawValue.getTombstoned()));
             }
         }
     }
-
 }
