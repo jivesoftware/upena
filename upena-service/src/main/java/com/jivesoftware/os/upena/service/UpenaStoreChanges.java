@@ -64,7 +64,7 @@ class UpenaStoreChanges<K, V> implements RowChanges {
                             k = rawKey.getKey() == null ? null : mapper.readValue(rawKey.getKey(), keyClass);
                         } catch (Exception x) {
                             LOG.warn("Failed converting key {} of class to class {}",
-                                new Object[]{rawKey.getKey(), k != null ? k.getClass() : "null", keyClass}, x);
+                                new Object[]{rawKey.getKey(), rawKey.getKey() != null ? rawKey.getKey().getClass() : "null", keyClass}, x);
                             throw x;
                         }
                         V v = null;
@@ -72,7 +72,7 @@ class UpenaStoreChanges<K, V> implements RowChanges {
                             v = g.getValue() == null ? null : mapper.readValue(g.getValue(), valueClass);
                         } catch (Exception x) {
                             LOG.warn("Failed converting value {} of class to class {}",
-                                new Object[]{g.getValue(), v != null ? v.getClass() : "null", valueClass}, x);
+                                new Object[]{g.getValue(), g.getValue() != null ? g.getValue().getClass() : "null", valueClass}, x);
                             throw x;
                         }
                         removes.change(k, new BasicTimestampedValue<>(v, g.getTimestampId(), g.getTombstoned()));
@@ -84,7 +84,7 @@ class UpenaStoreChanges<K, V> implements RowChanges {
                     k = rawKey.getKey() == null ? null : mapper.readValue(rawKey.getKey(), keyClass);
                 } catch (Exception x) {
                     LOG.warn("Failed converting key {} of class to class {}",
-                        new Object[]{rawKey.getKey(), k != null ? k.getClass() : "null", keyClass}, x);
+                        new Object[]{rawKey.getKey(), rawKey.getKey() != null ? rawKey.getKey().getClass() : "null", keyClass}, x);
                     throw x;
                 }
                 V v = null;
@@ -92,7 +92,7 @@ class UpenaStoreChanges<K, V> implements RowChanges {
                     v = rawValue.getValue() == null ? null : mapper.readValue(rawValue.getValue(), valueClass);
                 } catch (Exception x) {
                     LOG.warn("Failed converting value {} of class to class {}",
-                        new Object[]{rawValue.getValue(), v != null ? v.getClass() : "null", valueClass}, x);
+                        new Object[]{rawValue.getValue(), rawValue.getValue() != null ? rawValue.getValue().getClass() : "null", valueClass}, x);
                     throw x;
                 }
                 adds.change(k, new BasicTimestampedValue<>(v, rawValue.getTimestampId(), rawValue.getTombstoned()));
