@@ -61,14 +61,14 @@ class UpenaStoreChanges<K, V> implements RowChanges {
                     for (RowIndexValue g : got) {
                         K k = null;
                         try {
-                            k = mapper.readValue(rawKey.getKey(), keyClass);
+                            k = rawKey.getKey() == null ? null : mapper.readValue(rawKey.getKey(), keyClass);
                         } catch (Exception x) {
-                            LOG.warn("Failed converting value {} of class to class {}", new Object[]{k, k != null ? k.getClass() : "null", valueClass}, x);
+                            LOG.warn("Failed converting key {} of class to class {}", new Object[]{k, k != null ? k.getClass() : "null", valueClass}, x);
                             throw x;
                         }
                         V v = null;
                         try {
-                            v = mapper.readValue(g.getValue(), valueClass);
+                            v = g.getValue() == null ? null : mapper.readValue(g.getValue(), valueClass);
                         } catch (Exception x) {
                             LOG.warn("Failed converting value {} of class to class {}", new Object[]{v, v != null ? v.getClass() : "null", valueClass}, x);
                             throw x;
@@ -79,14 +79,14 @@ class UpenaStoreChanges<K, V> implements RowChanges {
             } else if (adds != null) {
                 K k = null;
                 try {
-                    k = mapper.readValue(rawKey.getKey(), keyClass);
+                    k = rawKey.getKey() == null ? null : mapper.readValue(rawKey.getKey(), keyClass);
                 } catch (Exception x) {
-                    LOG.warn("Failed converting value {} of class to class {}", new Object[]{k, k != null ? k.getClass() : "null", valueClass}, x);
+                    LOG.warn("Failed converting key {} of class to class {}", new Object[]{k, k != null ? k.getClass() : "null", valueClass}, x);
                     throw x;
                 }
                 V v = null;
                 try {
-                    v = mapper.readValue(rawValue.getValue(), valueClass);
+                    v = rawValue.getValue() == null ? null : mapper.readValue(rawValue.getValue(), valueClass);
                 } catch (Exception x) {
                     LOG.warn("Failed converting value {} of class to class {}", new Object[]{v, v != null ? v.getClass() : "null", valueClass}, x);
                     throw x;
