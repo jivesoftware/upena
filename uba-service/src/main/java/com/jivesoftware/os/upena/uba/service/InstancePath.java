@@ -101,7 +101,7 @@ public class InstancePath {
                 }
             }
         }
-        LOG.info("Read instance descriptor:" + id + " from:" + instanceProperties());
+        LOG.debug("Read instance descriptor:" + id + " from:" + instanceProperties());
         return id;
     }
 

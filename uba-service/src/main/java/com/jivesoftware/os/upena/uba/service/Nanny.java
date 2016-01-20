@@ -92,7 +92,7 @@ public class Nanny {
             LOG.info("Missing status script from " + got + " to " + id);
         }
         if (!redeploy.get()) {
-            LOG.info("Service:" + instancePath.toHumanReadableName() + " has NOT changed.");
+            LOG.debug("Service:" + instancePath.toHumanReadableName() + " has NOT changed.");
         } else {
             instanceDescriptor.set(id);
         }

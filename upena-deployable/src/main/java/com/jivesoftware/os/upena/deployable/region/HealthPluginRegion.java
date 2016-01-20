@@ -175,12 +175,16 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
 
                                 Instance instance = upenaStore.instances.get(new InstanceKey(nannyHealth.instanceDescriptor.instanceKey));
 
+                                String label = String.valueOf((int) (h * 100));
                                 String age = nannyHealth.uptime;
+                                String color = trafficlightColorRGB(h, 1f);
                                 long now = System.currentTimeMillis();
                                 if (instance != null
                                     && instance.restartTimestampGMTMillis > 0
                                     && System.currentTimeMillis() < instance.restartTimestampGMTMillis) {
-                                    age = DurationFormatUtils.formatDurationHMS(instance.restartTimestampGMTMillis - now) + "|" + nannyHealth.uptime;
+                                    age = DurationFormatUtils.formatDurationHMS(instance.restartTimestampGMTMillis - now);
+                                    color = "255,105,180";
+                                    label = "Restarting";
                                 }
 
                                 minHostHealth.compute(nannyHealth.instanceDescriptor.clusterName + ":" + nodeHealth.host + ":" + nodeHealth.port,
@@ -190,14 +194,14 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
 
                                 healths.add(ImmutableMap.<String, String>builder()
                                     .put("id", nannyHealth.instanceDescriptor.instanceKey)
-                                    .put("color", trafficlightColorRGB(h, 1f))
-                                    .put("text", String.valueOf((int) (h * 100)))
-                                    .put("age", nannyHealth.uptime)
+                                    .put("color", color)
+                                    .put("text", label)
+                                    .put("age", age)
                                     .build());
                             } else {
                                 healths.add(ImmutableMap.<String, String>builder()
                                     .put("id", nannyHealth.instanceDescriptor.instanceKey)
-                                    .put("color", "64,64,64")
+                                    .put("color", "128,128,128")
                                     .put("text", "")
                                     .put("age", "disabled")
                                     .build());

@@ -14,9 +14,9 @@
             {/foreach}
         </div>
     {else}
-        <pre>
-            None of the deployed service conform to the hasUI rest api.
-        </pre>
+        <div>
+            /ui/health/uis is inaccessible.
+        </div>
     {/if}
     {if $ports}
         <div style="width:1000px">
