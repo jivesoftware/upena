@@ -15,12 +15,14 @@
  */
 package com.jivesoftware.os.upena.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jivesoftware.os.amza.service.AmzaService;
 import java.net.SocketException;
 
 public class UpenaInitializer {
 
-    public UpenaService initialize(String datacenter,
+    public UpenaService initialize(ObjectMapper mapper,
+        String datacenter,
         String rack,
         String publicHost,
         InstanceChanges instanceChanges,
@@ -28,7 +30,7 @@ public class UpenaInitializer {
         TenantChanges tenantChanges,
         AmzaService amzaService) throws SocketException, Exception {
 
-        UpenaStore upenaStore = new UpenaStore(amzaService, instanceChanges, instanceRemoved, tenantChanges);
+        UpenaStore upenaStore = new UpenaStore(mapper, amzaService, instanceChanges, instanceRemoved, tenantChanges);
         upenaStore.attachWatchers();
         UpenaService composerService = new UpenaService(datacenter, rack, publicHost, upenaStore);
         return composerService;

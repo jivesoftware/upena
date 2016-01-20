@@ -32,14 +32,10 @@ import com.jivesoftware.os.amza.service.storage.replication.TakeFailureListener;
 import com.jivesoftware.os.amza.shared.AmzaInstance;
 import com.jivesoftware.os.amza.shared.MemoryRowsIndex;
 import com.jivesoftware.os.amza.shared.RingHost;
-import com.jivesoftware.os.amza.shared.RowChanges;
 import com.jivesoftware.os.amza.shared.RowIndexKey;
 import com.jivesoftware.os.amza.shared.RowIndexValue;
-import com.jivesoftware.os.amza.shared.RowsChanged;
-import com.jivesoftware.os.amza.shared.RowsIndex;
 import com.jivesoftware.os.amza.shared.RowsIndexProvider;
 import com.jivesoftware.os.amza.shared.RowsStorageProvider;
-import com.jivesoftware.os.amza.shared.TableName;
 import com.jivesoftware.os.amza.shared.UpdatesSender;
 import com.jivesoftware.os.amza.shared.UpdatesTaker;
 import com.jivesoftware.os.amza.storage.RowTable;
@@ -52,8 +48,6 @@ import com.jivesoftware.os.jive.utils.ordered.id.ConstantWriterIdProvider;
 import com.jivesoftware.os.jive.utils.ordered.id.OrderIdProvider;
 import com.jivesoftware.os.jive.utils.ordered.id.OrderIdProviderImpl;
 import com.jivesoftware.os.jive.utils.ordered.id.TimestampedOrderIdProvider;
-import com.jivesoftware.os.routing.bird.shared.InstanceChanged;
-import com.jivesoftware.os.routing.bird.shared.TenantChanged;
 import com.jivesoftware.os.upena.config.UpenaConfigRestEndpoints;
 import com.jivesoftware.os.upena.config.UpenaConfigStore;
 import com.jivesoftware.os.upena.deployable.UpenaEndpoints.AmzaClusterName;
@@ -204,11 +198,9 @@ public class Main {
             tableTaker,
             Optional.<SendFailureListener>absent(),
             Optional.<TakeFailureListener>absent(),
-            new RowChanges() {
-            @Override
-            public void changes(RowsChanged changes) throws Exception {
+            (changes) -> {
             }
-        });
+        );
 
         amzaService.start(ringHost, amzaServiceConfig.resendReplicasIntervalInMillis,
             amzaServiceConfig.applyReplicasIntervalInMillis,
@@ -227,7 +219,7 @@ public class Main {
         System.out.println("-----------------------------------------------------------------------");
 
         final AtomicReference<UbaService> conductor = new AtomicReference<>();
-        final UpenaStore upenaStore = new UpenaStore(amzaService, (List<InstanceChanged> instanceChanges) -> {
+        final UpenaStore upenaStore = new UpenaStore(mapper, amzaService, (instanceChanges) -> {
             Executors.newSingleThreadExecutor().submit(() -> {
                 UbaService got = conductor.get();
                 if (got != null) {
@@ -238,8 +230,8 @@ public class Main {
                     }
                 }
             });
-        }, (List<InstanceChanged> changes) -> {
-        }, (List<TenantChanged> change) -> {
+        }, (changes) -> {
+        }, (change) -> {
             System.out.println("TODO: tie into conductor. " + change);
         });
         upenaStore.attachWatchers();
@@ -259,7 +251,7 @@ public class Main {
             upenaStore.hosts.update(hostKey, host);
         }
 
-        UbaLog ubaLog = (String what, String why, String how) -> {
+        UbaLog ubaLog = (what, why, how) -> {
             try {
                 upenaStore.record("Uba-" + ringHost.getHost() + ":" + ringHost.getPort(), what, System.currentTimeMillis(), why, "", how);
             } catch (Exception x) {
@@ -307,14 +299,11 @@ public class Main {
         System.out.println("-----------------------------------------------------------------------");
 
         if (ubaService != null) {
-            Executors.newScheduledThreadPool(1).scheduleWithFixedDelay(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        ubaService.nanny();
-                    } catch (Exception ex) {
-                        ex.printStackTrace(); // HACK
-                    }
+            Executors.newScheduledThreadPool(1).scheduleWithFixedDelay(() -> {
+                try {
+                    ubaService.nanny();
+                } catch (Exception ex) {
+                    ex.printStackTrace(); // HACK
                 }
             }, 15, 15, TimeUnit.SECONDS);
             System.out.println("-----------------------------------------------------------------------");
@@ -488,19 +477,15 @@ public class Main {
     }
 
     private RowsStorageProvider rowsStorageProvider(final OrderIdProvider orderIdProvider) {
-        RowsStorageProvider rowsStorageProvider = (File workingDirectory, String tableDomain, TableName tableName) -> {
+        RowsStorageProvider rowsStorageProvider = (workingDirectory, tableDomain, tableName) -> {
             final File directory = new File(workingDirectory, tableDomain);
             directory.mkdirs();
             File file = new File(directory, tableName.getTableName() + ".kvt");
 
             BinaryRowMarshaller rowMarshaller = new BinaryRowMarshaller();
-            RowsIndexProvider tableIndexProvider = new RowsIndexProvider() {
-
-                @Override
-                public RowsIndex createRowsIndex(TableName tableName) throws Exception {
-                    NavigableMap<RowIndexKey, RowIndexValue> navigableMap = new ConcurrentSkipListMap<>();
-                    return new MemoryRowsIndex(navigableMap);
-                }
+            RowsIndexProvider tableIndexProvider = (tableName1) -> {
+                NavigableMap<RowIndexKey, RowIndexValue> navigableMap = new ConcurrentSkipListMap<>();
+                return new MemoryRowsIndex(navigableMap);
             };
 
             return new RowTable(tableName,
