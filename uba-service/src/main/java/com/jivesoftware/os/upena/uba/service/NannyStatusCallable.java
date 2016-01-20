@@ -58,7 +58,11 @@ class NannyStatusCallable implements Callable<Boolean> {
     @Override
     public Boolean call() throws Exception {
         try {
-            if (!id.enabled && Objects.firstNonNull(haveRunConfigExtractionCache.getIfPresent(id), Boolean.FALSE)) {
+            if (!id.enabled
+                && Objects.firstNonNull(haveRunConfigExtractionCache.getIfPresent(id), Boolean.FALSE)) {
+                deployLog.log("Service:" + instancePath.toHumanReadableName(), "Skipping config extraction.", null);
+                healthLog.commit();
+                startupTimestamp.set(-1);
                 return true;
             }
 
