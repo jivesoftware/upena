@@ -63,7 +63,7 @@ class UpenaStoreChanges<K, V> implements RowChanges {
                         try {
                             k = rawKey.getKey() == null ? null : mapper.readValue(rawKey.getKey(), keyClass);
                         } catch (Exception x) {
-                            LOG.warn("Failed converting key {} of class to class {}",
+                            LOG.warn("Failed converting key {} of class {} to class {}",
                                 new Object[]{rawKey.getKey(), rawKey.getKey() != null ? rawKey.getKey().getClass() : "null", keyClass}, x);
                             throw x;
                         }
@@ -71,7 +71,7 @@ class UpenaStoreChanges<K, V> implements RowChanges {
                         try {
                             v = g.getValue() == null ? null : mapper.readValue(g.getValue(), valueClass);
                         } catch (Exception x) {
-                            LOG.warn("Failed converting value {} of class to class {}",
+                            LOG.warn("Failed converting value {} of class {} to class {}",
                                 new Object[]{g.getValue(), g.getValue() != null ? g.getValue().getClass() : "null", valueClass}, x);
                             throw x;
                         }
@@ -83,7 +83,7 @@ class UpenaStoreChanges<K, V> implements RowChanges {
                 try {
                     k = rawKey.getKey() == null ? null : mapper.readValue(rawKey.getKey(), keyClass);
                 } catch (Exception x) {
-                    LOG.warn("Failed converting key {} of class to class {}",
+                    LOG.warn("Failed converting key {} of class {} to class {}",
                         new Object[]{rawKey.getKey(), rawKey.getKey() != null ? rawKey.getKey().getClass() : "null", keyClass}, x);
                     throw x;
                 }
@@ -91,7 +91,7 @@ class UpenaStoreChanges<K, V> implements RowChanges {
                 try {
                     v = rawValue.getValue() == null ? null : mapper.readValue(rawValue.getValue(), valueClass);
                 } catch (Exception x) {
-                    LOG.warn("Failed converting value {} of class to class {}",
+                    LOG.warn("Failed converting value {} of class {} to class {}",
                         new Object[]{rawValue.getValue(), rawValue.getValue() != null ? rawValue.getValue().getClass() : "null", valueClass}, x);
                     throw x;
                 }
