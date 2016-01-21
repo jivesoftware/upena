@@ -26,6 +26,7 @@ public class ReleaseGroup implements Stored<ReleaseGroup>, Serializable {
 
     public final String name;
     public final String email;
+    public final String rollbackVersion; // deliberately not part of hash or equals
     public final String version;
     public final String repository;
     public final String description;
@@ -33,11 +34,13 @@ public class ReleaseGroup implements Stored<ReleaseGroup>, Serializable {
     @JsonCreator
     public ReleaseGroup(@JsonProperty("name") String name,
         @JsonProperty("email") String email,
+        @JsonProperty("rollbackVersion") String rollbackVersion,
         @JsonProperty("version") String version,
         @JsonProperty("repository") String repository,
         @JsonProperty("description") String description) {
         this.name = name;
         this.email = email;
+        this.rollbackVersion = rollbackVersion;
         this.version = version;
         this.repository = repository;
         this.description = description;

@@ -45,7 +45,7 @@ public class ReleasesPluginEndpoints {
     public Response releases(@Context HttpServletRequest httpRequest) {
         try {
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-                new ReleasesPluginRegionInput("", "", "", "", "", "", ""));
+                new ReleasesPluginRegionInput("", "", "", "", "", "", "", "", ""));
             return Response.ok(rendered).build();
         } catch (Exception e) {
             LOG.error("releases", e);
@@ -61,14 +61,16 @@ public class ReleasesPluginEndpoints {
         @FormParam("key") @DefaultValue("") String key,
         @FormParam("name") @DefaultValue("") String name,
         @FormParam("description") @DefaultValue("") String description,
+        @FormParam("rollback") @DefaultValue("") String rollback,
         @FormParam("version") @DefaultValue("") String version,
+        @FormParam("upgrade") @DefaultValue("") String upgrade,
         @FormParam("repository") @DefaultValue("") String repository,
         @FormParam("email") @DefaultValue("") String email,
         @FormParam("action") @DefaultValue("") String action) {
 
         try {
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-                new ReleasesPluginRegionInput(key, name, description, version, repository, email, action));
+                new ReleasesPluginRegionInput(key, name, description, rollback, version, upgrade, repository, email, action));
             return Response.ok(rendered).build();
         } catch (Exception e) {
             LOG.error("action", e);

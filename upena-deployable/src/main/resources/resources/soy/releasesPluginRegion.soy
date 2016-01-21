@@ -83,15 +83,50 @@
                                     placeholder="Name" value="{$r.name}" name="name" id="namePicker" class="form-control">
                             </div>
                         </td>
-                        <td>
-                            {if $r.runningLatest} 
-                                {if $r.runningLatest != 'true'} 
-                                    <div class="coloredBox" style="background-color:orange;"></div>
-                                    <span style="font-weight: bold;">{$r.newerVersion}&nbsp&nbsp</span>
+                        <td  style="width:500px;">
+                            <input type="text" name="repository" class="form-control" value={$r.repository?:''}>
+
+                            {if $r.rollback}
+                                <div class="panel panel-default grid-host-panel popover-health" style="background-color: rgba(255, 255, 255, 0.6);">
+                                    <div class="health-color" style="float: left; color: orange;  text-align: center; margin-right: 4px; border-radius: 4px 0px 0px 4px; ">
+                                        <button onclick="return confirm('Are you sure you want to rollback?')" title="Rollback" type="submit" name="action" value="rollback" class="btn btn-default">
+                                            <span class="glyphicon glyphicon-download">&nbspRemove</span>
+                                        </button>
+                                    </div>
+                                    <div class="health-age" style="float:right; background-color:#eee; color:#999; padding:0 8px; height:20px; margin-left:4px; border-radius:0 4px 4px 0;">
+                                        {$r.rollback}
+                                    </div>
+                                </div>
+                                <input type="hidden" name="rollback" value="{$r.rollback}">
+                            {/if}
+
+                            <div class="panel panel-default grid-host-panel popover-health" style="background-color: rgba(255, 255, 255, 0.6);" >
+                                <div class="health-color" style="float: left; color: gray;  text-align: center; margin-right: 4px; border-radius: 4px 0px 0px 4px; ">
+                                    <button title="Upgrade" type="submit" name="action" value="upgrade" class="btn btn-default">
+                                        <span class="glyphicon glyphicon-save ladda-button"  data-spinner-color="#222" data-style="expand-right">Upgrade</span>
+                                    </button>
+                                </div>
+                                <div class="health-age" style="float:right; background-color:#eee; color:#999; padding:0 8px; height:20px; margin-left:4px; border-radius:0 4px 4px 0;">
+                                    <input id="{$r.key}" type="text" name="version" class="form-control" value={$r.version?:''}>
+                                </div>
+                            </div>
+
+                            {if $r.runningLatest}
+                                {if $r.runningLatest != 'true'}
+                                    <div class="panel panel-default grid-host-panel popover-health" style="background-color: rgba(255, 255, 255, 0.6);">
+                                        <div class="health-color" style="float: left; color: green;  text-align: center; margin-right: 4px; border-radius: 4px 0px 0px 4px;">
+                                            <button title="Upgrade" type="submit" name="action" value="upgrade" class="btn btn-default">
+                                                <span class="glyphicon glyphicon-upload ladda-button"  data-spinner-color="#222" data-style="expand-right">Upgrade</span>
+                                            </button>
+                                        </div>
+                                        <div class="health-age" style="float:right; background-color:#eee; color:#999; padding:0 8px; height:20px; margin-left:4px; border-radius:0 4px 4px 0;">
+                                            {$r.upgrade}
+                                        </div>
+                                    </div>
+                                    <input type="hidden" name="upgrade" value="{$r.upgrade}">
                                 {/if}
                             {/if}
-                            <input type="text" name="repository" class="form-control" value={$r.repository?:''}>
-                            <input id="{$r.key}" type="text" name="version" class="form-control" value={$r.version?:''}>
+
                         </td>
                         <td>
                             <div class="btn btn-default popover-health" " id="popoverAnchor-changelog-{$r.key}" data-popover-content="#popover-changelog-{$r.key}" data-popover-changelog-release-key="{$r.key}" data-placement="bottom">
@@ -110,12 +145,7 @@
                             </div>
                         </td>
                         <td>
-                            {if $r.runningLatest != 'true'}
-                                <button data-toggle="tooltip" title="Hooray!" class="btn btn-default btn-sm" type="button" onclick="upena.latestRelease.change('{$r.key}', '{$r.newerVersion}');" name="action" value="update">
-                                Upgrade</button>
-                            {/if}
                             <input type="hidden" name="key" value="{$r.key}">
-                            <button title="Update" type="submit" name="action" value="update" class="btn btn-default"><span class="glyphicon glyphicon-save ladda-button"  data-spinner-color="#222" data-style="expand-right">&nbspUpdate</span></button>
                             <button onclick="return confirm('Are you sure you want to delete?')" title="Remove" type="submit" name="action" value="remove" class="btn btn-default"><span class="glyphicon glyphicon-trash">&nbspRemove</span></button>
                         <td>
                     </tr>
