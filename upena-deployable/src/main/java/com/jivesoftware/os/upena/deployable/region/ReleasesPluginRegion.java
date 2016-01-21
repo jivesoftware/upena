@@ -221,7 +221,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
 
                                 ReleaseGroup updated = new ReleaseGroup(input.name,
                                     input.email,
-                                    (input.rollback == null || input.rollback.isEmpty()) ? null : input.rollback,
+                                    release.version,
                                     input.version,
                                     input.repository,
                                     input.description);
@@ -250,7 +250,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
 
                                 ReleaseGroup updated = new ReleaseGroup(input.name,
                                     input.email,
-                                    (input.rollback == null || input.rollback.isEmpty()) ? null : input.rollback,
+                                    input.version,
                                     input.upgrade,
                                     input.repository,
                                     input.description);
