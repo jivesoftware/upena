@@ -39,7 +39,6 @@ import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.apache.commons.lang.time.DurationFormatUtils;
 
 /**
  *
@@ -182,7 +181,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                                 if (instance != null
                                     && instance.restartTimestampGMTMillis > 0
                                     && System.currentTimeMillis() < instance.restartTimestampGMTMillis) {
-                                    age = DurationFormatUtils.formatDurationHMS(instance.restartTimestampGMTMillis - now);
+                                    age = UpenaEndpoints.humanReadableUptime(instance.restartTimestampGMTMillis - now);
                                     color = "255,105,180";
                                     label = "Restarting";
                                 }
