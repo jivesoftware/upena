@@ -87,43 +87,40 @@
                             <input type="text" name="repository" class="form-control" value={$r.repository?:''}>
 
                             {if $r.rollback}
-                                <div class="panel panel-default grid-host-panel popover-health" style="background-color: rgba(255, 255, 255, 0.6);">
-                                    <div class="health-color" style="float: left; color: orange;  text-align: center; margin-right: 4px; border-radius: 4px 0px 0px 4px; ">
+                                <div class="input-group">
+                                    <span class="input-group-addon" style="color: orange;"><span class="glyphicon glyphicon-download"></span></span>
+                                    <input type="text" class="form-control" value="{$r.rollback}" disabled>
+                                    <input type="hidden" name="rollback" value="{$r.rollback}">
+                                    <span class="input-group-addon">
                                         <button onclick="return confirm('Are you sure you want to rollback?')" title="Rollback" type="submit" name="action" value="rollback" class="btn btn-default">
-                                            <span class="glyphicon glyphicon-download">&nbspRemove</span>
+                                            Rollback
                                         </button>
-                                    </div>
-                                    <div class="health-age" style="float:right; background-color:#eee; color:#999; padding:0 8px; height:20px; margin-left:4px; border-radius:0 4px 4px 0;">
-                                        {$r.rollback}
-                                    </div>
+                                    </span>
                                 </div>
-                                <input type="hidden" name="rollback" value="{$r.rollback}">
                             {/if}
 
-                            <div class="panel panel-default grid-host-panel popover-health" style="background-color: rgba(255, 255, 255, 0.6);" >
-                                <div class="health-color" style="float: left; color: gray;  text-align: center; margin-right: 4px; border-radius: 4px 0px 0px 4px; ">
-                                    <button title="Upgrade" type="submit" name="action" value="upgrade" class="btn btn-default">
-                                        <span class="glyphicon glyphicon-save ladda-button"  data-spinner-color="#222" data-style="expand-right">Upgrade</span>
-                                    </button>
-                                </div>
-                                <div class="health-age" style="float:right; background-color:#eee; color:#999; padding:0 8px; height:20px; margin-left:4px; border-radius:0 4px 4px 0;">
+                            <div class="input-group">
+                                <span class="input-group-addon" style="color: gray;"><span class="glyphicon glyphicon-save"></span></span>
                                     <input id="{$r.key}" type="text" name="version" class="form-control" value={$r.version?:''}>
-                                </div>
+                                <span class="input-group-addon">
+                                    <button title="Upgrade" type="submit" name="action" value="update" class="btn btn-default">
+                                        Update
+                                    </button>
+                                </span>
                             </div>
 
                             {if $r.runningLatest}
                                 {if $r.runningLatest != 'true'}
-                                    <div class="panel panel-default grid-host-panel popover-health" style="background-color: rgba(255, 255, 255, 0.6);">
-                                        <div class="health-color" style="float: left; color: green;  text-align: center; margin-right: 4px; border-radius: 4px 0px 0px 4px;">
+                                    <div class="input-group">
+                                        <span class="input-group-addon" style="color: green;"><span class="glyphicon glyphicon-upload"></span></span>
+                                        <input type="text" class="form-control" value="{$r.upgrade}" disabled>
+                                        <input type="hidden" name="upgrade" value="{$r.upgrade}">
+                                        <span class="input-group-addon">
                                             <button title="Upgrade" type="submit" name="action" value="upgrade" class="btn btn-default">
-                                                <span class="glyphicon glyphicon-upload ladda-button"  data-spinner-color="#222" data-style="expand-right">Upgrade</span>
+                                                Upgrade
                                             </button>
-                                        </div>
-                                        <div class="health-age" style="float:right; background-color:#eee; color:#999; padding:0 8px; height:20px; margin-left:4px; border-radius:0 4px 4px 0;">
-                                            {$r.upgrade}
-                                        </div>
+                                        </span>
                                     </div>
-                                    <input type="hidden" name="upgrade" value="{$r.upgrade}">
                                 {/if}
                             {/if}
 
