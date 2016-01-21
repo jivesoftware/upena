@@ -77,22 +77,22 @@
                                 <div title="ServiceName" class="coloredBox" style="background-color:rgba({$ic.color},0.4);">{$ic.count}</div>
                             {/foreach}
                         </td>
-                        <td style="width:400px;">
+                        <td style="width:200px;">
                             <div>
                                 <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
                                     placeholder="Name" value="{$r.name}" name="name" id="namePicker" class="form-control">
                             </div>
                         </td>
-                        <td  style="width:500px;">
+                        <td  style="width:800px;">
                             <input type="text" name="repository" class="form-control" value={$r.repository?:''}>
 
                             {if $r.rollback}
                                 <div class="input-group">
                                     <span class="input-group-addon" style="color: orange;"><span class="glyphicon glyphicon-download"></span></span>
-                                    <input type="text" class="form-control" value="{$r.rollback}" disabled>
+                                    {$r.rollback}
                                     <input type="hidden" name="rollback" value="{$r.rollback}">
                                     <span class="input-group-addon">
-                                        <button onclick="return confirm('Are you sure you want to rollback?')" title="Rollback" type="submit" name="action" value="rollback" class="btn btn-default">
+                                        <button onclick="return confirm('Are you sure you want to rollback?')" title="Rollback" type="submit" name="action" value="rollback" class="btn btn-default" style="color: orange;">
                                             Rollback
                                         </button>
                                     </span>
@@ -100,7 +100,7 @@
                             {/if}
 
                             <div class="input-group">
-                                <span class="input-group-addon" style="color: gray;"><span class="glyphicon glyphicon-save"></span></span>
+                                <span class="input-group-addon" style="color: gray;">version</span></span>
                                     <input id="{$r.key}" type="text" name="version" class="form-control" value={$r.version?:''}>
                                 <span class="input-group-addon">
                                     <button title="Upgrade" type="submit" name="action" value="update" class="btn btn-default">
@@ -113,10 +113,10 @@
                                 {if $r.runningLatest != 'true'}
                                     <div class="input-group">
                                         <span class="input-group-addon" style="color: green;"><span class="glyphicon glyphicon-upload"></span></span>
-                                        <input type="text" class="form-control" value="{$r.upgrade}" disabled>
+                                        {$r.upgrade}
                                         <input type="hidden" name="upgrade" value="{$r.upgrade}">
                                         <span class="input-group-addon">
-                                            <button title="Upgrade" type="submit" name="action" value="upgrade" class="btn btn-default">
+                                            <button title="Upgrade" type="submit" name="action" value="upgrade" class="btn btn-default" style="color: green;">
                                                 Upgrade
                                             </button>
                                         </span>
@@ -125,7 +125,7 @@
                             {/if}
 
                         </td>
-                        <td>
+                        <td  style="width:50px;">
                             <div class="btn btn-default popover-health" " id="popoverAnchor-changelog-{$r.key}" data-popover-content="#popover-changelog-{$r.key}" data-popover-changelog-release-key="{$r.key}" data-placement="bottom">
                                 <span class="glyphicon glyphicon-list"></span>Changelog
                             </div>
@@ -133,7 +133,7 @@
                                 <div style="width:1200px" class="changelog" ></div>
                             </div>
                         </td>
-                        <td>
+                        <td  style="width:50px;">
                             <div class="btn btn-default popover-health" " id="popoverAnchor-scm-{$r.key}" data-popover-content="#popover-scm-{$r.key}" data-popover-scm-release-key="{$r.key}" data-placement="bottom">
                                 <span class="glyphicon glyphicon-list"></span>SCM
                             </a>
@@ -141,7 +141,7 @@
                                 <div style="width:1200px" class="scm" ></div>
                             </div>
                         </td>
-                        <td>
+                        <td  style="width:100px;">
                             <input type="hidden" name="key" value="{$r.key}">
                             <button onclick="return confirm('Are you sure you want to delete?')" title="Remove" type="submit" name="action" value="remove" class="btn btn-default"><span class="glyphicon glyphicon-trash">&nbspRemove</span></button>
                         <td>
