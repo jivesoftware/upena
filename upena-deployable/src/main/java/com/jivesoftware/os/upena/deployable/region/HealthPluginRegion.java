@@ -555,31 +555,33 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                                 h = nannyHealth.serviceHealth.health;
                             }
                             float sh = (float) Math.max(0, h);
-                            hostRows.get(hi).get(si + 1).put("uid", "uid-" + uid);
+                            Map<String, Object> cell = hostRows.get(hi).get(si + 1);
+                            cell.put("uid", "uid-" + uid);
                             uid++;
-                            hostRows.get(hi).get(si + 1).put("instanceKey", id.instanceKey);
-                            hostRows.get(hi).get(si + 1).put("clusterKey", id.clusterKey);
-                            hostRows.get(hi).get(si + 1).put("cluster", id.clusterName);
-                            hostRows.get(hi).get(si + 1).put("serviceKey", id.serviceKey);
-                            hostRows.get(hi).get(si + 1).put("service", id.serviceName);
-                            hostRows.get(hi).get(si + 1).put("releaseKey", id.releaseGroupKey);
-                            hostRows.get(hi).get(si + 1).put("release", id.releaseGroupName);
-                            hostRows.get(hi).get(si + 1).put("instance", String.valueOf(id.instanceName));
+                            cell.put("instanceKey", id.instanceKey);
+                            cell.put("clusterKey", id.clusterKey);
+                            cell.put("cluster", id.clusterName);
+                            cell.put("serviceKey", id.serviceKey);
+                            cell.put("service", id.serviceName);
+                            cell.put("releaseKey", id.releaseGroupKey);
+                            cell.put("release", id.releaseGroupName);
+                            cell.put("version", id.versionName);
+                            cell.put("instance", String.valueOf(id.instanceName));
                             if (id.enabled) {
-                                hostRows.get(hi).get(si + 1).put("color", "#" + getHEXTrafficlightColor(sh, 1f));
-                                hostRows.get(hi).get(si + 1).put("health", d2f(sh));
-                                hostRows.get(hi).get(si + 1).put("age", nannyHealth.uptime);
+                                cell.put("color", "#" + getHEXTrafficlightColor(sh, 1f));
+                                cell.put("health", d2f(sh));
+                                cell.put("age", nannyHealth.uptime);
                             } else {
-                                hostRows.get(hi).get(si + 1).put("color", "#404040");
-                                hostRows.get(hi).get(si + 1).put("health", "");
-                                hostRows.get(hi).get(si + 1).put("age", "disabled");
+                                cell.put("color", "#404040");
+                                cell.put("health", "");
+                                cell.put("age", "disabled");
                             }
-                            hostRows.get(hi).get(si + 1).put("link", "http://" + nodeHealth.host + ":" + id.ports.get("manage").port + "/manage/ui");
+                            cell.put("link", "http://" + nodeHealth.host + ":" + id.ports.get("manage").port + "/manage/ui");
 
-                            List<Map<String, String>> got = (List<Map<String, String>>) hostRows.get(hi).get(si + 1).get("instances");
+                            List<Map<String, String>> got = (List<Map<String, String>>) cell.get("instances");
                             if (got == null) {
                                 got = new ArrayList<>();
-                                hostRows.get(hi).get(si + 1).put("instances", got);
+                                cell.put("instances", got);
                             }
                             got.add(instanceHealth.get(id.instanceKey));
                         }

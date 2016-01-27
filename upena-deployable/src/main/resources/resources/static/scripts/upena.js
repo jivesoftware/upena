@@ -844,7 +844,6 @@ upena.livehealth = {
                 upena.livehealth.update(data);
             },
             error: function () {
-                //TODO error message
                 console.log("error!");
             }
         });

@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
+import org.eclipse.aether.ConfigurationProperties;
 import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
@@ -42,6 +43,8 @@ public class RepositoryProvider {
 
     public static DefaultRepositorySystemSession newRepositorySystemSession(RepositorySystem system) {
         DefaultRepositorySystemSession session = MavenRepositorySystemUtils.newSession();
+        session.setConfigProperty(ConfigurationProperties.REQUEST_TIMEOUT, 30_000);
+        session.setConfigProperty(ConfigurationProperties.CONNECT_TIMEOUT, 30_000);
 
         File repoDir = new File(new File(System.getProperty("user.home"), ".m2"), "repository");
         LocalRepository localRepo = new LocalRepository(repoDir);

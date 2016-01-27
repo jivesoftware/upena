@@ -54,13 +54,20 @@ class NannyDeployCallable implements Callable<Boolean> {
     private final DeployableScriptInvoker invokeScript;
     private final UbaLog ubaLog;
 
-    public NannyDeployCallable(String datacenter, String rack, String publicHostName, String host, String upenaHost, int upenaPort,
-        InstanceDescriptor id, InstancePath instancePath,
+    public NannyDeployCallable(String datacenter,
+        String rack,
+        String publicHostName,
+        String host,
+        String upenaHost,
+        int upenaPort,
+        InstanceDescriptor id,
+        InstancePath instancePath,
         DeployLog deployLog,
         HealthLog healthLog,
         DeployableValidator deployableValidator,
         DeployableScriptInvoker invokeScript,
         UbaLog ubaLog) {
+
         this.datacenter = datacenter;
         this.rack = rack;
         this.publicHostName = publicHostName;
@@ -134,6 +141,8 @@ class NannyDeployCallable implements Callable<Boolean> {
 
         RepositorySystem system = RepositoryProvider.newRepositorySystem();
         RepositorySystemSession session = RepositoryProvider.newRepositorySystemSession(system);
+       
+
         String[] repos = id.repository.split(",");
         List<RemoteRepository> remoteRepos = RepositoryProvider.newRepositories(system, session, null, repos);
 
