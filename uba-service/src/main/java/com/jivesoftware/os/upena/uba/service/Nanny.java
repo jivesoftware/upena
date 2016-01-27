@@ -192,7 +192,8 @@ public class Nanny {
                         }
                     }
 
-                    NannyStatusCallable nannyTask = new NannyStatusCallable(startupTimestamp,
+                    NannyStatusCallable nannyTask = new NannyStatusCallable(this,
+                        startupTimestamp,
                         instanceDescriptor.get(),
                         instancePath,
                         deployLog,

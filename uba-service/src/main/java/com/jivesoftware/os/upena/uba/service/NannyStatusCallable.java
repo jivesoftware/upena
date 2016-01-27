@@ -20,9 +20,11 @@ import com.google.common.cache.Cache;
 import com.jivesoftware.os.routing.bird.shared.InstanceDescriptor;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 
 class NannyStatusCallable implements Callable<Boolean> {
 
+    private final AtomicReference<String> status;
     private final AtomicLong startupTimestamp;
     private final InstanceDescriptor id;
     private final InstancePath instancePath;
@@ -32,7 +34,9 @@ class NannyStatusCallable implements Callable<Boolean> {
     private final UbaLog ubaLog;
     private final Cache<InstanceDescriptor, Boolean> haveRunConfigExtractionCache;
 
-    public NannyStatusCallable(AtomicLong startupTimestamp,
+    public NannyStatusCallable(
+        AtomicReference<String> status,
+        AtomicLong startupTimestamp,
         InstanceDescriptor id,
         InstancePath instancePath,
         DeployLog deployLog,
@@ -41,6 +45,7 @@ class NannyStatusCallable implements Callable<Boolean> {
         UbaLog ubaLog,
         Cache<InstanceDescriptor, Boolean> haveRunConfigExtractionCache) {
 
+        this.status = status;
         this.startupTimestamp = startupTimestamp;
         this.id = id;
         this.instancePath = instancePath;
@@ -60,15 +65,19 @@ class NannyStatusCallable implements Callable<Boolean> {
         try {
             if (!id.enabled
                 && Objects.firstNonNull(haveRunConfigExtractionCache.getIfPresent(id), Boolean.FALSE)) {
+                status.set("");
                 deployLog.log("Service:" + instancePath.toHumanReadableName(), "Skipping config extraction.", null);
                 healthLog.commit();
                 startupTimestamp.set(-1);
                 return true;
             }
 
+            status.set("Checking status...");
             if (invokeScript.invoke(deployLog, instancePath, "status")) {
+                status.set("");
                 deployLog.log("Service:" + instancePath.toHumanReadableName() + " 'status'", "ONLINE", null);
                 if (!invokeScript.invoke(healthLog, instancePath, "health")) {
+                    status.set("No health");
                     deployLog.log("Service:" + instancePath.toHumanReadableName() + " 'health'", "nanny health command failed", null);
                     healthLog.forcedHealthState("Service health",
                         "Service is failing to report health", "Look at logs or health script:" + invokeScript.scriptPath(instancePath, "health"));
@@ -79,7 +88,9 @@ class NannyStatusCallable implements Callable<Boolean> {
             }
             healthLog.forcedHealthState("Service Startup",
                 "Service is attempting to start. Phase: configuring...", "Be patient");
+            status.set("Extracting config...");
             if (!invokeScript.invoke(deployLog, instancePath, "config")) {
+                status.set("Config extraction failed!");
                 deployLog.log("Service:" + instancePath.toHumanReadableName() + " 'config'", "nanny health command failed", null);
                 healthLog.forcedHealthState("Service Config",
                     "Service is failing to generate config", "Look at config script:" + invokeScript.scriptPath(instancePath, "config"));
@@ -88,6 +99,7 @@ class NannyStatusCallable implements Callable<Boolean> {
             }
 
             if (!id.enabled) {
+                status.set("");
                 healthLog.forcedHealthState("Service Startup",
                     "Service is not enabled. Phase: stop...", "Enable when ready");
                 haveRunConfigExtractionCache.put(id, Boolean.TRUE);
@@ -96,21 +108,27 @@ class NannyStatusCallable implements Callable<Boolean> {
 
             healthLog.forcedHealthState("Service Startup",
                 "Service is attempting to start. Phase: start...", "Be patient");
+            status.set("Starting...");
             if (!invokeScript.invoke(deployLog, instancePath, "start")) {
+                status.set("Failed to start!");
                 deployLog.log("Service:" + instancePath.toHumanReadableName() + " 'start'", "nanny failed while start.", null);
                 healthLog.forcedHealthState("Service Start",
                     "Service is failing to generate config", "Look at config script:" + invokeScript.scriptPath(instancePath, "config"));
                 startupTimestamp.set(-1);
                 return false;
             } else {
+                status.set("Auto-restarted");
                 ubaLog.record("auto-restart", id.toString(), invokeScript.scriptPath(instancePath, "start"));
             }
             int checks = 1;
             while (checks < 10) { // todo expose to config or to instance
                 healthLog.forcedHealthState("Service Startup", "Service is being verifyed. Phase: verify...", "Be patient");
+                status.set("Verfying startup..." + checks);
                 if (invokeScript.invoke(deployLog, instancePath, "status")) {
                     deployLog.log("Service:" + instancePath.toHumanReadableName() + " 'status'", "ONLINE", null);
+                    status.set("Verfying health..." + checks);
                     if (!invokeScript.invoke(healthLog, instancePath, "health")) {
+                        status.set("Health failed!" + checks);
                         deployLog.log("Service:" + instancePath.toHumanReadableName() + " 'health'", "nanny health command failed", null);
                         healthLog.forcedHealthState("Service health",
                             "Service is failing to report health", "Look at logs or health script:" + invokeScript.scriptPath(instancePath, "health"));
@@ -120,16 +138,19 @@ class NannyStatusCallable implements Callable<Boolean> {
                         break;
                     }
                 } else {
+                    status.set("Health failed!" + checks);
                     checks++;
                     deployLog.log("Service:" + instancePath.toHumanReadableName() + " 'status'",
                         "Waiting for Service:" + instancePath.toHumanReadableName() + " to start for " + checks + " time.", null);
                     Thread.sleep(1000); // todo expose to config or to instance
                 }
             }
+            status.set("");
             startupTimestamp.set(System.currentTimeMillis());
             return true;
 
         } catch (InterruptedException x) {
+            status.set("Interrupted");
             deployLog.log("Nanny", "status failed.", x);
             healthLog.forcedHealthState("Nanny Interrupted",
                 "The nanny service was interruptd", x.toString());
