@@ -50,6 +50,7 @@ public class Nanny {
     private final AtomicLong startupTimestamp = new AtomicLong(-1);
     private final UbaLog ubaLog;
     private final Cache<InstanceDescriptor, Boolean> haveRunConfigExtractionCache;
+    private final AtomicReference<String> status = new AtomicReference<>("");
 
     public Nanny(InstanceDescriptor instanceDescriptor,
         InstancePath instancePath,
@@ -73,6 +74,10 @@ public class Nanny {
         redeploy = new AtomicBoolean(!exists);
         destroyed = new AtomicBoolean(false);
         this.haveRunConfigExtractionCache = haveRunConfigExtractionCache;
+    }
+
+    public String getStatus() {
+        return status.get();
     }
 
     public InstanceDescriptor getInstanceDescriptor() {
@@ -123,6 +128,7 @@ public class Nanny {
 
         long now = System.currentTimeMillis();
         if (restartAtTimestamp.get() > 0 && restartAtTimestamp.get() < now) {
+            status.set("Restarting");
             deployLog.log("Nanny", "Restart triggered by timestamp. " + this, null);
             if (kill()) {
                 lastRestart.set(now);
@@ -132,21 +138,25 @@ public class Nanny {
 
         try {
             if (destroyed.get()) {
+                status.set("Destroy");
                 deployLog.log("Nanny", "tried to check a service that has been destroyed. " + this, null);
                 return deployLog.getState();
             }
             if (linkedBlockingQueue.size() == 0) {
                 try {
                     if (redeploy.get()) {
+                        status.set("Redeploying");
                         NannyDestroyCallable destroyTask = new NannyDestroyCallable(instanceDescriptor.get(),
                             instancePath,
                             deployLog,
                             healthLog,
                             invokeScript,
                             ubaLog);
+
                         deployLog.log("Nanny", "destroying in preperation to redeploy. " + this, null);
-                        Future<Boolean> detroyedFuture = threadPoolExecutor.submit(destroyTask);
-                        if (detroyedFuture.get()) {
+                        Future<Boolean> destroyFuture = threadPoolExecutor.submit(destroyTask);
+                        status.set("Waiting for destroy...");
+                        if (destroyFuture.get()) {
 
                             NannyDeployCallable deployTask = new NannyDeployCallable(datacenter, rack, publicHostName, host, upenaHost, upenaPort,
                                 instanceDescriptor.get(),
@@ -159,6 +169,7 @@ public class Nanny {
                             deployLog.log("Nanny", "redeploying. " + this, null);
                             Future<Boolean> deployedFuture = threadPoolExecutor.submit(deployTask);
                             try {
+                                status.set("Waiting for deploy...");
                                 if (deployedFuture.get()) {
                                     try {
                                         try (FileWriter writer = new FileWriter(instancePath.deployLog())) {
@@ -167,12 +178,15 @@ public class Nanny {
                                             }
                                         }
                                         redeploy.set(false);
+                                        status.set("Successfully redeployed");
                                         deployLog.log("Nanny", " successfully redeployed. " + this, null);
                                     } catch (Exception x) {
+                                        status.set("Failed redeployed");
                                         deployLog.log("Nanny", " failed to redeployed. " + this, x);
                                     }
                                 }
                             } catch (ExecutionException ee) {
+                                status.set("Unexpected state");
                                 deployLog.log("Nanny", " Encountered an unexpected condition. " + this, ee);
                             }
                         }
@@ -220,6 +234,7 @@ public class Nanny {
     }
 
     synchronized Boolean kill() throws InterruptedException, ExecutionException {
+        status.set("Killing");
         NannyDestroyCallable nannyTask = new NannyDestroyCallable(instanceDescriptor.get(),
             instancePath,
             deployLog,
@@ -227,7 +242,9 @@ public class Nanny {
             invokeScript,
             ubaLog);
         Future<Boolean> waitForDestory = threadPoolExecutor.submit(nannyTask);
+        status.set("Waiting kill to complete...");
         Boolean result = waitForDestory.get();
+        status.set("Killed");
         return result;
 
     }
