@@ -294,7 +294,6 @@ public class UpenaEndpoints {
         NodeHealth nodeHealth = new NodeHealth(ringHostKey.getKey(), ringHost.getHost(), ringHost.getPort());
         for (Entry<String, Nanny> nanny : ubaService.iterateNannies()) {
             Nanny n = nanny.getValue();
-            nodeHealth.status = n.getStatus();
             InstanceDescriptor id = n.getInstanceDescriptor();
             List<String> log = n.getDeployLog().commitedLog();
             List<String> copyLog = n.getHealthLog().commitedLog();
@@ -320,6 +319,7 @@ public class UpenaEndpoints {
                 uptime = humanReadableUptime(System.currentTimeMillis() - nanny.getValue().getStartTimeMillis());
             }
             NannyHealth nannyHealth = new NannyHealth(uptime, id, log, serviceHealth);
+            nannyHealth.status = n.getStatus();
             nodeHealth.nannyHealths.add(nannyHealth);
 
         }
@@ -339,7 +339,7 @@ public class UpenaEndpoints {
         public String host;
         public int port;
         public List<NannyHealth> nannyHealths = new ArrayList<>();
-        public String status;
+        
 
         public NodeHealth() {
         }
@@ -358,6 +358,7 @@ public class UpenaEndpoints {
         public InstanceDescriptor instanceDescriptor;
         public List<String> log;
         public ServiceHealth serviceHealth;
+        public String status;
 
         public NannyHealth() {
         }

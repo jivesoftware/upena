@@ -186,8 +186,8 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                                     label = "Restarting";
                                 }
 
-                                if (nodeHealth.status != null && nodeHealth.status.length() > 0) {
-                                    label = nodeHealth.status;
+                                if (nannyHealth.status != null && nannyHealth.status.length() > 0) {
+                                    label = nannyHealth.status;
                                 }
 
                                 minHostHealth.compute(nannyHealth.instanceDescriptor.clusterName + ":" + nodeHealth.host + ":" + nodeHealth.port,
