@@ -51,6 +51,9 @@ public class Nanny {
     private final UbaLog ubaLog;
     private final Cache<InstanceDescriptor, Boolean> haveRunConfigExtractionCache;
     private final AtomicReference<String> status = new AtomicReference<>("");
+    final AtomicLong lastStartupId = new AtomicLong(-1);
+    final AtomicLong startupId = new AtomicLong(0);
+    final AtomicLong unexpectedRestartTimestamp = new AtomicLong(-1);
 
     public Nanny(InstanceDescriptor instanceDescriptor,
         InstancePath instancePath,
@@ -80,6 +83,10 @@ public class Nanny {
         return status.get();
     }
 
+    public long getUnexpectedRestartTimestamp() {
+        return unexpectedRestartTimestamp.get();
+    }
+    
     public InstanceDescriptor getInstanceDescriptor() {
         return instanceDescriptor.get();
     }
@@ -91,9 +98,13 @@ public class Nanny {
     synchronized public void setInstanceDescriptor(InstanceDescriptor id) {
         InstanceDescriptor got = instanceDescriptor.get();
         if (got != null && !got.equals(id)) {
+            startupId.incrementAndGet();
+            unexpectedRestartTimestamp.set(-1);
             redeploy.set(true);
             LOG.info("Instance changed from " + got + " to " + id);
         } else if (!instancePath.script("status").exists()) {
+            startupId.incrementAndGet();
+            unexpectedRestartTimestamp.set(-1);
             redeploy.set(true);
             LOG.info("Missing status script from " + got + " to " + id);
         }
@@ -192,7 +203,8 @@ public class Nanny {
                         }
                     }
 
-                    NannyStatusCallable nannyTask = new NannyStatusCallable(status,
+                    NannyStatusCallable nannyTask = new NannyStatusCallable(this,
+                        status,
                         startupTimestamp,
                         instanceDescriptor.get(),
                         instancePath,
@@ -221,6 +233,8 @@ public class Nanny {
 
     synchronized Boolean destroy() throws InterruptedException, ExecutionException {
         destroyed.set(true);
+        startupId.incrementAndGet();
+        unexpectedRestartTimestamp.set(-1);
         NannyDestroyCallable nannyTask = new NannyDestroyCallable(instanceDescriptor.get(),
             instancePath,
             deployLog,
@@ -236,6 +250,8 @@ public class Nanny {
 
     synchronized Boolean kill() throws InterruptedException, ExecutionException {
         status.set("Killing");
+        startupId.incrementAndGet();
+        unexpectedRestartTimestamp.set(-1);
         NannyDestroyCallable nannyTask = new NannyDestroyCallable(instanceDescriptor.get(),
             instancePath,
             deployLog,

@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 class NannyStatusCallable implements Callable<Boolean> {
 
+    private final Nanny nanny;
     private final AtomicReference<String> status;
     private final AtomicLong startupTimestamp;
     private final InstanceDescriptor id;
@@ -35,6 +36,7 @@ class NannyStatusCallable implements Callable<Boolean> {
     private final Cache<InstanceDescriptor, Boolean> haveRunConfigExtractionCache;
 
     public NannyStatusCallable(
+        Nanny nanny,
         AtomicReference<String> status,
         AtomicLong startupTimestamp,
         InstanceDescriptor id,
@@ -45,6 +47,7 @@ class NannyStatusCallable implements Callable<Boolean> {
         UbaLog ubaLog,
         Cache<InstanceDescriptor, Boolean> haveRunConfigExtractionCache) {
 
+        this.nanny = nanny;
         this.status = status;
         this.startupTimestamp = startupTimestamp;
         this.id = id;
@@ -86,6 +89,11 @@ class NannyStatusCallable implements Callable<Boolean> {
                 healthLog.commit();
                 return true;
             }
+
+            if (nanny.lastStartupId.get() == nanny.startupId.get()) {
+                nanny.unexpectedRestartTimestamp.compareAndSet(-1, System.currentTimeMillis());
+            }
+
             healthLog.forcedHealthState("Service Startup",
                 "Service is attempting to start. Phase: configuring...", "Be patient");
             status.set("Extracting config...");
@@ -147,6 +155,7 @@ class NannyStatusCallable implements Callable<Boolean> {
             }
             status.set("");
             startupTimestamp.set(System.currentTimeMillis());
+            nanny.lastStartupId.set(nanny.startupId.get());
             return true;
 
         } catch (InterruptedException x) {

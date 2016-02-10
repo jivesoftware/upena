@@ -195,12 +195,18 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                                         return ev == null ? nannyHealth.serviceHealth.health : Math.min(ev, nannyHealth.serviceHealth.health);
                                     });
 
-                                healths.add(ImmutableMap.<String, String>builder()
+                                ImmutableMap.Builder<String, String> map = ImmutableMap.<String, String>builder()
                                     .put("id", nannyHealth.instanceDescriptor.instanceKey)
                                     .put("color", color)
                                     .put("text", label)
-                                    .put("age", age)
-                                    .build());
+                                    .put("age", age);
+
+                                if ( nannyHealth.unexpectedRestart > -1 ) {
+                                    map.put("healthClass", nannyHealth.unexpectedRestart > -1 ? "unexpected-restart" : "");
+                                    map.put("unexpectedRestart", UpenaEndpoints.humanReadableUptime(nannyHealth.unexpectedRestart - now));
+                                }
+
+                                healths.add(map.build());
                             } else {
                                 healths.add(ImmutableMap.<String, String>builder()
                                     .put("id", nannyHealth.instanceDescriptor.instanceKey)

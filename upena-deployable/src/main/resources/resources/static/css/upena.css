@@ -13,10 +13,10 @@ li.j-listitem {
 }
 
 .changelog {
-  border-spacing: 0;
-  border: 1px solid #ddd;
-  border-bottom-width: 2px;
-  border-collapse: collapse;
+    border-spacing: 0;
+    border: 1px solid #ddd;
+    border-bottom-width: 2px;
+    border-collapse: collapse;
 }
 
 
@@ -32,6 +32,23 @@ body {
 /* Used by event stream */
 div.pad {
     padding: 3px;
+}
+
+
+
+div.health-age {
+    float: right;
+    background-color: #eee;
+    color: #999;
+    padding: 0 8px;
+    height: 20px;
+    margin-left: 4px;
+    border-radius: 0 4px 4px 0;
+}
+
+
+div.unexpected-restart div.health-age {
+    color: red;
 }
 
 div.datacenter-and-rack {

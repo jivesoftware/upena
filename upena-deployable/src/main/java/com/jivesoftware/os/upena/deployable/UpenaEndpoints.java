@@ -318,7 +318,13 @@ public class UpenaEndpoints {
             if (nanny.getValue().getStartTimeMillis() > 0) {
                 uptime = humanReadableUptime(System.currentTimeMillis() - nanny.getValue().getStartTimeMillis());
             }
+
+            
+
             NannyHealth nannyHealth = new NannyHealth(uptime, id, log, serviceHealth);
+            if (nanny.getValue().getUnexpectedRestartTimestamp() > -1) {
+               nannyHealth.unexpectedRestart = nanny.getValue().getUnexpectedRestartTimestamp();
+            }
             nannyHealth.status = n.getStatus();
             nodeHealth.nannyHealths.add(nannyHealth);
 
@@ -339,7 +345,6 @@ public class UpenaEndpoints {
         public String host;
         public int port;
         public List<NannyHealth> nannyHealths = new ArrayList<>();
-        
 
         public NodeHealth() {
         }
@@ -359,6 +364,7 @@ public class UpenaEndpoints {
         public List<String> log;
         public ServiceHealth serviceHealth;
         public String status;
+        public long unexpectedRestart = -1;
 
         public NannyHealth() {
         }
