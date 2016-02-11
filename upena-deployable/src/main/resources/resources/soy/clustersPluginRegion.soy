@@ -51,7 +51,7 @@
                                         </td>
                                         <td>
                                            
-                                            <table class="table table-hover table-condensed">
+                                            <table class="table table-condensed">
                                                 <thead>
                                                     <tr>
                                                         <th>Service</th>
@@ -62,8 +62,8 @@
                                                 <tbody>
                                                     {foreach $r in $c.defaultReleaseGroups}
                                                         <tr>
-                                                            <td>
-                                                                <div class="coloredBox" style="background-color:rgba({$r.serviceColor},0.4);">{$r.serviceName}<span class="badge">{$r.serviceCount}</span></div>
+                                                            <td style="background-color:rgba({$r.serviceColor},0.4);">
+                                                                <div><span class="badge">{$r.serviceCount}</span>&nbsp;&nbsp;{$r.serviceName}</div>
                                                             </td>
                                                             <td>
                                                                 <ul>
