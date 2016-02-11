@@ -15,6 +15,7 @@ import com.jivesoftware.os.upena.shared.HostKey;
 import com.jivesoftware.os.upena.shared.Instance;
 import com.jivesoftware.os.upena.shared.InstanceFilter;
 import com.jivesoftware.os.upena.shared.InstanceKey;
+import com.jivesoftware.os.upena.shared.Service;
 import com.jivesoftware.os.upena.shared.ServiceKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
 import java.util.ArrayList;
@@ -205,9 +206,11 @@ public class HostsPluginRegion implements PageRegion<HostsPluginRegionInput> {
 
                 List<Map<String, String>> instanceCounts = new ArrayList<>();
                 for (ServiceKey sk : new HashSet<>(serviceKeyCount)) {
+                    Service service = upenaStore.services.get(sk);
                     instanceCounts.add(ImmutableMap.of(
                         "count", String.valueOf(serviceKeyCount.count(sk)),
-                        "color", serviceColor.get(sk)
+                        "color", serviceColor.get(sk),
+                        "name", service == null ? "unknown" : service.name
                     ));
                 }
 
