@@ -79,50 +79,10 @@
                         </td>
                         <td>
                             <input type="text" name="repository" class="form-control" value={$r.repository?:''}>
-
-                            {if $r.rollback}
-                                <div class="input-group">
-                                    <span class="input-group-addon" style="color: orange;">
-                                        <div class="btn btn-default popover-health" " id="popoverAnchor-changelog-{$r.key}" data-popover-content="#popover-changelog-{$r.key}" data-popover-changelog-release-key="{$r.key}" data-placement="bottom">
-                                            <span class="glyphicon glyphicon-list"></span>
-                                        </div>
-                                        <div style="background-color: rgba(255, 255, 255, 0.6);" id="popover-changelog-{$r.key}" class="hide">
-                                            <div style="width:1200px" class="scm" ></div>
-                                            <div style="width:1200px" class="changelog" ></div>
-                                        </div>
-                                    </span>
-                                    {$r.rollback}
-                                    <input type="hidden" name="rollback" value="{$r.rollback}">
-                                    <span class="input-group-addon">
-                                        <button onclick="return confirm('Are you sure you want to rollback?')" title="Rollback" type="submit" name="action" value="rollback" class="btn btn-default" style="color: orange;">
-                                            Rollback
-                                        </button>
-                                    </span>
-                                </div>
-                            {/if}
-
-                            <div class="input-group">
-                                <span class="input-group-addon" style="color: gray;">
-                                    <div class="btn btn-default popover-health" " id="popoverAnchor-changelog-{$r.key}" data-popover-content="#popover-changelog-{$r.key}" data-popover-changelog-release-key="{$r.key}" data-placement="bottom">
-                                        <span class="glyphicon glyphicon-list"></span>
-                                    </div>
-                                    <div style="background-color: rgba(255, 255, 255, 0.6);" id="popover-changelog-{$r.key}" class="hide">
-                                        <div style="width:1200px" class="scm" ></div>
-                                        <div style="width:1200px" class="changelog" ></div>
-                                    </div>
-                                </span>
-                                    <input id="{$r.key}" type="text" name="version" class="form-control" value={$r.version?:''}>
-                                <span class="input-group-addon">
-                                    <button title="Upgrade" type="submit" name="action" value="update" class="btn btn-default">
-                                        Update
-                                    </button>
-                                </span>
-                            </div>
-
-                            {if $r.runningLatest}
-                                {if $r.runningLatest != 'true'}
-                                    <div class="input-group">
-                                        <span class="input-group-addon" style="color: green;">
+                            <ul style="list-style-type:none">
+                                {if $r.rollback}
+                                    <li>
+                                        <span class="input-group-addon" style="color: orange;">
                                             <div class="btn btn-default popover-health" " id="popoverAnchor-changelog-{$r.key}" data-popover-content="#popover-changelog-{$r.key}" data-popover-changelog-release-key="{$r.key}" data-placement="bottom">
                                                 <span class="glyphicon glyphicon-list"></span>
                                             </div>
@@ -131,16 +91,57 @@
                                                 <div style="width:1200px" class="changelog" ></div>
                                             </div>
                                         </span>
-                                        {$r.upgrade}
-                                        <input type="hidden" name="upgrade" value="{$r.upgrade}">
+                                        {$r.rollback}
+                                        <input type="hidden" name="rollback" value="{$r.rollback}">
                                         <span class="input-group-addon">
-                                            <button title="Upgrade" type="submit" name="action" value="upgrade" class="btn btn-default" style="color: green;">
-                                                Upgrade
+                                            <button onclick="return confirm('Are you sure you want to rollback?')" title="Rollback" type="submit" name="action" value="rollback" class="btn btn-default" style="color: orange;">
+                                                Rollback
                                             </button>
                                         </span>
-                                    </div>
+                                    </li>
                                 {/if}
-                            {/if}
+
+                                <li>
+                                    <span class="input-group-addon" style="color: gray;">
+                                        <div class="btn btn-default popover-health" " id="popoverAnchor-changelog-{$r.key}" data-popover-content="#popover-changelog-{$r.key}" data-popover-changelog-release-key="{$r.key}" data-placement="bottom">
+                                            <span class="glyphicon glyphicon-list"></span>
+                                        </div>
+                                        <div style="background-color: rgba(255, 255, 255, 0.6);" id="popover-changelog-{$r.key}" class="hide">
+                                            <div style="width:1200px" class="scm" ></div>
+                                            <div style="width:1200px" class="changelog" ></div>
+                                        </div>
+                                    </span>
+                                        <input id="{$r.key}" type="text" name="version" class="form-control" value={$r.version?:''}>
+                                    <span class="input-group-addon">
+                                        <button title="Upgrade" type="submit" name="action" value="update" class="btn btn-default">
+                                            Update
+                                        </button>
+                                    </span>
+                                </li>
+
+                                {if $r.runningLatest}
+                                    {if $r.runningLatest != 'true'}
+                                        <li>
+                                            <span class="input-group-addon" style="color: green;">
+                                                <div class="btn btn-default popover-health" " id="popoverAnchor-changelog-{$r.key}" data-popover-content="#popover-changelog-{$r.key}" data-popover-changelog-release-key="{$r.key}" data-placement="bottom">
+                                                    <span class="glyphicon glyphicon-list"></span>
+                                                </div>
+                                                <div style="background-color: rgba(255, 255, 255, 0.6);" id="popover-changelog-{$r.key}" class="hide">
+                                                    <div style="width:1200px" class="scm" ></div>
+                                                    <div style="width:1200px" class="changelog" ></div>
+                                                </div>
+                                            </span>
+                                            {$r.upgrade}
+                                            <input type="hidden" name="upgrade" value="{$r.upgrade}">
+                                            <span class="input-group-addon">
+                                                <button title="Upgrade" type="submit" name="action" value="upgrade" class="btn btn-default" style="color: green;">
+                                                    Upgrade
+                                                </button>
+                                            </span>
+                                        </li>
+                                    {/if}
+                                {/if}
+                            </ul>
 
                         </td>
                         <td  style="width:100px;">
