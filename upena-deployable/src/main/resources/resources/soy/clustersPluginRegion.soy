@@ -17,9 +17,8 @@
                     <table class="table table-hover table-condensed">
                         <thead>
                             <tr>
-                                <th>Instances</th>
                                 <th>Name</th>
-                                <th>Releases</th>
+                                <th>Routing</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -27,8 +26,6 @@
                             <form id="add-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
                                 data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="addHost">
                                 <tr style="background-color:#ddd;">
-                                    <td>
-                                    </td>
                                     <td style="width:400px;">
                                         <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
                                             placeholder="Name" value="{$filters.name?:''}" name="name" id="namePicker" class="form-control">
@@ -46,11 +43,6 @@
                                 <form id="edit-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
                                     data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="editHost">
                                     <tr>
-                                        <td style="width:100px;">
-                                            {foreach $ic in $c.instanceCounts}
-                                                <div class="coloredBox" style="background-color:rgba({$ic.color},0.4);">{$ic.count}</div>
-                                            {/foreach}
-                                        </td>
                                         <td style="width:400px;">
                                             <div>
                                                 <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
@@ -58,56 +50,53 @@
                                             </div>
                                         </td>
                                         <td>
-                                            <a href="#" rel="popover" id="releaseGroupPopoverAnchor-{$c.key}" data-popover-content="#releaseGroupPopover-{$c.key}" data-placement="left" class="btn btn-primary" title="Use these releases for this cluster">
-                                                <span class="glyphicon glyphicon-menu-down"></span>Releases
-                                            </a>
-                                            <div id="releaseGroupPopover-{$c.key}" class="hide">
-                                                <table class="table">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>Service</th>
-                                                            <th>Release</th>
-                                                            <th>Actions</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        {foreach $r in $c.defaultReleaseGroups}
-                                                            <tr>
-                                                                <td>
-                                                                    {$r.serviceName}
-                                                                </td>
-                                                                <td>
-                                                                    {$r.releaseGroupName}
-                                                                </td>
-                                                                <td>
-                                                                    <button title="Remove" onClick="upena.clusterReleaseGroups.remove('{$c.key}', '{$r.serviceKey}', '{$r.releaseGroupKey}')" class="btn btn-default"><span class="glyphicon glyphicon-trash">Remove</span></button>
-                                                                </td>
-                                                            </tr>
-                                                        {/foreach}
+                                           
+                                            <table class="table table-hover table-condensed">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Service</th>
+                                                        <th>Release</th>
+                                                        <th>Actions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {foreach $r in $c.defaultReleaseGroups}
                                                         <tr>
                                                             <td>
-                                                                <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                                                    placeholder="Service" value="" name="service"
-                                                                    class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/services">
-                                                                <input type="hidden" name="serviceKey" id="serviceId-{$c.key}" value="{$filters.serviceKey?:''}" />
+                                                                <div class="coloredBox" style="background-color:rgba({$r.serviceColor},0.4);">{$r.serviceName}<span class="badge">{$r.serviceCount}</span></div>
                                                             </td>
                                                             <td>
-                                                                <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                                                    placeholder="Release" value="" name="release"
-                                                                    class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/releases">
-                                                                <input type="hidden" name="releaseKey" id="releaseId-{$c.key}" value="{$filters.releaseKey?:''}" />
+                                                                {$r.releaseGroupName}
                                                             </td>
                                                             <td>
-                                                                <button title="Add" onClick="upena.clusterReleaseGroups.add('{$c.key}')" class="btn btn-default"><span class="glyphicon glyphicon-plus">&nbspAdd</span></button>
+                                                                <button title="Remove" onClick="upena.clusterReleaseGroups.remove('{$c.key}', '{$r.serviceKey}', '{$r.releaseGroupKey}')" class="btn btn-default"><span class="glyphicon glyphicon-trash">Remove</span></button>
                                                             </td>
                                                         </tr>
-                                                    </tbody>
-                                                </table>
-                                            </div>
+                                                    {/foreach}
+                                                    <tr>
+                                                        <td>
+                                                            <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                                                placeholder="Service" value="" name="service"
+                                                                class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/services">
+                                                            <input type="hidden" name="serviceKey" id="serviceId-{$c.key}" value="{$filters.serviceKey?:''}" />
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                                                placeholder="Release" value="" name="release"
+                                                                class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/releases">
+                                                            <input type="hidden" name="releaseKey" id="releaseId-{$c.key}" value="{$filters.releaseKey?:''}" />
+                                                        </td>
+                                                        <td>
+                                                            <button title="Add" onClick="upena.clusterReleaseGroups.add('{$c.key}')" class="btn btn-default"><span class="glyphicon glyphicon-plus">&nbspAdd</span></button>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                            
                                         </td>
                                         <td>
                                             <input type="hidden" name="key" value="{$c.key}">
-                                            <button title="Update" type="submit" name="action" value="update" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-save">&nbspUdpate</span></button>
+                                            <button title="Update" type="submit" name="action" value="update" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-save">&nbspUpdate</span></button>
                                             <button onclick="return confirm('Are you sure you want to delete?')" title="Remove" type="submit" name="action" value="remove" class="btn btn-default"><span class="glyphicon glyphicon-trash">&nbspRemove</span></button>
                                         </td>
                                     </tr>

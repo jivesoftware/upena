@@ -129,6 +129,9 @@
                                                 {else}
                                                     <span class="health-text" style="color:#666;">{$health.health|noAutoescape}</span>
                                                 {/if}
+                                                {if $health.healthClass}
+                                                    <span class="glyphicon glyphicon-warning-sign icon-warn">
+                                                {/if}
                                             </div>
                                             <div id="popover-{$health.uid}" class="hide" style="background-color: rgba(255, 255, 255, 0.6);">
                                                 {if $health.hostInfo}

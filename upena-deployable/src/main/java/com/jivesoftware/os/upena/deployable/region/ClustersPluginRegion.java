@@ -2,7 +2,6 @@ package com.jivesoftware.os.upena.deployable.region;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.HashMultiset;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
@@ -23,7 +22,6 @@ import com.jivesoftware.os.upena.shared.TimestampedValue;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -152,26 +150,6 @@ public class ClustersPluginRegion implements PageRegion<ClustersPluginRegionInpu
                 TimestampedValue<Cluster> timestampedValue = entrySet.getValue();
                 Cluster value = timestampedValue.getValue();
 
-                List<Map<String, String>> defaultReleaseGroups = new ArrayList<>();
-                for (Entry<ServiceKey, ReleaseGroupKey> e : value.defaultReleaseGroups.entrySet()) {
-                    Map<String, String> row = new HashMap<>();
-                    row.put("serviceKey", e.getKey().getKey());
-                    Service service = upenaStore.services.get(e.getKey());
-                    if (service != null) {
-                        row.put("serviceName", service.name);
-                    } else {
-                        row.put("serviceName", "missing");
-                    }
-                    row.put("releaseGroupKey", e.getValue().getKey());
-                    ReleaseGroup releaseGroup = upenaStore.releaseGroups.get(e.getValue());
-                    if (releaseGroup != null) {
-                        row.put("releaseGroupName", releaseGroup.name);
-                    } else {
-                        row.put("releaseGroupName", "missing");
-                    }
-                    defaultReleaseGroups.add(row);
-                }
-
                 InstanceFilter instanceFilter = new InstanceFilter(
                     key,
                     null,
@@ -188,16 +166,34 @@ public class ClustersPluginRegion implements PageRegion<ClustersPluginRegionInpu
                     }
                 }
 
-                List<Map<String, String>> instanceCounts = new ArrayList<>();
-                for (ServiceKey sk : new HashSet<>(serviceKeyCount)) {
-                    instanceCounts.add(ImmutableMap.of(
-                        "count", String.valueOf(serviceKeyCount.count(sk)),
-                        "color", serviceColor.get(sk)
-                    ));
+
+                List<Map<String, String>> defaultReleaseGroups = new ArrayList<>();
+                for (Entry<ServiceKey, ReleaseGroupKey> e : value.defaultReleaseGroups.entrySet()) {
+                    Map<String, String> row = new HashMap<>();
+                    row.put("serviceKey", e.getKey().getKey());
+                    Service service = upenaStore.services.get(e.getKey());
+                    if (service != null) {
+                        row.put("serviceCount", String.valueOf(serviceKeyCount.count(e.getKey())));
+                        row.put("serviceColor", serviceColor.get(e.getKey()));
+                        row.put("serviceName", service.name);
+                    } else {
+                        row.put("serviceCount", "0");
+                        row.put("serviceColor", "0,0,0");
+                        row.put("serviceName", "missing");
+                    }
+                    row.put("releaseGroupKey", e.getValue().getKey());
+                    ReleaseGroup releaseGroup = upenaStore.releaseGroups.get(e.getValue());
+                    if (releaseGroup != null) {
+                        row.put("releaseGroupName", releaseGroup.name);
+                    } else {
+                        row.put("releaseGroupName", "missing");
+                    }
+                    defaultReleaseGroups.add(row);
                 }
 
+                
+
                 Map<String, Object> row = new HashMap<>();
-                row.put("instanceCounts", instanceCounts);
                 row.put("key", key.getKey());
                 row.put("name", value.name);
                 row.put("description", value.description);
