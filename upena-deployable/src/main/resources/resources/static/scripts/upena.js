@@ -736,6 +736,7 @@ upena.health = {
     color: {},
     text: {},
     age: {},
+    warn: {},
     init: function () {
         setTimeout(upena.health.poll, 1000);
     },
@@ -765,10 +766,17 @@ upena.health = {
                 upena.health.color[id] = $cell.find('.health-color');
                 upena.health.text[id] = $cell.find('.health-text');
                 upena.health.age[id] = $cell.find('.health-age');
+                upena.health.warn[id] = $cell.find('.health-warn');
             }
             upena.health.color[id].css('background-color', "rgb(" + data[i].color + ")");
             upena.health.text[id].html(data[i].text || '&nbsp;&nbsp;&nbsp;');
             upena.health.age[id].html(data[i].age);
+
+            if (data[i].unexpectedRestart) {
+                upena.health.warn[id].show();
+            } else {
+                upena.health.warn[id].hide();
+            }
         }
     }
 };

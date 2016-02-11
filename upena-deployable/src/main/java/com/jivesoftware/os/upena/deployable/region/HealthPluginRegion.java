@@ -201,8 +201,8 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                                     .put("text", label)
                                     .put("age", age);
 
-                                if ( nannyHealth.unexpectedRestart > -1 ) {
-                                    map.put("unexpectedRestart", UpenaEndpoints.humanReadableUptime(nannyHealth.unexpectedRestart - now));
+                                if (nannyHealth.unexpectedRestart > -1 ) {
+                                    map.put("unexpectedRestart", UpenaEndpoints.humanReadableUptime(now-nannyHealth.unexpectedRestart));
                                 }
 
                                 healths.add(map.build());
@@ -412,8 +412,6 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                         h.put("port", String.valueOf(nannyHealth.instanceDescriptor.ports.get("main").port));
                         h.put("hostName", nodeHealth.host);
 
-                        h.put("details", "");
-
                         instanceHealth.put(nannyHealth.instanceDescriptor.instanceKey, h);
                     }
                 }
@@ -580,6 +578,10 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                                 cell.put("color", "#" + getHEXTrafficlightColor(sh, 1f));
                                 cell.put("health", d2f(sh));
                                 cell.put("age", nannyHealth.uptime);
+
+                                if (nannyHealth.unexpectedRestart > -1 ) {
+                                    cell.put("unexpectedRestart", UpenaEndpoints.humanReadableUptime(System.currentTimeMillis()-nannyHealth.unexpectedRestart));
+                                }
                             } else {
                                 cell.put("color", "#404040");
                                 cell.put("health", "");

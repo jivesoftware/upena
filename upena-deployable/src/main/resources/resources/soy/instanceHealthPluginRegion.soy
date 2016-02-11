@@ -12,6 +12,7 @@
             {foreach $u in $uis}
                 <a class="btn btn-default" href="http://{$u.host}:{$u.port}{$u.url}">{$u.name}</a>
             {/foreach}
+            
         </div>
     {else}
         <div>
@@ -33,15 +34,11 @@
     {/if}
     {if $log}
         <div style="width:1000px">
-            <table class="table table-hover table-condensed">
+            <ul>
                 {foreach $l in $log}
-                    <tr>
-                        <td>
-                            {$l}
-                        </td>
-                    </tr>
+                    <li>{$l}</li>
                 {/foreach}
-            </table>
+            </ul>
         </div>
     {/if}
     {if $healths}
