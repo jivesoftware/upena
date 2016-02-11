@@ -98,17 +98,19 @@
                                 {/if}
 
                                 <li>
-                                    <div style="color: gray;" class="btn btn-default popover-health" " id="popoverAnchor-changelog-{$r.key}" data-popover-content="#popover-changelog-{$r.key}" data-popover-changelog-release-key="{$r.key}" data-placement="bottom">
+                                    <div style="display: inline-block; color: gray;" class="btn btn-default popover-health" " id="popoverAnchor-changelog-{$r.key}" data-popover-content="#popover-changelog-{$r.key}" data-popover-changelog-release-key="{$r.key}" data-placement="bottom">
                                         <span class="glyphicon glyphicon-list"></span>
                                     </div>
-                                    <div style="background-color: rgba(255, 255, 255, 0.6);" id="popover-changelog-{$r.key}" class="hide">
+                                    <div style="display: inline-block; background-color: rgba(255, 255, 255, 0.6);" id="popover-changelog-{$r.key}" class="hide">
                                         <div style="width:1200px" class="scm" ></div>
                                         <div style="width:1200px" class="changelog" ></div>
                                     </div>
-                                    <input id="{$r.key}" type="text" name="version" class="form-control" value={$r.version?:''}>
-                                    <button title="Upgrade" type="submit" name="action" value="update" class="btn btn-default">
-                                        Update
-                                    </button>
+                                    <div style="display: inline-block;">
+                                        <input id="{$r.key}" type="text" name="version" class="form-control" value={$r.version?:''}>
+                                    </div>
+                                    <div style="display: inline-block;">
+                                        <button title="Upgrade" type="submit" name="action" value="update" class="btn btn-default">Update</button>
+                                    </div>
                                 </li>
 
                                 {if $r.runningLatest}
