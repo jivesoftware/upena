@@ -69,7 +69,7 @@
                                     data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="editHost">
                                     <tr>
                                         <td style="width:100px;">
-                                             <ul>
+                                             <ul style="list-style-type:none">
                                                 {foreach $ic in $h.instanceCounts}
                                                     <li style="background-color:rgba({$ic.color},0.4);"><span class="badge">{$ic.count}</span>&nbsp;&nbsp;{$ic.name}</li>
                                                 {/foreach}

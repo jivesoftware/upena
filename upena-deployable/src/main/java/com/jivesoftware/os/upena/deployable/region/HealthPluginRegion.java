@@ -202,7 +202,6 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                                     .put("age", age);
 
                                 if ( nannyHealth.unexpectedRestart > -1 ) {
-                                    map.put("healthClass", nannyHealth.unexpectedRestart > -1 ? "unexpected-restart" : "");
                                     map.put("unexpectedRestart", UpenaEndpoints.humanReadableUptime(nannyHealth.unexpectedRestart - now));
                                 }
 
