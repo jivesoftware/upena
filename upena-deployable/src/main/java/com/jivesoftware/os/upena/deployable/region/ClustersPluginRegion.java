@@ -185,8 +185,10 @@ public class ClustersPluginRegion implements PageRegion<ClustersPluginRegionInpu
                     ReleaseGroup releaseGroup = upenaStore.releaseGroups.get(e.getValue());
                     if (releaseGroup != null) {
                         row.put("releaseGroupName", releaseGroup.name);
+                        row.put("releaseGroupVersion", releaseGroup.version);
                     } else {
                         row.put("releaseGroupName", "missing");
+                        row.put("releaseGroupVersion", "");
                     }
                     defaultReleaseGroups.add(row);
                 }

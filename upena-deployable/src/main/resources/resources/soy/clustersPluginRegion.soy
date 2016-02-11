@@ -66,7 +66,10 @@
                                                                 <div class="coloredBox" style="background-color:rgba({$r.serviceColor},0.4);">{$r.serviceName}<span class="badge">{$r.serviceCount}</span></div>
                                                             </td>
                                                             <td>
-                                                                {$r.releaseGroupName}
+                                                                <ul>
+                                                                    <li>{$r.releaseGroupName}</li>
+                                                                    <li>{$r.releaseGroupVersion}</li>
+                                                                </ul>
                                                             </td>
                                                             <td>
                                                                 <button title="Remove" onClick="upena.clusterReleaseGroups.remove('{$c.key}', '{$r.serviceKey}', '{$r.releaseGroupKey}')" class="btn btn-default"><span class="glyphicon glyphicon-trash">Remove</span></button>
