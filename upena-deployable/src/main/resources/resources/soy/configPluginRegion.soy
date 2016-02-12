@@ -222,31 +222,37 @@
                 <table class="table table-condensed">
                     <tbody>
                         <tr stye="background-color:#FFFFE0;">
-                            <td bgcolor="#FFFFE0"> 
-                                Filter Property:<input type="text" autocomplete="off" role="combobox" style="width:350px; padding-left:10px;"
-                                       placeholder="property" value="{$property?:''}" name="property" id="descriptionPicker" class="form-control">
-                            </td>
                             <td bgcolor="#FFFFE0">
-                                Filter Value:<input type="text" autocomplete="off" role="combobox" style="width:350px; padding-left:10px;"
-                                       placeholder="value" value="{$value?:''}" name="value" class="form-control">
-                            </td>
-                            <td bgcolor="#FFFFE0">
-                                <label>
-                                    <span>overridden</span>
-                                    <input class="form-control" type="checkbox" name="overridden" value="true" {if $overridden}checked="checked"{/if}>
-                                </label>
-                            </td>
-                            <td bgcolor="#FFFFE0">
-                                <label>
-                                    <span>service</span>
+                                <div stye="display: inline-block">
+                                    <label>service</label>
                                     <input class="form-control" type="checkbox" name="service" value="true" {if $service}checked="checked"{/if}>
                                 </label>
                             </td>
                             <td bgcolor="#FFFFE0">
-                                <label>
-                                    <span>health</span>
+                                <div stye="display: inline-block">
+                                    <label>health</label>
                                     <input class="form-control" type="checkbox" name="health" value="true" {if $health}checked="checked"{/if}>
-                                </label>
+                                </div>
+                            </td>
+                            <td bgcolor="#FFFFE0"> 
+                                <div stye="display: inline-block">
+                                    <label>Filter Property:</label>
+                                    <input type="text" autocomplete="off" role="combobox" style="width:350px; padding-left:10px;"
+                                       placeholder="property" value="{$property?:''}" name="property" id="descriptionPicker" class="form-control">
+                                </div>
+                            </td>
+                            <td bgcolor="#FFFFE0">
+                                <div stye="display: inline-block">
+                                    <label>Filter Value:</label>
+                                    <input type="text" autocomplete="off" role="combobox" style="width:350px; padding-left:10px;"
+                                       placeholder="value" value="{$value?:''}" name="value" class="form-control">
+                                </div>
+                            </td>
+                            <td bgcolor="#FFFFE0">
+                                <div stye="display: inline-block">
+                                    <label>overridden</label>
+                                    <input class="form-control" type="checkbox" name="overridden" value="true" {if $overridden}checked="checked"{/if}>
+                                </div>
                             </td>
                         </tr>
                         <tr>
@@ -263,7 +269,7 @@
        
 
             {if $properties}
-                <table class="table table-bordered">
+                <table id="upena-cfg" class="table table-bordered">
                     {foreach $p in $properties}
                         <tr style="background-color:#FFFFE0;">
                             <td colspan="26">
