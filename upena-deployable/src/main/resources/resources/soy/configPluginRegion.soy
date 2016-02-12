@@ -49,7 +49,7 @@
                             <td style="width:25px;"></td>
                             <td style="width:25px;"></td>
                             <td style="width:25px;"></td>
-                            <td">Cluster</td>
+                            <td>Cluster</td>
                             <td style="width:25px;"></td>
                             <td style="width:25px;"></td>
                             <td style="width:25px;"></td>
@@ -82,7 +82,7 @@
                             <td style="width:25px;"></td>
                             <td style="width:25px;"></td>
                             <td style="width:25px;"></td>
-                            <td">Host</td>
+                            <td>Host</td>
                             <td style="width:25px;"></td>
                             <td style="width:25px;"></td>
                             <td style="width:25px;"></td>
@@ -217,6 +217,10 @@
                                 placeholder="Port" value="{$bRemoteConfigPort?:''}" name="bRemoteConfigPort" id="bRemotePortPicker" >
                             </td>
                         </tr>
+                    </tbody>
+                </table>
+                <table class="table table-condensed">
+                    <tbody>
                         <tr stye="background-color:#FFFFE0;">
                             <td bgcolor="#FFFFE0"> 
                                 Filter Property:<input type="text" autocomplete="off" role="combobox" style="width:350px; padding-left:10px;"
@@ -244,15 +248,9 @@
                                     <input class="form-control" type="checkbox" name="health" value="true" {if $health}checked="checked"{/if}>
                                 </label>
                             </td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
                         </tr>
                         <tr>
-                            <td colspan="10">
+                            <td colspan="4">
                                 <input type="submit" name="action" value="Refresh" class="form-control btn btn-primary ladda-button"  data-spinner-color="#222" data-style="expand-right"/>
                             </td>
                             <td colspan="1">
@@ -261,7 +259,6 @@
                         </tr>
                     </tbody>
                 </table>
-                
             </form>
        
 
