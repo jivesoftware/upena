@@ -80,6 +80,9 @@
                                     <div style="background-color: rgba(255, 255, 255, 0.6);" id="popover-{$service.service}" class="hide">
                                         <div class="btn-group">
                                             <form id="configService" method="post" action="/ui/config" name="configService">
+                                                {if $service.service}
+                                                    <input type="hidden" name="aService" value="{$service.service}">
+                                                {/if}
                                                 {if $service.serviceKey}
                                                     <input type="hidden" name="aServiceKey" value="{$service.serviceKey}">
                                                 {/if}

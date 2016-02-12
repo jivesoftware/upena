@@ -32,14 +32,32 @@
             <form id="config" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
                 data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="config">
                 <table class="table table-condensed">
-                    <thead>
-                        <tr>
-                            <th>A</th>
-                            <th>- vs -</th>
-                            <th>B</th>
-                        </tr>
-                    </thead>
                     <tbody>
+                        <tr>
+                            <td>
+                                <input type="text" style="width:300px; padding-left:10px;"
+                                placeholder="Host" value="{$aRemoteConfigHost?:''}" name="aRemoteConfigHost" id="aRemoteHostPicker" >
+                                <input type="text"  style="padding-left:10px;"
+                                placeholder="Port" value="{$aRemoteConfigPort?:''}" name="aRemoteConfigPort" id="aRemotePortPicker" >
+                            </td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td>
+                                <input type="text" style="width:300px; padding-left:10px;"
+                                placeholder="Host" value="{$bRemoteConfigHost?:''}" name="bRemoteConfigHost" id="bRemoteHostPicker" >
+                                <input type="text"  style="padding-left:10px;"
+                                placeholder="Port" value="{$bRemoteConfigPort?:''}" name="bRemoteConfigPort" id="bRemotePortPicker" >
+                            </td>
+                        </tr>
                         <tr>
                             <td bgcolor="#8299AF">
                                 <div class="input-group">
@@ -52,7 +70,17 @@
                                     <input type="hidden" name="aClusterKey" value="{$aFilters.clusterKey}" />
                                 </div>
                             </td>
-                            <td>Cluster</td>
+                            <td style="width:50px;"></td>
+                            <td style="width:50px;"></td>
+                            <td style="width:50px;"></td>
+                            <td style="width:50px;"></td>
+                            <td style="width:50px;"></td>
+                            <td">Cluster</td>
+                            <td style="width:50px;"></td>
+                            <td style="width:50px;"></td>
+                            <td style="width:50px;"></td>
+                            <td style="width:50px;"></td>
+                            <td style="width:50px;"></td>
                             <td bgcolor="#97979F">
                                 <div class="input-group">
                                     <div class="input-group-addon" id="basic-addon1">
@@ -66,6 +94,7 @@
                             </td>
                         </tr>
                         <tr>
+                            <td style="width:50px;"></td>
                             <td bgcolor="#92A9BF">
                                 <div class="input-group">
                                     <div class="input-group-addon" id="basic-addon1">
@@ -77,7 +106,15 @@
                                     <input type="hidden" name="aHostKey" value="{$aFilters.hostKey}" />
                                 </div>
                             </td>
-                            <td>Host</td>
+                            <td style="width:50px;"></td>
+                            <td style="width:50px;"></td>
+                            <td style="width:50px;"></td>
+                            <td style="width:50px;"></td>
+                            <td">Host</td>
+                            <td style="width:50px;"></td>
+                            <td style="width:50px;"></td>
+                            <td style="width:50px;"></td>
+                            <td style="width:50px;"></td>
                             <td bgcolor="#A7A7AF">
                                 <div class="input-group">
                                     <div class="input-group-addon" id="basic-addon1">
@@ -89,8 +126,12 @@
                                     <input type="hidden" name="bHostKey" value="{$bFilters.hostKey}" />
                                 </div>
                             </td>
+                            <td style="width:50px;"></td>
                         </tr>
                         <tr>
+                            <td style="width:50px;"></td>
+                            <td style="width:50px;"></td>
+                            <td style="width:50px;"></td>
                             <td bgcolor="#A2B9CF">
                                 <div class="input-group">
                                     <div class="input-group-addon" id="basic-addon1">
@@ -102,7 +143,11 @@
                                     <input type="hidden" name="aServiceKey" value="{$aFilters.serviceKey}" />
                                 </div>
                             </td>
+                            <td style="width:50px;"></td>
+                            <td style="width:50px;"></td>
                             <td>Service</td>
+                            <td style="width:50px;"></td>
+                            <td style="width:50px;"></td>
                             <td bgcolor="#B7B7BF">
                                 <div class="input-group">
                                     <div class="input-group-addon" id="basic-addon1">
@@ -114,8 +159,15 @@
                                     <input type="hidden" name="bServiceKey" value="{$bFilters.serviceKey}" />
                                 </div>
                             </td>
+                            <td style="width:50px;"></td>
+                            <td style="width:50px;"></td>
+                            <td style="width:50px;"></td>
                         </tr>
                         <tr>
+                            <td style="width:50px;"></td>
+                            <td style="width:50px;"></td>
+                            <td style="width:50px;"></td>
+                            <td style="width:50px;"></td>
                             <td bgcolor="#B2C9DF">
                                 <div class="input-group">
                                     <div class="input-group-addon" id="basic-addon1">
@@ -125,7 +177,9 @@
                                         placeholder="Instance" value="{$aFilters.instance?:''}" name="aInstance" class="form-control">
                                 </div>
                             </td>
+                            <td style="width:50px;"></td>
                             <td>Instance</td>
+                            <td style="width:50px;"></td>
                             <td bgcolor="#C7C7CF">
                                 <div class="input-group">
                                     <div class="input-group-addon" id="basic-addon1">
@@ -135,8 +189,17 @@
                                         placeholder="Instance" value="{$bFilters.instance?:''}" name="bInstance" class="form-control">
                                 </div>
                             </td>
+                            <td style="width:50px;"></td>
+                            <td style="width:50px;"></td>
+                            <td style="width:50px;"></td>
+                            <td style="width:50px;"></td>
                         </tr>
                         <tr>
+                            <td style="width:50px;"></td>
+                            <td style="width:50px;"></td>
+                            <td style="width:50px;"></td>
+                            <td style="width:50px;"></td>
+                            <td style="width:50px;"></td>
                             <td bgcolor="#C2D9EF">
                                 <div class="input-group">
                                     <div class="input-group-addon" id="basic-addon1">
@@ -160,22 +223,13 @@
                                     <input type="hidden" name="bReleaseKey" value="{$bFilters.releaseKey}" />
                                 </div>
                             </td>
+                            <td style="width:50px;"></td>
+                            <td style="width:50px;"></td>
+                            <td style="width:50px;"></td>
+                            <td style="width:50px;"></td>
+                            <td style="width:50px;"></td>
                         </tr>
-                        <tr>
-                            <td>
-                                <input type="text" style="width:300px; padding-left:10px;"
-                                placeholder="Host" value="{$aRemoteConfigHost?:''}" name="aRemoteConfigHost" id="aRemoteHostPicker" >
-                                <input type="text"  style="padding-left:10px;"
-                                placeholder="Port" value="{$aRemoteConfigPort?:''}" name="aRemoteConfigPort" id="aRemotePortPicker" >
-                            </td>
-                            <td></td>
-                            <td>
-                                <input type="text" style="width:300px; padding-left:10px;"
-                                placeholder="Host" value="{$bRemoteConfigHost?:''}" name="bRemoteConfigHost" id="bRemoteHostPicker" >
-                                <input type="text"  style="padding-left:10px;"
-                                placeholder="Port" value="{$bRemoteConfigPort?:''}" name="bRemoteConfigPort" id="bRemotePortPicker" >
-                            </td>
-                        </tr>
+                        
                         <tr stye="background-color:#FFFFE0;">
                             <td bgcolor="#FFFFE0"> 
                                 Filter Property:<input type="text" autocomplete="off" role="combobox" style="width:350px; padding-left:10px;"
@@ -214,76 +268,74 @@
                         </tr>
                     </tbody>
                 </table>
-                <div class="btn-group" role="group" aria-label="...">
-                    <button style="float:left" title="Export" type="submit" name="action" value="export" type="button" class="btn btn-default btn-xs">Export All Overriden Config</button>
-                    <form action="/ui/config/upload" method="post" enctype="multipart/form-data">
-                        <input style="float:left" type="file" name="file" size="50" />
-                        <input class="btn btn-default btn-xs" type="submit" value="Import Config" />
-                    </form>
-                </div>
+                
             </form>
-        </div>
-    </div>
-        {if $properties}
-            <div class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.6);">
-                <div class="panel-heading" id="upena-cfg">Instance Config/s</div>
-                <div class="panel-body">
-                    <table class="table table-bordered">
-                        {foreach $p in $properties}
-                            <tr style="background-color:#FFFFE0;">
-                                <td colspan="26">
-                                    <h8>{$p.property}</h8>
+       
+
+            {if $properties}
+                <table class="table table-bordered">
+                    {foreach $p in $properties}
+                        <tr style="background-color:#FFFFE0;">
+                            <td colspan="26">
+                                <h8>{$p.property}</h8>
+                            </td>
+                        </tr>
+                        {foreach $h in $p.has}
+                            <tr>
+                                <td>&nbsp;&nbsp;&nbsp;</td>
+                                <td bgcolor="#8299AF"><div style="max-width: 100px; word-wrap:break-word;">{$h.acluster?:''}</div></td>
+                                <td bgcolor="#92A9BF"><div style="max-width: 100px; word-wrap:break-word;">{$h.ahost?:''}</div></td>
+                                <td bgcolor="#A2B9CF"><div style="max-width: 100px; word-wrap:break-word;">{$h.aservice?:''}</div></td>
+                                <td bgcolor="#B2C9DF"><div style="max-width: 100px; word-wrap:break-word;">{$h.ainstance?:''}</div></td>
+                                <td bgcolor="#C2D9EF"><div style="max-width: 100px; word-wrap:break-word;">{$h.adefault?:''}</div></td>
+                                <td bgcolor="#D2E9FF">
+                                    {if ($h.acluster != null or $h.ahost != null or $h.aservice != null or $h.ainstance != null)}
+                                        <input type="text" style="width:100%; padding-left:10px;"
+                                            placeholder="override" value="{$h.aoverride?:''}" name="override" class="upena-cfg-field-a"
+                                            data-upena-cfg-prop="{$p.property}" data-upena-cfg-link="{$p.property}:{index($h)}"
+                                            data-upena-cfg-instance-key="{$h.ainstanceKey?:''}" data-upena-cfg-override="{$h.aoverride?:''}"
+                                            data-upena-cfg-cluster="{$h.acluster?:''}" data-upena-cfg-host="{$h.ahost?:''}"
+                                            data-upena-cfg-service="{$h.aservice?:''}" data-upena-cfg-instance="{$h.ainstance?:''}">
+                                    {/if}
                                 </td>
-                            </tr>
-                            {foreach $h in $p.has}
-                                <tr>
-                                    <td>&nbsp;&nbsp;&nbsp;</td>
-                                    <td bgcolor="#8299AF"><div style="max-width: 100px; word-wrap:break-word;">{$h.acluster?:''}</div></td>
-                                    <td bgcolor="#92A9BF"><div style="max-width: 100px; word-wrap:break-word;">{$h.ahost?:''}</div></td>
-                                    <td bgcolor="#A2B9CF"><div style="max-width: 100px; word-wrap:break-word;">{$h.aservice?:''}</div></td>
-                                    <td bgcolor="#B2C9DF"><div style="max-width: 100px; word-wrap:break-word;">{$h.ainstance?:''}</div></td>
-                                    <td bgcolor="#C2D9EF"><div style="max-width: 100px; word-wrap:break-word;">{$h.adefault?:''}</div></td>
-                                    <td bgcolor="#D2E9FF">
-                                        {if ($h.acluster != null or $h.ahost != null or $h.aservice != null or $h.ainstance != null)}
-                                            <input type="text" style="width:100%; padding-left:10px;"
-                                                placeholder="override" value="{$h.aoverride?:''}" name="override" class="upena-cfg-field-a"
-                                                data-upena-cfg-prop="{$p.property}" data-upena-cfg-link="{$p.property}:{index($h)}"
-                                                data-upena-cfg-instance-key="{$h.ainstanceKey?:''}" data-upena-cfg-override="{$h.aoverride?:''}"
-                                                data-upena-cfg-cluster="{$h.acluster?:''}" data-upena-cfg-host="{$h.ahost?:''}"
-                                                data-upena-cfg-service="{$h.aservice?:''}" data-upena-cfg-instance="{$h.ainstance?:''}">
-                                        {/if}
-                                    </td>
-                                    <td>
-                                        <button class="btn btn-default upena-cfg-link" data-upena-cfg-prop="{$p.property}" data-upena-cfg-link="{$p.property}:{index($h)}">
-                                            <span class="glyphicon glyphicon-link"></span>
+                                <td>
+                                    <button class="btn btn-default upena-cfg-link" data-upena-cfg-prop="{$p.property}" data-upena-cfg-link="{$p.property}:{index($h)}">
+                                        <span class="glyphicon glyphicon-link"></span>
+                                        &nbsp;
+                                    </button>
+                                </td>
+                                <td bgcolor="#EEEEEE">
+                                    {if $h.boverride != null}
+                                        <button class="btn btn-default upena-cfg-copy" data-upena-cfg-prop="{$p.property}" data-upena-cfg-copy="{$p.property}:{index($h)}">
+                                            <span class="glyphicon glyphicon-backward"></span>
                                             &nbsp;
                                         </button>
-                                    </td>
-                                    <td bgcolor="#EEEEEE">
-                                        {if $h.boverride != null}
-                                            <button class="btn btn-default upena-cfg-copy" data-upena-cfg-prop="{$p.property}" data-upena-cfg-copy="{$p.property}:{index($h)}">
-                                                <span class="glyphicon glyphicon-backward"></span>
-                                                &nbsp;
-                                            </button>
-                                        {/if}
-                                    </td>
-                                    <td bgcolor="#E7E7EF">
-                                        {if $h.boverride != null}
-                                            <input type="text" style="width:100%; padding-left:10px;"
-                                                placeholder="override" value="{$h.boverride?:''}" name="override" class="upena-cfg-field-b"
-                                                data-upena-cfg-prop="{$p.property}" data-upena-cfg-copy="{$p.property}:{index($h)}">
-                                        {/if}
-                                    </td>
-                                    <td bgcolor="#D7D7DF"><div style="max-width: 100px; word-wrap:break-word;">{$h.bdefault?:''}</div></td>
-                                    <td bgcolor="#C7C7CF"><div style="max-width: 100px; word-wrap:break-word;">{$h.binstance?:''}</div></td>
-                                    <td bgcolor="#B7B7BF"><div style="max-width: 100px; word-wrap:break-word;">{$h.bservice?:''}</div></td>
-                                    <td bgcolor="#A7A7AF"><div style="max-width: 100px; word-wrap:break-word;">{$h.bhost?:''}</div></td>
-                                    <td bgcolor="#97979F"><div style="max-width: 100px; word-wrap:break-word;">{$h.bcluster?:''}</div></td>
-                                </tr>
-                            {/foreach}
+                                    {/if}
+                                </td>
+                                <td bgcolor="#E7E7EF">
+                                    {if $h.boverride != null}
+                                        <input type="text" style="width:100%; padding-left:10px;"
+                                            placeholder="override" value="{$h.boverride?:''}" name="override" class="upena-cfg-field-b"
+                                            data-upena-cfg-prop="{$p.property}" data-upena-cfg-copy="{$p.property}:{index($h)}">
+                                    {/if}
+                                </td>
+                                <td bgcolor="#D7D7DF"><div style="max-width: 100px; word-wrap:break-word;">{$h.bdefault?:''}</div></td>
+                                <td bgcolor="#C7C7CF"><div style="max-width: 100px; word-wrap:break-word;">{$h.binstance?:''}</div></td>
+                                <td bgcolor="#B7B7BF"><div style="max-width: 100px; word-wrap:break-word;">{$h.bservice?:''}</div></td>
+                                <td bgcolor="#A7A7AF"><div style="max-width: 100px; word-wrap:break-word;">{$h.bhost?:''}</div></td>
+                                <td bgcolor="#97979F"><div style="max-width: 100px; word-wrap:break-word;">{$h.bcluster?:''}</div></td>
+                            </tr>
                         {/foreach}
-                    </table>
-                </div>
+                    {/foreach}
+                </table>
+            {/if}
+            <div class="btn-group" role="group" aria-label="...">
+                <button style="float:left" title="Export" type="submit" name="action" value="export" type="button" class="btn btn-default btn-xs">Export All Overriden Config</button>
+                <form action="/ui/config/upload" method="post" enctype="multipart/form-data">
+                    <input style="float:left" type="file" name="file" size="50" />
+                    <input class="btn btn-default btn-xs" type="submit" value="Import Config" />
+                </form>
             </div>
-        {/if}
+        </div>
+    </div>
 {/template}
