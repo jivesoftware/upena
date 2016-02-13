@@ -58,7 +58,6 @@ public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
         this.configStore = configStore;
     }
 
-
     @Override
     public String getRootPath() {
         return "/ui/config";
@@ -452,16 +451,16 @@ public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
 
                 Map<String, Object> propertyAndOccurrences = new HashMap<>();
                 propertyAndOccurrences.put("property", property);
+                propertyAndOccurrences.put("color", "AAAAAA");
 
                 List<Map<String, String>> al = as.get(property);
                 List<Map<String, String>> bl = bs.get(property);
-
 
                 List<Map<String, String>> hasProperty = new ArrayList<>();
                 int s = Math.max((al == null) ? 0 : al.size(), (bl == null) ? 0 : bl.size());
                 for (int i = 0; i < s; i++) {
                     Map<String, String> has = new HashMap<>();
-                    
+
                     if (al != null && i < al.size()) {
                         Map<String, String> a = al.get(i);
                         if (a.get("color") != null) {
@@ -653,7 +652,7 @@ public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
             if (isHealth) {
                 occurence.put("color", "#FFE6CC");
             } else {
-                 occurence.put("color", "#FFFFE0");
+                occurence.put("color", "#FFFFE0");
             }
             occurence.put("instanceKey", key.getKey());
             occurence.put("clusterKey", instance.clusterKey.getKey());
