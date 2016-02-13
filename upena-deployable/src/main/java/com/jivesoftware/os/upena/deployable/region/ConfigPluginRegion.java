@@ -456,13 +456,17 @@ public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
                 List<Map<String, String>> al = as.get(property);
                 List<Map<String, String>> bl = bs.get(property);
 
+
                 List<Map<String, String>> hasProperty = new ArrayList<>();
                 int s = Math.max((al == null) ? 0 : al.size(), (bl == null) ? 0 : bl.size());
                 for (int i = 0; i < s; i++) {
                     Map<String, String> has = new HashMap<>();
-
+                    
                     if (al != null && i < al.size()) {
                         Map<String, String> a = al.get(i);
+                        if (a.get("color") != null) {
+                            propertyAndOccurrences.put("color", a.get("color"));
+                        }
                         for (String k : ks) {
                             has.put("a" + k, a.get(k));
                         }
@@ -473,6 +477,9 @@ public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
                     }
                     if (bl != null && i < bl.size()) {
                         Map<String, String> b = bl.get(i);
+                        if (b.get("color") != null) {
+                            propertyAndOccurrences.put("color", b.get("color"));
+                        }
                         for (String k : ks) {
                             has.put("b" + k, b.get(k));
                         }
@@ -644,7 +651,7 @@ public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
 
             Map<String, String> occurence = new HashMap<>();
             if (isHealth) {
-                occurence.put("color", "#CCFFFF");
+                occurence.put("color", "#FFE6CC");
             } else {
                  occurence.put("color", "#FFFFE0");
             }

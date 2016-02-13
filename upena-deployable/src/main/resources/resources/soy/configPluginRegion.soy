@@ -232,16 +232,16 @@
                             <td style="width:100px;" bgcolor="#A2B9CF"></td>
                             <td style="width:100px;" bgcolor="#B2C9DF"></td>
                             <td style="width:100px;" bgcolor="#C2D9EF"></td>
-                            <td bgcolor="#CCFFFF">
-                                <input class="form-control" type="checkbox" name="health" value="true" {if $health}checked="checked"{/if}>health</input>
+                            <td bgcolor="#FFE6CC">
+                                <input type="checkbox" name="health" value="true" {if $health}checked="checked"{/if}>health</input>
                             </td>
-                            <td bgcolor="#CCFFFF">
+                            <td bgcolor="#FFE6CC">
                                 <input type="text" autocomplete="off" role="combobox" style="width:350px; padding-left:10px;"
-                                   placeholder="property" value="{$property?:''}" name="healthProperty" id="descriptionPicker" class="form-control">
+                                   placeholder="property" value="{$property?:''}" name="healthProperty" id="descriptionPicker">
                             </td>
-                            <td  bgcolor="#CCFFFF" style="width:100px; text-align: center;">Property</td>
-                            <td bgcolor="#CCFFFF"></td>
-                            <td bgcolor="#CCFFFF"></td>
+                            <td  bgcolor="#FFE6CC" style="width:100px; text-align: center;">Property</td>
+                            <td bgcolor="#FFE6CC"></td>
+                            <td bgcolor="#FFE6CC"></td>
                             <td style="width:100px;" bgcolor="#D7D7DF"></td>
                             <td style="width:100px;" bgcolor="#C7C7CF"></td>
                             <td style="width:100px;" bgcolor="#B7B7BF"></td>
@@ -253,11 +253,12 @@
                             <td style="width:100px;" bgcolor="#92A9BF"></td>
                             <td style="width:100px;" bgcolor="#A2B9CF"></td>
                             <td style="width:100px;" bgcolor="#B2C9DF"></td>
+                            <td style="width:100px;" bgcolor="#C2D9EF"></td>
                             <td style="width:100px;" bgcolor="#D2E9FF"></td>
                             <td bgcolor="#E6F3FF">
                                 <input type="text" autocomplete="off" role="combobox" style="width:350px; padding-left:10px;"
-                                   placeholder="value" value="{$value?:''}" name="value" class="form-control">
-                                <input class="form-control" type="checkbox" name="overridden" value="true" {if $overridden}checked="checked"{/if}>overridden</input>
+                                   placeholder="value" value="{$value?:''}" name="value">
+                                <input type="checkbox" name="overridden" value="true" {if $overridden}checked="checked"{/if}>overridden</input>
                             </td>
                             <td style="width:100px; text-align: center;">Value</td>
                             <td bgcolor="#F0F0F5"></td>
@@ -279,7 +280,7 @@
                  
                             {if $properties}
                                 {foreach $p in $properties}
-                                    <tr style="background-color:#FFFFE0;">
+                                    <tr style="background-color:#{$p.color:?FFFFFF};">
                                         <td colspan="15">
                                             <h8>{$p.property}</h8>
                                         </td>
