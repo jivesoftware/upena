@@ -49,7 +49,11 @@
                             <td style="width:15px;"></td>
                             <td style="width:15px;"></td>
                             <td style="width:15px;"></td>
+                            <td style="width:15px;"></td>
+                            <td style="width:15px;"></td>
                             <td style="width:100px; text-align: center;">Cluster</td>
+                            <td style="width:15px;"></td>
+                            <td style="width:15px;"></td>
                             <td style="width:15px;"></td>
                             <td style="width:15px;"></td>
                             <td style="width:15px;"></td>
@@ -82,7 +86,11 @@
                             <td style="width:15px;"></td>
                             <td style="width:15px;"></td>
                             <td style="width:15px;"></td>
+                            <td style="width:15px;"></td>
+                            <td style="width:15px;"></td>
                             <td style="width:100px; text-align: center;">Host</td>
+                            <td style="width:15px;"></td>
+                            <td style="width:15px;"></td>
                             <td style="width:15px;"></td>
                             <td style="width:15px;"></td>
                             <td style="width:15px;"></td>
@@ -115,7 +123,11 @@
                             </td>
                             <td style="width:15px;"></td>
                             <td style="width:15px;"></td>
+                            <td style="width:15px;"></td>
+                            <td style="width:15px;"></td>
                             <td style="width:100px; text-align: center;">Service</td>
+                            <td style="width:15px;"></td>
+                            <td style="width:15px;"></td>
                             <td style="width:15px;"></td>
                             <td style="width:15px;"></td>
                             <td bgcolor="#B7B7BF">
@@ -146,7 +158,11 @@
                                 </div>
                             </td>
                             <td style="width:15px;"></td>
+                            <td style="width:15px;"></td>
+                            <td style="width:15px;"></td>
                             <td style="width:100px; text-align: center;">Instance</td>
+                            <td style="width:15px;"></td>
+                            <td style="width:15px;"></td>
                             <td style="width:15px;"></td>
                             <td bgcolor="#C7C7CF">
                                 <div class="input-group">
@@ -177,7 +193,11 @@
                                     <input type="hidden" name="aReleaseKey" value="{$aFilters.releaseKey}" />
                                 </div>
                             </td>
+                            <td style="width:15px;"></td>
+                            <td style="width:15px;"></td>
                             <td style="width:100px; text-align: center;">Version</td>
+                            <td style="width:15px;"></td>
+                            <td style="width:15px;"></td>
                             <td bgcolor="#D7D7DF">
                                 <div class="input-group">
                                     <div class="input-group-addon" id="basic-addon1">
@@ -198,19 +218,17 @@
                             <td style="width:15px;"></td>
                             <td style="width:15px;"></td>
                             <td style="width:15px;"></td>
+                            <td style="width:15px;"></td>
+                            <td style="width:15px;"></td>
                             <td>
-                                <div stye="display: inline-block">
-                                    <label>service</label>
-                                    <input class="form-control" type="checkbox" name="service" value="true" {if $service}checked="checked"{/if}>
-                                </label>
+                                <input class="form-control" type="checkbox" name="service" value="true" {if $service}checked="checked"{/if}>service</input>
                             </td>
                             <td>
-                                <div stye="display: inline-block">
-                                    <label>health</label>
-                                    <input class="form-control" type="checkbox" name="health" value="true" {if $health}checked="checked"{/if}>
-                                </div>
+                                <input class="form-control" type="checkbox" name="health" value="true" {if $health}checked="checked"{/if}>health</input>
                             </td>
                             <td style="width:100px; text-align: center;">Type</td>
+                            <td style="width:15px;"></td>
+                            <td style="width:15px;"></td>
                             <td style="width:15px;"></td>
                             <td style="width:15px;"></td>
                             <td style="width:15px;"></td>
@@ -220,6 +238,8 @@
                         <tr>
                             <td bgcolor="#FFFFE0" style="width:15px;"></td>
                             <td bgcolor="#FFFFE0" style="width:15px;"></td>
+                            <td style="width:15px;"></td>
+                            <td style="width:15px;"></td>
                             <td colspan="3" bgcolor="#FFFFE0">
                                 <div stye="display: inline-block">
                                     <label>Filter Property:</label>
@@ -233,16 +253,17 @@
                             <td style="width:15px;"></td>
                             <td style="width:15px;"></td>
                             <td style="width:15px;"></td>
+                            <td style="width:15px;"></td>
+                            <td style="width:15px;"></td>
                         </tr>
                         <tr>
-                            <td bgcolor="#FFFFE0">
-                                <div stye="display: inline-block">
-                                    <label>overridden</label>
-                                    <input class="form-control" type="checkbox" name="overridden" value="true" {if $overridden}checked="checked"{/if}>
-                                </div>
+                            <td">
+                                <input class="form-control" type="checkbox" name="overridden" value="true" {if $overridden}checked="checked"{/if}>overridden</input>
                             </td>
                             <td style="width:15px;"></td>
-                            <td colspan="3" bgcolor="#FFFFE0">
+                            <td style="width:15px;"></td>
+                            <td style="width:15px;"></td>
+                            <td colspan="3" bgcolor="#D2E9FF">
                                 <div stye="display: inline-block">
                                     <label>Filter Value:</label>
                                     <input type="text" autocomplete="off" role="combobox" style="width:350px; padding-left:10px;"
@@ -255,9 +276,11 @@
                             <td style="width:15px;"></td>
                             <td style="width:15px;"></td>
                             <td style="width:15px;"></td>
+                            <td style="width:15px;"></td>
+                            <td style="width:15px;"></td>
                         </tr>
                         <tr>
-                            <td colspan="12">
+                            <td colspan="16">
                                 <input type="submit" name="action" value="Refresh" class="form-control btn btn-primary ladda-button"  data-spinner-color="#222" data-style="expand-right"/>
                             </td>
                             <td colspan="1">
@@ -268,7 +291,7 @@
                             {if $properties}
                                 {foreach $p in $properties}
                                     <tr style="background-color:#FFFFE0;">
-                                        <td colspan="13">
+                                        <td colspan="17">
                                             <h8>{$p.property}</h8>
                                         </td>
                                     </tr>
