@@ -236,8 +236,8 @@
                             <td style="width:15px;"></td>
                         </tr>
                         <tr>
-                            <td bgcolor="#FFFFE0" style="width:15px;"></td>
-                            <td bgcolor="#FFFFE0" style="width:15px;"></td>
+                            <td style="width:15px;"></td>
+                            <td style="width:15px;"></td>
                             <td style="width:15px;"></td>
                             <td style="width:15px;"></td>
                             <td colspan="3" bgcolor="#FFFFE0">
@@ -280,7 +280,7 @@
                             <td style="width:15px;"></td>
                         </tr>
                         <tr>
-                            <td colspan="16">
+                            <td colspan="14">
                                 <input type="submit" name="action" value="Refresh" class="form-control btn btn-primary ladda-button"  data-spinner-color="#222" data-style="expand-right"/>
                             </td>
                             <td colspan="1">
@@ -291,7 +291,7 @@
                             {if $properties}
                                 {foreach $p in $properties}
                                     <tr style="background-color:#FFFFE0;">
-                                        <td colspan="17">
+                                        <td colspan="15">
                                             <h8>{$p.property}</h8>
                                         </td>
                                     </tr>
@@ -301,6 +301,7 @@
                                             <td bgcolor="#92A9BF"><div style="max-width: 100px; word-wrap:break-word;">{$h.ahost?:''}</div></td>
                                             <td bgcolor="#A2B9CF"><div style="max-width: 100px; word-wrap:break-word;">{$h.aservice?:''}</div></td>
                                             <td bgcolor="#B2C9DF"><div style="max-width: 100px; word-wrap:break-word;">{$h.ainstance?:''}</div></td>
+                                            <td bgcolor="#C2D9EF"></td>
                                             <td bgcolor="#C2D9EF"><div style="max-width: 100px; word-wrap:break-word;">{$h.adefault?:''}</div></td>
                                             <td bgcolor="#D2E9FF">
                                                 {if ($h.acluster != null or $h.ahost != null or $h.aservice != null or $h.ainstance != null)}
@@ -332,6 +333,7 @@
                                                 {/if}
                                             </td>
                                             <td bgcolor="#D7D7DF"><div style="max-width: 100px; word-wrap:break-word;">{$h.bdefault?:''}</div></td>
+                                            <td bgcolor="#C7C7CF"></td>
                                             <td bgcolor="#C7C7CF"><div style="max-width: 100px; word-wrap:break-word;">{$h.binstance?:''}</div></td>
                                             <td bgcolor="#B7B7BF"><div style="max-width: 100px; word-wrap:break-word;">{$h.bservice?:''}</div></td>
                                             <td bgcolor="#A7A7AF"><div style="max-width: 100px; word-wrap:break-word;">{$h.bhost?:''}</div></td>
