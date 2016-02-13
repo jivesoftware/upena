@@ -257,13 +257,13 @@
                             <td style="width:15px;"></td>
                         </tr>
                         <tr>
-                            <td">
+                            <td style="width:15px;"></td>
+                            <td style="width:15px;"></td>
+                            <td style="width:15px;"></td>
+                            <td>
                                 <input class="form-control" type="checkbox" name="overridden" value="true" {if $overridden}checked="checked"{/if}>overridden</input>
                             </td>
-                            <td style="width:15px;"></td>
-                            <td style="width:15px;"></td>
-                            <td style="width:15px;"></td>
-                            <td colspan="3" bgcolor="#D2E9FF">
+                            <td colspan="3" bgcolor="#E6F3FF">
                                 <div stye="display: inline-block">
                                     <label>Filter Value:</label>
                                     <input type="text" autocomplete="off" role="combobox" style="width:350px; padding-left:10px;"
@@ -302,8 +302,8 @@
                                             <td bgcolor="#A2B9CF"><div style="max-width: 100px; word-wrap:break-word;">{$h.aservice?:''}</div></td>
                                             <td bgcolor="#B2C9DF"><div style="max-width: 100px; word-wrap:break-word;">{$h.ainstance?:''}</div></td>
                                             <td bgcolor="#C2D9EF"></td>
-                                            <td bgcolor="#C2D9EF"><div style="max-width: 100px; word-wrap:break-word;">{$h.adefault?:''}</div></td>
-                                            <td bgcolor="#D2E9FF">
+                                            <td bgcolor="#D2E9FF"><div style="max-width: 100px; word-wrap:break-word;">{$h.adefault?:''}</div></td>
+                                            <td bgcolor="#E6F3FF">
                                                 {if ($h.acluster != null or $h.ahost != null or $h.aservice != null or $h.ainstance != null)}
                                                     <input type="text" style="width:100%; padding-left:10px;"
                                                         placeholder="override" value="{$h.aoverride?:''}" name="override" class="upena-cfg-field-a"
@@ -325,15 +325,15 @@
                                                     </button>
                                                 {/if}
                                             </td>
-                                            <td bgcolor="#E7E7EF">
+                                            <td bgcolor="#F0F0F5">
                                                 {if $h.boverride != null}
                                                     <input type="text" style="width:100%; padding-left:10px;"
                                                         placeholder="override" value="{$h.boverride?:''}" name="override" class="upena-cfg-field-b"
                                                         data-upena-cfg-prop="{$p.property}" data-upena-cfg-copy="{$p.property}:{index($h)}">
                                                 {/if}
                                             </td>
-                                            <td bgcolor="#D7D7DF"><div style="max-width: 100px; word-wrap:break-word;">{$h.bdefault?:''}</div></td>
-                                            <td bgcolor="#C7C7CF"></td>
+                                            <td bgcolor="#E7E7EF"><div style="max-width: 100px; word-wrap:break-word;">{$h.bdefault?:''}</div></td>
+                                            <td bgcolor="#D7D7DF"></td>
                                             <td bgcolor="#C7C7CF"><div style="max-width: 100px; word-wrap:break-word;">{$h.binstance?:''}</div></td>
                                             <td bgcolor="#B7B7BF"><div style="max-width: 100px; word-wrap:break-word;">{$h.bservice?:''}</div></td>
                                             <td bgcolor="#A7A7AF"><div style="max-width: 100px; word-wrap:break-word;">{$h.bhost?:''}</div></td>
