@@ -195,62 +195,66 @@
                             <td style="width:15px;"></td>
                         </tr>
                         <tr>
+                            <td style="width:15px;"></td>
+                            <td style="width:15px;"></td>
+                            <td style="width:15px;"></td>
                             <td>
-                                <input type="text" style="width:300px; padding-left:10px;"
-                                placeholder="Host" value="{$aRemoteConfigHost?:''}" name="aRemoteConfigHost" id="aRemoteHostPicker" >
-                                <input type="text"  style="padding-left:10px;"
-                                placeholder="Port" value="{$aRemoteConfigPort?:''}" name="aRemoteConfigPort" id="aRemotePortPicker" >
-                            </td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td>
-                                <input type="text" style="width:300px; padding-left:10px;"
-                                placeholder="Host" value="{$bRemoteConfigHost?:''}" name="bRemoteConfigHost" id="bRemoteHostPicker" >
-                                <input type="text"  style="padding-left:10px;"
-                                placeholder="Port" value="{$bRemoteConfigPort?:''}" name="bRemoteConfigPort" id="bRemotePortPicker" >
-                            </td>
-                        </tr>
-               
-                        <tr stye="background-color:#FFFFE0;">
-                            <td bgcolor="#FFFFE0">
                                 <div stye="display: inline-block">
                                     <label>service</label>
                                     <input class="form-control" type="checkbox" name="service" value="true" {if $service}checked="checked"{/if}>
                                 </label>
                             </td>
-                            <td bgcolor="#FFFFE0">
+                            <td>
                                 <div stye="display: inline-block">
                                     <label>health</label>
                                     <input class="form-control" type="checkbox" name="health" value="true" {if $health}checked="checked"{/if}>
                                 </div>
                             </td>
-                            <td bgcolor="#FFFFE0"> 
+                            <td style="width:100px; text-align: center;">Type</td>
+                            <td style="width:15px;"></td>
+                            <td style="width:15px;"></td>
+                            <td style="width:15px;"></td>
+                            <td style="width:15px;"></td>
+                            <td style="width:15px;"></td>
+                        </tr>
+                        <tr>
+                            <td bgcolor="#FFFFE0" style="width:15px;"></td>
+                            <td bgcolor="#FFFFE0" style="width:15px;"></td>
+                            <td colspan="3" bgcolor="#FFFFE0">
                                 <div stye="display: inline-block">
                                     <label>Filter Property:</label>
                                     <input type="text" autocomplete="off" role="combobox" style="width:350px; padding-left:10px;"
                                        placeholder="property" value="{$property?:''}" name="property" id="descriptionPicker" class="form-control">
                                 </div>
                             </td>
-                            <td bgcolor="#FFFFE0">
-                                <div stye="display: inline-block">
-                                    <label>Filter Value:</label>
-                                    <input type="text" autocomplete="off" role="combobox" style="width:350px; padding-left:10px;"
-                                       placeholder="value" value="{$value?:''}" name="value" class="form-control">
-                                </div>
-                            </td>
+                            <td style="width:100px; text-align: center;">Property</td>
+                            <td style="width:15px;"></td>
+                            <td style="width:15px;"></td>
+                            <td style="width:15px;"></td>
+                            <td style="width:15px;"></td>
+                            <td style="width:15px;"></td>
+                        </tr>
+                        <tr>
                             <td bgcolor="#FFFFE0">
                                 <div stye="display: inline-block">
                                     <label>overridden</label>
                                     <input class="form-control" type="checkbox" name="overridden" value="true" {if $overridden}checked="checked"{/if}>
                                 </div>
                             </td>
+                            <td style="width:15px;"></td>
+                            <td colspan="3" bgcolor="#FFFFE0">
+                                <div stye="display: inline-block">
+                                    <label>Filter Value:</label>
+                                    <input type="text" autocomplete="off" role="combobox" style="width:350px; padding-left:10px;"
+                                       placeholder="value" value="{$value?:''}" name="value" class="form-control">
+                                </div>
+                            </td>
+                            <td style="width:100px; text-align: center;">Value</td>
+                            <td style="width:15px;"></td>
+                            <td style="width:15px;"></td>
+                            <td style="width:15px;"></td>
+                            <td style="width:15px;"></td>
+                            <td style="width:15px;"></td>
                         </tr>
                         <tr>
                             <td colspan="12">
@@ -315,6 +319,33 @@
                             {/if}
                         </tbody>
                      </table>
+
+                    <table class="table table-condensed">
+                        <tbody>
+                            <tr>
+                                <td colspan="5">Advanced: </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <input type="text" style="width:300px; padding-left:10px;"
+                                    placeholder="Host" value="{$aRemoteConfigHost?:''}" name="aRemoteConfigHost" id="aRemoteHostPicker" >
+                                </td>
+                                <td>
+                                    <input type="text"  style="padding-left:10px;"
+                                        placeholder="Port" value="{$aRemoteConfigPort?:''}" name="aRemoteConfigPort" id="aRemotePortPicker" >
+                                </td>
+                                <td>-</td>
+                                <td>
+                                    <input type="text" style="width:300px; padding-left:10px;"
+                                        placeholder="Host" value="{$bRemoteConfigHost?:''}" name="bRemoteConfigHost" id="bRemoteHostPicker" >
+                                </td>
+                                <td>
+                                    <input type="text"  style="padding-left:10px;"
+                                        placeholder="Port" value="{$bRemoteConfigPort?:''}" name="bRemoteConfigPort" id="bRemotePortPicker" >
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                  </form>
             <div class="btn-group" role="group" aria-label="...">
                 <button style="float:left" title="Export" type="submit" name="action" value="export" type="button" class="btn btn-default btn-xs">Export All Overriden Config</button>
