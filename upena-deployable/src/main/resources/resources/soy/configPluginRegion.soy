@@ -210,15 +210,16 @@
                             <td style="width:100px;" bgcolor="#A2B9CF"></td>
                             <td style="width:100px;" bgcolor="#B2C9DF"></td>
                             <td style="width:100px;" bgcolor="#C2D9EF"></td>
-                            <td>
+                            <td bgcolor="#FFFFE0">
                                 <input class="form-control" type="checkbox" name="service" value="true" {if $service}checked="checked"{/if}>service</input>
                             </td>
-                            <td>
-                                <input class="form-control" type="checkbox" name="health" value="true" {if $health}checked="checked"{/if}>health</input>
+                            <td bgcolor="#FFFFE0">
+                                <input type="text" autocomplete="off" role="combobox" style="width:350px; padding-left:10px;"
+                                   placeholder="property" value="{$property?:''}" name="property" id="descriptionPicker" class="form-control">
                             </td>
-                            <td style="width:100px; text-align: center;">Type</td>
-                            <td bgcolor="#F0F0F5"></td>
-                            <td bgcolor="#E7E7EF"></td>
+                            <td  bgcolor="#FFFFE0" style="width:100px; text-align: center;">Property</td>
+                            <td bgcolor="#FFFFE0"></td>
+                            <td bgcolor="#FFFFE0"></td>
                             <td style="width:100px;" bgcolor="#D7D7DF"></td>
                             <td style="width:100px;" bgcolor="#C7C7CF"></td>
                             <td style="width:100px;" bgcolor="#B7B7BF"></td>
@@ -231,14 +232,16 @@
                             <td style="width:100px;" bgcolor="#A2B9CF"></td>
                             <td style="width:100px;" bgcolor="#B2C9DF"></td>
                             <td style="width:100px;" bgcolor="#C2D9EF"></td>
-                            <td style="width:100px;" bgcolor="#FFFFE0"></td>
-                            <td bgcolor="#FFFFE0">
-                                <input type="text" autocomplete="off" role="combobox" style="width:350px; padding-left:10px;"
-                                   placeholder="property" value="{$property?:''}" name="property" id="descriptionPicker" class="form-control">
+                            <td bgcolor="#CCFFFF">
+                                <input class="form-control" type="checkbox" name="health" value="true" {if $health}checked="checked"{/if}>health</input>
                             </td>
-                            <td  bgcolor="#FFFFE0" style="width:100px; text-align: center;">Property</td>
-                            <td bgcolor="#FFFFE0"></td>
-                            <td bgcolor="#FFFFE0"></td>
+                            <td bgcolor="#CCFFFF">
+                                <input type="text" autocomplete="off" role="combobox" style="width:350px; padding-left:10px;"
+                                   placeholder="property" value="{$property?:''}" name="healthProperty" id="descriptionPicker" class="form-control">
+                            </td>
+                            <td  bgcolor="#CCFFFF" style="width:100px; text-align: center;">Property</td>
+                            <td bgcolor="#CCFFFF"></td>
+                            <td bgcolor="#CCFFFF"></td>
                             <td style="width:100px;" bgcolor="#D7D7DF"></td>
                             <td style="width:100px;" bgcolor="#C7C7CF"></td>
                             <td style="width:100px;" bgcolor="#B7B7BF"></td>
