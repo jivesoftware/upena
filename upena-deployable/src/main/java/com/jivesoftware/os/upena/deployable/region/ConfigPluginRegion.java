@@ -294,6 +294,7 @@ public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
         final String bRelease;
 
         final String property;
+        final String healthProperty;
         final String value;
         final boolean overridden;
         final boolean service;
@@ -313,6 +314,7 @@ public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
             String bClusterKey, String bCluster, String bHostKey, String bHost, String bServiceKey, String bService,
             String bInstance, String bReleaseKey, String bRelease,
             String property,
+            String healthProperty,
             String value,
             boolean overridden,
             boolean service,
@@ -342,6 +344,7 @@ public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
             this.bReleaseKey = bReleaseKey;
             this.bRelease = bRelease;
             this.property = property;
+            this.healthProperty = healthProperty;
             this.value = value;
             this.overridden = overridden;
             this.service = service;
@@ -389,6 +392,7 @@ public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
             data.put("bFilters", bFilters);
 
             data.put("property", input.property);
+            data.put("healthProperty", input.healthProperty);
             data.put("value", input.value);
             data.put("overridden", input.overridden);
             data.put("service", input.service);
@@ -408,6 +412,7 @@ public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
                 input.aInstance,
                 input.aReleaseKey,
                 input.property,
+                input.healthProperty,
                 input.value,
                 input.overridden,
                 input.service,
@@ -431,14 +436,15 @@ public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
                 }
 
                 as = packProperties(input.aRemoteConfigHost, input.aRemoteConfigPort, input.aClusterKey,
-                    input.aHostKey, input.aServiceKey, input.aInstance, input.aReleaseKey, input.property, input.value,
+                    input.aHostKey, input.aServiceKey, input.aInstance, input.aReleaseKey, input.property,
+                    input.healthProperty, input.value,
                     input.overridden, input.service, input.health);
             }
 
             ConcurrentSkipListMap<String, List<Map<String, String>>> bs = packProperties(
                 input.bRemoteConfigHost, input.bRemoteConfigPort,
                 input.bClusterKey,
-                input.bHostKey, input.bServiceKey, input.bInstance, input.bReleaseKey, input.property, input.value,
+                input.bHostKey, input.bServiceKey, input.bInstance, input.bReleaseKey, input.property, input.healthProperty, input.value,
                 input.overridden, input.service, input.health);
 
             Set<String> allProperties = Collections.newSetFromMap(new ConcurrentSkipListMap<String, Boolean>());
@@ -520,6 +526,7 @@ public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
         String instance,
         String releaseKey,
         String propertyContains,
+        String healthPropertyContains,
         String valueContains,
         boolean overridden,
         boolean service,
@@ -570,7 +577,7 @@ public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
                         filterProperties(requestHelper, key, i, properties,
                             gotDefault != null ? gotDefault.properties : Collections.emptyMap(),
                             gotOverride != null ? gotOverride.properties : Collections.emptyMap(),
-                            propertyContains, valueContains, health, overridden);
+                            health ? healthPropertyContains : propertyContains, valueContains, health, overridden);
                     }
 
                     if (health) {
@@ -582,7 +589,7 @@ public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
                         filterProperties(requestHelper, key, i, properties,
                             gotDefault != null ? gotDefault.properties : Collections.emptyMap(),
                             gotOverride != null ? gotOverride.properties : Collections.emptyMap(),
-                            propertyContains, valueContains, health, overridden);
+                            health ? healthPropertyContains : propertyContains, valueContains, health, overridden);
                     }
                 } else {
 
@@ -590,13 +597,13 @@ public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
                         Map<String, String> defaultServiceMaps = configStore.get(key.getKey(), "default", null);
                         Map<String, String> overriddenServiceMap = configStore.get(key.getKey(), "override", null);
 
-                        filterProperties(null, key, i, properties, defaultServiceMaps, overriddenServiceMap, propertyContains,
+                        filterProperties(null, key, i, properties, defaultServiceMaps, overriddenServiceMap, health ? healthPropertyContains : propertyContains,
                             valueContains, health, overridden);
                     }
                     if (health) {
                         Map<String, String> defaultHealthMaps = configStore.get(key.getKey(), "default-health", null);
                         Map<String, String> overriddenHealtheMap = configStore.get(key.getKey(), "override-health", null);
-                        filterProperties(null, key, i, properties, defaultHealthMaps, overriddenHealtheMap, propertyContains,
+                        filterProperties(null, key, i, properties, defaultHealthMaps, overriddenHealtheMap, health ? healthPropertyContains : propertyContains,
                             valueContains, health, overridden);
                     }
                 }

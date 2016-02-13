@@ -46,7 +46,7 @@ public class ConfigPluginEndpoints {
     @Produces(MediaType.TEXT_HTML)
     public Response services(@Context HttpServletRequest httpRequest) {
         String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-            new ConfigPluginRegionInput("", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", false, true, false,
+            new ConfigPluginRegionInput("", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", false, true, false,
                     "", -1, "", -1, ""));
         return Response.ok(rendered).build();
     }
@@ -74,9 +74,10 @@ public class ConfigPluginEndpoints {
         @FormParam("bReleaseKey") @DefaultValue("") String bReleaseKey,
         @FormParam("bRelease") @DefaultValue("") String bRelease,
         @FormParam("property") @DefaultValue("") String property,
+        @FormParam("healthProperty") @DefaultValue("") String healthProperty,
         @FormParam("value") @DefaultValue("") String value,
         @FormParam("overridden") @DefaultValue("false") boolean overridden,
-        @FormParam("service") @DefaultValue("true") boolean service,
+        @FormParam("service") @DefaultValue("false") boolean service,
         @FormParam("health") @DefaultValue("false") boolean health,
         @FormParam("aRemoteConfigHost") @DefaultValue("") String aRemoteConfigHost,
         @FormParam("aRemoteConfigPort") @DefaultValue("-1") int aRemoteConfigPort,
@@ -87,7 +88,7 @@ public class ConfigPluginEndpoints {
         ConfigPluginRegionInput configPluginRegionInput = new ConfigPluginRegionInput(
             aClusterKey, aCluster, aHostKey, aHost, aServiceKey, aService, aInstance, aReleaseKey, aRelease, bClusterKey,
             bCluster, bHostKey, bHost, bServiceKey, bService, bInstance, bReleaseKey, bRelease,
-            property, value, overridden, service, health, aRemoteConfigHost, aRemoteConfigPort, bRemoteConfigHost, bRemoteConfigPort, action);
+            property, healthProperty, value, overridden, service, health, aRemoteConfigHost, aRemoteConfigPort, bRemoteConfigHost, bRemoteConfigPort, action);
         if (action.equals("export")) {
             String export = pluginRegion.export(configPluginRegionInput);
             return Response.ok(export, MediaType.TEXT_PLAIN_TYPE).build();

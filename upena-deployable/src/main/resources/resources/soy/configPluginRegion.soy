@@ -12,6 +12,7 @@
  * @param? service
  * @param? health
  * @param? property
+ * @param? healthProperty
  * @param? value
  * @param? properties
  */
@@ -237,7 +238,7 @@
                             </td>
                             <td bgcolor="#FFE6CC">
                                 <input type="text" autocomplete="off" role="combobox" style="width:350px; padding-left:10px;"
-                                   placeholder="property" value="{$property?:''}" name="healthProperty" id="descriptionPicker">
+                                   placeholder="healthProperty" value="{$healthProperty?:''}" name="healthProperty" id="descriptionPicker">
                             </td>
                             <td  bgcolor="#FFE6CC" style="width:100px; text-align: center;">Property</td>
                             <td bgcolor="#FFE6CC"></td>
@@ -338,22 +339,26 @@
                     <table class="table table-condensed">
                         <tbody>
                             <tr>
-                                <td colspan="5">Advanced: </td>
+                                <td colspan="5">Advanced: Compare configs across clusters by providing remote upena host and port.</td>
                             </tr>
                             <tr>
+                                <td>Alternate left hand remote upena host:</td>
                                 <td>
                                     <input type="text" style="width:300px; padding-left:10px;"
                                     placeholder="Host" value="{$aRemoteConfigHost?:''}" name="aRemoteConfigHost" id="aRemoteHostPicker" >
                                 </td>
+                                <td>port:</td>
                                 <td>
                                     <input type="text"  style="padding-left:10px;"
                                         placeholder="Port" value="{$aRemoteConfigPort?:''}" name="aRemoteConfigPort" id="aRemotePortPicker" >
                                 </td>
                                 <td>-</td>
+                                <td>Alternate right hand remote upena host:</td>
                                 <td>
                                     <input type="text" style="width:300px; padding-left:10px;"
                                         placeholder="Host" value="{$bRemoteConfigHost?:''}" name="bRemoteConfigHost" id="bRemoteHostPicker" >
                                 </td>
+                                <td>port:</td>
                                 <td>
                                     <input type="text"  style="padding-left:10px;"
                                         placeholder="Port" value="{$bRemoteConfigPort?:''}" name="bRemoteConfigPort" id="bRemotePortPicker" >
