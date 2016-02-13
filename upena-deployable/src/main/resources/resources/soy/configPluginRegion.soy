@@ -280,9 +280,9 @@
                  
                             {if $properties}
                                 {foreach $p in $properties}
-                                    <tr style="background-color:#{$p.color:?FFFFFF};">
+                                    <tr style="background-color:#{$p.color?:FFFFFF};">
                                         <td colspan="15">
-                                            <h8>{$p.property}</h8>
+                                            <h6>{$p.property}</h6>
                                         </td>
                                     </tr>
                                     {foreach $h in $p.has}
