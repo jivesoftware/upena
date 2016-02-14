@@ -75,7 +75,7 @@ class CheckForLatestRelease {
             String packaging = versionParts[2];
             String version = versionParts[3];
 
-            Artifact artifact = new DefaultArtifact(groupId + ":" + artifactId + ":" + packaging + "[" + version + ",)");
+            Artifact artifact = new DefaultArtifact(groupId + ":" + artifactId + ":" + packaging + ":[" + version + ",)");
 
             VersionRangeRequest rangeRequest = new VersionRangeRequest();
             rangeRequest.setArtifact(artifact);
@@ -89,9 +89,9 @@ class CheckForLatestRelease {
             }
 
             if (versions.size() > 1) {
-                return versions.get(versions.size() - 1).toString();
+                return groupId + ":" + artifactId + ":" + packaging + ":" + versions.get(versions.size() - 1).toString();
             } else {
-                return version;
+                return groupId + ":" + artifactId + ":" + packaging + ":" + version;
             }
 
             /*
