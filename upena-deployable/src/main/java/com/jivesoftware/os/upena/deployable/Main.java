@@ -86,6 +86,7 @@ import com.jivesoftware.os.upena.deployable.region.HomeRegion;
 import com.jivesoftware.os.upena.deployable.region.HostsPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.InstancesPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ManagePlugin;
+import com.jivesoftware.os.upena.deployable.region.MenuRegion;
 import com.jivesoftware.os.upena.deployable.region.ModulesPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ProfilerPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ReleasesPluginRegion;
@@ -369,6 +370,7 @@ public class Main {
         SoyRenderer renderer = new SoyRenderer(tofu, new SoyDataUtils());
         SoyService soyService = new SoyService(renderer,
             new HeaderRegion("soy.chrome.headerRegion", renderer),
+            new MenuRegion("soy.chrome.menuRegion", renderer),
             new HomeRegion("soy.page.homeRegion", renderer),
             clusterName,
             hostKey,

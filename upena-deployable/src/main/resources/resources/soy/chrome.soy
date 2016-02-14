@@ -2,7 +2,7 @@
 
 /**
  * @param title
- * @param header
+ * @param menu
  * @param region
  */
 {template .chromeRegion}
@@ -28,9 +28,13 @@
         <script src="/static/vendor/float-table-head/dist/jquery.floatThead.min.js"></script>
         <link href="/static/img/favicon.ico" rel="shortcut icon" type="image/x-icon" />
         <link rel="stylesheet" href="/static/vendor/ladda-bootstrap/dist/ladda-themeless.min.css">
+        <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/jasny-bootstrap/3.1.3/css/jasny-bootstrap.min.css">
+        <script src="//cdnjs.cloudflare.com/ajax/libs/jasny-bootstrap/3.1.3/js/jasny-bootstrap.min.js"></script>
 	</head>
 	<body style="padding-top: 50px;">
-        {$header|noAutoescape}
+        //{$header|noAutoescape}
+        {$menu|noAutoescape}
+        
         
         <div class="container">
             <div class="row">
@@ -135,6 +139,67 @@
             </div>
         </div>
     </nav>
+{/template}
+
+
+/**
+ *
+ * @param cluster
+ * @param instance
+ * @param total
+ * @param instances
+ * @param plugins
+ */
+{template .menuRegion}
+    <div class="navmenu navmenu-default navmenu-fixed-left offcanvas-sm">
+      <a class="navmenu-brand visible-lg" href="/"><span><img src="/static/img/icon.png" alt="Upena"  height="24"></span></a>
+      <ul class="nav navmenu-nav">
+         <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                &nbsp&nbsp{$cluster}&nbsp&nbsp
+                {$instance}/{$total}&nbsp
+                <b class="caret"></b></a>
+            <ul class="dropdown-menu">
+                {foreach $i in $instances}
+                    <li><a href="http://{$i.host}:{$i.port}{$i.path}">{$i.name}</a></li>
+                {/foreach}
+            </ul>
+        </li>
+         {foreach $plugin in $plugins}
+            {if $plugin.active}
+                <li class="active" role="presentation">
+                    <a class="ladda-button" data-spinner-color="#222" data-style="expand-right" href="{$plugin.path}">
+                        {if $plugin.icon}
+                            <span class="ladda-label"><img src="/static/img/{$plugin.icon}.png" alt="Release" style="width:20px;height:20px;">&nbsp;{$plugin.name}</span>
+                        {else}
+                            <span class="ladda-label glyphicon glyphicon-{$plugin.glyphicon}"></span>&nbsp;{$plugin.name}
+                        {/if}
+                    </a>
+                </li>
+            {else}
+                <li role="presentation">
+                    <a style="border-radius: 10px 10px 0 0;" class="ladda-button"  data-spinner-color="#222" data-style="expand-right" href="{$plugin.path}">
+                        {if $plugin.icon}
+                            <span class="ladda-label"><img src="/static/img/{$plugin.icon}.png" alt="Release" style="width:20px;height:20px;">&nbsp;{$plugin.name}</span>
+                        {else}
+                           <span class="ladda-label glyphicon glyphicon-{$plugin.glyphicon}"></span>&nbsp;{$plugin.name}
+                        {/if}
+                    </a>
+                </li>
+            {/if}
+        {/foreach}
+      </ul>
+    </div>
+
+    <div class="navbar navbar-default navbar-fixed-top hidden-lg">
+      <button type="button" class="navbar-toggle" data-toggle="offcanvas" data-target=".navmenu">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="#"><img src="/static/img/icon.png" alt="Upena"  height="24"></a>
+    </div>
+
 {/template}
 
 

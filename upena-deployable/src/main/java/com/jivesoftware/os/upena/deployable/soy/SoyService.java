@@ -5,6 +5,7 @@ import com.jivesoftware.os.upena.deployable.region.ChromeRegion;
 import com.jivesoftware.os.upena.deployable.region.HeaderRegion;
 import com.jivesoftware.os.upena.deployable.region.HomeRegion.HomeInput;
 import com.jivesoftware.os.upena.deployable.region.ManagePlugin;
+import com.jivesoftware.os.upena.deployable.region.MenuRegion;
 import com.jivesoftware.os.upena.deployable.region.PageRegion;
 import com.jivesoftware.os.upena.deployable.region.PluginInput;
 import com.jivesoftware.os.upena.service.UpenaStore;
@@ -18,6 +19,7 @@ public class SoyService {
 
     private final SoyRenderer renderer;
     private final HeaderRegion headerRegion;
+    private final MenuRegion menuRegion;
     private final PageRegion<HomeInput> homeRegion;
     private final String cluster;
     private final HostKey hostKey;
@@ -28,6 +30,7 @@ public class SoyService {
     public SoyService(
         SoyRenderer renderer,
         HeaderRegion headerRegion,
+        MenuRegion menuRegion,
         PageRegion<HomeInput> homeRegion,
         String cluster,
         HostKey hostKey,
@@ -35,6 +38,7 @@ public class SoyService {
     ) {
         this.renderer = renderer;
         this.headerRegion = headerRegion;
+        this.menuRegion = menuRegion;
         this.homeRegion = homeRegion;
         this.cluster = cluster;
         this.hostKey = hostKey;
@@ -55,6 +59,7 @@ public class SoyService {
         return new ChromeRegion<>("soy.chrome.chromeRegion",
             renderer,
             headerRegion,
+            menuRegion,
             plugins,
             region,
             cluster,
