@@ -99,7 +99,7 @@ public class UpenaConfigStore {
         String key = createTableName(instanceKey, context);
         FetchedVersion fetchedVersion = lastFetchedVersion.get(key);
         System.out.println("---------------");
-        System.out.println("*********" + fetchedVersion);
+        System.out.println("********* " + fetchedVersion+" "+key);
         System.out.println("---------------");
         if (fetchedVersion == null) {
             return Collections.emptyMap();
@@ -148,6 +148,10 @@ public class UpenaConfigStore {
             }
         }
         if (cacheFetchedVersion) {
+            System.out.println("??????????????????????");
+            System.out.println("!!!!!!!!!!!! " + key);
+            System.out.println("??????????????????????");
+
             lastFetchedVersion.put(key, new FetchedVersion(System.currentTimeMillis(), rawProperties));
         }
         return results;
