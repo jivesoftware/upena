@@ -99,6 +99,9 @@ public class UpenaConfigStore {
         String key = createTableName(instanceKey, context);
         FetchedVersion fetchedVersion = lastFetchedVersion.get(key);
         if (fetchedVersion == null) {
+            System.out.println("*****************");
+            System.out.println("***************** " + key);
+            System.out.println("*****************");
             return Collections.emptyMap();
         }
         Map<String, String> current = mapper.readValue(fetchedVersion.rawProperties, new TypeReference<HashMap<String, String>>() {
@@ -117,6 +120,10 @@ public class UpenaConfigStore {
                 changed.put(c, currentValue + " is now " + storedValue);
             }
         }
+
+        System.out.println("*****************");
+        System.out.println("***************** " + key + " (" + changed.size() + ")");
+        System.out.println("*****************");
         return changed;
 
     }
