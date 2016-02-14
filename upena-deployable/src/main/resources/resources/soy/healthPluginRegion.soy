@@ -149,7 +149,7 @@
                                                         {$health.health|noAutoescape}
                                                     </span>
                                                     <span class="health-warn glyphicon glyphicon-warning-sign icon-warn" style="display:none;"></span>
-                                                    <span class="config-warn glyphicon glyphicon-asterisk icon-warn" style="display:none;"></span>
+                                                    <span title="Config has changed since last restart" class="config-warn glyphicon glyphicon-asterisk icon-warn" style="display:none;"></span>
                                                 {/if}
                                             </div>
                                             <div id="popover-{$health.uid}" class="hide" style="background-color: rgba(255, 255, 255, 0.6);">
@@ -340,7 +340,7 @@
                                                                                 {foreach $propertyName in keys($health.healthConfigIsStale)}
                                                                                     <tr>
                                                                                         <td>{$propertyName}</td>
-                                                                                        <td>{$health.configIsStale[$propertyName]}</td>
+                                                                                        <td>{$health.healthConfigIsStale[$propertyName]}</td>
                                                                                     </tr>
                                                                                 {/foreach}
                                                                             </table>
