@@ -11,8 +11,9 @@ body {
   padding: 0 0 0 0;
 }
 
-.navmenu {
+div.navmenu {
   padding-top: 50px;
+  width: 160px;
 }
 
 .navbar {
@@ -41,10 +42,11 @@ body {
 
 @media (min-width: 992px) {
   body {
-    padding: 0 0 0 300px;
+    padding: 0 0 0 160px;
   }
   .navmenu {
     padding-top: 0;
+    width: 160px;
   }
   .navbar {
     display: none !important; /* IE8 fix */

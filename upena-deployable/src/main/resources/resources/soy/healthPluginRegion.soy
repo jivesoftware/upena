@@ -149,6 +149,7 @@
                                                         {$health.health|noAutoescape}
                                                     </span>
                                                     <span class="health-warn glyphicon glyphicon-warning-sign icon-warn" style="display:none;"></span>
+                                                    <span class="config-warn glyphicon glyphicon-asterisk icon-warn" style="display:none;"></span>
                                                 {/if}
                                             </div>
                                             <div id="popover-{$health.uid}" class="hide" style="background-color: rgba(255, 255, 255, 0.6);">
@@ -315,9 +316,37 @@
                                                                 {/if}
                                                             </div>
                                                             <div class="panel-body" style="background-color: rgba(255, 255, 255, 0.6);">
-                                                                {if $health.unexpectedRestart}
-                                                                    <div><span class="label label-warning">Was unexpectedly restarted:{$health.unexpectedRestart}</span></div>
-                                                                {/if}
+                                                                <ul>
+                                                                    {if $health.unexpectedRestart}
+                                                                        <li><span class="label label-warning">Was unexpectedly restarted:{$health.unexpectedRestart}</span></li>
+                                                                    {/if}
+                                                                    {if $health.configIsStale}
+                                                                        <li>
+                                                                            <span class="label label-warning">Config is stale</span>
+                                                                            <table class="table table-condensed  float-table-head">
+                                                                                {foreach $propertyName in keys($health.configIsStale)}
+                                                                                    <tr>
+                                                                                        <td>{$propertyName}</td>
+                                                                                        <td>{$health.configIsStale[$propertyName]}</td>
+                                                                                    </tr>
+                                                                                {/foreach}
+                                                                            </table>
+                                                                        </li>
+                                                                    {/if}
+                                                                    {if $health.healthConfigIsStale}
+                                                                        <li>
+                                                                            <span class="label label-warning">health config is stale</span>
+                                                                            <table class="table table-condensed  float-table-head">
+                                                                                {foreach $propertyName in keys($health.healthConfigIsStale)}
+                                                                                    <tr>
+                                                                                        <td>{$propertyName}</td>
+                                                                                        <td>{$health.configIsStale[$propertyName]}</td>
+                                                                                    </tr>
+                                                                                {/foreach}
+                                                                            </table>
+                                                                        </li>
+                                                                    {/if}
+                                                                </ul>
                                                                 <div style="width:1200px" class="uis" ></div>
                                                             </div>
                                                         </div>

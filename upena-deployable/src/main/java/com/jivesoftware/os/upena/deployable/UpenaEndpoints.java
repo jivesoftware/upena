@@ -30,6 +30,7 @@ import com.jivesoftware.os.routing.bird.http.client.HttpClientFactoryProvider;
 import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelper;
 import com.jivesoftware.os.routing.bird.shared.InstanceDescriptor;
 import com.jivesoftware.os.routing.bird.shared.ResponseHelper;
+import com.jivesoftware.os.upena.config.UpenaConfigStore;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
 import com.jivesoftware.os.upena.service.DiscoveredRoutes;
 import com.jivesoftware.os.upena.service.DiscoveredRoutes.RouteHealths;
@@ -41,7 +42,9 @@ import com.jivesoftware.os.upena.uba.service.Nanny;
 import com.jivesoftware.os.upena.uba.service.UbaService;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 import javax.inject.Singleton;
@@ -81,6 +84,7 @@ public class UpenaEndpoints {
 
     private final AmzaInstance amzaInstance;
     private final UpenaStore upenaStore;
+    private final UpenaConfigStore upenaConfigStore;
     private final UpenaService upenaService;
     private final UbaService ubaService;
     private final RingHost ringHost;
@@ -91,6 +95,7 @@ public class UpenaEndpoints {
     public UpenaEndpoints(@Context AmzaClusterName amzaClusterName,
         @Context AmzaInstance amzaInstance,
         @Context UpenaStore upenaStore,
+        @Context UpenaConfigStore upenaConfigStore,
         @Context UpenaService upenaService,
         @Context UbaService ubaService,
         @Context RingHost ringHost,
@@ -100,6 +105,7 @@ public class UpenaEndpoints {
         this.amzaClusterName = amzaClusterName;
         this.amzaInstance = amzaInstance;
         this.upenaStore = upenaStore;
+        this.upenaConfigStore = upenaConfigStore;
         this.upenaService = upenaService;
         this.ubaService = ubaService;
         this.ringHost = ringHost;
@@ -319,12 +325,16 @@ public class UpenaEndpoints {
                 uptime = humanReadableUptime(System.currentTimeMillis() - nanny.getValue().getStartTimeMillis());
             }
 
-            
-
             NannyHealth nannyHealth = new NannyHealth(uptime, id, log, serviceHealth);
             if (nanny.getValue().getUnexpectedRestartTimestamp() > -1) {
-               nannyHealth.unexpectedRestart = nanny.getValue().getUnexpectedRestartTimestamp();
+                nannyHealth.unexpectedRestart = nanny.getValue().getUnexpectedRestartTimestamp();
             }
+
+            Map<String, String> lastOverrideFetchedVersion = upenaConfigStore.changesSinceLastFetch(id.instanceKey, "override");
+            Map<String, String> lastOverrideHealthFetchedVersion = upenaConfigStore.changesSinceLastFetch(id.instanceKey, "override-health");
+            nannyHealth.configIsStale = lastOverrideFetchedVersion;
+            nannyHealth.healthConfigIsStale = lastOverrideHealthFetchedVersion;
+
             nannyHealth.status = n.getStatus();
             nodeHealth.nannyHealths.add(nannyHealth);
 
@@ -365,7 +375,9 @@ public class UpenaEndpoints {
         public ServiceHealth serviceHealth;
         public String status;
         public long unexpectedRestart = -1;
-
+        public Map<String,String> configIsStale = new HashMap<>();
+        public Map<String,String> healthConfigIsStale = new HashMap<>();
+        
         public NannyHealth() {
         }
 

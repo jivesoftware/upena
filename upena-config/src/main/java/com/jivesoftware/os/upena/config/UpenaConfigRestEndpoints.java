@@ -47,7 +47,7 @@ public class UpenaConfigRestEndpoints {
         try {
             LOG.debug("Attempting to get: " + config);
             upenaConfigStore.putAll(config.instanceKey, config.context, config.properties);
-            Map<String, String> got = upenaConfigStore.get(config.instanceKey, config.context, new ArrayList<>(config.properties.keySet()));
+            Map<String, String> got = upenaConfigStore.get(config.instanceKey, config.context, new ArrayList<>(config.properties.keySet()), true);
             LOG.info("Set " + got.size() + " properties");
             return ResponseHelper.INSTANCE.jsonResponse(new DeployableConfig(config.context,
                 config.instanceKey, config.instanceVersion, got));
@@ -64,7 +64,7 @@ public class UpenaConfigRestEndpoints {
         try {
             LOG.debug("Attempting to get: " + config);
             Map<String, String> got = upenaConfigStore.get(config.instanceKey, config.context,
-                new ArrayList<>(config.properties.keySet()));
+                new ArrayList<>(config.properties.keySet()), false);
             LOG.info("Got " + got.size() + " properties for " + config);
             return ResponseHelper.INSTANCE.jsonResponse(new DeployableConfig(config.context,
                 config.instanceKey, config.instanceVersion, got));
@@ -83,7 +83,7 @@ public class UpenaConfigRestEndpoints {
             upenaConfigStore.remove(config.instanceKey, config.context,
                 config.properties.keySet());
             Map<String, String> got = upenaConfigStore.get(config.instanceKey, config.context,
-                new ArrayList<>(config.properties.keySet()));
+                new ArrayList<>(config.properties.keySet()), true);
             LOG.info("Removed " + got.size() + " properties");
             return ResponseHelper.INSTANCE.jsonResponse(new DeployableConfig(config.context,
                 config.instanceKey, config.instanceVersion, got));
@@ -99,7 +99,7 @@ public class UpenaConfigRestEndpoints {
     public Response getInstanceConfig(@QueryParam("instanceKey") String instanceKey, @QueryParam("context") String context) {
         try {
             LOG.debug("Attempting to get: " + instanceKey);
-            Map<String, String> got = upenaConfigStore.get(instanceKey, context, new ArrayList<String>());
+            Map<String, String> got = upenaConfigStore.get(instanceKey, context, new ArrayList<>(), false);
             StringBuilder sb = new StringBuilder();
             for (Map.Entry<String, String> entry : got.entrySet()) {
                 String key = entry.getKey();

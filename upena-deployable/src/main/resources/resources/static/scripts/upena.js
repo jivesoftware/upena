@@ -777,6 +777,12 @@ upena.health = {
             } else {
                 upena.health.warn[id].hide();
             }
+
+            if (data[i].configIsStale || data[i].healthConfigIsStale) {
+                upena.config.warn[id].show();
+            } else {
+                upena.config.warn[id].hide();
+            }
         }
     }
 };

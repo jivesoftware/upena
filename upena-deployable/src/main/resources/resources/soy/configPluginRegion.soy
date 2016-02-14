@@ -15,6 +15,7 @@
  * @param? healthProperty
  * @param? value
  * @param? properties
+ * @param? healthProperties
  */
 {template .configPluginRegion}
     <div id="upena-cfg-pending">
@@ -51,7 +52,7 @@
                             <td style="width:100px;" bgcolor="#8299AF"></td>
                             <td bgcolor="#8299AF"></td>
                             <td bgcolor="#8299AF"></td>
-                            <td style="width:100px; text-align: center;">Cluster</td>
+                            <td bgcolor="#FFFFFF" style="width:100px; text-align: center;">Cluster</td>
                             <td bgcolor="#97979F"></td>
                             <td bgcolor="#97979F"></td>
                             <td style="width:100px;" bgcolor="#97979F"></td>
@@ -86,7 +87,7 @@
                             <td style="width:100px;" bgcolor="#92A9BF"></td>
                             <td bgcolor="#92A9BF"></td>
                             <td bgcolor="#92A9BF"></td>
-                            <td style="width:100px; text-align: center;">Host</td>
+                            <td bgcolor="#FFFFFF" style="width:100px; text-align: center;">Host</td>
                             <td bgcolor="#A7A7AF"></td>
                             <td bgcolor="#A7A7AF"></td>
                             <td style="width:100px;" bgcolor="#A7A7AF"></td>
@@ -121,7 +122,7 @@
                             <td style="width:100px;" bgcolor="#A2B9CF"></td>
                             <td bgcolor="#A2B9CF"></td>
                             <td bgcolor="#A2B9CF"></td>
-                            <td style="width:100px; text-align: center;">Service</td>
+                            <td bgcolor="#FFFFFF" style="width:100px; text-align: center;">Service</td>
                             <td bgcolor="#B7B7BF"></td>
                             <td bgcolor="#B7B7BF"></td>
                             <td style="width:100px;" bgcolor="#B7B7BF"></td>
@@ -154,7 +155,7 @@
                             </td>
                             <td bgcolor="#B2C9DF"></td>
                             <td bgcolor="#B2C9DF"></td>
-                            <td style="width:100px; text-align: center;">Instance</td>
+                            <td bgcolor="#FFFFFF" style="width:100px; text-align: center;">Instance</td>
                             <td bgcolor="#C7C7CF"></td>
                             <td bgcolor="#C7C7CF"></td>
                             <td  colspan="2" bgcolor="#C7C7CF">
@@ -187,7 +188,7 @@
                                 </div>
                             </td>
                             <td bgcolor="#C2D9EF"></td>
-                            <td style="width:100px; text-align: center;">Version</td>
+                            <td bgcolor="#FFFFFF" style="width:100px; text-align: center;">Version</td>
                             <td bgcolor="#D7D7DF"></td>
                             <td colspan="2" bgcolor="#D7D7DF">
                                 <div class="input-group">
@@ -283,7 +284,63 @@
                                 {foreach $p in $properties}
                                     <tr style="background-color:#{$p.color};">
                                         <td colspan="15">
-                                            <h6>{$p.property}</h6>
+                                            <h4>{$p.property}</h4>
+                                        </td>
+                                    </tr>
+                                    {foreach $h in $p.has}
+                                        <tr>
+                                            <td bgcolor="#8299AF"><div style="max-width: 100px; word-wrap:break-word;">{$h.acluster?:''}</div></td>
+                                            <td bgcolor="#92A9BF"><div style="max-width: 100px; word-wrap:break-word;">{$h.ahost?:''}</div></td>
+                                            <td bgcolor="#A2B9CF"><div style="max-width: 100px; word-wrap:break-word;">{$h.aservice?:''}</div></td>
+                                            <td bgcolor="#B2C9DF"><div style="max-width: 100px; word-wrap:break-word;">{$h.ainstance?:''}</div></td>
+                                            <td bgcolor="#C2D9EF"></td>
+                                            <td bgcolor="#D2E9FF"><div style="max-width: 100px; word-wrap:break-word;">{$h.adefault?:''}</div></td>
+                                            <td bgcolor="#E6F3FF">
+                                                {if ($h.acluster != null or $h.ahost != null or $h.aservice != null or $h.ainstance != null)}
+                                                    <input type="text" style="width:100%; padding-left:10px;"
+                                                        placeholder="override" value="{$h.aoverride?:''}" name="override" class="upena-cfg-field-a"
+                                                        data-upena-cfg-prop="{$p.property}" data-upena-cfg-link="{$p.property}:{index($h)}"
+                                                        data-upena-cfg-instance-key="{$h.ainstanceKey?:''}" data-upena-cfg-override="{$h.aoverride?:''}"
+                                                        data-upena-cfg-cluster="{$h.acluster?:''}" data-upena-cfg-host="{$h.ahost?:''}"
+                                                        data-upena-cfg-service="{$h.aservice?:''}" data-upena-cfg-instance="{$h.ainstance?:''}">
+                                                {/if}
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-default upena-cfg-link" data-upena-cfg-prop="{$p.property}" data-upena-cfg-link="{$p.property}:{index($h)}">
+                                                    <span class="glyphicon glyphicon-link"></span>
+                                                    &nbsp;
+                                                </button>
+                                                {if $h.boverride != null}
+                                                    <button class="btn btn-default upena-cfg-copy" data-upena-cfg-prop="{$p.property}" data-upena-cfg-copy="{$p.property}:{index($h)}">
+                                                        <span class="glyphicon glyphicon-backward"></span>
+                                                        &nbsp;
+                                                    </button>
+                                                {/if}
+                                            </td>
+                                            <td bgcolor="#F0F0F5">
+                                                {if $h.boverride != null}
+                                                    <input type="text" style="width:100%; padding-left:10px;"
+                                                        placeholder="override" value="{$h.boverride?:''}" name="override" class="upena-cfg-field-b"
+                                                        data-upena-cfg-prop="{$p.property}" data-upena-cfg-copy="{$p.property}:{index($h)}">
+                                                {/if}
+                                            </td>
+                                            <td bgcolor="#E7E7EF"><div style="max-width: 100px; word-wrap:break-word;">{$h.bdefault?:''}</div></td>
+                                            <td bgcolor="#D7D7DF"></td>
+                                            <td bgcolor="#C7C7CF"><div style="max-width: 100px; word-wrap:break-word;">{$h.binstance?:''}</div></td>
+                                            <td bgcolor="#B7B7BF"><div style="max-width: 100px; word-wrap:break-word;">{$h.bservice?:''}</div></td>
+                                            <td bgcolor="#A7A7AF"><div style="max-width: 100px; word-wrap:break-word;">{$h.bhost?:''}</div></td>
+                                            <td bgcolor="#97979F"><div style="max-width: 100px; word-wrap:break-word;">{$h.bcluster?:''}</div></td>
+                                        </tr>
+                                    {/foreach}
+                                {/foreach}
+                            {/if}
+
+
+                            {if $healthProperties}
+                                {foreach $p in $healthProperties}
+                                    <tr style="background-color:#{$p.color};">
+                                        <td colspan="15">
+                                            <h4>{$p.property}</h4>
                                         </td>
                                     </tr>
                                     {foreach $h in $p.has}

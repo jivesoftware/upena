@@ -17,10 +17,12 @@ package com.jivesoftware.os.upena.config;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Maps;
 import com.jivesoftware.os.amza.service.AmzaService;
 import com.jivesoftware.os.amza.service.AmzaTable;
 import com.jivesoftware.os.amza.shared.RowIndexKey;
 import com.jivesoftware.os.amza.shared.TableName;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +32,7 @@ public class UpenaConfigStore {
 
     private final AmzaService amzaService;
     private final ObjectMapper mapper = new ObjectMapper();
+    private final Map<String, FetchedVersion> lastFetchedVersion = Maps.newConcurrentMap();
 
     public UpenaConfigStore(AmzaService amzaService) {
         this.amzaService = amzaService;
@@ -49,6 +52,7 @@ public class UpenaConfigStore {
         AmzaTable partition = getPartition();
         String key = createTableName(instanceKey, context);
         partition.remove(new RowIndexKey(key.getBytes("utf-8")));
+        lastFetchedVersion.remove(createTableName(instanceKey, context));
     }
 
     public void putAll(String instanceKey, String context, Map<String, String> properties) throws Exception {
@@ -72,6 +76,7 @@ public class UpenaConfigStore {
                 partition.set(tableIndexKey, mapper.writeValueAsBytes(current));
             }
         }
+        lastFetchedVersion.remove(createTableName(instanceKey, context));
     }
 
     public void remove(String instanceKey, String context, Set<String> keys) throws Exception {
@@ -87,9 +92,37 @@ public class UpenaConfigStore {
             }
             partition.set(tableIndexKey, mapper.writeValueAsBytes(current));
         }
+        lastFetchedVersion.remove(createTableName(instanceKey, context));
     }
 
-    public Map<String, String> get(String instanceKey, String context, List<String> keys) throws Exception {
+    public Map<String, String> changesSinceLastFetch(String instanceKey, String context) throws Exception {
+        String key = createTableName(instanceKey, context);
+        FetchedVersion fetchedVersion = lastFetchedVersion.get(key);
+        if (fetchedVersion == null) {
+            return Collections.emptyMap();
+        }
+        Map<String, String> current = mapper.readValue(fetchedVersion.rawProperties, new TypeReference<HashMap<String, String>>() {
+        });
+
+        Map<String, String> changed = new HashMap<>();
+        Map<String, String> stored = get(instanceKey, context, null, false);
+
+        for (String c : current.keySet()) {
+            String currentValue = current.get(c);
+            String storedValue = stored.get(c);
+
+            if (storedValue == null) {
+                changed.put(c, currentValue + " is not null");
+            } else if (!storedValue.equals(currentValue)) {
+                changed.put(c, currentValue + " is now " + storedValue);
+            }
+        }
+
+        return changed;
+
+    }
+
+    public Map<String, String> get(String instanceKey, String context, List<String> keys, boolean cacheFetchedVersion) throws Exception {
         final Map<String, String> results = new HashMap<>();
         AmzaTable partition = getPartition();
         String key = createTableName(instanceKey, context);
@@ -109,6 +142,21 @@ public class UpenaConfigStore {
                 results.putAll(current);
             }
         }
+        if (cacheFetchedVersion) {
+            lastFetchedVersion.put(key, new FetchedVersion(System.currentTimeMillis(), rawProperties));
+        }
         return results;
+    }
+
+    public static class FetchedVersion {
+
+        public final long time;
+        public final byte[] rawProperties;
+
+        public FetchedVersion(long time, byte[] rawProperties) {
+            this.time = time;
+            this.rawProperties = rawProperties;
+        }
+
     }
 }

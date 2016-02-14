@@ -16,6 +16,7 @@ import com.jivesoftware.os.routing.bird.http.client.HttpClientFactory;
 import com.jivesoftware.os.routing.bird.http.client.HttpClientFactoryProvider;
 import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelper;
 import com.jivesoftware.os.routing.bird.shared.InstanceDescriptor;
+import com.jivesoftware.os.upena.config.UpenaConfigStore;
 import com.jivesoftware.os.upena.deployable.UpenaEndpoints;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.service.UpenaStore;
@@ -55,6 +56,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
     private final SoyRenderer renderer;
     private final AmzaInstance amzaInstance;
     private final UpenaStore upenaStore;
+    private final UpenaConfigStore configStore;
     private final ExecutorService executorService = Executors.newCachedThreadPool();
 
     private final Map<InstanceDescriptor, SparseCircularHitsBucketBuffer> instanceHealthHistory = new ConcurrentHashMap<>();
@@ -64,7 +66,8 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
         String instanceTemplate,
         SoyRenderer renderer,
         AmzaInstance amzaInstance,
-        UpenaStore upenaStore) {
+        UpenaStore upenaStore,
+        UpenaConfigStore configStore) {
 
         this.ringHost = ringHost;
         this.template = template;
@@ -72,6 +75,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
         this.renderer = renderer;
         this.amzaInstance = amzaInstance;
         this.upenaStore = upenaStore;
+        this.configStore = configStore;
     }
 
     @Override
@@ -160,7 +164,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
         String live = "[]";
         try {
 
-            List<Map<String, String>> healths = new ArrayList<>();
+            List<Map<String, Object>> healths = new ArrayList<>();
 
             Map<String, Double> minHostHealth = new HashMap<>();
             for (UpenaEndpoints.NodeHealth nodeHealth : buildClusterHealth().values()) {
@@ -195,19 +199,27 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                                         return ev == null ? nannyHealth.serviceHealth.health : Math.min(ev, nannyHealth.serviceHealth.health);
                                     });
 
-                                ImmutableMap.Builder<String, String> map = ImmutableMap.<String, String>builder()
+                                ImmutableMap.Builder<String, Object> map = ImmutableMap.<String, Object>builder()
                                     .put("id", nannyHealth.instanceDescriptor.instanceKey)
                                     .put("color", color)
                                     .put("text", label)
                                     .put("age", age);
 
-                                if (nannyHealth.unexpectedRestart > -1 ) {
-                                    map.put("unexpectedRestart", UpenaEndpoints.humanReadableUptime(now-nannyHealth.unexpectedRestart));
+                                if (nannyHealth.unexpectedRestart > -1) {
+                                    map.put("unexpectedRestart", UpenaEndpoints.humanReadableUptime(now - nannyHealth.unexpectedRestart));
+                                }
+
+                                if (!nannyHealth.configIsStale.isEmpty()) {
+                                    map.put("configIsStale", nannyHealth.configIsStale);
+                                }
+
+                                if (!nannyHealth.healthConfigIsStale.isEmpty()) {
+                                    map.put("healthConfigIsStale", nannyHealth.healthConfigIsStale);
                                 }
 
                                 healths.add(map.build());
                             } else {
-                                healths.add(ImmutableMap.<String, String>builder()
+                                healths.add(ImmutableMap.<String, Object>builder()
                                     .put("id", nannyHealth.instanceDescriptor.instanceKey)
                                     .put("color", "128,128,128")
                                     .put("text", "")
@@ -225,7 +237,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                 Long recency = nodeRecency.get(parts[1] + ":" + parts[2]);
                 String age = recency != null ? UpenaEndpoints.humanReadableUptime(System.currentTimeMillis() - recency) : "unknown";
 
-                healths.add(ImmutableMap.<String, String>builder()
+                healths.add(ImmutableMap.<String, Object>builder()
                     .put("id", m.getKey())
                     .put("color", trafficlightColorRGB(Math.max(m.getValue(), 0d), 1f))
                     .put("text", m.getKey())
@@ -579,9 +591,18 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                                 cell.put("health", d2f(sh));
                                 cell.put("age", nannyHealth.uptime);
 
-                                if (nannyHealth.unexpectedRestart > -1 ) {
-                                    cell.put("unexpectedRestart", UpenaEndpoints.humanReadableUptime(System.currentTimeMillis()-nannyHealth.unexpectedRestart));
+                                if (nannyHealth.unexpectedRestart > -1) {
+                                    cell.put("unexpectedRestart",
+                                        UpenaEndpoints.humanReadableUptime(System.currentTimeMillis() - nannyHealth.unexpectedRestart));
                                 }
+                                if (!nannyHealth.configIsStale.isEmpty()) {
+                                    cell.put("configIsStale", nannyHealth.configIsStale);
+                                }
+
+                                if (!nannyHealth.healthConfigIsStale.isEmpty()) {
+                                    cell.put("healthConfigIsStale", nannyHealth.healthConfigIsStale);
+                                }
+
                             } else {
                                 cell.put("color", "#404040");
                                 cell.put("health", "");

@@ -28,8 +28,11 @@
         <script src="/static/vendor/float-table-head/dist/jquery.floatThead.min.js"></script>
         <link href="/static/img/favicon.ico" rel="shortcut icon" type="image/x-icon" />
         <link rel="stylesheet" href="/static/vendor/ladda-bootstrap/dist/ladda-themeless.min.css">
+
+
         <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/jasny-bootstrap/3.1.3/css/jasny-bootstrap.min.css">
         <script src="//cdnjs.cloudflare.com/ajax/libs/jasny-bootstrap/3.1.3/js/jasny-bootstrap.min.js"></script>
+
 	</head>
 	<body style="padding-top: 50px;">
         //{$header|noAutoescape}
@@ -68,7 +71,6 @@
     <link rel="stylesheet" href="/static/vendor/bootstrap-multiselect/css/prettify.css">
     <link rel="stylesheet" href="/static/vendor/bootstrap-slider/css/bootstrap-slider.css">
     
-
     // HEY ENGINEERS, add CSS here for now:
     <link rel="stylesheet" href="/static/css/upena.css">
 
@@ -149,6 +151,7 @@
  * @param total
  * @param instances
  * @param plugins
+ * @param user
  */
 {template .menuRegion}
     <div class="navmenu navmenu-default navmenu-fixed-left offcanvas-sm">
@@ -168,7 +171,7 @@
          {foreach $plugin in $plugins}
             {if $plugin.active}
                 <li class="active" role="presentation">
-                    <a class="ladda-button" data-spinner-color="#222" data-style="expand-right" href="{$plugin.path}">
+                    <a class="ladda-button" data-spinner-color="#222" data-style="expand-right" href="{$plugin.path}" title="{$plugin.name}">
                         {if $plugin.icon}
                             <span class="ladda-label"><img src="/static/img/{$plugin.icon}.png" alt="Release" style="width:20px;height:20px;">&nbsp;{$plugin.name}</span>
                         {else}
@@ -178,7 +181,7 @@
                 </li>
             {else}
                 <li role="presentation">
-                    <a style="border-radius: 10px 10px 0 0;" class="ladda-button"  data-spinner-color="#222" data-style="expand-right" href="{$plugin.path}">
+                    <a style="border-radius: 10px 10px 0 0;" class="ladda-button"  data-spinner-color="#222" data-style="expand-right" href="{$plugin.path}" title="{$plugin.name}">
                         {if $plugin.icon}
                             <span class="ladda-label"><img src="/static/img/{$plugin.icon}.png" alt="Release" style="width:20px;height:20px;">&nbsp;{$plugin.name}</span>
                         {else}
@@ -188,16 +191,42 @@
                 </li>
             {/if}
         {/foreach}
+        <li role="presentation"><a  class="ladda-button" data-spinner-color="#222" data-style="expand-right" href="/logout"  title="logout">
+            <span class="ladda-label glyphicon glyphicon-log-out">&nbsp;{$user}
+        </a></li>
       </ul>
     </div>
 
-    <div class="navbar navbar-default navbar-fixed-top hidden-lg">
+    <div class="navbar navbar-default navbar-fixed-top hidden-lg" style="overflow-x:auto">
       <button type="button" class="navbar-toggle" data-toggle="offcanvas" data-target=".navmenu">
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
       <a class="navbar-brand" href="#"><img src="/static/img/icon.png" alt="Upena"  height="24"></a>
+        {foreach $plugin in $plugins}
+            {if $plugin.active}
+                <a style="color: black;" role="presentation" class="button active ladda-button" data-spinner-color="#222" data-style="expand-right" href="{$plugin.path}" title="{$plugin.name}">
+                    {if $plugin.icon}
+                        <span class="active ladda-label"><img src="/static/img/{$plugin.icon}.png" alt="{$plugin.name}" style="width:20px;height:20px;"></span>
+                    {else}
+                        <span class="active ladda-label glyphicon glyphicon-{$plugin.glyphicon}"></span>
+                    {/if}
+                </a>
+            {else}
+                <a style="color: black;" role="presentation" style="border-radius: 10px 10px 0 0;" class="active ladda-button"  data-spinner-color="#222" data-style="expand-right" href="{$plugin.path}" title="{$plugin.name}">
+                    {if $plugin.icon}
+                        <span class="ladda-label"><img src="/static/img/{$plugin.icon}.png" alt="{$plugin.name}" style="width:20px;height:20px;"></span>
+                    {else}
+                       <span class="ladda-label glyphicon glyphicon-{$plugin.glyphicon}"></span>
+                    {/if}
+                </a>
+            {/if}
+            &nbsp;&nbsp;
+        {/foreach}
+        <a style="color: black;" class="active ladda-button" data-spinner-color="#222" data-style="expand-right" href="/logout">
+            <span class="ladda-label glyphicon glyphicon-log-out">
+        </a>
     </div>
 
 {/template}

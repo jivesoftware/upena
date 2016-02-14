@@ -381,7 +381,8 @@ public class Main {
             "soy.page.instanceHealthPluginRegion",
             renderer,
             amzaService,
-            upenaStore);
+            upenaStore,
+            upenaConfigStore);
         ReleasesPluginRegion releasesPluginRegion = new ReleasesPluginRegion("soy.page.releasesPluginRegion", "soy.page.releasesPluginRegionList",
             renderer, upenaStore);
         HostsPluginRegion hostsPluginRegion = new HostsPluginRegion("soy.page.hostsPluginRegion", renderer, upenaStore);
@@ -452,16 +453,16 @@ public class Main {
         List<ManagePlugin> plugins = Lists.newArrayList(
             build,
             dependencies,
-            releases,
-            config,
             changes,
+            config,
             clusters,
             hosts,
             services,
             instances,
-            topology,
-            connectivity,
+            releases,
             health,
+            connectivity,
+            topology,
             profiler,
             sar,
             ring);
