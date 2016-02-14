@@ -18,7 +18,6 @@ package com.jivesoftware.os.upena.deployable.region;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.uba.service.RepositoryProvider;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import org.eclipse.aether.RepositorySystem;
@@ -27,9 +26,9 @@ import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.repository.RepositoryPolicy;
-import org.eclipse.aether.resolution.ArtifactRequest;
-import org.eclipse.aether.resolution.ArtifactResolutionException;
-import org.eclipse.aether.resolution.ArtifactResult;
+import org.eclipse.aether.resolution.VersionRangeRequest;
+import org.eclipse.aether.resolution.VersionRangeResult;
+import org.eclipse.aether.version.Version;
 
 class CheckForLatestRelease {
 
@@ -74,6 +73,31 @@ class CheckForLatestRelease {
             String groupId = versionParts[0];
             String artifactId = versionParts[1];
             String packaging = versionParts[2];
+            String version = versionParts[3];
+
+            Artifact artifact = new DefaultArtifact(groupId + ":" + artifactId + ":" + packaging + "[" + version + ",)");
+
+            VersionRangeRequest rangeRequest = new VersionRangeRequest();
+            rangeRequest.setArtifact(artifact);
+            rangeRequest.addRepository(remoteRepos);
+
+            VersionRangeResult rangeResult = system.resolveVersionRange(session, rangeRequest);
+
+            List<Version> versions = rangeResult.getVersions();
+            for (Version v : versions) {
+                LOG.info("There is a newer version of " + deployablecoordinate + " which is " + v);
+            }
+
+            if (versions.size() > 1) {
+                return versions.get(versions.size() - 1).toString();
+            } else {
+                return version;
+            }
+
+            /*
+            String groupId = versionParts[0];
+            String artifactId = versionParts[1];
+            String packaging = versionParts[2];
             String version = "RELEASE";
 
             Artifact artifact = new DefaultArtifact(groupId, artifactId, packaging, version);
@@ -89,8 +113,8 @@ class CheckForLatestRelease {
                 LOG.info("There is a newer version of " + deployablecoordinate + " which is " + latestRelease);
             }
             return latestRelease;
-
-        } catch (ArtifactResolutionException x) {
+             */
+        } catch (Exception x) {
             LOG.warn("Failed to resolve " + deployablecoordinate + " against " + remoteRepos, x);
             return null;
         }
