@@ -64,7 +64,7 @@ public class UpenaConfigRestEndpoints {
         try {
             LOG.debug("Attempting to get: " + config);
             Map<String, String> got = upenaConfigStore.get(config.instanceKey, config.context,
-                new ArrayList<>(config.properties.keySet()), false);
+                new ArrayList<>(config.properties.keySet()), config.context.startsWith("override")); // barf
             LOG.info("Got " + got.size() + " properties for " + config);
             return ResponseHelper.INSTANCE.jsonResponse(new DeployableConfig(config.context,
                 config.instanceKey, config.instanceVersion, got));
