@@ -52,7 +52,7 @@ public class UpenaConfigStore {
         AmzaTable partition = getPartition();
         String key = createTableName(instanceKey, context);
         partition.remove(new RowIndexKey(key.getBytes("utf-8")));
-        lastFetchedVersion.remove(createTableName(instanceKey, context));
+        lastFetchedVersion.remove(key);
     }
 
     public void putAll(String instanceKey, String context, Map<String, String> properties) throws Exception {
@@ -76,7 +76,7 @@ public class UpenaConfigStore {
                 partition.set(tableIndexKey, mapper.writeValueAsBytes(current));
             }
         }
-        lastFetchedVersion.remove(createTableName(instanceKey, context));
+        lastFetchedVersion.remove(key);
     }
 
     public void remove(String instanceKey, String context, Set<String> keys) throws Exception {
@@ -92,16 +92,13 @@ public class UpenaConfigStore {
             }
             partition.set(tableIndexKey, mapper.writeValueAsBytes(current));
         }
-        lastFetchedVersion.remove(createTableName(instanceKey, context));
+        lastFetchedVersion.remove(key);
     }
 
     public Map<String, String> changesSinceLastFetch(String instanceKey, String context) throws Exception {
         String key = createTableName(instanceKey, context);
         FetchedVersion fetchedVersion = lastFetchedVersion.get(key);
         if (fetchedVersion == null) {
-            System.out.println("*****************");
-            System.out.println("***************** " + key);
-            System.out.println("*****************");
             return Collections.emptyMap();
         }
         Map<String, String> current = mapper.readValue(fetchedVersion.rawProperties, new TypeReference<HashMap<String, String>>() {
@@ -121,9 +118,6 @@ public class UpenaConfigStore {
             }
         }
 
-        System.out.println("*****************");
-        System.out.println("***************** " + key + " (" + changed.size() + ")");
-        System.out.println("*****************");
         return changed;
 
     }
