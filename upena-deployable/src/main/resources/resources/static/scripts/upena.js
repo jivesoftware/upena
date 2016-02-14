@@ -737,6 +737,7 @@ upena.health = {
     text: {},
     age: {},
     warn: {},
+    config: {},
     init: function () {
         setTimeout(upena.health.poll, 1000);
     },
@@ -767,6 +768,7 @@ upena.health = {
                 upena.health.text[id] = $cell.find('.health-text');
                 upena.health.age[id] = $cell.find('.health-age');
                 upena.health.warn[id] = $cell.find('.health-warn');
+                upena.health.config[id] = $cell.find('.config-warn');
             }
             upena.health.color[id].css('background-color', "rgb(" + data[i].color + ")");
             upena.health.text[id].html(data[i].text || '&nbsp;&nbsp;&nbsp;');
@@ -779,9 +781,9 @@ upena.health = {
             }
 
             if (data[i].configIsStale || data[i].healthConfigIsStale) {
-                upena.config.warn[id].show();
+                upena.health.config[id].show();
             } else {
-                upena.config.warn[id].hide();
+                upena.health.config[id].hide();
             }
         }
     }
