@@ -503,11 +503,13 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
         long now = System.currentTimeMillis();
 
         UpenaEndpoints.NannyHealth nannyHealth = nannyHealth(key.getKey());
-        String color = "#666";
+        String color = "#404040";
         double h = 0d;
-        if (nannyHealth != null) {
-            color = "#" + healthPluginRegion.getHEXTrafficlightColor(nannyHealth.serviceHealth.health, 1f);
-            h = nannyHealth.serviceHealth.health;
+        if (timestampedValue.getValue().enabled) {
+            if (nannyHealth != null) {
+                color = "#" + healthPluginRegion.getHEXTrafficlightColor(nannyHealth.serviceHealth.health, 1f);
+                h = nannyHealth.serviceHealth.health;
+            }
         }
 
         map.put("health", String.valueOf((int) (100 * Math.max(0d, Math.min(1d, h)))));
