@@ -98,6 +98,9 @@ public class UpenaConfigStore {
     public Map<String, String> changesSinceLastFetch(String instanceKey, String context) throws Exception {
         String key = createTableName(instanceKey, context);
         FetchedVersion fetchedVersion = lastFetchedVersion.get(key);
+        System.out.println("---------------");
+        System.out.println("*********" + fetchedVersion);
+        System.out.println("---------------");
         if (fetchedVersion == null) {
             return Collections.emptyMap();
         }
@@ -117,7 +120,9 @@ public class UpenaConfigStore {
                 changed.put(c, currentValue + " is now " + storedValue);
             }
         }
-
+        System.out.println("---------------");
+        System.out.println("*********" + changed.size());
+        System.out.println("---------------");
         return changed;
 
     }
