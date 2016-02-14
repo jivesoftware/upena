@@ -404,7 +404,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
             } else {
                 node.put("maxbgcolor", healthPluginRegion.getHEXTrafficlightColor(n.maxHealth, 1f));
                 node.put("minbgcolor", healthPluginRegion.getHEXTrafficlightColor(n.minHealth, 1f));
-                node.put("healthRadius", String.valueOf((int) (1d - n.minHealth) * 4));
+                node.put("healthRadius", String.valueOf(4)); //String.valueOf((int) (1d - n.minHealth) * 4));
             }
             if (n.tooltip != null) {
                 node.put("tooltip", n.tooltip);

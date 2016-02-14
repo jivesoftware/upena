@@ -94,26 +94,6 @@ class CheckForLatestRelease {
                 return groupId + ":" + artifactId + ":" + packaging + ":" + version;
             }
 
-            /*
-            String groupId = versionParts[0];
-            String artifactId = versionParts[1];
-            String packaging = versionParts[2];
-            String version = "RELEASE";
-
-            Artifact artifact = new DefaultArtifact(groupId, artifactId, packaging, version);
-            ArtifactRequest artifactRequest = new ArtifactRequest();
-            artifactRequest.setArtifact(artifact);
-            artifactRequest.setRepositories(Arrays.asList(remoteRepos));
-
-            LOG.info(" Resolving: " + deployablecoordinate);
-            ArtifactResult artifactResult = system.resolveArtifact(session, artifactRequest);
-            artifact = artifactResult.getArtifact();
-            String latestRelease = artifact.getGroupId() + ":" + artifact.getArtifactId() + ":" + packaging + ":" + artifact.getVersion();
-            if (!latestRelease.equals(deployablecoordinate)) {
-                LOG.info("There is a newer version of " + deployablecoordinate + " which is " + latestRelease);
-            }
-            return latestRelease;
-             */
         } catch (Exception x) {
             LOG.warn("Failed to resolve " + deployablecoordinate + " against " + remoteRepos, x);
             return null;
