@@ -135,49 +135,6 @@ public class UpenaEndpoints {
     }
 
     @GET
-    @Consumes("application/json")
-    @Path("/instances")
-    public Response getInstances(@Context UriInfo uriInfo) {
-        try {
-            /*
-             h.table(border);
-             h.tr(HtmlAttributesFactory.style("background-color:#bbbbbb;"));
-             h.td(border).content(String.valueOf("Key"));
-             h.td(border).content(String.valueOf("Id"));
-             h.td(border).content(String.valueOf("Cluster"));
-             h.td(border).content(String.valueOf("Host"));
-             h.td(border).content(String.valueOf("Service"));
-             h.td(border).content(String.valueOf("Release"));
-             h.td(border).content(String.valueOf("Action"));
-             h._tr();
-
-             InstanceFilter filter = new InstanceFilter(null, null, null, null, null, 0, 10000);
-             Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(filter);
-             for (Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {
-             InstanceKey key = entrySet.getKey();
-             TimestampedValue<Instance> timestampedValue = entrySet.getValue();
-             Instance value = timestampedValue.getValue();
-             h.tr();
-             h.td(HtmlAttributesFactory.style("background-color:#bbbbbb;")).content(key.getKey());
-             h.td(border).content(value.instanceId);
-             h.td(border).content(upenaStore.clusters.get(value.clusterKey).name);
-             h.td(border).content(upenaStore.hosts.get(value.hostKey).name);
-             h.td(border).content(upenaStore.services.get(value.serviceKey).name);
-             h.td(border).content(upenaStore.releaseGroups.get(value.releaseGroupKey).name);
-             h.td(border);
-             h.button(HtmlAttributesFactory.onClick("location.href='" + uriInfo.getAbsolutePath() + "services'")).content("TODO");
-             h._td();
-             h._tr();
-             }
-             */
-
-            return Response.ok("", MediaType.TEXT_HTML).build();
-        } catch (Exception x) {
-            return ResponseHelper.INSTANCE.errorResponse("Failed building all health view.", x);
-        }
-    }
-
-    @GET
     @Path("/health/check/{clusterName}/{healthy}")
     public Response getHealthCheck(@Context UriInfo uriInfo,
         @PathParam("clusterName") String clusterName,

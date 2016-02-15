@@ -15,7 +15,6 @@
  */
 package com.jivesoftware.os.upena.deployable;
 
-import com.jivesoftware.os.jive.utils.jaxrs.util.ResponseHelper;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import java.io.File;
@@ -24,14 +23,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import javax.inject.Singleton;
-import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
 /**
@@ -71,27 +67,4 @@ public class UpenaPropagatorEndpoints {
         };
     }
 
-    @GET
-    @Consumes("application/json")
-    @Path("/deploy")
-    public Response push(@QueryParam("clusterName") String clusterName,
-        @QueryParam("scpUser") String scpUser,
-        @QueryParam("scpHost") String scpHost,
-        @QueryParam("scpHome") String scpHome) {
-        try {
-            File pathToUpenaJar = new File(System.getProperty("user.dir"), "upena.jar");
-            UpenaPropagator propagator = new UpenaPropagator(pathToUpenaJar.getAbsolutePath(),
-                clusterName,
-                "~/.ssh/id_rsa",
-                scpUser,
-                scpHost,
-                scpHome
-            );
-            propagator.propagate();
-            return Response.ok("Propagated upena to: " + scpHost + ":" + scpHome, MediaType.TEXT_PLAIN).build();
-        } catch (Exception x) {
-            LOG.warn("Failed to deploy upena to: " + scpHost + ":" + scpHome, x);
-            return ResponseHelper.INSTANCE.errorResponse("Failed to deploy upena to:" + scpHost + ":" + scpHome, x);
-        }
-    }
 }

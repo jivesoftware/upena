@@ -15,6 +15,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 
 /**
  *
@@ -34,7 +35,7 @@ public class ChangeLogPluginEndpoints {
     @GET
     @Path("/")
     @Produces(MediaType.TEXT_HTML)
-    public Response hosts(@Context HttpServletRequest httpRequest) {
+    public Response hosts(@Context SecurityContext sc, @Context HttpServletRequest httpRequest) {
         String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
             new ChangeLogPluginRegionInput("", "", "", "", "", "", ""));
         return Response.ok(rendered).build();
@@ -44,7 +45,7 @@ public class ChangeLogPluginEndpoints {
     @Path("/")
     @Produces(MediaType.TEXT_HTML)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    public Response action(@Context HttpServletRequest httpRequest,
+    public Response action(@Context SecurityContext sc, @Context HttpServletRequest httpRequest,
         @FormParam("who") @DefaultValue("") String who,
         @FormParam("what") @DefaultValue("") String what,
         @FormParam("when") @DefaultValue("") String when,

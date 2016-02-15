@@ -26,6 +26,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 
 @Path("/uba")
 public class UbaServiceRestEndpoints {
@@ -40,7 +41,7 @@ public class UbaServiceRestEndpoints {
     @POST
     @Path("/upload")
     @Consumes("application/json")
-    public Response upload(DeployableUpload deploy) {
+    public Response upload(@Context SecurityContext sc, DeployableUpload deploy) {
         try {
             LOG.info("Uploading instanceIds:" + deploy.instanceIds + " version:" + deploy.version);
             //ubaService.upload(deploy.instanceIds, deploy.version, deploy.deployableFileBytes, deploy.extension);
@@ -61,7 +62,7 @@ public class UbaServiceRestEndpoints {
      */
     @GET
     @Path("/report")
-    public Response report() throws Exception {
+    public Response report(@Context SecurityContext sc) throws Exception {
         try {
             LOG.info("Getting report");
             return ResponseHelper.INSTANCE.jsonResponse(ubaService.report());
