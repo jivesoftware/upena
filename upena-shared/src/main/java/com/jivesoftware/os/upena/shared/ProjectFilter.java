@@ -23,7 +23,7 @@ import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class ProjectFilter implements KeyValueFilter<ServiceKey, Service>, Serializable {
+public class ProjectFilter implements KeyValueFilter<ProjectKey, Project>, Serializable {
 
     public final String name;
     public final String description;
@@ -44,19 +44,25 @@ public class ProjectFilter implements KeyValueFilter<ServiceKey, Service>, Seria
 
     @Override
     public String toString() {
-        return "ServiceFilter{" + "name=" + name + ", description=" + description + ", start=" + start + ", count=" + count + ", hit=" + hit + '}';
+        return "ProjectFilter{"
+            + "name=" + name
+            + ", description=" + description
+            + ", start=" + start
+            + ", count=" + count
+            + ", hit=" + hit
+            + '}';
     }
 
     @Override
-    public ConcurrentNavigableMap<ServiceKey, TimestampedValue<Service>> createCollector() {
+    public ConcurrentNavigableMap<ProjectKey, TimestampedValue<Project>> createCollector() {
         return new ProjectFilter.Results();
     }
 
-    public static class Results extends ConcurrentSkipListMap<ServiceKey, TimestampedValue<Service>> {
+    public static class Results extends ConcurrentSkipListMap<ProjectKey, TimestampedValue<Project>> {
     }
 
     @Override
-    public boolean filter(ServiceKey key, Service value) {
+    public boolean filter(ProjectKey key, Project value) {
         if (name != null && value.name != null) {
             if (!value.name.contains(name)) {
                 return false;

@@ -25,21 +25,24 @@ public class ArtifactRepository implements Stored<ArtifactRepository>, Serializa
 
     public final String name;
     public final String description;
-    //public final String scm;
-    //public final String branch;
+    public final String url;
 
     @JsonCreator
     public ArtifactRepository(@JsonProperty("name") String name,
-        @JsonProperty("description") String description) {
+        @JsonProperty("description") String description,
+        @JsonProperty("url") String url
+    ) {
         this.name = name;
         this.description = description;
+        this.url = url;
     }
 
     @Override
     public String toString() {
-        return "Service{"
+        return "ArtifactRepository{" 
             + "name=" + name
             + ", description=" + description
+            + ", url=" + url
             + '}';
     }
 

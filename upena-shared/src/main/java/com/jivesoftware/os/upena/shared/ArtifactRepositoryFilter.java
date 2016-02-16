@@ -23,10 +23,11 @@ import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class ArtifactRepositoryFilter implements KeyValueFilter<ServiceKey, Service>, Serializable {
+public class ArtifactRepositoryFilter implements KeyValueFilter<ArtifactRepositoryKey, ArtifactRepository>, Serializable {
 
     public final String name;
     public final String description;
+    public final String url;
     public final int start;
     public final int count;
     public int hit;
@@ -34,29 +35,31 @@ public class ArtifactRepositoryFilter implements KeyValueFilter<ServiceKey, Serv
     @JsonCreator
     public ArtifactRepositoryFilter(@JsonProperty("name") String name,
         @JsonProperty("description") String description,
+        @JsonProperty("url") String url,
         @JsonProperty("start") int start,
         @JsonProperty("count") int count) {
         this.name = name;
         this.description = description;
+        this.url = url;
         this.start = start;
         this.count = count;
     }
 
     @Override
     public String toString() {
-        return "ServiceFilter{" + "name=" + name + ", description=" + description + ", start=" + start + ", count=" + count + ", hit=" + hit + '}';
+        return "ArtifactRepositoryFilter{" + "name=" + name + ", description=" + description + ", url=" + url + ", start=" + start + ", count=" + count + ", hit=" + hit + '}';
     }
 
     @Override
-    public ConcurrentNavigableMap<ServiceKey, TimestampedValue<Service>> createCollector() {
+    public ConcurrentNavigableMap<ArtifactRepositoryKey, TimestampedValue<ArtifactRepository>> createCollector() {
         return new ArtifactRepositoryFilter.Results();
     }
 
-    public static class Results extends ConcurrentSkipListMap<ServiceKey, TimestampedValue<Service>> {
+    public static class Results extends ConcurrentSkipListMap<ArtifactRepositoryKey, TimestampedValue<ArtifactRepository>> {
     }
 
     @Override
-    public boolean filter(ServiceKey key, Service value) {
+    public boolean filter(ArtifactRepositoryKey key, ArtifactRepository value) {
         if (name != null && value.name != null) {
             if (!value.name.contains(name)) {
                 return false;
@@ -64,6 +67,11 @@ public class ArtifactRepositoryFilter implements KeyValueFilter<ServiceKey, Serv
         }
         if (description != null && value.description != null) {
             if (!value.description.contains(description)) {
+                return false;
+            }
+        }
+        if (url != null && value.url != null) {
+            if (!value.url.contains(url)) {
                 return false;
             }
         }

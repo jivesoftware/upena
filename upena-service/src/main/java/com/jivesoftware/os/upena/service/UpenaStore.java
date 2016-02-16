@@ -31,6 +31,8 @@ import com.jivesoftware.os.upena.shared.HostKey;
 import com.jivesoftware.os.upena.shared.Instance;
 import com.jivesoftware.os.upena.shared.InstanceFilter;
 import com.jivesoftware.os.upena.shared.InstanceKey;
+import com.jivesoftware.os.upena.shared.Project;
+import com.jivesoftware.os.upena.shared.ProjectKey;
 import com.jivesoftware.os.upena.shared.RecordedChange;
 import com.jivesoftware.os.upena.shared.ReleaseGroup;
 import com.jivesoftware.os.upena.shared.ReleaseGroupKey;
@@ -55,6 +57,7 @@ public class UpenaStore {
     private final InstanceChanges instanceRemoved;
     private final TenantChanges tenantChanges;
 
+    public final TableName projectStoreKey = new TableName("master", "projects", null, null);
     public final TableName clusterStoreKey = new TableName("master", "clusters", null, null);
     public final TableName hostStoreKey = new TableName("master", "hosts", null, null);
     public final TableName serviceStoreKey = new TableName("master", "services", null, null);
@@ -63,6 +66,7 @@ public class UpenaStore {
     public final TableName tenantStoreKey = new TableName("master", "tenants", null, null);
     public final TableName changeLogStoreKey = new TableName("master", "changeLog", null, null);
 
+    public final UpenaTable<ProjectKey, Project> projects;
     public final UpenaTable<ClusterKey, Cluster> clusters;
     public final UpenaTable<HostKey, Host> hosts;
     public final UpenaTable<ServiceKey, Service> services;
@@ -82,6 +86,7 @@ public class UpenaStore {
         this.instanceRemoved = instanceRemoved;
         this.tenantChanges = tenantChanges;
 
+        projects = new UpenaTable<>(amzaService.getTable(projectStoreKey), ProjectKey.class, Project.class, new ProjectKeyProvider(), null);
         clusters = new UpenaTable<>(amzaService.getTable(clusterStoreKey), ClusterKey.class, Cluster.class, new ClusterKeyProvider(), null);
         hosts = new UpenaTable<>(amzaService.getTable(hostStoreKey), HostKey.class, Host.class, new HostKeyProvider(), null);
         services = new UpenaTable<>(amzaService.getTable(serviceStoreKey), ServiceKey.class, Service.class, new ServiceKeyProvider(), null);

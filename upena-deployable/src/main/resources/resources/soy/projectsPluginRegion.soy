@@ -1,0 +1,96 @@
+{namespace soy.page}
+
+/**
+ * Upena Status plugin page
+ * 
+ * @param? message
+ * @param? filters
+ * @param? projects
+ */
+{template .projectsPluginRegion}
+    {if $projects}
+        <div class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.6);">
+                <div class="panel-heading"><span class="panel-title label label-warning">Projects ( Experimental )</span></div>
+                <div class="panel-body">
+                    {if $message}
+                        <pre>{$message}</pre>
+                    {/if}
+                    <table class="table table-hover table-condensed">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Settings</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <form id="add-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                                data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="addHost">
+                                <tr style="background-color:#ddd;">
+                                    <td style="width:400px;">
+                                        <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                            placeholder="Name" value="{$filters.name?:''}" name="name" id="namePicker" class="form-control">
+                                    </td>
+                                    <td>
+                                    </td>
+                                    <td>
+                                        <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-search">&nbspFilter</span></button>
+                                        <button title="Add" type="submit" name="action" value="add" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-plus">&nbspAdd</span></button>
+                                    </td>
+                                </tr>
+                            </form>
+
+                            {foreach $c in $projects}
+                                <form id="edit-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                                    data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="editHost">
+                                    <tr>
+                                        <td style="width:400px;">
+                                            <div>
+                                                <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                                placeholder="Name" value="{$c.name}" name="name" id="namePicker" class="form-control">
+                                            </div>
+                                        </td>
+                                        <td>
+                                           <ul>
+                                                <li>
+                                                    description&nbsp;<input type="text" style="padding-left:10px;"  name="description" value="{$c.description}">
+                                                </li>
+                                                <li>
+                                                    localPath&nbsp;<input type="text" style="padding-left:10px;"  name="localPath" value="{$c.localPath}">
+                                                </li>
+                                                <li>
+                                                    gitUrl&nbsp;<input type="text" style="padding-left:10px;"  name="scmUrl" value="{$c.scmUrl}">
+                                                </li>
+                                                <li>
+                                                    branch&nbsp;<input type="text" style="padding-left:10px;"  name="branch" value="{$c.branch}">
+                                                </li>
+                                                <li>
+                                                    pom&nbsp;<input type="text" style="padding-left:10px;"  name="pom" value="{$c.pom}">
+                                                </li>
+                                                <li>
+                                                    goals&nbsp;<input type="text" style="padding-left:10px;"  name="goals" value="{$c.goals}">
+                                                </li>
+                                                <li>
+                                                    mvnHome&nbsp;<input type="text" style="padding-left:10px;"  name="mvnHome" value="{$c.mvnHome}">
+                                                </li>
+                                                <li>
+                                                    localPathToRepo&nbsp;<input type="text" style="padding-left:10px;"  name="localPathToRepo" value="{$c.localPathToRepo}">
+                                                </li>
+                                           </ul>
+                                        </td>
+                                        <td>
+                                            <input type="hidden" name="key" value="{$c.key}">
+                                            <button title="Build" type="submit" name="action" value="build" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-play-circle">&nbspBuild</span></button>
+                                            <button title="Update" type="submit" name="action" value="update" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-save">&nbspUpdate</span></button>
+                                            <button onclick="return confirm('Are you sure you want to delete?')" title="Remove" type="submit" name="action" value="remove" class="btn btn-default"><span class="glyphicon glyphicon-trash">&nbspRemove</span></button>
+                                        </td>
+                                    </tr>
+                                </form>
+                            {/foreach}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    {/if}
+{/template}
