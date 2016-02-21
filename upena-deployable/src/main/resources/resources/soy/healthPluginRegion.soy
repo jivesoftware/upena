@@ -12,7 +12,7 @@
         <div class="panel-body">
             <form id="filter-health" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
                 data-jive-ui="jive/ui/typeahead/request_typeahead" method="get" name="filter-health">
-                <table class="table table-condensed">
+                <table class="table table-condensed table-responsive">
                     <tr style="background-color:#ddd;">
                         <td>
                             <div class="input-group">
@@ -66,7 +66,7 @@
                 </table>
             </form>
             <div>
-                <table class="table table-hover table-condensed  float-table-head">
+                <table class="table table-hover table-condensed  float-table-head table-responsive">
                     <thead>
                         <tr>
                             <th></th>
@@ -324,7 +324,7 @@
                                                                     {if $health.configIsStale}
                                                                         <li>
                                                                             <span class="label label-warning">Config is stale</span>
-                                                                            <table class="table table-condensed  float-table-head">
+                                                                            <table class="table table-condensed  float-table-head table-responsive">
                                                                                 {foreach $propertyName in keys($health.configIsStale)}
                                                                                     <tr>
                                                                                         <td>{$propertyName}</td>
@@ -337,7 +337,7 @@
                                                                     {if $health.healthConfigIsStale}
                                                                         <li>
                                                                             <span class="label label-warning">Health config is stale</span>
-                                                                            <table class="table table-condensed  float-table-head">
+                                                                            <table class="table table-condensed  float-table-head table-responsive">
                                                                                 {foreach $propertyName in keys($health.healthConfigIsStale)}
                                                                                     <tr>
                                                                                         <td>{$propertyName}</td>

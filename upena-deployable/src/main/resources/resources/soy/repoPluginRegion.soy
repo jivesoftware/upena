@@ -16,7 +16,7 @@
                 {/if}
                 <form id="filter-repo" method="post" name="addHost">
 
-                    <table class="table table-hover table-condensed">
+                    <table class="table table-hover table-condensed table-responsive">
                         <thead>
                             <tr>
                                 <th>GroupId</th>
@@ -56,7 +56,7 @@
                  </form>
 
                 {if $repo}
-                    <table class="table table-hover table-borderless">
+                    <table class="table table-hover table-borderless table-responsive">
                         {foreach $r in $repo}
                             <tr>
                                 <td><tt>{$r.name}</tt></td>
