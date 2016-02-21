@@ -36,8 +36,7 @@ public class Project implements Stored<Project>, Serializable {
     public final String goals;
 
     public final String mvnHome;
-    public final String localPathToRepo;
-
+ 
     public final Set<ArtifactRepositoryKey> downloadFromArtifactRepositories;
     public final Set<ArtifactRepositoryKey> uploadToArtifactRepositories;
 
@@ -52,7 +51,6 @@ public class Project implements Stored<Project>, Serializable {
         @JsonProperty("pom") String pom,
         @JsonProperty("goals") String goals,
         @JsonProperty("mvnHome") String mvnHome,
-        @JsonProperty("localPathToRepo") String localPathToRepo,
         @JsonProperty("downloadFromArtifactRepositories") Set<ArtifactRepositoryKey> downloadFromArtifactRepositories,
         @JsonProperty("uploadToArtifactRepositories") Set<ArtifactRepositoryKey> uploadToArtifactRepositories,
         @JsonProperty("dependantProjects") List<Project> dependantProjects
@@ -65,7 +63,6 @@ public class Project implements Stored<Project>, Serializable {
         this.pom = pom;
         this.goals = goals;
         this.mvnHome = mvnHome;
-        this.localPathToRepo = localPathToRepo;
         this.downloadFromArtifactRepositories = downloadFromArtifactRepositories;
         this.uploadToArtifactRepositories = uploadToArtifactRepositories;
         this.dependantProjects = dependantProjects;
@@ -82,7 +79,6 @@ public class Project implements Stored<Project>, Serializable {
             + ", pom=" + pom
             + ", goals=" + goals
             + ", mvnHome=" + mvnHome
-            + ", localPathToRepo=" + localPathToRepo
             + ", downloadFromArtifactRepositories=" + downloadFromArtifactRepositories
             + ", uploadToArtifactRepositories=" + uploadToArtifactRepositories
             + ", dependantProjects=" + dependantProjects

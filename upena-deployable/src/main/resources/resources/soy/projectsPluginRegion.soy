@@ -10,7 +10,7 @@
 {template .projectsPluginRegion}
     {if $projects}
         <div class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.6);">
-                <div class="panel-heading"><span class="panel-title label label-warning">Projects ( Experimental )</span></div>
+                <div class="panel-heading"><span class="panel-title">Projects</span></div>
                 <div class="panel-body">
                     {if $message}
                         <pre>{$message}</pre>
@@ -53,33 +53,33 @@
                                         <td>
                                            <ul>
                                                 <li>
-                                                    description&nbsp;<input type="text" style="padding-left:10px;"  name="description" value="{$c.description}">
+                                                    description&nbsp;<input type="text" size="100" style="padding-left:10px;"  name="description" value="{$c.description}">
                                                 </li>
                                                 <li>
-                                                    localPath&nbsp;<input type="text" style="padding-left:10px;"  name="localPath" value="{$c.localPath}">
+                                                    localPath&nbsp;<input type="text" size="100" style="padding-left:10px;"  name="localPath" value="{$c.localPath}">
                                                 </li>
                                                 <li>
-                                                    gitUrl&nbsp;<input type="text" style="padding-left:10px;"  name="scmUrl" value="{$c.scmUrl}">
+                                                    gitUrl&nbsp;<input type="text" size="100" style="padding-left:10px;"  name="scmUrl" value="{$c.scmUrl}">
                                                 </li>
                                                 <li>
-                                                    branch&nbsp;<input type="text" style="padding-left:10px;"  name="branch" value="{$c.branch}">
+                                                    branch&nbsp;<input type="text" size="100" style="padding-left:10px;"  name="branch" value="{$c.branch}">
                                                 </li>
                                                 <li>
-                                                    pom&nbsp;<input type="text" style="padding-left:10px;"  name="pom" value="{$c.pom}">
+                                                    pom&nbsp;<input type="text" size="100" style="padding-left:10px;"  name="pom" value="{$c.pom}">
                                                 </li>
                                                 <li>
-                                                    goals&nbsp;<input type="text" style="padding-left:10px;"  name="goals" value="{$c.goals}">
+                                                    goals&nbsp;<input type="text" size="100" style="padding-left:10px;"  name="goals" value="{$c.goals}">
                                                 </li>
                                                 <li>
-                                                    mvnHome&nbsp;<input type="text" style="padding-left:10px;"  name="mvnHome" value="{$c.mvnHome}">
-                                                </li>
-                                                <li>
-                                                    localPathToRepo&nbsp;<input type="text" style="padding-left:10px;"  name="localPathToRepo" value="{$c.localPathToRepo}">
+                                                    mvnHome&nbsp;<input type="text" size="100" style="padding-left:10px;"  name="mvnHome" value="{$c.mvnHome}">
                                                 </li>
                                            </ul>
                                         </td>
                                         <td>
                                             <input type="hidden" name="key" value="{$c.key}">
+                                            <a href="projects/output/{$c.key}" class="btn btn-default">
+                                                <span class="glyphicon glyphicon-list" aria-hidden="true">Output</span>
+                                            </a>
                                             <button title="Build" type="submit" name="action" value="build" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-play-circle">&nbspBuild</span></button>
                                             <button title="Update" type="submit" name="action" value="update" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-save">&nbspUpdate</span></button>
                                             <button onclick="return confirm('Are you sure you want to delete?')" title="Remove" type="submit" name="action" value="remove" class="btn btn-default"><span class="glyphicon glyphicon-trash">&nbspRemove</span></button>

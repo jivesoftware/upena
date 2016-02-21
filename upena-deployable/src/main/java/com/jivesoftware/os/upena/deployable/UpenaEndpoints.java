@@ -38,8 +38,15 @@ import com.jivesoftware.os.upena.service.DiscoveredRoutes.Routes;
 import com.jivesoftware.os.upena.service.UpenaService;
 import com.jivesoftware.os.upena.service.UpenaStore;
 import com.jivesoftware.os.upena.shared.HostKey;
+import com.jivesoftware.os.upena.shared.PathToRepo;
 import com.jivesoftware.os.upena.uba.service.Nanny;
 import com.jivesoftware.os.upena.uba.service.UbaService;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -52,13 +59,17 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
+import org.apache.commons.io.FileUtils;
 
 /**
  *
@@ -91,6 +102,8 @@ public class UpenaEndpoints {
     private final HostKey ringHostKey;
     private final SoyService soyService;
     private final DiscoveredRoutes discoveredRoutes;
+    private final PathToRepo localPathToRepo;
+    private final UpenaAutoRelease autoRelease;
 
     public UpenaEndpoints(@Context AmzaClusterName amzaClusterName,
         @Context AmzaInstance amzaInstance,
@@ -101,7 +114,9 @@ public class UpenaEndpoints {
         @Context RingHost ringHost,
         @Context HostKey ringHostKey,
         @Context SoyService soyService,
-        @Context DiscoveredRoutes discoveredRoutes) {
+        @Context DiscoveredRoutes discoveredRoutes,
+        @Context PathToRepo localPathToRepo,
+        @Context UpenaAutoRelease autoRelease) {
         this.amzaClusterName = amzaClusterName;
         this.amzaInstance = amzaInstance;
         this.upenaStore = upenaStore;
@@ -112,6 +127,86 @@ public class UpenaEndpoints {
         this.ringHostKey = ringHostKey;
         this.soyService = soyService;
         this.discoveredRoutes = discoveredRoutes;
+        this.localPathToRepo = localPathToRepo;
+        this.autoRelease = autoRelease;
+    }
+
+    @GET
+    @Path("/repo/{subResources:.*}")
+    public Object pull(@PathParam("subResources") String subResources) {
+        File f = new File(localPathToRepo.get(), subResources);
+        try {
+            LOG.error("!!!!!!!!!!!! GET  " + f.getAbsolutePath() + " !!!!!!!!!!!!!!!!");
+
+            if (!f.exists()) {
+                return Response.status(Response.Status.NOT_FOUND).build();
+            }
+
+            return (StreamingOutput) (OutputStream os) -> {
+                try {
+
+                    try {
+                        byte[] buf = new byte[8192];
+                        InputStream is = new FileInputStream(f);
+                        int c = 0;
+                        while ((c = is.read(buf, 0, buf.length)) > 0) {
+                            os.write(buf, 0, c);
+                            os.flush();
+                        }
+                        os.close();
+                        is.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                } catch (Exception e) {
+                    throw new WebApplicationException(e);
+                }
+            };
+        } catch (Exception x) {
+            LOG.error("Failed to read " + f, x);
+            return Response.serverError().entity(x.toString()).type(MediaType.TEXT_PLAIN).build();
+        }
+    }
+
+    @PUT
+    @Path("/repo/{subResources:.*}")
+    public Response putFileInRepo(
+        InputStream fileInputStream,
+        @PathParam("subResources") String subResources) {
+
+        File f = new File(localPathToRepo.get(), subResources);
+
+        try {
+            FileUtils.forceMkdir(f.getParentFile());
+            System.out.println("!!!!!!!!!!!! PUT  " + f.getAbsolutePath() + " !!!!!!!!!!!!!!!!");
+            saveFile(fileInputStream, f);
+        } catch (Exception x) {
+            LOG.error("Failed to write " + f, x);
+            FileUtils.deleteQuietly(f);
+            return Response.serverError().entity(x.toString()).type(MediaType.TEXT_PLAIN).build();
+        }
+
+        if (f.getName().endsWith(".pom")) {
+            autoRelease.uploaded(f);
+        }
+
+        return Response.ok("Success").build();
+    }
+
+    // save uploaded file to a defined location on the server
+    private void saveFile(InputStream uploadedInputStream,
+        File file) {
+        try (OutputStream outpuStream = new FileOutputStream(file)) {
+
+            int read = 0;
+            byte[] bytes = new byte[1024];
+            while ((read = uploadedInputStream.read(bytes)) != -1) {
+                outpuStream.write(bytes, 0, read);
+            }
+            outpuStream.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @GET
@@ -264,8 +359,10 @@ public class UpenaEndpoints {
             try {
                 ObjectMapper mapper = new ObjectMapper();
                 mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
                 if (!copyLog.isEmpty()) {
-                    serviceHealth = mapper.readValue(Joiner.on("").join(copyLog), ServiceHealth.class);
+                    serviceHealth = mapper.readValue(Joiner.on("").join(copyLog), ServiceHealth.class
+                    );
                     nodeHealth.health = Math.min(nodeHealth.health, serviceHealth.health);
                 }
             } catch (Exception x) {
@@ -297,6 +394,7 @@ public class UpenaEndpoints {
 
         }
         return nodeHealth;
+
     }
 
     static public class ClusterHealth {
@@ -332,9 +430,9 @@ public class UpenaEndpoints {
         public ServiceHealth serviceHealth;
         public String status;
         public long unexpectedRestart = -1;
-        public Map<String,String> configIsStale = new HashMap<>();
-        public Map<String,String> healthConfigIsStale = new HashMap<>();
-        
+        public Map<String, String> configIsStale = new HashMap<>();
+        public Map<String, String> healthConfigIsStale = new HashMap<>();
+
         public NannyHealth() {
         }
 

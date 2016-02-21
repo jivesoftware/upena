@@ -11,6 +11,11 @@ body {
   padding: 0 0 0 0;
 }
 
+.table-borderless tbody tr td, .table-borderless tbody tr th, .table-borderless thead tr th {
+    border: none;
+}
+
+
 div.navmenu {
   padding-top: 15px;
   width: 160px;
@@ -695,5 +700,6 @@ form#query-filters.query-show-advanced td.query-advanced { display: table-cell; 
     -webkit-animation-iteration-count:infinite;
     -webkit-animation-timing-function: linear;
 }
+
 
 

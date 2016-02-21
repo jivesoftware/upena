@@ -28,6 +28,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class Uba {
 
+    final RepositoryProvider repositoryProvider;
     final String datacenter;
     final String rack;
     final String publicHost;
@@ -39,7 +40,8 @@ public class Uba {
     private final UbaLog ubaLog;
     private final Cache<InstanceDescriptor, Boolean> haveRunConfigExtractionCache;
 
-    public Uba(String datacenter,
+    public Uba(RepositoryProvider repositoryProvider,
+        String datacenter,
         String rack,
         String publicHostName,
         String host,
@@ -48,6 +50,7 @@ public class Uba {
         UbaTree ubaTree,
         UbaLog ubaLog) {
 
+        this.repositoryProvider = repositoryProvider;
         this.datacenter = datacenter;
         this.rack = rack;
         this.publicHost = publicHostName;
@@ -106,7 +109,8 @@ public class Uba {
     Nanny newNanny(InstanceDescriptor instanceDescriptor, InstancePath instancePath) {
         DeployLog deployLog = new DeployLog();
         HealthLog healthLog = new HealthLog(deployLog);
-        return new Nanny(instanceDescriptor,
+        return new Nanny(repositoryProvider,
+            instanceDescriptor,
             instancePath,
             new DeployableValidator(),
             new DeployLog(),

@@ -66,6 +66,7 @@ import com.jivesoftware.os.upena.deployable.endpoints.ModulesPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ProfilerPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ProjectsPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ReleasesPluginEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.RepoPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.SARPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ServicesPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.TopologyPluginEndpoints;
@@ -92,6 +93,7 @@ import com.jivesoftware.os.upena.deployable.region.ModulesPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ProfilerPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ProjectsPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ReleasesPluginRegion;
+import com.jivesoftware.os.upena.deployable.region.RepoPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.SARPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ServicesPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.TopologyPluginRegion;
@@ -108,6 +110,8 @@ import com.jivesoftware.os.upena.service.UpenaService;
 import com.jivesoftware.os.upena.service.UpenaStore;
 import com.jivesoftware.os.upena.shared.Host;
 import com.jivesoftware.os.upena.shared.HostKey;
+import com.jivesoftware.os.upena.shared.PathToRepo;
+import com.jivesoftware.os.upena.uba.service.RepositoryProvider;
 import com.jivesoftware.os.upena.uba.service.UbaLog;
 import com.jivesoftware.os.upena.uba.service.UbaService;
 import com.jivesoftware.os.upena.uba.service.UbaServiceInitializer;
@@ -250,6 +254,10 @@ public class Main {
         LOG.info("-----------------------------------------------------------------------");
 
         String workingDir = System.getProperty("user.dir");
+        File defaultPathToRepo = new File(new File(System.getProperty("user.home"), ".m2"), "repository");
+        PathToRepo localPathToRepo = new PathToRepo(new File(System.getProperty("pathToRepo", defaultPathToRepo.getAbsolutePath())));
+        RepositoryProvider repositoryProvider = new RepositoryProvider(localPathToRepo);
+
         Host host = new Host(publicHost, datacenter, rack, ringHost.getHost(), ringHost.getPort(), workingDir, null);
 
         HostKey hostKey = upenaStore.hosts.toKey(host);
@@ -266,7 +274,8 @@ public class Main {
             }
         };
 
-        final UbaService ubaService = new UbaServiceInitializer().initialize(hostKey.getKey(),
+        final UbaService ubaService = new UbaServiceInitializer().initialize(repositoryProvider,
+            hostKey.getKey(),
             workingDir,
             datacenter,
             rack,
@@ -290,9 +299,13 @@ public class Main {
             .addEndpoint(UpenaEndpoints.class)
             .addInjectable(DiscoveredRoutes.class, discoveredRoutes)
             .addInjectable(RingHost.class, ringHost)
-            .addInjectable(HostKey.class, hostKey);
+            .addInjectable(HostKey.class, hostKey)
+            .addInjectable(UpenaAutoRelease.class,new UpenaAutoRelease(repositoryProvider, upenaStore))
+            .addInjectable(PathToRepo.class, localPathToRepo);
 
-        injectUI(amzaService, hostKey, ringHost, upenaStore, upenaConfigStore, upenaService, ubaService, jerseyEndpoints, clusterName, discoveredRoutes);
+        injectUI(amzaService, localPathToRepo, repositoryProvider, hostKey, ringHost, upenaStore, upenaConfigStore, upenaService, ubaService, jerseyEndpoints,
+            clusterName,
+            discoveredRoutes);
 
         InitializeRestfulServer initializeRestfulServer = new InitializeRestfulServer(port, "UpenaNode", 128, 10000);
         initializeRestfulServer.addClasspathResource("/resources");
@@ -333,6 +346,8 @@ public class Main {
     }
 
     private void injectUI(AmzaService amzaService,
+        PathToRepo localPathToRepo,
+        RepositoryProvider repositoryProvider,
         HostKey hostKey,
         RingHost ringHost,
         UpenaStore upenaStore,
@@ -358,7 +373,6 @@ public class Main {
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/instancesPluginRegion.soy"), "instances.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/dependenciesPluginRegion.soy"), "dependencies.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/modulesPluginRegion.soy"), "modules.soy");
-        soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/projectsPluginRegion.soy"), "projects.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/clustersPluginRegion.soy"), "clusters.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/hostsPluginRegion.soy"), "hosts.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/servicesPluginRegion.soy"), "services.soy");
@@ -367,6 +381,9 @@ public class Main {
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/configPluginRegion.soy"), "config.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/sarPluginRegion.soy"), "sarPluginRegion.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/profilerPluginRegion.soy"), "profilerPluginRegion.soy");
+        soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/projectsPluginRegion.soy"), "projects.soy");
+        soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/projectBuildOutput.soy"), "projectOutput.soy");
+        soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/repoPluginRegion.soy"), "repoPluginRegion.soy");
 
         SoyFileSet sfs = soyFileSetBuilder.build();
         SoyTofu tofu = sfs.compileToTofu();
@@ -386,7 +403,8 @@ public class Main {
             amzaService,
             upenaStore,
             upenaConfigStore);
-        ReleasesPluginRegion releasesPluginRegion = new ReleasesPluginRegion("soy.page.releasesPluginRegion", "soy.page.releasesPluginRegionList",
+        ReleasesPluginRegion releasesPluginRegion = new ReleasesPluginRegion(repositoryProvider,
+            "soy.page.releasesPluginRegion", "soy.page.releasesPluginRegionList",
             renderer, upenaStore);
         HostsPluginRegion hostsPluginRegion = new HostsPluginRegion("soy.page.hostsPluginRegion", renderer, upenaStore);
         InstancesPluginRegion instancesPluginRegion = new InstancesPluginRegion("soy.page.instancesPluginRegion",
@@ -416,9 +434,13 @@ public class Main {
             ConfigPluginEndpoints.class,
             new ConfigPluginRegion("soy.page.configPluginRegion", renderer, upenaStore, upenaConfigStore));
 
-         ManagePlugin projects = new ManagePlugin("folder-open", null, "Projects", "/ui/projects",
+        ManagePlugin repo = new ManagePlugin("hdd", null, "Repository", "/ui/repo",
+            RepoPluginEndpoints.class,
+            new RepoPluginRegion("soy.page.repoPluginRegion", renderer, upenaStore, localPathToRepo));
+
+        ManagePlugin projects = new ManagePlugin("folder-open", null, "Projects", "/ui/projects",
             ProjectsPluginEndpoints.class,
-            new ProjectsPluginRegion("soy.page.projectsPluginRegion", renderer, upenaStore));
+            new ProjectsPluginRegion("soy.page.projectsPluginRegion", "soy.page.projectBuildOutput", renderer, upenaStore, localPathToRepo));
 
         ManagePlugin clusters = new ManagePlugin(null, "cluster", "Clusters", "/ui/clusters",
             ClustersPluginEndpoints.class,
@@ -436,11 +458,11 @@ public class Main {
 
         ManagePlugin dependencies = new ManagePlugin("list", null, "Dep Versions", "/ui/dependencies",
             DependenciesPluginEndpoints.class,
-            new DependenciesPluginRegion("soy.page.dependenciesPluginRegion", renderer, upenaStore));
+            new DependenciesPluginRegion(repositoryProvider, "soy.page.dependenciesPluginRegion", renderer, upenaStore));
 
         ManagePlugin modules = new ManagePlugin("wrench", null, "Modules", "/ui/modules",
             ModulesPluginEndpoints.class,
-            new ModulesPluginRegion("soy.page.modulesPluginRegion", renderer, upenaStore));
+            new ModulesPluginRegion(repositoryProvider, "soy.page.modulesPluginRegion", renderer, upenaStore));
 
         ManagePlugin ring = new ManagePlugin("leaf", null, "Upena Ring", "/ui/ring",
             UpenaRingPluginEndpoints.class,
@@ -458,6 +480,7 @@ public class Main {
             new ProfilerPluginRegion("soy.page.profilerPluginRegion", renderer, new VisualizeProfile(new NameUtils(), servicesCallDepthStack)));
 
         List<ManagePlugin> plugins = Lists.newArrayList(
+            repo,
             projects,
             modules,
             dependencies,

@@ -33,6 +33,7 @@
                 <th>Instances</th>
                 <th>Name</th>
                 <th>Version</th>
+                <th>Auto Release</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -54,6 +55,9 @@
                             placeholder="Repository" value="{$filters.repository?:''}" name="repository" id="descriptionPicker" class="form-control">
                             <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
                             placeholder="Version" value="{$filters.version?:''}" name="version" id="descriptionPicker" class="form-control">
+                        </td>
+                        <td bgcolor>
+                            <input class="form-control" type="checkbox" name="autoRelease" value="true" {if $filters.autoRelease}checked="checked"{/if}>
                         </td>
                         <td>
                             <button data-toggle="tooltip" title="Filter" type="submit" name="action" value="filter" class="btn btn-primary ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-search">&nbspFilter</span></button>
@@ -134,6 +138,9 @@
                                 {/if}
                             </ul>
 
+                        </td>
+                        <td>
+                            <input class="form-control" type="checkbox" name="autoRelease" value="true" {if $r.autoRelease}checked="checked"{/if}>
                         </td>
                         <td  style="width:100px;">
                             <input type="hidden" name="key" value="{$r.key}">

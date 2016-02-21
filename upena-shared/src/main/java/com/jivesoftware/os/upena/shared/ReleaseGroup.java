@@ -30,6 +30,7 @@ public class ReleaseGroup implements Stored<ReleaseGroup>, Serializable {
     public final String version;
     public final String repository;
     public final String description;
+    public final boolean autoRelease;
 
     @JsonCreator
     public ReleaseGroup(@JsonProperty("name") String name,
@@ -37,13 +38,15 @@ public class ReleaseGroup implements Stored<ReleaseGroup>, Serializable {
         @JsonProperty("rollbackVersion") String rollbackVersion,
         @JsonProperty("version") String version,
         @JsonProperty("repository") String repository,
-        @JsonProperty("description") String description) {
+        @JsonProperty("description") String description,
+        @JsonProperty("autoRelease") boolean autoRelease) {
         this.name = name;
         this.email = email;
         this.rollbackVersion = rollbackVersion;
         this.version = version;
         this.repository = repository;
         this.description = description;
+        this.autoRelease = autoRelease;
     }
 
     @Override
@@ -54,6 +57,7 @@ public class ReleaseGroup implements Stored<ReleaseGroup>, Serializable {
             + ", version=" + version
             + ", repository=" + repository
             + ", description=" + description
+            + ", autoRelease=" + autoRelease
             + '}';
     }
 
@@ -65,6 +69,7 @@ public class ReleaseGroup implements Stored<ReleaseGroup>, Serializable {
         hash = 89 * hash + Objects.hashCode(this.version);
         hash = 89 * hash + Objects.hashCode(this.repository);
         hash = 89 * hash + Objects.hashCode(this.description);
+        hash = 89 * hash + Objects.hashCode(this.autoRelease);
         return hash;
     }
 
@@ -90,6 +95,9 @@ public class ReleaseGroup implements Stored<ReleaseGroup>, Serializable {
             return false;
         }
         if (!Objects.equals(this.description, other.description)) {
+            return false;
+        }
+        if (this.autoRelease != other.autoRelease) {
             return false;
         }
         return true;

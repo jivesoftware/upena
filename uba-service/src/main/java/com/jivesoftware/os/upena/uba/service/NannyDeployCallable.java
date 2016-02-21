@@ -40,6 +40,7 @@ import org.eclipse.aether.resolution.ArtifactResult;
 
 class NannyDeployCallable implements Callable<Boolean> {
 
+    private final RepositoryProvider repositoryProvider;
     private final String datacenter;
     private final String rack;
     private final String publicHostName;
@@ -54,7 +55,8 @@ class NannyDeployCallable implements Callable<Boolean> {
     private final DeployableScriptInvoker invokeScript;
     private final UbaLog ubaLog;
 
-    public NannyDeployCallable(String datacenter,
+    public NannyDeployCallable(RepositoryProvider repositoryProvider,
+        String datacenter,
         String rack,
         String publicHostName,
         String host,
@@ -68,6 +70,7 @@ class NannyDeployCallable implements Callable<Boolean> {
         DeployableScriptInvoker invokeScript,
         UbaLog ubaLog) {
 
+        this.repositoryProvider = repositoryProvider;
         this.datacenter = datacenter;
         this.rack = rack;
         this.publicHostName = publicHostName;
@@ -139,12 +142,12 @@ class NannyDeployCallable implements Callable<Boolean> {
             return false;
         }
 
-        RepositorySystem system = RepositoryProvider.newRepositorySystem();
-        RepositorySystemSession session = RepositoryProvider.newRepositorySystemSession(system);
+        RepositorySystem system = repositoryProvider.newRepositorySystem();
+        RepositorySystemSession session = repositoryProvider.newRepositorySystemSession(system);
        
 
         String[] repos = id.repository.split(",");
-        List<RemoteRepository> remoteRepos = RepositoryProvider.newRepositories(system, session, null, repos);
+        List<RemoteRepository> remoteRepos = repositoryProvider.newRepositories(system, session, null, repos);
 
         System.out.println("------------------------------------------------------------");
         System.out.println(" Resolving:" + id);

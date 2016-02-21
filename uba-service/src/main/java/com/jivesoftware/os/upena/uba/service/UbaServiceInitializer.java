@@ -29,7 +29,8 @@ import java.util.Arrays;
 
 public class UbaServiceInitializer {
 
-    public UbaService initialize(String hostKey,
+    public UbaService initialize(RepositoryProvider repositoryProvider,
+        String hostKey,
         String workingDir,
         String datacenter,
         String rack,
@@ -48,7 +49,7 @@ public class UbaServiceInitializer {
             throw new RuntimeException("Failed trying to mkdirs for " + root);
         }
         UbaTree tree = new UbaTree(root, new String[]{"cluster", "service", "release", "instance"});
-        Uba uba = new Uba(datacenter, rack, publicHostName, host, host, port, tree, ubaLog);
+        Uba uba = new Uba(repositoryProvider, datacenter, rack, publicHostName, host, host, port, tree, ubaLog);
         UbaService conductorService = new UbaService(client, uba, hostKey);
         return conductorService;
     }

@@ -3,6 +3,7 @@ package com.jivesoftware.os.upena.uba.service;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
 import org.eclipse.aether.ConfigurationProperties;
 import org.eclipse.aether.DefaultRepositorySystemSession;
@@ -20,7 +21,13 @@ import org.eclipse.aether.transport.http.HttpTransporterFactory;
 
 public class RepositoryProvider {
 
-    public static RepositorySystem newRepositorySystem() {
+    private final AtomicReference<File> localPathToRepo;
+
+    public RepositoryProvider(AtomicReference<File> localPathToRepo) {
+        this.localPathToRepo = localPathToRepo;
+    }
+
+    public RepositorySystem newRepositorySystem() {
         /*
          * Aether's components implement org.eclipse.aether.spi.locator.Service to ease manual wiring and using the
          * prepopulated DefaultServiceLocator, we only need to register the repository connector and transporter
@@ -41,13 +48,12 @@ public class RepositoryProvider {
         return locator.getService(RepositorySystem.class);
     }
 
-    public static DefaultRepositorySystemSession newRepositorySystemSession(RepositorySystem system) {
+    public DefaultRepositorySystemSession newRepositorySystemSession(RepositorySystem system) {
         DefaultRepositorySystemSession session = MavenRepositorySystemUtils.newSession();
         session.setConfigProperty(ConfigurationProperties.REQUEST_TIMEOUT, 30_000);
         session.setConfigProperty(ConfigurationProperties.CONNECT_TIMEOUT, 30_000);
 
-        File repoDir = new File(new File(System.getProperty("user.home"), ".m2"), "repository");
-        LocalRepository localRepo = new LocalRepository(repoDir);
+        LocalRepository localRepo = new LocalRepository(localPathToRepo.get());
         session.setLocalRepositoryManager(system.newLocalRepositoryManager(session, localRepo));
 
         session.setTransferListener(new ConsoleTransferListener());
@@ -58,7 +64,7 @@ public class RepositoryProvider {
         return session;
     }
 
-    public static List<RemoteRepository> newRepositories(RepositorySystem system,
+    public List<RemoteRepository> newRepositories(RepositorySystem system,
         RepositorySystemSession session, RepositoryPolicy policy, String... repoUrls) {
 
         List<RemoteRepository> repos = new ArrayList<>();
@@ -77,7 +83,7 @@ public class RepositoryProvider {
         return repos;
     }
 
-    private static RemoteRepository newCentralRepository() {
+    private RemoteRepository newCentralRepository() {
         return new RemoteRepository.Builder("central", "default", "http://central.maven.org/maven2/").build();
     }
 

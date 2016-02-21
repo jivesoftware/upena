@@ -45,20 +45,20 @@ class CheckGitInfo {
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
-    public static final CheckGitInfo SINGLETON = new CheckGitInfo();
-
+    private final RepositoryProvider repositoryProvider;
     private final Map<String, Map<String, String>> cache = new ConcurrentHashMap<>();
 
-    private CheckGitInfo() {
+    public CheckGitInfo(RepositoryProvider repositoryProvider) {
+        this.repositoryProvider = repositoryProvider;
     }
 
     public List<Map<String, String>> gitInfo(String repository, String coordinates) {
 
-        RepositorySystem system = RepositoryProvider.newRepositorySystem();
-        RepositorySystemSession session = RepositoryProvider.newRepositorySystemSession(system);
+        RepositorySystem system = repositoryProvider.newRepositorySystem();
+        RepositorySystemSession session = repositoryProvider.newRepositorySystemSession(system);
         String[] repos = repository.split(",");
         RepositoryPolicy policy = new RepositoryPolicy(true, RepositoryPolicy.UPDATE_POLICY_DAILY, RepositoryPolicy.CHECKSUM_POLICY_WARN);
-        List<RemoteRepository> remoteRepos = RepositoryProvider.newRepositories(system, session, policy, repos);
+        List<RemoteRepository> remoteRepos = repositoryProvider.newRepositories(system, session, policy, repos);
 
         String[] deployablecoordinates = coordinates.trim().split(",");
         List<Map<String, String>> list = new ArrayList<>();

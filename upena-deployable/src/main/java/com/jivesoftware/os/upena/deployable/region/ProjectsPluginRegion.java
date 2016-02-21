@@ -9,12 +9,13 @@ import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.deployable.region.ProjectsPluginRegion.ProjectsPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.service.UpenaStore;
+import com.jivesoftware.os.upena.shared.PathToRepo;
 import com.jivesoftware.os.upena.shared.Project;
 import com.jivesoftware.os.upena.shared.ProjectFilter;
 import com.jivesoftware.os.upena.shared.ProjectKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -25,6 +26,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicLong;
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.shared.invoker.DefaultInvocationRequest;
 import org.apache.maven.shared.invoker.DefaultInvoker;
@@ -33,7 +38,6 @@ import org.apache.maven.shared.invoker.InvocationResult;
 import org.apache.maven.shared.invoker.Invoker;
 import org.eclipse.jgit.api.CreateBranchCommand;
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.TextProgressMonitor;
 
 /**
@@ -45,16 +49,25 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
     private final String template;
+    private final String outputTemplate;
     private final SoyRenderer renderer;
     private final UpenaStore upenaStore;
+    private final PathToRepo localPathToRepo;
+
+    private final Map<ProjectKey, AtomicLong> runningProjects = new ConcurrentHashMap<>();
+    private final ExecutorService projectExecutors = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
     public ProjectsPluginRegion(String template,
+        String outputTemplate,
         SoyRenderer renderer,
-        UpenaStore upenaStore
+        UpenaStore upenaStore,
+        PathToRepo localPathToRepo
     ) {
         this.template = template;
+        this.outputTemplate = outputTemplate;
         this.renderer = renderer;
         this.upenaStore = upenaStore;
+        this.localPathToRepo = localPathToRepo;
     }
 
     @Override
@@ -75,7 +88,6 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
         final String goals;
 
         final String mvnHome;
-        final String localPathToRepo;
         final String action;
 
         public ProjectsPluginRegionInput(String key,
@@ -87,7 +99,6 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
             String pom,
             String goals,
             String mvnHome,
-            String localPathToRepo,
             String action) {
 
             this.key = key;
@@ -99,8 +110,7 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
             this.pom = pom;
             this.goals = goals;
             this.mvnHome = mvnHome;
-            this.localPathToRepo = localPathToRepo;
-
+        
             this.action = action;
         }
 
@@ -125,6 +135,7 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
 
             ProjectFilter filter = new ProjectFilter(null, null, 0, 10000);
             if (input.action != null) {
+                ProjectKey projectKey = new ProjectKey(input.key);
                 if (input.action.equals("filter")) {
                     filter = new ProjectFilter(
                         input.name.isEmpty() ? null : input.name,
@@ -133,92 +144,144 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
                     data.put("message", "Filtering: name.contains '" + input.name + "' description.contains '" + input.description + "'");
                 } else if (input.action.equals("build")) {
                     filters.clear();
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    PrintStream ps = new PrintStream(baos);
+                    File repoFile = localPathToRepo.get();
 
                     try {
-                        Project project = upenaStore.projects.get(new ProjectKey(input.key));
+                        Project project = upenaStore.projects.get(projectKey);
                         if (project == null) {
                             data.put("message", "Couldn't checkout no existent project. Someone else likely just removed it since your last refresh.");
                         } else {
+                            AtomicLong running = runningProjects.computeIfAbsent(projectKey, (k) -> new AtomicLong());
+                            if (running.compareAndSet(0, System.currentTimeMillis())) {
 
-                            File localPath = new File(new File(project.localPath), project.name);
-                            ps.println("Wiping " + localPath);
-                            FileUtils.deleteQuietly(localPath);
-                            ps.println("Cloning from " + project.scmUrl + " to " + localPath);
+                                File root = new File(project.localPath);
+                                FileUtils.forceMkdir(root);
+                                File localPath = new File(root, project.name);
+                                File output = new File(root, project.name + "-output.txt");
+                                FileUtils.deleteQuietly(localPath);
+                                output.delete();
 
-                            // then clone
-                            try (Git git = Git.cloneRepository()
-                                .setURI(project.scmUrl)
-                                .setDirectory(localPath)
-                                .setProgressMonitor(new TextProgressMonitor(new PrintWriter(ps)))
-                                .call()) {
+                                FileOutputStream fos = new FileOutputStream(output);
+                                PrintStream ps = new PrintStream(fos);
+                                ps.println("FILE: Wiped " + localPath);
+                                ps.println("FILE: Wiped " + output);
+                                ps.println();
+                                ps.println("COMMAND: Starting the build....");
+                                ps.flush();
 
-                                Ref ref = git.checkout().
-                                    setCreateBranch(true).
-                                    setName(project.branch).
-                                    setUpstreamMode(CreateBranchCommand.SetupUpstreamMode.TRACK).
-                                    setStartPoint("origin/" + project.branch).
-                                    call();
+                                projectExecutors.submit(() -> {
 
-                                try {
+                                    try {
 
-                                    List<String> goals = Lists.newArrayList(Splitter.on(' ').split(input.goals));
+                                        ps.println("GIT: Cloning from " + project.scmUrl + " to " + localPath);
 
-                                    InvocationRequest request = new DefaultInvocationRequest();
-                                    request.setPomFile(new File(localPath, input.pom));
-                                    request.setGoals(goals);
-                                    request.setOutputHandler((line) -> {
-                                        ps.println(line);
-                                    });
-                                    request.setMavenOpts("-Xmx3000m");
+                                        // then clone
+                                        try (Git git = Git.cloneRepository()
+                                            .setURI(project.scmUrl)
+                                            .setDirectory(localPath)
+                                            .setProgressMonitor(new TextProgressMonitor(new PrintWriter(ps)))
+                                            .call()) {
 
-                                    Invoker invoker = new DefaultInvoker();
-                                    invoker.setLocalRepositoryDirectory(new File("/jive/tmp/"));
-                                    invoker.setMavenHome(new File(input.mvnHome));
-                                    InvocationResult result = invoker.execute(request);
+                                            ps.println("COMMAND: Checking out branch " + project.branch);
+                                            git.checkout().
+                                                setCreateBranch(true).
+                                                setName(project.branch).
+                                                setUpstreamMode(CreateBranchCommand.SetupUpstreamMode.TRACK).
+                                                setStartPoint("origin/" + project.branch).
+                                                call();
 
-                                    if (result.getExitCode() == 0) {
+                                            try {
+                                                ps.println("COMMAND: Invoking maven with these goals " + project.goals);
+                                                List<String> goals = Lists.newArrayList(Splitter.on(' ').split(input.goals));
+                                                InvocationRequest request = new DefaultInvocationRequest();
+                                                request.setPomFile(new File(localPath, input.pom));
+                                                request.setGoals(goals);
+                                                request.setOutputHandler((line) -> {
+                                                    ps.println(line);
+                                                });
+                                                request.setMavenOpts("-Xmx3000m");
 
-                                        request = new DefaultInvocationRequest();
-                                        request.setPomFile(new File(localPath, input.pom));
-                                        request.setGoals(Arrays.asList("deploy"));
-                                        request.setOutputHandler((line) -> {
-                                            ps.println(line);
-                                        });
-                                        request.setMavenOpts("-Xmx3000m");
-                                        Properties properties = new Properties();
+                                                Invoker invoker = new DefaultInvoker();
 
-                                        properties.setProperty("altDeploymentRepository", "mine::default::file:///tmp/myrepo");
-                                        properties.setProperty("altReleaseRepository", "mine::default::file:///tmp/myrepo");
-                                        properties.setProperty("altSnapshotRepository", "mine::default::file:///tmp/myrepo");
+                                                FileUtils.forceMkdir(repoFile);
 
-                                        properties.setProperty("skipTests", "true");
-                                        properties.setProperty("deployAtEnd", "true");
-                                        request.setProperties(properties);
-                                        request.addShellEnvironment(user, user);
+                                                invoker.setLocalRepositoryDirectory(repoFile);
+                                                invoker.setMavenHome(new File(input.mvnHome));
+                                                InvocationResult result = invoker.execute(request);
 
-                                        invoker = new DefaultInvoker();
-                                        invoker.setLocalRepositoryDirectory(new File("/jive/tmp/"));
-                                        invoker.setMavenHome(new File("/usr/local/Cellar/maven/3.3.1/libexec"));
-                                        result = invoker.execute(request);
+                                                if (result.getExitCode() == 0) {
+                                                    ps.println();
+                                                    ps.println("Hooray it builds!");
+                                                    ps.println();
 
-                                        ps.println(result.getExitCode());
+                                                    ps.println("Invoking deploying... ");
+
+                                                    request = new DefaultInvocationRequest();
+                                                    request.setPomFile(new File(localPath, input.pom));
+                                                    request.setGoals(Arrays.asList("deploy"));
+                                                    request.setOutputHandler((line) -> {
+                                                        ps.println(line);
+                                                    });
+                                                    request.setShowErrors(true);
+                                                    request.setShowVersion(true);
+
+                                                    request.setMavenOpts("-Xmx3000m");
+                                                    request.setDebug(false);
+
+                                                    Properties properties = new Properties();
+
+                                                    String repoUrl = "http://localhost:1175/repo";
+                                                    properties.setProperty("altDeploymentRepository", "mine::default::" + repoUrl);
+                                                    properties.setProperty("altReleaseRepository", "mine::default::" + repoUrl);
+                                                    properties.setProperty("altSnapshotRepository", "mine::default::" + repoUrl);
+
+                                                    properties.setProperty("skipTests", "true");
+                                                    properties.setProperty("deployAtEnd", "true");
+                                                    request.setProperties(properties);
+                                                    request.addShellEnvironment(user, user);
+
+                                                    invoker = new DefaultInvoker();
+                                                    invoker.setLocalRepositoryDirectory(repoFile);
+                                                    invoker.setMavenHome(new File("/usr/local/Cellar/maven/3.3.1/libexec"));
+                                                    result = invoker.execute(request);
+
+                                                    if (result.getExitCode() == 0) {
+                                                        ps.println();
+                                                        ps.println("SUCCES: Hooray it deployed!");
+                                                        ps.println();
+                                                    } else {
+                                                        ps.println();
+                                                        ps.println("ERROR: Darn it!");
+                                                        ps.println();
+                                                    }
+                                                } else {
+                                                    ps.println();
+                                                    ps.println("ERROR: Darn it!");
+                                                    ps.println();
+                                                }
+                                            } catch (Exception x) {
+                                                String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
+                                                ps.println("error while calling mvn " + trace);
+                                            }
+
+                                            fos.flush();
+                                            fos.close();
+                                        }
+                                    } catch (Exception x) {
+                                        LOG.error("Unexpected failure while building" + project, x);
+                                    } finally {
+                                        runningProjects.remove(projectKey);
                                     }
-                                } catch (Exception x) {
-                                    String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
-                                    ps.println("error while calling mvn " + trace);
-                                }
+                                });
 
+                                return output(input.key);
+                            } else {
+                                data.put("message", "Project is alreadying running.");
                             }
-
-                            data.put("message", baos.toString("UTF-8"));
-
                         }
                     } catch (Exception x) {
                         String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
-                        ps.println("Error while trying to add Project:" + input.name + "\n" + trace);
-                        data.put("message", baos.toString("UTF-8"));
+                        data.put("message", "Error while trying to build Project:" + input.name + "\n" + trace);
                     }
 
                 } else if (input.action.equals("add")) {
@@ -232,7 +295,6 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
                             input.pom,
                             input.goals,
                             input.mvnHome,
-                            input.localPathToRepo,
                             new HashSet<>(),
                             new HashSet<>(),
                             new ArrayList<>());
@@ -247,7 +309,7 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
                 } else if (input.action.equals("update")) {
                     filters.clear();
                     try {
-                        Project project = upenaStore.projects.get(new ProjectKey(input.key));
+                        Project project = upenaStore.projects.get(projectKey);
                         if (project == null) {
                             data.put("message", "Couldn't update no existent project. Someone else likely just removed it since your last refresh.");
                         } else {
@@ -259,11 +321,10 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
                                 input.pom,
                                 input.goals,
                                 input.mvnHome,
-                                input.localPathToRepo,
                                 new HashSet<>(),
                                 new HashSet<>(),
                                 new ArrayList<>());
-                            upenaStore.projects.update(new ProjectKey(input.key), updatedProject);
+                            upenaStore.projects.update(projectKey, updatedProject);
                             data.put("message", "Updated Project:" + input.name);
                             upenaStore.record(user, "updated", System.currentTimeMillis(), "", "projects-ui", project.toString());
                         }
@@ -276,7 +337,6 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
                         data.put("message", "Failed to remove Project:" + input.name);
                     } else {
                         try {
-                            ProjectKey projectKey = new ProjectKey(input.key);
                             Project removing = upenaStore.projects.get(projectKey);
                             if (removing != null) {
                                 upenaStore.projects.remove(projectKey);
@@ -298,6 +358,7 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
                 Project value = timestampedValue.getValue();
 
                 Map<String, Object> row = new HashMap<>();
+                row.put("running", runningProjects.containsKey(key));
                 row.put("key", key.getKey());
                 row.put("name", value.name);
                 row.put("description", value.description);
@@ -307,7 +368,6 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
                 row.put("pom", value.pom);
                 row.put("goals", value.goals);
                 row.put("mvnHome", value.mvnHome);
-                row.put("localPathToRepo", value.localPathToRepo);
                 rows.add(row);
             }
 
@@ -329,6 +389,31 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
         }
 
         return renderer.render(template, data);
+    }
+
+    public String output(String key) throws Exception {
+        Map<String, Object> data = Maps.newHashMap();
+
+        List<String> log = new ArrayList<>();
+      
+        Project project = upenaStore.projects.get(new ProjectKey(key));
+        if (project != null) {
+            data.put("key", key);
+            data.put("name", project.name);
+
+            File output = new File(new File(project.localPath), project.name + "-output.txt");
+            if (output.exists()) {
+                List<String> lines = FileUtils.readLines(output);
+                log.addAll(lines);
+            }
+
+        } else {
+            data.put("key", key);
+            data.put("name", "No project found for " + key);
+        }
+        data.put("log", log);
+      
+        return renderer.render(outputTemplate, data);
     }
 
     public void add(String user, ProjectUpdate releaseGroupUpdate) throws Exception {
@@ -374,4 +459,5 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
         return "Projects";
     }
 
+    
 }

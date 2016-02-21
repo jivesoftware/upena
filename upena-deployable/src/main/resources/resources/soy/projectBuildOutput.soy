@@ -1,0 +1,45 @@
+{namespace soy.page}
+
+/**
+ * Upena Status plugin page
+ *
+ * @param? key
+ * @param? name
+ * @param? log
+ */
+{template .projectBuildOutput}
+    <div class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.6);">
+        <div class="panel-heading"><span class="panel-title">Project {$name} Output</span>
+            <a href="{$key}" class="btn btn-default">
+                <span class="glyphicon glyphicon-refresh" aria-hidden="true">Refresh</span>
+            </a>
+        </div>
+        <div class="panel-body">
+             <ol type="1">
+                {foreach $l in $log}
+                    {if strContains($l,'SUCCESS') }
+                        <li style="color:green"><span style="color:green">
+                    {elseif strContains($l,'COMMAND') }
+                        <li style="color:blue"><span style="color:blue">
+                    {elseif strContains($l,'WARN') }
+                        <li style="color:orange"><span style="color:orange">
+                    {elseif strContains($l,'ERROR') }
+                        <li style="color:red"><span style="color:red">
+                    {elseif strContains($l,'GIT') }
+                        <li style="color:gray"><span style="color:gray">
+                    {else}
+                        <li style="color:black"><span style="color:black">
+                    {/if}
+                        {$l}</span>
+                    </li>
+                {/foreach}
+             </ol>
+        </div>
+        <a href="{$key}" class="btn btn-default">
+            <span class="glyphicon glyphicon-refresh" aria-hidden="true">Refresh</span>
+        </a>
+        <script>
+            window.scrollTo(0,document.body.scrollHeight);
+        </script>
+    </div>
+{/template}

@@ -37,14 +37,17 @@ public class DependenciesPluginRegion implements PageRegion<DependenciesPluginRe
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
+    private final RepositoryProvider repositoryProvider;
     private final String template;
     private final SoyRenderer renderer;
     private final UpenaStore upenaStore;
 
-    public DependenciesPluginRegion(String template,
+    public DependenciesPluginRegion(RepositoryProvider repositoryProvider,
+        String template,
         SoyRenderer renderer,
         UpenaStore upenaStore
     ) {
+        this.repositoryProvider = repositoryProvider;
         this.template = template;
         this.renderer = renderer;
         this.upenaStore = upenaStore;
@@ -114,10 +117,10 @@ public class DependenciesPluginRegion implements PageRegion<DependenciesPluginRe
 
     private void deploy(Map<Artifact, String> latestCache, ReleaseGroup releaseGroup, List<Map<String, Object>> rows) {
 
-        RepositorySystem system = RepositoryProvider.newRepositorySystem();
-        RepositorySystemSession session = RepositoryProvider.newRepositorySystemSession(system);
+        RepositorySystem system = repositoryProvider.newRepositorySystem();
+        RepositorySystemSession session = repositoryProvider.newRepositorySystemSession(system);
         String[] repos = releaseGroup.repository.split(",");
-        List<RemoteRepository> remoteRepos = RepositoryProvider.newRepositories(system, session, null, repos);
+        List<RemoteRepository> remoteRepos = repositoryProvider.newRepositories(system, session, null, repos);
         String[] deployablecoordinates = releaseGroup.version.trim().split(",");
         gather(latestCache, deployablecoordinates[0], remoteRepos, system, session, rows);
 

@@ -56,12 +56,18 @@ public class ChromeRegion<I extends PluginInput, R extends PageRegion<I>> implem
 
     @Override
     public String render(String user, I input) {
+        return render(region.getRootPath(), user, input.name(), region.getTitle(), region.render(user, input));
+
+    }
+
+    public String render(String path, String user, String name, String title, String htmlRegion) {
         List<Map<String, String>> p = Lists.transform(plugins, (input1) -> {
             Map<String, String> map = new HashMap<>();
-            map.put("name", input1.name);
-            if (input.name().equals(input1.name)) {
-                map.put("active", String.valueOf(input.name().equals(input1.name)));
+            if (name.equals(input1.name)) {
+                map.put("active", String.valueOf(name.equals(input1.name)));
             }
+
+            map.put("name", input1.name);
             map.put("path", input1.path);
             map.put("glyphicon", input1.glyphicon);
             map.put("icon", input1.icon);
@@ -79,7 +85,7 @@ public class ChromeRegion<I extends PluginInput, R extends PageRegion<I>> implem
                 instances.add(ImmutableMap.of("host", value.name,
                     "name", String.valueOf("upena-" + i[0]),
                     "port", String.valueOf(value.port),
-                    "path", region.getRootPath()));
+                    "path", path));
                 if (key.equals(hostKey)) {
                     instance[0] = i[0];
                 }
@@ -97,8 +103,8 @@ public class ChromeRegion<I extends PluginInput, R extends PageRegion<I>> implem
         Map<String, Object> data = Maps.newHashMap();
         data.put("header", headerRegion.render(user, headerData));
         data.put("menu", menuRegion.render(user, headerData));
-        data.put("region", region.render(user, input));
-        data.put("title", region.getTitle());
+        data.put("region", htmlRegion);
+        data.put("title", title);
         data.put("plugins", p);
         data.put("user", user);
         return renderer.render(template, data);

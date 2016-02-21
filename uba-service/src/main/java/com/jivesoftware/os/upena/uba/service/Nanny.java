@@ -35,6 +35,8 @@ import java.util.concurrent.atomic.AtomicReference;
 public class Nanny {
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
+
+    private final RepositoryProvider repositoryProvider;
     private final InstancePath instancePath;
     private final DeployableValidator deployableValidator;
     private final DeployLog deployLog;
@@ -55,7 +57,8 @@ public class Nanny {
     final AtomicLong startupId = new AtomicLong(0);
     final AtomicLong unexpectedRestartTimestamp = new AtomicLong(-1);
 
-    public Nanny(InstanceDescriptor instanceDescriptor,
+    public Nanny(RepositoryProvider repositoryProvider,
+        InstanceDescriptor instanceDescriptor,
         InstancePath instancePath,
         DeployableValidator deployableValidator,
         DeployLog deployLog,
@@ -63,6 +66,8 @@ public class Nanny {
         DeployableScriptInvoker invokeScript,
         UbaLog ubaLog,
         Cache<InstanceDescriptor, Boolean> haveRunConfigExtractionCache) {
+
+        this.repositoryProvider = repositoryProvider;
         this.instanceDescriptor = new AtomicReference<>(instanceDescriptor);
         this.instancePath = instancePath;
         this.deployableValidator = deployableValidator;
@@ -86,7 +91,7 @@ public class Nanny {
     public long getUnexpectedRestartTimestamp() {
         return unexpectedRestartTimestamp.get();
     }
-    
+
     public InstanceDescriptor getInstanceDescriptor() {
         return instanceDescriptor.get();
     }
@@ -169,7 +174,13 @@ public class Nanny {
                         status.set("Waiting for destroy...");
                         if (destroyFuture.get()) {
 
-                            NannyDeployCallable deployTask = new NannyDeployCallable(datacenter, rack, publicHostName, host, upenaHost, upenaPort,
+                            NannyDeployCallable deployTask = new NannyDeployCallable(repositoryProvider,
+                                datacenter,
+                                rack,
+                                publicHostName,
+                                host,
+                                upenaHost,
+                                upenaPort,
                                 instanceDescriptor.get(),
                                 instancePath,
                                 deployLog,

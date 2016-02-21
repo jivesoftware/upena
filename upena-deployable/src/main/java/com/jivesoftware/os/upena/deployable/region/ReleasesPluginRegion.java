@@ -17,6 +17,7 @@ import com.jivesoftware.os.upena.shared.ReleaseGroupFilter;
 import com.jivesoftware.os.upena.shared.ReleaseGroupKey;
 import com.jivesoftware.os.upena.shared.ServiceKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
+import com.jivesoftware.os.upena.uba.service.RepositoryProvider;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -34,15 +35,19 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
 
     private static final MetricLogger log = MetricLoggerFactory.getLogger();
 
+    private final RepositoryProvider repositoryProvider;
     private final String template;
     private final String simpleTemplate;
     private final SoyRenderer renderer;
     private final UpenaStore upenaStore;
 
-    public ReleasesPluginRegion(String template,
+    public ReleasesPluginRegion(RepositoryProvider repositoryProvider,
+        String template,
         String simpleTemplate,
         SoyRenderer renderer,
         UpenaStore upenaStore) {
+
+        this.repositoryProvider = repositoryProvider;
         this.template = template;
         this.simpleTemplate = simpleTemplate;
         this.renderer = renderer;
@@ -63,7 +68,8 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
 
         boolean newerVersionAvailable = false;
         StringBuilder newerVersion = new StringBuilder();
-        LinkedHashMap<String, String> latestRelease = new CheckForLatestRelease().isLatestRelease(releaseGroup.repository, releaseGroup.version);
+        LinkedHashMap<String, String> latestRelease = new CheckForLatestRelease(repositoryProvider).isLatestRelease(releaseGroup.repository,
+            releaseGroup.version);
         for (Entry<String, String> e : latestRelease.entrySet()) {
             if (newerVersion.length() > 0) {
                 newerVersion.append(",");
@@ -74,9 +80,9 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
             }
         }
         if (newerVersionAvailable) {
-            return CheckChangelog.SINGLETON.changelog(releaseGroup.repository, newerVersion.toString());
+            return new CheckChangelog(repositoryProvider).changelog(releaseGroup.repository, newerVersion.toString());
         } else {
-            return CheckChangelog.SINGLETON.changelog(releaseGroup.repository, releaseGroup.version);
+            return new CheckChangelog(repositoryProvider).changelog(releaseGroup.repository, releaseGroup.version);
         }
 
     }
@@ -89,7 +95,8 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
 
         boolean newerVersionAvailable = false;
         StringBuilder newerVersion = new StringBuilder();
-        LinkedHashMap<String, String> latestRelease = new CheckForLatestRelease().isLatestRelease(releaseGroup.repository, releaseGroup.version);
+        LinkedHashMap<String, String> latestRelease = new CheckForLatestRelease(repositoryProvider).isLatestRelease(releaseGroup.repository,
+            releaseGroup.version);
         for (Entry<String, String> e : latestRelease.entrySet()) {
             if (newerVersion.length() > 0) {
                 newerVersion.append(",");
@@ -100,9 +107,9 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
             }
         }
         if (newerVersionAvailable) {
-            return CheckGitInfo.SINGLETON.gitInfo(releaseGroup.repository, newerVersion.toString());
+            return new CheckGitInfo(repositoryProvider).gitInfo(releaseGroup.repository, newerVersion.toString());
         } else {
-            return CheckGitInfo.SINGLETON.gitInfo(releaseGroup.repository, releaseGroup.version);
+            return new CheckGitInfo(repositoryProvider).gitInfo(releaseGroup.repository, releaseGroup.version);
         }
 
     }
@@ -117,6 +124,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
         final String upgrade;
         final String repository;
         final String email;
+        final boolean autoRelease;
         final String action;
 
         public ReleasesPluginRegionInput(String key,
@@ -127,6 +135,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
             String upgrade,
             String repository,
             String email,
+            boolean autoRelease,
             String action) {
 
             this.key = key;
@@ -137,6 +146,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
             this.upgrade = upgrade;
             this.repository = repository;
             this.email = email;
+            this.autoRelease = autoRelease;
             this.action = action;
         }
 
@@ -170,6 +180,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
             filters.put("repository", input.repository);
             filters.put("version", input.version);
             filters.put("description", input.description);
+            filters.put("autoRelease", String.valueOf(input.autoRelease));
             data.put("filters", filters);
 
             ReleaseGroupFilter filter = new ReleaseGroupFilter(null, null, null, null, null, 0, 10000);
@@ -197,7 +208,8 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
                             null,
                             input.version,
                             input.repository,
-                            input.description
+                            input.description,
+                            input.autoRelease
                         );
                         upenaStore.releaseGroups.update(null, newRelease);
 
@@ -216,7 +228,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
                             data.put("message", "Couldn't update no existent cluster. Someone else likely just removed it since your last refresh.");
                         } else {
 
-                            List<String> errors = new CheckReleasable().isReleasable(input.repository, input.version);
+                            List<String> errors = new CheckReleasable(repositoryProvider).isReleasable(input.repository, input.version);
                             if (errors.isEmpty()) {
 
                                 ReleaseGroup updated = new ReleaseGroup(input.name,
@@ -224,7 +236,8 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
                                     release.version,
                                     input.version,
                                     input.repository,
-                                    input.description);
+                                    input.description,
+                                    input.autoRelease);
                                 upenaStore.releaseGroups.update(new ReleaseGroupKey(input.key), updated);
                                 data.put("message", "Updated Release:" + input.name);
                                 upenaStore.record(user, "updated", System.currentTimeMillis(), "", "release-ui", updated.toString());
@@ -245,7 +258,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
                             data.put("message", "Couldn't update no existent cluster. Someone else likely just removed it since your last refresh.");
                         } else {
 
-                            List<String> errors = new CheckReleasable().isReleasable(input.repository, input.version);
+                            List<String> errors = new CheckReleasable(repositoryProvider).isReleasable(input.repository, input.version);
                             if (errors.isEmpty()) {
 
                                 ReleaseGroup updated = new ReleaseGroup(input.name,
@@ -253,7 +266,8 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
                                     input.version,
                                     input.upgrade,
                                     input.repository,
-                                    input.description);
+                                    input.description,
+                                    input.autoRelease);
                                 upenaStore.releaseGroups.update(new ReleaseGroupKey(input.key), updated);
                                 data.put("message", "Upgrade Release:" + input.name);
                                 upenaStore.record(user, "upgrade", System.currentTimeMillis(), "", "release-ui", updated.toString());
@@ -274,7 +288,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
                             data.put("message", "Couldn't update no existent cluster. Someone else likely just removed it since your last refresh.");
                         } else {
 
-                            List<String> errors = new CheckReleasable().isReleasable(input.repository, input.version);
+                            List<String> errors = new CheckReleasable(repositoryProvider).isReleasable(input.repository, input.version);
                             if (errors.isEmpty()) {
 
                                 ReleaseGroup updated = new ReleaseGroup(input.name,
@@ -282,7 +296,8 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
                                     null,
                                     input.rollback,
                                     input.repository,
-                                    input.description);
+                                    input.description,
+                                    input.autoRelease);
                                 upenaStore.releaseGroups.update(new ReleaseGroupKey(input.key), updated);
                                 data.put("message", "Rollback Release:" + input.name);
                                 upenaStore.record(user, "rollback", System.currentTimeMillis(), "", "release-ui", updated.toString());
@@ -352,6 +367,9 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
                 row.put("name", value.name);
                 row.put("email", value.email);
                 row.put("repository", value.repository);
+                row.put("autoRelease", value.autoRelease);
+
+
                 if (value.rollbackVersion != null) {
                     row.put("rollback", value.rollbackVersion);
                 }
@@ -360,7 +378,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
 
                 boolean newerVersionAvailable = false;
                 StringBuilder newerVersion = new StringBuilder();
-                LinkedHashMap<String, String> latestRelease = new CheckForLatestRelease().isLatestRelease(value.repository, value.version);
+                LinkedHashMap<String, String> latestRelease = new CheckForLatestRelease(repositoryProvider).isLatestRelease(value.repository, value.version);
                 for (Entry<String, String> e : latestRelease.entrySet()) {
                     if (newerVersion.length() > 0) {
                         newerVersion.append(",");

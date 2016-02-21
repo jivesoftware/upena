@@ -345,7 +345,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
 
                         String title = title(cluster, host, service, versions, null);
                         n.focusHtml = title + "<br>" + releasesPluginRegion.renderSimple(user,
-                            new ReleasesPluginRegionInput(value.releaseGroupKey.toString(), releaseGroup.name, "", "", "", "", "", "", "filter"));
+                            new ReleasesPluginRegionInput(value.releaseGroupKey.toString(), releaseGroup.name, "", "", "", "", "", "", false, "filter"));
                         fs -= 2;
 
                         n.maxHealth = Math.max(n.maxHealth, serviceHealth);

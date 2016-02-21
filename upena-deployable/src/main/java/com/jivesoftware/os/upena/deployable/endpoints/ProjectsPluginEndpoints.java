@@ -13,6 +13,7 @@ import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -41,7 +42,7 @@ public class ProjectsPluginEndpoints {
     public Response projects(@Context HttpServletRequest httpRequest) {
         String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(),
             pluginRegion,
-            new ProjectsPluginRegionInput("", "", "", "", "", "", "", "", "", "", ""));
+            new ProjectsPluginRegionInput("", "", "", "", "", "", "", "", "", ""));
         return Response.ok(rendered).build();
     }
 
@@ -59,12 +60,28 @@ public class ProjectsPluginEndpoints {
         @FormParam("pom") @DefaultValue("") String pom,
         @FormParam("goals") @DefaultValue("") String goals,
         @FormParam("mvnHome") @DefaultValue("") String mvnHome,
-        @FormParam("localPathToRepo") @DefaultValue("") String localPathToRepo,
         @FormParam("action") @DefaultValue("") String action) {
 
         String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-            new ProjectsPluginRegionInput(key, name, description, localPath, scmUrl, branch, pom, goals, mvnHome, localPathToRepo, action));
+            new ProjectsPluginRegionInput(key, name, description, localPath, scmUrl, branch, pom, goals, mvnHome, action));
         return Response.ok(rendered).build();
+    }
+
+    @GET
+    @Path("/output/{key}")
+    @Produces(MediaType.TEXT_HTML)
+    public Response output(@PathParam("key") @DefaultValue("") String key,
+        @Context HttpServletRequest httpRequest) {
+        try {
+
+            String rendered = soyService.wrapWithChrome(pluginRegion.getRootPath(), httpRequest.getRemoteUser(), pluginRegion.getTitle(), "Project Output",
+                pluginRegion.output(key));
+
+            return Response.ok(rendered).build();
+        } catch (Exception x) {
+            LOG.error("Failed to generate output for:" + key, x);
+            return Response.serverError().build();
+        }
     }
 
     @POST

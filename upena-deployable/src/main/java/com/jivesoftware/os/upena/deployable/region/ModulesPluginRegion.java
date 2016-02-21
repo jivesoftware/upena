@@ -53,16 +53,19 @@ public class ModulesPluginRegion implements PageRegion<ModulesPluginRegionInput>
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
+    private final RepositoryProvider repositoryProvider;
     private final String template;
     private final SoyRenderer renderer;
     private final UpenaStore upenaStore;
 
     private final ConcurrentHashMap<Artifact, List<Artifact>> deps = new ConcurrentHashMap<>();
 
-    public ModulesPluginRegion(String template,
+    public ModulesPluginRegion(RepositoryProvider repositoryProvider,
+        String template,
         SoyRenderer renderer,
         UpenaStore upenaStore
     ) {
+        this.repositoryProvider  = repositoryProvider;
         this.template = template;
         this.renderer = renderer;
         this.upenaStore = upenaStore;
@@ -196,14 +199,14 @@ public class ModulesPluginRegion implements PageRegion<ModulesPluginRegionInput>
                 }
             }
 
-            RepositorySystem system = RepositoryProvider.newRepositorySystem();
-            RepositorySystemSession session = RepositoryProvider.newRepositorySystemSession(system);
+            RepositorySystem system = repositoryProvider.newRepositorySystem();
+            RepositorySystemSession session = repositoryProvider.newRepositorySystemSession(system);
 
             HashSet<Artifact> gathered = new HashSet<>();
             for (ReleaseGroup releaseGroup : releaseGroups) {
 
                 String[] repos = releaseGroup.repository.split(",");
-                List<RemoteRepository> remoteRepos = RepositoryProvider.newRepositories(system, session, null, repos);
+                List<RemoteRepository> remoteRepos = repositoryProvider.newRepositories(system, session, null, repos);
                 String[] deployablecoordinates = releaseGroup.version.trim().split(",");
 
                 HashSet<Artifact> gatherable = new HashSet<>();
