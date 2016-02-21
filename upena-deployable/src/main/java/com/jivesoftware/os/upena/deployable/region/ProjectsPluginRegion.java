@@ -110,7 +110,7 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
             this.pom = pom;
             this.goals = goals;
             this.mvnHome = mvnHome;
-        
+
             this.action = action;
         }
 
@@ -218,7 +218,7 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
 
                                                     request = new DefaultInvocationRequest();
                                                     request.setPomFile(new File(localPath, input.pom));
-                                                    request.setGoals(Arrays.asList("deploy"));
+                                                    request.setGoals(Arrays.asList("javadoc:jar", "source:jar", "deploy"));
                                                     request.setOutputHandler((line) -> {
                                                         ps.println(line);
                                                     });
@@ -395,7 +395,7 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
         Map<String, Object> data = Maps.newHashMap();
 
         List<String> log = new ArrayList<>();
-      
+
         Project project = upenaStore.projects.get(new ProjectKey(key));
         if (project != null) {
             data.put("key", key);
@@ -412,7 +412,7 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
             data.put("name", "No project found for " + key);
         }
         data.put("log", log);
-      
+
         return renderer.render(outputTemplate, data);
     }
 
@@ -459,5 +459,4 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
         return "Projects";
     }
 
-    
 }
