@@ -10,9 +10,6 @@
  */
 {template .projectBuildOutput}
 
-    <script>
-        window.scrollTo(0,document.body.scrollHeight);
-    </script>
     <div id="upena-project-build-output" class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.9);">
         <div class="panel-heading"><span class="panel-title">Project {$name} Output</span>
             <form method="get" action="/ui/projects/output/{$key}">
@@ -47,5 +44,8 @@
             {sp}
             <input id="project-refresh-bottom" type="checkbox" name="refresh" value="true" {if $refresh}checked="checked"{/if}> <label for="refresh">Auto-refresh every 2s</label>
         </form>
+        <script>
+            window.scrollTo(0,document.body.scrollHeight);
+        </script>
     </div>
 {/template}

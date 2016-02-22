@@ -41,19 +41,20 @@
                             </form>
 
                             {foreach $c in $projects}
-                                <form id="edit-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
-                                    data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="editHost">
-                                    <tr>
-                                        <td>
-                                            <span class="label label-{$c.status}">{if $c.elapse}{$c.elapse}{/if}</span>
-                                        </td>
-                                        <td>
-                                            <div>
-                                                <a style="width:100%;" href="#" rel="popover" id="popoverAnchor-{$c.key}" data-popover-content="#popover-{$c.key}" data-placement="bottom" class="btn btn-default" title="{$c.name}">
-                                                    <span class="glyphicon glyphicon-menu-down">{$c.name}</span>
-                                                </a>
-                                            </div>
-                                            <div  id="popover-{$c.key}" class="hide">
+                                <tr>
+                                    <td>
+                                        <span class="label label-{$c.status}">{if $c.elapse}{$c.elapse}{/if}</span>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <a style="width:100%;" href="#" rel="popover" id="popoverAnchor-{$c.key}" data-popover-content="#popover-{$c.key}" data-placement="bottom" class="btn btn-default" title="{$c.name}">
+                                                <span class="glyphicon glyphicon-menu-down">{$c.name}</span>
+                                            </a>
+                                        </div>
+                                        <div  id="popover-{$c.key}" class="hide">
+                                            <form id="edit-{$c.key}" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                                                data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="editHost">
+                                                <input type="hidden" name="key" value="{$c.key}">
                                                 <ul>
                                                     <li>
                                                          description&nbsp;<input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
@@ -87,9 +88,13 @@
                                                 <button title="Update" type="submit" name="action" value="clone" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
                                                     <span class="glyphicon glyphicon-backboard">&nbsp;Clone</span>
                                                 </button>
-                                            </div>
-                                        </td>
-                                        <td>
+                                            </form>
+                                        </div>
+                                    </td>
+                                    <td>
+                                         <form id="edit-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                                            data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="editHost">
+
                                             <input type="hidden" name="key" value="{$c.key}">
                                             {if $c.running}
                                                 <button title="Cancel" type="submit" name="action" value="cancel" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
@@ -101,9 +106,9 @@
                                             </a>
                                             <button title="Build" type="submit" name="action" value="build" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-play-circle">&nbsp;Build</span></button>
                                             <button onclick="return confirm('Are you sure you want to delete?')" title="Remove" type="submit" name="action" value="remove" class="btn btn-default"><span class="glyphicon glyphicon-trash">&nbsp;Remove</span></button>
-                                        </td>
-                                    </tr>
-                                </form>
+                                        </form>
+                                    </td>
+                                </tr>
                             {/foreach}
                         </tbody>
                     </table>
