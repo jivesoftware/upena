@@ -547,20 +547,32 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
             File running = new File(projectDir, project.name + "-running.txt");
             if (running.exists()) {
                 List<String> lines = FileUtils.readLines(running);
-                log.addAll(lines);
+                if (refresh) {
+                    log.addAll(lines.subList(Math.max(0, lines.size() - 1000), lines.size()));
+                } else {
+                    log.addAll(lines);
+                }
             }
 
             File failed = new File(projectDir, project.name + "-failed.txt");
             if (failed.exists()) {
                 List<String> lines = FileUtils.readLines(failed);
-                log.addAll(lines);
+                if (refresh) {
+                    log.addAll(lines.subList(Math.max(0, lines.size() - 1000), lines.size()));
+                } else {
+                    log.addAll(lines);
+                }
                 refresh = false;
             }
 
             File success = new File(projectDir, project.name + "-success.txt");
             if (success.exists()) {
                 List<String> lines = FileUtils.readLines(success);
-                log.addAll(lines);
+                if (refresh) {
+                    log.addAll(lines.subList(Math.max(0, lines.size() - 1000), lines.size()));
+                } else {
+                    log.addAll(lines);
+                }
                 refresh = false;
             }
 
