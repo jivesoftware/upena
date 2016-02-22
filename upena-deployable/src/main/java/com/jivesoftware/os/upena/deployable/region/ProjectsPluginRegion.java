@@ -6,6 +6,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
+import com.jivesoftware.os.upena.deployable.UpenaEndpoints;
 import com.jivesoftware.os.upena.deployable.region.ProjectsPluginRegion.ProjectsPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.service.UpenaStore;
@@ -155,23 +156,27 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
 
                     try {
                         Project project = upenaStore.projects.get(projectKey);
+                        File root = new File(project.localPath);
+                        FileUtils.forceMkdir(root);
+                        File localPath = new File(root, project.name);
+                        File runningOutput = new File(root, project.name + "-running.txt");
+                        File failedOutput = new File(root, project.name + "-failed.txt");
+                        File successOutput = new File(root, project.name + "-success.txt");
+                        FileUtils.deleteQuietly(localPath);
+                        runningOutput.delete();
+                        failedOutput.delete();
+                        successOutput.delete();
+
                         if (project == null) {
                             data.put("message", "Couldn't checkout no existent project. Someone else likely just removed it since your last refresh.");
                         } else {
                             AtomicLong running = runningProjects.computeIfAbsent(projectKey, (k) -> new AtomicLong());
                             if (running.compareAndSet(0, System.currentTimeMillis())) {
 
-                                File root = new File(project.localPath);
-                                FileUtils.forceMkdir(root);
-                                File localPath = new File(root, project.name);
-                                File output = new File(root, project.name + "-output.txt");
-                                FileUtils.deleteQuietly(localPath);
-                                output.delete();
-
-                                FileOutputStream fos = new FileOutputStream(output);
+                                FileOutputStream fos = new FileOutputStream(runningOutput);
                                 PrintStream ps = new PrintStream(fos);
                                 ps.println("FILE: Wiped " + localPath);
-                                ps.println("FILE: Wiped " + output);
+                                ps.println("FILE: Wiped " + runningOutput);
                                 ps.println();
                                 ps.println("COMMAND: Starting the build....");
                                 ps.flush();
@@ -272,7 +277,9 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
 
                                                     if (result.getExitCode() == 0) {
                                                         ps.println();
-                                                        ps.println("SUCCES: Hooray it deployed!");
+                                                        ps.println("SUCCES: /-----------------------\\");
+                                                        ps.println("SUCCES: |  Hooray it deployed!  |");
+                                                        ps.println("SUCCES: \\-----------------------/");
                                                         ps.println();
                                                     } else {
                                                         ps.println();
@@ -292,13 +299,22 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
 
                                             fos.flush();
                                             fos.close();
+                                            FileUtils.moveFile(runningOutput, successOutput);
+
                                         } catch (Exception x) {
                                             String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
                                             ps.println(trace);
                                             fos.flush();
                                             fos.close();
+
+                                            FileUtils.moveFile(runningOutput, failedOutput);
                                         }
                                     } catch (Exception x) {
+                                        try {
+                                            FileUtils.moveFile(runningOutput, failedOutput);
+                                        } catch (Exception xx) {
+                                            LOG.error("Failed to move " + runningOutput + " " + failedOutput, x);
+                                        }
                                         LOG.error("Unexpected failure while building" + project, x);
                                     } finally {
                                         runningProjects.remove(projectKey);
@@ -391,7 +407,32 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
                 Project value = timestampedValue.getValue();
 
                 Map<String, Object> row = new HashMap<>();
-                row.put("running", runningProjects.containsKey(key));
+
+                AtomicLong got = runningProjects.get(key);
+
+                row.put("running", got != null);
+                if (got != null) {
+                    row.put("elapse", UpenaEndpoints.humanReadableUptime(System.currentTimeMillis() - got.get()));
+                }
+
+                File root = new File(value.localPath);
+                File runningOutput = new File(root, value.name + "-running.txt");
+                File failedOutput = new File(root, value.name + "-failed.txt");
+                File successOutput = new File(root, value.name + "-success.txt");
+
+                if (failedOutput.exists()) {
+                    row.put("status", "danger");
+                    row.put("elapse", UpenaEndpoints.humanReadableUptime(System.currentTimeMillis() - failedOutput.lastModified()));
+                } else if (successOutput.exists()) {
+                    row.put("status", "success");
+                    row.put("elapse", UpenaEndpoints.humanReadableUptime(System.currentTimeMillis() - successOutput.lastModified()));
+                } else if (runningOutput.exists()) {
+                    row.put("status", "info");
+                } else {
+                    row.put("status", "default");
+                    row.put("elapse", "never");
+                }
+
                 row.put("key", key.getKey());
                 row.put("name", value.name);
                 row.put("description", value.description);

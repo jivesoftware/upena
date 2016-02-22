@@ -18,8 +18,8 @@
                     <table class="table table-hover table-condensed table-responsive">
                         <thead>
                             <tr>
+                                <th>Status</th>
                                 <th>Name</th>
-                                <th>Settings</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -27,11 +27,11 @@
                             <form id="add-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
                                 data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="addHost">
                                 <tr style="background-color:#ddd;">
+                                    <td>
+                                    </td>
                                     <td style="width:400px;">
                                         <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
                                             placeholder="Name" value="{$filters.name?:''}" name="name" id="namePicker" class="form-control">
-                                    </td>
-                                    <td>
                                     </td>
                                     <td>
                                         <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-search">&nbspFilter</span></button>
@@ -44,40 +44,52 @@
                                 <form id="edit-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
                                     data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="editHost">
                                     <tr>
-                                        <td style="width:400px;">
-                                            <div>
-                                                <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                                placeholder="Name" value="{$c.name}" name="name" id="namePicker" class="form-control">
-                                            </div>
+                                        <td>
+                                            <span class="label label-{$c.status}">{$c.elapse}</span>
                                         </td>
                                         <td>
-                                           <ul>
-                                                <li>
-                                                    description&nbsp;<input type="text" size="100" style="padding-left:10px;"  name="description" value="{$c.description}">
-                                                </li>
-                                                <li>
-                                                    localPath&nbsp;<input type="text" size="100" style="padding-left:10px;"  name="localPath" value="{$c.localPath}">
-                                                </li>
-                                                <li>
-                                                    gitUrl&nbsp;<input type="text" size="100" style="padding-left:10px;"  name="scmUrl" value="{$c.scmUrl}">
-                                                </li>
-                                                <li>
-                                                    branch&nbsp;<input type="text" size="100" style="padding-left:10px;"  name="branch" value="{$c.branch}">
-                                                </li>
-                                                <li>
-                                                    pom&nbsp;<input type="text" size="100" style="padding-left:10px;"  name="pom" value="{$c.pom}">
-                                                </li>
-                                                <li>
-                                                    goals&nbsp;<input type="text" size="100" style="padding-left:10px;"  name="goals" value="{$c.goals}">
-                                                </li>
-                                                <li>
-                                                    mvnHome&nbsp;<input type="text" size="100" style="padding-left:10px;"  name="mvnHome" value="{$c.mvnHome}">
-                                                </li>
-                                           </ul>
+                                            <div>
+                                                <a style="width:100%;" href="#" rel="popover" id="popoverAnchor-{$c.key}" data-popover-content="#popover-{$c.key}" data-placement="bottom" class="btn btn-default" title="{$c.name}">
+                                                    <span class="glyphicon glyphicon-menu-down">{$c.name}</span>
+                                                </a>
+                                            </div>
+                                            <div  id="popover-{$c.key}" class="hide">
+                                                <ul>
+                                                    <li>
+                                                         description&nbsp;<input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                                            placeholder="Name" value="{$c.name}" name="name" id="namePicker" class="form-control">
+                                                     </li>
+                                                     <li>
+                                                         description&nbsp;<input type="text" size="100" style="padding-left:10px;"  name="description" value="{$c.description}">
+                                                     </li>
+                                                     <li>
+                                                         localPath&nbsp;<input type="text" size="100" style="padding-left:10px;"  name="localPath" value="{$c.localPath}">
+                                                     </li>
+                                                     <li>
+                                                         gitUrl&nbsp;<input type="text" size="100" style="padding-left:10px;"  name="scmUrl" value="{$c.scmUrl}">
+                                                     </li>
+                                                     <li>
+                                                         branch&nbsp;<input type="text" size="100" style="padding-left:10px;"  name="branch" value="{$c.branch}">
+                                                     </li>
+                                                     <li>
+                                                         pom&nbsp;<input type="text" size="100" style="padding-left:10px;"  name="pom" value="{$c.pom}">
+                                                     </li>
+                                                     <li>
+                                                         goals&nbsp;<input type="text" size="100" style="padding-left:10px;"  name="goals" value="{$c.goals}">
+                                                     </li>
+                                                     <li>
+                                                         mvnHome&nbsp;<input type="text" size="100" style="padding-left:10px;"  name="mvnHome" value="{$c.mvnHome}">
+                                                     </li>
+                                                </ul>
+                                                <button title="Update" type="submit" name="action" value="update" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                                                    <span class="glyphicon glyphicon-save">&nbspUpdate</span>
+                                                </button>
+                                            </div>
                                         </td>
                                         <td>
                                             <input type="hidden" name="key" value="{$c.key}">
                                             {if $c.running}
+                                                {if $c.elapse}>&nbsp>&nbsp$c.elapse>&nbsp>&nbsp{/if}
                                                 <button title="Cancel" type="submit" name="action" value="cancel" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
                                                     <span class="glyphicon glyphicon-stop">&nbspCancel</span>
                                                 </button>
@@ -86,7 +98,6 @@
                                                 <span class="glyphicon glyphicon-list" aria-hidden="true">Output</span>
                                             </a>
                                             <button title="Build" type="submit" name="action" value="build" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-play-circle">&nbspBuild</span></button>
-                                            <button title="Update" type="submit" name="action" value="update" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-save">&nbspUpdate</span></button>
                                             <button onclick="return confirm('Are you sure you want to delete?')" title="Remove" type="submit" name="action" value="remove" class="btn btn-default"><span class="glyphicon glyphicon-trash">&nbspRemove</span></button>
                                         </td>
                                     </tr>
