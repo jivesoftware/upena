@@ -77,6 +77,11 @@
                                         </td>
                                         <td>
                                             <input type="hidden" name="key" value="{$c.key}">
+                                            {if $c.running}
+                                                <button title="Cancel" type="submit" name="action" value="cancel" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                                                    <span class="glyphicon glyphicon-stop">&nbspCancel</span>
+                                                </button>
+                                            {/if}
                                             <a href="projects/output/{$c.key}" class="btn btn-default">
                                                 <span class="glyphicon glyphicon-list" aria-hidden="true">Output</span>
                                             </a>

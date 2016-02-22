@@ -142,6 +142,13 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
                         input.description.isEmpty() ? null : input.description,
                         0, 10000);
                     data.put("message", "Filtering: name.contains '" + input.name + "' description.contains '" + input.description + "'");
+                } else if (input.action.equals("cancel")) {
+                    AtomicLong removed = runningProjects.remove(input.key);
+                    if (removed != null) {
+                        data.put("message", "Build for project " + input.key + " was cacneled. ");
+                    } else {
+                        data.put("message", "No progect was found for " + input.key + ". Cancel request ignored.");
+                    }
                 } else if (input.action.equals("build")) {
                     filters.clear();
                     File repoFile = localPathToRepo.get();
@@ -182,6 +189,11 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
                                             .setProgressMonitor(new TextProgressMonitor(new PrintWriter(ps)))
                                             .call()) {
 
+                                            if (!runningProjects.containsKey(input.key)) {
+                                                ps.println("ERROR: Build canceled.");
+                                                return;
+                                            }
+
                                             if (!project.branch.equals(git.getRepository().getBranch())) {
 
                                                 ps.println("COMMAND: Checking out branch " + project.branch);
@@ -211,6 +223,11 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
                                                 invoker.setLocalRepositoryDirectory(repoFile);
                                                 invoker.setMavenHome(new File(input.mvnHome));
                                                 InvocationResult result = invoker.execute(request);
+
+                                                if (!runningProjects.containsKey(input.key)) {
+                                                    ps.println("ERROR: Build canceled.");
+                                                    return;
+                                                }
 
                                                 if (result.getExitCode() == 0) {
                                                     ps.println();
@@ -247,6 +264,11 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
                                                     invoker.setLocalRepositoryDirectory(repoFile);
                                                     invoker.setMavenHome(new File(input.mvnHome));
                                                     result = invoker.execute(request);
+
+                                                    if (!runningProjects.containsKey(input.key)) {
+                                                        ps.println("ERROR: Build canceled.");
+                                                        return;
+                                                    }
 
                                                     if (result.getExitCode() == 0) {
                                                         ps.println();
@@ -289,6 +311,7 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
                             }
                         }
                     } catch (Exception x) {
+                        runningProjects.remove(input.key);
                         LOG.error("JGit eror", x);
                         String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
                         data.put("message", "Error while trying to build Project:" + input.name + "\n" + trace);
