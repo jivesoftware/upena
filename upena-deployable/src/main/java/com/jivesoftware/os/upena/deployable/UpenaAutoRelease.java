@@ -63,7 +63,7 @@ public class UpenaAutoRelease {
 
             RepositorySystem system = repositoryProvider.newRepositorySystem();
             DefaultRepositorySystemSession session = repositoryProvider.newRepositorySystemSession(system);
-            List<RemoteRepository> repositories = repositoryProvider.newRepositories(system, session, null, (String)null);
+            List<RemoteRepository> repositories = repositoryProvider.newRepositories(system, session, null, (String) null);
             Artifact artifact = new DefaultArtifact(model.getGroupId(), model.getArtifactId(), model.getPackaging(), "(0,]");
             VersionRangeResult resolveVersion = system.resolveVersionRange(session, new VersionRangeRequest(artifact, repositories, null));
 
@@ -72,9 +72,13 @@ public class UpenaAutoRelease {
 
                 String find = model.getGroupId() + ":" + model.getArtifactId() + ":" + model.getPackaging() + ":";
                 ReleaseGroupFilter filter = new ReleaseGroupFilter(null, null, find, null, null, 0, 1000);
+                System.out.println("BALLS find " + find);
+
                 ConcurrentNavigableMap<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> found = upenaStore.releaseGroups.find(filter);
+                System.out.println("BALLS found " + found.size());
                 for (Map.Entry<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> entry : found.entrySet()) {
                     ReleaseGroup releaseGroup = entry.getValue().getValue();
+                    System.out.println("BALLS found " + releaseGroup);
                     if (releaseGroup.autoRelease) {
                         System.out.println("BALLS " + releaseGroup);
 
