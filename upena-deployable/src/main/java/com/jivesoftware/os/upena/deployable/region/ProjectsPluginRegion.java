@@ -288,6 +288,7 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
                     } catch (Exception x) {
                         String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
                         data.put("message", "Error while trying to build Project:" + input.name + "\n" + trace);
+                        LOG.error("JGit eror", x);
                     }
 
                 } else if (input.action.equals("add")) {
