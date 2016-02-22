@@ -521,6 +521,7 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
             if (failed.exists()) {
                 List<String> lines = FileUtils.readLines(failed);
                 log.addAll(lines);
+                refresh = false;
             }
 
             File success = new File(projectDir, project.name + "-success.txt");
