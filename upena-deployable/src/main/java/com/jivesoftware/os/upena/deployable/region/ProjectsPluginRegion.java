@@ -385,6 +385,32 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
                         String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
                         data.put("message", "Error while trying to add Project:" + input.name + "\n" + trace);
                     }
+                } else if (input.action.equals("clone")) {
+                    filters.clear();
+                    try {
+                        Project project = upenaStore.projects.get(projectKey);
+                        if (project == null) {
+                            data.put("message", "Couldn't clone no existent project. Someone else likely just removed it since your last refresh.");
+                        } else {
+                            Project clone = new Project("CLONE-" + input.name,
+                                input.description,
+                                input.localPath,
+                                input.scmUrl,
+                                input.branch,
+                                input.pom,
+                                input.goals,
+                                input.mvnHome,
+                                new HashSet<>(),
+                                new HashSet<>(),
+                                new ArrayList<>());
+                            upenaStore.projects.update(null, clone);
+                            data.put("message", "Cloned Project:" + input.name);
+                            upenaStore.record(user, "cloned", System.currentTimeMillis(), "", "projects-ui", project.toString());
+                        }
+                    } catch (Exception x) {
+                        String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
+                        data.put("message", "Error while trying to add Project:" + input.name + "\n" + trace);
+                    }
                 } else if (input.action.equals("remove")) {
                     if (input.key.isEmpty()) {
                         data.put("message", "Failed to remove Project:" + input.name);
