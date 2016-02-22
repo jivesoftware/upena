@@ -188,7 +188,7 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
                                 projectExecutors.submit(() -> {
 
                                     try {
-
+                                        File finalOutput = successOutput;
                                         ps.println("GIT: Cloning from " + project.scmUrl + " to " + localPath);
 
                                         // then clone
@@ -200,6 +200,7 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
 
                                             if (!runningProjects.containsKey(projectKey)) {
                                                 ps.println("ERROR: Build canceled.");
+                                                finalOutput = failedOutput;
                                                 return;
                                             }
 
@@ -235,6 +236,7 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
 
                                                 if (!runningProjects.containsKey(projectKey)) {
                                                     ps.println("ERROR: Build canceled.");
+                                                    finalOutput = failedOutput;
                                                     return;
                                                 }
 
@@ -276,6 +278,7 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
 
                                                     if (!runningProjects.containsKey(projectKey)) {
                                                         ps.println("ERROR: Build canceled.");
+                                                        finalOutput = failedOutput;
                                                         return;
                                                     }
 
@@ -287,31 +290,35 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
                                                         ps.println();
                                                     } else {
                                                         ps.println();
-                                                        ps.println("ERROR: Darn it!");
+                                                        ps.println("ERROR: /-----------------------\\");
+                                                        ps.println("ERROR: | Darn it!");
+                                                        ps.println("ERROR: \\-----------------------/");
                                                         ps.println();
+                                                        finalOutput = failedOutput;
                                                     }
                                                 } else {
                                                     ps.println();
-                                                    ps.println("ERROR: Darn it!");
+                                                    ps.println("ERROR: /-----------------------\\");
+                                                    ps.println("ERROR: | Darn it!");
+                                                    ps.println("ERROR: \\-----------------------/");
                                                     ps.println();
+                                                    finalOutput = failedOutput;
                                                 }
                                             } catch (Exception x) {
                                                 String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
                                                 ps.println(trace);
                                                 ps.println("error while calling mvn " + trace);
+                                                finalOutput = failedOutput;
                                             }
-
-                                            fos.flush();
-                                            fos.close();
-                                            FileUtils.moveFile(runningOutput, successOutput);
 
                                         } catch (Exception x) {
                                             String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
                                             ps.println(trace);
+                                            finalOutput = failedOutput;
+                                        } finally {
                                             fos.flush();
                                             fos.close();
-
-                                            FileUtils.moveFile(runningOutput, failedOutput);
+                                            FileUtils.moveFile(runningOutput, finalOutput);
                                         }
                                     } catch (Exception x) {
                                         try {
@@ -502,15 +509,30 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
 
         Project project = upenaStore.projects.get(new ProjectKey(key));
         if (project != null) {
+            File projectDir = new File(project.localPath);
+
+            File running = new File(projectDir, project.name + "-running.txt");
+            if (running.exists()) {
+                List<String> lines = FileUtils.readLines(running);
+                log.addAll(lines);
+            }
+
+            File failed = new File(projectDir, project.name + "-failed.txt");
+            if (failed.exists()) {
+                List<String> lines = FileUtils.readLines(failed);
+                log.addAll(lines);
+            }
+
+            File success = new File(projectDir, project.name + "-success.txt");
+            if (success.exists()) {
+                List<String> lines = FileUtils.readLines(success);
+                log.addAll(lines);
+                refresh = false;
+            }
+
             data.put("key", key);
             data.put("name", project.name);
             data.put("refresh", refresh);
-
-            File output = new File(new File(project.localPath), project.name + "-output.txt");
-            if (output.exists()) {
-                List<String> lines = FileUtils.readLines(output);
-                log.addAll(lines);
-            }
 
         } else {
             data.put("key", key);

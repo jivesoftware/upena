@@ -45,7 +45,7 @@
                                     data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="editHost">
                                     <tr>
                                         <td>
-                                            <span class="label label-{$c.status}">{$c.elapse}</span>
+                                            <span class="label label-{$c.status}">{if $c.elapse}{$c.elapse}{/if}</span>
                                         </td>
                                         <td>
                                             <div>

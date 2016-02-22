@@ -62,7 +62,7 @@ public class ProjectsPluginEndpoints {
         @FormParam("goals") @DefaultValue("") String goals,
         @FormParam("mvnHome") @DefaultValue("") String mvnHome,
         @FormParam("action") @DefaultValue("") String action,
-        @FormParam("refresh") @DefaultValue("false") boolean refresh) {
+        @FormParam("refresh") @DefaultValue("true") boolean refresh) {
 
         String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
             new ProjectsPluginRegionInput(key, name, description, localPath, scmUrl, branch, pom, goals, mvnHome, action, refresh));
@@ -73,7 +73,7 @@ public class ProjectsPluginEndpoints {
     @Path("/output/{key}")
     @Produces(MediaType.TEXT_HTML)
     public Response output(@PathParam("key") @DefaultValue("") String key,
-        @QueryParam("refresh") @DefaultValue("false") boolean refresh,
+        @QueryParam("refresh") @DefaultValue("true") boolean refresh,
         @Context HttpServletRequest httpRequest) {
         try {
 
