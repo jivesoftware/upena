@@ -245,7 +245,7 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
 
                                                     invoker = new DefaultInvoker();
                                                     invoker.setLocalRepositoryDirectory(repoFile);
-                                                    invoker.setMavenHome(new File("/usr/local/Cellar/maven/3.3.1/libexec"));
+                                                    invoker.setMavenHome(new File(input.mvnHome));
                                                     result = invoker.execute(request);
 
                                                     if (result.getExitCode() == 0) {
