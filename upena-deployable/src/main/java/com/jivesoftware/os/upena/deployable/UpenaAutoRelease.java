@@ -70,7 +70,7 @@ public class UpenaAutoRelease {
             if (resolveVersion != null) {
                 System.out.println("BALLS " + model + " " + resolveVersion.getHighestVersion());
 
-                String find = model.getGroupId() + ":" + model.getArtifactId() + ":" + model.getPackaging() + ":";
+                String find = model.getGroupId() + ":" + model.getArtifactId() + ":";
                 ReleaseGroupFilter filter = new ReleaseGroupFilter(null, null, find, null, null, 0, 1000);
                 System.out.println("BALLS find " + find);
 
