@@ -281,9 +281,9 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
 
                                                     if (result.getExitCode() == 0) {
                                                         ps.println();
-                                                        ps.println("SUCCES: /-----------------------\\");
-                                                        ps.println("SUCCES: |  Hooray it deployed!  |");
-                                                        ps.println("SUCCES: \\-----------------------/");
+                                                        ps.println("SUCCESS: /-----------------------\\");
+                                                        ps.println("SUCCESS: |  Hooray it deployed!  |");
+                                                        ps.println("SUCCESS: \\-----------------------/");
                                                         ps.println();
                                                     } else {
                                                         ps.println();
