@@ -182,13 +182,16 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
                                             .setProgressMonitor(new TextProgressMonitor(new PrintWriter(ps)))
                                             .call()) {
 
-                                            ps.println("COMMAND: Checking out branch " + project.branch);
-                                            git.checkout().
-                                                setCreateBranch(true).
-                                                setName(project.branch).
-                                                setUpstreamMode(CreateBranchCommand.SetupUpstreamMode.TRACK).
-                                                setStartPoint("origin/" + project.branch).
-                                                call();
+                                            if (!project.branch.equals(git.getRepository().getBranch())) {
+
+                                                ps.println("COMMAND: Checking out branch " + project.branch);
+                                                git.checkout().
+                                                    setCreateBranch(true).
+                                                    setName(project.branch).
+                                                    setUpstreamMode(CreateBranchCommand.SetupUpstreamMode.TRACK).
+                                                    setStartPoint("origin/" + project.branch).
+                                                    call();
+                                            }
 
                                             try {
                                                 ps.println("COMMAND: Invoking maven with these goals " + project.goals);
@@ -286,9 +289,9 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
                             }
                         }
                     } catch (Exception x) {
+                        LOG.error("JGit eror", x);
                         String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
                         data.put("message", "Error while trying to build Project:" + input.name + "\n" + trace);
-                        LOG.error("JGit eror", x);
                     }
 
                 } else if (input.action.equals("add")) {
