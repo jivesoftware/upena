@@ -91,6 +91,8 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
         final String mvnHome;
         final String action;
 
+        final boolean refresh;
+
         public ProjectsPluginRegionInput(String key,
             String name,
             String description,
@@ -100,7 +102,8 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
             String pom,
             String goals,
             String mvnHome,
-            String action) {
+            String action,
+            boolean refresh) {
 
             this.key = key;
             this.name = name;
@@ -113,6 +116,7 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
             this.mvnHome = mvnHome;
 
             this.action = action;
+            this.refresh = refresh;
         }
 
         @Override
@@ -321,13 +325,13 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
                                     }
                                 });
 
-                                return output(input.key);
+                                return output(input.key, input.refresh);
                             } else {
                                 data.put("message", "Project is alreadying running.");
                             }
                         }
                     } catch (Exception x) {
-                        runningProjects.remove(input.key);
+                        runningProjects.remove(projectKey);
                         LOG.error("JGit eror", x);
                         String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
                         data.put("message", "Error while trying to build Project:" + input.name + "\n" + trace);
@@ -465,7 +469,7 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
         return renderer.render(template, data);
     }
 
-    public String output(String key) throws Exception {
+    public String output(String key, boolean refresh) throws Exception {
         Map<String, Object> data = Maps.newHashMap();
 
         List<String> log = new ArrayList<>();
@@ -474,6 +478,7 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
         if (project != null) {
             data.put("key", key);
             data.put("name", project.name);
+            data.put("refresh", refresh);
 
             File output = new File(new File(project.localPath), project.name + "-output.txt");
             if (output.exists()) {
@@ -484,6 +489,7 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
         } else {
             data.put("key", key);
             data.put("name", "No project found for " + key);
+            data.put("refresh", refresh);
         }
         data.put("log", log);
 

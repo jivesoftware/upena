@@ -117,26 +117,26 @@ upena.hs = {
                 'remotePort': $(port).attr('value')
             }
         })
-                .done(function (data) {
-                    if (!upena.hs.installed || upena.hs.installed.selector != $selector) {
-                        // selector changed during the query
-                        return;
+            .done(function (data) {
+                if (!upena.hs.installed || upena.hs.installed.selector != $selector) {
+                    // selector changed during the query
+                    return;
+                }
+                if (data.length) {
+                    $selector.empty();
+                    for (var i = 0; i < data.length; i++) {
+                        $selector.append(
+                            "<a href='#'" +
+                            " class='upena-hs-choice'" +
+                            " data-upena-key='" + data[i].key + "'" +
+                            " data-upena-name='" + data[i].name + "'>" + data[i].name + "</a><br/>");
                     }
-                    if (data.length) {
-                        $selector.empty();
-                        for (var i = 0; i < data.length; i++) {
-                            $selector.append(
-                                    "<a href='#'" +
-                                    " class='upena-hs-choice'" +
-                                    " data-upena-key='" + data[i].key + "'" +
-                                    " data-upena-name='" + data[i].name + "'>" + data[i].name + "</a><br/>");
-                        }
-                        upena.hs.link($selector);
-                        upena.hs.installed.ready = true;
-                    } else {
-                        $selector.html("<em>No matches</em>");
-                    }
-                });
+                    upena.hs.link($selector);
+                    upena.hs.installed.ready = true;
+                } else {
+                    $selector.html("<em>No matches</em>");
+                }
+            });
     },
     link: function ($selector) {
         $selector.find('a').each(function (i) {
@@ -835,8 +835,8 @@ upena.livehealth = {
 
         upena.livehealth.graphType = $waveform.data('graphType');
         upena.livehealth.graphProp = (upena.livehealth.graphType == 'Line' || upena.livehealth.graphType == 'Radar') ? 'points'
-                : (upena.livehealth.graphType == 'Bar' || upena.livehealth.graphType == 'StackedBar') ? 'bars'
-                : 'unknown';
+            : (upena.livehealth.graphType == 'Bar' || upena.livehealth.graphType == 'StackedBar') ? 'bars'
+            : 'unknown';
 
         if (upena.livehealth.requireFocus) {
             upena.onWindowFocus.push(function () {
@@ -907,6 +907,38 @@ upena.livehealth = {
 
 };
 
+upena.projectBuildOutput = {
+    timeoutHandle: null,
+
+    init: function () {
+        var $prTop = $('#project-refresh-top');
+        var $prBottom = $('#project-refresh-bottom');
+        $prTop.click(function () {
+            $prBottom.prop('checked', $prTop.prop('checked'));
+            upena.projectBuildOutput.checkTimeout();
+        });
+        $prBottom.click(function () {
+            $prTop.prop('checked', $prBottom.prop('checked'));
+            upena.projectBuildOutput.checkTimeout();
+        });
+
+        upena.projectBuildOutput.checkTimeout();
+    },
+
+    checkTimeout: function () {
+        var $prBottom = $('#project-refresh-bottom');
+        if (upena.projectBuildOutput.timeoutHandle != null) {
+            clearTimeout(upena.projectBuildOutput.timeoutHandle);
+            upena.projectBuildOutput.timeoutHandle = null;
+        }
+
+        if ($prBottom.prop('checked')) {
+            upena.projectBuildOutput.timeoutHandle = setTimeout(function () {
+                $('#project-refresh-form').submit();
+            }, 2000);
+        }
+    }
+};
 
 $(document).ready(function () {
 
@@ -946,6 +978,9 @@ $(document).ready(function () {
     }
     if ($('#upena-health').length) {
         upena.health.init();
+    }
+    if ($('#upena-project-build-output').length) {
+        upena.projectBuildOutput.init();
     }
 
     if ($('.sar-wave').length) {

@@ -15,6 +15,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -42,7 +43,7 @@ public class ProjectsPluginEndpoints {
     public Response projects(@Context HttpServletRequest httpRequest) {
         String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(),
             pluginRegion,
-            new ProjectsPluginRegionInput("", "", "", "", "", "", "", "", "", ""));
+            new ProjectsPluginRegionInput("", "", "", "", "", "", "", "", "", "", false));
         return Response.ok(rendered).build();
     }
 
@@ -60,10 +61,11 @@ public class ProjectsPluginEndpoints {
         @FormParam("pom") @DefaultValue("") String pom,
         @FormParam("goals") @DefaultValue("") String goals,
         @FormParam("mvnHome") @DefaultValue("") String mvnHome,
-        @FormParam("action") @DefaultValue("") String action) {
+        @FormParam("action") @DefaultValue("") String action,
+        @FormParam("refresh") @DefaultValue("false") boolean refresh) {
 
         String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-            new ProjectsPluginRegionInput(key, name, description, localPath, scmUrl, branch, pom, goals, mvnHome, action));
+            new ProjectsPluginRegionInput(key, name, description, localPath, scmUrl, branch, pom, goals, mvnHome, action, refresh));
         return Response.ok(rendered).build();
     }
 
@@ -71,11 +73,12 @@ public class ProjectsPluginEndpoints {
     @Path("/output/{key}")
     @Produces(MediaType.TEXT_HTML)
     public Response output(@PathParam("key") @DefaultValue("") String key,
+        @QueryParam("refresh") @DefaultValue("false") boolean refresh,
         @Context HttpServletRequest httpRequest) {
         try {
 
             String rendered = soyService.wrapWithChrome(pluginRegion.getRootPath(), httpRequest.getRemoteUser(), pluginRegion.getTitle(), "Project Output",
-                pluginRegion.output(key));
+                pluginRegion.output(key, refresh));
 
             return Response.ok(rendered).build();
         } catch (Exception x) {
