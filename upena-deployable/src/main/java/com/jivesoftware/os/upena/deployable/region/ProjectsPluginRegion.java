@@ -547,6 +547,7 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
         if (project != null) {
             File projectDir = new File(project.localPath);
 
+            boolean done = false;
             File running = new File(projectDir, project.name + "-running.txt");
             if (running.exists()) {
                 List<String> lines = FileUtils.readLines(running);
@@ -566,6 +567,7 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
                     log.addAll(lines);
                 }
                 refresh = false;
+                done = true;
             }
 
             File success = new File(projectDir, project.name + "-success.txt");
@@ -577,16 +579,21 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
                     log.addAll(lines);
                 }
                 refresh = false;
+                done = true;
             }
 
             data.put("key", key);
             data.put("name", project.name);
             data.put("refresh", refresh);
+            data.put("offset", 0);
+            data.put("done", done);
 
         } else {
             data.put("key", key);
             data.put("name", "No project found for " + key);
             data.put("refresh", refresh);
+            data.put("offset", 0);
+            data.put("done", true);
         }
         data.put("log", log);
 
@@ -603,6 +610,7 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
         if (project != null) {
             File projectDir = new File(project.localPath);
 
+            boolean done = false;
             List<String> lines = Collections.emptyList();
             File running = new File(projectDir, project.name + "-running.txt");
             if (running.exists()) {
@@ -612,11 +620,13 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
             File failed = new File(projectDir, project.name + "-failed.txt");
             if (failed.exists()) {
                 lines = FileUtils.readLines(failed);
+                done = true;
             }
 
             File success = new File(projectDir, project.name + "-success.txt");
             if (success.exists()) {
                 lines = FileUtils.readLines(success);
+                done = true;
             }
 
             log.addAll(lines.subList(Math.min(offset, lines.size()), lines.size()));
@@ -625,11 +635,13 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
             data.put("key", key);
             data.put("name", project.name);
             data.put("offset", newOffset);
+            data.put("done", done);
 
         } else {
             data.put("key", key);
             data.put("name", "No project found for " + key);
             data.put("offset", newOffset);
+            data.put("done", true);
         }
         data.put("log", log);
 

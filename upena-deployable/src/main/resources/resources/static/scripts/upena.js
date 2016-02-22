@@ -908,27 +908,43 @@ upena.livehealth = {
 };
 
 upena.projectBuildOutput = {
+    key: null,
     timeoutHandle: null,
     stickHandle: null,
 
     init: function () {
+        upena.projectBuildOutput.key = $('#upena-project-build-output').data('key');
+        upena.projectBuildOutput.finishStick();
+
         var $prTop = $('#project-refresh-top');
         var $prBottom = $('#project-refresh-bottom');
         $prTop.change(function () {
             $prBottom.prop('checked', $prTop.prop('checked'));
-            upena.projectBuildOutput.checkTimeout();
         });
         $prBottom.change(function () {
             $prTop.prop('checked', $prBottom.prop('checked'));
-            upena.projectBuildOutput.checkTimeout();
         });
 
-        upena.projectBuildOutput.checkTimeout();
+        var $refreshButtons = $('.build-log-refresh');
+        $refreshButtons.click(function () {
+            $refreshButtons.prop('disabled', true);
+            var offset = 1 + parseInt($('.build-log-line:last').data('line'));
+            upena.projectBuildOutput.stickBottom();
+            $.ajax("/ui/projects/tail/" + upena.projectBuildOutput.key + "/" + offset, {
+                method: "get",
+                success: function (data) {
+                    $('#upena-project-build-log').append(data);
+                    upena.projectBuildOutput.finishStick();
+                    $refreshButtons.prop('disabled', false);
+                },
+                error: function () {
+                    upena.projectBuildOutput.finishStick();
+                    $refreshButtons.prop('disabled', false);
+                }
+            });
+        });
 
-        if (upena.projectBuildOutput.stickHandle != null) {
-            clearInterval(upena.projectBuildOutput.stickHandle);
-        }
-        window.scrollTo(0, document.body.scrollHeight);
+        upena.projectBuildOutput.refreshTimer();
     },
 
     stickBottom: function () {
@@ -937,18 +953,27 @@ upena.projectBuildOutput = {
         }, 10);
     },
 
-    checkTimeout: function () {
-        var $prBottom = $('#project-refresh-bottom');
-        if (upena.projectBuildOutput.timeoutHandle != null) {
-            clearTimeout(upena.projectBuildOutput.timeoutHandle);
-            upena.projectBuildOutput.timeoutHandle = null;
+    finishStick: function () {
+        if (upena.projectBuildOutput.stickHandle != null) {
+            clearInterval(upena.projectBuildOutput.stickHandle);
+            upena.projectBuildOutput.stickHandle = null;
         }
+        window.scrollTo(0, document.body.scrollHeight);
+    },
 
-        if ($prBottom.prop('checked')) {
-            upena.projectBuildOutput.timeoutHandle = setTimeout(function () {
-                $('#project-refresh-form').submit();
-            }, 2000);
-        }
+    refreshTimer: function () {
+        var $prBottom = $('#project-refresh-bottom');
+        var $submit = $('#project-refresh-submit');
+        upena.projectBuildOutput.timeoutHandle = setInterval(function () {
+            if ($prBottom.prop('checked') && $submit.is(':enabled')) {
+                var done = $('.build-log-line:last').data('done');
+                if (done) {
+                    $prBottom.prop('checked', false);
+                } else {
+                    $submit.click();
+                }
+            }
+        }, 1000);
     }
 };
 

@@ -13,39 +13,22 @@
     <script>
         upena.projectBuildOutput.stickBottom();
     </script>
-    <div id="upena-project-build-output" class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.9);">
-        <div class="panel-heading"><span class="panel-title">Project {$name} Output</span>
-            <form method="get" action="/ui/projects/output/{$key}">
-                <button title="Refresh" class="btn btn-default" name="action" value="refresh"><span class="glyphicon glyphicon-refresh" aria-hidden="true">Refresh</span></button>
-                {sp}
-                <input id="project-refresh-top" type="checkbox" name="refresh" {if $refresh}checked="checked"{/if}> <label for="project-refresh-top">Auto-refresh every 2s</label>
-            </form>
+    <div id="upena-project-build-output" data-key="{$key}" class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.9);">
+        <div class="panel-heading">
+            <span class="panel-title">Project {$name} Output</span>
+            <button title="Refresh" class="btn btn-default build-log-refresh" name="action" value="refresh"><span class="glyphicon glyphicon-refresh" aria-hidden="true">Refresh</span></button>
+            {sp}
+            <input id="project-refresh-top" type="checkbox" name="refresh" {if $refresh}checked="checked"{/if}> <label for="project-refresh-top">Auto-refresh (1s)</label>
         </div>
         <div class="panel-body">
-             <ul style="list-style-type:none;">
-                {foreach $l in $log}
-                    {if strContains($l,'SUCCESS') }
-                        <li style="color:green"><span style="color:green">
-                    {elseif strContains($l,'COMMAND') }
-                        <li style="color:blue"><span style="color:blue">
-                    {elseif strContains($l,'WARN') }
-                        <li style="color:orange"><span style="color:orange">
-                    {elseif strContains($l,'ERROR') }
-                        <li style="color:red"><span style="color:red">
-                    {elseif strContains($l,'GIT') }
-                        <li style="color:gray"><span style="color:gray">
-                    {else}
-                        <li style="color:black"><span style="color:black">
-                    {/if}
-                        {$l}</span>
-                    </li>
-                {/foreach}
+             <ul id="upena-project-build-log" style="list-style-type:none;">
+                {call .projectBuildOutputTail data="all"/}
              </ul>
         </div>
-        <form id="project-refresh-form" method="get" action="/ui/projects/output/{$key}">
-            <button title="Refresh" class="btn btn-default" name="action" value="refresh"><span class="glyphicon glyphicon-refresh" aria-hidden="true">Refresh</span></button>
+        <div>
+            <button id="project-refresh-submit" title="Refresh" class="btn btn-default build-log-refresh" name="action" value="refresh"><span class="glyphicon glyphicon-refresh" aria-hidden="true">Refresh</span></button>
             {sp}
-            <input id="project-refresh-bottom" type="checkbox" name="refresh" value="true" {if $refresh}checked="checked"{/if}> <label for="project-refresh-bottom">Auto-refresh every 2s</label>
-        </form>
+            <input id="project-refresh-bottom" type="checkbox" name="refresh" value="true" {if $refresh}checked="checked"{/if}> <label for="project-refresh-bottom">Auto-refresh (1s)</label>
+        </div>
     </div>
 {/template}

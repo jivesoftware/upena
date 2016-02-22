@@ -1,31 +1,31 @@
 {namespace soy.page}
 
 /**
- * Upena Status plugin page
+ * Upena Status plugin page - tail project build output
  *
- * @param? key
- * @param? name
  * @param? log
  * @param? offset
+ * @param? done
  */
 {template .projectBuildOutputTail}
-    <ul style="list-style-type:none;">
-        {foreach $l in $log}
-            {if strContains($l,'SUCCESS') }
-                <li style="color:green"><span style="color:green">
-            {elseif strContains($l,'COMMAND') }
-                <li style="color:blue"><span style="color:blue">
-            {elseif strContains($l,'WARN') }
-                <li style="color:orange"><span style="color:orange">
-            {elseif strContains($l,'ERROR') }
-                <li style="color:red"><span style="color:red">
-            {elseif strContains($l,'GIT') }
-                <li style="color:gray"><span style="color:gray">
+    {foreach $l in $log}
+        {let $color}
+            {if strContains($l,'SUCCESS')}
+                green
+            {elseif strContains($l,'COMMAND')}
+                blue
+            {elseif strContains($l,'WARN')}
+                orange
+            {elseif strContains($l,'ERROR')}
+                red
+            {elseif strContains($l,'GIT')}
+                gray
             {else}
-                <li style="color:black"><span style="color:black">
+                black
             {/if}
-                {$l}</span>
-            </li>
-        {/foreach}
-     </ul>
+        {/let}
+        <li style="color:{$color}" class="build-log-line" data-line="{$offset + index($l)}" {if $done and isLast($l)}data-done="true"{/if}>
+            <span style="color:{$color}">{$l}</span>
+        </li>
+    {/foreach}
 {/template}
