@@ -909,20 +909,32 @@ upena.livehealth = {
 
 upena.projectBuildOutput = {
     timeoutHandle: null,
+    stickHandle: null,
 
     init: function () {
         var $prTop = $('#project-refresh-top');
         var $prBottom = $('#project-refresh-bottom');
-        $prTop.click(function () {
+        $prTop.change(function () {
             $prBottom.prop('checked', $prTop.prop('checked'));
             upena.projectBuildOutput.checkTimeout();
         });
-        $prBottom.click(function () {
+        $prBottom.change(function () {
             $prTop.prop('checked', $prBottom.prop('checked'));
             upena.projectBuildOutput.checkTimeout();
         });
 
         upena.projectBuildOutput.checkTimeout();
+
+        if (upena.projectBuildOutput.stickHandle != null) {
+            clearInterval(upena.projectBuildOutput.stickHandle);
+        }
+        window.scrollTo(0, document.body.scrollHeight);
+    },
+
+    stickBottom: function () {
+        upena.projectBuildOutput.stickHandle = setInterval(function () {
+            window.scrollTo(0, document.body.scrollHeight);
+        }, 10);
     },
 
     checkTimeout: function () {
