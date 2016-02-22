@@ -148,7 +148,7 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
                         0, 10000);
                     data.put("message", "Filtering: name.contains '" + input.name + "' description.contains '" + input.description + "'");
                 } else if (input.action.equals("cancel")) {
-                    AtomicLong removed = runningProjects.remove(input.key);
+                    AtomicLong removed = runningProjects.remove(projectKey);
                     if (removed != null) {
                         data.put("message", "Build for project " + input.key + " was cacneled. ");
                     } else {
@@ -198,7 +198,7 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
                                             .setProgressMonitor(new TextProgressMonitor(new PrintWriter(ps)))
                                             .call()) {
 
-                                            if (!runningProjects.containsKey(input.key)) {
+                                            if (!runningProjects.containsKey(projectKey)) {
                                                 ps.println("ERROR: Build canceled.");
                                                 return;
                                             }
@@ -233,7 +233,7 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
                                                 invoker.setMavenHome(new File(input.mvnHome));
                                                 InvocationResult result = invoker.execute(request);
 
-                                                if (!runningProjects.containsKey(input.key)) {
+                                                if (!runningProjects.containsKey(projectKey)) {
                                                     ps.println("ERROR: Build canceled.");
                                                     return;
                                                 }
@@ -274,7 +274,7 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
                                                     invoker.setMavenHome(new File(input.mvnHome));
                                                     result = invoker.execute(request);
 
-                                                    if (!runningProjects.containsKey(input.key)) {
+                                                    if (!runningProjects.containsKey(projectKey)) {
                                                         ps.println("ERROR: Build canceled.");
                                                         return;
                                                     }
