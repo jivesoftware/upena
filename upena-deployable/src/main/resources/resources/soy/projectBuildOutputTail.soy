@@ -1,0 +1,31 @@
+{namespace soy.page}
+
+/**
+ * Upena Status plugin page
+ *
+ * @param? key
+ * @param? name
+ * @param? log
+ * @param? offset
+ */
+{template .projectBuildOutputTail}
+    <ul style="list-style-type:none;">
+        {foreach $l in $log}
+            {if strContains($l,'SUCCESS') }
+                <li style="color:green"><span style="color:green">
+            {elseif strContains($l,'COMMAND') }
+                <li style="color:blue"><span style="color:blue">
+            {elseif strContains($l,'WARN') }
+                <li style="color:orange"><span style="color:orange">
+            {elseif strContains($l,'ERROR') }
+                <li style="color:red"><span style="color:red">
+            {elseif strContains($l,'GIT') }
+                <li style="color:gray"><span style="color:gray">
+            {else}
+                <li style="color:black"><span style="color:black">
+            {/if}
+                {$l}</span>
+            </li>
+        {/foreach}
+     </ul>
+{/template}

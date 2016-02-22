@@ -52,6 +52,7 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
 
     private final String template;
     private final String outputTemplate;
+    private final String tailTemplate;
     private final SoyRenderer renderer;
     private final UpenaStore upenaStore;
     private final PathToRepo localPathToRepo;
@@ -61,12 +62,14 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
 
     public ProjectsPluginRegion(String template,
         String outputTemplate,
+        String tailTemplate,
         SoyRenderer renderer,
         UpenaStore upenaStore,
         PathToRepo localPathToRepo
     ) {
         this.template = template;
         this.outputTemplate = outputTemplate;
+        this.tailTemplate = tailTemplate;
         this.renderer = renderer;
         this.upenaStore = upenaStore;
         this.localPathToRepo = localPathToRepo;
@@ -588,6 +591,49 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
         data.put("log", log);
 
         return renderer.render(outputTemplate, data);
+    }
+
+    public String tail(String key, int offset) throws Exception {
+        Map<String, Object> data = Maps.newHashMap();
+
+        List<String> log = new ArrayList<>();
+
+        Project project = upenaStore.projects.get(new ProjectKey(key));
+        int newOffset = offset;
+        if (project != null) {
+            File projectDir = new File(project.localPath);
+
+            List<String> lines = Collections.emptyList();
+            File running = new File(projectDir, project.name + "-running.txt");
+            if (running.exists()) {
+                lines = FileUtils.readLines(running);
+            }
+
+            File failed = new File(projectDir, project.name + "-failed.txt");
+            if (failed.exists()) {
+                lines = FileUtils.readLines(failed);
+            }
+
+            File success = new File(projectDir, project.name + "-success.txt");
+            if (success.exists()) {
+                lines = FileUtils.readLines(success);
+            }
+
+            log.addAll(lines.subList(Math.min(offset, lines.size()), lines.size()));
+            newOffset = lines.size();
+
+            data.put("key", key);
+            data.put("name", project.name);
+            data.put("offset", newOffset);
+
+        } else {
+            data.put("key", key);
+            data.put("name", "No project found for " + key);
+            data.put("offset", newOffset);
+        }
+        data.put("log", log);
+
+        return renderer.render(tailTemplate, data);
     }
 
     public void add(String user, ProjectUpdate releaseGroupUpdate) throws Exception {

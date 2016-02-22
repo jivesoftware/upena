@@ -300,7 +300,7 @@ public class Main {
             .addInjectable(DiscoveredRoutes.class, discoveredRoutes)
             .addInjectable(RingHost.class, ringHost)
             .addInjectable(HostKey.class, hostKey)
-            .addInjectable(UpenaAutoRelease.class,new UpenaAutoRelease(repositoryProvider, upenaStore))
+            .addInjectable(UpenaAutoRelease.class, new UpenaAutoRelease(repositoryProvider, upenaStore))
             .addInjectable(PathToRepo.class, localPathToRepo);
 
         injectUI(amzaService, localPathToRepo, repositoryProvider, hostKey, ringHost, upenaStore, upenaConfigStore, upenaService, ubaService, jerseyEndpoints,
@@ -383,6 +383,7 @@ public class Main {
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/profilerPluginRegion.soy"), "profilerPluginRegion.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/projectsPluginRegion.soy"), "projects.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/projectBuildOutput.soy"), "projectOutput.soy");
+        soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/projectBuildOutputTail.soy"), "projectOutputTail.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/repoPluginRegion.soy"), "repoPluginRegion.soy");
 
         SoyFileSet sfs = soyFileSetBuilder.build();
@@ -440,7 +441,8 @@ public class Main {
 
         ManagePlugin projects = new ManagePlugin("folder-open", null, "Projects", "/ui/projects",
             ProjectsPluginEndpoints.class,
-            new ProjectsPluginRegion("soy.page.projectsPluginRegion", "soy.page.projectBuildOutput", renderer, upenaStore, localPathToRepo));
+            new ProjectsPluginRegion("soy.page.projectsPluginRegion", "soy.page.projectBuildOutput", "soy.page.projectBuildOutputTail", renderer, upenaStore,
+                localPathToRepo));
 
         ManagePlugin clusters = new ManagePlugin(null, "cluster", "Clusters", "/ui/clusters",
             ClustersPluginEndpoints.class,

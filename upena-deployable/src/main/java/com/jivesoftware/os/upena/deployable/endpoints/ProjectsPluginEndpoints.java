@@ -87,6 +87,22 @@ public class ProjectsPluginEndpoints {
         }
     }
 
+    @GET
+    @Path("/tail/{key}/{offset}")
+    @Produces(MediaType.TEXT_HTML)
+    public Response tail(@PathParam("key") @DefaultValue("") String key,
+        @PathParam("offset") @DefaultValue("0") int offset,
+        @Context HttpServletRequest httpRequest) {
+        try {
+
+            String rendered = pluginRegion.tail(key, offset);
+            return Response.ok(rendered).build();
+        } catch (Exception x) {
+            LOG.error("Failed to generate output for:" + key, x);
+            return Response.serverError().build();
+        }
+    }
+
     @POST
     @Path("/add")
     @Produces(MediaType.APPLICATION_JSON)
