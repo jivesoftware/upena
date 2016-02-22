@@ -22,7 +22,7 @@
             </form>
         </div>
         <div class="panel-body">
-             <ol type="1">
+             <ul style="list-style-type:none;">
                 {foreach $l in $log}
                     {if strContains($l,'SUCCESS') }
                         <li style="color:green"><span style="color:green">
@@ -40,7 +40,7 @@
                         {$l}</span>
                     </li>
                 {/foreach}
-             </ol>
+             </ul>
         </div>
         <form id="project-refresh-form" method="get" action="/ui/projects/output/{$key}">
             <button title="Refresh" class="btn btn-default" name="action" value="refresh"><span class="glyphicon glyphicon-refresh" aria-hidden="true">Refresh</span></button>
