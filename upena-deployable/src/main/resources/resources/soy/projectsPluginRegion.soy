@@ -90,6 +90,85 @@
                                                 </button>
                                             </form>
                                         </div>
+                                        <div>
+                  
+
+                                            {if  $c.gitStatus}
+                                                {if $c.gitStatus.added}
+                                                    <ul>
+                                                        <li>Added</li>
+                                                        {foreach $g in $$c.gitStatus.added}
+                                                            <li>{$g}</li>
+                                                        {/foreach}
+                                                    </ul>
+                                                {/if}
+                                                {if $c.gitStatus.changed}
+                                                    <ul>
+                                                        <li>Changed</li>
+                                                        {foreach $g in $$c.gitStatus.changed}
+                                                            <li>{$g}</li>
+                                                        {/foreach}
+                                                    </ul>
+                                                {/if}
+                                                {if $c.gitStatus.conflicting}
+                                                    <ul>
+                                                        <li>Conflicting</li>
+                                                        {foreach $g in $$c.gitStatus.conflicting}
+                                                            <li>{$g}</li>
+                                                        {/foreach}
+                                                    </ul>
+                                                {/if}
+                                                {if $c.gitStatus.missing}
+                                                    <ul>
+                                                        <li>Missing</li>
+                                                        {foreach $g in $$c.gitStatus.missing}
+                                                            <li>{$g}</li>
+                                                        {/foreach}
+                                                    </ul>
+                                                {/if}
+                                                {if $c.gitStatus.modified}
+                                                    <ul>
+                                                        <li>Modified</li>
+                                                        {foreach $g in $$c.gitStatus.modified}
+                                                            <li>{$g}</li>
+                                                        {/foreach}
+                                                    </ul>
+                                                {/if}
+                                                {if $c.gitStatus.removed}
+                                                    <ul>
+                                                        <li>Removed</li>
+                                                        {foreach $g in $$c.gitStatus.removed}
+                                                            <li>{$g}</li>
+                                                        {/foreach}
+                                                    </ul>
+                                                {/if}
+                                                {if $c.gitStatus.uncommited}
+                                                    <ul>
+                                                        <li>Uncommited</li>
+                                                        {foreach $g in $$c.gitStatus.uncommited}
+                                                            <li>{$g}</li>
+                                                        {/foreach}
+                                                    </ul>
+                                                {/if}
+                                                {if $c.gitStatus.untracked}
+                                                    <ul>
+                                                        <li>Untracked</li>
+                                                        {foreach $g in $$c.gitStatus.untracked}
+                                                            <li>{$g}</li>
+                                                        {/foreach}
+                                                    </ul>
+                                                {/if}
+                                                {if $c.gitStatus.untrackedFolders}
+                                                    <ul>
+                                                        <li>Untracked Folders</li>
+                                                        {foreach $g in $$c.untrackedFolders.conflicting}
+                                                            <li>{$g}</li>
+                                                        {/foreach}
+                                                    </ul>
+                                                {/if}
+
+                                            {/if}
+                                        </div>
                                     </td>
                                     <td>
                                          <form id="edit-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"

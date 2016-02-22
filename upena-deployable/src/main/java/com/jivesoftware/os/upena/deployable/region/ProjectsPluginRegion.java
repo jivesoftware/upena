@@ -39,6 +39,7 @@ import org.apache.maven.shared.invoker.InvocationResult;
 import org.apache.maven.shared.invoker.Invoker;
 import org.eclipse.jgit.api.CreateBranchCommand;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.lib.TextProgressMonitor;
 
 /**
@@ -441,9 +442,46 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
             for (Map.Entry<ProjectKey, TimestampedValue<Project>> entrySet : found.entrySet()) {
                 ProjectKey key = entrySet.getKey();
                 TimestampedValue<Project> timestampedValue = entrySet.getValue();
-                Project value = timestampedValue.getValue();
+                Project project = timestampedValue.getValue();
+
+                File root = new File(project.localPath);
+
+                File runningOutput = new File(root, project.name + "-running.txt");
+                File failedOutput = new File(root, project.name + "-failed.txt");
+                File successOutput = new File(root, project.name + "-success.txt");
+                File localPath = new File(root, project.name);
 
                 Map<String, Object> row = new HashMap<>();
+                Git gitProject = null;
+                try {
+                    gitProject = Git.open(localPath);
+                    gitProject.fetch().call();
+
+                    Status status = gitProject.status().call();
+                    Map<String, Object> gitStatus = new HashMap<>();
+                    gitStatus.put("added", status.getAdded());
+                    gitStatus.put("changed", status.getChanged());
+                    gitStatus.put("conflicting", status.getConflicting());
+                    gitStatus.put("missing", status.getMissing());
+                    gitStatus.put("modified", status.getModified());
+                    gitStatus.put("removed", status.getRemoved());
+                    gitStatus.put("uncommited", status.getUncommittedChanges());
+                    gitStatus.put("untracked", status.getUntracked());
+                    gitStatus.put("untrackedFolders", status.getUntrackedFolders());
+
+                    row.put("gitStatus", gitStatus);
+
+                    if (!status.isClean()) {
+                        
+                    }
+
+                } catch (Exception x) {
+                    LOG.warn("Issues checking git status", x);
+                } finally {
+                    if (gitProject != null) {
+                        gitProject.close();
+                    }
+                }
 
                 AtomicLong got = runningProjects.get(key);
 
@@ -451,11 +489,6 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
                 if (got != null) {
                     row.put("elapse", UpenaEndpoints.humanReadableUptime(System.currentTimeMillis() - got.get()));
                 }
-
-                File root = new File(value.localPath);
-                File runningOutput = new File(root, value.name + "-running.txt");
-                File failedOutput = new File(root, value.name + "-failed.txt");
-                File successOutput = new File(root, value.name + "-success.txt");
 
                 if (failedOutput.exists()) {
                     row.put("status", "danger");
@@ -471,14 +504,14 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
                 }
 
                 row.put("key", key.getKey());
-                row.put("name", value.name);
-                row.put("description", value.description);
-                row.put("localPath", value.localPath);
-                row.put("scmUrl", value.scmUrl);
-                row.put("branch", value.branch);
-                row.put("pom", value.pom);
-                row.put("goals", value.goals);
-                row.put("mvnHome", value.mvnHome);
+                row.put("name", project.name);
+                row.put("description", project.description);
+                row.put("localPath", project.localPath);
+                row.put("scmUrl", project.scmUrl);
+                row.put("branch", project.branch);
+                row.put("pom", project.pom);
+                row.put("goals", project.goals);
+                row.put("mvnHome", project.mvnHome);
                 rows.add(row);
             }
 
