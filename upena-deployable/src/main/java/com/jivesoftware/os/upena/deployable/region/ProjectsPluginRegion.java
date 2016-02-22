@@ -261,9 +261,15 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
                                                 }
                                             } catch (Exception x) {
                                                 String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
+                                                ps.println(trace);
                                                 ps.println("error while calling mvn " + trace);
                                             }
 
+                                            fos.flush();
+                                            fos.close();
+                                        } catch (Exception x) {
+                                            String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
+                                            ps.println(trace);
                                             fos.flush();
                                             fos.close();
                                         }
