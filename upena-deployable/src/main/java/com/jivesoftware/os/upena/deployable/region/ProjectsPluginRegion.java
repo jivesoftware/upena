@@ -218,9 +218,10 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
 
                                             try {
                                                 ps.println("COMMAND: Invoking maven with these goals " + project.goals);
-                                                List<String> goals = Lists.newArrayList(Splitter.on(' ').split(input.goals));
+
+                                                List<String> goals = Lists.newArrayList(Splitter.on(' ').split(project.goals));
                                                 InvocationRequest request = new DefaultInvocationRequest();
-                                                request.setPomFile(new File(localPath, input.pom));
+                                                request.setPomFile(new File(localPath, project.pom));
                                                 request.setGoals(goals);
                                                 request.setOutputHandler((line) -> {
                                                     ps.println(line);
@@ -232,7 +233,8 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
                                                 FileUtils.forceMkdir(repoFile);
 
                                                 invoker.setLocalRepositoryDirectory(repoFile);
-                                                invoker.setMavenHome(new File(input.mvnHome));
+                                                invoker.setMavenHome(new File(project.mvnHome));
+                                                ps.println("COMMAND Using maven home:" + project.mvnHome);
                                                 InvocationResult result = invoker.execute(request);
 
                                                 if (!runningProjects.containsKey(projectKey)) {
@@ -249,7 +251,7 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
                                                     ps.println("Invoking deploying... ");
 
                                                     request = new DefaultInvocationRequest();
-                                                    request.setPomFile(new File(localPath, input.pom));
+                                                    request.setPomFile(new File(localPath, project.pom));
                                                     request.setGoals(Arrays.asList("javadoc:jar", "source:jar", "deploy"));
                                                     request.setOutputHandler((line) -> {
                                                         ps.println(line);
@@ -274,7 +276,7 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
 
                                                     invoker = new DefaultInvoker();
                                                     invoker.setLocalRepositoryDirectory(repoFile);
-                                                    invoker.setMavenHome(new File(input.mvnHome));
+                                                    invoker.setMavenHome(new File(project.mvnHome));
                                                     result = invoker.execute(request);
 
                                                     if (!runningProjects.containsKey(projectKey)) {
@@ -285,23 +287,17 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
 
                                                     if (result.getExitCode() == 0) {
                                                         ps.println();
-                                                        ps.println("SUCCESS: /-----------------------\\");
-                                                        ps.println("SUCCESS: |  Hooray it deployed!  |");
-                                                        ps.println("SUCCESS: \\-----------------------/");
+                                                        ps.println("SUCCESS: Hooray it deployed!");
                                                         ps.println();
                                                     } else {
                                                         ps.println();
-                                                        ps.println("ERROR: /-----------------------\\");
-                                                        ps.println("ERROR: | Darn it!");
-                                                        ps.println("ERROR: \\-----------------------/");
+                                                        ps.println("ERROR: Darn it!");
                                                         ps.println();
                                                         finalOutput = failedOutput;
                                                     }
                                                 } else {
                                                     ps.println();
-                                                    ps.println("ERROR: /-----------------------\\");
-                                                    ps.println("ERROR: | Darn it!");
-                                                    ps.println("ERROR: \\-----------------------/");
+                                                    ps.println("ERROR: Darn it!");
                                                     ps.println();
                                                     finalOutput = failedOutput;
                                                 }
@@ -452,34 +448,38 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
                 File localPath = new File(root, project.name);
 
                 Map<String, Object> row = new HashMap<>();
-                Git gitProject = null;
-                try {
-                    gitProject = Git.open(localPath);
-                    gitProject.fetch().call();
 
-                    Status status = gitProject.status().call();
-                    Map<String, Object> gitStatus = new HashMap<>();
-                    gitStatus.put("added", status.getAdded());
-                    gitStatus.put("changed", status.getChanged());
-                    gitStatus.put("conflicting", status.getConflicting());
-                    gitStatus.put("missing", status.getMissing());
-                    gitStatus.put("modified", status.getModified());
-                    gitStatus.put("removed", status.getRemoved());
-                    gitStatus.put("uncommited", status.getUncommittedChanges());
-                    gitStatus.put("untracked", status.getUntracked());
-                    gitStatus.put("untrackedFolders", status.getUntrackedFolders());
+                boolean getGitStatus = false; // TODO expose to ....
+                if (getGitStatus) {
+                    Git gitProject = null;
+                    try {
+                        gitProject = Git.open(localPath);
+                        gitProject.fetch().call();
 
-                    row.put("gitStatus", gitStatus);
+                        Status status = gitProject.status().call();
+                        Map<String, Object> gitStatus = new HashMap<>();
+                        gitStatus.put("added", status.getAdded().isEmpty() ? null : status.getAdded());
+                        gitStatus.put("changed", status.getChanged().isEmpty() ? null : status.getChanged());
+                        gitStatus.put("conflicting", status.getConflicting().isEmpty() ? null : status.getConflicting());
+                        gitStatus.put("missing", status.getMissing().isEmpty() ? null : status.getMissing());
+                        gitStatus.put("modified", status.getModified().isEmpty() ? null : status.getModified());
+                        gitStatus.put("removed", status.getRemoved().isEmpty() ? null : status.getRemoved());
+                        gitStatus.put("uncommited", status.getUncommittedChanges().isEmpty() ? null : status.getUncommittedChanges());
+                        gitStatus.put("untracked", status.getUntracked().isEmpty() ? null : status.getUntracked());
+                        gitStatus.put("untrackedFolders", status.getUntrackedFolders().isEmpty() ? null : status.getUntrackedFolders());
 
-                    if (!status.isClean()) {
-                        
-                    }
+                        row.put("gitStatus", gitStatus);
 
-                } catch (Exception x) {
-                    LOG.warn("Issues checking git status", x);
-                } finally {
-                    if (gitProject != null) {
-                        gitProject.close();
+                        if (!status.isClean()) {
+
+                        }
+
+                    } catch (Exception x) {
+                        LOG.warn("Issues checking git status", x);
+                    } finally {
+                        if (gitProject != null) {
+                            gitProject.close();
+                        }
                     }
                 }
 

@@ -93,11 +93,11 @@
                                         <div>
                   
 
-                                            {if  $c.gitStatus}
+                                            {if $c.gitStatus}
                                                 {if $c.gitStatus.added}
                                                     <ul>
                                                         <li>Added</li>
-                                                        {foreach $g in $$c.gitStatus.added}
+                                                        {foreach $g in $c.gitStatus.added}
                                                             <li>{$g}</li>
                                                         {/foreach}
                                                     </ul>
@@ -105,7 +105,7 @@
                                                 {if $c.gitStatus.changed}
                                                     <ul>
                                                         <li>Changed</li>
-                                                        {foreach $g in $$c.gitStatus.changed}
+                                                        {foreach $g in $c.gitStatus.changed}
                                                             <li>{$g}</li>
                                                         {/foreach}
                                                     </ul>
@@ -113,7 +113,7 @@
                                                 {if $c.gitStatus.conflicting}
                                                     <ul>
                                                         <li>Conflicting</li>
-                                                        {foreach $g in $$c.gitStatus.conflicting}
+                                                        {foreach $g in $c.gitStatus.conflicting}
                                                             <li>{$g}</li>
                                                         {/foreach}
                                                     </ul>
@@ -121,7 +121,7 @@
                                                 {if $c.gitStatus.missing}
                                                     <ul>
                                                         <li>Missing</li>
-                                                        {foreach $g in $$c.gitStatus.missing}
+                                                        {foreach $g in $c.gitStatus.missing}
                                                             <li>{$g}</li>
                                                         {/foreach}
                                                     </ul>
@@ -129,7 +129,7 @@
                                                 {if $c.gitStatus.modified}
                                                     <ul>
                                                         <li>Modified</li>
-                                                        {foreach $g in $$c.gitStatus.modified}
+                                                        {foreach $g in $c.gitStatus.modified}
                                                             <li>{$g}</li>
                                                         {/foreach}
                                                     </ul>
@@ -137,7 +137,7 @@
                                                 {if $c.gitStatus.removed}
                                                     <ul>
                                                         <li>Removed</li>
-                                                        {foreach $g in $$c.gitStatus.removed}
+                                                        {foreach $g in $c.gitStatus.removed}
                                                             <li>{$g}</li>
                                                         {/foreach}
                                                     </ul>
@@ -145,7 +145,7 @@
                                                 {if $c.gitStatus.uncommited}
                                                     <ul>
                                                         <li>Uncommited</li>
-                                                        {foreach $g in $$c.gitStatus.uncommited}
+                                                        {foreach $g in $c.gitStatus.uncommited}
                                                             <li>{$g}</li>
                                                         {/foreach}
                                                     </ul>
@@ -153,7 +153,7 @@
                                                 {if $c.gitStatus.untracked}
                                                     <ul>
                                                         <li>Untracked</li>
-                                                        {foreach $g in $$c.gitStatus.untracked}
+                                                        {foreach $g in $c.gitStatus.untracked}
                                                             <li>{$g}</li>
                                                         {/foreach}
                                                     </ul>
@@ -161,7 +161,7 @@
                                                 {if $c.gitStatus.untrackedFolders}
                                                     <ul>
                                                         <li>Untracked Folders</li>
-                                                        {foreach $g in $$c.untrackedFolders.conflicting}
+                                                        {foreach $g in $c.gitStatus.untrackedFolders}
                                                             <li>{$g}</li>
                                                         {/foreach}
                                                     </ul>
