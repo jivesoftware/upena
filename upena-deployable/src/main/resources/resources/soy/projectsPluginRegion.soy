@@ -43,7 +43,24 @@
                             {foreach $c in $projects}
                                 <tr>
                                     <td>
-                                        <span class="label label-{$c.status}">{if $c.elapse}{$c.elapse}{/if}</span>
+                                        <form id="edit-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                                            data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="editHost">
+
+                                            <input type="hidden" name="key" value="{$c.key}">
+                                            {if $c.running}
+                                                <button style="display: inline;" title="Stop" type="submit" name="action" value="cancel" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                                                    <span class="glyphicon glyphicon-stop"></span>
+                                                </button>
+                                            {else}
+                                                <button  style="display: inline;" title="Build" type="submit" name="action" value="build" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                                                    <span class="glyphicon glyphicon-play"></span>
+                                                </button>
+                                            {/if}
+                                            <a href="projects/output/{$c.key}"  style="display: inline;"  class="btn btn-default">
+                                                <span class="glyphicon glyphicon-list" aria-hidden="true">&nbsp;Output&nbsp;</span>
+                                                <span class="label label-{$c.status}">{if $c.elapse}{$c.elapse}{/if}</span>
+                                            </a>
+                                        </form>
                                     </td>
                                     <td>
                                         <div>
@@ -180,9 +197,6 @@
                                                     <span class="glyphicon glyphicon-stop">&nbsp;Cancel</span>
                                                 </button>
                                             {/if}
-                                            <a href="projects/output/{$c.key}" class="btn btn-default">
-                                                <span class="glyphicon glyphicon-list" aria-hidden="true">Output</span>
-                                            </a>
                                             <button title="Build" type="submit" name="action" value="build" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-play-circle">&nbsp;Build</span></button>
                                             <button onclick="return confirm('Are you sure you want to delete?')" title="Remove" type="submit" name="action" value="remove" class="btn btn-default"><span class="glyphicon glyphicon-trash">&nbsp;Remove</span></button>
                                         </form>
