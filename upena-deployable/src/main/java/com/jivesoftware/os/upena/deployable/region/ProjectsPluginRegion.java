@@ -92,6 +92,10 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
         final String pom;
         final String goals;
 
+        final String profiles;
+        final String properties;
+        final String mavenOpts;
+
         final String mvnHome;
         final String action;
 
@@ -105,6 +109,9 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
             String branch,
             String pom,
             String goals,
+            String profiles,
+            String properties,
+            String mavenOpts,
             String mvnHome,
             String action,
             boolean refresh) {
@@ -117,6 +124,9 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
             this.branch = branch;
             this.pom = pom;
             this.goals = goals;
+            this.profiles = profiles;
+            this.properties = properties;
+            this.mavenOpts = mavenOpts;
             this.mvnHome = mvnHome;
 
             this.action = action;
@@ -170,6 +180,7 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
                         File runningOutput = new File(root, project.name + "-running.txt");
                         File failedOutput = new File(root, project.name + "-failed.txt");
                         File successOutput = new File(root, project.name + "-success.txt");
+                        File depsList = new File(root, project.name + "-deps.dot");
                         FileUtils.deleteQuietly(localPath);
                         runningOutput.delete();
                         failedOutput.delete();
@@ -220,9 +231,17 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
                                             }
 
                                             try {
-                                                ps.println("COMMAND: Invoking maven with these goals " + project.goals);
+                                                FileUtils.forceMkdir(repoFile);
+                                                Invoker invoker = new DefaultInvoker();
+                                                ps.println("COMMAND Using maven repo:" + repoFile.getAbsolutePath());
+                                                invoker.setLocalRepositoryDirectory(repoFile);
+                                                ps.println("COMMAND Using maven home:" + project.mvnHome);
+                                                invoker.setMavenHome(new File(project.mvnHome));
 
-                                                List<String> goals = Lists.newArrayList(Splitter.on(' ').split(project.goals));
+                                                ps.println("COMMAND: Invoking maven with these goals ");
+
+                                                //mvn dependency:list -DappendOutput=true -DoutputFile=/jive/tmp/deps.txt
+                                                List<String> goals = Arrays.asList("dependency:tree");
                                                 InvocationRequest request = new DefaultInvocationRequest();
                                                 request.setPomFile(new File(localPath, project.pom));
                                                 request.setGoals(goals);
@@ -230,15 +249,64 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
                                                     ps.println(line);
                                                 });
                                                 request.setMavenOpts("-Xmx3000m");
+                                                Properties prprts = new Properties();
+                                                prprts.put("outputFile", depsList.getAbsolutePath());
+                                                prprts.put("tokens", "whitespace");
+                                                prprts.put("outputType", "text");
+                                                prprts.put("appendOutput", "true");
+                                                request.setProperties(prprts);
 
-                                                Invoker invoker = new DefaultInvoker();
-
-                                                FileUtils.forceMkdir(repoFile);
-
-                                                invoker.setLocalRepositoryDirectory(repoFile);
-                                                invoker.setMavenHome(new File(project.mvnHome));
-                                                ps.println("COMMAND Using maven home:" + project.mvnHome);
                                                 InvocationResult result = invoker.execute(request);
+
+                                                if (!runningProjects.containsKey(projectKey)) {
+                                                    ps.println("ERROR: Build canceled.");
+                                                    finalOutput = failedOutput;
+                                                    return;
+                                                }
+
+                                                if (result.getExitCode() == 0) {
+                                                    ps.println();
+                                                    ps.println("Hooray it builds!");
+                                                    ps.println();
+
+                                                    ps.println("SUCCESS: Recorded dependecy list " + depsList.getAbsolutePath());
+
+                                                    // Compute dependant modules:
+                                                    upenaStore.projects.scan((ProjectKey key, Project p) -> {
+
+                                                        File proot = new File(project.localPath);
+                                                        File pdeps = new File(root, project.name + "-deps.dot");
+                                                        if (pdeps.exists() && pdeps.isFile()) {
+                                                            List<String> lines = FileUtils.readLines(pdeps);
+                                                            for (String line : lines) {
+                                                                ps.println(line);
+                                                            }
+                                                        }
+
+                                                        return true;
+                                                    });
+
+                                                } else {
+                                                    ps.println();
+                                                    ps.println("ERROR: Darn it!");
+                                                    ps.println();
+                                                    finalOutput = failedOutput;
+                                                    return;
+                                                }
+
+                                                ps.println("COMMAND: Invoking maven with these goals " + project.goals);
+
+                                                goals = Lists.newArrayList(Splitter.on(' ').split(project.goals));
+                                                request = new DefaultInvocationRequest();
+                                                request.setPomFile(new File(localPath, project.pom));
+                                                request.setGoals(goals);
+                                                request.setOutputHandler((line) -> {
+                                                    ps.println(line);
+                                                });
+                                                request.setMavenOpts("-Xmx3000m");
+
+                                                ps.println("COMMAND Using maven home:" + project.mvnHome);
+                                                result = invoker.execute(request);
 
                                                 if (!runningProjects.containsKey(projectKey)) {
                                                     ps.println("ERROR: Build canceled.");
