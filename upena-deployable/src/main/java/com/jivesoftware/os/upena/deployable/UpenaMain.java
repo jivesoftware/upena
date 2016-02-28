@@ -389,9 +389,9 @@ public class UpenaMain {
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/projectBuildOutputTail.soy"), "projectOutputTail.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/repoPluginRegion.soy"), "repoPluginRegion.soy");
 
-        JVMAttachAPI jvmaapi = null;
+        JDIAPI jvmaapi = null;
         try {
-            jvmaapi = new JVMAttachAPI();
+            jvmaapi = new JDIAPI();
             soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/jvmPluginRegion.soy"), "jvmPluginRegion.soy");
         } catch (Exception x) {
             LOG.warn("Failed to local tools.jar. Please manually add to classpath.", x);

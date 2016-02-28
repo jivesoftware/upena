@@ -5,7 +5,8 @@ import com.google.common.collect.Maps;
 import com.jivesoftware.os.amza.shared.AmzaInstance;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
-import com.jivesoftware.os.upena.deployable.JVMAttachAPI;
+import com.jivesoftware.os.upena.deployable.JDIAPI;
+import com.jivesoftware.os.upena.deployable.JDIAPI.ThreadDumpLineType;
 import com.jivesoftware.os.upena.deployable.region.JVMPluginRegion.JVMPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import java.util.ArrayList;
@@ -24,12 +25,12 @@ public class JVMPluginRegion implements PageRegion<JVMPluginRegionInput> {
     private final String template;
     private final SoyRenderer renderer;
     private final AmzaInstance amzaInstance;
-    private final JVMAttachAPI jvm;
+    private final JDIAPI jvm;
 
     public JVMPluginRegion(String template,
         SoyRenderer renderer,
         AmzaInstance amzaInstance,
-        JVMAttachAPI jvm) {
+        JDIAPI jvm) {
         this.template = template;
         this.renderer = renderer;
         this.amzaInstance = amzaInstance;
@@ -84,12 +85,20 @@ public class JVMPluginRegion implements PageRegion<JVMPluginRegionInput> {
             }
 
             if (input.action.equals("threadDump")) {
+                List<List<Map<String, String>>> threadDumps = new ArrayList<>();
+
                 List<Map<String, String>> threadDump = new ArrayList<>();
-                jvm.threadDump(input.host, Integer.parseInt(input.port), (String type, String value) -> {
-                    threadDump.add(ImmutableMap.of("type", type, "value", value));
+                jvm.threadDump(input.host, Integer.parseInt(input.port), (ThreadDumpLineType type, String value) -> {
+
+                    if (type == ThreadDumpLineType.eod) {
+                        threadDumps.add(new ArrayList<>(threadDump));
+                        threadDump.clear();
+                    } else {
+                        threadDump.add(ImmutableMap.of("type", type.toString(), "value", value));
+                    }
                     return true;
                 });
-                data.put("threadDump", threadDump);
+                data.put("threadDumps", threadDumps);
             }
 
         } catch (Exception e) {
