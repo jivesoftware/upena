@@ -11,7 +11,7 @@
     <groupId>com.jivesoftware.os.upena</groupId>
     <artifactId>upena-deployable</artifactId>
     <properties>
-        <main.class>com.jivesoftware.os.upena.deployable.Main</main.class>
+        <main.class>com.jivesoftware.os.upena.deployable.UpenaMain</main.class>
         <module.type>shared_lib</module.type>
     </properties>
     <build>

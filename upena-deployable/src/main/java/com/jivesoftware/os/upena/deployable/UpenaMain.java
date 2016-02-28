@@ -129,7 +129,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class Main {
+public class UpenaMain {
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
@@ -163,7 +163,7 @@ public class Main {
                 System.exit(1);
 
             } else {
-                new Main().run(args);
+                new UpenaMain().run(args);
             }
         } catch (Exception x) {
             x.printStackTrace();
