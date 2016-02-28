@@ -9,6 +9,7 @@ import com.jivesoftware.os.upena.deployable.JVMAttachAPI;
 import com.jivesoftware.os.upena.deployable.region.JVMPluginRegion.JVMPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -72,8 +73,8 @@ public class JVMPluginRegion implements PageRegion<JVMPluginRegionInput> {
                     instanceCounts.add(ImmutableMap.of("name", name, "count", String.valueOf(count)));
                     return true;
                 });
-                instanceCounts.sort((Map<String, String> o1, Map<String, String> o2) -> {
-                    int c = Integer.compare(Integer.parseInt(o1.get("count")), Integer.parseInt(o1.get("count")));
+                Collections.sort(instanceCounts, (Map<String, String> o1, Map<String, String> o2) -> {
+                    int c = Long.compare(Long.parseLong(o1.get("count")), Long.parseLong(o2.get("count")));
                     if (c != 0) {
                         return -c;
                     }

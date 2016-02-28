@@ -17,12 +17,15 @@ import java.util.Map;
  */
 public class JVMAttachAPI {
 
+    public static void main(String[] args) throws Exception {
+        new JVMAttachAPI().run();
+    }
+
     public interface ThreadDump {
 
         boolean histo(String thread, String frameLocation);
     }
 
-   
     public void threadDump(String hostName, int port, ThreadDump threadDump) throws Exception {
         VirtualMachineManager virtualMachineManager = Bootstrap.virtualMachineManager();
         AttachingConnector socketConnector = null;
@@ -97,16 +100,17 @@ public class JVMAttachAPI {
             VirtualMachine vm = socketConnector.attach(defaultArguments);
             System.out.println("Attached to process '" + vm.name() + "'");
 
-            //Location breakpointLocation = null;
-            List<ReferenceType> referenceTypes = vm.allClasses();
-            long[] instanceCounts = vm.instanceCounts(referenceTypes);
-            for (int i = 0; i < instanceCounts.length; i++) {
-                System.out.println(instanceCounts[i] + " " + referenceTypes.get(i).getValue(null));
-
-                ReferenceType rt = referenceTypes.get(i);
-                memoryHisto.histo(rt.name(), instanceCounts[i]);
+            try {
+                vm.suspend();
+                List<ReferenceType> referenceTypes = vm.allClasses();
+                long[] instanceCounts = vm.instanceCounts(referenceTypes);
+                for (int i = 0; i < instanceCounts.length; i++) {
+                    ReferenceType rt = referenceTypes.get(i);
+                    memoryHisto.histo(rt.name(), instanceCounts[i]);
+                }
+            } finally {
+                vm.resume();
             }
-            vm.dispose();
         } else {
             throw new Exception("Failed to connect to " + hostName + ":" + port);
         }
@@ -137,49 +141,14 @@ public class JVMAttachAPI {
             VirtualMachine vm = socketConnector.attach(defaultArguments);
             System.out.println("Attached to process '" + vm.name() + "'");
 
-            //Location breakpointLocation = null;
-            List<ReferenceType> referenceTypes = vm.allClasses();
-            /*
-            if (vm.canGetInstanceInfo()) {
+            vm.suspend();
+
+            try {
+                List<ReferenceType> referenceTypes = vm.allClasses();
                 long[] instanceCounts = vm.instanceCounts(referenceTypes);
-                for (int i = 0; i < instanceCounts.length; i++) {
-                    System.out.println(instanceCounts[i] + " " + referenceTypes.get(i).getValue(null)
-                    );
-                }
-
-            } else {
-                System.out.println("JVM doens't support instanceCounts");
-            }*/
-            
-            /*
-            EventQueue evtQueue = vm.eventQueue();
-            for (ReferenceType referenceType : referenceTypes) {
-                //List<Field> allFields = referenceType.allFields();
-                //for (Field allField : allFields) {
-                //    allField.
-                //}
-                List<Location> allLineLocations = referenceType.allLineLocations();
-                for (Location allLineLocation : allLineLocations) {
-                    //allLineLocation.
-                }
-            }*/
-            List<ThreadReference> allThreads = vm.allThreads();
-            for (ThreadReference thread : allThreads) {
-                if (thread.status() == 1) {
-                    thread.suspend();
-                    System.out.println("thread:" + thread.name() + " " + STATUS[thread.status()] + " " + thread.frameCount() + " threadGroup:" + thread
-                        .threadGroup().name());
-                    try {
-                        for (StackFrame frame : thread.frames()) {
-                            System.out.println("> " + frame);
-
-                        }
-                    } catch (Exception x) {
-                    }
-                    thread.resume();
-                }
+            } finally {
+                vm.resume();
             }
-
         }
 
     }

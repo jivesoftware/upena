@@ -38,14 +38,14 @@
                         <tr>
                             <td colspan="2">
                                 <button title="memoryHisto" type="submit" name="action" value="memoryHisto" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
-                                    <span class="glyphicon glyphicon-play">&nbspInstances</span>
+                                    <span class="glyphicon glyphicon-play">&nbspLive Histo</span>
                                 </button>
                             <td>
                         </tr>
                         <tr>
                             <td colspan="2">
                                 <button title="threadDump" type="submit" name="action" value="threadDump" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
-                                    <span class="glyphicon glyphicon-play">&nbspTheadDump</span>
+                                    <span class="glyphicon glyphicon-play">&nbspThead Dump</span>
                                 </button>
                             <td>
                         </tr>
@@ -58,13 +58,22 @@
     <div class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.9);">
         <div class="panel-heading panel-heading"><span class="panel-title">Instances</span></div>
             <div class="panel-body">
-            <ol>
-            {foreach $ic in $instanceCounts}
-                <li>
-                    {$ic.name}={$ic.count}
-                </li>
-            {/foreach}
-            </ol>
+            <table class="table table-hover table-condensed table-striped table-responsive">
+                <thead>
+                    <tr>
+                        <th>Count</th>
+                        <th>Class</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {foreach $ic in $instanceCounts}
+                        <tr>
+                            <td>{$ic.count}</td>
+                            <td>{$ic.name}</td>
+                        </tr>
+                    {/foreach}
+                </tbody>
+            </table>
         </div>
     </div>
     {/if}
