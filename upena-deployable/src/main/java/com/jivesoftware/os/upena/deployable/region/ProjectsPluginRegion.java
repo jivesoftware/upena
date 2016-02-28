@@ -10,10 +10,14 @@ import com.jivesoftware.os.upena.deployable.UpenaEndpoints;
 import com.jivesoftware.os.upena.deployable.region.ProjectsPluginRegion.ProjectsPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.service.UpenaStore;
+import com.jivesoftware.os.upena.shared.Artifact;
 import com.jivesoftware.os.upena.shared.PathToRepo;
 import com.jivesoftware.os.upena.shared.Project;
 import com.jivesoftware.os.upena.shared.ProjectFilter;
 import com.jivesoftware.os.upena.shared.ProjectKey;
+import com.jivesoftware.os.upena.shared.ReleaseGroup;
+import com.jivesoftware.os.upena.shared.ReleaseGroupFilter;
+import com.jivesoftware.os.upena.shared.ReleaseGroupKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -26,8 +30,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
@@ -39,6 +46,7 @@ import org.apache.maven.shared.invoker.InvocationResult;
 import org.apache.maven.shared.invoker.Invoker;
 import org.eclipse.jgit.api.CreateBranchCommand;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.PullResult;
 import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.lib.TextProgressMonitor;
 
@@ -97,6 +105,9 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
         final String mavenOpts;
 
         final String mvnHome;
+
+        final String oldCoordinate;
+        final String newCoordinate;
         final String action;
 
         final boolean refresh;
@@ -113,6 +124,8 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
             String properties,
             String mavenOpts,
             String mvnHome,
+            String oldCoordinate,
+            String newCoordinate,
             String action,
             boolean refresh) {
 
@@ -128,7 +141,8 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
             this.properties = properties;
             this.mavenOpts = mavenOpts;
             this.mvnHome = mvnHome;
-
+            this.oldCoordinate = oldCoordinate;
+            this.newCoordinate = newCoordinate;
             this.action = action;
             this.refresh = refresh;
         }
@@ -174,74 +188,141 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
 
                     try {
                         Project project = upenaStore.projects.get(projectKey);
-                        File root = new File(project.localPath);
-                        FileUtils.forceMkdir(root);
-                        File localPath = new File(root, project.name);
-                        File runningOutput = new File(root, project.name + "-running.txt");
-                        File failedOutput = new File(root, project.name + "-failed.txt");
-                        File successOutput = new File(root, project.name + "-success.txt");
-                        File depsList = new File(root, project.name + "-deps.dot");
-                        FileUtils.deleteQuietly(localPath);
-                        runningOutput.delete();
-                        failedOutput.delete();
-                        successOutput.delete();
-
                         if (project == null) {
                             data.put("message", "Couldn't checkout no existent project. Someone else likely just removed it since your last refresh.");
                         } else {
+                            File root = new File(project.localPath);
+                            FileUtils.forceMkdir(root);
+                            File localPath = new File(root, project.name);
+                            File runningOutput = new File(root, project.name + "-running.txt");
+                            File failedOutput = new File(root, project.name + "-failed.txt");
+                            File successOutput = new File(root, project.name + "-success.txt");
+                            File depsList = new File(root, project.name + "-deps.txt");
+
+                            runningOutput.delete();
+                            failedOutput.delete();
+                            successOutput.delete();
+                            depsList.delete();
                             AtomicLong running = runningProjects.computeIfAbsent(projectKey, (k) -> new AtomicLong());
                             if (running.compareAndSet(0, System.currentTimeMillis())) {
 
                                 FileOutputStream fos = new FileOutputStream(runningOutput);
                                 PrintStream ps = new PrintStream(fos);
-                                ps.println("FILE: Wiped " + localPath);
-                                ps.println("FILE: Wiped " + runningOutput);
-                                ps.println();
-                                ps.println("COMMAND: Starting the build....");
-                                ps.flush();
 
                                 projectExecutors.submit(() -> {
 
                                     try {
                                         File finalOutput = successOutput;
-                                        ps.println("GIT: Cloning from " + project.scmUrl + " to " + localPath);
 
-                                        // then clone
-                                        try (Git git = Git.cloneRepository()
-                                            .setURI(project.scmUrl)
-                                            .setDirectory(localPath)
-                                            .setProgressMonitor(new TextProgressMonitor(new PrintWriter(ps)))
-                                            .call()) {
+                                        try {
 
-                                            if (!runningProjects.containsKey(projectKey)) {
-                                                ps.println("ERROR: Build canceled.");
-                                                finalOutput = failedOutput;
-                                                return;
-                                            }
+                                            if (localPath.exists()) {
+                                                Git gitProject = null;
+                                                try {
+                                                    ps.println("GIT open repo " + localPath);
+                                                    gitProject = Git.open(localPath);
+                                                    Status status = gitProject.status().call();
+                                                    if (!status.isClean()) {
+                                                        ps.println("Build canceled because repo has uncommited changes.");
+                                                        printGitStatus(status, ps);
+                                                        finalOutput = failedOutput;
+                                                        return;
+                                                    }
 
-                                            if (!project.branch.equals(git.getRepository().getBranch())) {
+                                                    if (!project.branch.equals(gitProject.getRepository().getBranch())) {
 
-                                                ps.println("COMMAND: Checking out branch " + project.branch);
-                                                git.checkout().
-                                                    setCreateBranch(true).
-                                                    setName(project.branch).
-                                                    setUpstreamMode(CreateBranchCommand.SetupUpstreamMode.TRACK).
-                                                    setStartPoint("origin/" + project.branch).
-                                                    call();
+                                                        ps.println("CONFIG: Checking out branch " + project.branch);
+                                                        gitProject.checkout().
+                                                            setCreateBranch(true).
+                                                            setName(project.branch).
+                                                            setUpstreamMode(CreateBranchCommand.SetupUpstreamMode.TRACK).
+                                                            setStartPoint("origin/" + project.branch).
+                                                            call();
+                                                        ps.println("PASSED changed branch to " + project.branch);
+                                                    }
+
+                                                    PullResult pullResult = gitProject.pull()
+                                                        .setProgressMonitor(new TextProgressMonitor(new PrintWriter(ps)))
+                                                        .call();
+
+                                                    if (!pullResult.isSuccessful() || !status.isClean()) {
+                                                        if (!pullResult.isSuccessful()) {
+                                                            ps.println("GIT pull was not successful.");
+                                                        }
+                                                        if (!status.isClean()) {
+                                                            printGitStatus(status, ps);
+                                                        }
+                                                        finalOutput = failedOutput;
+                                                        return;
+                                                    }
+
+                                                    ps.println("PASSED git repo ready to build.");
+
+                                                } catch (Exception x) {
+                                                    String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
+                                                    ps.println(trace);
+                                                    ps.println("FAILED " + x.getMessage());
+                                                    LOG.warn("Git failure", x);
+                                                    finalOutput = failedOutput;
+                                                    return;
+                                                } finally {
+                                                    if (gitProject != null) {
+                                                        gitProject.close();
+                                                    }
+                                                }
+
+                                            } else {
+                                                ps.println("GIT: Cloning from " + project.scmUrl + " to " + localPath);
+
+                                                try (Git git = Git.cloneRepository()
+                                                    .setURI(project.scmUrl)
+                                                    .setDirectory(localPath)
+                                                    .setProgressMonitor(new TextProgressMonitor(new PrintWriter(ps)))
+                                                    .call()) {
+
+                                                    ps.println("PASSED git repo " + project.scmUrl + " cloned");
+                                                    if (!runningProjects.containsKey(projectKey)) {
+                                                        ps.println("FAILED Build canceled.");
+                                                        finalOutput = failedOutput;
+                                                        return;
+                                                    }
+
+                                                    if (!project.branch.equals(git.getRepository().getBranch())) {
+
+                                                        ps.println("CONFIG: Checking out branch " + project.branch);
+                                                        git.checkout().
+                                                            setCreateBranch(true).
+                                                            setName(project.branch).
+                                                            setUpstreamMode(CreateBranchCommand.SetupUpstreamMode.TRACK).
+                                                            setStartPoint("origin/" + project.branch).
+                                                            call();
+                                                        ps.println("PASSED changed branch to " + project.branch);
+                                                    }
+                                                } catch (Exception x) {
+                                                    String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
+                                                    ps.println(trace);
+                                                    ps.println("FAILED " + x.getMessage());
+                                                    finalOutput = failedOutput;
+                                                    return;
+                                                }
                                             }
 
                                             try {
                                                 FileUtils.forceMkdir(repoFile);
                                                 Invoker invoker = new DefaultInvoker();
-                                                ps.println("COMMAND Using maven repo:" + repoFile.getAbsolutePath());
+                                                ps.println("CONFIG Using maven repo:" + repoFile.getAbsolutePath());
                                                 invoker.setLocalRepositoryDirectory(repoFile);
-                                                ps.println("COMMAND Using maven home:" + project.mvnHome);
+                                                ps.println("CONFIG Using maven home:" + project.mvnHome);
                                                 invoker.setMavenHome(new File(project.mvnHome));
 
-                                                ps.println("COMMAND: Invoking maven with these goals ");
+                                                if (!checkForUpgradeables(projectKey, project, invoker, ps)) {
+                                                    finalOutput = failedOutput;
+                                                    return;
+                                                }
 
-                                                //mvn dependency:list -DappendOutput=true -DoutputFile=/jive/tmp/deps.txt
-                                                List<String> goals = Arrays.asList("dependency:tree");
+                                                ps.println("CONFIG: mvn " + project.goals);
+
+                                                List<String> goals = Lists.newArrayList(Splitter.on(' ').split(project.goals));
                                                 InvocationRequest request = new DefaultInvocationRequest();
                                                 request.setPomFile(new File(localPath, project.pom));
                                                 request.setGoals(goals);
@@ -249,12 +330,6 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
                                                     ps.println(line);
                                                 });
                                                 request.setMavenOpts("-Xmx3000m");
-                                                Properties prprts = new Properties();
-                                                prprts.put("outputFile", depsList.getAbsolutePath());
-                                                prprts.put("tokens", "whitespace");
-                                                prprts.put("outputType", "text");
-                                                prprts.put("appendOutput", "true");
-                                                request.setProperties(prprts);
 
                                                 InvocationResult result = invoker.execute(request);
 
@@ -265,59 +340,7 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
                                                 }
 
                                                 if (result.getExitCode() == 0) {
-                                                    ps.println();
-                                                    ps.println("Hooray it builds!");
-                                                    ps.println();
-
-                                                    ps.println("SUCCESS: Recorded dependecy list " + depsList.getAbsolutePath());
-
-                                                    // Compute dependant modules:
-                                                    upenaStore.projects.scan((ProjectKey key, Project p) -> {
-
-                                                        File proot = new File(project.localPath);
-                                                        File pdeps = new File(root, project.name + "-deps.dot");
-                                                        if (pdeps.exists() && pdeps.isFile()) {
-                                                            List<String> lines = FileUtils.readLines(pdeps);
-                                                            for (String line : lines) {
-                                                                ps.println(line);
-                                                            }
-                                                        }
-
-                                                        return true;
-                                                    });
-
-                                                } else {
-                                                    ps.println();
-                                                    ps.println("ERROR: Darn it!");
-                                                    ps.println();
-                                                    finalOutput = failedOutput;
-                                                    return;
-                                                }
-
-                                                ps.println("COMMAND: Invoking maven with these goals " + project.goals);
-
-                                                goals = Lists.newArrayList(Splitter.on(' ').split(project.goals));
-                                                request = new DefaultInvocationRequest();
-                                                request.setPomFile(new File(localPath, project.pom));
-                                                request.setGoals(goals);
-                                                request.setOutputHandler((line) -> {
-                                                    ps.println(line);
-                                                });
-                                                request.setMavenOpts("-Xmx3000m");
-
-                                                ps.println("COMMAND Using maven home:" + project.mvnHome);
-                                                result = invoker.execute(request);
-
-                                                if (!runningProjects.containsKey(projectKey)) {
-                                                    ps.println("ERROR: Build canceled.");
-                                                    finalOutput = failedOutput;
-                                                    return;
-                                                }
-
-                                                if (result.getExitCode() == 0) {
-                                                    ps.println();
-                                                    ps.println("Hooray it builds!");
-                                                    ps.println();
+                                                    ps.println("PASSED mvn " + project.goals);
 
                                                     ps.println("Invoking deploying... ");
 
@@ -336,6 +359,8 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
                                                     Properties properties = new Properties();
 
                                                     String repoUrl = "http://localhost:1175/repo";
+
+                                                    // TODO deploy to backup/HA url
                                                     properties.setProperty("altDeploymentRepository", "mine::default::" + repoUrl);
                                                     properties.setProperty("altReleaseRepository", "mine::default::" + repoUrl);
                                                     properties.setProperty("altSnapshotRepository", "mine::default::" + repoUrl);
@@ -358,24 +383,24 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
 
                                                     if (result.getExitCode() == 0) {
                                                         ps.println();
-                                                        ps.println("SUCCESS: Hooray it deployed!");
+                                                        ps.println("PASSED mvn javadoc:jar source:jar deploy");
                                                         ps.println();
                                                     } else {
                                                         ps.println();
-                                                        ps.println("ERROR: Darn it!");
+                                                        ps.println("FAILED: Darn it!");
                                                         ps.println();
                                                         finalOutput = failedOutput;
                                                     }
                                                 } else {
                                                     ps.println();
-                                                    ps.println("ERROR: Darn it!");
+                                                    ps.println("FAILED: Darn it!");
                                                     ps.println();
                                                     finalOutput = failedOutput;
                                                 }
                                             } catch (Exception x) {
                                                 String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
                                                 ps.println(trace);
-                                                ps.println("error while calling mvn " + trace);
+                                                ps.println("FAILED while calling mvn " + trace);
                                                 finalOutput = failedOutput;
                                             }
 
@@ -425,7 +450,8 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
                             input.mvnHome,
                             new HashSet<>(),
                             new HashSet<>(),
-                            new ArrayList<>());
+                            new HashMap<>(),
+                            new HashMap<>());
                         upenaStore.projects.update(null, newProject);
                         upenaStore.record(user, "added", System.currentTimeMillis(), "", "projects-ui", newProject.toString());
 
@@ -449,9 +475,10 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
                                 input.pom,
                                 input.goals,
                                 input.mvnHome,
-                                new HashSet<>(),
-                                new HashSet<>(),
-                                new ArrayList<>());
+                                project.downloadFromArtifactRepositories,
+                                project.uploadToArtifactRepositories,
+                                project.conflictingCoordinateProjectKeyArtifacts,
+                                project.dependantReleaseGroups);
                             upenaStore.projects.update(projectKey, updatedProject);
                             data.put("message", "Updated Project:" + input.name);
                             upenaStore.record(user, "updated", System.currentTimeMillis(), "", "projects-ui", project.toString());
@@ -477,7 +504,8 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
                                 input.mvnHome,
                                 new HashSet<>(),
                                 new HashSet<>(),
-                                new ArrayList<>());
+                                new HashMap<>(),
+                                new HashMap<>());
                             upenaStore.projects.update(null, clone);
                             data.put("message", "Cloned Project:" + input.name);
                             upenaStore.record(user, "cloned", System.currentTimeMillis(), "", "projects-ui", project.toString());
@@ -489,12 +517,58 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
                 } else if (input.action.equals("remove")) {
                     if (input.key.isEmpty()) {
                         data.put("message", "Failed to remove Project:" + input.name);
+                    } else if (runningProjects.containsKey(new ProjectKey(input.key))) {
+                        data.put("message", "Failed to remove Project:" + input.name + " because it is currently running.");
                     } else {
                         try {
                             Project removing = upenaStore.projects.get(projectKey);
                             if (removing != null) {
                                 upenaStore.projects.remove(projectKey);
                                 upenaStore.record(user, "removed", System.currentTimeMillis(), "", "projects-ui", removing.toString());
+                            }
+                        } catch (Exception x) {
+                            String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
+                            data.put("message", "Error while trying to remove Project:" + input.name + "\n" + trace);
+                        }
+                    }
+                } else if (input.action.equals("setVersion")) {
+                    if (input.key.isEmpty()) {
+                        data.put("message", "Failed to set version Project:" + input.name);
+                    } else {
+                        filters.clear();
+                        try {
+                            Project project = upenaStore.projects.get(projectKey);
+                            if (project == null) {
+                                data.put("message", "Couldn't checkout no existent project. Someone else likely just removed it since your last refresh.");
+                            } else {
+                                File root = new File(project.localPath);
+                                FileUtils.forceMkdir(root);
+                                File runningOutput = new File(root, project.name + "-running.txt");
+                                File failedOutput = new File(root, project.name + "-failed.txt");
+                                File successOutput = new File(root, project.name + "-success.txt");
+
+                                runningOutput.delete();
+                                failedOutput.delete();
+                                successOutput.delete();
+
+                                AtomicLong running = runningProjects.computeIfAbsent(projectKey, (k) -> new AtomicLong());
+                                if (running.compareAndSet(0, System.currentTimeMillis())) {
+
+                                    FileOutputStream fos = new FileOutputStream(runningOutput);
+                                    PrintStream ps = new PrintStream(fos);
+
+                                    projectExecutors.submit(() -> {
+                                        try {
+                                            setVersion(new ProjectKey(input.key),
+                                                project,
+                                                input.oldCoordinate.trim().split(":"),
+                                                input.newCoordinate.trim().split(":"),
+                                                ps);
+                                        } catch (Exception x) {
+                                            LOG.error("Unecpected failure.", x);
+                                        }
+                                    });
+                                }
                             }
                         } catch (Exception x) {
                             String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
@@ -520,37 +594,29 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
 
                 Map<String, Object> row = new HashMap<>();
 
-                boolean getGitStatus = false; // TODO expose to ....
-                if (getGitStatus) {
-                    Git gitProject = null;
-                    try {
-                        gitProject = Git.open(localPath);
-                        gitProject.fetch().call();
+                Git gitProject = null;
+                try {
+                    gitProject = Git.open(localPath);
 
-                        Status status = gitProject.status().call();
-                        Map<String, Object> gitStatus = new HashMap<>();
-                        gitStatus.put("added", status.getAdded().isEmpty() ? null : status.getAdded());
-                        gitStatus.put("changed", status.getChanged().isEmpty() ? null : status.getChanged());
-                        gitStatus.put("conflicting", status.getConflicting().isEmpty() ? null : status.getConflicting());
-                        gitStatus.put("missing", status.getMissing().isEmpty() ? null : status.getMissing());
-                        gitStatus.put("modified", status.getModified().isEmpty() ? null : status.getModified());
-                        gitStatus.put("removed", status.getRemoved().isEmpty() ? null : status.getRemoved());
-                        gitStatus.put("uncommited", status.getUncommittedChanges().isEmpty() ? null : status.getUncommittedChanges());
-                        gitStatus.put("untracked", status.getUntracked().isEmpty() ? null : status.getUntracked());
-                        gitStatus.put("untrackedFolders", status.getUntrackedFolders().isEmpty() ? null : status.getUntrackedFolders());
+                    Status status = gitProject.status().call();
+                    Map<String, Object> gitStatus = new HashMap<>();
+                    gitStatus.put("added", status.getAdded().isEmpty() ? null : status.getAdded());
+                    gitStatus.put("changed", status.getChanged().isEmpty() ? null : status.getChanged());
+                    gitStatus.put("conflicting", status.getConflicting().isEmpty() ? null : status.getConflicting());
+                    gitStatus.put("missing", status.getMissing().isEmpty() ? null : status.getMissing());
+                    gitStatus.put("modified", status.getModified().isEmpty() ? null : status.getModified());
+                    gitStatus.put("removed", status.getRemoved().isEmpty() ? null : status.getRemoved());
+                    gitStatus.put("uncommited", status.getUncommittedChanges().isEmpty() ? null : status.getUncommittedChanges());
+                    gitStatus.put("untracked", status.getUntracked().isEmpty() ? null : status.getUntracked());
+                    gitStatus.put("untrackedFolders", status.getUntrackedFolders().isEmpty() ? null : status.getUntrackedFolders());
+                    gitStatus.put("isClean", String.valueOf(status.isClean()));
+                    row.put("gitStatus", gitStatus);
 
-                        row.put("gitStatus", gitStatus);
-
-                        if (!status.isClean()) {
-
-                        }
-
-                    } catch (Exception x) {
-                        LOG.warn("Issues checking git status", x);
-                    } finally {
-                        if (gitProject != null) {
-                            gitProject.close();
-                        }
+                } catch (Exception x) {
+                    LOG.warn("Issues checking git status", x);
+                } finally {
+                    if (gitProject != null) {
+                        gitProject.close();
                     }
                 }
 
@@ -583,6 +649,62 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
                 row.put("pom", project.pom);
                 row.put("goals", project.goals);
                 row.put("mvnHome", project.mvnHome);
+
+                if (project.dependantReleaseGroups != null) {
+                    List<Map<String, Object>> releases = new ArrayList<>();
+                    for (Entry<ReleaseGroupKey, Artifact> e : project.dependantReleaseGroups.entrySet()) {
+                        ReleaseGroup releaseGroup = upenaStore.releaseGroups.get(e.getKey());
+                        if (releaseGroup != null) {
+                            Map<String, Object> release = new HashMap<>();
+                            release.put("name", releaseGroup.name);
+                            release.put("version", releaseGroup.version);
+                            Artifact expected = e.getValue();
+                            String[] coordinates = releaseGroup.version.split(",");
+                            for (String coordinate : coordinates) {
+                                Artifact current = new Artifact(coordinate.trim().split(":"));
+                                if (!current.equals(expected)) {
+                                    release.put("alternateVersion", expected.toString());
+                                }
+                            }
+                            releases.add(release);
+                        }
+                    }
+                    if (releases.size() > 0) {
+                        row.put("hasReleases", String.valueOf(releases.size()));
+                        row.put("releases", releases);
+                    }
+                }
+
+                if (project.conflictingCoordinateProjectKeyArtifacts != null) {
+                    List<Map<String, Object>> versionConflicts = new ArrayList<>();
+                    for (Entry<String, Map<ProjectKey, Artifact>> e : project.conflictingCoordinateProjectKeyArtifacts.entrySet()) {
+
+                        List<Map<String, Object>> versionUsages = new ArrayList<>();
+                        for (Entry<ProjectKey, Artifact> f : e.getValue().entrySet()) {
+                            if (!f.getKey().equals(key)) {
+                                Project p = upenaStore.projects.get(f.getKey());
+                                if (p != null) {
+                                    Map<String, Object> v = new HashMap<>();
+                                    v.put("key", f.getKey());
+                                    v.put("name", p.name);
+                                    v.put("version", f.getValue().toString());
+                                    versionUsages.add(v);
+                                }
+                            }
+                        }
+                        if (!versionUsages.isEmpty()) {
+                            Map<String, Object> m = new HashMap<>();
+                            m.put("version", e.getKey());
+                            m.put("versionUsages", versionUsages);
+                            versionConflicts.add(m);
+                        }
+                    }
+                    if (versionConflicts.size() > 0) {
+                        row.put("hasVersionConflicts", String.valueOf(versionConflicts.size()));
+                        row.put("versionConflicts", versionConflicts);
+                    }
+                }
+
                 rows.add(row);
             }
 
@@ -606,6 +728,298 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
         return renderer.render(template, data);
     }
 
+    public void setVersion(ProjectKey projectKey,
+        Project project,
+        String[] oldCoordinate,
+        String[] newCoordinate,
+        PrintStream ps) throws Exception {
+
+        File root = new File(project.localPath);
+        FileUtils.forceMkdir(root);
+        File localPath = new File(root, project.name);
+        File runningOutput = new File(root, project.name + "-running.txt");
+        File failedOutput = new File(root, project.name + "-failed.txt");
+        File successOutput = new File(root, project.name + "-success.txt");
+        File finalOutput = null;
+        try {
+
+            Invoker invoker = new DefaultInvoker();
+            File repoFile = localPathToRepo.get();
+            ps.println("CONFIG Using maven repo:" + repoFile.getAbsolutePath());
+            invoker.setLocalRepositoryDirectory(repoFile);
+            ps.println("CONFIG Using maven home:" + project.mvnHome);
+            invoker.setMavenHome(new File(project.mvnHome));
+
+            File pomFile = new File(localPath, project.pom);
+
+            ps.println("CONFIG: versions:set " + pomFile.getAbsolutePath());
+            //mvn dependency:list -DappendOutput=true -DoutputFile=/jive/tmp/deps.txt
+            List<String> goals = Arrays.asList("org.codehaus.mojo:versions-maven-plugin:2.1:set"); // TODO expose to config
+            InvocationRequest request = new DefaultInvocationRequest();
+            request.setPomFile(pomFile);
+            request.setGoals(goals);
+            request.setOutputHandler((line) -> {
+                ps.println(line);
+            });
+            request.setMavenOpts("-Xmx3000m");
+
+            Properties prprts = new Properties();
+            prprts.put("groupId", newCoordinate[0]);
+            prprts.put("artifactId", newCoordinate[1]);
+            prprts.put("oldVersion", oldCoordinate[2]);
+            prprts.put("newVersion", newCoordinate[3]);
+
+            prprts.put("processPlugins", "false");
+            prprts.put("generateBackupPoms", "false");
+            request.setProperties(prprts);
+            request.setDebug(true);
+
+            InvocationResult result = invoker.execute(request);
+            if (!runningProjects.containsKey(projectKey)) {
+                ps.println("FAILED: Build canceled.");
+                finalOutput = failedOutput;
+                return;
+            }
+            if (result.getExitCode() == 0) {
+                ps.println();
+                ps.println("PASSED set version to " + Arrays.toString(newCoordinate));
+                ps.println();
+            } else {
+                ps.println();
+                ps.println("FAILED to set version to " + Arrays.toString(newCoordinate));
+                ps.println();
+                finalOutput = failedOutput;
+                return;
+            }
+
+            finalOutput = successOutput;
+        } catch (Exception x) {
+            LOG.error("Unexpected failure while building" + project, x);
+            finalOutput = failedOutput;
+        } finally {
+            if (ps != null) {
+                ps.flush();
+                ps.close();
+            }
+            try {
+                FileUtils.moveFile(runningOutput, finalOutput);
+            } catch (Exception xx) {
+                LOG.error("Failed to move " + runningOutput + " " + failedOutput, xx);
+            }
+            runningProjects.remove(projectKey);
+        }
+
+    }
+
+    private void printGitStatus(Status status, PrintStream ps) {
+        for (String string : status.getAdded()) {
+            ps.println("Added:" + string);
+        }
+        for (String string : status.getChanged()) {
+            ps.println("Changes:" + string);
+        }
+        for (String string : status.getConflicting()) {
+            ps.println("Conflicting:" + string);
+        }
+        for (String string : status.getMissing()) {
+            ps.println("Missing:" + string);
+        }
+        for (String string : status.getModified()) {
+            ps.println("Modified:" + string);
+        }
+        for (String string : status.getRemoved()) {
+            ps.println("Removed:" + string);
+        }
+        for (String string : status.getUncommittedChanges()) {
+            ps.println("Uncommited:" + string);
+        }
+        for (String string : status.getUntrackedFolders()) {
+            ps.println("Untracked:" + string);
+        }
+    }
+
+    private boolean checkForUpgradeables(ProjectKey projectKey, Project project, Invoker invoker, PrintStream ps) throws Exception {
+        File root = new File(project.localPath);
+        File localPath = new File(root, project.name);
+        File deps = new File(root, project.name + "-deps.txt");
+        File pomFile = new File(localPath, project.pom);
+
+        ps.println("CONFIG:  dependency:tree " + pomFile.getAbsolutePath());
+        //mvn dependency:list -DappendOutput=true -DoutputFile=/jive/tmp/deps.txt
+        List<String> goals = Arrays.asList("dependency:tree");
+        InvocationRequest request = new DefaultInvocationRequest();
+        request.setPomFile(pomFile);
+        request.setGoals(goals);
+        request.setOutputHandler((line) -> {
+            ps.println(line);
+        });
+        request.setMavenOpts("-Xmx3000m");
+
+        Properties prprts = new Properties();
+        prprts.put("outputFile", deps.getAbsolutePath());
+        prprts.put("tokens", "whitespace");
+        prprts.put("outputType", "text");
+        prprts.put("appendOutput", "true");
+        request.setProperties(prprts);
+
+        InvocationResult result = invoker.execute(request);
+        if (!runningProjects.containsKey(projectKey)) {
+            ps.println("ERROR: Build canceled.");
+            return false;
+        }
+        if (result.getExitCode() == 0) {
+            ps.println("PASSED Recorded dependency list " + deps.getAbsolutePath());
+
+            ps.println("CONFIG upgradables for " + project.name);
+            buildUpgradables(projectKey, project, ps);
+
+        } else {
+            ps.println();
+            ps.println("FAILED trying to build dependency list");
+            ps.println();
+            return false;
+        }
+        return true;
+    }
+
+    private class ProjectModule {
+
+        String groupId;
+        String artifactId;
+
+        Map<ProjectKey, ProjectAndVersion> versions = new ConcurrentHashMap<>();
+
+        public ProjectModule(String groupId, String artifactId) {
+            this.groupId = groupId;
+            this.artifactId = artifactId;
+        }
+    }
+
+    private static class ProjectAndVersion {
+
+        public final Project project;
+        public final Artifact artifact;
+
+        public ProjectAndVersion(Project project, String[] coordinate) {
+            this.project = project;
+            this.artifact = new Artifact(coordinate);
+        }
+
+        @Override
+        public String toString() {
+            return project.name + "->" + artifact;
+        }
+
+    }
+
+    private void buildUpgradables(ProjectKey projectKey, Project project, PrintStream ps) throws Exception {
+        File root = new File(project.localPath);
+        File deps = new File(root, project.name + "-deps.txt");
+
+        Set<String> moduleCoordinates = new HashSet<>();
+
+        Map<String, ProjectModule> projectModules = new ConcurrentHashMap<>();
+
+        List<String> lines = FileUtils.readLines(deps);
+        for (String line : lines) {
+            String[] coordinate = line.trim().split(":");
+            if (line.startsWith("      ")) { // ignore secondary deps
+            } else if (line.startsWith("   ")) { // primary
+                ProjectModule dependsOnModule = projectModules.computeIfAbsent(coordinate[0] + ":" + coordinate[1], (t) -> new ProjectModule(coordinate[0],
+                    coordinate[1]));
+                dependsOnModule.versions.put(projectKey, new ProjectAndVersion(project, coordinate));
+            } else if (!coordinate[2].equals("pom")) {
+                ProjectModule projectModule = projectModules.computeIfAbsent(coordinate[0] + ":" + coordinate[1], (t)
+                    -> new ProjectModule(coordinate[0], coordinate[1]));
+                projectModule.versions.put(projectKey, new ProjectAndVersion(project, coordinate));
+                moduleCoordinates.add(line);
+            }
+        }
+
+        // Compute dependant modules:
+        upenaStore.projects.scan((ProjectKey pk, Project p) -> {
+
+            File otherRoot = new File(p.localPath);
+            File otherDeps = new File(otherRoot, p.name + "-deps.txt");
+            if (otherDeps.exists() && otherDeps.isFile()) {
+                List<String> otherLines = FileUtils.readLines(otherDeps);
+                for (String line : otherLines) {
+                    String[] coordinate = line.trim().split(":");
+                    if (line.startsWith("      ")) { // ignore secondary deps
+                    } else if (line.startsWith("   ")) { // primary
+                        ProjectModule dependsOnModule = projectModules.computeIfAbsent(coordinate[0] + ":" + coordinate[1], (t) -> new ProjectModule(
+                            coordinate[0],
+                            coordinate[1]));
+                        dependsOnModule.versions.put(pk, new ProjectAndVersion(p, coordinate));
+                    } else if (!coordinate[2].equals("pom")) {
+                        ProjectModule otherProjectModule = projectModules.computeIfAbsent(coordinate[0] + ":" + coordinate[1], (t)
+                            -> new ProjectModule(coordinate[0], coordinate[1]));
+                        otherProjectModule.versions.put(pk, new ProjectAndVersion(p, coordinate));
+                    }
+                }
+            }
+            return true;
+        });
+
+        project.dependantReleaseGroups = new HashMap<>();
+        for (String moduleCoordinate : moduleCoordinates) {
+
+            System.out.println("INFO Modules:" + moduleCoordinate);
+            String[] coordinate = moduleCoordinate.trim().split(":");
+            String find = coordinate[0] + ":" + coordinate[1] + ":";
+            ReleaseGroupFilter filter = new ReleaseGroupFilter(null, null, find, null, null, 0, 1000);
+            ConcurrentNavigableMap<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> found = upenaStore.releaseGroups.find(filter);
+            for (Map.Entry<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> entry : found.entrySet()) {
+                project.dependantReleaseGroups.put(entry.getKey(), new Artifact(coordinate));
+                ps.println("INFO: found a release:" + entry.getValue().getValue().name + " tied to " + find);
+            }
+        }
+        ps.println("PASSED version conflicts computed");
+
+//        
+        Map<ProjectKey, Map<String, Map<ProjectKey, Artifact>>> conflictingCoordinateProjectKeyArtifacts = new HashMap<>();
+
+        for (ProjectModule value : projectModules.values()) {
+            if (value.versions.size() > 1) {
+                Set<String> warning = new HashSet<>();
+                for (ProjectAndVersion projectAndVersion : value.versions.values()) {
+                    warning.add(projectAndVersion.artifact.groupId + ":" + projectAndVersion.artifact.artifactId + ":" + projectAndVersion.artifact.version);
+                }
+                if (warning.size() > 1) {
+                    for (Entry<ProjectKey, ProjectAndVersion> e : value.versions.entrySet()) {
+
+                        Map<String, Map<ProjectKey, Artifact>> conflicts = conflictingCoordinateProjectKeyArtifacts.computeIfAbsent(e.getKey(),
+                            (k) -> new HashMap<>());
+
+                        String currentArtifact = value.groupId + ":" + value.artifactId + ":" + value.versions.get(e.getKey()).artifact.version;
+                        for (Entry<ProjectKey, ProjectAndVersion> f : value.versions.entrySet()) {
+
+                            Map<ProjectKey, Artifact> projectVersionConflicts = conflicts.computeIfAbsent(currentArtifact, (k) -> new HashMap<>());
+                            projectVersionConflicts.put(f.getKey(), f.getValue().artifact);
+                            ps.println("WARNING:" + f.getValue());
+                        }
+                    }
+                }
+            }
+        }
+
+        for (Entry<ProjectKey, Map<String, Map<ProjectKey, Artifact>>> e : conflictingCoordinateProjectKeyArtifacts.entrySet()) {
+            if (e.getKey().equals(projectKey)) {
+                project.conflictingCoordinateProjectKeyArtifacts = e.getValue();
+            } else {
+                Project got = upenaStore.projects.get(e.getKey());
+                if (got != null) {
+                    got.conflictingCoordinateProjectKeyArtifacts = e.getValue();
+                    upenaStore.projects.update(e.getKey(), got);
+                }
+            }
+        }
+
+        upenaStore.projects.update(projectKey, project);
+        ps.println("PASSED version conflicts recorded");
+
+    }
+
     public String output(String key, boolean refresh) throws Exception {
         Map<String, Object> data = Maps.newHashMap();
 
@@ -620,7 +1034,7 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
             if (running.exists()) {
                 List<String> lines = FileUtils.readLines(running);
                 if (refresh) {
-                    log.addAll(lines.subList(Math.max(0, lines.size() - 1000), lines.size()));
+                    log.addAll(lines.subList(Math.max(0, lines.size() - 10000), lines.size()));
                 } else {
                     log.addAll(lines);
                 }
@@ -630,7 +1044,7 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
             if (failed.exists()) {
                 List<String> lines = FileUtils.readLines(failed);
                 if (refresh) {
-                    log.addAll(lines.subList(Math.max(0, lines.size() - 1000), lines.size()));
+                    log.addAll(lines.subList(Math.max(0, lines.size() - 10000), lines.size()));
                 } else {
                     log.addAll(lines);
                 }
@@ -642,7 +1056,7 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
             if (success.exists()) {
                 List<String> lines = FileUtils.readLines(success);
                 if (refresh) {
-                    log.addAll(lines.subList(Math.max(0, lines.size() - 1000), lines.size()));
+                    log.addAll(lines.subList(Math.max(0, lines.size() - 10000), lines.size()));
                 } else {
                     log.addAll(lines);
                 }

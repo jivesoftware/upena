@@ -1,0 +1,86 @@
+{namespace soy.page}
+
+/**
+ * JVM plugin page
+ * 
+ * @param? host
+ * @param? port
+ * @param? instanceCounts
+ * @param? threadDump
+ */
+{template .jvmPluginRegion}
+    <div class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.9);">
+        <div class="panel-heading panel-heading"><span class="panel-title">JVM</span></div>
+        <div class="panel-body">
+
+            <table class="table table-hover table-condensed table-responsive">
+                <thead>
+                    <tr>
+                        <th>Host</th>
+                        <th>Port</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <form id="add-ring-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                        data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="addRingHost">
+                        <tr style="background-color:#ddd;">
+                            <td>
+                                <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                class="form-control" placeholder="Host" value="{$host}"
+                                name="host" id="hostPicker" data-original-title="" title="">
+                            </td>
+                            <td>
+                                <input type="number" name="port" min="1" max="65536" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                class="form-control" placeholder="Port" value="{$port}" id="portPicker"
+                                data-original-title="" title="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <button title="memoryHisto" type="submit" name="action" value="memoryHisto" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                                    <span class="glyphicon glyphicon-play">&nbspInstances</span>
+                                </button>
+                            <td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <button title="threadDump" type="submit" name="action" value="threadDump" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                                    <span class="glyphicon glyphicon-play">&nbspTheadDump</span>
+                                </button>
+                            <td>
+                        </tr>
+                    </form>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {if $instanceCounts}
+    <div class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.9);">
+        <div class="panel-heading panel-heading"><span class="panel-title">Instances</span></div>
+            <div class="panel-body">
+            <ol>
+            {foreach $ic in $instanceCounts}
+                <li>
+                    {$ic.name}={$ic.count}
+                </li>
+            {/foreach}
+            </ol>
+        </div>
+    </div>
+    {/if}
+    {if $threadDump}
+    <div class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.9);">
+        <div class="panel-heading panel-heading"><span class="panel-title">ThreadDump</span></div>
+            <div class="panel-body">
+            <ol>
+            {foreach $t in $threadDump}
+                <li>
+                    {$t};
+                </li>
+            {/foreach}
+            </ol>
+        </div>
+    </div>
+    {/if}
+
+{/template}

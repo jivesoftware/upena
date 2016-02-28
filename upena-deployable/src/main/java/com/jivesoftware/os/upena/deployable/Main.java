@@ -19,7 +19,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.base.Optional;
-import com.google.common.collect.Lists;
 import com.google.template.soy.SoyFileSet;
 import com.google.template.soy.base.SoySyntaxException;
 import com.google.template.soy.tofu.SoyTofu;
@@ -62,6 +61,7 @@ import com.jivesoftware.os.upena.deployable.endpoints.DependenciesPluginEndpoint
 import com.jivesoftware.os.upena.deployable.endpoints.HealthPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.HostsPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.InstancesPluginEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.JVMPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ModulesPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ProfilerPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ProjectsPluginEndpoints;
@@ -87,6 +87,7 @@ import com.jivesoftware.os.upena.deployable.region.HealthPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.HomeRegion;
 import com.jivesoftware.os.upena.deployable.region.HostsPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.InstancesPluginRegion;
+import com.jivesoftware.os.upena.deployable.region.JVMPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ManagePlugin;
 import com.jivesoftware.os.upena.deployable.region.MenuRegion;
 import com.jivesoftware.os.upena.deployable.region.ModulesPluginRegion;
@@ -119,6 +120,7 @@ import com.jivesoftware.os.upena.uba.service.endpoints.UbaServiceRestEndpoints;
 import de.ruedigermoeller.serialization.FSTConfiguration;
 import java.io.File;
 import java.net.InetAddress;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NavigableMap;
 import java.util.Random;
@@ -131,7 +133,8 @@ public class Main {
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
+
         try {
             if (args.length == 0) {
                 System.out.println("Usage:");
@@ -386,6 +389,21 @@ public class Main {
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/projectBuildOutputTail.soy"), "projectOutputTail.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/repoPluginRegion.soy"), "repoPluginRegion.soy");
 
+        JVMAttachAPI jvmaapi = null;
+        try {
+            jvmaapi = new JVMAttachAPI();
+            soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/jvmPluginRegion.soy"), "jvmPluginRegion.soy");
+        } catch (Exception x) {
+            LOG.warn("Failed to local tools.jar. Please manually add to classpath.", x);
+        }
+//        try {
+//            jvmaapi.run();
+//            System.exit(0);
+//        } catch (Exception xx) {
+//            LOG.warn("WTF.", xx);
+//            System.exit(0);
+//        }
+
         SoyFileSet sfs = soyFileSetBuilder.build();
         SoyTofu tofu = sfs.compileToTofu();
         SoyRenderer renderer = new SoyRenderer(tofu, new SoyDataUtils());
@@ -428,7 +446,7 @@ public class Main {
             ChangeLogPluginEndpoints.class,
             new ChangeLogPluginRegion("soy.page.changeLogPluginRegion", renderer, upenaStore));
 
-        ManagePlugin instances = new ManagePlugin(null, "instance", "Instances", "/ui/instances",
+        ManagePlugin instances = new ManagePlugin(null, "instance-white", "Instances", "/ui/instances",
             InstancesPluginEndpoints.class, instancesPluginRegion);
 
         ManagePlugin config = new ManagePlugin("cog", null, "Config", "/ui/config",
@@ -444,18 +462,18 @@ public class Main {
             new ProjectsPluginRegion("soy.page.projectsPluginRegion", "soy.page.projectBuildOutput", "soy.page.projectBuildOutputTail", renderer, upenaStore,
                 localPathToRepo));
 
-        ManagePlugin clusters = new ManagePlugin(null, "cluster", "Clusters", "/ui/clusters",
+        ManagePlugin clusters = new ManagePlugin(null, "cluster-white", "Clusters", "/ui/clusters",
             ClustersPluginEndpoints.class,
             new ClustersPluginRegion("soy.page.clustersPluginRegion", renderer, upenaStore));
 
-        ManagePlugin hosts = new ManagePlugin(null, "host", "Hosts", "/ui/hosts",
+        ManagePlugin hosts = new ManagePlugin(null, "host-white", "Hosts", "/ui/hosts",
             HostsPluginEndpoints.class, hostsPluginRegion);
 
-        ManagePlugin services = new ManagePlugin(null, "service", "Services", "/ui/services",
+        ManagePlugin services = new ManagePlugin(null, "service-white", "Services", "/ui/services",
             ServicesPluginEndpoints.class,
             new ServicesPluginRegion("soy.page.servicesPluginRegion", renderer, amzaService, upenaStore, upenaService, ubaService, ringHost));
 
-        ManagePlugin releases = new ManagePlugin(null, "release", "Releases", "/ui/releases",
+        ManagePlugin releases = new ManagePlugin(null, "release-white", "Releases", "/ui/releases",
             ReleasesPluginEndpoints.class, releasesPluginRegion);
 
         ManagePlugin dependencies = new ManagePlugin("list", null, "Dep Versions", "/ui/dependencies",
@@ -466,7 +484,7 @@ public class Main {
             ModulesPluginEndpoints.class,
             new ModulesPluginRegion(repositoryProvider, "soy.page.modulesPluginRegion", renderer, upenaStore));
 
-        ManagePlugin ring = new ManagePlugin("leaf", null, "Upena Ring", "/ui/ring",
+        ManagePlugin ring = new ManagePlugin("leaf", null, "Upena", "/ui/ring",
             UpenaRingPluginEndpoints.class,
             new UpenaRingPluginRegion("soy.page.upenaRingPluginRegion", renderer, amzaService, upenaStore, upenaService, ubaService, ringHost));
 
@@ -481,24 +499,35 @@ public class Main {
             ProfilerPluginEndpoints.class,
             new ProfilerPluginRegion("soy.page.profilerPluginRegion", renderer, new VisualizeProfile(new NameUtils(), servicesCallDepthStack)));
 
-        List<ManagePlugin> plugins = Lists.newArrayList(
-            repo,
-            projects,
-            modules,
-            dependencies,
-            changes,
-            config,
-            clusters,
-            hosts,
-            services,
-            instances,
-            releases,
-            health,
-            connectivity,
-            topology,
-            profiler,
-            sar,
-            ring);
+        ManagePlugin jvm = null;
+        if (jvmaapi != null) {
+            jvm = new ManagePlugin("camera", null, "JVM", "/ui/jvm",
+                JVMPluginEndpoints.class,
+                new JVMPluginRegion("soy.page.jvmPluginRegion", renderer, amzaService, jvmaapi));
+        }
+
+        List<ManagePlugin> plugins = new ArrayList<>();
+
+        plugins.add(repo);
+        plugins.add(projects);
+        plugins.add(modules);
+        plugins.add(dependencies);
+        plugins.add(changes);
+        plugins.add(config);
+        plugins.add(clusters);
+        plugins.add(hosts);
+        plugins.add(services);
+        plugins.add(instances);
+        plugins.add(releases);
+        plugins.add(health);
+        plugins.add(connectivity);
+        plugins.add(topology);
+        if (jvm != null) {
+            plugins.add(jvm);
+        }
+        plugins.add(profiler);
+        plugins.add(sar);
+        plugins.add(ring);
 
         jerseyEndpoints.addInjectable(SoyService.class, soyService);
         jerseyEndpoints.addEndpoint(AsyncLookupEndpoints.class);

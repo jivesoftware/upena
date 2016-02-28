@@ -59,8 +59,7 @@ public class UpenaAutoRelease {
         try {
             MavenXpp3Reader reader = new MavenXpp3Reader();
             Model model = reader.read(new FileReader(pom));
-            System.out.println("BALLS " + model);
-
+            
             RepositorySystem system = repositoryProvider.newRepositorySystem();
             DefaultRepositorySystemSession session = repositoryProvider.newRepositorySystemSession(system);
             List<RemoteRepository> repositories = repositoryProvider.newRepositories(system, session, null, (String) null);
@@ -68,20 +67,15 @@ public class UpenaAutoRelease {
             VersionRangeResult resolveVersion = system.resolveVersionRange(session, new VersionRangeRequest(artifact, repositories, null));
 
             if (resolveVersion != null) {
-                System.out.println("BALLS " + model + " " + resolveVersion.getHighestVersion());
-
+                
                 String find = model.getGroupId() + ":" + model.getArtifactId() + ":";
                 ReleaseGroupFilter filter = new ReleaseGroupFilter(null, null, find, null, null, 0, 1000);
-                System.out.println("BALLS find " + find);
-
+                
                 ConcurrentNavigableMap<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> found = upenaStore.releaseGroups.find(filter);
-                System.out.println("BALLS found " + found.size());
                 for (Map.Entry<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> entry : found.entrySet()) {
                     ReleaseGroup releaseGroup = entry.getValue().getValue();
-                    System.out.println("BALLS found " + releaseGroup);
                     if (releaseGroup.autoRelease) {
-                        System.out.println("BALLS " + releaseGroup);
-
+                
                         String[] deployablecoordinates = releaseGroup.version.trim().split(",");
 
                         boolean changed = false;

@@ -136,8 +136,6 @@ public class UpenaEndpoints {
     public Object pull(@PathParam("subResources") String subResources) {
         File f = new File(localPathToRepo.get(), subResources);
         try {
-            LOG.error("!!!!!!!!!!!! GET  " + f.getAbsolutePath() + " !!!!!!!!!!!!!!!!");
-
             if (!f.exists()) {
                 return Response.status(Response.Status.NOT_FOUND).build();
             }
@@ -175,10 +173,8 @@ public class UpenaEndpoints {
         @PathParam("subResources") String subResources) {
 
         File f = new File(localPathToRepo.get(), subResources);
-
         try {
             FileUtils.forceMkdir(f.getParentFile());
-            System.out.println("!!!!!!!!!!!! PUT  " + f.getAbsolutePath() + " !!!!!!!!!!!!!!!!");
             saveFile(fileInputStream, f);
         } catch (Exception x) {
             LOG.error("Failed to write " + f, x);
@@ -194,10 +190,8 @@ public class UpenaEndpoints {
     }
 
     // save uploaded file to a defined location on the server
-    private void saveFile(InputStream uploadedInputStream,
-        File file) {
+    private void saveFile(InputStream uploadedInputStream, File file) {
         try (OutputStream outpuStream = new FileOutputStream(file)) {
-
             int read = 0;
             byte[] bytes = new byte[1024];
             while ((read = uploadedInputStream.read(bytes)) != -1) {

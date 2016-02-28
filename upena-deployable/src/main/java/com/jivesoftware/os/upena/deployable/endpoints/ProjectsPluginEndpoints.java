@@ -43,7 +43,7 @@ public class ProjectsPluginEndpoints {
     public Response projects(@Context HttpServletRequest httpRequest) {
         String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(),
             pluginRegion,
-            new ProjectsPluginRegionInput("", "", "", "", "", "", "", "", "", "", "", "", "", false));
+            new ProjectsPluginRegionInput("", "", "", "", "", "", "", "", "","", "", "", "", "", "", false));
         return Response.ok(rendered).build();
     }
 
@@ -64,11 +64,16 @@ public class ProjectsPluginEndpoints {
         @FormParam("properties") @DefaultValue("") String properties,
         @FormParam("mavenOpts") @DefaultValue("") String mavenOpts,
         @FormParam("mvnHome") @DefaultValue("") String mvnHome,
+        @FormParam("oldCoordinate") @DefaultValue("") String oldCoordinate,
+        @FormParam("newCoordinate") @DefaultValue("") String newCoordinate,
         @FormParam("action") @DefaultValue("") String action,
         @FormParam("refresh") @DefaultValue("true") boolean refresh) {
 
         String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-            new ProjectsPluginRegionInput(key, name, description, localPath, scmUrl, branch, pom, goals, profiles, properties, mavenOpts, mvnHome, action,
+            new ProjectsPluginRegionInput(key, name, description, localPath, scmUrl, branch, pom, goals, profiles, properties, mavenOpts, mvnHome, 
+                oldCoordinate,
+                newCoordinate,
+                action,
                 refresh));
         return Response.ok(rendered).build();
     }

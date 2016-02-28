@@ -12,11 +12,15 @@
         {let $color}
             {if strContains($l,'SUCCESS')}
                 green
-            {elseif strContains($l,'COMMAND')}
+            {elseif strContains($l,'PASSED')}
+                green
+            {elseif strContains($l,'CONFIG')}
                 blue
             {elseif strContains($l,'WARN')}
                 orange
             {elseif strContains($l,'ERROR')}
+                red
+            {elseif strContains($l,'FAILED')}
                 red
             {elseif strContains($l,'GIT')}
                 gray
@@ -24,8 +28,23 @@
                 black
             {/if}
         {/let}
+        {let $alert}
+            {if strContains($l,'CONFIG')}
+                info
+            {elseif strContains($l,'PASSED')}
+                success
+            {elseif strContains($l,'FAILED')}
+                danger
+            {else}
+            {/if}
+        {/let}
         <li style="color:{$color}" class="build-log-line" data-line="{$offset + index($l)}" {if $done and isLast($l)}data-done="true"{/if}>
-            <span style="color:{$color}">{$l}</span>
+
+            {if $alert}
+                <div class="alert alert-{$alert}" role="alert"> <strong>{$l}</strong></div>
+            {else}
+                <span style="color:{$color}">{$l}</span>
+            {/if}
         </li>
     {/foreach}
 {/template}

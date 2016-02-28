@@ -19,28 +19,29 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
-import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Project implements Stored<Project>, Serializable {
 
     public final String name;
-    public final String description;
-    public final String localPath;
+    public String description;
+    public String localPath;
 
-    public final String scmUrl;
-    public final String branch;
+    public String scmUrl;
+    public String branch;
 
-    public final String pom;
-    public final String goals;
+    public String pom;
+    public String goals;
 
-    public final String mvnHome;
- 
+    public String mvnHome;
+
     public final Set<ArtifactRepositoryKey> downloadFromArtifactRepositories;
     public final Set<ArtifactRepositoryKey> uploadToArtifactRepositories;
 
-    public final List<Project> dependantProjects;
+    public Map<String, Map<ProjectKey, Artifact>> conflictingCoordinateProjectKeyArtifacts;
+    public Map<ReleaseGroupKey, Artifact> dependantReleaseGroups;
 
     @JsonCreator
     public Project(@JsonProperty("name") String name,
@@ -53,7 +54,8 @@ public class Project implements Stored<Project>, Serializable {
         @JsonProperty("mvnHome") String mvnHome,
         @JsonProperty("downloadFromArtifactRepositories") Set<ArtifactRepositoryKey> downloadFromArtifactRepositories,
         @JsonProperty("uploadToArtifactRepositories") Set<ArtifactRepositoryKey> uploadToArtifactRepositories,
-        @JsonProperty("dependantProjects") List<Project> dependantProjects
+        @JsonProperty("conflictingCoordinateProjectKeyArtifacts") Map<String, Map<ProjectKey, Artifact>> conflictingCoordinateProjectKeyArtifacts,
+        @JsonProperty("dependantReleaseGroups") Map<ReleaseGroupKey, Artifact> dependantReleaseGroups
     ) {
         this.name = name;
         this.description = description;
@@ -65,7 +67,8 @@ public class Project implements Stored<Project>, Serializable {
         this.mvnHome = mvnHome;
         this.downloadFromArtifactRepositories = downloadFromArtifactRepositories;
         this.uploadToArtifactRepositories = uploadToArtifactRepositories;
-        this.dependantProjects = dependantProjects;
+        this.conflictingCoordinateProjectKeyArtifacts = conflictingCoordinateProjectKeyArtifacts;
+        this.dependantReleaseGroups = dependantReleaseGroups;
     }
 
     @Override
@@ -81,7 +84,8 @@ public class Project implements Stored<Project>, Serializable {
             + ", mvnHome=" + mvnHome
             + ", downloadFromArtifactRepositories=" + downloadFromArtifactRepositories
             + ", uploadToArtifactRepositories=" + uploadToArtifactRepositories
-            + ", dependantProjects=" + dependantProjects
+            + ", conflictingCoordinateProjectKeyArtifacts=" + conflictingCoordinateProjectKeyArtifacts
+            + ", dependantReleaseGroups=" + dependantReleaseGroups
             + '}';
     }
 
