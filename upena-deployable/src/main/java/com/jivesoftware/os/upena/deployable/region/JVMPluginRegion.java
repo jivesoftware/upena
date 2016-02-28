@@ -84,18 +84,12 @@ public class JVMPluginRegion implements PageRegion<JVMPluginRegionInput> {
             }
 
             if (input.action.equals("threadDump")) {
-                List<String> stacktrace = new ArrayList<>();
-                jvm.threadDump(input.host, Integer.parseInt(input.port), (String thread, String frameLocation) -> {
-                    if (thread != null) {
-                        stacktrace.add("-----------");
-                        stacktrace.add(thread);
-                    }
-                    if (frameLocation != null) {
-                        stacktrace.add("|->" + frameLocation);
-                    }
+                List<Map<String, String>> threadDump = new ArrayList<>();
+                jvm.threadDump(input.host, Integer.parseInt(input.port), (String type, String value) -> {
+                    threadDump.add(ImmutableMap.of("type", type, "value", value));
                     return true;
                 });
-                data.put("threadDump", stacktrace);
+                data.put("threadDump", threadDump);
             }
 
         } catch (Exception e) {

@@ -1,6 +1,7 @@
 package com.jivesoftware.os.upena.deployable;
 
 import com.sun.jdi.Bootstrap;
+import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.StackFrame;
 import com.sun.jdi.ThreadReference;
@@ -23,7 +24,7 @@ public class JVMAttachAPI {
 
     public interface ThreadDump {
 
-        boolean histo(String thread, String frameLocation);
+        boolean histo(String type, String value);
     }
 
     public void threadDump(String hostName, int port, ThreadDump threadDump) throws Exception {
@@ -49,26 +50,65 @@ public class JVMAttachAPI {
             VirtualMachine vm = socketConnector.attach(defaultArguments);
             System.out.println("Attached to process '" + vm.name() + "'");
             vm.suspend();
-            List<ThreadReference> allThreads = vm.allThreads();
-            for (ThreadReference thread : allThreads) {
-                if (thread.status() == 1) {
-                    //thread.suspend();
-                    threadDump.histo(thread.toString(), null);
-                    System.out.println(thread.toString());
-                    try {
-                        for (StackFrame frame : thread.frames()) {
-                            System.out.println("> " + frame.location().toString());
-                            threadDump.histo(null, frame.location().toString());
-                        }
-                    } catch (Exception x) {
+            try {
+                List<ThreadReference> allThreads = vm.allThreads();
+                for (ThreadReference thread : allThreads) {
+                    if (thread.status() == 1) {
+                        dump(vm, thread, threadDump);
                     }
-                    //thread.resume();
                 }
+                for (ThreadReference thread : allThreads) {
+                    if (thread.status() == 3 || thread.status() == 4) {
+                        dump(vm, thread, threadDump);
+                    }
+                }
+                for (ThreadReference thread : allThreads) {
+                    if (thread.status() == 2) {
+                        dump(vm, thread, threadDump);
+                    }
+                }
+            } finally {
+                vm.resume();
+                vm.dispose();
             }
-            vm.resume();
-            vm.dispose();
         } else {
             throw new Exception("Failed to connect to " + hostName + ":" + port);
+        }
+    }
+
+    static String[] STATUS = new String[]{
+        "ZOMBIE",
+        "RUNNING",
+        "SLEEPING",
+        "MONITOR",
+        "WAIT",
+        "NOT_STARTED"
+    };
+
+    private void dump(VirtualMachine vm, ThreadReference thread, ThreadDump threadDump) {
+        int status = thread.status();
+        String threadString = status < 0 ? "UNKNOWN" : STATUS[status];
+        threadString += " " + thread.name() + " " + thread.threadGroup().name();
+        threadDump.histo("thread", threadString);
+        try {
+            if (vm.canGetOwnedMonitorInfo()) {
+                ObjectReference currentContendedMonitor = thread.currentContendedMonitor();
+                if (currentContendedMonitor != null) {
+                    threadDump.histo("monitor", "currentContendedMonitor:" + currentContendedMonitor.uniqueID() + " " + currentContendedMonitor.referenceType()
+                        .name());
+                }
+                List<ObjectReference> ownedMonitors = thread.ownedMonitors();
+                if (ownedMonitors != null && !ownedMonitors.isEmpty()) {
+                    for (ObjectReference ownedMonitor : ownedMonitors) {
+                        threadDump.histo("monitor", "ownedMonitor:" + ownedMonitor.uniqueID() + " " + ownedMonitor.referenceType().name());
+                    }
+                }
+            }
+
+            for (StackFrame frame : thread.frames()) {
+                threadDump.histo("location", frame.location().toString());
+            }
+        } catch (Exception x) {
         }
     }
 
@@ -110,6 +150,7 @@ public class JVMAttachAPI {
                 }
             } finally {
                 vm.resume();
+                vm.dispose();
             }
         } else {
             throw new Exception("Failed to connect to " + hostName + ":" + port);
@@ -152,13 +193,4 @@ public class JVMAttachAPI {
         }
 
     }
-
-    static String[] STATUS = new String[]{
-        "ZOMBIE",
-        "RUNNING",
-        "SLEEPING",
-        "MONITOR",
-        "WAIT",
-        "NOT_STARTED"
-    };
 }
