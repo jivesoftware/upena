@@ -63,83 +63,107 @@
                                     </a>
                                     <div style="display: inline;">
                                         <a href="#" rel="popover" id="popoverAnchor-git-{$c.key}" data-popover-content="#popover-git-{$c.key}" data-placement="bottom" class="btn btn-default" title="Git">
-                                            <span class="{if $c.gitStatus.isClean}label label-success{else}label label-warning{/if}">Git</span>
+                                            <span class="{if $c.gitStatus.hasUncommittedChanges}label label-warning{else}label label-success{/if}">Git</span>
                                         </a>
                                     </div>
                                     <div id="popover-git-{$c.key}" class="hide">
                                         <form id="edit-git-{$c.key}"  method="post" name="git">
                                             <div>
+                                                <input type="hidden" name="key" value="{$c.key}">
+                                                {if $c.gitStatus.hasUncommittedChanges}
+                                                    <button  style="display: inline;" title="gitResetHardHead" type="submit" name="action" value="gitResetHardHead" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                                                        <span class="glyphicon glyphicon-play">Reset Hard Head</span>
+                                                    </button>
+                                                {/if}
                                                 {if $c.gitStatus}
                                                     {if $c.gitStatus.added}
-                                                        <ul>
+                                                        <ul style="list-style-type:none;">
                                                             <li>Added</li>
-                                                            {foreach $g in $c.gitStatus.added}
-                                                                <li>{$g}</li>
-                                                            {/foreach}
+                                                            <li><ul>
+                                                                {foreach $g in $c.gitStatus.added}
+                                                                    <li>{$g}</li>
+                                                                {/foreach}
+                                                            </li><ul>
                                                         </ul>
                                                     {/if}
                                                     {if $c.gitStatus.changed}
-                                                        <ul>
+                                                        <ul style="list-style-type:none;">
                                                             <li>Changed</li>
-                                                            {foreach $g in $c.gitStatus.changed}
-                                                                <li>{$g}</li>
-                                                            {/foreach}
+                                                            <li><ul>
+                                                                {foreach $g in $c.gitStatus.changed}
+                                                                    <li>{$g}</li>
+                                                                {/foreach}
+                                                            </li><ul>
                                                         </ul>
                                                     {/if}
                                                     {if $c.gitStatus.conflicting}
-                                                        <ul>
+                                                        <ul style="list-style-type:none;">
                                                             <li>Conflicting</li>
-                                                            {foreach $g in $c.gitStatus.conflicting}
-                                                                <li>{$g}</li>
-                                                            {/foreach}
+                                                            <li><ul>
+                                                                {foreach $g in $c.gitStatus.conflicting}
+                                                                    <li>{$g}</li>
+                                                                {/foreach}
+                                                            </li><ul>
                                                         </ul>
                                                     {/if}
                                                     {if $c.gitStatus.missing}
-                                                        <ul>
+                                                        <ul style="list-style-type:none;">
                                                             <li>Missing</li>
-                                                            {foreach $g in $c.gitStatus.missing}
-                                                                <li>{$g}</li>
-                                                            {/foreach}
+                                                            <li><ul>
+                                                                {foreach $g in $c.gitStatus.missing}
+                                                                    <li>{$g}</li>
+                                                                {/foreach}
+                                                            </li><ul>
                                                         </ul>
                                                     {/if}
                                                     {if $c.gitStatus.modified}
-                                                        <ul>
+                                                        <ul style="list-style-type:none;">
                                                             <li>Modified</li>
-                                                            {foreach $g in $c.gitStatus.modified}
-                                                                <li>{$g}</li>
-                                                            {/foreach}
+                                                            <li><ul>
+                                                                {foreach $g in $c.gitStatus.modified}
+                                                                    <li>{$g}</li>
+                                                                {/foreach}
+                                                            </li><ul>
                                                         </ul>
                                                     {/if}
                                                     {if $c.gitStatus.removed}
-                                                        <ul>
+                                                        <ul style="list-style-type:none;">
                                                             <li>Removed</li>
-                                                            {foreach $g in $c.gitStatus.removed}
-                                                                <li>{$g}</li>
-                                                            {/foreach}
+                                                            <li><ul>
+                                                                {foreach $g in $c.gitStatus.removed}
+                                                                    <li>{$g}</li>
+                                                                {/foreach}
+                                                            </li><ul>
                                                         </ul>
                                                     {/if}
                                                     {if $c.gitStatus.uncommited}
-                                                        <ul>
+                                                        <ul style="list-style-type:none;">
                                                             <li>Uncommited</li>
-                                                            {foreach $g in $c.gitStatus.uncommited}
-                                                                <li>{$g}</li>
-                                                            {/foreach}
+                                                            <li><ul>
+                                                                {foreach $g in $c.gitStatus.uncommited}
+                                                                    <li>{$g}</li>
+                                                                {/foreach}
+                                                            </li><ul>
                                                         </ul>
                                                     {/if}
                                                     {if $c.gitStatus.untracked}
-                                                        <ul>
+                                                        <ul style="list-style-type:none;">
                                                             <li>Untracked</li>
-                                                            {foreach $g in $c.gitStatus.untracked}
-                                                                <li>{$g}</li>
-                                                            {/foreach}
+                                                            <li><ul>
+                                                                {foreach $g in $c.gitStatus.untracked}
+                                                                    <li>{$g}</li>
+                                                                {/foreach}
+                                                            </li><ul>
                                                         </ul>
                                                     {/if}
                                                     {if $c.gitStatus.untrackedFolders}
-                                                        <ul>
+                                                        <ul style="list-style-type:none;">
                                                             <li>Untracked Folders</li>
-                                                            {foreach $g in $c.gitStatus.untrackedFolders}
-                                                                <li>{$g}</li>
-                                                            {/foreach}
+                                                            <li><ul>
+                                                                {foreach $g in $c.gitStatus.untrackedFolders}
+                                                                    <li>{$g}</li>
+                                                                {/foreach}
+                                                            </li><ul>
                                                         </ul>
                                                     {/if}
 
@@ -253,8 +277,9 @@
                                     {/if}
                                 </td>
                                 <td>
-                                     <form id="project-actions" method="post" name="projectActions">
+                                    <form id="project-actions" method="post" name="projectActions">
                                         <input type="hidden" name="key" value="{$c.key}">
+                                        <button onclick="return confirm('Are you sure you want to wipe all files related to this project?')" title="Wipe" type="submit" name="action" value="wipe" class="btn btn-default"><span class="glyphicon glyphicon-erase">&nbsp;Wipe</span></button>
                                         <button onclick="return confirm('Are you sure you want to delete?')" title="Remove" type="submit" name="action" value="remove" class="btn btn-default"><span class="glyphicon glyphicon-trash">&nbsp;Remove</span></button>
                                     </form>
                                 </td>

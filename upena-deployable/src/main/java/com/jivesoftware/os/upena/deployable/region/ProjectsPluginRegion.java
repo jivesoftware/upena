@@ -47,7 +47,10 @@ import org.apache.maven.shared.invoker.Invoker;
 import org.eclipse.jgit.api.CreateBranchCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.PullResult;
+import org.eclipse.jgit.api.ResetCommand;
+import org.eclipse.jgit.api.ResetCommand.ResetType;
 import org.eclipse.jgit.api.Status;
+import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.TextProgressMonitor;
 
 /**
@@ -222,7 +225,7 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
                                                     ps.println("GIT open repo " + localPath);
                                                     gitProject = Git.open(localPath);
                                                     Status status = gitProject.status().call();
-                                                    if (!status.isClean()) {
+                                                    if (!status.hasUncommittedChanges()) {
                                                         ps.println("Build canceled because repo has uncommited changes.");
                                                         printGitStatus(status, ps);
                                                         finalOutput = failedOutput;
@@ -231,7 +234,7 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
 
                                                     if (!project.branch.equals(gitProject.getRepository().getBranch())) {
 
-                                                        ps.println("CONFIG: Checking out branch " + project.branch);
+                                                        ps.println("COMMAND: Checking out branch " + project.branch);
                                                         gitProject.checkout().
                                                             setCreateBranch(true).
                                                             setName(project.branch).
@@ -245,11 +248,11 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
                                                         .setProgressMonitor(new TextProgressMonitor(new PrintWriter(ps)))
                                                         .call();
 
-                                                    if (!pullResult.isSuccessful() || !status.isClean()) {
+                                                    if (!pullResult.isSuccessful() || !status.hasUncommittedChanges()) {
                                                         if (!pullResult.isSuccessful()) {
                                                             ps.println("GIT pull was not successful.");
                                                         }
-                                                        if (!status.isClean()) {
+                                                        if (!status.hasUncommittedChanges()) {
                                                             printGitStatus(status, ps);
                                                         }
                                                         finalOutput = failedOutput;
@@ -289,7 +292,7 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
 
                                                     if (!project.branch.equals(git.getRepository().getBranch())) {
 
-                                                        ps.println("CONFIG: Checking out branch " + project.branch);
+                                                        ps.println("COMMAND: Checking out branch " + project.branch);
                                                         git.checkout().
                                                             setCreateBranch(true).
                                                             setName(project.branch).
@@ -320,7 +323,7 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
                                                     return;
                                                 }
 
-                                                ps.println("CONFIG: mvn " + project.goals);
+                                                ps.println("COMMAND: mvn " + project.goals);
 
                                                 List<String> goals = Lists.newArrayList(Splitter.on(' ').split(project.goals));
                                                 InvocationRequest request = new DefaultInvocationRequest();
@@ -575,6 +578,54 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
                             data.put("message", "Error while trying to remove Project:" + input.name + "\n" + trace);
                         }
                     }
+                } else if (input.action.equals("gitResetHardHead")) {
+                    Git gitProject = null;
+                    try {
+                        Project project = upenaStore.projects.get(projectKey);
+                        if (project == null) {
+                            data.put("message", "Couldn't checkout no existent project. Someone else likely just removed it since your last refresh.");
+                        } else {
+                            File root = new File(project.localPath);
+                            File localPath = new File(root, project.name);
+
+                            gitProject = Git.open(localPath);
+                            ResetCommand resetCmd = gitProject.reset().setMode(ResetType.HARD);
+                            Ref ref = resetCmd.call();
+                            data.put("message", "Reset to " + ref.toString());
+                        }
+                    } catch (Exception x) {
+                        String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
+                        data.put("message", "Error while trying to remove Project:" + input.name + "\n" + trace);
+                    } finally {
+                        if (gitProject != null) {
+                            gitProject.close();
+                        }
+                    }
+                } else if (input.action.equals("wipe")) {
+                    try {
+                        Project project = upenaStore.projects.get(projectKey);
+                        if (project == null) {
+                            data.put("message", "Couldn't wipe no existent project. Someone else likely just removed it since your last refresh.");
+                        } else {
+                            File root = new File(project.localPath);
+                            File runningOutput = new File(root, project.name + "-running.txt");
+                            File failedOutput = new File(root, project.name + "-failed.txt");
+                            File successOutput = new File(root, project.name + "-success.txt");
+                            File depsList = new File(root, project.name + "-deps.txt");
+                            File localPath = new File(root, project.name);
+
+                            FileUtils.forceDelete(localPath);
+                            depsList.delete();
+                            runningOutput.delete();
+                            failedOutput.delete();
+                            successOutput.delete();
+
+                            data.put("message", "Wiped project:" + project.name);
+                        }
+                    } catch (Exception x) {
+                        String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
+                        data.put("message", "Error while trying to wipe Project:" + input.name + "\n" + trace);
+                    }
                 }
             }
 
@@ -600,6 +651,9 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
 
                     Status status = gitProject.status().call();
                     Map<String, Object> gitStatus = new HashMap<>();
+                    if (status.hasUncommittedChanges()) {
+                        gitStatus.put("hasUncommittedChanges", String.valueOf(status.hasUncommittedChanges()));
+                    }
                     gitStatus.put("added", status.getAdded().isEmpty() ? null : status.getAdded());
                     gitStatus.put("changed", status.getChanged().isEmpty() ? null : status.getChanged());
                     gitStatus.put("conflicting", status.getConflicting().isEmpty() ? null : status.getConflicting());
@@ -752,7 +806,7 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
 
             File pomFile = new File(localPath, project.pom);
 
-            ps.println("CONFIG: versions:set " + pomFile.getAbsolutePath());
+            ps.println("COMMAND: versions:set " + pomFile.getAbsolutePath());
             //mvn dependency:list -DappendOutput=true -DoutputFile=/jive/tmp/deps.txt
             List<String> goals = Arrays.asList("org.codehaus.mojo:versions-maven-plugin:2.1:set"); // TODO expose to config
             InvocationRequest request = new DefaultInvocationRequest();
@@ -844,7 +898,7 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
         File deps = new File(root, project.name + "-deps.txt");
         File pomFile = new File(localPath, project.pom);
 
-        ps.println("CONFIG:  dependency:tree " + pomFile.getAbsolutePath());
+        ps.println("COMMAND:  dependency:tree " + pomFile.getAbsolutePath());
         //mvn dependency:list -DappendOutput=true -DoutputFile=/jive/tmp/deps.txt
         List<String> goals = Arrays.asList("dependency:tree");
         InvocationRequest request = new DefaultInvocationRequest();
@@ -870,7 +924,7 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
         if (result.getExitCode() == 0) {
             ps.println("PASSED Recorded dependency list " + deps.getAbsolutePath());
 
-            ps.println("CONFIG upgradables for " + project.name);
+            ps.println("COMMAND compute upgradables for " + project.name);
             buildUpgradables(projectKey, project, ps);
 
         } else {
