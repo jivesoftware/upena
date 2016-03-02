@@ -48,8 +48,9 @@ public class ReleasesPluginEndpoints {
                 new ReleasesPluginRegionInput("", "", "", "", "", "", "", "", false, ""));
             return Response.ok(rendered).build();
         } catch (Exception e) {
-            LOG.error("releases", e);
-            return responseHelper.errorResponse("releases failed", e);
+            LOG.error("releases GET", e);
+            return Response.serverError().entity(e.getMessage()).build();
+
         }
     }
 
@@ -75,7 +76,7 @@ public class ReleasesPluginEndpoints {
             return Response.ok(rendered).build();
         } catch (Exception e) {
             LOG.error("action", e);
-            return responseHelper.errorResponse("action failed", e);
+            return Response.serverError().entity(e.getMessage()).build();
         }
     }
 
@@ -87,7 +88,7 @@ public class ReleasesPluginEndpoints {
             return Response.ok(pluginRegion.renderChangelog(releaseKey)).build();
         } catch (Exception e) {
             LOG.error("changelog", e);
-            return responseHelper.errorResponse("changelog failed", e);
+            return Response.serverError().entity(e.getMessage()).build();
         }
     }
 
@@ -99,7 +100,7 @@ public class ReleasesPluginEndpoints {
             return Response.ok(pluginRegion.renderScm(releaseKey)).build();
         } catch (Exception e) {
             LOG.error("scm", e);
-            return responseHelper.errorResponse("scm failed", e);
+            return Response.serverError().entity(e.getMessage()).build();
         }
     }
 

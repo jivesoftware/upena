@@ -47,7 +47,7 @@ public class RepoPluginEndpoints {
             return Response.ok(rendered).build();
         } catch (Exception e) {
             LOG.error("repo", e);
-            return responseHelper.errorResponse("repo failed", e);
+            return Response.serverError().entity(e.getMessage()).build();
         }
     }
 
@@ -67,7 +67,7 @@ public class RepoPluginEndpoints {
             return Response.ok(rendered).build();
         } catch (Exception e) {
             LOG.error("action", e);
-            return responseHelper.errorResponse("action failed", e);
+            return Response.serverError().entity(e.getMessage()).build();
         }
     }
 }

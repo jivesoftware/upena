@@ -2,7 +2,6 @@ package com.jivesoftware.os.upena.deployable.endpoints;
 
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
-import com.jivesoftware.os.routing.bird.shared.ResponseHelper;
 import com.jivesoftware.os.upena.deployable.region.HostsPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.HostsPluginRegion.HostsPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
@@ -30,8 +29,7 @@ public class HostsPluginEndpoints {
 
     private final SoyService soyService;
     private final HostsPluginRegion pluginRegion;
-    private final ResponseHelper responseHelper = ResponseHelper.INSTANCE;
-
+   
     public HostsPluginEndpoints(@Context SoyService soyService, @Context HostsPluginRegion pluginRegion) {
         this.soyService = soyService;
         this.pluginRegion = pluginRegion;
@@ -46,8 +44,8 @@ public class HostsPluginEndpoints {
                 new HostsPluginRegionInput("", "", "", "", "", "", "", ""));
             return Response.ok(rendered).build();
         } catch (Exception e) {
-            LOG.error("hosts", e);
-            return responseHelper.errorResponse("hosts failed", e);
+            LOG.error("hosts GET", e);
+           return Response.serverError().entity(e.getMessage()).build();
         }
     }
 
@@ -69,8 +67,8 @@ public class HostsPluginEndpoints {
                 new HostsPluginRegionInput(key, name, datacenter, rack, host, port, workingDirectory, action));
             return Response.ok(rendered).build();
         } catch (Exception e) {
-            LOG.error("action", e);
-            return responseHelper.errorResponse("action failed", e);
+            LOG.error("hosts action POST", e);
+            return Response.serverError().entity(e.getMessage()).build();
         }
     }
 }

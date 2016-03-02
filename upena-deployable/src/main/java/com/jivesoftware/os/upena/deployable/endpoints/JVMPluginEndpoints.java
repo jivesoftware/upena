@@ -1,5 +1,7 @@
 package com.jivesoftware.os.upena.deployable.endpoints;
 
+import com.jivesoftware.os.mlogger.core.MetricLogger;
+import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.deployable.region.JVMPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.JVMPluginRegion.JVMPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
@@ -23,6 +25,8 @@ import javax.ws.rs.core.Response;
 @Path("/ui/jvm")
 public class JVMPluginEndpoints {
 
+    private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
+
     private final SoyService soyService;
     private final JVMPluginRegion pluginRegion;
 
@@ -35,10 +39,15 @@ public class JVMPluginEndpoints {
     @GET
     @Path("/")
     @Produces(MediaType.TEXT_HTML)
-    public Response ring(@Context HttpServletRequest httpRequest) {
-        String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-            new JVMPluginRegionInput("", "", ""));
-        return Response.ok(rendered).build();
+    public Response jmv(@Context HttpServletRequest httpRequest) {
+        try {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+                new JVMPluginRegionInput("", "", ""));
+            return Response.ok(rendered).build();
+        } catch (Exception e) {
+            LOG.error("jvm GET", e);
+            return Response.serverError().entity(e.getMessage()).build();
+        }
     }
 
     @POST
@@ -49,8 +58,13 @@ public class JVMPluginEndpoints {
         @FormParam("host") @DefaultValue("") String host,
         @FormParam("port") @DefaultValue("") String port,
         @FormParam("action") @DefaultValue("") String action) {
-        String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-            new JVMPluginRegionInput(host, port, action));
-        return Response.ok(rendered).build();
+        try {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+                new JVMPluginRegionInput(host, port, action));
+            return Response.ok(rendered).build();
+        } catch (Exception e) {
+            LOG.error("jvm action POST", e);
+            return Response.serverError().entity(e.getMessage()).build();
+        }
     }
 }

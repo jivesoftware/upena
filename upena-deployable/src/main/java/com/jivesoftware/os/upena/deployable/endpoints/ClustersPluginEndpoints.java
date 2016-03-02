@@ -39,10 +39,15 @@ public class ClustersPluginEndpoints {
     @Path("/")
     @Produces(MediaType.TEXT_HTML)
     public Response clusters(@Context HttpServletRequest httpRequest) {
-        String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(),
-            pluginRegion,
-            new ClustersPluginRegionInput("", "", "", ""));
-        return Response.ok(rendered).build();
+        try {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(),
+                pluginRegion,
+                new ClustersPluginRegionInput("", "", "", ""));
+            return Response.ok(rendered).build();
+        } catch (Exception e) {
+            LOG.error("clusters GET.", e);
+            return Response.serverError().entity(e.getMessage()).build();
+        }
     }
 
     @POST
@@ -54,9 +59,14 @@ public class ClustersPluginEndpoints {
         @FormParam("name") @DefaultValue("") String name,
         @FormParam("description") @DefaultValue("") String description,
         @FormParam("action") @DefaultValue("") String action) {
-        String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-            new ClustersPluginRegionInput(key, name, description, action));
-        return Response.ok(rendered).build();
+        try {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+                new ClustersPluginRegionInput(key, name, description, action));
+            return Response.ok(rendered).build();
+        } catch (Exception e) {
+            LOG.error("clusters action  POST.", e);
+            return Response.serverError().entity(e.getMessage()).build();
+        }
     }
 
     @POST
@@ -68,7 +78,7 @@ public class ClustersPluginEndpoints {
             pluginRegion.add(httpRequest.getRemoteUser(), update);
             return Response.ok().build();
         } catch (Exception x) {
-            LOG.error("Failed to add to default release groups for:" + update, x);
+            LOG.error("clusters add POST.", x);
             return Response.serverError().build();
         }
     }
@@ -82,7 +92,7 @@ public class ClustersPluginEndpoints {
             pluginRegion.remove(httpRequest.getRemoteUser(), update);
             return Response.ok().build();
         } catch (Exception x) {
-            LOG.error("Failed to remove to default release groups for:" + update, x);
+            LOG.error("clusters remove  POST.", x);
             return Response.serverError().build();
         }
     }

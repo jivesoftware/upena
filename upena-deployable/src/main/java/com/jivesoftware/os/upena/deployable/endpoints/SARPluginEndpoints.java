@@ -1,5 +1,7 @@
 package com.jivesoftware.os.upena.deployable.endpoints;
 
+import com.jivesoftware.os.mlogger.core.MetricLogger;
+import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.deployable.region.SARPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.SARPluginRegion.SARInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
@@ -19,6 +21,8 @@ import javax.ws.rs.core.Response;
 @Path("/ui/sar")
 public class SARPluginEndpoints {
 
+    private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
+
     private final SoyService soyService;
     private final SARPluginRegion pluginRegion;
 
@@ -31,8 +35,13 @@ public class SARPluginEndpoints {
     @Path("/")
     @Produces(MediaType.TEXT_HTML)
     public Response sar(@Context HttpServletRequest httpRequest) {
-        String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion, new SARInput());
-        return Response.ok(rendered).build();
+        try {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion, new SARInput());
+            return Response.ok(rendered).build();
+        } catch (Exception e) {
+            LOG.error("sar GET", e);
+            return Response.serverError().entity(e.getMessage()).build();
+        }
     }
 
 }

@@ -1,5 +1,7 @@
 package com.jivesoftware.os.upena.deployable.endpoints;
 
+import com.jivesoftware.os.mlogger.core.MetricLogger;
+import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.deployable.region.DependenciesPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.DependenciesPluginRegion.DependenciesPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
@@ -23,6 +25,8 @@ import javax.ws.rs.core.Response;
 @Path("/ui/dependencies")
 public class DependenciesPluginEndpoints {
 
+    private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
+
     private final SoyService soyService;
     private final DependenciesPluginRegion pluginRegion;
 
@@ -35,9 +39,14 @@ public class DependenciesPluginEndpoints {
     @Path("/")
     @Produces(MediaType.TEXT_HTML)
     public Response dependencies(@Context HttpServletRequest httpRequest) {
-        String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-            new DependenciesPluginRegionInput("", "", ""));
-        return Response.ok(rendered).build();
+        try {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+                new DependenciesPluginRegionInput("", "", ""));
+            return Response.ok(rendered).build();
+        } catch (Exception e) {
+            LOG.error("dependencies GET.", e);
+            return Response.serverError().entity(e.getMessage()).build();
+        }
     }
 
     @POST
@@ -48,9 +57,14 @@ public class DependenciesPluginEndpoints {
         @FormParam("releaseKey") @DefaultValue("") String releaseKey,
         @FormParam("release") @DefaultValue("") String release,
         @FormParam("action") @DefaultValue("") String action) {
-        String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-            new DependenciesPluginRegionInput(releaseKey, release, action));
-        return Response.ok(rendered).build();
+        try {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+                new DependenciesPluginRegionInput(releaseKey, release, action));
+            return Response.ok(rendered).build();
+        } catch (Exception e) {
+            LOG.error("dependencies GET.", e);
+            return Response.serverError().entity(e.getMessage()).build();
+        }
     }
 
 }

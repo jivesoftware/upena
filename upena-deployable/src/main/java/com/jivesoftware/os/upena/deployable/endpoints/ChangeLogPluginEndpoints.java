@@ -1,5 +1,7 @@
 package com.jivesoftware.os.upena.deployable.endpoints;
 
+import com.jivesoftware.os.mlogger.core.MetricLogger;
+import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.deployable.region.ChangeLogPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ChangeLogPluginRegion.ChangeLogPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
@@ -24,6 +26,8 @@ import javax.ws.rs.core.SecurityContext;
 @Path("/ui/changeLog")
 public class ChangeLogPluginEndpoints {
 
+    private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
+
     private final SoyService soyService;
     private final ChangeLogPluginRegion pluginRegion;
 
@@ -35,10 +39,15 @@ public class ChangeLogPluginEndpoints {
     @GET
     @Path("/")
     @Produces(MediaType.TEXT_HTML)
-    public Response hosts(@Context SecurityContext sc, @Context HttpServletRequest httpRequest) {
+    public Response changelog(@Context SecurityContext sc, @Context HttpServletRequest httpRequest) {
         String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
             new ChangeLogPluginRegionInput("", "", "", "", "", "", ""));
-        return Response.ok(rendered).build();
+        try {
+            return Response.ok(rendered).build();
+        } catch (Exception e) {
+            LOG.error("changelog GET.", e);
+            return Response.serverError().entity(e.getMessage()).build();
+        }
     }
 
     @POST
@@ -53,8 +62,14 @@ public class ChangeLogPluginEndpoints {
         @FormParam("why") @DefaultValue("") String why,
         @FormParam("how") @DefaultValue("") String how,
         @FormParam("action") @DefaultValue("") String action) {
-        String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-            new ChangeLogPluginRegionInput(who, what, when, where, why, how, action));
-        return Response.ok(rendered).build();
+        try {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+                new ChangeLogPluginRegionInput(who, what, when, where, why, how, action));
+            return Response.ok(rendered).build();
+        } catch (Exception e) {
+            LOG.error("changelog POST.", e);
+            return Response.serverError().entity(e.getMessage()).build();
+        }
+
     }
 }

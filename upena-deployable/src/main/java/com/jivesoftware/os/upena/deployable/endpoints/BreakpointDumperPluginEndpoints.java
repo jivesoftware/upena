@@ -1,8 +1,12 @@
 package com.jivesoftware.os.upena.deployable.endpoints;
 
+import com.jivesoftware.os.mlogger.core.MetricLogger;
+import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.deployable.region.BreakpointDumperPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.BreakpointDumperPluginRegion.BreakpointDumperPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
+import java.util.Collections;
+import java.util.List;
 import javax.inject.Singleton;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -23,6 +27,8 @@ import javax.ws.rs.core.Response;
 @Path("/ui/breakpoint")
 public class BreakpointDumperPluginEndpoints {
 
+    private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
+
     private final SoyService soyService;
     private final BreakpointDumperPluginRegion pluginRegion;
 
@@ -36,10 +42,16 @@ public class BreakpointDumperPluginEndpoints {
     @Path("/")
     @Produces(MediaType.TEXT_HTML)
     public Response breakpoint(@Context HttpServletRequest httpRequest) {
-        String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-            new BreakpointDumperPluginRegionInput("", "", "", "", "", "", "", "", "", new String[0],
-                "", -1, "", -1, "", ""));
-        return Response.ok(rendered).build();
+
+        try {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+                new BreakpointDumperPluginRegionInput("", "", "", "", "", "", "", "", "", Collections.emptyList(),
+                    "", -1, "", -1, "", ""));
+            return Response.ok(rendered).build();
+        } catch (Exception e) {
+            LOG.error("breakpoint GET.", e);
+            return Response.serverError().entity(e.getMessage()).build();
+        }
     }
 
     @POST
@@ -56,31 +68,37 @@ public class BreakpointDumperPluginEndpoints {
         @FormParam("instanceId") @DefaultValue("") String instanceId,
         @FormParam("releaseKey") @DefaultValue("") String releaseKey,
         @FormParam("release") @DefaultValue("") String release,
-        @FormParam("instanceKeys") @DefaultValue("") String[] instanceKeys,
+        @FormParam("instanceKeys") @DefaultValue("") List<String> instanceKeys,
         @FormParam("hostName") @DefaultValue("") String hostName,
         @FormParam("port") @DefaultValue("-1") int port,
         @FormParam("className") @DefaultValue("") String className,
         @FormParam("lineNumber") @DefaultValue("-1") int lineNumber,
         @FormParam("breakpoint") @DefaultValue("") String breakpoint,
         @FormParam("action") @DefaultValue("") String action) {
+        try {
 
-        String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-            new BreakpointDumperPluginRegionInput(clusterKey,
-                cluster,
-                hostKey,
-                host,
-                serviceKey,
-                service,
-                instanceId,
-                releaseKey,
-                release,
-                instanceKeys,
-                hostName,
-                port,
-                className,
-                lineNumber,
-                breakpoint,
-                action));
-        return Response.ok(rendered).build();
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(),
+                pluginRegion,
+                new BreakpointDumperPluginRegionInput(clusterKey,
+                    cluster,
+                    hostKey,
+                    host,
+                    serviceKey,
+                    service,
+                    instanceId,
+                    releaseKey,
+                    release,
+                    instanceKeys,
+                    hostName,
+                    port,
+                    className,
+                    lineNumber,
+                    breakpoint,
+                    action));
+            return Response.ok(rendered).build();
+        } catch (Exception e) {
+            LOG.error("breakpoint POST.", e);
+            return Response.serverError().entity(e.getMessage()).build();
+        }
     }
 }

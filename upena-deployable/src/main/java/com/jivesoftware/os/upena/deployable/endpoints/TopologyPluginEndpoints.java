@@ -1,5 +1,7 @@
 package com.jivesoftware.os.upena.deployable.endpoints;
 
+import com.jivesoftware.os.mlogger.core.MetricLogger;
+import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.deployable.region.TopologyPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.TopologyPluginRegion.TopologyPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
@@ -26,6 +28,8 @@ import javax.ws.rs.core.Response;
 @Path("/ui/topology")
 public class TopologyPluginEndpoints {
 
+    private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
+
     private final SoyService soyService;
     private final TopologyPluginRegion pluginRegion;
 
@@ -37,10 +41,15 @@ public class TopologyPluginEndpoints {
     @GET
     @Path("/")
     @Produces(MediaType.TEXT_HTML)
-    public Response render(@Context HttpServletRequest httpRequest) {
-        String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion, new TopologyPluginRegionInput("", "", "", "", "", "", "", "",
-            new HashSet<>(Arrays.asList("linkCluster", "linkService", "linkInstance", "linkHost", "linkRelease"))));
-        return Response.ok(rendered).build();
+    public Response topology(@Context HttpServletRequest httpRequest) {
+        try {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion, new TopologyPluginRegionInput("", "", "", "", "", "", "", "",
+                new HashSet<>(Arrays.asList("linkCluster", "linkService", "linkInstance", "linkHost", "linkRelease"))));
+            return Response.ok(rendered).build();
+        } catch (Exception e) {
+            LOG.error("topology GET", e);
+            return Response.serverError().entity(e.getMessage()).build();
+        }
     }
 
     @POST
@@ -57,10 +66,14 @@ public class TopologyPluginEndpoints {
         @FormParam("releaseKey") @DefaultValue("") String releaseKey,
         @FormParam("release") @DefaultValue("") String release,
         @FormParam("linkType") @DefaultValue("linkCluster,linkService,linkInstance,linkHost,linkRelease") List<String> linkType) {
-
-        String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-            new TopologyPluginRegionInput(clusterKey, cluster, hostKey, host, serviceKey, service, releaseKey, release, new HashSet<>(linkType)));
-        return Response.ok(rendered).build();
+        try {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+                new TopologyPluginRegionInput(clusterKey, cluster, hostKey, host, serviceKey, service, releaseKey, release, new HashSet<>(linkType)));
+            return Response.ok(rendered).build();
+        } catch (Exception e) {
+            LOG.error("topology POST", e);
+            return Response.serverError().entity(e.getMessage()).build();
+        }
     }
 
 }

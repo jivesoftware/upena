@@ -1,5 +1,7 @@
 package com.jivesoftware.os.upena.deployable.endpoints;
 
+import com.jivesoftware.os.mlogger.core.MetricLogger;
+import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.deployable.region.UpenaRingPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.UpenaRingPluginRegion.UpenaRingPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
@@ -23,6 +25,8 @@ import javax.ws.rs.core.Response;
 @Path("/ui/ring")
 public class UpenaRingPluginEndpoints {
 
+    private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
+
     private final SoyService soyService;
     private final UpenaRingPluginRegion pluginRegion;
 
@@ -36,9 +40,14 @@ public class UpenaRingPluginEndpoints {
     @Path("/")
     @Produces(MediaType.TEXT_HTML)
     public Response ring(@Context HttpServletRequest httpRequest) {
-        String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-            new UpenaRingPluginRegionInput("", "", ""));
-        return Response.ok(rendered).build();
+        try {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+                new UpenaRingPluginRegionInput("", "", ""));
+            return Response.ok(rendered).build();
+        } catch (Exception e) {
+            LOG.error("ring GET", e);
+            return Response.serverError().entity(e.getMessage()).build();
+        }
     }
 
     @POST
@@ -46,11 +55,19 @@ public class UpenaRingPluginEndpoints {
     @Produces(MediaType.TEXT_HTML)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response action(@Context HttpServletRequest httpRequest,
-        @FormParam("host") @DefaultValue("") String host,
-        @FormParam("port") @DefaultValue("") String port,
-        @FormParam("action") @DefaultValue("") String action) {
-        String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-            new UpenaRingPluginRegionInput(host, port, action));
-        return Response.ok(rendered).build();
+        @FormParam("host")
+        @DefaultValue("") String host,
+        @FormParam("port")
+        @DefaultValue("") String port,
+        @FormParam("action")
+        @DefaultValue("") String action) {
+        try {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+                new UpenaRingPluginRegionInput(host, port, action));
+            return Response.ok(rendered).build();
+        } catch (Exception e) {
+            LOG.error("ring action POST", e);
+            return Response.serverError().entity(e.getMessage()).build();
+        }
     }
 }

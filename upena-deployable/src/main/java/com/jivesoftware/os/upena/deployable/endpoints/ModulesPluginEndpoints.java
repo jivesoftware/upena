@@ -1,5 +1,7 @@
 package com.jivesoftware.os.upena.deployable.endpoints;
 
+import com.jivesoftware.os.mlogger.core.MetricLogger;
+import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.deployable.region.ModulesPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ModulesPluginRegion.ModulesPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
@@ -23,6 +25,8 @@ import javax.ws.rs.core.Response;
 @Path("/ui/modules")
 public class ModulesPluginEndpoints {
 
+    private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
+
     private final SoyService soyService;
     private final ModulesPluginRegion pluginRegion;
 
@@ -34,9 +38,14 @@ public class ModulesPluginEndpoints {
     @GET
     @Path("/")
     @Produces(MediaType.TEXT_HTML)
-    public Response render(@Context HttpServletRequest httpRequest) {
-        String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion, new ModulesPluginRegionInput("", "", "", "", "", "", "", ""));
-        return Response.ok(rendered).build();
+    public Response modules(@Context HttpServletRequest httpRequest) {
+        try {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion, new ModulesPluginRegionInput("", "", "", "", "", "", "", ""));
+            return Response.ok(rendered).build();
+        } catch (Exception e) {
+            LOG.error("modules GET", e);
+            return Response.serverError().entity(e.getMessage()).build();
+        }
     }
 
     @POST
@@ -52,10 +61,14 @@ public class ModulesPluginEndpoints {
         @FormParam("service") @DefaultValue("") String service,
         @FormParam("releaseKey") @DefaultValue("") String releaseKey,
         @FormParam("release") @DefaultValue("") String release) {
-
-        String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-            new ModulesPluginRegionInput(clusterKey, cluster, hostKey, host, serviceKey, service, releaseKey, release));
-        return Response.ok(rendered).build();
+        try {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+                new ModulesPluginRegionInput(clusterKey, cluster, hostKey, host, serviceKey, service, releaseKey, release));
+            return Response.ok(rendered).build();
+        } catch (Exception e) {
+            LOG.error("modules POST", e);
+            return Response.serverError().entity(e.getMessage()).build();
+        }
     }
 
 }

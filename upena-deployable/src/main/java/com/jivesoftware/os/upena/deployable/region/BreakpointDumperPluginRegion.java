@@ -73,7 +73,7 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
         final String instanceId;
         final String releaseKey;
         final String release;
-        final String[] instanceKeys;
+        final List<String> instanceKeys;
 
         final String hostName;
         final int port;
@@ -85,7 +85,7 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
         final String action;
 
         public BreakpointDumperPluginRegionInput(String clusterKey, String cluster, String hostKey, String host, String serviceKey, String service,
-            String instanceId, String releaseKey, String release, String[] instanceKeys, String hostName, int port, String className, int lineNumber,
+            String instanceId, String releaseKey, String release, List<String> instanceKeys, String hostName, int port, String className, int lineNumber,
             String breakpoint, String action) {
             this.clusterKey = clusterKey;
             this.cluster = cluster;

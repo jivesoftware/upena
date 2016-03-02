@@ -44,11 +44,16 @@ public class ConfigPluginEndpoints {
     @GET
     @Path("/")
     @Produces(MediaType.TEXT_HTML)
-    public Response services(@Context HttpServletRequest httpRequest) {
-        String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-            new ConfigPluginRegionInput("", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", false, true, false,
+    public Response config(@Context HttpServletRequest httpRequest) {
+        try {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+                new ConfigPluginRegionInput("", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", false, true, false,
                     "", -1, "", -1, ""));
-        return Response.ok(rendered).build();
+            return Response.ok(rendered).build();
+        } catch (Exception e) {
+            LOG.error("config GET.", e);
+            return Response.serverError().entity(e.getMessage()).build();
+        }
     }
 
     @POST
@@ -84,18 +89,23 @@ public class ConfigPluginEndpoints {
         @FormParam("bRemoteConfigHost") @DefaultValue("") String bRemoteConfigHost,
         @FormParam("bRemoteConfigPort") @DefaultValue("-1") int bRemoteConfigPort,
         @FormParam("action") @DefaultValue("") String action) throws Exception {
+        try {
 
-        ConfigPluginRegionInput configPluginRegionInput = new ConfigPluginRegionInput(
-            aClusterKey, aCluster, aHostKey, aHost, aServiceKey, aService, aInstance, aReleaseKey, aRelease, bClusterKey,
-            bCluster, bHostKey, bHost, bServiceKey, bService, bInstance, bReleaseKey, bRelease,
-            property, healthProperty, value, overridden, service, health, aRemoteConfigHost, aRemoteConfigPort, bRemoteConfigHost, bRemoteConfigPort, action);
-        if (action.equals("export")) {
-            String export = pluginRegion.export(configPluginRegionInput);
-            return Response.ok(export, MediaType.TEXT_PLAIN_TYPE).build();
-        } else {
-            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-                configPluginRegionInput);
-            return Response.ok(rendered, MediaType.TEXT_HTML).build();
+            ConfigPluginRegionInput configPluginRegionInput = new ConfigPluginRegionInput(
+                aClusterKey, aCluster, aHostKey, aHost, aServiceKey, aService, aInstance, aReleaseKey, aRelease, bClusterKey,
+                bCluster, bHostKey, bHost, bServiceKey, bService, bInstance, bReleaseKey, bRelease,
+                property, healthProperty, value, overridden, service, health, aRemoteConfigHost, aRemoteConfigPort, bRemoteConfigHost, bRemoteConfigPort, action);
+            if (action.equals("export")) {
+                String export = pluginRegion.export(configPluginRegionInput);
+                return Response.ok(export, MediaType.TEXT_PLAIN_TYPE).build();
+            } else {
+                String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+                    configPluginRegionInput);
+                return Response.ok(rendered, MediaType.TEXT_HTML).build();
+            }
+        } catch (Exception e) {
+            LOG.error("config POST.", e);
+            return Response.serverError().entity(e.getMessage()).build();
         }
     }
 
@@ -132,26 +142,23 @@ public class ConfigPluginEndpoints {
     public Response uploadConfigFile(
         @FormDataParam("file") InputStream fileInputStream,
         @FormDataParam("file") FormDataContentDisposition contentDispositionHeader) {
-
-        saveFile(fileInputStream);
-        String output = "You config was uploaded";
-        return Response.status(200).entity(output).build();
+        try {
+            saveFile(fileInputStream);
+            String output = "You config was uploaded";
+            return Response.status(200).entity(output).build();
+        } catch (Exception e) {
+            LOG.error("config upload POST.", e);
+            return Response.serverError().entity(e.getMessage()).build();
+        }
     }
 
-    private void saveFile(InputStream uploadedInputStream) {
-        try {
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    private void saveFile(InputStream uploadedInputStream) throws IOException {
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             int read = 0;
             byte[] bytes = new byte[1024];
             while ((read = uploadedInputStream.read(bytes)) != -1) {
                 outputStream.write(bytes, 0, read);
             }
-            outputStream.close();
-
-            System.out.println(new String(outputStream.toByteArray()));
-
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 

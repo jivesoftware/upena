@@ -53,8 +53,8 @@ public class HealthPluginEndpoints {
                 new HealthPluginRegionInput(datacenter, rack, cluster, host, service));
             return Response.ok(rendered).build();
         } catch (Exception e) {
-            LOG.error("filter", e);
-            return responseHelper.errorResponse("filter failed", e);
+            LOG.error("filter GET.", e);
+            return Response.serverError().entity(e.getMessage()).build();
         }
     }
 
@@ -65,8 +65,8 @@ public class HealthPluginEndpoints {
         try {
             return Response.ok(pluginRegion.renderInstanceHealth(instanceKey)).build();
         } catch (Exception e) {
-            LOG.error("uis", e);
-            return responseHelper.errorResponse("uis failed", e);
+            LOG.error("uis GET.", e);
+            return Response.serverError().entity(e.getMessage()).build();
         }
     }
 
@@ -83,8 +83,8 @@ public class HealthPluginEndpoints {
             return Response.ok(pluginRegion.renderLive(httpRequest.getRemoteUser(), new HealthPluginRegionInput(datacenter, rack, cluster, host, service)))
                 .build();
         } catch (Exception e) {
-            LOG.error("live", e);
-            return responseHelper.errorResponse("live failed", e);
+            LOG.error("list GET.", e);
+            return Response.serverError().entity(e.getMessage()).build();
         }
     }
 
@@ -102,8 +102,8 @@ public class HealthPluginEndpoints {
             Map<String, Object> result = pluginRegion.poll(new HealthPluginRegionInput(datacenter, rack, cluster, host, service));
             return responseHelper.jsonResponse(result != null ? result : "");
         } catch (Exception e) {
-            LOG.error("poll failed", e);
-            return responseHelper.errorResponse("poll failed", e);
+            LOG.error("poll POST", e);
+            return Response.serverError().entity(e.getMessage()).build();
         }
     }
 

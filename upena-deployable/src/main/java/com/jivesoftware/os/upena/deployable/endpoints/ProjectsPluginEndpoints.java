@@ -41,10 +41,15 @@ public class ProjectsPluginEndpoints {
     @Path("/")
     @Produces(MediaType.TEXT_HTML)
     public Response projects(@Context HttpServletRequest httpRequest) {
-        String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(),
-            pluginRegion,
-            new ProjectsPluginRegionInput("", "", "", "", "", "", "", "", "","", "", "", "", "", "", false));
-        return Response.ok(rendered).build();
+        try {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(),
+                pluginRegion,
+                new ProjectsPluginRegionInput("", "", "", "", "", "", "", "", "", "", "", "", "", "", "", false));
+            return Response.ok(rendered).build();
+        } catch (Exception e) {
+            LOG.error("projects GET", e);
+            return Response.serverError().entity(e.getMessage()).build();
+        }
     }
 
     @POST
@@ -68,14 +73,18 @@ public class ProjectsPluginEndpoints {
         @FormParam("newCoordinate") @DefaultValue("") String newCoordinate,
         @FormParam("action") @DefaultValue("") String action,
         @FormParam("refresh") @DefaultValue("true") boolean refresh) {
-
-        String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-            new ProjectsPluginRegionInput(key, name, description, localPath, scmUrl, branch, pom, goals, profiles, properties, mavenOpts, mvnHome, 
-                oldCoordinate,
-                newCoordinate,
-                action,
-                refresh));
-        return Response.ok(rendered).build();
+        try {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+                new ProjectsPluginRegionInput(key, name, description, localPath, scmUrl, branch, pom, goals, profiles, properties, mavenOpts, mvnHome,
+                    oldCoordinate,
+                    newCoordinate,
+                    action,
+                    refresh));
+            return Response.ok(rendered).build();
+        } catch (Exception e) {
+            LOG.error("projects action POT", e);
+            return Response.serverError().entity(e.getMessage()).build();
+        }
     }
 
     @GET
@@ -92,7 +101,7 @@ public class ProjectsPluginEndpoints {
             return Response.ok(rendered).build();
         } catch (Exception x) {
             LOG.error("Failed to generate output for:" + key, x);
-            return Response.serverError().build();
+            return Response.serverError().entity(x.getMessage()).build();
         }
     }
 
@@ -108,7 +117,7 @@ public class ProjectsPluginEndpoints {
             return Response.ok(rendered).build();
         } catch (Exception x) {
             LOG.error("Failed to generate output for:" + key, x);
-            return Response.serverError().build();
+            return Response.serverError().entity(x.getMessage()).build();
         }
     }
 
@@ -122,7 +131,7 @@ public class ProjectsPluginEndpoints {
             return Response.ok().build();
         } catch (Exception x) {
             LOG.error("Failed to add to default release groups for:" + update, x);
-            return Response.serverError().build();
+            return Response.serverError().entity(x.getMessage()).build();
         }
     }
 
@@ -136,7 +145,7 @@ public class ProjectsPluginEndpoints {
             return Response.ok().build();
         } catch (Exception x) {
             LOG.error("Failed to remove to default release groups for:" + update, x);
-            return Response.serverError().build();
+            return Response.serverError().entity(x.getMessage()).build();
         }
     }
 

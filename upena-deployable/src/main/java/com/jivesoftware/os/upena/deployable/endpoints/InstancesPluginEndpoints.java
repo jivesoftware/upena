@@ -30,7 +30,7 @@ public class InstancesPluginEndpoints {
 
     private final SoyService soyService;
     private final InstancesPluginRegion pluginRegion;
-
+    
     public InstancesPluginEndpoints(@Context SoyService soyService, @Context InstancesPluginRegion pluginRegion) {
         this.soyService = soyService;
         this.pluginRegion = pluginRegion;
@@ -40,9 +40,14 @@ public class InstancesPluginEndpoints {
     @Path("/")
     @Produces(MediaType.TEXT_HTML)
     public Response instances(@Context HttpServletRequest httpRequest) {
-        String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-            new InstancesPluginRegionInput("", "", "", "", "", "", "", "", "", "", false, "", "", ""));
-        return Response.ok(rendered).build();
+        try {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+                new InstancesPluginRegionInput("", "", "", "", "", "", "", "", "", "", false, "", "", ""));
+            return Response.ok(rendered).build();
+        } catch (Exception e) {
+            LOG.error("hosts GET", e);
+            return Response.serverError().entity(e.getMessage()).build();
+        }
     }
 
     @POST
@@ -64,22 +69,28 @@ public class InstancesPluginEndpoints {
         @FormParam("intervalUnits") @DefaultValue("SECONDS") String intervalUnits,
         @FormParam("interval") @DefaultValue("30") String interval,
         @FormParam("action") @DefaultValue("") String action) {
-        String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-            new InstancesPluginRegionInput(key,
-                clusterKey,
-                cluster,
-                hostKey,
-                host,
-                serviceKey,
-                service,
-                instanceId,
-                releaseKey,
-                release,
-                enabled,
-                intervalUnits,
-                interval,
-                action));
-        return Response.ok(rendered).build();
+
+        try {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+                new InstancesPluginRegionInput(key,
+                    clusterKey,
+                    cluster,
+                    hostKey,
+                    host,
+                    serviceKey,
+                    service,
+                    instanceId,
+                    releaseKey,
+                    release,
+                    enabled,
+                    intervalUnits,
+                    interval,
+                    action));
+            return Response.ok(rendered).build();
+        } catch (Exception e) {
+            LOG.error("instances action POST", e);
+            return Response.serverError().entity(e.getMessage()).build();
+        }
     }
 
     @POST

@@ -1,5 +1,7 @@
 package com.jivesoftware.os.upena.deployable.endpoints;
 
+import com.jivesoftware.os.mlogger.core.MetricLogger;
+import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.deployable.region.ServicesPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ServicesPluginRegion.ServicesPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
@@ -23,6 +25,7 @@ import javax.ws.rs.core.Response;
 @Path("/ui/services")
 public class ServicesPluginEndpoints {
 
+    private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
     private final SoyService soyService;
     private final ServicesPluginRegion pluginRegion;
 
@@ -35,9 +38,14 @@ public class ServicesPluginEndpoints {
     @Path("/")
     @Produces(MediaType.TEXT_HTML)
     public Response services(@Context HttpServletRequest httpRequest) {
-        String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-            new ServicesPluginRegionInput("", "", "", ""));
-        return Response.ok(rendered).build();
+        try {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+                new ServicesPluginRegionInput("", "", "", ""));
+            return Response.ok(rendered).build();
+        } catch (Exception e) {
+            LOG.error("action GET", e);
+            return Response.serverError().entity(e.getMessage()).build();
+        }
     }
 
     @POST
@@ -49,9 +57,14 @@ public class ServicesPluginEndpoints {
         @FormParam("name") @DefaultValue("") String name,
         @FormParam("description") @DefaultValue("") String description,
         @FormParam("action") @DefaultValue("") String action) {
-        String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-            new ServicesPluginRegionInput(key, name, description, action));
-        return Response.ok(rendered).build();
+        try {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+                new ServicesPluginRegionInput(key, name, description, action));
+            return Response.ok(rendered).build();
+        } catch (Exception e) {
+            LOG.error("service action GET", e);
+            return Response.serverError().entity(e.getMessage()).build();
+        }
     }
 
 }
