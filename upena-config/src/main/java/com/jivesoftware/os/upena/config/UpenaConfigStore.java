@@ -98,7 +98,7 @@ public class UpenaConfigStore {
     public Map<String, String> changesSinceLastFetch(String instanceKey, String context) throws Exception {
         String key = createTableName(instanceKey, context);
         FetchedVersion fetchedVersion = lastFetchedVersion.get(key);
-        if (fetchedVersion == null) {
+        if (fetchedVersion == null || fetchedVersion.rawProperties == null) {
             return Collections.emptyMap();
         }
         Map<String, String> current = mapper.readValue(fetchedVersion.rawProperties, new TypeReference<HashMap<String, String>>() {
