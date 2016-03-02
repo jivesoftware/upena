@@ -1,3 +1,4 @@
+
 /*
  * Don't add custom CSS unless you absolutely have to...  usually in response to shared JavaScript components
  * which rely on jive.css...
@@ -24,6 +25,10 @@ div.navmenu {
 .panel-default > .panel-heading  {
     background-image: linear-gradient(to bottom,#808080 0,#000000 100%);
     color: white;
+}
+
+.popover-content {
+    padding: 0px 0px;
 }
 
 .navbar {

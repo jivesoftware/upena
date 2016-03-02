@@ -1,16 +1,46 @@
 package com.jivesoftware.os.upena.deployable;
 
+import com.sun.jdi.AbsentInformationException;
+import com.sun.jdi.ArrayReference;
+import com.sun.jdi.ArrayType;
+import com.sun.jdi.BooleanType;
 import com.sun.jdi.Bootstrap;
+import com.sun.jdi.ClassNotLoadedException;
+import com.sun.jdi.ClassType;
+import com.sun.jdi.Field;
+import com.sun.jdi.InterfaceType;
+import com.sun.jdi.LocalVariable;
+import com.sun.jdi.Location;
+import com.sun.jdi.Method;
 import com.sun.jdi.ObjectReference;
+import com.sun.jdi.PrimitiveType;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.StackFrame;
 import com.sun.jdi.ThreadReference;
+import com.sun.jdi.Type;
+import com.sun.jdi.Value;
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.VirtualMachineManager;
 import com.sun.jdi.connect.AttachingConnector;
 import com.sun.jdi.connect.Connector;
+import com.sun.jdi.event.BreakpointEvent;
+import com.sun.jdi.event.Event;
+import com.sun.jdi.event.EventIterator;
+import com.sun.jdi.event.EventQueue;
+import com.sun.jdi.event.EventSet;
+import com.sun.jdi.request.BreakpointRequest;
+import com.sun.jdi.request.EventRequest;
+import com.sun.jdi.request.EventRequestManager;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  *
@@ -18,13 +48,12 @@ import java.util.Map;
  */
 public class JDIAPI {
 
-    public static void main(String[] args) throws Exception {
-        new JDIAPI().run();
-    }
-
     public static enum ThreadDumpLineType {
         thread, monitor, location, eod;
     }
+
+    private static String[] primitiveTypeNames = {"boolean", "byte", "char",
+        "short", "int", "long", "float", "double"};
 
     public interface ThreadDump {
 
@@ -175,46 +204,446 @@ public class JDIAPI {
         }
     }
 
-    public void run() throws Exception {
-        String hostName = "soa-prime-data5.phx1.jivehosted.com";
-        int port = 10003;
-        VirtualMachineManager virtualMachineManager = Bootstrap.virtualMachineManager();
-        AttachingConnector socketConnector = null;
-        List<AttachingConnector> attachingConnectors = virtualMachineManager.attachingConnectors();
-        for (AttachingConnector attachingConnector : attachingConnectors) {
-            if (attachingConnector.transport().name().equals("dt_socket")) {
-                socketConnector = attachingConnector;
-                break;
-            }
-        }
-        if (socketConnector != null) {
-            Map<String, Connector.Argument> defaultArguments = socketConnector.defaultArguments();
-            for (Map.Entry<String, Connector.Argument> entry : defaultArguments.entrySet()) {
-                System.out.println(entry.getKey() + " " + entry.getValue().getClass() + " " + entry.getValue());
-            }
+    private final ConcurrentHashMap<String, BreakpointDebugger> breakpointDebugger = new ConcurrentHashMap<>();
 
-            Connector.StringArgument hostNameArg = (Connector.StringArgument) defaultArguments.get("hostname");
-            hostNameArg.setValue(hostName);
-            Connector.IntegerArgument portArg = (Connector.IntegerArgument) defaultArguments.get("port");
-            portArg.setValue(port);
-            VirtualMachine vm = socketConnector.attach(defaultArguments);
-            System.out.println("Attached to process '" + vm.name() + "'");
-
-
-
-            vm.suspend();
-
-            try {
-                List<ReferenceType> referenceTypes = vm.allClasses();
-                long[] instanceCounts = vm.instanceCounts(referenceTypes);
-
-
-
-
-            } finally {
-                vm.resume();
-            }
-        }
-
+    public BreakpointDebugger create(String hostName, int port) {
+        return breakpointDebugger.computeIfAbsent(hostName.trim() + ":" + port, (key) -> new BreakpointDebugger(hostName, port));
     }
+
+    public static class BreakpointDebugger {
+
+        public interface BreakpointState {
+
+            boolean state(double progress, String breakpointClass, int lineNumber, String className, String fieldName, String value, String fields, Exception x);
+        }
+
+        public static class Breakpoint {
+
+            private final String className;
+            private final int lineNumber;
+
+            private Breakpoint(String className, int lineNumber) {
+                this.className = className;
+                this.lineNumber = lineNumber;
+            }
+
+            public String getClassName() {
+                return className;
+            }
+
+            public int getLineNumber() {
+                return lineNumber;
+            }
+
+            @Override
+            public int hashCode() {
+                int hash = 7;
+                hash = 83 * hash + Objects.hashCode(this.className);
+                hash = 83 * hash + this.lineNumber;
+                return hash;
+            }
+
+            @Override
+            public boolean equals(Object obj) {
+                if (this == obj) {
+                    return true;
+                }
+                if (obj == null) {
+                    return false;
+                }
+                if (getClass() != obj.getClass()) {
+                    return false;
+                }
+                final Breakpoint other = (Breakpoint) obj;
+                if (this.lineNumber != other.lineNumber) {
+                    return false;
+                }
+                if (!Objects.equals(this.className, other.className)) {
+                    return false;
+                }
+                return true;
+            }
+
+        }
+
+        private final AtomicBoolean attached = new AtomicBoolean();
+        private final String hostName;
+        private final int port;
+
+        private final Set<Breakpoint> breakpoints = Collections.newSetFromMap(new ConcurrentHashMap<Breakpoint, Boolean>());
+        private final Set<Breakpoint> attachedBreakpoints = Collections.newSetFromMap(new ConcurrentHashMap<Breakpoint, Boolean>());
+        private final AtomicLong version = new AtomicLong();
+
+        public BreakpointDebugger(String hostName, int port) {
+            this.hostName = hostName;
+            this.port = port;
+        }
+
+        public String getHostName() {
+            return hostName;
+        }
+
+        public int getPort() {
+            return port;
+        }
+
+        public boolean attached() {
+            return attached.get();
+        }
+
+        public void dettach() {
+            attached.set(false);
+        }
+
+        public Set<Breakpoint> getAttachedBreakpoints() {
+            return attachedBreakpoints;
+        }
+
+        public void addBreakpoint(String className, int lineNumber) {
+            if (breakpoints.add(new Breakpoint(className, lineNumber))) {
+                version.incrementAndGet();
+            }
+        }
+
+        public void removeBreakpoint(String className, int lineNumber) {
+            if (breakpoints.remove(new Breakpoint(className, lineNumber))) {
+                version.incrementAndGet();
+            }
+        }
+
+        public void clearBreakpoints() {
+            breakpoints.clear();
+            version.incrementAndGet();
+        }
+
+        public void run(BreakpointState breakpointState) throws Exception {
+            if (!attached.compareAndSet(false, true)) {
+                throw new RuntimeException("Breakpoint debugger already attached...");
+            }
+
+            VirtualMachineManager virtualMachineManager = Bootstrap.virtualMachineManager();
+            AttachingConnector socketConnector = null;
+            List<AttachingConnector> attachingConnectors = virtualMachineManager.attachingConnectors();
+            for (AttachingConnector attachingConnector : attachingConnectors) {
+                if (attachingConnector.transport().name().equals("dt_socket")) {
+                    socketConnector = attachingConnector;
+                    break;
+                }
+            }
+            if (socketConnector != null) {
+                Map<String, Connector.Argument> defaultArguments = socketConnector.defaultArguments();
+                for (Map.Entry<String, Connector.Argument> entry : defaultArguments.entrySet()) {
+                    System.out.println(entry.getKey() + " " + entry.getValue().getClass() + " " + entry.getValue());
+                }
+
+                Connector.StringArgument hostNameArg = (Connector.StringArgument) defaultArguments.get("hostname");
+                hostNameArg.setValue(hostName);
+                Connector.IntegerArgument portArg = (Connector.IntegerArgument) defaultArguments.get("port");
+                portArg.setValue(port);
+                VirtualMachine vm = socketConnector.attach(defaultArguments);
+                System.out.println("Attached to process '" + vm.name() + "'");
+
+                try {
+
+                    while (attached.get()) {
+                        attachedBreakpoints.clear();
+                        long breakPointsVersion = version.get();
+                        List<Location> breakpointLocations = new ArrayList<>();
+                        for (Breakpoint breakpoint : breakpoints) {
+                            List<ReferenceType> refTypes = vm.classesByName(breakpoint.className);
+                            Location breakpointLocation = null;
+                            for (ReferenceType refType : refTypes) {
+                                if (breakpointLocation != null) {
+                                    break;
+                                }
+                                List<Location> locs = refType.allLineLocations();
+                                for (Location loc : locs) {
+                                    if (loc.lineNumber() == breakpoint.lineNumber) {
+                                        breakpointLocation = loc;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (breakpointLocation != null) {
+                                breakpointLocations.add(breakpointLocation);
+                                attachedBreakpoints.add(breakpoint);
+                            }
+                        }
+
+                        if (!breakpointLocations.isEmpty()) {
+                            EventRequestManager evtReqMgr = vm.eventRequestManager();
+                            for (Location breakpointLocation : breakpointLocations) {
+                                BreakpointRequest bReq = evtReqMgr.createBreakpointRequest(breakpointLocation);
+                                bReq.setSuspendPolicy(BreakpointRequest.SUSPEND_ALL);
+                                bReq.enable();
+                            }
+
+                            EventQueue evtQueue = vm.eventQueue();
+                            while (attached.get()) {
+                                if (breakPointsVersion < version.get()) {
+                                    evtReqMgr.deleteAllBreakpoints();
+                                    break;
+                                }
+                                EventSet evtSet = evtQueue.remove(1000);
+                                if (evtSet == null) {
+                                    if (attached.get()) {
+                                        continue;
+                                    } else {
+                                        break;
+                                    }
+                                }
+                                EventIterator evtIter = evtSet.eventIterator();
+                                while (evtIter.hasNext()) {
+                                    try {
+                                        Event evt = evtIter.next();
+                                        EventRequest evtReq = evt.request();
+                                        if (evtReq instanceof BreakpointRequest) {
+                                            BreakpointRequest bpReq = (BreakpointRequest) evtReq;
+                                            Location location = bpReq.location();
+                                            String breakpointClass = location.sourcePath().replace('/', '.'); // Grrrr
+                                            breakpointClass = breakpointClass.substring(0, breakpointClass.lastIndexOf(".")); // Grrr
+                                            int breakpointLineNumber = location.lineNumber();
+                                            BreakpointEvent brEvt = (BreakpointEvent) evt;
+                                            ThreadReference threadRef = brEvt.thread();
+                                            StackFrame stackFrame = threadRef.frame(0);
+                                            List<LocalVariable> visVars = stackFrame.visibleVariables();
+                                            Map<LocalVariable, Value> values = stackFrame.getValues(visVars);
+                                            int i = 0;
+                                            Set<Map.Entry<LocalVariable, Value>> entrySet = values.entrySet();
+                                            int count = entrySet.size();
+                                            for (Map.Entry<LocalVariable, Value> entry : entrySet) {
+                                                LocalVariable localVariable = entry.getKey();
+                                                Value value = entry.getValue();
+                                                double progress = i / (double) count;
+                                                try {
+                                                    breakpointState.state(progress,
+                                                        breakpointClass,
+                                                        breakpointLineNumber,
+                                                        localVariable.typeName(),
+                                                        localVariable.name(),
+                                                        valueToString(threadRef, value),
+                                                        valueToFields(threadRef, value),
+                                                        null);
+                                                } catch (Exception x) {
+                                                    breakpointState.state(progress,
+                                                        breakpointClass,
+                                                        breakpointLineNumber,
+                                                        localVariable.typeName(),
+                                                        localVariable.name(),
+                                                        null,
+                                                        null,
+                                                        x);
+                                                }
+                                            }
+                                            breakpointState.state(1.0d, breakpointClass, breakpointLineNumber, null, null, null, null, null); // EOS
+                                        }
+                                    } catch (AbsentInformationException aie) {
+                                        System.out.println("AbsentInformationException: did you compile your target application with -g option?");
+                                    } catch (Exception exc) {
+                                        System.out.println(exc.getClass().getName() + ": " + exc.getMessage());
+                                    } finally {
+                                        evtSet.resume();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } finally {
+                    vm.resume();
+                    vm.dispose();
+                }
+            }
+        }
+    }
+
+    public static String valueToFields(ThreadReference threadRef, Value var) {
+        if (var instanceof ObjectReference) {
+            List<Field> allFields = ((ObjectReference) var).referenceType().allFields();
+            StringBuilder sb = new StringBuilder();
+            for (Field field : allFields) {
+                if (sb.length() > 0) {
+                    sb.append(", ");
+                }
+                sb.append(field.name());
+            }
+            return sb.toString();
+        } else {
+            return null;
+        }
+    }
+
+    public static String valueToString(ThreadReference threadRef, Value var) throws Exception {
+        if (var == null) {
+            return "null";
+        }
+        if (var instanceof ArrayReference) {
+            StringBuilder sb = new StringBuilder("[");
+            ArrayReference arrayObj = (ArrayReference) var;
+            if (arrayObj.length() == 0) {
+                return "[]";
+            }
+            List<Value> values = arrayObj.getValues();
+            for (Value value : values) {
+                sb.append(valueToString(threadRef, value)).append(",");
+            }
+            sb.deleteCharAt(sb.length() - 1);
+            sb.append("]");
+            return sb.toString();
+        } else if (var instanceof ObjectReference) {
+            Value strValue = invoke(threadRef, (ObjectReference) var, "toString", new ArrayList());
+            return strValue.toString();
+        } else {
+            return var.toString();
+        }
+    }
+
+    public static Value invoke(ThreadReference threadRef, Object invoker, String methodName, List args) throws Exception {
+        Value value = null;
+        Method matchedMethod = null;
+        List<Method> methods = null;
+        ClassType refType = null;
+        ObjectReference obj = null;
+        if (invoker instanceof ClassType) {
+            refType = (ClassType) invoker;
+            methods = refType.methodsByName(methodName);
+        } else {
+            obj = (ObjectReference) invoker;
+            methods = obj.referenceType().methodsByName(methodName);
+        }
+        if (methods == null || methods.size() == 0) {
+            throw new RuntimeException("eval expression error, method '" + methodName + "' can't be found");
+        }
+        if (methods.size() == 1) {
+            matchedMethod = methods.get(0);
+        } else {
+            matchedMethod = findMatchedMethod(methods, args);
+        }
+
+        if (invoker instanceof ClassType) {
+            ClassType clazz = (ClassType) refType;
+            value = clazz.invokeMethod(threadRef, matchedMethod, args,
+                ObjectReference.INVOKE_SINGLE_THREADED);
+        } else {
+            value = obj.invokeMethod(threadRef, matchedMethod, args,
+                ObjectReference.INVOKE_SINGLE_THREADED);
+        }
+
+        return value;
+    }
+
+    private static Method findMatchedMethod(List<Method> methods, List arguments) {
+        for (Method method : methods) {
+            try {
+                List argTypes = method.argumentTypes();
+                if (argumentsMatch(argTypes, arguments)) {
+                    return method;
+                }
+            } catch (ClassNotLoadedException e) {
+            }
+        }
+        return null;
+    }
+
+    private static boolean argumentsMatch(List argTypes, List arguments) {
+        if (argTypes.size() != arguments.size()) {
+            return false;
+        }
+        Iterator typeIter = argTypes.iterator();
+        Iterator valIter = arguments.iterator();
+        while (typeIter.hasNext()) {
+            Type argType = (Type) typeIter.next();
+            Value value = (Value) valIter.next();
+            if (value == null) {
+                if (isPrimitiveType(argType.name())) {
+                    return false;
+                }
+            }
+            if (!value.type().equals(argType)) {
+                if (isAssignableTo(value.type(), argType)) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    private static boolean isPrimitiveType(String name) {
+        for (String primitiveType : primitiveTypeNames) {
+            if (primitiveType.equals(name)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean isAssignableTo(Type fromType, Type toType) {
+
+        if (fromType.equals(toType)) {
+            return true;
+        }
+        if (fromType instanceof BooleanType && toType instanceof BooleanType) {
+            return true;
+        }
+        if (toType instanceof BooleanType) {
+            return false;
+        }
+        if (fromType instanceof PrimitiveType
+            && toType instanceof PrimitiveType) {
+            return true;
+        }
+        if (toType instanceof PrimitiveType) {
+            return false;
+        }
+
+        if (fromType instanceof ArrayType) {
+            return isArrayAssignableTo((ArrayType) fromType, toType);
+        }
+        List interfaces;
+        if (fromType instanceof ClassType) {
+            ClassType superclazz = ((ClassType) fromType).superclass();
+            if ((superclazz != null) && isAssignableTo(superclazz, toType)) {
+                return true;
+            }
+            interfaces = ((ClassType) fromType).interfaces();
+        } else {
+            interfaces = ((InterfaceType) fromType).superinterfaces();
+        }
+        Iterator iter = interfaces.iterator();
+        while (iter.hasNext()) {
+            InterfaceType interfaze = (InterfaceType) iter.next();
+            if (isAssignableTo(interfaze, toType)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    static boolean isArrayAssignableTo(ArrayType fromType, Type toType) {
+        if (toType instanceof ArrayType) {
+            try {
+                Type toComponentType = ((ArrayType) toType).componentType();
+                return isComponentAssignable(fromType.componentType(),
+                    toComponentType);
+            } catch (ClassNotLoadedException e) {
+                return false;
+            }
+        }
+        if (toType instanceof InterfaceType) {
+            return toType.name().equals("java.lang.Cloneable");
+        }
+        return toType.name().equals("java.lang.Object");
+    }
+
+    private static boolean isComponentAssignable(Type fromType, Type toType) {
+        if (fromType instanceof PrimitiveType) {
+            return fromType.equals(toType);
+        }
+        if (toType instanceof PrimitiveType) {
+            return false;
+        }
+        return isAssignableTo(fromType, toType);
+    }
+
 }

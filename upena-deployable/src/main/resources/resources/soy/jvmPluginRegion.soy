@@ -24,7 +24,7 @@
                 <tbody>
                     <form id="add-ring-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
                         data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="addRingHost">
-                        <tr style="background-color:#ddd;">
+                    <tr style="background-color:#ddd;">
                             <td>
                                 <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
                                 class="form-control" placeholder="Host" value="{$host}"
@@ -38,13 +38,13 @@
                             <td>
                                 <button title="memoryHisto" type="submit" name="action" value="memoryHisto" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
                                     <span class="glyphicon glyphicon-play">&nbspLive Histo</span>
-                                </button>
+                                    </button>
                                 <button title="threadDump" type="submit" name="action" value="threadDump" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
-                                    <span class="glyphicon glyphicon-play">&nbspThead Dump</span>
-                                </button>
+                                        <span class="glyphicon glyphicon-play">&nbspThead Dump</span>
+                                    </button>
                             <td>
-                        </tr>
-                    </form>
+                    </tr>
+                        </form>
                 </tbody>
             </table>
         </div>
@@ -107,7 +107,7 @@
                             <li class="list-group-item {if $alert}list-group-item-{$alert}{/if}">
                                 {$pad|noAutoescape}<span class="glyphicon glyphicon-{$icon}" aria-hidden="true">{$t.value}</span>
                             </li>
-                        {/foreach}
+                            {/foreach}
                     </ul>
                 {/foreach}
             </div>

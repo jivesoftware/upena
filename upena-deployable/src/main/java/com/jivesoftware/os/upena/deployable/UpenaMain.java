@@ -53,6 +53,7 @@ import com.jivesoftware.os.upena.config.UpenaConfigRestEndpoints;
 import com.jivesoftware.os.upena.config.UpenaConfigStore;
 import com.jivesoftware.os.upena.deployable.UpenaEndpoints.AmzaClusterName;
 import com.jivesoftware.os.upena.deployable.endpoints.AsyncLookupEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.BreakpointDumperPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ChangeLogPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ClustersPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ConfigPluginEndpoints;
@@ -77,6 +78,7 @@ import com.jivesoftware.os.upena.deployable.profiler.server.endpoints.PerfServic
 import com.jivesoftware.os.upena.deployable.profiler.server.endpoints.PerfServiceEndpoint;
 import com.jivesoftware.os.upena.deployable.profiler.visualize.NameUtils;
 import com.jivesoftware.os.upena.deployable.profiler.visualize.VisualizeProfile;
+import com.jivesoftware.os.upena.deployable.region.BreakpointDumperPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ChangeLogPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ClustersPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ConfigPluginRegion;
@@ -172,6 +174,26 @@ public class UpenaMain {
     }
 
     public void run(String[] args) throws Exception {
+
+        JDIAPI jvmaapi = null;
+        try {
+            jvmaapi = new JDIAPI();
+//            AtomicBoolean running = new AtomicBoolean(true);
+//            String hostName = "soa-prime-data10.phx1.jivehosted.com";
+//            int port = 10007;
+//            String className = "com.jivesoftware.os.miru.plugin.solution.MiruAggregateUtil";
+//            int lineNumber = 120;
+//            jvmaapi.run(running, hostName, port, className, lineNumber, new JDIAPI.BreakPointState() {
+//                @Override
+//                public boolean state(String className, Object value) {
+//                    System.out.println(className + "=" + value);
+//                    return true;
+//                }
+//            });
+//            System.exit(0);
+        } catch (Exception x) {
+            LOG.warn("Failed to local tools.jar. Please manually add to classpath.", x);
+        }
 
         String hostname = InetAddress.getLocalHost().getHostName();
         if (args != null && args.length > 0) {
@@ -306,7 +328,17 @@ public class UpenaMain {
             .addInjectable(UpenaAutoRelease.class, new UpenaAutoRelease(repositoryProvider, upenaStore))
             .addInjectable(PathToRepo.class, localPathToRepo);
 
-        injectUI(amzaService, localPathToRepo, repositoryProvider, hostKey, ringHost, upenaStore, upenaConfigStore, upenaService, ubaService, jerseyEndpoints,
+        injectUI(jvmaapi,
+            amzaService,
+            localPathToRepo,
+            repositoryProvider,
+            hostKey,
+            ringHost,
+            upenaStore,
+            upenaConfigStore,
+            upenaService,
+            ubaService,
+            jerseyEndpoints,
             clusterName,
             discoveredRoutes);
 
@@ -348,7 +380,8 @@ public class UpenaMain {
         }
     }
 
-    private void injectUI(AmzaService amzaService,
+    private void injectUI(JDIAPI jvmaapi,
+        AmzaService amzaService,
         PathToRepo localPathToRepo,
         RepositoryProvider repositoryProvider,
         HostKey hostKey,
@@ -389,20 +422,10 @@ public class UpenaMain {
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/projectBuildOutputTail.soy"), "projectOutputTail.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/repoPluginRegion.soy"), "repoPluginRegion.soy");
 
-        JDIAPI jvmaapi = null;
-        try {
-            jvmaapi = new JDIAPI();
+        if (jvmaapi != null) {
             soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/jvmPluginRegion.soy"), "jvmPluginRegion.soy");
-        } catch (Exception x) {
-            LOG.warn("Failed to local tools.jar. Please manually add to classpath.", x);
+            soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/breakpointDumperPluginRegion.soy"), "breakpointDumperPluginRegion.soy");
         }
-//        try {
-//            jvmaapi.run();
-//            System.exit(0);
-//        } catch (Exception xx) {
-//            LOG.warn("WTF.", xx);
-//            System.exit(0);
-//        }
 
         SoyFileSet sfs = soyFileSetBuilder.build();
         SoyTofu tofu = sfs.compileToTofu();
@@ -500,10 +523,15 @@ public class UpenaMain {
             new ProfilerPluginRegion("soy.page.profilerPluginRegion", renderer, new VisualizeProfile(new NameUtils(), servicesCallDepthStack)));
 
         ManagePlugin jvm = null;
+        ManagePlugin breakpointDumper = null;
         if (jvmaapi != null) {
             jvm = new ManagePlugin("camera", null, "JVM", "/ui/jvm",
                 JVMPluginEndpoints.class,
                 new JVMPluginRegion("soy.page.jvmPluginRegion", renderer, amzaService, jvmaapi));
+
+            breakpointDumper = new ManagePlugin("record", null, "Breakpoint Dumper", "/ui/breakpoint",
+                BreakpointDumperPluginEndpoints.class,
+                new BreakpointDumperPluginRegion("soy.page.breakpointDumperPluginRegion", renderer, amzaService, jvmaapi));
         }
 
         List<ManagePlugin> plugins = new ArrayList<>();
@@ -524,6 +552,7 @@ public class UpenaMain {
         plugins.add(topology);
         if (jvm != null) {
             plugins.add(jvm);
+            plugins.add(breakpointDumper);
         }
         plugins.add(profiler);
         plugins.add(sar);
