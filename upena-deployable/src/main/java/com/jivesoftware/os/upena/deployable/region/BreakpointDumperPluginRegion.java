@@ -184,7 +184,7 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
                 Map<String, Object> dump = new HashMap<>();
                 dump.put("id", id);
                 id++;
-                dump.put("host", breakpointDebugger.breakpointDebugger.getHostName());
+                dump.put("hostName", breakpointDebugger.breakpointDebugger.getHostName());
                 dump.put("port", breakpointDebugger.breakpointDebugger.getPort());
                 dump.put("log", breakpointDebugger.breakpointDebugger.getLog());
 
@@ -207,7 +207,6 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
                         got = breakpointDebugger.getCapturingFrames(attachedBreakpoint.getClassName(), attachedBreakpoint.getLineNumber());
                         breakpoint.put("frames", got);
                     }
-
                     breakpoints.add(breakpoint);
                 }
 

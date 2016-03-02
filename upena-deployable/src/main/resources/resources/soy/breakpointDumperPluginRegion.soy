@@ -6,7 +6,7 @@
  * @param? message
  * @param? filters
  * @param? instances
- * @param? host
+ * @param? hostName
  * @param? port
  * @param? className
  * @param? lineNumber
@@ -83,13 +83,14 @@
             <form id="attachBreakPointDebugger" method="post" name="attachBreakPointDebugger">
                  <table class="table table-hover table-condensed table-responsive">
                     <tr colspan="3">
-                        <form id="add-ring-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
-                        data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="addRingHost">
+                        <form id="pick-instances" method="post" name="pick-instances">
                             <td>
-                                <select name="instances" multiple>
-                                    {foreach $i in $instances}
-                                        <option value="{$i.key}">{$i.name}</option>
-                                    {/foreach}
+                                <select name="instanceKeys" multiple>
+                                    {if $instances}
+                                        {foreach $i in $instances}
+                                            <option value="{$i.key}">{$i.name}</option>
+                                        {/foreach}
+                                    {/if}
                                  </select>
                             </td>
                         </form>
@@ -129,8 +130,8 @@
                         <form id="attachBreakPointDebugger" method="post" name="attachBreakPointDebugger">
                             <td>
                                 <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                class="form-control" placeholder="Host" value="{$host}"
-                                name="host" id="hostPicker" data-original-title="" title="">
+                                class="form-control" placeholder="Host Name" value="{$hostName}"
+                                name="hostName" id="hostPicker" data-original-title="" title="">
                             </td>
                             <td>
                                 <input type="number" name="port" min="1" max="65536" autocomplete="off" role="combobox" style="padding-left:10px;"
@@ -184,9 +185,9 @@
                                     {/if}
                                 </ul>
                             </div>
-                            <div style="display: inline;">&nbsp;&nbsp;&nbsp;{$d.host}:{$d.port}&nbsp;&nbsp;&nbsp;</div>
+                            <div style="display: inline;">&nbsp;&nbsp;&nbsp;{$d.hostName}:{$d.port}&nbsp;&nbsp;&nbsp;</div>
                             <form style="display: inline;" id="dettachHostDebugger" method="post" name="dettachHostDebugger">
-                                <input type="hidden" name="host" value="{$d.host}"/>
+                                <input type="hidden" name="hostName" value="{$d.hostName}"/>
                                 <input type="hidden" name="port" value="{$d.port}"/>
                                 <button style="display: inline;" title="memoryHisto" type="submit" name="action" value="dettach" class="btn btn-danger ladda-button"  data-spinner-color="#222" data-style="expand-right">
                                     <span class="glyphicon glyphicon-stop"></span>
@@ -198,7 +199,7 @@
                                 <li class="list-group-item disabled">
                                     <div style="display: inline;">&nbsp;&nbsp;&nbsp;{$f.className}:{$f.lineNumber}&nbsp;&nbsp;&nbsp;</div>
                                     <form style="display: inline;" id="attachFrameBreakPointDebugger" method="post" name="attachFrameBreakPointDebugger">
-                                        <input type="hidden" name="host" value="{$d.host}"/>
+                                        <input type="hidden" name="hostName" value="{$d.hostName}"/>
                                         <input type="hidden" name="port" value="{$d.port}"/>
                                         <input type="hidden" name="className" value="{$f.className}"/>
                                         <input type="hidden" name="lineNumber" value="{$f.lineNumber}"/>
@@ -214,7 +215,7 @@
                                 <li class="list-group-item disabled">
                                     <div style="display: inline;">{$b.className}:{$b.lineNumber}&nbsp;&nbsp;&nbsp;</div>
                                     <form style="display: inline;" id="dettachBreakPointDebugger" method="post" name="dettachBreakPointDebugger">
-                                        <input type="hidden" name="host" value="{$d.host}"/>
+                                        <input type="hidden" name="hostName" value="{$d.hostName}"/>
                                         <input type="hidden" name="port" value="{$d.port}"/>
                                         <input type="hidden" name="className" value="{$b.className}"/>
                                         <input type="hidden" name="lineNumber" value="{$b.lineNumber}"/>
