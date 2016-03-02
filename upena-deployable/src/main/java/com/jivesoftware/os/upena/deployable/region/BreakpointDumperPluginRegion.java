@@ -115,7 +115,7 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
     @Override
     public String render(String user, BreakpointDumperPluginRegionInput input) {
         Map<String, Object> data = Maps.newHashMap();
-        data.put("host", input.hostName);
+        data.put("hostName", input.hostName);
         data.put("port", input.port);
         data.put("className", input.className);
         data.put("lineNumber", input.lineNumber);
