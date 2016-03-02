@@ -253,6 +253,7 @@ public class UpenaEndpoints {
                 return Response.ok(minHealth, MediaType.TEXT_PLAIN).build();
             }
         } catch (Exception x) {
+            LOG.error("Failed to check instance health. {} {} ", new Object[]{clusterName, health}, x);
             return Response.serverError().entity(x.toString()).type(MediaType.TEXT_PLAIN).build();
         }
     }
@@ -265,6 +266,7 @@ public class UpenaEndpoints {
             NodeHealth upenaHealth = buildNodeHealth();
             return ResponseHelper.INSTANCE.jsonResponse(upenaHealth);
         } catch (Exception x) {
+            LOG.error("Failed getting instance health", x);
             return ResponseHelper.INSTANCE.errorResponse("Failed building all health view.", x);
         }
     }
@@ -276,6 +278,7 @@ public class UpenaEndpoints {
         try {
             return ResponseHelper.INSTANCE.jsonResponse(new Routes(discoveredRoutes.routes()));
         } catch (Exception x) {
+            LOG.error("Failed getting instance routes", x);
             return ResponseHelper.INSTANCE.errorResponse("Failed building all health view.", x);
         }
     }
@@ -287,6 +290,7 @@ public class UpenaEndpoints {
         try {
             return ResponseHelper.INSTANCE.jsonResponse(new RouteHealths(discoveredRoutes.routesHealth(sinceTimestampMillis)));
         } catch (Exception x) {
+            LOG.error("Failed getting routes health", x);
             return ResponseHelper.INSTANCE.errorResponse("Failed building all health view.", x);
         }
     }
@@ -299,21 +303,13 @@ public class UpenaEndpoints {
             ClusterHealth clusterHealth = buildClusterHealth(uriInfo);
             return ResponseHelper.INSTANCE.jsonResponse(clusterHealth);
         } catch (Exception x) {
+            LOG.error("Failed getting cluster health", x);
             return ResponseHelper.INSTANCE.errorResponse("Failed building all health view.", x);
         }
     }
 
     private ClusterHealth buildClusterHealth(UriInfo uriInfo) throws Exception {
         ClusterHealth clusterHealth = new ClusterHealth();
-        /*for (RingHost ringHost : new RingHost[]{
-         new RingHost("soa-prime-data5.phx1.jivehosted.com", 1175),
-         new RingHost("soa-prime-data6.phx1.jivehosted.com", 1175),
-         new RingHost("soa-prime-data7.phx1.jivehosted.com", 1175),
-         new RingHost("soa-prime-data8.phx1.jivehosted.com", 1175),
-         new RingHost("soa-prime-data9.phx1.jivehosted.com", 1175),
-         new RingHost("soa-prime-data10.phx1.jivehosted.com", 1175)
-         }) { //amzaInstance.getRing("MASTER")) {*/
-
         for (RingHost ringHost : amzaInstance.getRing("MASTER")) {
             try {
                 HttpRequestHelper requestHelper = buildRequestHelper(ringHost.getHost(), ringHost.getPort());

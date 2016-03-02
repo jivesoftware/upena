@@ -22,9 +22,9 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <form id="add-ring-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
-                        data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="addRingHost">
                     <tr style="background-color:#ddd;">
+                        <form id="add-ring-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                        data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="addRingHost">
                             <td>
                                 <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
                                 class="form-control" placeholder="Host" value="{$host}"
@@ -43,8 +43,8 @@
                                         <span class="glyphicon glyphicon-play">&nbspThead Dump</span>
                                     </button>
                             <td>
-                    </tr>
                         </form>
+                    </tr>
                 </tbody>
             </table>
         </div>
@@ -73,46 +73,46 @@
     </div>
     {/if}
     {if $threadDumps}
-    <div class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.9);">
-        <div class="panel-heading panel-heading"><span class="panel-title">Thread Dump</span></div>
-            <div class="panel-body">
-                {foreach $threadDump in $threadDumps}
-                    <ul class="list-group" style="list-style-type:none">
-                        {foreach $t in $threadDump}
-                            {let $icon}
-                                {if strContains($t.type,'thread')}
-                                    road
-                                {elseif strContains($t.type,'monitor')}
-                                    lock
-                                {else}
-                                    menu-hamburger
-                                {/if}
-                            {/let}
-                            {let $alert}
-                                {if strContains($t.type,'thread')}
-                                    success
-                                {elseif strContains($t.type,'monitor')}
-                                    warning
-                                {else}
-                                {/if}
-                            {/let}
-                            {let $pad}
-                                {if strContains($t.type,'thread')}
-                                {elseif strContains($t.type,'monitor')}
-                                    &nbsp;&nbsp;&nbsp;&nbsp;
-                                {else}
-                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                {/if}
-                            {/let}
-                            <li class="list-group-item {if $alert}list-group-item-{$alert}{/if}">
-                                {$pad|noAutoescape}<span class="glyphicon glyphicon-{$icon}" aria-hidden="true">{$t.value}</span>
-                            </li>
+        <div class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.9);">
+            <div class="panel-heading panel-heading"><span class="panel-title">Thread Dump</span></div>
+                <div class="panel-body">
+                    {foreach $threadDump in $threadDumps}
+                        <ul class="list-group" style="list-style-type:none">
+                            {foreach $t in $threadDump}
+                                {let $icon}
+                                    {if strContains($t.type,'thread')}
+                                        road
+                                    {elseif strContains($t.type,'monitor')}
+                                        lock
+                                    {else}
+                                        menu-hamburger
+                                    {/if}
+                                {/let}
+                                {let $alert}
+                                    {if strContains($t.type,'thread')}
+                                        success
+                                    {elseif strContains($t.type,'monitor')}
+                                        warning
+                                    {else}
+                                    {/if}
+                                {/let}
+                                {let $pad}
+                                    {if strContains($t.type,'thread')}
+                                    {elseif strContains($t.type,'monitor')}
+                                        &nbsp;&nbsp;&nbsp;&nbsp;
+                                    {else}
+                                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                    {/if}
+                                {/let}
+                                <li class="list-group-item {if $alert}list-group-item-{$alert}{/if}">
+                                    {$pad|noAutoescape}<span class="glyphicon glyphicon-{$icon}" aria-hidden="true">{$t.value}</span>
+                                </li>
                             {/foreach}
-                    </ul>
-                {/foreach}
+                        </ul>
+                    {/foreach}
+                </div>
             </div>
         </div>
-    </div>
     {/if}
 
 {/template}

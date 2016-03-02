@@ -527,11 +527,11 @@ public class UpenaMain {
         if (jvmaapi != null) {
             jvm = new ManagePlugin("camera", null, "JVM", "/ui/jvm",
                 JVMPluginEndpoints.class,
-                new JVMPluginRegion("soy.page.jvmPluginRegion", renderer, amzaService, jvmaapi));
+                new JVMPluginRegion("soy.page.jvmPluginRegion", renderer, upenaStore, jvmaapi));
 
             breakpointDumper = new ManagePlugin("record", null, "Breakpoint Dumper", "/ui/breakpoint",
                 BreakpointDumperPluginEndpoints.class,
-                new BreakpointDumperPluginRegion("soy.page.breakpointDumperPluginRegion", renderer, amzaService, jvmaapi));
+                new BreakpointDumperPluginRegion("soy.page.breakpointDumperPluginRegion", renderer, upenaStore, jvmaapi));
         }
 
         List<ManagePlugin> plugins = new ArrayList<>();

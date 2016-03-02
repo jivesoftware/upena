@@ -2,13 +2,13 @@ package com.jivesoftware.os.upena.deployable.region;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import com.jivesoftware.os.amza.shared.AmzaInstance;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.deployable.JDIAPI;
 import com.jivesoftware.os.upena.deployable.JDIAPI.ThreadDumpLineType;
 import com.jivesoftware.os.upena.deployable.region.JVMPluginRegion.JVMPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
+import com.jivesoftware.os.upena.service.UpenaStore;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -24,16 +24,16 @@ public class JVMPluginRegion implements PageRegion<JVMPluginRegionInput> {
 
     private final String template;
     private final SoyRenderer renderer;
-    private final AmzaInstance amzaInstance;
+    private final UpenaStore upenaStore;
     private final JDIAPI jvm;
 
     public JVMPluginRegion(String template,
         SoyRenderer renderer,
-        AmzaInstance amzaInstance,
+        UpenaStore upenaStore,
         JDIAPI jvm) {
         this.template = template;
         this.renderer = renderer;
-        this.amzaInstance = amzaInstance;
+        this.upenaStore = upenaStore;
         this.jvm = jvm;
     }
 

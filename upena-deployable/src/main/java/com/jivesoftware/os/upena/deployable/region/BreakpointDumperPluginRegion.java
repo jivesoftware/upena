@@ -2,7 +2,6 @@ package com.jivesoftware.os.upena.deployable.region;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Maps;
-import com.jivesoftware.os.amza.shared.AmzaInstance;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.deployable.JDIAPI;
@@ -11,6 +10,19 @@ import com.jivesoftware.os.upena.deployable.JDIAPI.BreakpointDebugger.Breakpoint
 import com.jivesoftware.os.upena.deployable.JDIAPI.BreakpointDebugger.StackFrames;
 import com.jivesoftware.os.upena.deployable.region.BreakpointDumperPluginRegion.BreakpointDumperPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
+import com.jivesoftware.os.upena.service.UpenaStore;
+import com.jivesoftware.os.upena.shared.Cluster;
+import com.jivesoftware.os.upena.shared.ClusterKey;
+import com.jivesoftware.os.upena.shared.Host;
+import com.jivesoftware.os.upena.shared.HostKey;
+import com.jivesoftware.os.upena.shared.Instance;
+import com.jivesoftware.os.upena.shared.InstanceFilter;
+import com.jivesoftware.os.upena.shared.InstanceKey;
+import com.jivesoftware.os.upena.shared.ReleaseGroup;
+import com.jivesoftware.os.upena.shared.ReleaseGroupKey;
+import com.jivesoftware.os.upena.shared.Service;
+import com.jivesoftware.os.upena.shared.ServiceKey;
+import com.jivesoftware.os.upena.shared.TimestampedValue;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -30,18 +42,18 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
 
     private final String template;
     private final SoyRenderer renderer;
-    private final AmzaInstance amzaInstance;
+    private final UpenaStore upenaStore;
     private final JDIAPI jvm;
     private final Map<String, BreakpointDebuggerOutput> debuggers = new ConcurrentHashMap<>();
     private final ExecutorService debuggerExecutors = Executors.newCachedThreadPool();
 
     public BreakpointDumperPluginRegion(String template,
         SoyRenderer renderer,
-        AmzaInstance amzaInstance,
+        UpenaStore upenaStore,
         JDIAPI jvm) {
         this.template = template;
         this.renderer = renderer;
-        this.amzaInstance = amzaInstance;
+        this.upenaStore = upenaStore;
         this.jvm = jvm;
     }
 
@@ -52,17 +64,44 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
 
     public static class BreakpointDumperPluginRegionInput implements PluginInput {
 
+        final String clusterKey;
+        final String cluster;
+        final String hostKey;
         final String host;
+        final String serviceKey;
+        final String service;
+        final String instanceId;
+        final String releaseKey;
+        final String release;
+        final String[] instanceKeys;
+
+        final String hostName;
         final int port;
         final String className;
         final int lineNumber;
+
+        final String breakpoint;
+
         final String action;
 
-        public BreakpointDumperPluginRegionInput(String host, int port, String className, int lineNumber, String action) {
+        public BreakpointDumperPluginRegionInput(String clusterKey, String cluster, String hostKey, String host, String serviceKey, String service,
+            String instanceId, String releaseKey, String release, String[] instanceKeys, String hostName, int port, String className, int lineNumber,
+            String breakpoint, String action) {
+            this.clusterKey = clusterKey;
+            this.cluster = cluster;
+            this.hostKey = hostKey;
             this.host = host;
+            this.serviceKey = serviceKey;
+            this.service = service;
+            this.instanceId = instanceId;
+            this.releaseKey = releaseKey;
+            this.release = release;
+            this.instanceKeys = instanceKeys;
+            this.hostName = hostName;
             this.port = port;
             this.className = className;
             this.lineNumber = lineNumber;
+            this.breakpoint = breakpoint;
             this.action = action;
         }
 
@@ -76,26 +115,46 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
     @Override
     public String render(String user, BreakpointDumperPluginRegionInput input) {
         Map<String, Object> data = Maps.newHashMap();
-        data.put("host", input.host);
+        data.put("host", input.hostName);
         data.put("port", input.port);
         data.put("className", input.className);
         data.put("lineNumber", input.lineNumber);
 
         try {
-            String key = input.host + ":" + input.port;
+            if (input.action.equals("find")) {
+                InstanceFilter filter = new InstanceFilter(
+                    input.clusterKey.isEmpty() ? null : new ClusterKey(input.clusterKey),
+                    input.hostKey.isEmpty() ? null : new HostKey(input.hostKey),
+                    input.serviceKey.isEmpty() ? null : new ServiceKey(input.serviceKey),
+                    input.releaseKey.isEmpty() ? null : new ReleaseGroupKey(input.releaseKey),
+                    input.instanceId.isEmpty() ? null : Integer.parseInt(input.instanceId),
+                    0, 10000);
+
+                List<Map<String, Object>> instances = new ArrayList<>();
+                Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(filter);
+                for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {
+                    InstanceKey key = entrySet.getKey();
+                    TimestampedValue<Instance> timestampedValue = entrySet.getValue();
+                    Instance value = timestampedValue.getValue();
+                    instances.add(toMap(key, value));
+                }
+                data.put("instances", instances);
+            }
+
+            String key = input.hostName + ":" + input.port;
             if (input.action.equals("attach")) {
                 BreakpointDebuggerOutput breakpointDebugger = debuggers.computeIfAbsent(key, (t) -> {
-                    return new BreakpointDebuggerOutput(jvm.create(input.host, input.port));
+                    return new BreakpointDebuggerOutput(jvm.create(input.hostName, input.port));
                 });
 
                 breakpointDebugger.breakpointDebugger.addBreakpoint(input.className, input.lineNumber);
                 if (!breakpointDebugger.isCapturing() && !breakpointDebugger.breakpointDebugger.attached()) {
                     debuggerExecutors.submit(breakpointDebugger);
                     data.put("message", "Added breakpoint " + input.className + ":" + input.lineNumber
-                        + " to " + input.host + ":" + input.port
+                        + " to " + input.hostName + ":" + input.port
                         + " and submitted for attachment.");
                 } else {
-                    data.put("message", "Added breakpoint  " + input.className + ":" + input.lineNumber + " to " + input.host + ":" + input.port);
+                    data.put("message", "Added breakpoint  " + input.className + ":" + input.lineNumber + " to " + input.hostName + ":" + input.port);
                 }
             }
             if (input.action.equals("dettach")) {
@@ -107,7 +166,7 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
                         debuggers.remove(key);
                         breakpointDebugger.breakpointDebugger.dettach();
                     }
-                    data.put("message", "Detached breakpoint debugger for " + input.host + ":" + input.port);
+                    data.put("message", "Detached breakpoint debugger for " + input.hostName + ":" + input.port);
                 }
             }
 
@@ -148,7 +207,7 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
                         got = breakpointDebugger.getCapturingFrames(attachedBreakpoint.getClassName(), attachedBreakpoint.getLineNumber());
                         breakpoint.put("frames", got);
                     }
-                    
+
                     breakpoints.add(breakpoint);
                 }
 
@@ -167,7 +226,7 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
         return "Breakpoint Dump";
     }
 
-    class BreakpointDebuggerOutput implements BreakpointState,StackFrames, Runnable {
+    class BreakpointDebuggerOutput implements BreakpointState, StackFrames, Runnable {
 
         private final Map<String, List<Map<String, String>>> capturingFrames = new ConcurrentHashMap<>();
         private final Map<String, List<Map<String, String>>> capturedFrames = new ConcurrentHashMap<>();
@@ -201,7 +260,6 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
                 running.compareAndSet(true, false);
             }
         }
-
 
         @Override
         public boolean frames(String breakpointClass, int lineNumber, String stackFrameClass, int stackFrameLineNumber) {
@@ -275,5 +333,31 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
                 return String.valueOf(p);
             }
         }
+    }
+
+
+    private Map<String, Object> toMap(InstanceKey key, Instance value) throws Exception {
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("key", key.getKey());
+
+        Cluster cluster = upenaStore.clusters.get(value.clusterKey);
+        Host host = upenaStore.hosts.get(value.hostKey);
+        Service service = upenaStore.services.get(value.serviceKey);
+        ReleaseGroup releaseGroup = upenaStore.releaseGroups.get(value.releaseGroupKey);
+
+        String name = cluster != null ? cluster.name : "unknownCluster";
+        name += " - ";
+        name += host != null ? host.name : "unknownHost";
+        name += " - ";
+        name += service != null ? service.name : "unknownService";
+        name += " - ";
+        name += String.valueOf(value.instanceId);
+        name += " - ";
+        name += releaseGroup != null ? releaseGroup.name : "unknownRelease";
+
+        map.put("key", value.releaseGroupKey.getKey());
+            map.put("name", name);
+        return map;
     }
 }

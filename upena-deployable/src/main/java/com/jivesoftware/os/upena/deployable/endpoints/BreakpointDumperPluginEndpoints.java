@@ -37,7 +37,8 @@ public class BreakpointDumperPluginEndpoints {
     @Produces(MediaType.TEXT_HTML)
     public Response breakpoint(@Context HttpServletRequest httpRequest) {
         String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-            new BreakpointDumperPluginRegionInput("", -1, "", -1, ""));
+            new BreakpointDumperPluginRegionInput("", "", "", "", "", "", "", "", "", new String[0],
+                "", -1, "", -1, "", ""));
         return Response.ok(rendered).build();
     }
 
@@ -46,13 +47,40 @@ public class BreakpointDumperPluginEndpoints {
     @Produces(MediaType.TEXT_HTML)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response breakpoint(@Context HttpServletRequest httpRequest,
+        @FormParam("clusterKey") @DefaultValue("") String clusterKey,
+        @FormParam("cluster") @DefaultValue("") String cluster,
+        @FormParam("hostKey") @DefaultValue("") String hostKey,
         @FormParam("host") @DefaultValue("") String host,
+        @FormParam("serviceKey") @DefaultValue("") String serviceKey,
+        @FormParam("service") @DefaultValue("") String service,
+        @FormParam("instanceId") @DefaultValue("") String instanceId,
+        @FormParam("releaseKey") @DefaultValue("") String releaseKey,
+        @FormParam("release") @DefaultValue("") String release,
+        @FormParam("instanceKeys") @DefaultValue("") String[] instanceKeys,
+        @FormParam("hostName") @DefaultValue("") String hostName,
         @FormParam("port") @DefaultValue("-1") int port,
         @FormParam("className") @DefaultValue("") String className,
         @FormParam("lineNumber") @DefaultValue("-1") int lineNumber,
+        @FormParam("breakpoint") @DefaultValue("") String breakpoint,
         @FormParam("action") @DefaultValue("") String action) {
+
         String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-            new BreakpointDumperPluginRegionInput(host, port, className, lineNumber, action));
+            new BreakpointDumperPluginRegionInput(clusterKey,
+                cluster,
+                hostKey,
+                host,
+                serviceKey,
+                service,
+                instanceId,
+                releaseKey,
+                release,
+                instanceKeys,
+                hostName,
+                port,
+                className,
+                lineNumber,
+                breakpoint,
+                action));
         return Response.ok(rendered).build();
     }
 }
