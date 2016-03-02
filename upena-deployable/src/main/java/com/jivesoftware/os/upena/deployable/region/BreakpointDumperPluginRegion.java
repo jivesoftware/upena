@@ -120,6 +120,18 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
         data.put("className", input.className);
         data.put("lineNumber", input.lineNumber);
 
+        Map<String, Object> filters = new HashMap<>();
+        filters.put("clusterKey", input.clusterKey);
+        filters.put("cluster", input.cluster);
+        filters.put("hostKey", input.hostKey);
+        filters.put("host", input.host);
+        filters.put("serviceKey", input.serviceKey);
+        filters.put("service", input.service);
+        filters.put("instanceId", input.instanceId);
+        filters.put("releaseKey", input.releaseKey);
+        filters.put("release", input.release);
+        data.put("filters", filters);
+
         try {
             if (input.action.equals("find")) {
                 InstanceFilter filter = new InstanceFilter(
