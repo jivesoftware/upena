@@ -58,11 +58,13 @@
                         </form>
                     </tr>
                     <tr colspan="5">
-                        <form id="attachBreakPointDebugger" method="post" name="attachBreakPointDebugger">
-                            <button title="threadDump" type="submit" name="action" value="refresh" class="btn btn-success ladda-button"  data-spinner-color="#222" data-style="expand-right">
-                                <span class="glyphicon glyphicon-refresh">&nbspRefresh</span>
-                            </button>
-                        </form>
+                        <td>
+                            <form id="attachBreakPointDebugger" method="post" name="attachBreakPointDebugger">
+                                <button title="threadDump" type="submit" name="action" value="refresh" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                                    <span class="glyphicon glyphicon-refresh">&nbspRefresh</span>
+                                </button>
+                            </form>
+                        </td>
                     </tr>
                 </tbody>
             </table>
@@ -71,7 +73,21 @@
                 <ul class="list-group" style="list-style-type:none">
                     {foreach $d in $dumps}
                         <li class="list-group-item active">
-                            <div style="display: inline;">{$d.host}:{$d.port}&nbsp;&nbsp;&nbsp;</div>
+                            <div style="display: inline;">
+                                <a href="#" data-trigger="hover" rel="popover" id="popoverAnchor-log-{$d.id}" data-popover-content="#popover-log-{$d.id}" data-placement="bottom" class="btn btn-primary" title="Log">
+                                    <span class="glyphicon glyphicon-list"></span>
+                                </a>
+                            </div>
+                            <div id="popover-log-{$d.id}" class="hide">
+                                <ul style="list-style-type:none">
+                                    {if $d.log}
+                                        {foreach $l in $d.log}
+                                            <li>{$l}</li>
+                                        {/foreach}
+                                    {/if}
+                                </ul>
+                            </div>
+                            <div style="display: inline;">&nbsp;&nbsp;&nbsp;{$d.host}:{$d.port}&nbsp;&nbsp;&nbsp;</div>
                             <form style="display: inline;" id="dettachHostDebugger" method="post" name="dettachHostDebugger">
                                 <input type="hidden" name="host" value="{$d.host}"/>
                                 <input type="hidden" name="port" value="{$d.port}"/>
@@ -80,6 +96,22 @@
                                 </button>
                             </form>
                         </li>
+                        {if $d.frames}
+                            {foreach $f in $d.frames}
+                                <li class="list-group-item disabled">
+                                    <div style="display: inline;">&nbsp;&nbsp;&nbsp;{$f.className}:{$f.lineNumber}&nbsp;&nbsp;&nbsp;</div>
+                                    <form style="display: inline;" id="attachFrameBreakPointDebugger" method="post" name="attachFrameBreakPointDebugger">
+                                        <input type="hidden" name="host" value="{$d.host}"/>
+                                        <input type="hidden" name="port" value="{$d.port}"/>
+                                        <input type="hidden" name="className" value="{$f.className}"/>
+                                        <input type="hidden" name="lineNumber" value="{$f.lineNumber}"/>
+                                        <button style="display: inline;" title="memoryHisto" type="submit" name="action" value="attach" class="btn btn-success ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                                            <span class="glyphicon glyphicon-play"></span>
+                                        </button>
+                                    </form>
+                                </li>
+                            {/foreach}
+                        {/if}
                         {if $d.breakpoints}
                             {foreach $b in $d.breakpoints}
                                 <li class="list-group-item disabled">
@@ -97,7 +129,7 @@
                                 {if $b.progress}
                                     <li class="list-group-item">
                                         <div class="progress">
-                                            <div class="progress-bar" role="progressbar" aria-valuenow="{$b.progress}" aria-valuemin="0" aria-valuemax="100" style="width: 60%;">
+                                            <div class="progress-bar" role="progressbar" aria-valuenow="{$b.progress}" aria-valuemin="0" aria-valuemax="100" style="width: {$b.progress}%;">
                                               <span class="sr-only">{$b.progress}% Complete</span>
                                             </div>
                                         </div>
@@ -111,8 +143,8 @@
                                                     <td>{$s.fieldName}</td>
                                                     <td>{$s.value}</td>
                                                     <td>{$s.className}</td>
-                                                    <td>{$s.fieldNames}</td>
-                                                    <td>{$s.exception}</td>
+                                                    <td>{if $s.fieldNames}{$s.fieldNames}{/if}</td>
+                                                    <td>{if $s.exception}{$s.exception}{/if}</td>
                                                 </tr>
                                             {/foreach}
                                         </table>

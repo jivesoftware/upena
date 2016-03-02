@@ -1,5 +1,6 @@
 package com.jivesoftware.os.upena.deployable;
 
+import com.google.common.base.Joiner;
 import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.ArrayReference;
 import com.sun.jdi.ArrayType;
@@ -217,6 +218,11 @@ public class JDIAPI {
             boolean state(double progress, String breakpointClass, int lineNumber, String className, String fieldName, String value, String fields, Exception x);
         }
 
+        public interface StackFrames {
+
+            boolean frames(String breakpointClass, int lineNumber, String stackFrameClass, int stackFrameLineNumber);
+        }
+
         public static class Breakpoint {
 
             private final String className;
@@ -273,6 +279,7 @@ public class JDIAPI {
         private final Set<Breakpoint> breakpoints = Collections.newSetFromMap(new ConcurrentHashMap<Breakpoint, Boolean>());
         private final Set<Breakpoint> attachedBreakpoints = Collections.newSetFromMap(new ConcurrentHashMap<Breakpoint, Boolean>());
         private final AtomicLong version = new AtomicLong();
+        private final List<String> log = new ArrayList<>();
 
         public BreakpointDebugger(String hostName, int port) {
             this.hostName = hostName;
@@ -293,6 +300,10 @@ public class JDIAPI {
 
         public void dettach() {
             attached.set(false);
+        }
+
+        public List<String> getLog() {
+            return log;
         }
 
         public Set<Breakpoint> getAttachedBreakpoints() {
@@ -316,10 +327,19 @@ public class JDIAPI {
             version.incrementAndGet();
         }
 
-        public void run(BreakpointState breakpointState) throws Exception {
-            if (!attached.compareAndSet(false, true)) {
-                throw new RuntimeException("Breakpoint debugger already attached...");
+        public void log(String message) {
+            log.add(message);
+            while (log.size() > 100) {
+                log.remove(0);
             }
+        }
+
+        public void run(BreakpointState breakpointState, StackFrames stackFrames) throws Exception {
+            if (!attached.compareAndSet(false, true)) {
+                log.add("Breakpoint debugger already attached...");
+                return;
+            }
+            log.clear();
 
             VirtualMachineManager virtualMachineManager = Bootstrap.virtualMachineManager();
             AttachingConnector socketConnector = null;
@@ -327,23 +347,20 @@ public class JDIAPI {
             for (AttachingConnector attachingConnector : attachingConnectors) {
                 if (attachingConnector.transport().name().equals("dt_socket")) {
                     socketConnector = attachingConnector;
+                    log.add("Found socket connector..");
                     break;
                 }
             }
             if (socketConnector != null) {
-                Map<String, Connector.Argument> defaultArguments = socketConnector.defaultArguments();
-                for (Map.Entry<String, Connector.Argument> entry : defaultArguments.entrySet()) {
-                    System.out.println(entry.getKey() + " " + entry.getValue().getClass() + " " + entry.getValue());
-                }
-
-                Connector.StringArgument hostNameArg = (Connector.StringArgument) defaultArguments.get("hostname");
-                hostNameArg.setValue(hostName);
-                Connector.IntegerArgument portArg = (Connector.IntegerArgument) defaultArguments.get("port");
-                portArg.setValue(port);
-                VirtualMachine vm = socketConnector.attach(defaultArguments);
-                System.out.println("Attached to process '" + vm.name() + "'");
-
+                VirtualMachine vm = null;
                 try {
+                    Map<String, Connector.Argument> defaultArguments = socketConnector.defaultArguments();
+                    Connector.StringArgument hostNameArg = (Connector.StringArgument) defaultArguments.get("hostname");
+                    hostNameArg.setValue(hostName);
+                    Connector.IntegerArgument portArg = (Connector.IntegerArgument) defaultArguments.get("port");
+                    portArg.setValue(port);
+                    vm = socketConnector.attach(defaultArguments);
+                    log.add("Attached to " + vm.description());
 
                     while (attached.get()) {
                         attachedBreakpoints.clear();
@@ -382,6 +399,7 @@ public class JDIAPI {
                             while (attached.get()) {
                                 if (breakPointsVersion < version.get()) {
                                     evtReqMgr.deleteAllBreakpoints();
+                                    log.add("Cleared all breakpoints");
                                     break;
                                 }
                                 EventSet evtSet = evtQueue.remove(1000);
@@ -398,13 +416,31 @@ public class JDIAPI {
                                         Event evt = evtIter.next();
                                         EventRequest evtReq = evt.request();
                                         if (evtReq instanceof BreakpointRequest) {
+                                            long start = System.currentTimeMillis();
                                             BreakpointRequest bpReq = (BreakpointRequest) evtReq;
                                             Location location = bpReq.location();
                                             String breakpointClass = location.sourcePath().replace('/', '.'); // Grrrr
                                             breakpointClass = breakpointClass.substring(0, breakpointClass.lastIndexOf(".")); // Grrr
                                             int breakpointLineNumber = location.lineNumber();
+
+                                            log.add("Breakpoint triggered:" + breakpointClass + ":" + breakpointLineNumber);
                                             BreakpointEvent brEvt = (BreakpointEvent) evt;
                                             ThreadReference threadRef = brEvt.thread();
+                                            int frameCount = threadRef.frameCount();
+                                            for (int i = frameCount - 1; i > 0; i--) {
+                                                try {
+                                                    StackFrame stackFrame = threadRef.frame(i);
+                                                    Location stackLocation = stackFrame.location();
+                                                    String stackFrameClass = stackLocation.sourcePath().replace('/', '.'); // Grrrr
+                                                    stackFrameClass = stackFrameClass.substring(0, stackFrameClass.lastIndexOf(".")); // Grrr
+                                                    int stackFrameLineNumber = location.lineNumber();
+                                                    stackFrames.frames(breakpointClass, breakpointLineNumber, stackFrameClass, stackFrameLineNumber);
+                                                } catch (Exception x) {
+                                                    stackFrames.frames(breakpointClass, breakpointLineNumber, "unknown", -1);
+                                                }
+                                            }
+                                            stackFrames.frames(breakpointClass, breakpointLineNumber, null, -1);
+
                                             StackFrame stackFrame = threadRef.frame(0);
                                             List<LocalVariable> visVars = stackFrame.visibleVariables();
                                             Map<LocalVariable, Value> values = stackFrame.getValues(visVars);
@@ -414,7 +450,7 @@ public class JDIAPI {
                                             for (Map.Entry<LocalVariable, Value> entry : entrySet) {
                                                 LocalVariable localVariable = entry.getKey();
                                                 Value value = entry.getValue();
-                                                double progress = i / (double) count;
+                                                double progress = (double) i / (double) count;
                                                 try {
                                                     breakpointState.state(progress,
                                                         breakpointClass,
@@ -434,13 +470,16 @@ public class JDIAPI {
                                                         null,
                                                         x);
                                                 }
+                                                i++;
                                             }
                                             breakpointState.state(1.0d, breakpointClass, breakpointLineNumber, null, null, null, null, null); // EOS
+                                            log.add("Capture state for breakpoint:" + breakpointClass + ":" + breakpointLineNumber + " in " + (System
+                                                .currentTimeMillis() - start) + " millis");
                                         }
                                     } catch (AbsentInformationException aie) {
-                                        System.out.println("AbsentInformationException: did you compile your target application with -g option?");
+                                        log.add("AbsentInformationException: did you compile your target application with -g option?");
                                     } catch (Exception exc) {
-                                        System.out.println(exc.getClass().getName() + ": " + exc.getMessage());
+                                        log.add(exc.getMessage() + "\n" + Joiner.on("\n").join(exc.getStackTrace()));
                                     } finally {
                                         evtSet.resume();
                                     }
@@ -449,8 +488,10 @@ public class JDIAPI {
                         }
                     }
                 } finally {
-                    vm.resume();
-                    vm.dispose();
+                    if (vm != null) {
+                        vm.resume();
+                        vm.dispose();
+                    }
                 }
             }
         }
