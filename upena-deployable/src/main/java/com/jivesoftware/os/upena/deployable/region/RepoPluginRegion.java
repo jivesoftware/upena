@@ -106,7 +106,9 @@ public class RepoPluginRegion implements PageRegion<RepoPluginRegionInput> {
             filter.put("fileNameFilter", input.fileNameFilter);
             data.put("filters", filter);
 
-            data.put("repo", repo);
+            if (!repo.isEmpty()) {
+                data.put("repo", repo);
+            }
 
         } catch (Exception e) {
             LOG.error("Unable to retrieve data", e);

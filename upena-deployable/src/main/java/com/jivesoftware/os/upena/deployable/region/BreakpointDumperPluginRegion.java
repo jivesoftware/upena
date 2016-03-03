@@ -153,23 +153,30 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
                 data.put("instances", instances);
             }
 
-            String key = input.hostName + ":" + input.port;
             if (input.action.equals("attach")) {
-                BreakpointDebuggerOutput breakpointDebugger = debuggers.computeIfAbsent(key, (t) -> {
-                    return new BreakpointDebuggerOutput(jvm.create(input.hostName, input.port));
-                });
-
-                breakpointDebugger.breakpointDebugger.addBreakpoint(input.className, input.lineNumber);
-                if (!breakpointDebugger.isCapturing() && !breakpointDebugger.breakpointDebugger.attached()) {
-                    debuggerExecutors.submit(breakpointDebugger);
-                    data.put("message", "Added breakpoint " + input.className + ":" + input.lineNumber
-                        + " to " + input.hostName + ":" + input.port
-                        + " and submitted for attachment.");
-                } else {
-                    data.put("message", "Added breakpoint  " + input.className + ":" + input.lineNumber + " to " + input.hostName + ":" + input.port);
+                List<String> messages = new ArrayList<>();
+                if (input.hostName != null && input.port != -1) {
+                    addBreakpoint(input.hostName, input.port, input, messages);
                 }
+                if (input.instanceKeys != null && !input.instanceKeys.isEmpty()) {
+                    for (String instanceKey : input.instanceKeys) {
+                        Instance instance = upenaStore.instances.get(new InstanceKey(instanceKey));
+                        if (instance != null) {
+                            Instance.Port debugPort = instance.ports.get("debug");
+                            if (debugPort != null) {
+                                Host host = upenaStore.hosts.get(instance.hostKey);
+                                if (host != null) {
+                                    addBreakpoint(host.hostName, debugPort.port, input, messages);
+                                }
+                            }
+                        }
+                    }
+                }
+                data.put("message", Joiner.on("\n").join(messages));
             }
+
             if (input.action.equals("dettach")) {
+                String key = input.hostName + ":" + input.port;
                 BreakpointDebuggerOutput breakpointDebugger = debuggers.get(key);
                 if (breakpointDebugger != null) {
 
@@ -230,6 +237,37 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
         data.put("dumps", dumps);
 
         return renderer.render(template, data);
+    }
+
+    private void addBreakpoint(String hostName, int port, BreakpointDumperPluginRegionInput input, List<String> messages) {
+        if (hostName != null && !hostName.isEmpty() && input.port != -1) {
+            if (input.className != null && input.lineNumber != -1) {
+                String key = input.hostName + ":" + input.port;
+                addBreakpoint(key, input.hostName, input.port, input.className, input.lineNumber, messages);
+            }
+            if (input.breakpoint != null && !input.breakpoint.isEmpty() && input.breakpoint.indexOf(":") != -1) {
+                String key = input.hostName + ":" + input.port;
+                String[] classNameLineNumber = input.breakpoint.trim().split(":");
+                int lineNumber = Integer.parseInt(classNameLineNumber[1]);
+                addBreakpoint(key, input.hostName, input.port, classNameLineNumber[0], lineNumber, messages);
+            }
+        }
+    }
+
+    private void addBreakpoint(String key, String hostName, int port, String className, int lineNumber, List<String> messages) {
+        BreakpointDebuggerOutput breakpointDebugger = debuggers.computeIfAbsent(key, (t) -> {
+            return new BreakpointDebuggerOutput(jvm.create(hostName, port));
+        });
+
+        breakpointDebugger.breakpointDebugger.addBreakpoint(className, lineNumber);
+        if (!breakpointDebugger.isCapturing() && !breakpointDebugger.breakpointDebugger.attached()) {
+            debuggerExecutors.submit(breakpointDebugger);
+            messages.add("Added breakpoint " + className + ":" + lineNumber
+                + " to " + hostName + ":" + port
+                + " and submitted for attachment.");
+        } else {
+            messages.add("Added breakpoint  " + className + ":" + lineNumber + " to " + hostName + ":" + port);
+        }
     }
 
     @Override
@@ -346,7 +384,6 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
         }
     }
 
-
     private Map<String, Object> toMap(InstanceKey key, Instance value) throws Exception {
 
         Map<String, Object> map = new HashMap<>();
@@ -368,7 +405,7 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
         name += releaseGroup != null ? releaseGroup.name : "unknownRelease";
 
         map.put("key", value.releaseGroupKey.getKey());
-            map.put("name", name);
+        map.put("name", name);
         return map;
     }
 }

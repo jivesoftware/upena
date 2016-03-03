@@ -19,153 +19,166 @@
             {if $message}
                 <pre>{$message}</pre>
             {/if}
-            <table class="table table-hover table-condensed table-responsive">
-                <thead>
-                    <tr>
-                        <th>Cluster</th>
-                        <th>Host</th>
-                        <th>Service</th>
-                        <th>Id</th>
-                        <th>Release</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {if $filters}
-                        <tr style="background-color:#ddd;">
-                            <form id="filter-form" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
-                                data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="instance">
-                                <td>
-                                    <div>
-                                        <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                            placeholder="Cluster" value="{$filters.cluster?:''}" name="cluster" id="clusterPicker"
-                                            class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/clusters">
-                                        <input type="hidden" name="clusterKey" value="{$filters.clusterKey?:''}" />
-                                    </div>
-                                </td>
-                                <td>
-                                    <div>
-                                        <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                            placeholder="Host" value="{$filters.host?:''}" name="host" id="hostPicker"
-                                            class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/hosts">
-                                        <input type="hidden" name="hostKey" value="{$filters.hostKey?:''}" />
-                                    </div>
-                                </td>
-                                <td>
-                                    <div>
-                                        <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                            placeholder="Service" value="{$filters.service?:''}" name="service" id="servicePicker"
-                                            class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/services">
-                                        <input type="hidden" name="serviceKey" value="{$filters.serviceKey?:''}" />
-                                    </div>
-                                </td>
-                                <td style="width:100px;">
-                                    <input type="text" autocomplete="off" role="combobox" class="form-control" style="padding-left:10px;"
-                                        placeholder="Id" value="{$filters.instanceId?:''}" name="instanceId" id="idPicker">
-                                </td>
-                                <td>
-                                    <div>
-                                        <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                            placeholder="Release" value="{$filters.release?:''}" name="release" id="releasePicker"
-                                            class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/releases">
-                                        <input type="hidden" name="releaseKey" value="{$filters.releaseKey?:''}" />
-                                    </div>
-                                </td>
-                                <td>
-                                    <button title="Find" type="submit" name="action" value="find" class="btn btn-primary ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-search">&nbspFilter</span></button>
-                                </td>
-                            </form>
-                        </tr>
-                    {/if}
-                </tbody>
-            </table>
+            <div>
+                <div style="display: inline;">
+                    <a href="#" rel="popover" id="popoverAnchor-add-service" data-popover-content="#popover-add-service" data-placement="bottom" class="btn btn-primary" title="Add Service">
+                        <span class="glyphicon glyphicon-plus">&nbsp;&nbsp;Service Breakpoints&nbsp;&nbsp;</span>
+                    </a>
+                </div>
+                <div id="popover-add-service" class="hide">
+                    <table class="table table-hover table-condensed table-responsive">
+                        <thead>
+                            <tr>
+                                <th>Cluster</th>
+                                <th>Host</th>
+                                <th>Service</th>
+                                <th>Id</th>
+                                <th>Release</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {if $filters}
+                                <tr style="background-color:#ddd;">
+                                    <form id="filter-form" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                                        data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="instance">
+                                        <td>
+                                            <div>
+                                                <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                                    placeholder="Cluster" value="{$filters.cluster?:''}" name="cluster" id="clusterPicker"
+                                                    class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/clusters">
+                                                <input type="hidden" name="clusterKey" value="{$filters.clusterKey?:''}" />
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div>
+                                                <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                                    placeholder="Host" value="{$filters.host?:''}" name="host" id="hostPicker"
+                                                    class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/hosts">
+                                                <input type="hidden" name="hostKey" value="{$filters.hostKey?:''}" />
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div>
+                                                <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                                    placeholder="Service" value="{$filters.service?:''}" name="service" id="servicePicker"
+                                                    class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/services">
+                                                <input type="hidden" name="serviceKey" value="{$filters.serviceKey?:''}" />
+                                            </div>
+                                        </td>
+                                        <td style="width:100px;">
+                                            <input type="text" autocomplete="off" role="combobox" class="form-control" style="padding-left:10px;"
+                                                placeholder="Id" value="{$filters.instanceId?:''}" name="instanceId" id="idPicker">
+                                        </td>
+                                        <td>
+                                            <div>
+                                                <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                                    placeholder="Release" value="{$filters.release?:''}" name="release" id="releasePicker"
+                                                    class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/releases">
+                                                <input type="hidden" name="releaseKey" value="{$filters.releaseKey?:''}" />
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <button title="Find" type="submit" name="action" value="find" class="btn btn-primary ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-search">&nbspFilter</span></button>
+                                        </td>
+                                    </form>
+                                </tr>
+                            {/if}
+                        </tbody>
+                    </table>
+                    <form id="attachBreakPointDebugger" method="post" name="attachBreakPointDebugger">
+                        <table class="table table-hover table-condensed table-responsive">
+                           <tr colspan="3">
+                               <form id="pick-instances" method="post" name="pick-instances">
+                                   <td>
+                                       <select style="width: 100%;" name="instanceKeys" multiple>
+                                           {if $instances}
+                                               {foreach $i in $instances}
+                                                   <option value="{$i.key}">{$i.name}</option>
+                                               {/foreach}
+                                           {/if}
+                                        </select>
+                                   </td>
+                               </form>
+                           </tr>
+                           <tr>
+                               <td>
+                                   <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                   class="form-control" placeholder="className" value="{$className}"
+                                   name="className" id="classnamePicker" data-original-title="" title="">
+                               </td>
+                               <td>
+                                   <input type="number" name="lineNumber" min="1" max="65536" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                   class="form-control" placeholder="lineNumber" value="{$lineNumber}" id="portPicker"
+                                   data-original-title="" title="">
+                               </td>
+                               <td>
+                                   <button title="threadDump" type="submit" name="action" value="attach" class="btn btn-success ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                                       <span class="glyphicon glyphicon-play">&nbspAttach</span>
+                                   </button>
+                               </td>
+                           </tr>
+                       </table>
+                   </form>
+                </div>
 
-            <form id="attachBreakPointDebugger" method="post" name="attachBreakPointDebugger">
-                 <table class="table table-hover table-condensed table-responsive">
-                    <tr colspan="3">
-                        <form id="pick-instances" method="post" name="pick-instances">
-                            <td>
-                                <select name="instanceKeys" multiple>
-                                    {if $instances}
-                                        {foreach $i in $instances}
-                                            <option value="{$i.key}">{$i.name}</option>
-                                        {/foreach}
-                                    {/if}
-                                 </select>
-                            </td>
-                        </form>
-                    </tr>
-                    <tr>
-                        <td>
-                            <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
-                            class="form-control" placeholder="className" value="{$className}"
-                            name="className" id="classnamePicker" data-original-title="" title="">
-                        </td>
-                        <td>
-                            <input type="number" name="lineNumber" min="1" max="65536" autocomplete="off" role="combobox" style="padding-left:10px;"
-                            class="form-control" placeholder="lineNumber" value="{$lineNumber}" id="portPicker"
-                            data-original-title="" title="">
-                        </td>
-                        <td>
-                            <button title="threadDump" type="submit" name="action" value="attach" class="btn btn-success ladda-button"  data-spinner-color="#222" data-style="expand-right">
-                                <span class="glyphicon glyphicon-play">&nbspAttach</span>
-                            </button>
-                        </td>
-                    </tr>
-                </table>
-            </form>
-
-            <table class="table table-hover table-condensed table-responsive">
-                <thead>
-                    <tr>
-                        <th>Host</th>
-                        <th>Port</th>
-                        <th>Class</th>
-                        <th>Line</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr style="background-color:#ddd;">
-                        <form id="attachBreakPointDebugger" method="post" name="attachBreakPointDebugger">
-                            <td>
-                                <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                class="form-control" placeholder="Host Name" value="{$hostName}"
-                                name="hostName" id="hostPicker" data-original-title="" title="">
-                            </td>
-                            <td>
-                                <input type="number" name="port" min="1" max="65536" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                class="form-control" placeholder="Port" value="{$port}" id="portPicker"
-                                data-original-title="" title="">
-                            </td>
-                            <td>
-                                <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                class="form-control" placeholder="className" value="{$className}"
-                                name="className" id="classnamePicker" data-original-title="" title="">
-                            </td>
-                            <td>
-                                <input type="number" name="lineNumber" min="1" max="65536" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                class="form-control" placeholder="lineNumber" value="{$lineNumber}" id="portPicker"
-                                data-original-title="" title="">
-                            </td>
-                            <td>
-                                <button title="threadDump" type="submit" name="action" value="attach" class="btn btn-success ladda-button"  data-spinner-color="#222" data-style="expand-right">
-                                    <span class="glyphicon glyphicon-play">&nbspAttach</span>
-                                </button>
-                            </td>
-                        </form>
-                    </tr>
-                    <tr colspan="5">
-                        <td>
-                            <form id="attachBreakPointDebugger" method="post" name="attachBreakPointDebugger">
-                                <button title="threadDump" type="submit" name="action" value="refresh" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
-                                    <span class="glyphicon glyphicon-refresh">&nbspRefresh</span>
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+                <div style="display: inline;">
+                    <a href="#" rel="popover" id="popoverAnchor-add-host-port" data-popover-content="#popover-add-host-port" data-placement="bottom" class="btn btn-primary" title="Host:port Breakpointer">
+                        <span class="glyphicon glyphicon-plus">&nbsp;&nbsp;host:port breakpoint&nbsp;&nbsp;</span>
+                    </a>
+                </div>
+                <div id="popover-add-host-port" class="hide">
+                    <table class="table table-hover table-condensed table-responsive">
+                        <thead>
+                            <tr>
+                                <th>Host</th>
+                                <th>Port</th>
+                                <th>Class</th>
+                                <th>Line</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="background-color:#ddd;">
+                                <form id="attachBreakPointDebugger" method="post" name="attachBreakPointDebugger">
+                                    <td>
+                                        <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                        class="form-control" placeholder="Host Name" value="{$hostName}"
+                                        name="hostName" id="hostPicker" data-original-title="" title="">
+                                    </td>
+                                    <td>
+                                        <input type="number" name="port" min="1" max="65536" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                        class="form-control" placeholder="Port" value="{$port}" id="portPicker"
+                                        data-original-title="" title="">
+                                    </td>
+                                    <td>
+                                        <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                        class="form-control" placeholder="className" value="{$className}"
+                                        name="className" id="classnamePicker" data-original-title="" title="">
+                                    </td>
+                                    <td>
+                                        <input type="number" name="lineNumber" min="1" max="65536" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                        class="form-control" placeholder="lineNumber" value="{$lineNumber}" id="portPicker"
+                                        data-original-title="" title="">
+                                    </td>
+                                    <td>
+                                        <button title="threadDump" type="submit" name="action" value="attach" class="btn btn-success ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                                            <span class="glyphicon glyphicon-play">&nbspAttach</span>
+                                        </button>
+                                    </td>
+                                </form>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div>
+                <form id="attachBreakPointDebugger" method="post" name="attachBreakPointDebugger">
+                    <button title="threadDump" type="submit" name="action" value="refresh" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                        <span class="glyphicon glyphicon-refresh">&nbspRefresh</span>
+                    </button>
+                </form>
+            </div>
 
             {if $dumps}
                 <ul class="list-group" style="list-style-type:none">
