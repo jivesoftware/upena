@@ -46,7 +46,7 @@ public class BreakpointDumperPluginEndpoints {
         try {
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
                 new BreakpointDumperPluginRegionInput("", "", "", "", "", "", "", "", "", Collections.emptyList(),
-                    "", -1, "", -1, "", ""));
+                    "", -1, "", -1, 1, "", ""));
             return Response.ok(rendered).build();
         } catch (Exception e) {
             LOG.error("breakpoint GET.", e);
@@ -73,6 +73,7 @@ public class BreakpointDumperPluginEndpoints {
         @FormParam("port") @DefaultValue("-1") int port,
         @FormParam("className") @DefaultValue("") String className,
         @FormParam("lineNumber") @DefaultValue("-1") int lineNumber,
+        @FormParam("maxVersions") @DefaultValue("1") int maxVersions,
         @FormParam("breakpoint") @DefaultValue("") String breakpoint,
         @FormParam("action") @DefaultValue("") String action) {
         try {
@@ -93,6 +94,7 @@ public class BreakpointDumperPluginEndpoints {
                     port,
                     className,
                     lineNumber,
+                    maxVersions,
                     breakpoint,
                     action));
             return Response.ok(rendered).build();

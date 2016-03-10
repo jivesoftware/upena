@@ -93,22 +93,12 @@
                                             </form>
                                         </div>
                                         <div class="btn-group">
-                                            <form id="restartService" method="post" action="/ui/instances" name="restartService">
+                                            <form id="editService" method="post" action="/ui/instances" name="editService">
                                                 {if $service.serviceKey}
                                                     <input type="hidden" name="serviceKey" value="{$service.serviceKey}">
                                                 {/if}
                                                 <button type="submit" class="btn btn-primary">
-                                                    Restart
-                                                </button>
-                                            </form>
-                                        </div>
-                                        <div class="btn-group">
-                                            <form id="removeService" method="post" action="/ui/instances" name="removeService">
-                                                {if $service.serviceKey}
-                                                    <input type="hidden" name="serviceKey" value="{$service.serviceKey}">
-                                                {/if}
-                                                <button type="submit" class="btn btn-primary">
-                                                    Remove
+                                                    Edit
                                                 </button>
                                             </form>
                                         </div>
