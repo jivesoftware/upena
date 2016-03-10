@@ -251,11 +251,98 @@
                                         <table class="table table-hover table-condensed table-responsive">
                                             {foreach $s in $b.dump}
                                                 <tr>
-                                                    <td>{$s.fieldName}</td>
-                                                    <td>{$s.value}</td>
-                                                    <td>{$s.className}</td>
-                                                    <td>{if $s.fieldNames}{$s.fieldNames}{/if}</td>
-                                                    <td>{if $s.exception}{$s.exception}{/if}</td>
+                                                    <td>
+                                                        <form style="display: inline;" id="dettachBreakPointDebugger" method="post" name="dettachBreakPointDebugger">
+                                                            <input type="hidden" name="fieldName" value="{$s.fieldName}"/>
+                                                            <div style="display: inline;">
+                                                                {if $s.disable}
+                                                                    <button style="display: inline;" title="click to enable" type="submit" name="action" value="enableField" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                                                                        <span class="glyphicon glyphicon-unchecked"></span>
+                                                                    </button>
+                                                                {else}
+                                                                    <button style="display: inline;" title="click to disable" type="submit" name="action" value="disableField" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                                                                        <span class="glyphicon glyphicon-checked"></span>
+                                                                    </button>
+                                                                {/if}
+                                                            </div>
+                                                        </form>
+                                                    </td>
+                                                    <td><div><a data-toggle="tooltip" title="{$s.className}">{$s.fieldName}</a></div></td>
+                                                    <td>
+                                                        <div style="display: inline;">
+                                                            <a href="#" rel="popover" id="popoverAnchor-filter-{$s.fieldName}" style="display: inline;"
+                                                                data-popover-content="#popover-filter-{$s.fieldName}" data-placement="right"
+                                                                 class="btn btn-{if $s.filter}success{else}default{/if}"
+                                                                title="Filter {$s.fieldName}">
+                                                                <span class="glyphicon glyphicon-filter"></span>
+                                                            </a>
+                                                        </div>
+                                                        <div id="popover-filter-{$s.fieldName}" class="hide">
+                                                            <form style="display: inline;" id="dettachBreakPointDebugger" method="post" name="dettachBreakPointDebugger">
+                                                                <input type="hidden" name="fieldName" value="{$s.fieldName}"/>
+                                                                <input style="display: inline;" type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                                                    class="form-control" placeholder="filter" value="{if $s.filter}{$s.filter}{/if}"
+                                                                    name="filter" id="filterPicker" data-original-title="" title="filter">
+                                                                <button style="display: inline;" title="memoryHisto" type="submit" name="action" value="filter" class="btn btn-success ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                                                                    <span class="glyphicon glyphicon-play"></span>
+                                                                </button>
+                                                            </form>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        {if $s.fullValue}
+                                                            <div style="display: inline;">
+                                                                {if $s.exception}{$s.exception}{/if}
+                                                                {$s.value}
+                                                                <a href="#" rel="popover" id="popoverAnchor-f-{$s.fieldName}" style="display: inline;"
+                                                                    data-popover-content="#popover-f-{$s.fieldName}" data-placement="bottom" class="btn btn-default"
+                                                                    title="{$s.fieldName}">
+                                                                    <span class="glyphicon glyphicon-option-horizontal"></span>
+                                                                </a>
+                                                            </div>
+                                                            <div id="popover-f-{$s.fieldName}" class="hide">
+                                                                {$s.fullValue}
+                                                            </div>
+                                                        {else}
+                                                            {if $s.exception}{$s.exception}{/if}
+                                                            {$s.value}
+                                                        {/if}
+                                                    </td>
+                                                    <td>
+                                                        {if $s.fieldNames}
+                                                            <div style="display: inline;">
+                                                                <a href="#" rel="popover" id="popoverAnchor-cf-{$s.fieldName}" style="display: inline;"
+                                                                    data-popover-content="#popover-cf-{$s.fieldName}" data-placement="left" class="btn btn-default"
+                                                                    title="Child fields of {$s.fieldName}">
+                                                                    <span class="glyphicon glyphicon-triangle-right"></span>
+                                                                </a>
+                                                            </div>
+                                                            <div id="popover-cf-{$s.fieldName}" class="hide">
+                                                                <ul  class="list-group" style="list-style-type:none">
+                                                                {foreach $cf in $s.fieldNames}
+                                                                    <li class="list-group-item">
+                                                                        <div style="display: inline;">
+                                                                            <form style="display: inline;" id="dettachBreakPointDebugger" method="post" name="dettachBreakPointDebugger">
+                                                                                <input type="hidden" name="fieldName" value="{$s.fieldName}"/>
+                                                                                <input type="hidden" name="childFieldName" value="{$cf.name}"/>
+                                                                                {if $cf.disabled}
+                                                                                    <button style="display: inline;" title="click to enable" type="submit" name="action" value="enableChildField" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                                                                                        <span class="glyphicon glyphicon-unchecked"></span>
+                                                                                    </button>
+                                                                                {else}
+                                                                                    <button style="display: inline;" title="click to disable" type="submit" name="action" value="disableChildField" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                                                                                        <span class="glyphicon glyphicon-checked"></span>
+                                                                                    </button>
+                                                                                {/if}
+                                                                            </form>
+                                                                            &nbsp;&nbsp;&nbsp;
+                                                                            {$cf.name}
+                                                                        </div>
+                                                                    </li>
+                                                                {/foreach}
+                                                            </div>
+                                                        {/if}
+                                                    </td>
                                                 </tr>
                                             {/foreach}
                                         </table>

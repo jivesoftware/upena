@@ -117,26 +117,26 @@ upena.hs = {
                 'remotePort': $(port).attr('value')
             }
         })
-            .done(function (data) {
-                if (!upena.hs.installed || upena.hs.installed.selector != $selector) {
-                    // selector changed during the query
-                    return;
-                }
-                if (data.length) {
-                    $selector.empty();
-                    for (var i = 0; i < data.length; i++) {
-                        $selector.append(
-                            "<a href='#'" +
-                            " class='upena-hs-choice'" +
-                            " data-upena-key='" + data[i].key + "'" +
-                            " data-upena-name='" + data[i].name + "'>" + data[i].name + "</a><br/>");
+                .done(function (data) {
+                    if (!upena.hs.installed || upena.hs.installed.selector != $selector) {
+                        // selector changed during the query
+                        return;
                     }
-                    upena.hs.link($selector);
-                    upena.hs.installed.ready = true;
-                } else {
-                    $selector.html("<em>No matches</em>");
-                }
-            });
+                    if (data.length) {
+                        $selector.empty();
+                        for (var i = 0; i < data.length; i++) {
+                            $selector.append(
+                                    "<a href='#'" +
+                                    " class='upena-hs-choice'" +
+                                    " data-upena-key='" + data[i].key + "'" +
+                                    " data-upena-name='" + data[i].name + "'>" + data[i].name + "</a><br/>");
+                        }
+                        upena.hs.link($selector);
+                        upena.hs.installed.ready = true;
+                    } else {
+                        $selector.html("<em>No matches</em>");
+                    }
+                });
     },
     link: function ($selector) {
         $selector.find('a').each(function (i) {
@@ -835,8 +835,8 @@ upena.livehealth = {
 
         upena.livehealth.graphType = $waveform.data('graphType');
         upena.livehealth.graphProp = (upena.livehealth.graphType == 'Line' || upena.livehealth.graphType == 'Radar') ? 'points'
-            : (upena.livehealth.graphType == 'Bar' || upena.livehealth.graphType == 'StackedBar') ? 'bars'
-            : 'unknown';
+                : (upena.livehealth.graphType == 'Bar' || upena.livehealth.graphType == 'StackedBar') ? 'bars'
+                : 'unknown';
 
         if (upena.livehealth.requireFocus) {
             upena.onWindowFocus.push(function () {
@@ -911,7 +911,6 @@ upena.projectBuildOutput = {
     key: null,
     timeoutHandle: null,
     stickHandle: null,
-
     init: function () {
         upena.projectBuildOutput.key = $('#upena-project-build-output').data('key');
         upena.projectBuildOutput.finishStick();
@@ -946,13 +945,11 @@ upena.projectBuildOutput = {
 
         upena.projectBuildOutput.refreshTimer();
     },
-
     stickBottom: function () {
         upena.projectBuildOutput.stickHandle = setInterval(function () {
             window.scrollTo(0, document.body.scrollHeight);
         }, 10);
     },
-
     finishStick: function () {
         if (upena.projectBuildOutput.stickHandle != null) {
             clearInterval(upena.projectBuildOutput.stickHandle);
@@ -960,7 +957,6 @@ upena.projectBuildOutput = {
         }
         window.scrollTo(0, document.body.scrollHeight);
     },
-
     refreshTimer: function () {
         var $prBottom = $('#project-refresh-bottom');
         var $submit = $('#project-refresh-submit');
@@ -979,7 +975,10 @@ upena.projectBuildOutput = {
 
 $(document).ready(function () {
 
-    $('[data-toggle="tooltip"]').tooltip();
+    $('[data-toggle="tooltip"]').tooltip({
+        animated: 'fade',
+        placement: 'bottom',
+    });
 
     $('.float-table-head').each(function (j, table) {
         $(table).floatThead({

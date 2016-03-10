@@ -5,23 +5,33 @@ import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.ArrayReference;
 import com.sun.jdi.ArrayType;
 import com.sun.jdi.BooleanType;
+import com.sun.jdi.BooleanValue;
 import com.sun.jdi.Bootstrap;
+import com.sun.jdi.ByteValue;
+import com.sun.jdi.CharValue;
 import com.sun.jdi.ClassNotLoadedException;
 import com.sun.jdi.ClassType;
+import com.sun.jdi.DoubleValue;
 import com.sun.jdi.Field;
+import com.sun.jdi.FloatValue;
+import com.sun.jdi.IntegerValue;
 import com.sun.jdi.InterfaceType;
 import com.sun.jdi.LocalVariable;
 import com.sun.jdi.Location;
+import com.sun.jdi.LongValue;
 import com.sun.jdi.Method;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.PrimitiveType;
 import com.sun.jdi.ReferenceType;
+import com.sun.jdi.ShortValue;
 import com.sun.jdi.StackFrame;
+import com.sun.jdi.StringReference;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.Type;
 import com.sun.jdi.Value;
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.VirtualMachineManager;
+import com.sun.jdi.VoidValue;
 import com.sun.jdi.connect.AttachingConnector;
 import com.sun.jdi.connect.Connector;
 import com.sun.jdi.event.BreakpointEvent;
@@ -39,6 +49,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
@@ -215,7 +226,16 @@ public class JDIAPI {
 
         public interface BreakpointState {
 
-            boolean state(double progress, String breakpointClass, int lineNumber, String className, String fieldName, String value, String fields, Exception x);
+            boolean state(double progress,
+                long timestamp,
+                String breakpointClass,
+                int lineNumber,
+                String className,
+                String fieldName,
+                Callable<String> value,
+                List<String> fields,
+                List<Callable<String>> fieldValues,
+                Exception x) throws Exception;
         }
 
         public interface StackFrames {
@@ -224,7 +244,7 @@ public class JDIAPI {
         }
 
         public static class Breakpoint {
-
+            
             private final String className;
             private final int lineNumber;
 
@@ -453,26 +473,30 @@ public class JDIAPI {
                                                 double progress = (double) i / (double) count;
                                                 try {
                                                     breakpointState.state(progress,
+                                                        start,
                                                         breakpointClass,
                                                         breakpointLineNumber,
                                                         localVariable.typeName(),
                                                         localVariable.name(),
-                                                        valueToString(threadRef, value),
+                                                        () -> valueToString(threadRef, value),
                                                         valueToFields(threadRef, value),
+                                                        valueToFieldValues(threadRef, value),
                                                         null);
                                                 } catch (Exception x) {
                                                     breakpointState.state(progress,
+                                                        start,
                                                         breakpointClass,
                                                         breakpointLineNumber,
                                                         localVariable.typeName(),
                                                         localVariable.name(),
+                                                        null,
                                                         null,
                                                         null,
                                                         x);
                                                 }
                                                 i++;
                                             }
-                                            breakpointState.state(1.0d, breakpointClass, breakpointLineNumber, null, null, null, null, null); // EOS
+                                            breakpointState.state(1.0d, start, breakpointClass, breakpointLineNumber, null, null, null, null, null, null); // EOS
                                             log.add("Capture state for breakpoint:" + breakpointClass + ":" + breakpointLineNumber + " in " + (System
                                                 .currentTimeMillis() - start) + " millis");
                                         }
@@ -497,17 +521,27 @@ public class JDIAPI {
         }
     }
 
-    public static String valueToFields(ThreadReference threadRef, Value var) {
+    public static List<String> valueToFields(ThreadReference threadRef, Value var) {
         if (var instanceof ObjectReference) {
             List<Field> allFields = ((ObjectReference) var).referenceType().allFields();
-            StringBuilder sb = new StringBuilder();
+            List<String> fields = new ArrayList<>();
             for (Field field : allFields) {
-                if (sb.length() > 0) {
-                    sb.append(", ");
-                }
-                sb.append(field.name());
+                fields.add(field.name());
             }
-            return sb.toString();
+            return fields;
+        } else {
+            return null;
+        }
+    }
+
+    public static List<Callable<String>> valueToFieldValues(ThreadReference threadRef, Value var) {
+        if (var instanceof ObjectReference) {
+            List<Field> allFields = ((ObjectReference) var).referenceType().allFields();
+            List<Callable<String>> fieldValues = new ArrayList<>();
+            for (Field field : allFields) {
+                fieldValues.add((Callable<String>) () -> valueToString(threadRef, ((ObjectReference) var).getValue(field)));
+            }
+            return fieldValues;
         } else {
             return null;
         }
@@ -531,9 +565,36 @@ public class JDIAPI {
             sb.append("]");
             return sb.toString();
         } else if (var instanceof ObjectReference) {
-            Value strValue = invoke(threadRef, (ObjectReference) var, "toString", new ArrayList());
-            return strValue.toString();
+            StringReference strValue = (StringReference)invoke(threadRef, var, "toString", new ArrayList());
+            return strValue.value();
         } else {
+            if (var instanceof BooleanValue) {
+                return String.valueOf(((BooleanValue)var).value());
+            }
+            if (var instanceof CharValue) {
+                return String.valueOf(((CharValue)var).value());
+            }
+            if (var instanceof ByteValue) {
+                return String.valueOf(((ByteValue)var).value());
+            }
+            if (var instanceof DoubleValue) {
+                return String.valueOf(((DoubleValue)var).value());
+            }
+            if (var instanceof FloatValue) {
+                return String.valueOf(((FloatValue)var).value());
+            }
+            if (var instanceof IntegerValue) {
+                return String.valueOf(((IntegerValue)var).value());
+            }
+            if (var instanceof LongValue) {
+                return String.valueOf(((LongValue)var).value());
+            }
+            if (var instanceof ShortValue) {
+                return String.valueOf(((ShortValue)var).value());
+            }
+            if (var instanceof VoidValue) {
+                return String.valueOf(Void.class);
+            }
             return var.toString();
         }
     }

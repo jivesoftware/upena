@@ -27,10 +27,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableMap;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  *
@@ -79,6 +83,7 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
         final int port;
         final String className;
         final int lineNumber;
+        final int maxVersions;
 
         final String breakpoint;
 
@@ -86,7 +91,7 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
 
         public BreakpointDumperPluginRegionInput(String clusterKey, String cluster, String hostKey, String host, String serviceKey, String service,
             String instanceId, String releaseKey, String release, List<String> instanceKeys, String hostName, int port, String className, int lineNumber,
-            String breakpoint, String action) {
+            int maxVersions, String breakpoint, String action) {
             this.clusterKey = clusterKey;
             this.cluster = cluster;
             this.hostKey = hostKey;
@@ -101,6 +106,7 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
             this.port = port;
             this.className = className;
             this.lineNumber = lineNumber;
+            this.maxVersions = maxVersions;
             this.breakpoint = breakpoint;
             this.action = action;
         }
@@ -196,13 +202,11 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
         List<Map<String, Object>> dumps = new ArrayList<>();
 
         List<String> keys = new ArrayList<>(debuggers.keySet());
-        int id = 0;
         for (String key : keys) {
             BreakpointDebuggerOutput breakpointDebugger = debuggers.get(key);
             if (breakpointDebugger != null) {
                 Map<String, Object> dump = new HashMap<>();
-                dump.put("id", id);
-                id++;
+                dump.put("id", String.valueOf(breakpointDebugger.id));
                 dump.put("hostName", breakpointDebugger.breakpointDebugger.getHostName());
                 dump.put("port", breakpointDebugger.breakpointDebugger.getPort());
                 dump.put("log", breakpointDebugger.breakpointDebugger.getLog());
@@ -213,7 +217,7 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
                     breakpoint.put("className", attachedBreakpoint.getClassName());
                     breakpoint.put("lineNumber", attachedBreakpoint.getLineNumber());
                     breakpoint.put("progress", breakpointDebugger.progress(attachedBreakpoint.getClassName(), attachedBreakpoint.getLineNumber()));
-                    List<Map<String, String>> got = breakpointDebugger.getCaptured(attachedBreakpoint.getClassName(), attachedBreakpoint.getLineNumber());
+                    List<Map<String, Object>> got = breakpointDebugger.getCaptured(attachedBreakpoint.getClassName(), attachedBreakpoint.getLineNumber());
                     breakpoint.put("dump", got);
                     if (got == null || got.isEmpty()) {
                         got = breakpointDebugger.getCapturing(attachedBreakpoint.getClassName(), attachedBreakpoint.getLineNumber());
@@ -243,20 +247,21 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
         if (hostName != null && !hostName.isEmpty() && input.port != -1) {
             if (input.className != null && input.lineNumber != -1) {
                 String key = input.hostName + ":" + input.port;
-                addBreakpoint(key, input.hostName, input.port, input.className, input.lineNumber, messages);
+                addBreakpoint(key, input.hostName, input.port, input.className, input.lineNumber, input.maxVersions, messages);
             }
             if (input.breakpoint != null && !input.breakpoint.isEmpty() && input.breakpoint.indexOf(":") != -1) {
                 String key = input.hostName + ":" + input.port;
                 String[] classNameLineNumber = input.breakpoint.trim().split(":");
                 int lineNumber = Integer.parseInt(classNameLineNumber[1]);
-                addBreakpoint(key, input.hostName, input.port, classNameLineNumber[0], lineNumber, messages);
+                addBreakpoint(key, input.hostName, input.port, classNameLineNumber[0], lineNumber, input.maxVersions, messages);
             }
         }
     }
+    private final AtomicLong nextBreakpointDebuggerOutputId = new AtomicLong();
 
-    private void addBreakpoint(String key, String hostName, int port, String className, int lineNumber, List<String> messages) {
+    private void addBreakpoint(String key, String hostName, int port, String className, int lineNumber, int maxVersions, List<String> messages) {
         BreakpointDebuggerOutput breakpointDebugger = debuggers.computeIfAbsent(key, (t) -> {
-            return new BreakpointDebuggerOutput(jvm.create(hostName, port));
+            return new BreakpointDebuggerOutput(nextBreakpointDebuggerOutputId.incrementAndGet(), maxVersions, jvm.create(hostName, port));
         });
 
         breakpointDebugger.breakpointDebugger.addBreakpoint(className, lineNumber);
@@ -277,17 +282,26 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
 
     class BreakpointDebuggerOutput implements BreakpointState, StackFrames, Runnable {
 
-        private final Map<String, List<Map<String, String>>> capturingFrames = new ConcurrentHashMap<>();
-        private final Map<String, List<Map<String, String>>> capturedFrames = new ConcurrentHashMap<>();
+        private final Map<String, List<Map<String, Object>>> capturingFrames = new ConcurrentHashMap<>();
+        private final Map<String, List<Map<String, Object>>> capturedFrames = new ConcurrentHashMap<>();
 
-        private final Map<String, List<Map<String, String>>> capturing = new ConcurrentHashMap<>();
-        private final Map<String, List<Map<String, String>>> captured = new ConcurrentHashMap<>();
+        // berakpoint -> fieldName -> fieldState
+        private final Map<String, NavigableMap<String, Map<String, Object>>> capturing = new ConcurrentHashMap<>();
+        // berakpoint -> fieldName -> version -> fieldState
+        private final Map<String, Map<String, Map<String, Object>>> captured = new ConcurrentHashMap<>();
         private final Map<String, Double> progress = new ConcurrentHashMap<>();
 
+        private final Map<String, Map<String, Object>> possibleFields = new ConcurrentHashMap<>();
+        private final Map<String, Map<String, Object>> enabledFields = new ConcurrentHashMap<>();
+
         final BreakpointDebugger breakpointDebugger;
+        final long id;
+        final int maxVersions;
         private final AtomicBoolean running = new AtomicBoolean(false);
 
-        public BreakpointDebuggerOutput(BreakpointDebugger breakpointDebugger) {
+        public BreakpointDebuggerOutput(long id, int maxVersions, BreakpointDebugger breakpointDebugger) {
+            this.id = id;
+            this.maxVersions = maxVersions;
             this.breakpointDebugger = breakpointDebugger;
         }
 
@@ -314,14 +328,14 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
         public boolean frames(String breakpointClass, int lineNumber, String stackFrameClass, int stackFrameLineNumber) {
             String key = breakpointClass + ":" + lineNumber;
             if (stackFrameClass == null && stackFrameLineNumber == -1) {
-                List<Map<String, String>> got = capturingFrames.get(key);
+                List<Map<String, Object>> got = capturingFrames.get(key);
                 if (got != null && !got.isEmpty()) {
                     capturedFrames.put(key, got);
                     capturingFrames.remove(key);
                 }
             } else {
-                List<Map<String, String>> got = capturingFrames.computeIfAbsent(key, (t) -> new ArrayList<>());
-                Map<String, String> state = new HashMap<>();
+                List<Map<String, Object>> got = capturingFrames.computeIfAbsent(key, (t) -> new ArrayList<>());
+                Map<String, Object> state = new HashMap<>();
                 state.put("className", stackFrameClass);
                 state.put("lineNumber", String.valueOf(stackFrameLineNumber));
                 got.add(state);
@@ -330,47 +344,94 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
         }
 
         @Override
-        public boolean state(double progress, String breakpointClass, int lineNumber, String className, String fieldName, String value, String fieldNames,
-            Exception x) {
+        public boolean state(double progress,
+            long timestamp,
+            String breakpointClass,
+            int lineNumber,
+            String className,
+            String fieldName,
+            Callable<String> value,
+            List<String> fieldNames,
+            List<Callable<String>> fieldValues,
+            Exception x) throws Exception {
+
             String key = breakpointClass + ":" + lineNumber;
             this.progress.put(key, progress);
             if (className == null && fieldName == null && value == null && x == null) {
-                List<Map<String, String>> got = capturing.get(key);
+                Map<String, Map<String, Object>> got = capturing.get(key);
                 if (got != null && !got.isEmpty()) {
+
                     captured.put(key, got);
+                    // Merge
                     capturing.remove(key);
                 }
             } else {
-                List<Map<String, String>> got = capturing.computeIfAbsent(key, (t) -> new ArrayList<>());
-                Map<String, String> state = new HashMap<>();
+                Map<String, Map<String, Object>> got = capturing.computeIfAbsent(key, (String t) -> new ConcurrentSkipListMap<>());
+
+                Map<String, Object> state = new HashMap<>();
                 state.put("className", className);
                 state.put("fieldName", fieldName);
-                state.put("value", value);
-                state.put("fieldNames", fieldNames);
+                //state.put("disabled", bla); // TODO
+                if (value != null) {
+                    String v = value.call();
+
+                    if (v.length() > 100) {
+                        state.put("value", v.substring(0, Math.min(100, v.length())));
+                        state.put("fullValue", v);
+                    } else {
+                        state.put("value", v);
+                    }
+                }
+                if (fieldNames != null && !fieldNames.isEmpty()) {
+                    List<Map<String, Object>> fns = new ArrayList<>();
+                    for (String name : fieldNames) {
+                        HashMap m = new HashMap<>();
+                        m.put("name", name);
+                        //m.put("disabled", bla); // TODO
+                        fns.add(m);
+                    }
+                    state.put("fieldNames", fns);
+                }
                 state.put("exception", (x != null) ? x.getMessage() : "");
-                got.add(state);
+                got.put(fieldName, state);
             }
             return true;
         }
 
-        public List<Map<String, String>> getCapturedFrames(String breakpointClass, int lineNumber) {
+        public List<Map<String, Object>> getCapturedFrames(String breakpointClass, int lineNumber) {
             String key = breakpointClass + ":" + lineNumber;
             return capturedFrames.get(key);
         }
 
-        public List<Map<String, String>> getCapturingFrames(String breakpointClass, int lineNumber) {
+        public List<Map<String, Object>> getCapturingFrames(String breakpointClass, int lineNumber) {
             String key = breakpointClass + ":" + lineNumber;
             return capturingFrames.get(key);
         }
 
-        public List<Map<String, String>> getCaptured(String breakpointClass, int lineNumber) {
+        public List<Map<String, Object>> getCaptured(String breakpointClass, int lineNumber) {
             String key = breakpointClass + ":" + lineNumber;
-            return captured.get(key);
+            Map<String, Map<String, Object>> got = captured.get(key);
+            if (got == null) {
+                return null;
+            }
+            List<Map<String, Object>> vs = new ArrayList<>(got.size());
+            for (Map<String, Object> value : got.values()) {
+                vs.add(value);
+            }
+            return vs;
         }
 
-        public List<Map<String, String>> getCapturing(String breakpointClass, int lineNumber) {
+        public List<Map<String, Object>> getCapturing(String breakpointClass, int lineNumber) {
             String key = breakpointClass + ":" + lineNumber;
-            return capturing.get(key);
+            Map<String, Map<String, Object>> got = capturing.get(key);
+            if (got == null) {
+                return null;
+            }
+            List<Map<String, Object>> vs = new ArrayList<>(got.size());
+            for (Map<String, Object> value : got.values()) {
+                vs.add(value);
+            }
+            return vs;
         }
 
         private String progress(String breakpointClass, int lineNumber) {
