@@ -354,7 +354,6 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
     }
 
     private void handleAdd(String user, Map<String, Object> filters, InstancesPluginRegionInput input, Map<String, Object> data) {
-        filters.clear();
         try {
             boolean valid = true;
             Cluster cluster = upenaStore.clusters.get(new ClusterKey(input.clusterKey));
@@ -401,7 +400,6 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
     }
 
     private void handleRestart(String user, Map<String, Object> filters, InstancesPluginRegionInput input, Map<String, Object> data) {
-        filters.clear();
         try {
             Instance instance = upenaStore.instances.get(new InstanceKey(input.key));
             if (instance == null) {
@@ -421,7 +419,6 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
     }
 
     private void handleUpdate(String user, Map<String, Object> filters, InstancesPluginRegionInput input, Map<String, Object> data) {
-        filters.clear();
         try {
             Instance instance = upenaStore.instances.get(new InstanceKey(input.key));
             if (instance == null) {
