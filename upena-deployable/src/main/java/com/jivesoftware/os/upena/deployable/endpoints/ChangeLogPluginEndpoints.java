@@ -40,9 +40,9 @@ public class ChangeLogPluginEndpoints {
     @Path("/")
     @Produces(MediaType.TEXT_HTML)
     public Response changelog(@Context SecurityContext sc, @Context HttpServletRequest httpRequest) {
-        String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-            new ChangeLogPluginRegionInput("", "", "", "", "", "", ""));
         try {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+                new ChangeLogPluginRegionInput("", "", "", "", "", "", ""));
             return Response.ok(rendered).build();
         } catch (Exception e) {
             LOG.error("changelog GET.", e);

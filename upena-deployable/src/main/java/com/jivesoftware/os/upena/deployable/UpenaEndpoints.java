@@ -207,7 +207,7 @@ public class UpenaEndpoints {
     @Path("/")
     @Produces(MediaType.TEXT_HTML)
     public Response get(@Context HttpServletRequest httpRequest,
-        @Context UriInfo uriInfo) {
+        @Context UriInfo uriInfo) throws Exception {
 
         String rendered = soyService.render(httpRequest.getRemoteUser(), uriInfo.getAbsolutePath() + "propagator/download", amzaClusterName.name);
         return Response.ok(rendered).build();
@@ -217,7 +217,7 @@ public class UpenaEndpoints {
     @Path("/logout")
     @Produces(MediaType.TEXT_HTML)
     public Response logout(@Context HttpServletRequest httpRequest,
-        @Context UriInfo uriInfo) throws ServletException {
+        @Context UriInfo uriInfo) throws ServletException, Exception {
         httpRequest.logout();
         String rendered = soyService.render(httpRequest.getRemoteUser(), uriInfo.getAbsolutePath() + "propagator/download", amzaClusterName.name);
         return Response.ok(rendered).build();

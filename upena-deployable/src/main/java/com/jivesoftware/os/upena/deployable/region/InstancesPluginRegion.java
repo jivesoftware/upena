@@ -153,11 +153,11 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
                 if (input.action.equals("filter")) {
                     handleFilter(data, input);
                 } else if (input.action.equals("add")) {
-                    handleAdd(user, filters, input, data);
+                    handleAdd(user, input, data);
                 } else if (input.action.equals("update")) {
-                    handleUpdate(user, filters, input, data);
+                    handleUpdate(user, input, data);
                 } else if (input.action.equals("restart")) {
-                    handleRestart(user, filters, input, data);
+                    handleRestart(user, input, data);
                 } else if (input.action.equals("remove")) {
                     handleRemove(user, input, data);
                 } else if (input.action.equals("restartAllNow")) {
@@ -353,7 +353,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
         }
     }
 
-    private void handleAdd(String user, Map<String, Object> filters, InstancesPluginRegionInput input, Map<String, Object> data) {
+    private void handleAdd(String user,InstancesPluginRegionInput input, Map<String, Object> data) {
         try {
             boolean valid = true;
             Cluster cluster = upenaStore.clusters.get(new ClusterKey(input.clusterKey));
@@ -399,7 +399,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
         }
     }
 
-    private void handleRestart(String user, Map<String, Object> filters, InstancesPluginRegionInput input, Map<String, Object> data) {
+    private void handleRestart(String user, InstancesPluginRegionInput input, Map<String, Object> data) {
         try {
             Instance instance = upenaStore.instances.get(new InstanceKey(input.key));
             if (instance == null) {
@@ -418,7 +418,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
         }
     }
 
-    private void handleUpdate(String user, Map<String, Object> filters, InstancesPluginRegionInput input, Map<String, Object> data) {
+    private void handleUpdate(String user, InstancesPluginRegionInput input, Map<String, Object> data) {
         try {
             Instance instance = upenaStore.instances.get(new InstanceKey(input.key));
             if (instance == null) {
