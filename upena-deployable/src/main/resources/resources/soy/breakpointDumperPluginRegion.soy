@@ -140,7 +140,7 @@
                         {/if}
                         <ul class="list-group" style="list-style-type:none">
                             {foreach $c in $s.connections}
-                                <li class="list-group-item-info">
+                                <li class="list-group-item disabled">
                                     <div style="display: inline;">
                                         <a href="#" data-trigger="hover" rel="popover" id="popoverAnchor-log-{$c.id}" data-popover-content="#popover-log-{$c.id}" data-placement="bottom" class="btn btn-default" title="Log">
                                             <span class="glyphicon glyphicon-list"></span>
@@ -176,7 +176,7 @@
                                 </li>
                                 {if $c.frames}
                                     {foreach $f in $c.frames}
-                                        <li class="list-group-item disabled">
+                                        <li class="list-group-item list-group-item-info">
                                             <div style="display: inline;">&nbsp;&nbsp;&nbsp;{$f.className}:{$f.lineNumber}&nbsp;&nbsp;&nbsp;</div>
                                             <form style="display: inline;" id="attachFrameBreakPointDebugger" method="post" name="attachFrameBreakPointDebugger">
                                                 <input type="hidden" name="sessionId" value="{$s.id}"/>
