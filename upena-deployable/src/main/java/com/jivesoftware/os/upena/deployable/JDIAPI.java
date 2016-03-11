@@ -226,7 +226,9 @@ public class JDIAPI {
 
         public interface BreakpointState {
 
-            boolean state(double progress,
+            boolean state(String host,
+                int port,
+                double progress,
                 long timestamp,
                 String breakpointClass,
                 int lineNumber,
@@ -244,7 +246,7 @@ public class JDIAPI {
         }
 
         public static class Breakpoint {
-            
+
             private final String className;
             private final int lineNumber;
 
@@ -326,8 +328,16 @@ public class JDIAPI {
             return log;
         }
 
+        public Set<Breakpoint> getBreakpoints() {
+            return breakpoints;
+        }
+
         public Set<Breakpoint> getAttachedBreakpoints() {
             return attachedBreakpoints;
+        }
+        
+        public boolean isAttached(Breakpoint breakpoint) {
+            return attachedBreakpoints.contains(breakpoint);
         }
 
         public void addBreakpoint(String className, int lineNumber) {
@@ -472,7 +482,9 @@ public class JDIAPI {
                                                 Value value = entry.getValue();
                                                 double progress = (double) i / (double) count;
                                                 try {
-                                                    breakpointState.state(progress,
+                                                    if (!breakpointState.state(hostName,
+                                                        port,
+                                                        progress,
                                                         start,
                                                         breakpointClass,
                                                         breakpointLineNumber,
@@ -481,9 +493,13 @@ public class JDIAPI {
                                                         () -> valueToString(threadRef, value),
                                                         valueToFields(threadRef, value),
                                                         valueToFieldValues(threadRef, value),
-                                                        null);
+                                                        null)) {
+                                                        break;
+                                                    }
                                                 } catch (Exception x) {
-                                                    breakpointState.state(progress,
+                                                    if (!breakpointState.state(hostName,
+                                                        port,
+                                                        progress,
                                                         start,
                                                         breakpointClass,
                                                         breakpointLineNumber,
@@ -492,11 +508,24 @@ public class JDIAPI {
                                                         null,
                                                         null,
                                                         null,
-                                                        x);
+                                                        x)) {
+                                                        break;
+                                                    }
                                                 }
                                                 i++;
                                             }
-                                            breakpointState.state(1.0d, start, breakpointClass, breakpointLineNumber, null, null, null, null, null, null); // EOS
+                                            breakpointState.state(hostName,
+                                                port,
+                                                1.0d,
+                                                start,
+                                                breakpointClass,
+                                                breakpointLineNumber,
+                                                null,
+                                                null,
+                                                null,
+                                                null,
+                                                null,
+                                                null); // EOS
                                             log.add("Capture state for breakpoint:" + breakpointClass + ":" + breakpointLineNumber + " in " + (System
                                                 .currentTimeMillis() - start) + " millis");
                                         }
@@ -565,32 +594,32 @@ public class JDIAPI {
             sb.append("]");
             return sb.toString();
         } else if (var instanceof ObjectReference) {
-            StringReference strValue = (StringReference)invoke(threadRef, var, "toString", new ArrayList());
+            StringReference strValue = (StringReference) invoke(threadRef, var, "toString", new ArrayList());
             return strValue.value();
         } else {
             if (var instanceof BooleanValue) {
-                return String.valueOf(((BooleanValue)var).value());
+                return String.valueOf(((BooleanValue) var).value());
             }
             if (var instanceof CharValue) {
-                return String.valueOf(((CharValue)var).value());
+                return String.valueOf(((CharValue) var).value());
             }
             if (var instanceof ByteValue) {
-                return String.valueOf(((ByteValue)var).value());
+                return String.valueOf(((ByteValue) var).value());
             }
             if (var instanceof DoubleValue) {
-                return String.valueOf(((DoubleValue)var).value());
+                return String.valueOf(((DoubleValue) var).value());
             }
             if (var instanceof FloatValue) {
-                return String.valueOf(((FloatValue)var).value());
+                return String.valueOf(((FloatValue) var).value());
             }
             if (var instanceof IntegerValue) {
-                return String.valueOf(((IntegerValue)var).value());
+                return String.valueOf(((IntegerValue) var).value());
             }
             if (var instanceof LongValue) {
-                return String.valueOf(((LongValue)var).value());
+                return String.valueOf(((LongValue) var).value());
             }
             if (var instanceof ShortValue) {
-                return String.valueOf(((ShortValue)var).value());
+                return String.valueOf(((ShortValue) var).value());
             }
             if (var instanceof VoidValue) {
                 return String.valueOf(Void.class);

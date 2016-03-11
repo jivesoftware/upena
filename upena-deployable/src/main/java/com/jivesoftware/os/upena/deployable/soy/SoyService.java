@@ -46,7 +46,7 @@ public class SoyService {
 
     }
 
-    public String render(String user, String upenaJarWGetURL, String upenaClusterName) {
+    public String render(String user, String upenaJarWGetURL, String upenaClusterName) throws Exception {
 
         return chrome(homeRegion).render(user, new HomeInput(upenaJarWGetURL, upenaClusterName));
     }
@@ -67,7 +67,7 @@ public class SoyService {
             upenaStore);
     }
 
-    public <I extends PluginInput> String renderPlugin(String user, PageRegion<I> pluginRegion, I input) {
+    public <I extends PluginInput> String renderPlugin(String user, PageRegion<I> pluginRegion, I input) throws Exception {
         return chrome(pluginRegion).render(user, input);
     }
 

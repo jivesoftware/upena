@@ -55,7 +55,7 @@ public class ChromeRegion<I extends PluginInput, R extends PageRegion<I>> implem
     }
 
     @Override
-    public String render(String user, I input) {
+    public String render(String user, I input) throws Exception {
         return render(region.getRootPath(), user, input.name(), region.getTitle(), region.render(user, input));
 
     }

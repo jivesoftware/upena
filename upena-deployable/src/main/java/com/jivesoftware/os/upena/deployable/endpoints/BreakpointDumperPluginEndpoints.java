@@ -46,7 +46,7 @@ public class BreakpointDumperPluginEndpoints {
         try {
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
                 new BreakpointDumperPluginRegionInput("", "", "", "", "", "", "", "", "", Collections.emptyList(),
-                    "", -1, "", -1, 1, "", ""));
+                    "", 0, 1, 0, "", "","", 0, 0, "", ""));
             return Response.ok(rendered).build();
         } catch (Exception e) {
             LOG.error("breakpoint GET.", e);
@@ -70,9 +70,13 @@ public class BreakpointDumperPluginEndpoints {
         @FormParam("release") @DefaultValue("") String release,
         @FormParam("instanceKeys") @DefaultValue("") List<String> instanceKeys,
         @FormParam("hostName") @DefaultValue("") String hostName,
-        @FormParam("port") @DefaultValue("-1") int port,
+        @FormParam("port") @DefaultValue("0") int port,
+        @FormParam("sessionId") @DefaultValue("0") long sessionId,
+        @FormParam("connectionId") @DefaultValue("0") long connectionId,
+        @FormParam("breakPointFieldName") @DefaultValue("") String breakPointFieldName,
+        @FormParam("filter") @DefaultValue("") String filter,
         @FormParam("className") @DefaultValue("") String className,
-        @FormParam("lineNumber") @DefaultValue("-1") int lineNumber,
+        @FormParam("lineNumber") @DefaultValue("0") int lineNumber,
         @FormParam("maxVersions") @DefaultValue("1") int maxVersions,
         @FormParam("breakpoint") @DefaultValue("") String breakpoint,
         @FormParam("action") @DefaultValue("") String action) {
@@ -92,6 +96,10 @@ public class BreakpointDumperPluginEndpoints {
                     instanceKeys,
                     hostName,
                     port,
+                    sessionId,
+                    connectionId,
+                    breakPointFieldName,
+                    filter,
                     className,
                     lineNumber,
                     maxVersions,

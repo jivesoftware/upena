@@ -5,12 +5,7 @@
  *
  * @param? message
  * @param? filters
- * @param? instances
- * @param? hostName
- * @param? port
- * @param? className
- * @param? lineNumber
- * @param? dumps
+ * @param? sessions
  */
 {template .breakpointDumperPluginRegion}
     <div class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.9);">
@@ -21,338 +16,327 @@
             {/if}
             <div>
                 <div style="display: inline;">
-                    <a href="#" rel="popover" id="popoverAnchor-add-service" data-popover-content="#popover-add-service" data-placement="bottom" class="btn btn-primary" title="Add Service">
-                        <span class="glyphicon glyphicon-plus">&nbsp;&nbsp;Service Breakpoints&nbsp;&nbsp;</span>
-                    </a>
-                </div>
-                <div id="popover-add-service" class="hide">
-                    <table class="table table-hover table-condensed table-responsive">
-                        <thead>
-                            <tr>
-                                <th>Cluster</th>
-                                <th>Host</th>
-                                <th>Service</th>
-                                <th>Id</th>
-                                <th>Release</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {if $filters}
-                                <tr style="background-color:#ddd;">
-                                    <form id="filter-form" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
-                                        data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="instance">
-                                        <td>
-                                            <div>
-                                                <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                                    placeholder="Cluster" value="{$filters.cluster?:''}" name="cluster" id="clusterPicker"
-                                                    class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/clusters">
-                                                <input type="hidden" name="clusterKey" value="{$filters.clusterKey?:''}" />
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div>
-                                                <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                                    placeholder="Host" value="{$filters.host?:''}" name="host" id="hostPicker"
-                                                    class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/hosts">
-                                                <input type="hidden" name="hostKey" value="{$filters.hostKey?:''}" />
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div>
-                                                <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                                    placeholder="Service" value="{$filters.service?:''}" name="service" id="servicePicker"
-                                                    class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/services">
-                                                <input type="hidden" name="serviceKey" value="{$filters.serviceKey?:''}" />
-                                            </div>
-                                        </td>
-                                        <td style="width:100px;">
-                                            <input type="text" autocomplete="off" role="combobox" class="form-control" style="padding-left:10px;"
-                                                placeholder="Id" value="{$filters.instanceId?:''}" name="instanceId" id="idPicker">
-                                        </td>
-                                        <td>
-                                            <div>
-                                                <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                                    placeholder="Release" value="{$filters.release?:''}" name="release" id="releasePicker"
-                                                    class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/releases">
-                                                <input type="hidden" name="releaseKey" value="{$filters.releaseKey?:''}" />
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <button title="Find" type="submit" name="action" value="find" class="btn btn-primary ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-search">&nbspFilter</span></button>
-                                        </td>
-                                    </form>
-                                </tr>
-                            {/if}
-                        </tbody>
-                    </table>
                     <form id="attachBreakPointDebugger" method="post" name="attachBreakPointDebugger">
-                        <table class="table table-hover table-condensed table-responsive">
-                           <tr colspan="3">
-                               <form id="pick-instances" method="post" name="pick-instances">
-                                   <td>
-                                       <select style="width: 100%;" name="instanceKeys" multiple>
-                                           {if $instances}
-                                               {foreach $i in $instances}
-                                                   <option value="{$i.key}">{$i.name}</option>
-                                               {/foreach}
-                                           {/if}
-                                        </select>
-                                   </td>
-                               </form>
-                           </tr>
-                           <tr>
-                               <td>
-                                   <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                   class="form-control" placeholder="className" value="{$className}"
-                                   name="className" id="classnamePicker" data-original-title="" title="">
-                               </td>
-                               <td>
-                                   <input type="number" name="lineNumber" min="1" max="65536" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                   class="form-control" placeholder="lineNumber" value="{$lineNumber}" id="portPicker"
-                                   data-original-title="" title="">
-                               </td>
-                               <td>
-                                   <button title="threadDump" type="submit" name="action" value="attach" class="btn btn-success ladda-button"  data-spinner-color="#222" data-style="expand-right">
-                                       <span class="glyphicon glyphicon-play">&nbspAttach</span>
-                                   </button>
-                               </td>
-                           </tr>
-                       </table>
-                   </form>
-                </div>
-
-                <div style="display: inline;">
-                    <a href="#" rel="popover" id="popoverAnchor-add-host-port" data-popover-content="#popover-add-host-port" data-placement="bottom" class="btn btn-primary" title="Host:port Breakpointer">
-                        <span class="glyphicon glyphicon-plus">&nbsp;&nbsp;host:port breakpoint&nbsp;&nbsp;</span>
-                    </a>
-                </div>
-                <div id="popover-add-host-port" class="hide">
-                    <table class="table table-hover table-condensed table-responsive">
-                        <thead>
-                            <tr>
-                                <th>Host</th>
-                                <th>Port</th>
-                                <th>Class</th>
-                                <th>Line</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr style="background-color:#ddd;">
-                                <form id="attachBreakPointDebugger" method="post" name="attachBreakPointDebugger">
-                                    <td>
-                                        <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                        class="form-control" placeholder="Host Name" value="{$hostName}"
-                                        name="hostName" id="hostPicker" data-original-title="" title="">
-                                    </td>
-                                    <td>
-                                        <input type="number" name="port" min="1" max="65536" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                        class="form-control" placeholder="Port" value="{$port}" id="portPicker"
-                                        data-original-title="" title="">
-                                    </td>
-                                    <td>
-                                        <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                        class="form-control" placeholder="className" value="{$className}"
-                                        name="className" id="classnamePicker" data-original-title="" title="">
-                                    </td>
-                                    <td>
-                                        <input type="number" name="lineNumber" min="1" max="65536" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                        class="form-control" placeholder="lineNumber" value="{$lineNumber}" id="portPicker"
-                                        data-original-title="" title="">
-                                    </td>
-                                    <td>
-                                        <button title="threadDump" type="submit" name="action" value="attach" class="btn btn-success ladda-button"  data-spinner-color="#222" data-style="expand-right">
-                                            <span class="glyphicon glyphicon-play">&nbspAttach</span>
-                                        </button>
-                                    </td>
-                                </form>
-                            </tr>
-                        </tbody>
-                    </table>
+                        <button title="threadDump" type="submit" name="action" value="refresh" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                            <span class="glyphicon glyphicon-refresh">&nbspRefresh</span>
+                        </button>
+                    </form>
                 </div>
             </div>
-            <div>
-                <form id="attachBreakPointDebugger" method="post" name="attachBreakPointDebugger">
-                    <button title="threadDump" type="submit" name="action" value="refresh" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
-                        <span class="glyphicon glyphicon-refresh">&nbspRefresh</span>
-                    </button>
-                </form>
-            </div>
 
-            {if $dumps}
-                <ul class="list-group" style="list-style-type:none">
-                    {foreach $d in $dumps}
-                        <li class="list-group-item active">
-                            <div style="display: inline;">
-                                <a href="#" data-trigger="hover" rel="popover" id="popoverAnchor-log-{$d.id}" data-popover-content="#popover-log-{$d.id}" data-placement="bottom" class="btn btn-primary" title="Log">
-                                    <span class="glyphicon glyphicon-list"></span>
-                                </a>
-                            </div>
-                            <div id="popover-log-{$d.id}" class="hide">
-                                <ul style="list-style-type:none">
-                                    {if $d.log}
-                                        {foreach $l in $d.log}
-                                            <li>{$l}</li>
-                                        {/foreach}
+            <ul class="list-group" style="list-style-type:none">
+                {foreach $s in $sessions}
+                     <li class="list-group-item">
+                        <div style="display: inline;">
+                            <a href="#" rel="popover" id="popoverAnchor-add-service" data-popover-content="#popover-add-service" data-placement="bottom" class="btn btn-primary" title="Add Service">
+                                <span class="glyphicon glyphicon-plus">&nbsp;&nbsp;Service&nbsp;&nbsp;</span><span class="caret"></span>
+                            </a>
+                        </div>
+                        <div id="popover-add-service" class="hide">
+                            <table class="table table-hover table-condensed table-responsive">
+                                <thead>
+                                    <tr>
+                                        <th>Cluster</th>
+                                        <th>Host</th>
+                                        <th>Service</th>
+                                        <th>Id</th>
+                                        <th>Release</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {if $filters}
+                                        <tr style="background-color:#ddd;">
+                                            <form id="filter-form" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                                                data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="instance">
+                                                <td>
+                                                    <div>
+                                                        <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                                            placeholder="Cluster" value="{$filters.cluster?:''}" name="cluster" id="clusterPicker"
+                                                            class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/clusters">
+                                                        <input type="hidden" name="clusterKey" value="{$filters.clusterKey?:''}" />
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div>
+                                                        <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                                            placeholder="Host" value="{$filters.host?:''}" name="host" id="hostPicker"
+                                                            class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/hosts">
+                                                        <input type="hidden" name="hostKey" value="{$filters.hostKey?:''}" />
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div>
+                                                        <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                                            placeholder="Service" value="{$filters.service?:''}" name="service" id="servicePicker"
+                                                            class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/services">
+                                                        <input type="hidden" name="serviceKey" value="{$filters.serviceKey?:''}" />
+                                                    </div>
+                                                </td>
+                                                <td style="width:100px;">
+                                                    <input type="text" autocomplete="off" role="combobox" class="form-control" style="padding-left:10px;"
+                                                        placeholder="Id" value="{$filters.instanceId?:''}" name="instanceId" id="idPicker">
+                                                </td>
+                                                <td>
+                                                    <div>
+                                                        <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                                            placeholder="Release" value="{$filters.release?:''}" name="release" id="releasePicker"
+                                                            class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/releases">
+                                                        <input type="hidden" name="releaseKey" value="{$filters.releaseKey?:''}" />
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                     <input type="hidden" name="sessionId" value="{$s.id}"/>
+                                                    <button title="Add" type="submit" name="action" value="addConnections" class="btn btn-primary ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-search">&nbspAdd</span></button>
+                                                </td>
+                                            </form>
+                                        </tr>
                                     {/if}
-                                </ul>
-                            </div>
-                            <div style="display: inline;">&nbsp;&nbsp;&nbsp;{$d.hostName}:{$d.port}&nbsp;&nbsp;&nbsp;</div>
-                            <form style="display: inline;" id="dettachHostDebugger" method="post" name="dettachHostDebugger">
-                                <input type="hidden" name="hostName" value="{$d.hostName}"/>
-                                <input type="hidden" name="port" value="{$d.port}"/>
-                                <button style="display: inline;" title="memoryHisto" type="submit" name="action" value="dettach" class="btn btn-danger ladda-button"  data-spinner-color="#222" data-style="expand-right">
-                                    <span class="glyphicon glyphicon-stop"></span>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div style="display: inline;">
+                            <a href="#" rel="popover" id="popoverAnchor-add-host-port" data-popover-content="#popover-add-host-port" data-placement="bottom" class="btn btn-primary" title="Host:port Breakpointer">
+                                <span class="glyphicon glyphicon-plus">&nbsp;&nbsp;host:port&nbsp;&nbsp;</span><span class="caret"></span>
+                            </a>
+                        </div>
+                        <div id="popover-add-host-port" class="hide">
+                            <form style="display: inline;" id="attachBreakPointDebugger" method="post" name="attachBreakPointDebugger">
+                                <input type="hidden" name="sessionId" value="{$s.id}"/>
+                                <input style="display: inline;" type="text" autocomplete="off" role="combobox" style="display: inline; padding-left:10px;"
+                                    class="form-control" placeholder="Host Name" value=""
+                                    name="hostName" id="hostPicker" data-original-title="" title="">
+                                <input style="display: inline;" type="number" name="port" min="1" max="65536" autocomplete="off" role="combobox" style="display: inline; padding-left:10px;"
+                                    class="form-control" placeholder="Port" value="" id="portPicker"
+                                    data-original-title="" title="">
+                                <button style="display: inline;" title="threadDump" type="submit" name="action" value="addConnections" class="btn btn-success ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                                    <span class="glyphicon glyphicon-play">&nbspAttach</span>
                                 </button>
                             </form>
-                        </li>
-                        {if $d.frames}
-                            {foreach $f in $d.frames}
-                                <li class="list-group-item disabled">
-                                    <div style="display: inline;">&nbsp;&nbsp;&nbsp;{$f.className}:{$f.lineNumber}&nbsp;&nbsp;&nbsp;</div>
-                                    <form style="display: inline;" id="attachFrameBreakPointDebugger" method="post" name="attachFrameBreakPointDebugger">
-                                        <input type="hidden" name="hostName" value="{$d.hostName}"/>
-                                        <input type="hidden" name="port" value="{$d.port}"/>
-                                        <input type="hidden" name="className" value="{$f.className}"/>
-                                        <input type="hidden" name="lineNumber" value="{$f.lineNumber}"/>
-                                        <button style="display: inline;" title="memoryHisto" type="submit" name="action" value="attach" class="btn btn-success ladda-button"  data-spinner-color="#222" data-style="expand-right">
-                                            <span class="glyphicon glyphicon-play"></span>
+                        </div>
+                        {if length($s.connections) > 0}
+                            <div style="display: inline;">
+                                <a href="#" rel="popover" id="popoverAnchor-add-bp" data-popover-content="#popover-add-bp" data-placement="bottom" class="btn btn-primary" title="Add Breakpoint">
+                                    <span class="glyphicon glyphicon-plus">&nbsp;&nbsp;Breakpoint&nbsp;&nbsp;</span><span class="caret"></span>
+                                </a>
+                            </div>
+                            <div id="popover-add-bp" class="hide">
+                                <div>
+                                    <form id="attachBreakPointDebugger" method="post" name="attachBreakPointDebugger">
+                                        <input type="hidden" name="sessionId" value="{$s.id}"/>
+                                        <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                            class="form-control" placeholder="className" value=""
+                                            name="className" id="classnamePicker" data-original-title="" title="">
+                                        <input type="number" name="lineNumber" min="1" max="65536" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                            class="form-control" placeholder="lineNumber" value="" id="portPicker"
+                                            data-original-title="" title="">
+                                        <button title="threadDump" type="submit" name="action" value="addBreakpoint" class="btn btn-success ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                                            <span class="glyphicon glyphicon-play">&nbspAdd</span>
                                         </button>
                                     </form>
-                                </li>
-                            {/foreach}
+                                </div>
+                            </div>
                         {/if}
-                        {if $d.breakpoints}
-                            {foreach $b in $d.breakpoints}
+                        <ul class="list-group" style="list-style-type:none">
+                            {foreach $c in $s.connections}
                                 <li class="list-group-item disabled">
-                                    <div style="display: inline;">{$b.className}:{$b.lineNumber}&nbsp;&nbsp;&nbsp;</div>
-                                    <form style="display: inline;" id="dettachBreakPointDebugger" method="post" name="dettachBreakPointDebugger">
-                                        <input type="hidden" name="hostName" value="{$d.hostName}"/>
-                                        <input type="hidden" name="port" value="{$d.port}"/>
-                                        <input type="hidden" name="className" value="{$b.className}"/>
-                                        <input type="hidden" name="lineNumber" value="{$b.lineNumber}"/>
-                                        <button style="display: inline;" title="memoryHisto" type="submit" name="action" value="dettach" class="btn btn-danger ladda-button"  data-spinner-color="#222" data-style="expand-right">
-                                            <span class="glyphicon glyphicon-stop"></span>
-                                        </button>
+                                    <div style="display: inline;">
+                                        <a href="#" data-trigger="hover" rel="popover" id="popoverAnchor-log-{$c.id}" data-popover-content="#popover-log-{$c.id}" data-placement="bottom" class="btn btn-default" title="Log">
+                                            <span class="glyphicon glyphicon-list"></span>
+                                        </a>
+                                    </div>
+                                    <div id="popover-log-{$c.id}" class="hide">
+                                        <ul style="list-style-type:none">
+                                            {if $c.log}
+                                                {foreach $l in $c.log}
+                                                    <li>{$l}</li>
+                                                {/foreach}
+                                            {/if}
+                                        </ul>
+                                    </div>
+                                    <div style="display: inline;">&nbsp;&nbsp;&nbsp;{$c.name}&nbsp;&nbsp;&nbsp;</div>
+                                    <form style="display: inline;" id="dettachHostDebugger" method="post" name="dettachHostDebugger">
+                                        <input type="hidden" name="sessionId" value="{$s.id}"/>
+                                        <input type="hidden" name="connectionId" value="{$c.id}"/>
+
+                                        {if $c.attached}
+                                            <button style="display: inline;" title="dettach" type="submit" name="action" value="dettach" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                                                <span class="glyphicon glyphicon-stop"></span>
+                                            </button>
+                                        {else}
+                                            <button style="display: inline;" title="attach" type="submit" name="action" value="attach" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                                                <span class="glyphicon glyphicon-play"></span>
+                                            </button>
+                                            <button style="display: inline;" title="attach" type="submit" name="action" value="removeConnection" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                                                <span class="glyphicon glyphicon-trash"></span>
+                                            </button>
+                                        {/if}
                                     </form>
                                 </li>
-                                {if $b.progress}
-                                    <li class="list-group-item">
-                                        <div class="progress">
-                                            <div class="progress-bar" role="progressbar" aria-valuenow="{$b.progress}" aria-valuemin="0" aria-valuemax="100" style="width: {$b.progress}%;">
-                                              <span class="sr-only">{$b.progress}% Complete</span>
+                                {if $c.frames}
+                                    {foreach $f in $c.frames}
+                                        <li class="list-group-item list-group-item-info">
+                                            <div style="display: inline;">&nbsp;&nbsp;&nbsp;{$f.className}:{$f.lineNumber}&nbsp;&nbsp;&nbsp;</div>
+                                            <form style="display: inline;" id="attachFrameBreakPointDebugger" method="post" name="attachFrameBreakPointDebugger">
+                                                <input type="hidden" name="sessionId" value="{$s.id}"/>
+                                                <input type="hidden" name="connectionId" value="{$c.id}"/>
+                                                <input type="hidden" name="className" value="{$f.className}"/>
+                                                <input type="hidden" name="lineNumber" value="{$f.lineNumber}"/>
+                                                <button style="display: inline;" title="addBreakpoint" type="submit" name="action" value="attach" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                                                    <span class="glyphicon glyphicon-play"></span>
+                                                </button>
+                                            </form>
+                                        </li>
+                                    {/foreach}
+                                {/if}
+                                {if $c.breakpoints}
+                                    {foreach $b in $c.breakpoints}
+                                        <li class="list-group-item disabled">
+                                            <div style="display: inline;">
+                                                {if $b.attached}
+                                                    <span class="glyphicon glyphicon-transfer"></span>
+                                                {else}
+                                                    <span class="glyphicon glyphicon-alert"></span>
+                                                {/if}
+                                                &nbsp;&nbsp;&nbsp;{$b.className}:{$b.lineNumber}&nbsp;&nbsp;&nbsp;
                                             </div>
-                                        </div>
-                                    </li>
-                                {/if}
-                                {if $b.dump}
-                                    <li class="list-group-item">
-                                        <table class="table table-hover table-condensed table-responsive">
-                                            {foreach $s in $b.dump}
-                                                <tr>
-                                                    <td>
-                                                        <form style="display: inline;" id="dettachBreakPointDebugger" method="post" name="dettachBreakPointDebugger">
-                                                            <input type="hidden" name="fieldName" value="{$s.fieldName}"/>
-                                                            <div style="display: inline;">
-                                                                {if $s.disable}
-                                                                    <button style="display: inline;" title="click to enable" type="submit" name="action" value="enableField" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
-                                                                        <span class="glyphicon glyphicon-unchecked"></span>
-                                                                    </button>
+                                            <form style="display: inline;" id="dettachBreakPointDebugger" method="post" name="dettachBreakPointDebugger">
+                                                <input type="hidden" name="sessionId" value="{$s.id}"/>
+                                                <input type="hidden" name="connectionId" value="{$c.id}"/>
+                                                <input type="hidden" name="className" value="{$b.className}"/>
+                                                <input type="hidden" name="lineNumber" value="{$b.lineNumber}"/>
+                                                <button style="display: inline;" title="remove breakpoint" type="submit" name="action" value="removeBreakpoint" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                                                    <span class="glyphicon glyphicon-trash"></span>
+                                                </button>
+                                            </form>
+                                        </li>
+                                        {if $b.progress}
+                                            <li class="list-group-item">
+                                                <div class="progress">
+                                                    <div class="progress-bar" role="progressbar" aria-valuenow="{$b.progress}" aria-valuemin="0" aria-valuemax="100" style="width: {$b.progress}%;">
+                                                      <span class="sr-only">{$b.progress}% Complete</span>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                        {/if}
+                                        {if $b.dump}
+                                            <li class="list-group-item">
+                                                <table class="table table-hover table-condensed table-responsive">
+                                                    {foreach $d in $b.dump}
+                                                        <tr>
+                                                            <td>
+                                                                <form style="display: inline;" id="dettachBreakPointDebugger" method="post" name="dettachBreakPointDebugger">
+                                                                    <input type="hidden" name="sessionId" value="{$s.id}"/>
+                                                                    <input type="hidden" name="connectionId" value="{$c.id}"/>
+                                                                    <input type="hidden" name="breakPointFieldName" value="{$d.fieldName}"/>
+                                                                    <div style="display: inline;">
+                                                                        {if $d.disable}
+                                                                            <button style="display: inline;" title="click to enable" type="submit" name="action" value="enableBreakPointField">
+                                                                                <span class="glyphicon glyphicon-unchecked"></span>
+                                                                            </button>
+                                                                        {else}
+                                                                            <button style="display: inline;" title="click to disable" type="submit" name="action" value="disableBreakPointField">
+                                                                                <span class="glyphicon glyphicon-check"></span>
+                                                                            </button>
+                                                                        {/if}
+                                                                    </div>
+                                                                </form>
+                                                            </td>
+                                                            <td><div><a data-toggle="tooltip" title="{$d.className}">{$d.fieldName}</a></div></td>
+                                                            <td>
+                                                                <div style="display: inline;">
+                                                                    <a href="#" rel="popover" id="popoverAnchor-filter-{$d.fieldName}" style="display: inline;"
+                                                                        data-popover-content="#popover-filter-{$d.fieldName}" data-placement="right"
+                                                                         class="{if $d.filter}btn btn-success{else}{/if}"
+                                                                        title="Filter {$d.fieldName}">
+                                                                        <span class="glyphicon glyphicon-filter"></span>
+                                                                    </a>
+                                                                </div>
+                                                                <div id="popover-filter-{$d.fieldName}" class="hide">
+                                                                    <form style="display: inline;" id="dettachBreakPointDebugger" method="post" name="dettachBreakPointDebugger">
+                                                                        <input type="hidden" name="sessionId" value="{$s.id}"/>
+                                                                        <input type="hidden" name="className" value="{$b.className}"/>
+                                                                        <input type="hidden" name="lineNumber" value="{$b.lineNumber}"/>
+                                                                        <input type="hidden" name="breakPointFieldName" value="{$d.fieldName}"/>
+                                                                        <input style="display: inline;" type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                                                            class="form-control" placeholder="filter" value="{if $d.filter}{$d.filter}{/if}"
+                                                                            name="filter" id="filterPicker" data-original-title="" title="filter">
+                                                                        <button style="display: inline;" title="filter" type="submit" name="action" value="setBreakPointFieldFilter" class="btn btn-success ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                                                                            <span class="glyphicon glyphicon-play"></span>
+                                                                        </button>
+                                                                    </form>
+                                                                </div>
+                                                            </td>
+                                                            <td>
+                                                                {if $d.fullValue}
+                                                                    <div style="display: inline;">
+                                                                        {if $d.exception}{$d.exception}{/if}
+                                                                        {$d.value}
+                                                                        <a href="#" rel="popover" id="popoverAnchor-f-{$d.fieldName}" style="display: inline;"
+                                                                            data-popover-content="#popover-f-{$d.fieldName}" data-placement="bottom" 
+                                                                            title="{$d.fieldName}">
+                                                                            <span class="glyphicon glyphicon-option-horizontal"></span>
+                                                                        </a>
+                                                                    </div>
+                                                                    <div id="popover-f-{$d.fieldName}" class="hide">
+                                                                        {$d.fullValue}
+                                                                    </div>
                                                                 {else}
-                                                                    <button style="display: inline;" title="click to disable" type="submit" name="action" value="disableField" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
-                                                                        <span class="glyphicon glyphicon-checked"></span>
-                                                                    </button>
+                                                                    {if $d.exception}{$d.exception}{/if}
+                                                                    {$d.value}
                                                                 {/if}
-                                                            </div>
-                                                        </form>
-                                                    </td>
-                                                    <td><div><a data-toggle="tooltip" title="{$s.className}">{$s.fieldName}</a></div></td>
-                                                    <td>
-                                                        <div style="display: inline;">
-                                                            <a href="#" rel="popover" id="popoverAnchor-filter-{$s.fieldName}" style="display: inline;"
-                                                                data-popover-content="#popover-filter-{$s.fieldName}" data-placement="right"
-                                                                 class="btn btn-{if $s.filter}success{else}default{/if}"
-                                                                title="Filter {$s.fieldName}">
-                                                                <span class="glyphicon glyphicon-filter"></span>
-                                                            </a>
-                                                        </div>
-                                                        <div id="popover-filter-{$s.fieldName}" class="hide">
-                                                            <form style="display: inline;" id="dettachBreakPointDebugger" method="post" name="dettachBreakPointDebugger">
-                                                                <input type="hidden" name="fieldName" value="{$s.fieldName}"/>
-                                                                <input style="display: inline;" type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                                                    class="form-control" placeholder="filter" value="{if $s.filter}{$s.filter}{/if}"
-                                                                    name="filter" id="filterPicker" data-original-title="" title="filter">
-                                                                <button style="display: inline;" title="memoryHisto" type="submit" name="action" value="filter" class="btn btn-success ladda-button"  data-spinner-color="#222" data-style="expand-right">
-                                                                    <span class="glyphicon glyphicon-play"></span>
-                                                                </button>
-                                                            </form>
-                                                        </div>
-                                                    </td>
-                                                    <td>
-                                                        {if $s.fullValue}
-                                                            <div style="display: inline;">
-                                                                {if $s.exception}{$s.exception}{/if}
-                                                                {$s.value}
-                                                                <a href="#" rel="popover" id="popoverAnchor-f-{$s.fieldName}" style="display: inline;"
-                                                                    data-popover-content="#popover-f-{$s.fieldName}" data-placement="bottom" class="btn btn-default"
-                                                                    title="{$s.fieldName}">
-                                                                    <span class="glyphicon glyphicon-option-horizontal"></span>
-                                                                </a>
-                                                            </div>
-                                                            <div id="popover-f-{$s.fieldName}" class="hide">
-                                                                {$s.fullValue}
-                                                            </div>
-                                                        {else}
-                                                            {if $s.exception}{$s.exception}{/if}
-                                                            {$s.value}
-                                                        {/if}
-                                                    </td>
-                                                    <td>
-                                                        {if $s.fieldNames}
-                                                            <div style="display: inline;">
-                                                                <a href="#" rel="popover" id="popoverAnchor-cf-{$s.fieldName}" style="display: inline;"
-                                                                    data-popover-content="#popover-cf-{$s.fieldName}" data-placement="left" class="btn btn-default"
-                                                                    title="Child fields of {$s.fieldName}">
-                                                                    <span class="glyphicon glyphicon-triangle-right"></span>
-                                                                </a>
-                                                            </div>
-                                                            <div id="popover-cf-{$s.fieldName}" class="hide">
-                                                                <ul  class="list-group" style="list-style-type:none">
-                                                                {foreach $cf in $s.fieldNames}
-                                                                    <li class="list-group-item">
-                                                                        <div style="display: inline;">
-                                                                            <form style="display: inline;" id="dettachBreakPointDebugger" method="post" name="dettachBreakPointDebugger">
-                                                                                <input type="hidden" name="fieldName" value="{$s.fieldName}"/>
-                                                                                <input type="hidden" name="childFieldName" value="{$cf.name}"/>
-                                                                                {if $cf.disabled}
-                                                                                    <button style="display: inline;" title="click to enable" type="submit" name="action" value="enableChildField" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
-                                                                                        <span class="glyphicon glyphicon-unchecked"></span>
-                                                                                    </button>
-                                                                                {else}
-                                                                                    <button style="display: inline;" title="click to disable" type="submit" name="action" value="disableChildField" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
-                                                                                        <span class="glyphicon glyphicon-checked"></span>
-                                                                                    </button>
-                                                                                {/if}
-                                                                            </form>
-                                                                            &nbsp;&nbsp;&nbsp;
-                                                                            {$cf.name}
-                                                                        </div>
-                                                                    </li>
-                                                                {/foreach}
-                                                            </div>
-                                                        {/if}
-                                                    </td>
-                                                </tr>
-                                            {/foreach}
-                                        </table>
-                                    </li>
+                                                            </td>
+                                                            <td>
+                                                                {if $d.fieldNames}
+                                                                    <div style="display: inline;">
+                                                                        <a href="#" rel="popover" id="popoverAnchor-cf-{$d.fieldName}" style="display: inline;"
+                                                                            data-popover-content="#popover-cf-{$d.fieldName}" data-placement="left" class=""
+                                                                            title="Child fields of {$d.fieldName}">
+                                                                            <span class="glyphicon glyphicon-triangle-right"></span>
+                                                                        </a>
+                                                                    </div>
+                                                                    <div id="popover-cf-{$d.fieldName}" class="hide">
+                                                                        <ul  class="list-group" style="list-style-type:none">
+                                                                        {foreach $cf in $d.fieldNames}
+                                                                            <li class="list-group-item">
+                                                                                <div style="display: inline;">
+                                                                                    <form style="display: inline;" id="dettachBreakPointDebugger" method="post" name="dettachBreakPointDebugger">
+                                                                                        <input type="hidden" name="sessionId" value="{$s.id}"/>
+                                                                                        <input type="hidden" name="fieldName" value="{$d.fieldName}"/>
+                                                                                        <input type="hidden" name="childFieldName" value="{$cf.name}"/>
+                                                                                        {if $cf.enabled}
+                                                                                            <button style="display: inline;" title="click to enable" type="submit" name="action" value="enableChildField">
+                                                                                                <span class="glyphicon glyphicon-unchecked"></span>
+                                                                                            </button>
+                                                                                        {else}
+                                                                                            <button style="display: inline;" title="click to disable" type="submit" name="action" value="disableChildField">
+                                                                                                <span class="glyphicon glyphicon-check"></span>
+                                                                                            </button>
+                                                                                        {/if}
+                                                                                    </form>
+                                                                                    &nbsp;&nbsp;&nbsp;
+                                                                                    {$cf.name}
+                                                                                </div>
+                                                                            </li>
+                                                                        {/foreach}
+                                                                    </div>
+                                                                {/if}
+                                                            </td>
+                                                            <td>{$d.hostName}:{$d.port}</td>
+                                                        </tr>
+                                                    {/foreach}
+                                                </table>
+                                            </li>
+                                        {/if}
+                                    {/foreach}
                                 {/if}
                             {/foreach}
-                        {/if}
-                    {/foreach}
-                </li>
-            {/if}
+                        </ul>
+                    </li>
+                {/foreach}
+            </ul>
+
         </div>
     </div>
 {/template}
