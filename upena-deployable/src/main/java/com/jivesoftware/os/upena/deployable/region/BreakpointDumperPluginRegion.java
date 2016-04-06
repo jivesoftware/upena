@@ -199,27 +199,27 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
                 }
 
                 if (input.action.equals("attachAll")) {
-                    session.attachAll();
+                    data.put("message", session.attachAll());
                 }
 
                 if (input.action.equals("dettachAll")) {
-                    session.dettachAll();
+                    data.put("message", session.dettachAll());
                 }
 
                 if (input.action.equals("removeAllConnections")) {
-                    session.removeAllConnection();
+                    data.put("message", session.removeAllConnection());
                 }
 
                 if (input.action.equals("attach")) {
-                    session.attach(input.connectionId);
+                    data.put("message", session.attach(input.connectionId));
                 }
 
                 if (input.action.equals("dettach")) {
-                    session.dettach(input.connectionId);
+                    data.put("message", session.dettach(input.connectionId));
                 }
 
                 if (input.action.equals("removeConnection")) {
-                    session.removeConnection(input.connectionId);
+                    data.put("message", session.removeConnection(input.connectionId));
                 }
 
                 if (input.action.equals("addBreakpoint")) {
@@ -362,45 +362,71 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
             }
         }
 
-        private void attach(long connectionId) {
+        private String attach(long connectionId) {
+            StringBuilder sb = new StringBuilder();
             BreakpointDebuggerState got = breakpointDebuggers.get(connectionId);
             if (got != null) {
+                sb.append("submited ").append(got.name).append("... ");
                 debuggerThread.execute(got);
+            } else {
+                sb.append("could not dettach because there was no debugger for connectionId=").append(connectionId).append("... ");
             }
+            return sb.toString();
         }
 
-        private void dettach(long connectionId) {
+        private String dettach(long connectionId) {
+            StringBuilder sb = new StringBuilder();
             BreakpointDebuggerState got = breakpointDebuggers.get(connectionId);
             if (got != null) {
+                sb.append("dettach ").append(got.name).append("... ");
                 got.breakpointDebugger.dettach();
+            } else {
+                sb.append("could not dettach because there was no debugger for connectionId=").append(connectionId).append("... ");
             }
+            return sb.toString();
         }
 
-        private void removeConnection(long connectionId) {
+        private String removeConnection(long connectionId) {
+            StringBuilder sb = new StringBuilder();
             BreakpointDebuggerState got = breakpointDebuggers.get(connectionId);
             if (got != null) {
+                sb.append("dettach ").append(got.name).append("... ");
                 got.breakpointDebugger.dettach();
+                sb.append("removed connectionId ").append(connectionId).append("... ");
                 breakpointDebuggers.remove(connectionId);
+            } else {
+                sb.append("could not find a connection at id ").append(connectionId).append("... ");
             }
+            return sb.toString();
         }
 
-        private void attachAll() {
+        private String attachAll() {
+            StringBuilder sb = new StringBuilder();
             for (BreakpointDebuggerState value : breakpointDebuggers.values()) {
+                sb.append("submited ").append(value.name).append("... ");
                 debuggerThread.execute(value);
             }
+            return sb.toString();
         }
 
-        private void dettachAll() {
+        private String dettachAll() {
+            StringBuilder sb = new StringBuilder();
             for (BreakpointDebuggerState value : breakpointDebuggers.values()) {
+                sb.append("dettach ").append(value.name).append("... ");
                 value.breakpointDebugger.dettach();
             }
+            return sb.toString();
         }
 
-        private void removeAllConnection() {
+        private String removeAllConnection() {
+            StringBuilder sb = new StringBuilder();
             for (Map.Entry<Long, BreakpointDebuggerState> entry : breakpointDebuggers.entrySet()) {
+                sb.append("dettach ").append(entry.getValue().breakpointDebugger.getHostName()).append("... ");
                 entry.getValue().breakpointDebugger.dettach();
+                sb.append("removed breakpointDebugger ").append(entry.getKey()).append("... ");
                 breakpointDebuggers.remove(entry.getKey());
             }
+            return sb.toString();
         }
 
         private void enableBreakpointField(String className, int lineNumber, String breakPointFieldName) {
