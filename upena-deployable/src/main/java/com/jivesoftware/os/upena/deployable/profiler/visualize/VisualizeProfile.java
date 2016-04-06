@@ -92,6 +92,10 @@ public class VisualizeProfile {
         selectedServiceName.set(serviceName);
     }
 
+    public CallDepth[] callStack(String serviceName) {
+        return servicesCallDepthStack.getCopy(serviceName);
+    }
+
     public IImage render(Map<String, Object> data,
         boolean enabled,
         int _h,
