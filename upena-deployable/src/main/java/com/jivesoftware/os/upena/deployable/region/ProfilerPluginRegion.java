@@ -4,6 +4,9 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
+import com.jivesoftware.os.upena.deployable.profiler.model.CallClass;
+import com.jivesoftware.os.upena.deployable.profiler.model.CallDepth;
+import com.jivesoftware.os.upena.deployable.profiler.model.ClassMethod;
 import com.jivesoftware.os.upena.deployable.profiler.visualize.VStrategies.Background;
 import com.jivesoftware.os.upena.deployable.profiler.visualize.VStrategies.BarStrat;
 import com.jivesoftware.os.upena.deployable.profiler.visualize.VStrategies.ClassNameStrat;
@@ -20,7 +23,9 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.imageio.ImageIO;
 import org.apache.commons.codec.binary.Base64;
 
@@ -149,6 +154,42 @@ public class ProfilerPluginRegion implements PageRegion<ProfilerPluginRegionInpu
                 String base64ii = Base64.encodeBase64String(baos.toByteArray());
                 data.put("profile", "data:image/png;base64," + base64ii);
             }
+
+            List<Map<String, Object>> calls = Lists.newArrayList();
+            CallDepth[] callDepths = visualizeProfile.callStack(input.serviceName);
+            if (callDepths != null) {
+                for (int i = 0; i < callDepths.length; i++) {
+                    CallDepth callDepth = callDepths[i];
+
+                    Map<String, Object> depth = Maps.newHashMap();
+                    depth.put("depth", String.valueOf(i + 1));
+
+                    List<Map<String, Object>> classes = Lists.newArrayList();
+                    CallClass[] callClasses = callDepth.getCopy();
+                    for (CallClass callClass : callClasses) {
+                        Map<String, Object> clazz = Maps.newHashMap();
+
+                        clazz.put("name", callClass.getName());
+                        clazz.put("failed", callClass.getFailed());
+                        clazz.put("failedLatency", callClass.getFailedlatency());
+                        clazz.put("called", callClass.getCalled());
+                        clazz.put("successLatency", callClass.getSuccesslatency());
+
+                        ConcurrentHashMap<String, ClassMethod> classMethods = callClass.getClassMethods();
+                        for (Map.Entry<String, ClassMethod> entry : classMethods.entrySet()) {
+                            //entry.getValue().
+                        }
+
+
+                        classes.add(clazz);
+                    }
+
+                    depth.put("classes",classes);
+                    calls.add(depth);
+                }
+            }
+
+            data.put("calls", calls);
 
         } catch (Exception e) {
             log.error("Unable to retrieve data", e);

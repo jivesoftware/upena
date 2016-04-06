@@ -193,7 +193,7 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
                         }
                     }
 
-                    if (input.hostName != null && input.port != -1) {
+                    if (input.hostName != null && !input.hostName.isEmpty() && input.port > 0) {
                         session.add(debuggerSessionId.incrementAndGet(), "manual", input.hostName, input.port);
                     }
                 }
@@ -218,7 +218,7 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
                     session.dettach(input.connectionId);
                 }
 
-                if (input.action.equals("removeConnnectiion")) {
+                if (input.action.equals("removeConnection")) {
                     session.removeConnection(input.connectionId);
                 }
 
