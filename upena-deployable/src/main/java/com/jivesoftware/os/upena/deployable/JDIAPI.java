@@ -393,6 +393,7 @@ public class JDIAPI {
                     log.add("Attached to " + vm.description());
 
                     while (attached.get()) {
+                        log.clear();
                         attachedBreakpoints.clear();
                         long breakPointsVersion = version.get();
                         List<Location> breakpointLocations = new ArrayList<>();
@@ -432,6 +433,7 @@ public class JDIAPI {
                                     log.add("Cleared all breakpoints");
                                     break;
                                 }
+                                log.clear();
                                 EventSet evtSet = evtQueue.remove(1000);
                                 if (evtSet == null) {
                                     if (attached.get()) {

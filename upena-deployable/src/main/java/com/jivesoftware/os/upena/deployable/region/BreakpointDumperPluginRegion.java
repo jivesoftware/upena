@@ -292,9 +292,10 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
                         breakpoint.put("lineNumber", bp.getLineNumber());
                         breakpoint.put("progress", state.progress(bp.getClassName(), bp.getLineNumber()));
                         List<Map<String, Object>> got = state.getCaptured(bp.getClassName(), bp.getLineNumber());
-                        breakpoint.put("dump", got);
                         if (got == null || got.isEmpty()) {
                             got = state.getCapturing(bp.getClassName(), bp.getLineNumber());
+                            breakpoint.put("dump", got);
+                        } else {
                             breakpoint.put("dump", got);
                         }
 
@@ -470,7 +471,6 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
         private final Map<String, List<Map<String, Object>>> capturingFrames = new ConcurrentHashMap<>();
         private final Map<String, List<Map<String, Object>>> capturedFrames = new ConcurrentHashMap<>();
 
-        private AtomicBoolean capturingFailedFilters = new AtomicBoolean(false);
         // breakpoint -> fieldName -> fieldState
         private final Map<String, Capturing> capturing = new ConcurrentHashMap<>();
         // breakpoint -> fieldName -> version -> fieldState
@@ -505,8 +505,9 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
                 return;
             }
             try {
-                running.compareAndSet(false, true);
-                breakpointDebugger.run(this, this);
+                if (running.compareAndSet(false, true)) {
+                    breakpointDebugger.run(this, this);
+                }
             } catch (Exception x) {
                 breakpointDebugger.log(x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace()));
             } finally {
@@ -631,7 +632,7 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
             }
             List<Map<String, Object>> vs = new ArrayList<>(got.size());
             for (Map<String, Object> value : got.values()) {
-                vs.add(value);
+                vs.add(new HashMap<>(value));
             }
             return vs;
         }
@@ -644,7 +645,7 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
             }
             List<Map<String, Object>> vs = new ArrayList<>(got.size());
             for (Map<String, Object> value : got.values()) {
-                vs.add(value);
+                vs.add(new HashMap<>(value));
             }
             return vs;
         }
