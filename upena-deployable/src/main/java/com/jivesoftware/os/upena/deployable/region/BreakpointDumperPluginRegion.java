@@ -505,9 +505,9 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
                 return;
             }
             try {
-                if (running.compareAndSet(false, true)) {
-                    breakpointDebugger.run(this, this);
-                }
+                running.compareAndSet(false, true);
+                breakpointDebugger.run(this, this);
+
             } catch (Exception x) {
                 breakpointDebugger.log(x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace()));
             } finally {
