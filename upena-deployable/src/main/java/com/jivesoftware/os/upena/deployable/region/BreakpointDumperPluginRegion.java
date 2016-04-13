@@ -630,10 +630,23 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
             if (got == null) {
                 return null;
             }
+
             List<Map<String, Object>> vs = new ArrayList<>(got.size());
-            for (Map<String, Object> value : got.values()) {
-                vs.add(new HashMap<>(value));
+            for (Map.Entry<String, Map<String, Object>> entry : got.entrySet()) {
+                HashMap<String, Object> state = new HashMap<>(entry.getValue());
+
+                String clf = breakpointClass + ":" + lineNumber + ":" + entry.getKey();
+                if (disabledFields.contains(clf)) {
+                    state.put("disabled", String.valueOf(true));
+                    state.put("value", "DISABLED");
+                }
+                String filter = fieldFilters.get(clf);
+                if (filter != null) {
+                    state.put("filter", filter);
+                }
+                vs.add(state);
             }
+
             return vs;
         }
 
