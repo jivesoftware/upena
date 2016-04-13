@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.NavigableMap;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -248,6 +247,10 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
                     session.setBreakPointFieldFilter(input.className, input.lineNumber, input.breakPointFieldName, input.filter);
                 }
 
+                if (input.action.equals("removeBreakPointFieldFilter")) {
+                    session.removeBreakPointFieldFilter(input.className, input.lineNumber, input.breakPointFieldName);
+                }
+
                 if (input.action.equals("enableBreakPointField")) {
                     session.enableBreakpointField(input.className, input.lineNumber, input.breakPointFieldName);
                 }
@@ -447,6 +450,12 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
             }
         }
 
+        private void removeBreakPointFieldFilter(String className, int lineNumber, String breakPointFieldName) {
+             for (BreakpointDebuggerState value : breakpointDebuggers.values()) {
+                value.removeBreakPointFieldFilter(className, lineNumber, breakPointFieldName);
+            }
+        }
+
     }
 
     static class BreakpointDebuggerState implements BreakpointState, StackFrames, Runnable {
@@ -459,7 +468,7 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
 
         private AtomicBoolean capturingFailedFilters = new AtomicBoolean(false);
         // breakpoint -> fieldName -> fieldState
-        private final Map<String, NavigableMap<String, Map<String, Object>>> capturing = new ConcurrentHashMap<>();
+        private final Map<String, Capturing> capturing = new ConcurrentHashMap<>();
         // breakpoint -> fieldName -> version -> fieldState
         private final Map<String, Map<String, Map<String, Object>>> captured = new ConcurrentHashMap<>();
         private final Map<String, Double> progress = new ConcurrentHashMap<>();
@@ -480,6 +489,10 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
             } else {
                 fieldFilters.put(className + ":" + lineNumber + ":" + breakPointFieldName, filter);
             }
+        }
+
+        private void removeBreakPointFieldFilter(String className, int lineNumber, String breakPointFieldName) {
+            fieldFilters.remove(className + ":" + lineNumber + ":" + breakPointFieldName);
         }
 
         @Override
@@ -533,9 +546,9 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
             String key = breakpointClass + ":" + lineNumber;
             this.progress.put(key, progress);
             if (className == null && fieldName == null && value == null && x == null) {
-                Map<String, Map<String, Object>> got = capturing.get(key);
+                Capturing got = capturing.get(key);
                 if (got != null && !got.isEmpty()) {
-                    if (capturingFailedFilters.get()) { // HMMM fix this
+                    if (got.filterFailed) {
                         capturing.remove(key);
                     } else {
                         captured.put(key, got);
@@ -543,8 +556,8 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
                     }
                 }
             } else {
-                Map<String, Map<String, Object>> got = capturing.computeIfAbsent(key, (String t) -> new ConcurrentSkipListMap<>());
-
+                Capturing got = capturing.computeIfAbsent(key, (k) -> new Capturing());
+               
                 Map<String, Object> state = new HashMap<>();
                 state.put("className", className);
                 state.put("fieldName", fieldName);
@@ -558,7 +571,7 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
                     if (filter != null) {
                         state.put("filter", v);
                         if (!v.contains(filter)) {
-                            capturingFailedFilters.set(true);
+                            got.filterFailed = true;
                         }
                     }
 
@@ -582,6 +595,7 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
                 state.put("exception", (x != null) ? x.getMessage() : "");
                 state.put("hostName", hostName);
                 state.put("port", String.valueOf(port));
+
                 got.put(fieldName, state);
             }
             return true;
@@ -644,6 +658,13 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
         public boolean isCapturing() {
             return running.get();
         }
+
+
+    }
+
+    static class Capturing extends ConcurrentSkipListMap<String, Map<String, Object>> {
+
+        public boolean filterFailed = false;
 
     }
 //
