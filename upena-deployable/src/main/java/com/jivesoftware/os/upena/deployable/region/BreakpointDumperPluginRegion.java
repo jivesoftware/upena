@@ -245,18 +245,22 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
 
                 if (input.action.equals("setBreakPointFieldFilter")) {
                     session.setBreakPointFieldFilter(input.className, input.lineNumber, input.breakPointFieldName, input.filter);
+                    data.put("message", "Adding filter=" + input.filter + " to " + input.className + ":" + input.lineNumber + ":" + input.breakPointFieldName);
                 }
 
                 if (input.action.equals("removeBreakPointFieldFilter")) {
                     session.removeBreakPointFieldFilter(input.className, input.lineNumber, input.breakPointFieldName);
+                    data.put("message", "Removing filter=" + input.filter + " to " + input.className + ":" + input.lineNumber + ":" + input.breakPointFieldName);
                 }
 
                 if (input.action.equals("enableBreakPointField")) {
                     session.enableBreakpointField(input.className, input.lineNumber, input.breakPointFieldName);
+                    data.put("message", "Enable " + input.className + ":" + input.lineNumber + ":" + input.breakPointFieldName);
                 }
 
                 if (input.action.equals("disableBreakPointField")) {
                     session.disableBreakpointField(input.className, input.lineNumber, input.breakPointFieldName);
+                    data.put("message", "Disable " + input.className + ":" + input.lineNumber + ":" + input.breakPointFieldName);
                 }
             }
         }
@@ -451,7 +455,7 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
         }
 
         private void removeBreakPointFieldFilter(String className, int lineNumber, String breakPointFieldName) {
-             for (BreakpointDebuggerState value : breakpointDebuggers.values()) {
+            for (BreakpointDebuggerState value : breakpointDebuggers.values()) {
                 value.removeBreakPointFieldFilter(className, lineNumber, breakPointFieldName);
             }
         }
@@ -557,7 +561,7 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
                 }
             } else {
                 Capturing got = capturing.computeIfAbsent(key, (k) -> new Capturing());
-               
+
                 Map<String, Object> state = new HashMap<>();
                 state.put("className", className);
                 state.put("fieldName", fieldName);
@@ -658,7 +662,6 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
         public boolean isCapturing() {
             return running.get();
         }
-
 
     }
 
