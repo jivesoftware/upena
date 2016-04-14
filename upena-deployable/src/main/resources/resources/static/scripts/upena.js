@@ -290,6 +290,7 @@ upena.cfg = {
                     $(this).val(value);
                     upena.cfg.checkInput($(this));
                 });
+                return false;
             });
         });
         $('button.upena-cfg-copy').each(function (i) {
@@ -302,6 +303,7 @@ upena.cfg = {
                     $(this).val(value);
                     upena.cfg.checkInput($(this));
                 });
+                return false;
             });
         });
         $('input[type=text].upena-cfg-field-a').on('input', function () {
