@@ -95,7 +95,7 @@
         <div class="container">
             <div id="navbar" class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
-                    <liclass="active"><a class="navbar-brand" href="/">
+                    <li class="active"><a class="navbar-brand" href="/">
                         <span><img src="/static/img/icon.png" alt="Upena"  height="24"></span>
                     </li>
                     <li class="dropdown">
@@ -169,13 +169,16 @@
             </ul>
         </li>
          {foreach $plugin in $plugins}
-            {if $plugin.active}
+            {if $plugin.seperator}
+                <li style="border-bottom: 1px solid #ffffff; font-style: italic; color: gray;"></li>
+            {elseif $plugin.active}
+            
                 <li class="active">
                     <a class="ladda-button" data-spinner-color="#222" data-style="expand-right" href="{$plugin.path}" title="{$plugin.name}">
                         {if $plugin.icon}
-                            <span class="ladda-label"><img src="/static/img/{$plugin.icon}.png" alt="Release" style="width:20px;height:20px;">&nbsp;{$plugin.name}</span>
+                            {sp}<span class="ladda-label"><img src="/static/img/{$plugin.icon}.png" alt="Release" style="width:20px;height:20px;">{sp}{$plugin.name}</span>
                         {else}
-                            <span class="ladda-label glyphicon glyphicon-{$plugin.glyphicon}"></span>&nbsp;{$plugin.name}
+                            {sp}<span class="ladda-label glyphicon glyphicon-{$plugin.glyphicon}"></span>{sp}{$plugin.name}
                         {/if}
                     </a>
                 </li>
@@ -183,9 +186,9 @@
                 <li>
                     <a style="border-radius: 10px 10px 0 0;" class="ladda-button"  data-spinner-color="#222" data-style="expand-right" href="{$plugin.path}" title="{$plugin.name}">
                         {if $plugin.icon}
-                            <span class="ladda-label"><img src="/static/img/{$plugin.icon}.png" alt="Release" style="width:20px;height:20px;">&nbsp;{$plugin.name}</span>
+                            {sp}<span class="ladda-label"><img src="/static/img/{$plugin.icon}.png" alt="Release" style="width:20px;height:20px;">{sp}{$plugin.name}</span>
                         {else}
-                           <span class="ladda-label glyphicon glyphicon-{$plugin.glyphicon}"></span>&nbsp;{$plugin.name}
+                           {sp}<span class="ladda-label glyphicon glyphicon-{$plugin.glyphicon}"></span>{sp}{$plugin.name}
                         {/if}
                     </a>
                 </li>
