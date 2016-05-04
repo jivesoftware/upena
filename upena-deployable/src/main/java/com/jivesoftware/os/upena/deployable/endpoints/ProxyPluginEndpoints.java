@@ -16,6 +16,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -76,11 +77,10 @@ public class ProxyPluginEndpoints {
     @GET
     @Path("/redirect")
     @Produces(MediaType.TEXT_HTML)
-    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response redirect(@Context HttpServletRequest httpRequest,
-        @FormParam("host") @DefaultValue("") String host,
-        @FormParam("port") @DefaultValue("-1") int port,
-        @FormParam("path") @DefaultValue("") String path) {
+        @QueryParam("host") @DefaultValue("") String host,
+        @QueryParam("port") @DefaultValue("-1") int port,
+        @QueryParam("path") @DefaultValue("") String path) {
         try {
 
             UpenaProxy redirect = pluginRegion.redirect(host, port);
