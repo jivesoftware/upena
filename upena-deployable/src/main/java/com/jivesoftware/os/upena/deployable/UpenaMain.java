@@ -65,6 +65,7 @@ import com.jivesoftware.os.upena.deployable.endpoints.JVMPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ModulesPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ProfilerPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ProjectsPluginEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.ProxyPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ReleasesPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.RepoPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.SARPluginEndpoints;
@@ -93,6 +94,7 @@ import com.jivesoftware.os.upena.deployable.region.MenuRegion;
 import com.jivesoftware.os.upena.deployable.region.ModulesPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ProfilerPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ProjectsPluginRegion;
+import com.jivesoftware.os.upena.deployable.region.ProxyPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ReleasesPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.RepoPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.SARPluginRegion;
@@ -405,6 +407,7 @@ public class UpenaMain {
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/projectBuildOutput.soy"), "projectOutput.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/projectBuildOutputTail.soy"), "projectOutputTail.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/repoPluginRegion.soy"), "repoPluginRegion.soy");
+        soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/proxyPluginRegion.soy"), "proxyPluginRegion.soy");
 
         if (jvmaapi != null) {
             soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/jvmPluginRegion.soy"), "jvmPluginRegion.soy");
@@ -486,6 +489,10 @@ public class UpenaMain {
         ManagePlugin modules = new ManagePlugin("wrench", null, "Modules", "/ui/modules",
             ModulesPluginEndpoints.class,
             new ModulesPluginRegion(repositoryProvider, "soy.page.modulesPluginRegion", renderer, upenaStore), null);
+        
+        ManagePlugin proxy = new ManagePlugin("random", null, "Proxies", "/ui/proxy",
+            ProxyPluginEndpoints.class,
+            new ProxyPluginRegion("soy.page.proxyPluginRegion", renderer, amzaService, upenaStore, upenaService, ubaService, ringHost), null);
 
         ManagePlugin ring = new ManagePlugin("leaf", null, "Upena", "/ui/ring",
             UpenaRingPluginEndpoints.class,
@@ -533,6 +540,7 @@ public class UpenaMain {
         plugins.add(health);
         plugins.add(connectivity);
         plugins.add(new ManagePlugin(null, null, "Tools", null, null, null, "seperator"));
+        plugins.add(proxy);
         if (jvm != null) {
             plugins.add(jvm);
             plugins.add(breakpointDumper);
