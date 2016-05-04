@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.jivesoftware.os.upena.inheritance.poms</groupId>
         <artifactId>executable-build-management</artifactId>
-        <version>0.506</version>
+        <version>0.507</version>
         <relativePath>../inheritance-poms/executable-build-management/pom.xml</relativePath>
     </parent>
     <groupId>com.jivesoftware.os.upena</groupId>
@@ -115,12 +115,12 @@
 
     <dependencies>
         <dependency>
-          <groupId>com.sun</groupId>
-          <artifactId>tools</artifactId>
-          <version>1.4.2</version>
-          <scope>system</scope>
-<!--          /Library/Java/JavaVirtualMachines/jdk1.8.0_60.jdk/Contents/Home/lib/tools.jar-->
-          <systemPath>${java.home}/../lib/tools.jar</systemPath>
+            <groupId>com.sun</groupId>
+            <artifactId>tools</artifactId>
+            <version>1.4.2</version>
+            <scope>system</scope>
+            <!--          /Library/Java/JavaVirtualMachines/jdk1.8.0_60.jdk/Contents/Home/lib/tools.jar-->
+            <systemPath>${java.home}/../lib/tools.jar</systemPath>
         </dependency>
 
 
@@ -172,7 +172,7 @@
         <dependency>
             <groupId>com.jivesoftware.os.upena</groupId>
             <artifactId>upena-shared</artifactId>
-            <version>0.506</version>
+            <version>0.507</version>
         </dependency>
         <dependency>
             <groupId>com.jivesoftware.os.amza</groupId>
@@ -193,12 +193,12 @@
         <dependency>
             <groupId>com.jivesoftware.os.upena</groupId>
             <artifactId>uba-service</artifactId>
-            <version>0.506</version>
+            <version>0.507</version>
         </dependency>
         <dependency>
             <groupId>com.jivesoftware.os.upena</groupId>
             <artifactId>upena-service</artifactId>
-            <version>0.506</version>
+            <version>0.507</version>
         </dependency>
         <dependency>
             <groupId>com.jivesoftware.os.jive.utils</groupId>
@@ -215,7 +215,7 @@
         <dependency>
             <groupId>com.jivesoftware.os.upena</groupId>
             <artifactId>upena-config</artifactId>
-            <version>0.506</version>
+            <version>0.507</version>
         </dependency>
         <dependency>
             <groupId>de.ruedigermoeller</groupId>
