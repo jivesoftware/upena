@@ -434,7 +434,7 @@ public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
             input.value,
             input.overridden,
             suffix
-            );
+        );
 
         if (input.action.equals("revert")) {
             Map<String, Map<String, String>> property_instanceKey_revert = new HashMap<>();
@@ -577,15 +577,33 @@ public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
                     filterProperties(requestHelper, key, i, properties,
                         gotDefault != null ? gotDefault.properties : Collections.emptyMap(),
                         gotOverride != null ? gotOverride.properties : Collections.emptyMap(),
-                        propertyContains, valueContains, overridden);
+                        propertyContains, valueContains);
                 } else {
 
                     Map<String, String> defaultHealthMaps = configStore.get(key.getKey(), "default" + suffix, null, false);
                     Map<String, String> overriddenHealtheMap = configStore.get(key.getKey(), "override" + suffix, null, false);
                     filterProperties(null, key, i, properties, defaultHealthMaps, overriddenHealtheMap, propertyContains,
-                        valueContains, overridden);
+                        valueContains);
                 }
+            }
 
+            if (overridden) {
+                Set<String> removeableProperties = new HashSet<>();
+                for (Entry<String, List<Map<String, String>>> entry : properties.entrySet()) {
+                    boolean atleastOneOverride = false;
+                    for (Map<String, String> map : entry.getValue()) {
+                        if (map.get("override") != null) {
+                            atleastOneOverride = true;
+                            break;
+                        }
+                    }
+                    if (!atleastOneOverride) {
+                        removeableProperties.add(entry.getKey());
+                    }
+                }
+                for (String removeableProperty : removeableProperties) {
+                    properties.remove(removeableProperty);
+                }
             }
         }
         return properties;
@@ -598,8 +616,7 @@ public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
         Map<String, String> defaultServiceMaps,
         Map<String, String> overriddenServiceMap,
         String propertyContains,
-        String valueContains,
-        boolean isOverridden) throws Exception {
+        String valueContains) throws Exception {
 
         Map<ClusterKey, String> clusterNameCache = new HashMap<>();
         Map<HostKey, String> hostNameCache = new HashMap<>();
@@ -628,9 +645,6 @@ public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
                     continue;
                 }
             }
-            if (isOverridden && overiddenValue == null) {
-                continue;
-            }
 
             Map<String, String> occurence = new HashMap<>();
             occurence.put("instanceKey", key.getKey());
@@ -638,8 +652,8 @@ public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
             occurence.put("hostKey", instance.hostKey.getKey());
             occurence.put("serviceKey", instance.serviceKey.getKey());
             occurence.put("instance", String.valueOf(instance.instanceId));
-            occurence.put("override", overriddenServiceMap.get(property));
-            occurence.put("default", defaultServiceMaps.get(property));
+            occurence.put("override", overiddenValue);
+            occurence.put("default", defaultValue);
 
             if (requestHelper != null) {
 
