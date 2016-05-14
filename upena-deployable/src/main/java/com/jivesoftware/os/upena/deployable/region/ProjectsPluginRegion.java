@@ -225,7 +225,7 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
                                                     ps.println("GIT open repo " + localPath);
                                                     gitProject = Git.open(localPath);
                                                     Status status = gitProject.status().call();
-                                                    if (!status.hasUncommittedChanges()) {
+                                                    if (!status.isClean()) {
                                                         ps.println("Build canceled because repo has uncommited changes.");
                                                         printGitStatus(status, ps);
                                                         finalOutput = failedOutput;

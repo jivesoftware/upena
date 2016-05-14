@@ -31,7 +31,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import org.eclipse.jetty.util.ConcurrentHashSet;
 
@@ -479,8 +478,7 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
 
         private final Set<String> disabledFields = new ConcurrentHashSet<>();
         private final Map<String, String> fieldFilters = new ConcurrentHashMap<>();
-        private final AtomicBoolean running = new AtomicBoolean(false);
-
+        
         public BreakpointDebuggerState(long id, String name, BreakpointDebugger breakpointDebugger) {
             this.id = id;
             this.name = name;
@@ -505,13 +503,9 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
                 return;
             }
             try {
-                running.compareAndSet(false, true);
                 breakpointDebugger.run(this, this);
-
             } catch (Exception x) {
                 breakpointDebugger.log(x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace()));
-            } finally {
-                running.compareAndSet(true, false);
             }
         }
 
@@ -674,7 +668,7 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
         }
 
         public boolean isCapturing() {
-            return running.get();
+            return breakpointDebugger.attached();
         }
 
     }
@@ -684,29 +678,4 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
         public boolean filterFailed = false;
 
     }
-//
-//    private Map<String, Object> toMap(InstanceKey key, Instance value) throws Exception {
-//
-//        Map<String, Object> map = new HashMap<>();
-//        map.put("key", key.getKey());
-//
-//        Cluster cluster = upenaStore.clusters.get(value.clusterKey);
-//        Host host = upenaStore.hosts.get(value.hostKey);
-//        Service service = upenaStore.services.get(value.serviceKey);
-//        ReleaseGroup releaseGroup = upenaStore.releaseGroups.get(value.releaseGroupKey);
-//
-//        String name = cluster != null ? cluster.name : "unknownCluster";
-//        name += " - ";
-//        name += host != null ? host.name : "unknownHost";
-//        name += " - ";
-//        name += service != null ? service.name : "unknownService";
-//        name += " - ";
-//        name += String.valueOf(value.instanceId);
-//        name += " - ";
-//        name += releaseGroup != null ? releaseGroup.name : "unknownRelease";
-//
-//        map.put("key", value.releaseGroupKey.getKey());
-//        map.put("name", name);
-//        return map;
-//    }
 }
