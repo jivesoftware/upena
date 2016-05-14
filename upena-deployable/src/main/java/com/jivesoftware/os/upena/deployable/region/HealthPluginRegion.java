@@ -60,6 +60,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
     private final ExecutorService executorService = Executors.newCachedThreadPool();
 
     private final Map<InstanceDescriptor, SparseCircularHitsBucketBuffer> instanceHealthHistory = new ConcurrentHashMap<>();
+    private final long startupTime = System.currentTimeMillis();
 
     public HealthPluginRegion(RingHost ringHost,
         String template,
@@ -235,7 +236,9 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
 
                 String[] parts = m.getKey().split(":");
                 Long recency = nodeRecency.get(parts[1] + ":" + parts[2]);
-                String age = recency != null ? UpenaEndpoints.humanReadableUptime(System.currentTimeMillis() - recency) : "unknown";
+                String age = recency != null
+                    ? UpenaEndpoints.humanReadableUptime(System.currentTimeMillis() - recency)
+                    : ">" + UpenaEndpoints.humanReadableUptime(System.currentTimeMillis() - startupTime);
 
                 healths.add(ImmutableMap.<String, Object>builder()
                     .put("id", m.getKey())
@@ -505,7 +508,9 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                     if (hi != null) {
 
                         Long recency = nodeRecency.get(nodeHealth.host + ":" + nodeHealth.port);
-                        String age = recency != null ? UpenaEndpoints.humanReadableUptime(System.currentTimeMillis() - recency) : "unknown";
+                        String age = recency != null
+                            ? UpenaEndpoints.humanReadableUptime(System.currentTimeMillis() - recency)
+                            : ">" + UpenaEndpoints.humanReadableUptime(System.currentTimeMillis() - startupTime);
 
                         float hh = (float) Math.max(0, nodeHealth.health);
                         hostRows.get(hi).get(0).put("color", "#" + getHEXTrafficlightColor(hh, 1f));

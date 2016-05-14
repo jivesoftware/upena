@@ -327,6 +327,8 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
 
                                                 List<String> goals = Lists.newArrayList(Splitter.on(' ').split(project.goals));
                                                 InvocationRequest request = new DefaultInvocationRequest();
+                                                request.setDebug(true); // TODO expose
+                                                request.setRecursive(true);
                                                 request.setPomFile(new File(localPath, project.pom));
                                                 request.setGoals(goals);
                                                 request.setOutputHandler((line) -> {
@@ -348,6 +350,8 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
                                                     ps.println("Invoking deploying... ");
 
                                                     request = new DefaultInvocationRequest();
+                                                    request.setDebug(true); // TODO expose
+                                                    request.setRecursive(true);
                                                     request.setPomFile(new File(localPath, project.pom));
                                                     request.setGoals(Arrays.asList("javadoc:jar", "source:jar", "deploy"));
                                                     request.setOutputHandler((line) -> {
@@ -810,6 +814,8 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
             //mvn dependency:list -DappendOutput=true -DoutputFile=/jive/tmp/deps.txt
             List<String> goals = Arrays.asList("org.codehaus.mojo:versions-maven-plugin:2.1:set"); // TODO expose to config
             InvocationRequest request = new DefaultInvocationRequest();
+            request.setDebug(true); // TODO expose
+            request.setRecursive(true);
             request.setPomFile(pomFile);
             request.setGoals(goals);
             request.setOutputHandler((line) -> {
@@ -902,6 +908,8 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
         //mvn dependency:list -DappendOutput=true -DoutputFile=/jive/tmp/deps.txt
         List<String> goals = Arrays.asList("dependency:tree");
         InvocationRequest request = new DefaultInvocationRequest();
+        request.setDebug(true); // TODO expose
+        request.setRecursive(true);
         request.setPomFile(pomFile);
         request.setGoals(goals);
         request.setOutputHandler((line) -> {
