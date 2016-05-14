@@ -25,6 +25,7 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -225,7 +226,7 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
                                                     ps.println("GIT open repo " + localPath);
                                                     gitProject = Git.open(localPath);
                                                     Status status = gitProject.status().call();
-                                                    if (!status.isClean()) {
+                                                    if (!isClean(status)) {
                                                         ps.println("Build canceled because repo has uncommited changes.");
                                                         printGitStatus(status, ps);
                                                         finalOutput = failedOutput;
@@ -667,7 +668,7 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
                     gitStatus.put("uncommited", status.getUncommittedChanges().isEmpty() ? null : status.getUncommittedChanges());
                     gitStatus.put("untracked", status.getUntracked().isEmpty() ? null : status.getUntracked());
                     gitStatus.put("untrackedFolders", status.getUntrackedFolders().isEmpty() ? null : status.getUntrackedFolders());
-                    gitStatus.put("isClean", String.valueOf(status.isClean()));
+                    gitStatus.put("isClean", String.valueOf(isClean(status)));
                     row.put("gitStatus", gitStatus);
 
                 } catch (Exception x) {
@@ -871,31 +872,73 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
 
     }
 
+    public boolean isClean(Status status) {
+        if (status == null) {
+            return false;
+        }
+        if (!orEmpty(status.getAdded()).isEmpty()) {
+            return false;
+        }
+        if (!orEmpty(status.getChanged()).isEmpty()) {
+            return false;
+        }
+        if (!orEmpty(status.getConflicting()).isEmpty()) {
+            return false;
+        }
+        if (!orEmpty(status.getMissing()).isEmpty()) {
+            return false;
+        }
+        if (!orEmpty(status.getModified()).isEmpty()) {
+            return false;
+        }
+        if (!orEmpty(status.getRemoved()).isEmpty()) {
+            return false;
+        }
+        if (!orEmpty(status.getUncommittedChanges()).isEmpty()) {
+            return false;
+        }
+        if (!orEmpty(status.getUntrackedFolders()).isEmpty()) {
+            return false;
+        }
+        return true;
+    }
+
     private void printGitStatus(Status status, PrintStream ps) {
-        for (String string : status.getAdded()) {
-            ps.println("Added:" + string);
+        if (status != null) {
+            for (String string : orEmpty(status.getAdded())) {
+                ps.println("Added:" + string);
+            }
+            for (String string : orEmpty(status.getChanged())) {
+                ps.println("Changes:" + string);
+            }
+            for (String string : orEmpty(status.getConflicting())) {
+                ps.println("Conflicting:" + string);
+            }
+            for (String string : orEmpty(status.getMissing())) {
+                ps.println("Missing:" + string);
+            }
+            for (String string : orEmpty(status.getModified())) {
+                ps.println("Modified:" + string);
+            }
+            for (String string : orEmpty(status.getRemoved())) {
+                ps.println("Removed:" + string);
+            }
+            for (String string : orEmpty(status.getUncommittedChanges())) {
+                ps.println("Uncommited:" + string);
+            }
+            for (String string : orEmpty(status.getUntrackedFolders())) {
+                ps.println("Untracked:" + string);
+            }
+        } else {
+            ps.println("status:" + null);
         }
-        for (String string : status.getChanged()) {
-            ps.println("Changes:" + string);
+    }
+
+    private Collection<String> orEmpty(Collection<String> collection) {
+        if (collection == null) {
+            return Collections.emptyList();
         }
-        for (String string : status.getConflicting()) {
-            ps.println("Conflicting:" + string);
-        }
-        for (String string : status.getMissing()) {
-            ps.println("Missing:" + string);
-        }
-        for (String string : status.getModified()) {
-            ps.println("Modified:" + string);
-        }
-        for (String string : status.getRemoved()) {
-            ps.println("Removed:" + string);
-        }
-        for (String string : status.getUncommittedChanges()) {
-            ps.println("Uncommited:" + string);
-        }
-        for (String string : status.getUntrackedFolders()) {
-            ps.println("Untracked:" + string);
-        }
+        return collection;
     }
 
     private boolean checkForUpgradeables(ProjectKey projectKey, Project project, Invoker invoker, PrintStream ps) throws Exception {
