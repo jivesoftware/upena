@@ -170,17 +170,15 @@ public class ProfilerPluginRegion implements PageRegion<ProfilerPluginRegionInpu
                         Map<String, Object> clazz = Maps.newHashMap();
 
                         clazz.put("name", callClass.getName());
-                        clazz.put("failed", callClass.getFailed());
-                        clazz.put("failedLatency", callClass.getFailedlatency());
-                        clazz.put("called", callClass.getCalled());
-                        clazz.put("successLatency", callClass.getSuccesslatency());
+                        clazz.put("failed", String.valueOf(callClass.getFailed()));
+                        clazz.put("failedLatency", String.valueOf(callClass.getFailedlatency()));
+                        clazz.put("called", String.valueOf(callClass.getCalled()));
+                        clazz.put("successLatency", String.valueOf(callClass.getSuccesslatency()));
 
                         ConcurrentHashMap<String, ClassMethod> classMethods = callClass.getClassMethods();
                         for (Map.Entry<String, ClassMethod> entry : classMethods.entrySet()) {
                             //entry.getValue().
                         }
-
-
                         classes.add(clazz);
                     }
 
