@@ -6,7 +6,6 @@ import com.jivesoftware.os.routing.bird.shared.ConnectionDescriptor;
 import com.jivesoftware.os.routing.bird.shared.ConnectionDescriptorsRequest;
 import com.jivesoftware.os.routing.bird.shared.ConnectionDescriptorsResponse;
 import com.jivesoftware.os.routing.bird.shared.ConnectionHealth;
-import com.jivesoftware.os.routing.bird.shared.HostPort;
 import com.jivesoftware.os.routing.bird.shared.InstanceConnectionHealth;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,15 +20,15 @@ import java.util.concurrent.ConcurrentHashMap;
 public class DiscoveredRoutes {
 
     public final Map<ConnectionDescriptorsRequest, TimestampedConnectionDescriptorsResponse> discoveredConnection = new ConcurrentHashMap<>();
-    public final Map<String, Map<HostPort, Map<String, ConnectionHealth>>> instanceHostPortFamilyConnectionHealths = new ConcurrentHashMap<>();
+    public final Map<String, Map<String, Map<String, ConnectionHealth>>> from_to_Family_ConnectionHealths = new ConcurrentHashMap<>();
 
     public List<InstanceConnectionHealth> routesHealth(long sinceTimestampMillis) {
         List<InstanceConnectionHealth> instanceConnectionHealths = new ArrayList<>();
 
-        for (Entry<String, Map<HostPort, Map<String, ConnectionHealth>>> instances : instanceHostPortFamilyConnectionHealths.entrySet()) {
+        for (Entry<String, Map<String, Map<String, ConnectionHealth>>> instances : from_to_Family_ConnectionHealths.entrySet()) {
 
             List<ConnectionHealth> connectionHealths = new ArrayList<>();
-            for (Entry<HostPort, Map<String, ConnectionHealth>> hostPorts : instances.getValue().entrySet()) {
+            for (Entry<String, Map<String, ConnectionHealth>> hostPorts : instances.getValue().entrySet()) {
                 for (ConnectionHealth value : hostPorts.getValue().values()) {
                     if (value.timestampMillis > sinceTimestampMillis) {
                         connectionHealths.add(value);
@@ -44,19 +43,19 @@ public class DiscoveredRoutes {
     }
 
     public void connectionHealth(InstanceConnectionHealth instanceConnectionHealth) {
-        Map<HostPort, Map<String, ConnectionHealth>> hostPortFamilyConnectionHealths = instanceHostPortFamilyConnectionHealths.computeIfAbsent(
+        Map<String, Map<String, ConnectionHealth>> to_Family_ConnectionHealths = from_to_Family_ConnectionHealths.computeIfAbsent(
             instanceConnectionHealth.instanceId, (key) -> {
                 return new ConcurrentHashMap<>();
             });
 
         for (ConnectionHealth connectionHealth : instanceConnectionHealth.connectionHealths) {
-            Map<String, ConnectionHealth> familyConnectionHealths = hostPortFamilyConnectionHealths.computeIfAbsent(
-                connectionHealth.connectionDescriptor.getHostPort(),
+            Map<String, ConnectionHealth> family_ConnectionHealths = to_Family_ConnectionHealths.computeIfAbsent(
+                connectionHealth.connectionDescriptor.getInstanceDescriptor().instanceKey,
                 (key) -> {
                     return new ConcurrentHashMap<>();
                 });
 
-            familyConnectionHealths.compute(connectionHealth.family, (String key, ConnectionHealth value) -> {
+            family_ConnectionHealths.compute(connectionHealth.family, (String key, ConnectionHealth value) -> {
                 if (value == null) {
                     return connectionHealth;
                 } else {
@@ -66,8 +65,8 @@ public class DiscoveredRoutes {
         }
     }
 
-    public Map<HostPort, Map<String, ConnectionHealth>> getConnectionHealth(String instanceId) {
-        return instanceHostPortFamilyConnectionHealths.computeIfAbsent(instanceId, (key) -> {
+    public Map<String, Map<String, ConnectionHealth>> getConnectionHealth(String instanceId) {
+        return from_to_Family_ConnectionHealths.computeIfAbsent(instanceId, (key) -> {
             return new ConcurrentHashMap<>();
         });
     }

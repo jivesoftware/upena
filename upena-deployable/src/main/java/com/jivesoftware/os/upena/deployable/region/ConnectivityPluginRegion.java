@@ -15,7 +15,6 @@ import com.jivesoftware.os.routing.bird.http.client.HttpClientFactory;
 import com.jivesoftware.os.routing.bird.http.client.HttpClientFactoryProvider;
 import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelper;
 import com.jivesoftware.os.routing.bird.shared.ConnectionHealth;
-import com.jivesoftware.os.routing.bird.shared.HostPort;
 import com.jivesoftware.os.routing.bird.shared.InstanceConnectionHealth;
 import com.jivesoftware.os.upena.deployable.UpenaEndpoints.NannyHealth;
 import com.jivesoftware.os.upena.deployable.UpenaEndpoints.NodeHealth;
@@ -223,9 +222,9 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
         Map<String, Node> nodes = new HashMap<>();
         int id = 0;
         buildClusterRoutes();
-        Map<String, Map<HostPort, Map<String, ConnectionHealth>>> routes = discoveredRoutes.instanceHostPortFamilyConnectionHealths;
+        Map<String, Map<String, Map<String, ConnectionHealth>>> routes = discoveredRoutes.from_to_Family_ConnectionHealths;
 
-        for (Map.Entry<String, Map<HostPort, Map<String, ConnectionHealth>>> entrySet : routes.entrySet()) {
+        for (Map.Entry<String, Map<String, Map<String, ConnectionHealth>>> entrySet : routes.entrySet()) {
             String instanceId = entrySet.getKey();
             Instance instance = upenaStore.instances.get(new InstanceKey(instanceId));
             if (instance != null && !filter.filter(new InstanceKey(instanceId), instance)) {
@@ -251,8 +250,8 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
                 from.count++;
             }
 
-            Map<HostPort, Map<String, ConnectionHealth>> hostPortFamilyConnectionHealths = entrySet.getValue();
-            for (Map.Entry<HostPort, Map<String, ConnectionHealth>> hostPortFamilyConnectionHealth : hostPortFamilyConnectionHealths.entrySet()) {
+            Map<String, Map<String, ConnectionHealth>> hostPortFamilyConnectionHealths = entrySet.getValue();
+            for (Map.Entry<String, Map<String, ConnectionHealth>> hostPortFamilyConnectionHealth : hostPortFamilyConnectionHealths.entrySet()) {
                 Map<String, ConnectionHealth> familyConnectionHealths = hostPortFamilyConnectionHealth.getValue();
                 for (Map.Entry<String, ConnectionHealth> familyConnectionHealth : familyConnectionHealths.entrySet()) {
                     ConnectionHealth connectionHealth = familyConnectionHealth.getValue();
@@ -273,9 +272,9 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
 
         Map<String, Edge> edges = new HashMap<>();
 
-        for (Map.Entry<String, Map<HostPort, Map<String, ConnectionHealth>>> entrySet : routes.entrySet()) {
+        for (Map.Entry<String, Map<String, Map<String, ConnectionHealth>>> entrySet : routes.entrySet()) {
             String instanceId = entrySet.getKey();
-            Map<HostPort, Map<String, ConnectionHealth>> hostPortFamilyConnectionHealths = entrySet.getValue();
+            Map<String, Map<String, ConnectionHealth>> to_Family_ConnectionHealths = entrySet.getValue();
 
             Instance instance = upenaStore.instances.get(new InstanceKey(instanceId));
             if (instance != null && !filter.filter(new InstanceKey(instanceId), instance)) {
@@ -291,15 +290,13 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
             MinMaxDouble mmd = new MinMaxDouble();
             from.focusHtml = renderConnectionHealth(mmd, nodes, serviceName, instanceId);
 
-            for (Map.Entry<HostPort, Map<String, ConnectionHealth>> hostPortFamilyConnectionHealth : hostPortFamilyConnectionHealths.entrySet()) {
+            for (Map.Entry<String, Map<String, ConnectionHealth>> to_Family_ConnectionHealth : to_Family_ConnectionHealths.entrySet()) {
 
-                HostPort hostPort = hostPortFamilyConnectionHealth.getKey();
-                Map<String, ConnectionHealth> familyConnectionHealths = hostPortFamilyConnectionHealth.getValue();
+                Map<String, ConnectionHealth> familyConnectionHealths = to_Family_ConnectionHealth.getValue();
                 Node to = null;
                 MinMaxDouble edgeWeight = new MinMaxDouble();
                 double successPerSecond = 0;
                 for (Map.Entry<String, ConnectionHealth> familyConnectionHealth : familyConnectionHealths.entrySet()) {
-                    String family = familyConnectionHealth.getKey();
                     ConnectionHealth connectionHealth = familyConnectionHealth.getValue();
 
                     if (to == null) {
@@ -399,11 +396,11 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
 
     private String renderConnectionHealth(MinMaxDouble mmd, Map<String, Node> nodes, String from, String instanceId) throws Exception {
         List<Map<String, Object>> healths = new ArrayList<>();
-        Map<HostPort, Map<String, ConnectionHealth>> connectionHealths = discoveredRoutes.getConnectionHealth(instanceId);
+        Map<String, Map<String, ConnectionHealth>> connectionHealths = discoveredRoutes.getConnectionHealth(instanceId);
 
-        for (Map.Entry<HostPort, Map<String, ConnectionHealth>> hostPortHealth : connectionHealths.entrySet()) {
+        for (Map.Entry<String, Map<String, ConnectionHealth>> toInstanceHealth : connectionHealths.entrySet()) {
 
-            for (Map.Entry<String, ConnectionHealth> familyHealth : hostPortHealth.getValue().entrySet()) {
+            for (Map.Entry<String, ConnectionHealth> familyHealth : toInstanceHealth.getValue().entrySet()) {
 
                 mmd.value(familyHealth.getValue().latencyStats.latencyMin);
                 mmd.value(familyHealth.getValue().latencyStats.latencyMean);
@@ -418,7 +415,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
             }
         }
 
-        for (Map.Entry<HostPort, Map<String, ConnectionHealth>> hostPortHealth : connectionHealths.entrySet()) {
+        for (Map.Entry<String, Map<String, ConnectionHealth>> hostPortHealth : connectionHealths.entrySet()) {
 
             for (Map.Entry<String, ConnectionHealth> familyHealth : hostPortHealth.getValue().entrySet()) {
 
@@ -465,8 +462,8 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
                 health.put("latency999th", numberFormat.format(value.latencyStats.latency999th));
                 health.put("latency999thColor", healthPluginRegion.trafficlightColorRGB(1d - mmd.zeroToOne(value.latencyStats.latency999th), 1f));
 
-                health.put("host", hostPortHealth.getKey().getHost());
-                health.put("port", hostPortHealth.getKey().getPort());
+                health.put("host", value.connectionDescriptor.getHostPort().getHost());
+                health.put("port", value.connectionDescriptor.getHostPort().getPort());
 
                 healths.add(health);
             }
@@ -572,9 +569,6 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
 
     }
 
-    public void toInstance(HostPort hostPort) {
-
-    }
 
     @Override
     public String getTitle() {
@@ -593,14 +587,6 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
             allRoutes.addAll(v.getRoutes());
         }
 
-//        for (RingHost ringHost : new RingHost[]{
-//            new RingHost("soa-prime-data5.phx1.jivehosted.com", 1175),
-//            new RingHost("soa-prime-data6.phx1.jivehosted.com", 1175),
-//            new RingHost("soa-prime-data7.phx1.jivehosted.com", 1175),
-//            new RingHost("soa-prime-data8.phx1.jivehosted.com", 1175),
-//            new RingHost("soa-prime-data9.phx1.jivehosted.com", 1175),
-//            new RingHost("soa-prime-data10.phx1.jivehosted.com", 1175)
-//        }) {
         for (final RingHost ringHost : amzaInstance.getRing("MASTER")) {
             if (currentlyExecuting.putIfAbsent(ringHost, true) == null) {
                 executorService.submit(() -> {
