@@ -365,6 +365,27 @@ public class UpenaMain {
             System.out.println("|     Amza Service is in manual Discovery mode.  No cluster name was specified");
             System.out.println("-----------------------------------------------------------------------");
         }
+
+        String peers = System.getProperty("manual.peers");
+        if (peers != null) {
+            String[] hostPortTuples = peers.split(",");
+            for (String hostPortTuple : hostPortTuples) {
+                String hostPort = hostPortTuple.trim();
+                if (hostPort.length() > 0 && hostPort.contains(":")) {
+                    String[] host_port = hostPort.split(":");
+                    try {
+                        RingHost anotherRingHost = new RingHost(host_port[0].trim(), Integer.parseInt(host_port[1].trim()));
+                        List<RingHost> ring = amzaService.getRing("master");
+                        if (!ring.contains(anotherRingHost)) {
+                            LOG.info("Adding host to the cluster: " + anotherRingHost);
+                            amzaService.addRingHost("master", anotherRingHost);
+                        }
+                    } catch (Exception x) {
+                        LOG.warn("Malformed hostPortTuple {}", hostPort);
+                    }
+                }
+            }
+        }
     }
 
     private void injectUI(JDIAPI jvmaapi,
@@ -489,7 +510,7 @@ public class UpenaMain {
         ManagePlugin modules = new ManagePlugin("wrench", null, "Modules", "/ui/modules",
             ModulesPluginEndpoints.class,
             new ModulesPluginRegion(repositoryProvider, "soy.page.modulesPluginRegion", renderer, upenaStore), null);
-        
+
         ManagePlugin proxy = new ManagePlugin("random", null, "Proxies", "/ui/proxy",
             ProxyPluginEndpoints.class,
             new ProxyPluginRegion("soy.page.proxyPluginRegion", renderer, amzaService, upenaStore, upenaService, ubaService, ringHost), null);
