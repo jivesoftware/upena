@@ -288,6 +288,8 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
             Node from = nodes.get(serviceName);
 
             MinMaxDouble mmd = new MinMaxDouble();
+
+            // TODO fix with async: This is crap because it clobbers
             from.focusHtml = renderConnectionHealth(mmd, nodes, serviceName, instanceId);
 
             for (Map.Entry<String, Map<String, ConnectionHealth>> to_Family_ConnectionHealth : to_Family_ConnectionHealths.entrySet()) {
@@ -357,7 +359,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
             edge.put("from", "id" + e.from);
             edge.put("label", e.label);
             edge.put("to", "id" + e.to);
-            edge.put("color", healthPluginRegion.getHEXIdColor(((float) e.from / (float) id), 1f));
+            edge.put("color", healthPluginRegion.getHEXIdColor((e.from / (float) id), 1f));
             edge.put("minColor", healthPluginRegion.getHEXTrafficlightColor(e.min, 1f));
             edge.put("maxColor", healthPluginRegion.getHEXTrafficlightColor(e.max, 1f));
             renderEdges.add(edge);

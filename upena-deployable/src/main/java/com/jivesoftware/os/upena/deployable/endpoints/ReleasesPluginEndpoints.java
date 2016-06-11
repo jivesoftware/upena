@@ -6,6 +6,7 @@ import com.jivesoftware.os.routing.bird.shared.ResponseHelper;
 import com.jivesoftware.os.upena.deployable.region.ReleasesPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ReleasesPluginRegion.ReleasesPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
+import java.io.InputStream;
 import javax.inject.Singleton;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -14,11 +15,14 @@ import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 
 /**
  *
@@ -101,6 +105,49 @@ public class ReleasesPluginEndpoints {
         } catch (Exception e) {
             LOG.error("scm", e);
             return Response.serverError().entity(e.getMessage()).build();
+        }
+    }
+
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Path("/export")
+    public Response export(@Context HttpServletRequest httpRequest,
+        @FormParam("key") @DefaultValue("") String key,
+        @FormParam("name") @DefaultValue("") String name,
+        @FormParam("description") @DefaultValue("") String description,
+        @FormParam("rollback") @DefaultValue("") String rollback,
+        @FormParam("version") @DefaultValue("") String version,
+        @FormParam("upgrade") @DefaultValue("") String upgrade,
+        @FormParam("repository") @DefaultValue("") String repository,
+        @FormParam("email") @DefaultValue("") String email,
+        @FormParam("autoRelease") @DefaultValue("false") boolean autoRelease) {
+
+        try {
+            String export = pluginRegion.doExport(new ReleasesPluginRegionInput(key, name, description, rollback, version, upgrade, repository, email,
+                autoRelease, "export"), httpRequest.getRemoteUser());
+            return Response.ok(export).build();
+        } catch (Exception e) {
+            LOG.error("action", e);
+            return Response.serverError().entity(e.getMessage()).build();
+        }
+    }
+
+    @POST
+    @Path("/balancer/import/{forceInstance}")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.TEXT_HTML)
+    public Response importTopology(@Context HttpServletRequest httpRequest,
+        @PathParam("forceInstance") boolean forceInstance,
+        @FormDataParam("file") InputStream fileInputStream,
+        @FormDataParam("file") FormDataContentDisposition contentDispositionHeader) {
+        try {
+            pluginRegion.doImport(fileInputStream, "user");
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+                new ReleasesPluginRegionInput("", "", "", "", "", "", "", "", false, ""));
+            return Response.ok(rendered).build();
+        } catch (Throwable t) {
+            return Response.serverError().entity(t.getMessage()).build();
         }
     }
 
