@@ -138,7 +138,7 @@
                                                             <span class="glyphicon glyphicon-menu-down"></span>
                                                         {/if}
                                                     </div>
-                                                    <div style="float:none">
+                                                    <div class="health-text" style="float:none">
                                                         {if $health.health == null}
                                                         {else}
                                                             {$health.health|noAutoescape}
@@ -147,7 +147,7 @@
                                                         {/if}
                                                     </div>
                                                 </div>
-                                                <div>
+                                                <div class="health-age">
                                                     {if $health.age}{$health.age}{/if}
                                                 </div>
                                             </div>
