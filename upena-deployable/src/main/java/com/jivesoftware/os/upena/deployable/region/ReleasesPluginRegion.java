@@ -1,7 +1,5 @@
 package com.jivesoftware.os.upena.deployable.region;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
 import com.google.common.collect.HashMultiset;
@@ -21,7 +19,6 @@ import com.jivesoftware.os.upena.shared.ReleaseGroupKey;
 import com.jivesoftware.os.upena.shared.ServiceKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
 import com.jivesoftware.os.upena.uba.service.RepositoryProvider;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -39,18 +36,20 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
 
     private static final MetricLogger log = MetricLoggerFactory.getLogger();
 
+    private final ObjectMapper mapper;
     private final RepositoryProvider repositoryProvider;
     private final String template;
     private final String simpleTemplate;
     private final SoyRenderer renderer;
     private final UpenaStore upenaStore;
 
-    public ReleasesPluginRegion(RepositoryProvider repositoryProvider,
+    public ReleasesPluginRegion(ObjectMapper mapper,
+        RepositoryProvider repositoryProvider,
         String template,
         String simpleTemplate,
         SoyRenderer renderer,
         UpenaStore upenaStore) {
-
+        this.mapper = mapper;
         this.repositoryProvider = repositoryProvider;
         this.template = template;
         this.simpleTemplate = simpleTemplate;
@@ -429,14 +428,6 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
 
         try {
 
-            Map<String, String> filters = new HashMap<>();
-            filters.put("name", input.name);
-            filters.put("email", input.email);
-            filters.put("repository", input.repository);
-            filters.put("version", input.version);
-            filters.put("description", input.description);
-            filters.put("autoRelease", String.valueOf(input.autoRelease));
-
             ReleaseGroupFilter filter = new ReleaseGroupFilter(
                 input.name.isEmpty() ? null : input.name,
                 input.description.isEmpty() ? null : input.description,
@@ -445,7 +436,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
                 input.email.isEmpty() ? null : input.email,
                 0, 10000);
 
-            List<ReleaseGroup> values = new ArrayList<>();
+            ListOfReleaseGroup values = new ListOfReleaseGroup();
             Map<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> found = upenaStore.releaseGroups.find(filter);
             for (Map.Entry<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> entrySet : found.entrySet()) {
                 TimestampedValue<ReleaseGroup> timestampedValue = entrySet.getValue();
@@ -453,9 +444,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
                 values.add(value);
             }
 
-            ObjectMapper mapper = new ObjectMapper();
-            mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
-            return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(values);
+            return mapper.writeValueAsString(values);
 
         } catch (Exception e) {
             log.error("Unable to retrieve data", e);
@@ -463,18 +452,16 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
         }
     }
 
-    public String doImport(InputStream in, String user) {
+    public String doImport(String in, String user) {
         Map<String, Object> data = Maps.newHashMap();
         try {
-            ObjectMapper mapper = new ObjectMapper();
-            List<ReleaseGroup> values = mapper.readValue(in, new TypeReference<List<ReleaseGroup>>() {
-            });
+            ListOfReleaseGroup values = mapper.readValue(in, ListOfReleaseGroup.class);
 
-            for (ReleaseGroup releaseGroup : values) {
-                upenaStore.releaseGroups.update(null, releaseGroup);
+            for (ReleaseGroup value : values) {
+                upenaStore.releaseGroups.update(null, value);
 
-                data.put("message", "Import Release:" + releaseGroup.name);
-                upenaStore.record(user, "imported", System.currentTimeMillis(), "", "release-ui", releaseGroup.toString());
+                data.put("message", "Import:" + value.name);
+                upenaStore.record(user, "imported", System.currentTimeMillis(), "", "release-ui", value.toString());
             }
 
             return "Imported " + values.size();
@@ -483,6 +470,9 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
             String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
             return "Error while trying to import releaseGroups \n" + trace;
         }
+    }
+
+    static class ListOfReleaseGroup extends ArrayList<ReleaseGroup> {
     }
 
 }

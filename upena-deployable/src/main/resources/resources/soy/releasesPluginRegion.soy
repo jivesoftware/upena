@@ -137,11 +137,10 @@
     </table>
     <div class="btn-group" role="group" aria-label="...">
         <form method="post" action="/ui/releases/import" enctype="multipart/form-data">
-            <label class="btn btn-default" for="my-file-selector">
-                <input id="my-file-selector" type="file" style="display:none;" onchange="$('#upload-file-info').html($(this).val());">
-                Browse...
-            </label>
-            <span class='btn btn-default' id="upload-file-info"></span>
+            <div class="fileinput fileinput-new" data-provides="fileinput">
+                <span class="btn btn-default btn-file"><span>Browse...</span><input type="file" name="file"/></span>
+                <span class="fileinput-filename"></span><span class="fileinput-new">&nbsp;&nbsp;&nbsp;No file chosen&nbsp;&nbsp;&nbsp;</span>
+            </div>
             <button title="Import" type="submit"  value="import" class="btn btn-default"><span class="glyphicon glyphicon-import">&nbspImport</span></button>
         </form>
     </div>

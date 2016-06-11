@@ -200,10 +200,10 @@ public class UpenaMain {
         final TimestampedOrderIdProvider orderIdProvider = new OrderIdProviderImpl(new ConstantWriterIdProvider(new Random().nextInt(512)));
 
         final ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
         mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        mapper.configure(SerializationFeature.INDENT_OUTPUT, false);
-
+        
         final AmzaServiceConfig amzaServiceConfig = new AmzaServiceConfig();
 
         RowsStorageProvider rowsStorageProvider = rowsStorageProvider(orderIdProvider);
@@ -315,7 +315,8 @@ public class UpenaMain {
             .addInjectable(UpenaAutoRelease.class, new UpenaAutoRelease(repositoryProvider, upenaStore))
             .addInjectable(PathToRepo.class, localPathToRepo);
 
-        injectUI(jvmaapi,
+        injectUI(mapper,
+            jvmaapi,
             amzaService,
             localPathToRepo,
             repositoryProvider,
@@ -388,7 +389,8 @@ public class UpenaMain {
         }
     }
 
-    private void injectUI(JDIAPI jvmaapi,
+    private void injectUI(ObjectMapper mapper,
+        JDIAPI jvmaapi,
         AmzaService amzaService,
         PathToRepo localPathToRepo,
         RepositoryProvider repositoryProvider,
@@ -453,7 +455,7 @@ public class UpenaMain {
             amzaService,
             upenaStore,
             upenaConfigStore);
-        ReleasesPluginRegion releasesPluginRegion = new ReleasesPluginRegion(repositoryProvider,
+        ReleasesPluginRegion releasesPluginRegion = new ReleasesPluginRegion(mapper, repositoryProvider,
             "soy.page.releasesPluginRegion", "soy.page.releasesPluginRegionList",
             renderer, upenaStore);
         HostsPluginRegion hostsPluginRegion = new HostsPluginRegion("soy.page.hostsPluginRegion", renderer, upenaStore);
@@ -502,7 +504,7 @@ public class UpenaMain {
 
         ManagePlugin services = new ManagePlugin(null, "service-white", "Services", "/ui/services",
             ServicesPluginEndpoints.class,
-            new ServicesPluginRegion("soy.page.servicesPluginRegion", renderer, amzaService, upenaStore, upenaService, ubaService, ringHost), null);
+            new ServicesPluginRegion(mapper, "soy.page.servicesPluginRegion", renderer, amzaService, upenaStore, upenaService, ubaService, ringHost), null);
 
         ManagePlugin releases = new ManagePlugin(null, "release-white", "Releases", "/ui/releases",
             ReleasesPluginEndpoints.class, releasesPluginRegion, null);

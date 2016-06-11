@@ -1,5 +1,6 @@
 package com.jivesoftware.os.upena.deployable.region;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Maps;
 import com.jivesoftware.os.amza.shared.AmzaInstance;
@@ -32,6 +33,7 @@ public class ServicesPluginRegion implements PageRegion<ServicesPluginRegionInpu
 
     private static final MetricLogger log = MetricLoggerFactory.getLogger();
 
+    private final ObjectMapper mapper;
     private final String template;
     private final SoyRenderer renderer;
     private final AmzaInstance amzaInstance;
@@ -40,13 +42,15 @@ public class ServicesPluginRegion implements PageRegion<ServicesPluginRegionInpu
     private final UbaService ubaService;
     private final RingHost ringHost;
 
-    public ServicesPluginRegion(String template,
+    public ServicesPluginRegion(ObjectMapper mapper,
+        String template,
         SoyRenderer renderer,
         AmzaInstance amzaInstance,
         UpenaStore upenaStore,
         UpenaService upenaService,
         UbaService ubaService,
         RingHost ringHost) {
+        this.mapper = mapper;
         this.template = template;
         this.renderer = renderer;
         this.amzaInstance = amzaInstance;
@@ -60,7 +64,6 @@ public class ServicesPluginRegion implements PageRegion<ServicesPluginRegionInpu
     public String getRootPath() {
         return "/ui/services";
     }
-
 
     public static class ServicesPluginRegionInput implements PluginInput {
 
@@ -221,5 +224,54 @@ public class ServicesPluginRegion implements PageRegion<ServicesPluginRegionInpu
     @Override
     public String getTitle() {
         return "Upena Services";
+    }
+
+    public String doExport(ServicesPluginRegionInput input, String user) {
+
+        try {
+
+            ServiceFilter filter;
+            filter = new ServiceFilter(
+                input.name.isEmpty() ? null : input.name,
+                input.description.isEmpty() ? null : input.description,
+                0, 10000);
+
+            ListOfService values = new ListOfService();
+            Map<ServiceKey, TimestampedValue<Service>> found = upenaStore.services.find(filter);
+            for (Map.Entry<ServiceKey, TimestampedValue<Service>> entrySet : found.entrySet()) {
+                TimestampedValue<Service> timestampedValue = entrySet.getValue();
+                Service value = timestampedValue.getValue();
+                values.add(value);
+            }
+
+            return mapper.writeValueAsString(values);
+
+        } catch (Exception e) {
+            log.error("Unable to retrieve data", e);
+            return e.toString();
+        }
+    }
+
+    public String doImport(String in, String user) {
+        Map<String, Object> data = Maps.newHashMap();
+        try {
+            ListOfService values = mapper.readValue(in, ListOfService.class);
+
+            for (Service value : values) {
+                upenaStore.services.update(null, value);
+
+                data.put("message", "Import:" + value.name);
+                upenaStore.record(user, "imported", System.currentTimeMillis(), "", "release-ui", value.toString());
+            }
+
+            return "Imported " + values.size();
+        } catch (Exception x) {
+            log.error("Unable to retrieve data", x);
+            String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
+            return "Error while trying to import releaseGroups \n" + trace;
+        }
+    }
+
+    static class ListOfService extends ArrayList<Service> {
     }
 }

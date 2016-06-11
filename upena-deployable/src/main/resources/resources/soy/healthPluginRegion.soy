@@ -130,19 +130,21 @@
                                                 {if $health.instanceKey} data-popover-instance-key="{$health.instanceKey}" {/if}
                                                 data-health-hook="{$health.instanceKey ? $health.instanceKey : $health.health ? $health.health : ''}"
                                                 data-popover-content="#popover-{$health.uid}" data-placement="bottom">
-                                                <div class="health-color" style="float:left; background-color:{$health.color}; color:#fff; width:20px; height:20px; text-align:center; margin-right:4px; border-radius:4px 0 0 4px;">
-                                                    <span class="glyphicon glyphicon-menu-down"></span>
-                                                </div>
-                                                {if $health.age}<div class="health-age" style="float:right; background-color:#eee; color:#999; padding:0 8px; height:20px; margin-left:4px; border-radius:0 4px 4px 0;">{$health.age}</div>{/if}
-                                                {if $health.health == null}
-                                                    &nbsp;&nbsp;&nbsp;
-                                                {else}
-                                                    <span class="health-text" style="color:#666;">
-                                                        {$health.health|noAutoescape}
+                                                <div class="health-color" style="float:left; background-color:{$health.color}; color:#fff; text-align:center; margin-right:4px; border-radius:4px 0 0 4px;">
+                                                    <span>
+                                                        {if $health.age}<div class="health-age" style="float:right; background-color:#eee; color:#999; padding:0 8px; height:20px; margin-left:4px; border-radius:0 4px 4px 0;">{$health.age}</div>{/if}
+                                                        {if $health.health == null}
+                                                            &nbsp;&nbsp;&nbsp;
+                                                        {else}
+                                                            <span class="health-text" style="color:#666;">
+                                                                {$health.health|noAutoescape}
+                                                            </span>
+                                                            <span class="health-warn glyphicon glyphicon-warning-sign icon-warn" style="display:none;"></span>
+                                                            <span title="Config has changed since last restart" class="config-warn glyphicon glyphicon-asterisk icon-warn" style="display:none;"></span>
+                                                        {/if}
                                                     </span>
-                                                    <span class="health-warn glyphicon glyphicon-warning-sign icon-warn" style="display:none;"></span>
-                                                    <span title="Config has changed since last restart" class="config-warn glyphicon glyphicon-asterisk icon-warn" style="display:none;"></span>
-                                                {/if}
+                                                </div>
+                                                
                                             </div>
                                             <div id="popover-{$health.uid}" class="hide" style="background-color: rgba(255, 255, 255, 0.9);">
                                                 {if $health.hostInfo}

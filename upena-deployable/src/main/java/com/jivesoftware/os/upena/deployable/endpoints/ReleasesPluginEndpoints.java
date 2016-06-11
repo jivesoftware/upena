@@ -7,6 +7,8 @@ import com.jivesoftware.os.upena.deployable.region.ReleasesPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ReleasesPluginRegion.ReleasesPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
 import java.io.InputStream;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import javax.inject.Singleton;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -20,6 +22,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.apache.commons.io.IOUtils;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
@@ -115,33 +118,15 @@ public class ReleasesPluginEndpoints {
     @POST
     @Path("/import")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    @Produces(MediaType.TEXT_HTML)
-    public Response importTopology(@FormDataParam("file") InputStream fileInputStream,
+    public Response importTopology(@Context HttpServletRequest httpRequest,
+        @FormDataParam("file") InputStream fileInputStream,
         @FormDataParam("file") FormDataContentDisposition contentDispositionHeader) {
-        LOG.info("-----------------------------------");
-        LOG.info("-----------------------------------");
-        LOG.info("-----------------------------------");
-        LOG.info("-----------------------------------");
-        LOG.info("-----------------------------------");
-        LOG.info("-----------------------------------");
-        LOG.info("-----------------------------------");
-        LOG.info("-----------------------------------");
-        LOG.info("-----------------------------------");
-        LOG.info("-----------------------------------");
-        LOG.info("-----------------------------------");
-        LOG.info("-----------------------------------");
-        LOG.info("-----------------------------------");
-        LOG.info("-----------------------------------");
-        LOG.info("-----------------------------------");
-        LOG.info("-----------------------------------");
-        LOG.info("-----------------------------------");
-        LOG.info("-----------------------------------");
-        LOG.info("-----------------------------------");
         try {
-            pluginRegion.doImport(fileInputStream, "user");
-            String rendered = soyService.renderPlugin("user", pluginRegion,
-                new ReleasesPluginRegionInput("", "", "", "", "", "", "", "", false, ""));
-            return Response.ok(rendered).build();
+            String json = IOUtils.toString(fileInputStream, StandardCharsets.UTF_8);
+            LOG.info("importing:{}", json);
+            pluginRegion.doImport(json, httpRequest.getRemoteUser());
+            URI location = new URI("/ui/releases");
+            return Response.seeOther(location).build();
         } catch (Throwable t) {
             LOG.error("Failed to import", t);
             return Response.serverError().entity(t.getMessage()).build();

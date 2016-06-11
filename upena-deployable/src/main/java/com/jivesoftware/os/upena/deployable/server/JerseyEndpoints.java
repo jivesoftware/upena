@@ -122,7 +122,7 @@ public class JerseyEndpoints implements HasServletContextHandler {
         if (!applicationName.isEmpty()) {
             servletContextHandler.setDisplayName(applicationName);
         }
-        servletContextHandler.addServlet(servletHolder, "/");
+        servletContextHandler.addServlet(servletHolder, "/*");
 
         return servletContextHandler;
     }
