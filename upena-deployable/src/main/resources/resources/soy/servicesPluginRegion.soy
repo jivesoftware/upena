@@ -42,6 +42,7 @@
                                     <td>
                                         <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-search">&nbspFilter</span></button>
                                         <button title="Add" type="submit" name="action" value="add" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-plus">&nbspAdd</span></button>
+                                        <button title="Export" type="submit" name="action" value="export" class="btn btn-default"><span class="glyphicon glyphicon-export">&nbspExport</span></button>
                                     <td>
                                 </tr>
                             </form>
@@ -73,6 +74,15 @@
                             {/foreach}
                         </tbody>
                     </table>
+                    <div class="btn-group" role="group" aria-label="...">
+                        <form method="post" action="/ui/services/import" enctype="multipart/form-data">
+                            <div class="fileinput fileinput-new" data-provides="fileinput">
+                                <span class="btn btn-default btn-file"><span>Browse...</span><input type="file" name="file"/></span>
+                                <span class="fileinput-filename"></span><span class="fileinput-new">&nbsp;&nbsp;&nbsp;No file chosen&nbsp;&nbsp;&nbsp;</span>
+                            </div>
+                            <button title="Import" type="submit"  value="import" class="btn btn-default"><span class="glyphicon glyphicon-import">&nbspImport</span></button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
