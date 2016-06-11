@@ -132,10 +132,13 @@
                                                 data-popover-content="#popover-{$health.uid}" data-placement="bottom">
 
                                                 <div>
-                                                    <div class="health-color" style="background-color:{$health.color}; color:#fff; border-radius:4px 4px 4px 4px;">
-                                                        <span class="glyphicon glyphicon-menu-down"></span>
+                                                    <div style="float:left" class="health-color" style="background-color:{$health.color}; color:#fff; border-radius:4px 4px 4px 4px;">
+                                                        {if $health.health == null}
+                                                        {else}
+                                                            <span class="glyphicon glyphicon-menu-down"></span>
+                                                        {/if}
                                                     </div>
-                                                    <div style="float:right">
+                                                    <div style="float:none">
                                                         {if $health.health == null}
                                                         {else}
                                                             {$health.health|noAutoescape}
