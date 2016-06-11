@@ -131,16 +131,16 @@
                                                 data-health-hook="{$health.instanceKey ? $health.instanceKey : $health.health ? $health.health : ''}"
                                                 data-popover-content="#popover-{$health.uid}" data-placement="bottom">
 
-                                                <div class="health-color" style="float:left; background-color:{$health.color}; color:#fff; width:20px; height:20px; text-align:center; margin-right:4px; border-radius:4px 0 0 4px;"></div>
-                                                <div>
-                                                    <span class="glyphicon glyphicon-menu-down">{if $health.age}{$health.age}{/if}</span>
-                                                
+                                                <div class="health-color" style="float:left; background-color:{$health.color}; color:#fff; height:20px; text-align:center; margin-right:4px; border-radius:4px 0 0 4px;">
                                                     {if $health.health == null}
                                                     {else}
                                                         {$health.health|noAutoescape}
                                                         <span class="health-warn glyphicon glyphicon-warning-sign icon-warn" style="display:none;"></span>
                                                         <span title="Config has changed since last restart" class="config-warn glyphicon glyphicon-asterisk icon-warn" style="display:none;"></span>
                                                     {/if}
+                                                </div>
+                                                <div>
+                                                    {if $health.age}{$health.age}{/if}
                                                 </div>
                                             </div>
                                             <div id="popover-{$health.uid}" class="hide" style="background-color: rgba(255, 255, 255, 0.9);">
