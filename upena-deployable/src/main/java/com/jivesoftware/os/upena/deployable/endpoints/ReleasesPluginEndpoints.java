@@ -15,7 +15,6 @@ import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
@@ -54,13 +53,11 @@ public class ReleasesPluginEndpoints {
         } catch (Exception e) {
             LOG.error("releases GET", e);
             return Response.serverError().entity(e.getMessage()).build();
-
         }
     }
 
     @POST
     @Path("/")
-    @Produces(MediaType.TEXT_HTML)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response action(@Context HttpServletRequest httpRequest,
         @FormParam("key") @DefaultValue("") String key,
@@ -75,9 +72,16 @@ public class ReleasesPluginEndpoints {
         @FormParam("action") @DefaultValue("") String action) {
 
         try {
-            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-                new ReleasesPluginRegionInput(key, name, description, rollback, version, upgrade, repository, email, autoRelease, action));
-            return Response.ok(rendered).build();
+            if (action.startsWith("export")) {
+                String export = pluginRegion.doExport(new ReleasesPluginRegionInput(key, name, description, rollback, version, upgrade, repository, email,
+                    autoRelease, "export"), httpRequest.getRemoteUser());
+                return Response.ok(export, MediaType.APPLICATION_OCTET_STREAM_TYPE).build();
+            } else {
+
+                String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+                    new ReleasesPluginRegionInput(key, name, description, rollback, version, upgrade, repository, email, autoRelease, action));
+                return Response.ok(rendered, MediaType.TEXT_HTML).build();
+            }
         } catch (Exception e) {
             LOG.error("action", e);
             return Response.serverError().entity(e.getMessage()).build();
@@ -108,45 +112,38 @@ public class ReleasesPluginEndpoints {
         }
     }
 
-    @GET
-    @Produces(MediaType.TEXT_PLAIN)
-    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    @Path("/export")
-    public Response export(@Context HttpServletRequest httpRequest,
-        @FormParam("key") @DefaultValue("") String key,
-        @FormParam("name") @DefaultValue("") String name,
-        @FormParam("description") @DefaultValue("") String description,
-        @FormParam("rollback") @DefaultValue("") String rollback,
-        @FormParam("version") @DefaultValue("") String version,
-        @FormParam("upgrade") @DefaultValue("") String upgrade,
-        @FormParam("repository") @DefaultValue("") String repository,
-        @FormParam("email") @DefaultValue("") String email,
-        @FormParam("autoRelease") @DefaultValue("false") boolean autoRelease) {
-
-        try {
-            String export = pluginRegion.doExport(new ReleasesPluginRegionInput(key, name, description, rollback, version, upgrade, repository, email,
-                autoRelease, "export"), httpRequest.getRemoteUser());
-            return Response.ok(export).build();
-        } catch (Exception e) {
-            LOG.error("action", e);
-            return Response.serverError().entity(e.getMessage()).build();
-        }
-    }
-
     @POST
-    @Path("/balancer/import/{forceInstance}")
+    @Path("/import")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.TEXT_HTML)
-    public Response importTopology(@Context HttpServletRequest httpRequest,
-        @PathParam("forceInstance") boolean forceInstance,
-        @FormDataParam("file") InputStream fileInputStream,
+    public Response importTopology(@FormDataParam("file") InputStream fileInputStream,
         @FormDataParam("file") FormDataContentDisposition contentDispositionHeader) {
+        LOG.info("-----------------------------------");
+        LOG.info("-----------------------------------");
+        LOG.info("-----------------------------------");
+        LOG.info("-----------------------------------");
+        LOG.info("-----------------------------------");
+        LOG.info("-----------------------------------");
+        LOG.info("-----------------------------------");
+        LOG.info("-----------------------------------");
+        LOG.info("-----------------------------------");
+        LOG.info("-----------------------------------");
+        LOG.info("-----------------------------------");
+        LOG.info("-----------------------------------");
+        LOG.info("-----------------------------------");
+        LOG.info("-----------------------------------");
+        LOG.info("-----------------------------------");
+        LOG.info("-----------------------------------");
+        LOG.info("-----------------------------------");
+        LOG.info("-----------------------------------");
+        LOG.info("-----------------------------------");
         try {
             pluginRegion.doImport(fileInputStream, "user");
-            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+            String rendered = soyService.renderPlugin("user", pluginRegion,
                 new ReleasesPluginRegionInput("", "", "", "", "", "", "", "", false, ""));
             return Response.ok(rendered).build();
         } catch (Throwable t) {
+            LOG.error("Failed to import", t);
             return Response.serverError().entity(t.getMessage()).build();
         }
     }
