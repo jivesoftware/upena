@@ -62,6 +62,7 @@
                         <td>
                             <button data-toggle="tooltip" title="Filter" type="submit" name="action" value="filter" class="btn btn-primary ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-search">&nbspFilter</span></button>
                             <button data-toggle="tooltip" title="Add" type="submit" name="action" value="add" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-plus">&nbspAdd</span></button>
+                            <button title="Export" type="submit" name="action" value="export" class="btn btn-default"><span class="glyphicon glyphicon-export">&nbspExport</span></button>
                         <td>
                     </tr>
                 </form>
@@ -69,7 +70,7 @@
 
             {foreach $r in $releases}
                 <form id="edit-{$r.key}" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
-                    data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="editHost">
+                     method="post" name="editHost">
                     <tr>
                         <td style="width:100px;">
                              {foreach $ic in $r.instanceCounts}
@@ -134,4 +135,14 @@
             {/foreach}
         </tbody>
     </table>
+    <div class="btn-group" role="group" aria-label="...">
+        <form method="post" action="/ui/releases/import" enctype="multipart/form-data">
+            <label class="btn btn-default" for="my-file-selector">
+                <input id="my-file-selector" type="file" style="display:none;" onchange="$('#upload-file-info').html($(this).val());">
+                Browse...
+            </label>
+            <span class='btn btn-default' id="upload-file-info"></span>
+            <button title="Import" type="submit"  value="import" class="btn btn-default"><span class="glyphicon glyphicon-import">&nbspImport</span></button>
+        </form>
+    </div>
 {/template}

@@ -71,7 +71,8 @@
                         <tr>
                             <th></th>
                             {foreach $service in $gridServices}
-                                <th>
+                                <th class="rotate"><div>
+
                                     <a style="width:100%; background-color: rgba({$service.serviceColor}, 0.4);" href="#" rel="popover" id="popoverAnchor-{$service.service}" data-popover-content="#popover-{$service.service}" data-placement="bottom" class="btn" title="{$service.service}">
                                         <span class="glyphicon glyphicon-menu-down"></span>{$service.service}
                                         {if $service.warnings}
@@ -110,7 +111,7 @@
                                             </ul>
                                         {/if}
                                     </div>
-                                </th>
+                                </div></th>
                             {/foreach}
                         </tr>
                     </thead>
