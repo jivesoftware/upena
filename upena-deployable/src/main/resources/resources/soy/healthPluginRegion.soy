@@ -131,7 +131,7 @@
                                                 data-health-hook="{$health.instanceKey ? $health.instanceKey : $health.health ? $health.health : ''}"
                                                 data-popover-content="#popover-{$health.uid}" data-placement="bottom">
 
-                                                <div class="health-color" style="float:left; background-color:{$health.color}; color:#fff; height:20px; text-align:center; margin-right:4px; border-radius:4px 0 0 4px;">
+                                                <div class="health-color" style="background-color:{$health.color}; color:#fff; border-radius:4px 0 0 4px;">
                                                     {if $health.health == null}
                                                     {else}
                                                         {$health.health|noAutoescape}
