@@ -131,13 +131,18 @@
                                                 data-health-hook="{$health.instanceKey ? $health.instanceKey : $health.health ? $health.health : ''}"
                                                 data-popover-content="#popover-{$health.uid}" data-placement="bottom">
 
-                                                <div class="health-color" style="background-color:{$health.color}; color:#fff; border-radius:4px 0 0 4px;">
-                                                    {if $health.health == null}
-                                                    {else}
-                                                        {$health.health|noAutoescape}
-                                                        <span class="health-warn glyphicon glyphicon-warning-sign icon-warn" style="display:none;"></span>
-                                                        <span title="Config has changed since last restart" class="config-warn glyphicon glyphicon-asterisk icon-warn" style="display:none;"></span>
-                                                    {/if}
+                                                <div>
+                                                    <div class="health-color" style="background-color:{$health.color}; color:#fff; border-radius:4px 4px 4px 4px;">
+                                                        <span class="glyphicon glyphicon-menu-down"></span>
+                                                    </div>
+                                                    <div style="float:right">
+                                                        {if $health.health == null}
+                                                        {else}
+                                                            {$health.health|noAutoescape}
+                                                            <span class="health-warn glyphicon glyphicon-warning-sign icon-warn" style="display:none;"></span>
+                                                            <span title="Config has changed since last restart" class="config-warn glyphicon glyphicon-asterisk icon-warn" style="display:none;"></span>
+                                                        {/if}
+                                                    </div>
                                                 </div>
                                                 <div>
                                                     {if $health.age}{$health.age}{/if}
