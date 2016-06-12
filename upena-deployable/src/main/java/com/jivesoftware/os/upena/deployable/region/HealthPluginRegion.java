@@ -197,7 +197,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                                     label = nannyHealth.status;
                                 }
 
-                                minHostHealth.compute(nannyHealth.instanceDescriptor.clusterName + " " + nodeHealth.host + " " + nodeHealth.port,
+                                minHostHealth.compute(nannyHealth.instanceDescriptor.clusterName + ":" + nodeHealth.host + ":" + nodeHealth.port,
                                     (String k, Double ev) -> {
                                         return ev == null ? nannyHealth.serviceHealth.health : Math.min(ev, nannyHealth.serviceHealth.health);
                                     });
@@ -518,7 +518,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                         hostRows.get(hi).get(0).put("color", "#" + getHEXTrafficlightColor(hh, 1f));
                         hostRows.get(hi).get(0).put("host", nodeHealth.host); // TODO change to hostKey
                         hostRows.get(hi).get(0).put("hostKey", nodeHealth.host); // TODO change to hostKey
-                        hostRows.get(hi).get(0).put("health", host.toString());
+                        hostRows.get(hi).get(0).put("health", host.toString().replace(":", " "));
                         hostRows.get(hi).get(0).put("age", age);
                         hostRows.get(hi).get(0).put("uid", "uid-" + uid);
                         hostRows.get(hi).get(0).put("instanceKey", "");
@@ -571,7 +571,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                             hostRows.get(hi).get(0).put("color", "#" + getHEXTrafficlightColor(hh, 1f));
                             hostRows.get(hi).get(0).put("host", nodeHealth.host); // TODO change to hostKey
                             hostRows.get(hi).get(0).put("hostKey", nodeHealth.host); // TODO change to hostKey
-                            hostRows.get(hi).get(0).put("health", host.toString());
+                            hostRows.get(hi).get(0).put("health", host.toString().replace(":", " "));
                             hostRows.get(hi).get(0).put("age", age);
                             hostRows.get(hi).get(0).put("uid", "uid-" + uid);
                             hostRows.get(hi).get(0).put("instanceKey", "");
