@@ -146,10 +146,10 @@
                                                     {if $health.health == null}
                                                     {else}
                                                         {$health.health|noAutoescape}
-                                                        <span class="health-warn glyphicon glyphicon-warning-sign icon-warn" style="display:none;"></span>
-                                                        <span title="Config has changed since last restart" class="config-warn glyphicon glyphicon-asterisk icon-warn" style="display:none;"></span>
                                                     {/if}
                                                 </span>
+                                                <span class="health-warn glyphicon glyphicon-warning-sign icon-warn" style="display:none;"></span>
+                                                <span title="Config has changed since last restart" class="config-warn glyphicon glyphicon-asterisk icon-warn" style="display:none;"></span>
                                                 {if $health.health != null}
                                                     {if $health.age}
                                                         &nbsp;&nbsp;
