@@ -119,14 +119,14 @@
                         {foreach $host in $gridHost}
                             <tr class="grid-host">
                                 {foreach $health in $host}
-                                    <td style="border-left: gray; border-left-width: thin; border-left-style: solid;">
+                                    <td style="border-left: lightgray; border-left-width: thin; border-left-style: solid;">
                                         {if $health.datacenter}
                                             <div class="datacenter-and-rack">
                                                 <img src="/static/img/datacenter.png" alt="Datacenter" style="width:20px;height:20px;">&nbsp;{$health.datacenter}&nbsp;&nbsp;
                                                 <img src="/static/img/rack.png" alt="Rack" style="width:20px;height:20px;">&nbsp;{$health.rack}
                                             </div>
                                         {elseif $health.uid}
-                                            <div class="grid-host-panel popover-health" " style="background-color: rgba(255, 255, 255, 0.9);" id="popoverAnchor-{$health.uid}"
+                                            <div class="grid-host-panel popover-health" " id="popoverAnchor-{$health.uid}"
                                                 {if $health.instanceKey} data-popover-instance-key="{$health.instanceKey}" {/if}
                                                 data-health-hook="{$health.instanceKey ? $health.instanceKey : $health.health ? $health.health : ''}"
                                                 data-popover-content="#popover-{$health.uid}" data-placement="bottom">
