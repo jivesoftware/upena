@@ -197,7 +197,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                                     label = nannyHealth.status;
                                 }
 
-                                minHostHealth.compute(nannyHealth.instanceDescriptor.clusterName + ":" + nodeHealth.host + ":" + nodeHealth.port,
+                                minHostHealth.compute(nannyHealth.instanceDescriptor.clusterName + " " + nodeHealth.host + " " + nodeHealth.port,
                                     (String k, Double ev) -> {
                                         return ev == null ? nannyHealth.serviceHealth.health : Math.min(ev, nannyHealth.serviceHealth.health);
                                     });
