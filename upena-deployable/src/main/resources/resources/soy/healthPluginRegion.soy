@@ -131,7 +131,7 @@
                                                 data-health-hook="{$health.instanceKey ? $health.instanceKey : $health.health ? $health.health : ''}"
                                                 data-popover-content="#popover-{$health.uid}" data-placement="bottom">
 
-                                                <div>
+                                                <div style="display:inline-block">
                                                     <div class="health-color" style="float:left; background-color:{$health.color}; color:#fff; border-radius:4px 4px 4px 4px;">
                                                         {if $health.health == null}
                                                         {else}
@@ -147,7 +147,7 @@
                                                         {/if}
                                                     </div>
                                                 </div>
-                                                <div class="health-age">
+                                                <div  style="display:inline-block" class="health-age">
                                                     {if $health.age}{$health.age}{/if}
                                                 </div>
                                             </div>
