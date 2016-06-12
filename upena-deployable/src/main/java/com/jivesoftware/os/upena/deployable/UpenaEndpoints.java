@@ -369,7 +369,7 @@ public class UpenaEndpoints {
             if (nanny.getValue().getStartTimeMillis() > 0) {
                 uptime = shortHumanReadableUptime(System.currentTimeMillis() - nanny.getValue().getStartTimeMillis());
             } else {
-                 uptime = shortHumanReadableUptime(System.currentTimeMillis() - startupTime);
+                 uptime = ">"+shortHumanReadableUptime(System.currentTimeMillis() - startupTime);
             }
 
             NannyHealth nannyHealth = new NannyHealth(uptime, id, log, serviceHealth);

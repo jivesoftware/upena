@@ -563,8 +563,9 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
 
                             int si = service.index;
                             Long recency = nodeRecency.get(nodeHealth.host + ":" + nodeHealth.port);
-                            String age = recency != null ? UpenaEndpoints.shortHumanReadableUptime(System.currentTimeMillis() - recency) : ">" + UpenaEndpoints
-                                .shortHumanReadableUptime(System.currentTimeMillis() - startupTime);
+                            String age = recency != null ? 
+                                UpenaEndpoints.shortHumanReadableUptime(System.currentTimeMillis() - recency)
+                                : ">" + UpenaEndpoints.shortHumanReadableUptime(System.currentTimeMillis() - startupTime);
 
                             float hh = (float) Math.max(0, nodeHealth.health);
                             hostRows.get(hi).get(0).put("color", "#" + getHEXTrafficlightColor(hh, 1f));
