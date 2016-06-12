@@ -449,7 +449,9 @@ public class UpenaMain {
             upenaStore
         );
 
-        HealthPluginRegion healthPluginRegion = new HealthPluginRegion(ringHost, "soy.page.healthPluginRegion",
+        HealthPluginRegion healthPluginRegion = new HealthPluginRegion(System.currentTimeMillis(),
+            ringHost,
+            "soy.page.healthPluginRegion",
             "soy.page.instanceHealthPluginRegion",
             renderer,
             amzaService,
