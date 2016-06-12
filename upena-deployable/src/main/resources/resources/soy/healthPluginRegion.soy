@@ -136,13 +136,12 @@
                                                 <img src="/static/img/rack.png" alt="Rack" style="width:20px;height:20px;">&nbsp;{$health.rack}
                                             </div>
                                         {elseif $health.uid}
-                                            <div class="health-color grid-host-panel popover-health" " id="popoverAnchor-{$health.uid}"
+                                            <div class="grid-host-panel popover-health" " id="popoverAnchor-{$health.uid}"
                                                 {if $health.instanceKey} data-popover-instance-key="{$health.instanceKey}" {/if}
                                                 data-health-hook="{$health.instanceKey ? $health.instanceKey : $health.health ? $health.health : ''}"
-                                                data-popover-content="#popover-{$health.uid}" data-placement="bottom"
-                                                style="border-left-color:{$health.color}; color:#222; border-left-style: solid; border-left-width: 3px;">
+                                                data-popover-content="#popover-{$health.uid}" data-placement="bottom">
 
-                                                <span class="health-text" style="display:inline-block;  font-style:bold;">
+                                                <span class="health-color health-text" style="display:inline-block;  font-style:bold; background:{$health.color}; color:#222;">
                                                     {if $health.health == null}
                                                     {else}
                                                         {$health.health|noAutoescape}
