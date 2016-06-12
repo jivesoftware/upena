@@ -773,7 +773,7 @@ upena.health = {
                 upena.health.config[id] = $cell.find('.config-warn');
             }
             upena.health.color[id].css('background-color', "rgb(" + data[i].color + ")");
-            upena.health.text[id].html(data[i].text || '&nbsp;&nbsp;&nbsp;');
+            upena.health.text[id].html(data[i].text || '');
             upena.health.age[id].html(data[i].age);
 
             if (data[i].unexpectedRestart) {
