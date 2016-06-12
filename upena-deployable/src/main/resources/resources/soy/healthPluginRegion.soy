@@ -129,7 +129,7 @@
                         {foreach $host in $gridHost}
                             <tr class="grid-host">
                                 {foreach $health in $host}
-                                    <td style="border-left: lightgray; border-left-width: thin; border-left-style: solid;">
+                                    <td>
                                         {if $health.datacenter}
                                             <div class="datacenter-and-rack">
                                                 <img src="/static/img/datacenter.png" alt="Datacenter" style="width:20px;height:20px;">&nbsp;{$health.datacenter}&nbsp;&nbsp;
@@ -145,13 +145,18 @@
                                                 <span class="health-text" style="display:inline-block;  font-style:bold;">
                                                     {if $health.health == null}
                                                     {else}
-                                                        {$health.health|noAutoescape}&nbsp;&nbsp;
+                                                        {$health.health|noAutoescape}
                                                         <span class="health-warn glyphicon glyphicon-warning-sign icon-warn" style="display:none;"></span>
                                                         <span title="Config has changed since last restart" class="config-warn glyphicon glyphicon-asterisk icon-warn" style="display:none;"></span>
                                                     {/if}
                                                 </span>
+                                                {if $health.health != null}
+                                                    {if $health.age}
+                                                        &nbsp;&nbsp;
+                                                    {fi}
+                                                {fi}
                                                 <span class="health-age" style="display:inline-block; color:#777; font-style:italic;">
-                                                    {if $health.age}&nbsp;&nbsp;{$health.age}{/if}
+                                                    {if $health.age}{$health.age}{/if}
                                                 </span>
                                             </div>
                                             <div id="popover-{$health.uid}" class="hide" style="background-color: rgba(255, 255, 255, 0.9);">
