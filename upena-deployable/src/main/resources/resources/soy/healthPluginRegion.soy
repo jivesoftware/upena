@@ -131,7 +131,7 @@
                                                 data-health-hook="{$health.instanceKey ? $health.instanceKey : $health.health ? $health.health : ''}"
                                                 data-popover-content="#popover-{$health.uid}" data-placement="bottom">
 
-                                                <div class="health-text, health-color" style="display:inline-block; background-color:{$health.color}; color:#fff; border-radius:4px 4px 4px 4px;">
+                                                <div class="health-text, health-color" style="float:left; background-color:{$health.color}; color:#222; border-radius:4px 4px 4px 4px;">
                                                     {if $health.health == null}
                                                     {else}
                                                         {$health.health|noAutoescape}
@@ -139,7 +139,7 @@
                                                         <span title="Config has changed since last restart" class="config-warn glyphicon glyphicon-asterisk icon-warn" style="display:none;"></span>
                                                     {/if}
                                                 </div>
-                                                <div  style="display:inline-block" class="health-age">
+                                                <div class="health-age">
                                                     {if $health.age}{$health.age}{/if}
                                                 </div>
                                             </div>
