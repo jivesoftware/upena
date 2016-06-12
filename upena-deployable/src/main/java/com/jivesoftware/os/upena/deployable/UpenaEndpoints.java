@@ -104,6 +104,7 @@ public class UpenaEndpoints {
     private final DiscoveredRoutes discoveredRoutes;
     private final PathToRepo localPathToRepo;
     private final UpenaAutoRelease autoRelease;
+    private final long startupTime = System.currentTimeMillis();
 
     public UpenaEndpoints(@Context AmzaClusterName amzaClusterName,
         @Context AmzaInstance amzaInstance,
@@ -364,9 +365,11 @@ public class UpenaEndpoints {
                 serviceHealth = new ServiceHealth();
                 serviceHealth.health = -1;
             }
-            String uptime = "unknown";
+            String uptime = "";
             if (nanny.getValue().getStartTimeMillis() > 0) {
-                uptime = humanReadableUptime(System.currentTimeMillis() - nanny.getValue().getStartTimeMillis());
+                uptime = shortHumanReadableUptime(System.currentTimeMillis() - nanny.getValue().getStartTimeMillis());
+            } else {
+                 uptime = shortHumanReadableUptime(System.currentTimeMillis() - startupTime);
             }
 
             NannyHealth nannyHealth = new NannyHealth(uptime, id, log, serviceHealth);
@@ -517,4 +520,35 @@ public class UpenaEndpoints {
 
         return (sb.toString());
     }
+
+    public static String shortHumanReadableUptime(long millis) {
+        if (millis < 0) {
+            return String.valueOf(millis);
+        }
+
+        long days = TimeUnit.MILLISECONDS.toDays(millis);
+        millis -= TimeUnit.DAYS.toDays(days);
+        long hours = TimeUnit.MILLISECONDS.toHours(millis);
+        millis -= TimeUnit.HOURS.toMillis(hours);
+        long minutes = TimeUnit.MILLISECONDS.toMinutes(millis);
+        millis -= TimeUnit.MINUTES.toMillis(minutes);
+        long seconds = TimeUnit.MILLISECONDS.toSeconds(millis);
+        millis -= TimeUnit.SECONDS.toMillis(seconds);
+
+        StringBuilder sb = new StringBuilder(64);
+        if (days > 0) {
+            return days + "d";
+        }
+        if (hours > 0) {
+            return hours + "h";
+        }
+        if (minutes > 0) {
+            return minutes + "m";
+        }
+        if (seconds > 0) {
+            return seconds + "s";
+        }
+        return "";
+    }
+
 }
