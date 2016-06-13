@@ -88,6 +88,8 @@
                                                 {if $service.serviceKey}
                                                     <input type="hidden" name="aServiceKey" value="{$service.serviceKey}">
                                                 {/if}
+                                                <input type="hidden" name="service" value="true">
+                                                <input type="hidden" name="overridden" value="true">
                                                 <button type="submit" class="btn btn-primary">
                                                     Config
                                                 </button>
@@ -210,7 +212,7 @@
                                                                                 <input type="hidden" name="release" value="{$health.release}">
                                                                             {/if}
                                                                             {if $health.instance}
-                                                                                <input type="hidden" name="instance" value="{$health.instance}">
+                                                                                <input type="hidden" name="instanceId" value="{$health.instance}">
                                                                             {/if}
                                                                             <button type="submit" class="btn btn-primary">
                                                                                 Add
@@ -247,6 +249,8 @@
                                                                             {if $health.instance}
                                                                                 <input type="hidden" name="aInstance" value="{$health.instance}">
                                                                             {/if}
+                                                                            <input type="hidden" name="service" value="true">
+                                                                            <input type="hidden" name="overridden" value="true">
                                                                             <button type="submit" class="btn btn-primary">
                                                                                 Config
                                                                             </button>
@@ -279,7 +283,7 @@
                                                                                 <input type="hidden" name="release" value="{$health.release}">
                                                                             {/if}
                                                                             {if $health.instance}
-                                                                                <input type="hidden" name="instance" value="{$health.instance}">
+                                                                                <input type="hidden" name="instanceId" value="{$health.instance}">
                                                                             {/if}
                                                                             <button type="submit" class="btn btn-primary">
                                                                                 Edit
@@ -313,7 +317,7 @@
                                                                                 <input type="hidden" name="release" value="{$health.release}">
                                                                             {/if}
                                                                             {if $health.instance}
-                                                                                <input type="hidden" name="instance" value="{$health.instance}">
+                                                                                <input type="hidden" name="instanceId" value="{$health.instance}">
                                                                             {/if}
                                                                             <button type="submit" class="btn btn-primary">
                                                                                 Restart
