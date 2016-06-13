@@ -170,6 +170,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
             List<Map<String, Object>> healths = new ArrayList<>();
 
             Map<String, Double> minHostHealth = new HashMap<>();
+            Map<String, Double> minServiceHealth = new HashMap<>();
             for (UpenaEndpoints.NodeHealth nodeHealth : buildClusterHealth().values()) {
 
                 for (UpenaEndpoints.NannyHealth nannyHealth : nodeHealth.nannyHealths) {
@@ -198,6 +199,11 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                                 }
 
                                 minHostHealth.compute(nannyHealth.instanceDescriptor.clusterName + ":" + nodeHealth.host + ":" + nodeHealth.port,
+                                    (String k, Double ev) -> {
+                                        return ev == null ? nannyHealth.serviceHealth.health : Math.min(ev, nannyHealth.serviceHealth.health);
+                                    });
+
+                                minServiceHealth.compute(nannyHealth.instanceDescriptor.clusterName + ":" + nannyHealth.instanceDescriptor.serviceName,
                                     (String k, Double ev) -> {
                                         return ev == null ? nannyHealth.serviceHealth.health : Math.min(ev, nannyHealth.serviceHealth.health);
                                     });
@@ -777,14 +783,6 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
     private final ConcurrentMap<RingHost, Boolean> currentlyExecuting = Maps.newConcurrentMap();
 
     ConcurrentMap<RingHost, UpenaEndpoints.NodeHealth> buildClusterHealth() throws Exception {
-//        for (RingHost ringHost : new RingHost[]{
-//            new RingHost("soa-prime-data5.phx1.jivehosted.com", 1175),
-//            new RingHost("soa-prime-data6.phx1.jivehosted.com", 1175),
-//            new RingHost("soa-prime-data7.phx1.jivehosted.com", 1175),
-//            new RingHost("soa-prime-data8.phx1.jivehosted.com", 1175),
-//            new RingHost("soa-prime-data9.phx1.jivehosted.com", 1175),
-//            new RingHost("soa-prime-data10.phx1.jivehosted.com", 1175)
-//        }) {
 
         for (final RingHost ringHost : amzaInstance.getRing("MASTER")) {
             if (currentlyExecuting.putIfAbsent(ringHost, true) == null) {
