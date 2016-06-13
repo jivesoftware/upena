@@ -547,9 +547,19 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
         map.put("cluster", ImmutableMap.of(
             "key", value.clusterKey.getKey(),
             "name", cluster != null ? cluster.name : "unknownCluster"));
+
+        String name = "unknownHost";
+        if (host != null) {
+            name = host.hostName + "/" + host.name;
+            if (host.name.equals(host.hostName)) {
+                name = host.hostName;
+            }
+        }
+
+
         map.put("host", ImmutableMap.of(
             "key", value.hostKey.getKey(),
-            "name", host != null ? host.name : "unknownHost"));
+            "name", name));
         map.put("service", ImmutableMap.of(
             "color", serviceColor.get(value.serviceKey),
             "key", value.serviceKey.getKey(),

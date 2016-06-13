@@ -81,7 +81,12 @@ public class AsyncLookupEndpoints {
             Map<HostKey, TimestampedValue<Host>> hosts = asyncLookupService.findHosts(remoteHost, remotePort, contains);
             List<Map<String, String>> results = Lists.newArrayList();
             for (Map.Entry<HostKey, TimestampedValue<Host>> entry : hosts.entrySet()) {
-                results.add(ImmutableMap.of("key", entry.getKey().getKey(), "name", entry.getValue().getValue().name));
+
+                String name = entry.getValue().getValue().hostName + "/" + entry.getValue().getValue().name;
+                if (entry.getValue().getValue().name.equals(entry.getValue().getValue().hostName)) {
+                    name = entry.getValue().getValue().hostName;
+                }
+                results.add(ImmutableMap.of("key", entry.getKey().getKey(), "name", name));
             }
             Collections.sort(results, (Map<String, String> o1, Map<String, String> o2) -> {
                 int c = o1.get("name").compareTo(o2.get("name"));
