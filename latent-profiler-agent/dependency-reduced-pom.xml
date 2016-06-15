@@ -3,13 +3,13 @@
   <parent>
     <artifactId>shared-lib-build-management</artifactId>
     <groupId>com.jivesoftware.os.upena.inheritance.poms</groupId>
-    <version>0.566-SNAPSHOT</version>
+    <version>0.567-SNAPSHOT</version>
     <relativePath>../inheritance-poms/shared-lib-build-management/pom.xml</relativePath>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.jonathancolt.nicity</groupId>
   <artifactId>latent-profiler-agent</artifactId>
-  <version>0.566-SNAPSHOT</version>
+  <version>0.567-SNAPSHOT</version>
   <build>
     <plugins>
       <plugin>
