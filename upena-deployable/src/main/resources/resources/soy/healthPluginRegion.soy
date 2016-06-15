@@ -4,7 +4,10 @@
  * @param? gridServices
  * @param? gridHost
  * @param? filter
- *
+ * @param? clusters
+ * @param? hosts
+ * @param? services
+ * @param? releases
  */
 {template .healthPluginRegion}
     <div id="upena-health" class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.9);">
@@ -71,59 +74,87 @@
                         <tr  style="background:white;">
                             <th></th>
                             {foreach $service in $gridServices}
-                                <th class="rotate"><div>
+                                <th class="rotate">
+                                    <div>
 
-                                    <a style="color:#222; background-color: rgba({$service.serviceColor}, 0.4);" href="#" rel="popover" id="popoverAnchor-{$service.service}" data-popover-content="#popover-{$service.service}" data-placement="bottom" class="btn" title="{$service.service}">
-                                        {$service.service}
-                                        {if $service.warnings}
-                                            &nbsp;&nbsp;<span class="glyphicon glyphicon-warning-sign icon-warn">
-                                        {/if}
-                                    </a>
-                                    <div style="background-color: rgba(255, 255, 255, 0.6);" id="popover-{$service.service}" class="hide">
-                                        <div class="btn-group">
-                                            <form id="configService" method="post" action="/ui/config" name="configService">
-                                                {if $service.service}
-                                                    <input type="hidden" name="aService" value="{$service.service}">
-                                                {/if}
-                                                {if $service.serviceKey}
-                                                    <input type="hidden" name="aServiceKey" value="{$service.serviceKey}">
-                                                {/if}
-                                                <input type="hidden" name="service" value="true">
-                                                <input type="hidden" name="overridden" value="true">
-                                                <button type="submit" class="btn btn-primary">
-                                                    Config
-                                                </button>
-                                            </form>
-                                        </div>
-                                        <div class="btn-group">
-                                            <form id="editService" method="post" action="/ui/instances" name="editService">
-                                                {if $service.serviceKey}
+                                        <a style="color:#222; background-color: rgba({$service.serviceColor}, 0.4);" href="#" rel="popover" id="popoverAnchor-{$service.service}" data-popover-content="#popover-{$service.service}" data-placement="bottom" class="btn" title="{$service.service}">
+                                            {$service.service}
+                                            {if $service.warnings}
+                                                &nbsp;&nbsp;<span class="glyphicon glyphicon-warning-sign icon-warn">
+                                            {/if}
+                                        </a>
+                                        <div style="background-color: rgba(255, 255, 255, 0.6);" id="popover-{$service.service}" class="hide">
+                                            <div class="btn-group">
+                                                <form id="configService" method="post" action="/ui/config" name="configService">
+                                                    {if $service.service}
+                                                        <input type="hidden" name="aService" value="{$service.service}">
+                                                    {/if}
+                                                    {if $service.serviceKey}
+                                                        <input type="hidden" name="aServiceKey" value="{$service.serviceKey}">
+                                                    {/if}
+                                                    <input type="hidden" name="service" value="true">
+                                                    <input type="hidden" name="overridden" value="true">
+                                                    <button type="submit" class="btn btn-primary">
+                                                        Config
+                                                    </button>
+                                                </form>
+                                            </div>
+                                            <div class="btn-group">
+                                                <form id="editService" method="post" action="/ui/instances" name="editService">
+                                                    {if $service.serviceKey}
+                                                        <input type="hidden" name="serviceKey" value="{$service.serviceKey}">
+                                                    {/if}
+                                                    <button type="submit" class="btn btn-primary">
+                                                        Edit
+                                                    </button>
+                                                </form>
+                                            </div>
+                                            <div class="btn-group">
+                                                <form id="restartService" method="post" action="/ui/instances" name="restartService">
+                                                    {if $service.serviceKey}
+                                                        <input type="hidden" name="serviceKey" value="{$service.serviceKey}">
+                                                    {/if}
+                                                    <button type="submit" class="btn btn-primary">
+                                                        Restart
+                                                    </button>
+                                                </form>
+                                            </div>
+                                            {if $service.warnings}
+                                                <ul class="list-group">
+                                                    {foreach $warning in $service.warnings}
+                                                        <li class="list-group-item list-group-item-warning">{$warning}</li>
+                                                    {/foreach}
+                                                </ul>
+                                            {/if}
+                                            {if $service.serviceKey}
+                                                <form id="addService" method="post" action="/ui/instances/add" name="addService">
+                                                    <span>Clusters<span><br>
+                                                    <ul>
+                                                        {foreach $ac in $clusters}
+                                                            <li><input type="radio" name="clusterKey" value="{$ac.key}">{$ac.name}</li>
+                                                        {/foreach}
+                                                    </ul>
+                                                    <span>Hosts<span><br>
+                                                    <ul>
+                                                        {foreach $ah in $hosts}
+                                                            <li><input type="checkbox" name="hostKeys" value="{$ah.key}">{$ah.name}</li>
+                                                        {/foreach}
+                                                    </ul>
                                                     <input type="hidden" name="serviceKey" value="{$service.serviceKey}">
-                                                {/if}
-                                                <button type="submit" class="btn btn-primary">
-                                                    Edit
-                                                </button>
-                                            </form>
+                                                    <span>Releases<span><br>
+                                                    <ul>
+                                                        {foreach $ar in $releases}
+                                                            <li><input type="radio" name="releaseKey" value="{$ar.key}">{$ar.name}</li>
+                                                        {/foreach}
+                                                    </ul>
+                                                    <button type="submit" class="btn btn-primary">
+                                                        Add
+                                                    </button>
+                                                </form>
+                                            {/if}
                                         </div>
-                                        <div class="btn-group">
-                                            <form id="restartService" method="post" action="/ui/instances" name="restartService">
-                                                {if $service.serviceKey}
-                                                    <input type="hidden" name="serviceKey" value="{$service.serviceKey}">
-                                                {/if}
-                                                <button type="submit" class="btn btn-primary">
-                                                    Restart
-                                                </button>
-                                            </form>
-                                        </div>
-                                        {if $service.warnings}
-                                            <ul class="list-group">
-                                                {foreach $warning in $service.warnings}
-                                                    <li class="list-group-item list-group-item-warning">{$warning}</li>
-                                                {/foreach}
-                                            </ul>
-                                        {/if}
                                     </div>
-                                </div></th>
+                                </th>
                             {/foreach}
                         </tr>
                     </thead>
@@ -173,6 +204,32 @@
                                                             </ul>
                                                         </div>
                                                     </div>
+                                                    {if $health.hostKey}
+                                                        <form id="addService" method="post" action="/ui/instances/add" name="addService">
+                                                            <span>Clusters<span><br>
+                                                            <ul>
+                                                                {foreach $ac in $clusters}
+                                                                    <li><input type="radio" name="clusterKey" value="{$ac.key}">{$ac.name}</li>
+                                                                {/foreach}
+                                                            </ul>
+                                                            <input type="hidden" name="hostKeys" value="{$health.hostKey}">
+                                                            <span>Clusters<span><br>
+                                                            <ul>
+                                                                {foreach $as in $services}
+                                                                    <li><input type="radio" name="serviceKey" value="{$as.key}">{$as.name}</li>
+                                                                {/foreach}
+                                                            </ul>
+                                                            <span>Clusters<span><br>
+                                                            <ul>
+                                                                {foreach $ar in $releases}
+                                                                    <li><input type="radio" name="releaseKey" value="{$ar.key}">{$ar.name}</li>
+                                                                {/foreach}
+                                                            </ul>
+                                                            <button type="submit" class="btn btn-primary">
+                                                                Add
+                                                            </button>
+                                                        </form>
+                                                    {/if}
                                                 {/if}
                                                 {if $health.instances}
                                                     {foreach $i in $health.instances}

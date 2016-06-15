@@ -2,6 +2,7 @@ package com.jivesoftware.os.upena.deployable.region;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.jivesoftware.os.amza.shared.AmzaInstance;
 import com.jivesoftware.os.amza.shared.RingHost;
@@ -21,15 +22,25 @@ import com.jivesoftware.os.upena.deployable.UpenaEndpoints;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.service.UpenaStore;
 import com.jivesoftware.os.upena.shared.Cluster;
+import com.jivesoftware.os.upena.shared.ClusterFilter;
+import com.jivesoftware.os.upena.shared.ClusterKey;
 import com.jivesoftware.os.upena.shared.Host;
+import com.jivesoftware.os.upena.shared.HostFilter;
 import com.jivesoftware.os.upena.shared.HostKey;
 import com.jivesoftware.os.upena.shared.Instance;
 import com.jivesoftware.os.upena.shared.InstanceKey;
+import com.jivesoftware.os.upena.shared.ReleaseGroup;
+import com.jivesoftware.os.upena.shared.ReleaseGroupFilter;
+import com.jivesoftware.os.upena.shared.ReleaseGroupKey;
+import com.jivesoftware.os.upena.shared.Service;
+import com.jivesoftware.os.upena.shared.ServiceFilter;
 import com.jivesoftware.os.upena.shared.ServiceKey;
+import com.jivesoftware.os.upena.shared.TimestampedValue;
 import java.awt.Color;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -381,6 +392,17 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                 return o1.serviceKey.compareTo(o2.serviceKey);
             });
 
+            // Services
+             Map<ServiceKey, TimestampedValue<Service>> foundServices = upenaStore.services.find(new ServiceFilter(null, null, 0, 10000));
+            List<Map<String, String>> serviceResults = Lists.newArrayList();
+            for (Map.Entry<ServiceKey, TimestampedValue<Service>> entry : foundServices.entrySet()) {
+                serviceResults.add(ImmutableMap.of("key", entry.getKey().getKey(), "name", entry.getValue().getValue().name));
+                services.add(new GridService(entry.getKey().getKey(), entry.getValue().getValue().name));
+            }
+            sort(serviceResults);
+            data.put("services", serviceResults);
+
+
             Map<String, Map<String, String>> instanceHealth = new HashMap<>();
 
             for (UpenaEndpoints.NodeHealth nodeHealth : nodeHealths.values()) {
@@ -439,6 +461,20 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                     }
                 }
             }
+            
+            // Hosts
+            Map<HostKey, TimestampedValue<Host>> foundHosts = upenaStore.hosts.find(new HostFilter(null, null, null, null, null, 0, 10000));
+            List<Map<String, String>> hostResults = Lists.newArrayList();
+            for (Map.Entry<HostKey, TimestampedValue<Host>> entry : foundHosts.entrySet()) {
+                String name = entry.getValue().getValue().hostName + "/" + entry.getValue().getValue().name;
+                if (entry.getValue().getValue().name.equals(entry.getValue().getValue().hostName)) {
+                    name = entry.getValue().getValue().hostName;
+                }
+                hostResults.add(ImmutableMap.of("key", entry.getKey().getKey(), "name", name));
+            }
+            sort(hostResults);
+            data.put("hosts", hostResults);
+
 
             Map<GridServiceKey, GridService> serviceIndexs = new HashMap<>();
             int serviceIndex = 0;
@@ -653,11 +689,41 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
             data.put("gridServices", serviceData);
             data.put("gridHost", hostRows);
 
+           
+            // Clusters
+            Map<ClusterKey, TimestampedValue<Cluster>> foundClusters = upenaStore.clusters.find(new ClusterFilter(null, null, 0, 10000));
+            List<Map<String, String>> clusterResults = Lists.newArrayList();
+            for (Map.Entry<ClusterKey, TimestampedValue<Cluster>> entry : foundClusters.entrySet()) {
+                clusterResults.add(ImmutableMap.of("key", entry.getKey().getKey(), "name", entry.getValue().getValue().name));
+            }
+            sort(clusterResults);
+            data.put("clusters", clusterResults);
+
+            
+            // Releases
+            Map<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> foundReleases = upenaStore.releaseGroups.find(new ReleaseGroupFilter(null, null, null, null, null, 0, 10000));
+            List<Map<String, String>> releaseResults = Lists.newArrayList();
+            for (Map.Entry<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> entry : foundReleases.entrySet()) {
+                releaseResults.add(ImmutableMap.of("key", entry.getKey().getKey(), "name", entry.getValue().getValue().name));
+            }
+            sort(releaseResults);
+            data.put("releases", releaseResults);
+
         } catch (Exception e) {
             LOG.error("Unable to retrieve data", e);
         }
 
         return renderer.render(template, data);
+    }
+
+    private void sort(List<Map<String, String>> clusterResults) {
+        Collections.sort(clusterResults, (Map<String, String> o1, Map<String, String> o2) -> {
+            int c = o1.get("name").compareTo(o2.get("name"));
+            if (c != 0) {
+                return c;
+            }
+            return o1.get("key").compareTo(o2.get("key"));
+        });
     }
 
     public static void addWarning(GridService service) {

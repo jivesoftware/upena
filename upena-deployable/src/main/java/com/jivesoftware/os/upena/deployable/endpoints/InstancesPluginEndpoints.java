@@ -6,6 +6,8 @@ import com.jivesoftware.os.upena.deployable.region.InstancesPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.InstancesPluginRegion.InstancesPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.region.InstancesPluginRegion.PortUpdate;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
+import java.net.URI;
+import java.util.List;
 import javax.inject.Singleton;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -30,7 +32,7 @@ public class InstancesPluginEndpoints {
 
     private final SoyService soyService;
     private final InstancesPluginRegion pluginRegion;
-    
+
     public InstancesPluginEndpoints(@Context SoyService soyService, @Context InstancesPluginRegion pluginRegion) {
         this.soyService = soyService;
         this.pluginRegion = pluginRegion;
@@ -87,6 +89,27 @@ public class InstancesPluginEndpoints {
                     interval,
                     action));
             return Response.ok(rendered).build();
+        } catch (Exception e) {
+            LOG.error("instances action POST", e);
+            return Response.serverError().entity(e.getMessage()).build();
+        }
+    }
+
+    @POST
+    @Path("/add")
+    @Produces(MediaType.TEXT_HTML)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    public Response add(@Context HttpServletRequest httpRequest,
+        @FormParam("clusterKey") @DefaultValue("") String clusterKey,
+        @FormParam("hostKeys") @DefaultValue("") List<String> hostKeys,
+        @FormParam("serviceKey") @DefaultValue("") String serviceKey,
+        @FormParam("releaseKey") @DefaultValue("") String releaseKey) {
+
+        try {
+            String result = pluginRegion.add(httpRequest.getRemoteUser(), clusterKey, hostKeys, serviceKey, releaseKey);
+            LOG.info(result);
+            URI location = new URI("/ui/health");
+            return Response.seeOther(location).build();
         } catch (Exception e) {
             LOG.error("instances action POST", e);
             return Response.serverError().entity(e.getMessage()).build();

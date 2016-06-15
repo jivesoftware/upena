@@ -74,4 +74,5 @@ public class SoyService {
     public <I extends PluginInput> String wrapWithChrome(String path, String user, String name, String title, String htmlRegion) {
         return chrome(null).render(path, user, name, title, htmlRegion);
     }
+
 }
