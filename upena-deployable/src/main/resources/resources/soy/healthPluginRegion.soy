@@ -213,13 +213,13 @@
                                                                 {/foreach}
                                                             </ul>
                                                             <input type="hidden" name="hostKeys" value="{$health.hostKey}">
-                                                            <span>Clusters<span><br>
+                                                            <span>Services<span><br>
                                                             <ul>
                                                                 {foreach $as in $services}
                                                                     <li><input type="radio" name="serviceKey" value="{$as.key}">{$as.name}</li>
                                                                 {/foreach}
                                                             </ul>
-                                                            <span>Clusters<span><br>
+                                                            <span>Releases<span><br>
                                                             <ul>
                                                                 {foreach $ar in $releases}
                                                                     <li><input type="radio" name="releaseKey" value="{$ar.key}">{$ar.name}</li>
