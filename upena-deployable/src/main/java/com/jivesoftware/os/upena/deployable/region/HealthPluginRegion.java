@@ -492,8 +492,8 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
             for (GridHost gridHost : gridHosts) {
 
                 List<Map<String, Object>> hostRow = new ArrayList<>();
-                String currentDatacenter = com.google.common.base.Objects.firstNonNull(gridHost.datacenter, "");
-                String currentRack = com.google.common.base.Objects.firstNonNull(gridHost.rack, "");
+                String currentDatacenter = com.google.common.base.Objects.firstNonNull(gridHost.datacenter, "Unknown");
+                String currentRack = com.google.common.base.Objects.firstNonNull(gridHost.rack, "Unknown");
                 if (lastDatacenter == null || !lastDatacenter.equals(currentDatacenter)
                     || lastRack == null || !lastRack.equals(currentRack)) {
 
