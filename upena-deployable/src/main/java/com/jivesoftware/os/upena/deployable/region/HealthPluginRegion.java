@@ -609,8 +609,8 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                                 UpenaEndpoints.shortHumanReadableUptime(System.currentTimeMillis() - recency)
                                 : ">" + UpenaEndpoints.shortHumanReadableUptime(System.currentTimeMillis() - startupTime);
 
-                            float hh = (float) Math.max(0, nodeHealth.health);
-                            hostRows.get(hi).get(0).put("color", "#" + getHEXTrafficlightColor(hh, 1f));
+                            //float hh = (float) Math.max(0, nodeHealth.health);
+                            hostRows.get(hi).get(0).put("color", "#d7d7d7");// + getHEXTrafficlightColor(hh, 1f));
                             hostRows.get(hi).get(0).put("host", nodeHealth.host); 
                             hostRows.get(hi).get(0).put("hostKey", nodeHealth.hostKey);
                             hostRows.get(hi).get(0).put("health", host.toString().replace(":", " "));
