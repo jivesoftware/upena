@@ -242,7 +242,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                                 healths.add(ImmutableMap.<String, Object>builder()
                                     .put("id", nannyHealth.instanceDescriptor.instanceKey)
                                     .put("color", "192,192,192")
-                                    .put("text", "")
+                                    .put("text", "&odash;")
                                     .put("age", "&odash;")
                                     .build());
                             }
