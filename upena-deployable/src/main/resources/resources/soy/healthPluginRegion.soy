@@ -173,7 +173,7 @@
                                                 {if $health.instanceKey} data-popover-instance-key="{$health.instanceKey}" {/if}
                                                 data-health-hook="{$health.instanceKey ? $health.instanceKey : $health.health ? $health.health : ''}"
                                                 data-popover-content="#popover-{$health.uid}" data-placement="bottom"
-                                                style="background-color:white; border-radius: 4px;">
+                                                {if $health.instances}style="background-color:white; border-radius: 4px;"{/if}>
 
                                                 <span class="health-color health-text" style="border-radius: 4px;
                                                     padding: 1px 4px 1px 4px; display:inline-block;  font-style:bold; background-color:{$health.color}; color:#222;">
