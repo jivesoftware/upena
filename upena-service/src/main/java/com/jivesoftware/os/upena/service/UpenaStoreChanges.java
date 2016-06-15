@@ -73,7 +73,7 @@ class UpenaStoreChanges<K, V> implements RowChanges {
                         } catch (Exception x) {
                             LOG.warn("Failed converting value {} of class {} to class {}",
                                 new Object[]{g.getValue(), g.getValue() != null ? g.getValue().getClass() : "null", valueClass}, x);
-                            throw x;
+                            //throw x;
                         }
                         removes.change(k, new BasicTimestampedValue<>(v, g.getTimestampId(), g.getTombstoned()));
                     }
