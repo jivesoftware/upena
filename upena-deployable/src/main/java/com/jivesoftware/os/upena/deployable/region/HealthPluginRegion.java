@@ -359,7 +359,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
 
         try {
 
-            Map<ServiceKey, String> serviceColor = ServiceColorUtil.serviceKeysColor(upenaStore);
+            //Map<ServiceKey, String> serviceColor = ServiceColorUtil.serviceKeysColor(upenaStore);
 
             Map<String, String> filter = new HashMap<>();
             filter.put("datacenter", input.datacenter);
@@ -556,8 +556,8 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                             ? UpenaEndpoints.shortHumanReadableUptime(System.currentTimeMillis() - recency)
                             : ">" + UpenaEndpoints.shortHumanReadableUptime(System.currentTimeMillis() - startupTime);
 
-                        float hh = (float) Math.max(0, nodeHealth.health);
-                        hostRows.get(hi).get(0).put("color", "#" + getHEXTrafficlightColor(hh, 1f));
+                        //float hh = (float) Math.max(0, nodeHealth.health);
+                        hostRows.get(hi).get(0).put("color", "#d7d7d7"); // + getHEXTrafficlightColor(hh, 1f));
                         hostRows.get(hi).get(0).put("host", nodeHealth.host); // TODO change to hostKey
                         hostRows.get(hi).get(0).put("hostKey", nodeHealth.host); // TODO change to hostKey
                         hostRows.get(hi).get(0).put("health", host.toString().replace(":", " "));
@@ -611,8 +611,8 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
 
                             float hh = (float) Math.max(0, nodeHealth.health);
                             hostRows.get(hi).get(0).put("color", "#" + getHEXTrafficlightColor(hh, 1f));
-                            hostRows.get(hi).get(0).put("host", nodeHealth.host); // TODO change to hostKey
-                            hostRows.get(hi).get(0).put("hostKey", nodeHealth.host); // TODO change to hostKey
+                            hostRows.get(hi).get(0).put("host", nodeHealth.host); 
+                            hostRows.get(hi).get(0).put("hostKey", nodeHealth.hostKey);
                             hostRows.get(hi).get(0).put("health", host.toString().replace(":", " "));
                             hostRows.get(hi).get(0).put("age", age);
                             hostRows.get(hi).get(0).put("uid", "uid-" + uid);
@@ -683,7 +683,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                     serviceCell.put("warnings", service.warnings);
                 }
                 serviceCell.put("serviceKey", service.serviceKey);
-                serviceCell.put("serviceColor", serviceColor.getOrDefault(new ServiceKey(service.serviceKey), "127,127,127"));
+                serviceCell.put("serviceColor", "215,215,215"); //serviceColor.getOrDefault(new ServiceKey(service.serviceKey), "127,127,127"));
                 serviceData.add(serviceCell);
             }
             data.put("gridServices", serviceData);
