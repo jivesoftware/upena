@@ -537,18 +537,18 @@ public class UpenaEndpoints {
 
         StringBuilder sb = new StringBuilder(64);
         if (days > 0) {
-            return days + "d";
+            sb.append(days + "d ");
         }
         if (hours > 0) {
-            return hours + "h";
+            sb.append(hours + "h ");
         }
         if (minutes > 0) {
-            return minutes + "m";
+            sb.append(minutes + "m ");
         }
         if (seconds > 0) {
-            return seconds + "s";
+            sb.append(seconds + "s");
         }
-        return "";
+        return sb.toString();
     }
 
 }

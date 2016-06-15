@@ -29,9 +29,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang.time.DurationFormatUtils;
@@ -179,9 +181,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
             for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {
                 InstanceKey key = entrySet.getKey();
                 TimestampedValue<Instance> timestampedValue = entrySet.getValue();
-                Instance value = timestampedValue.getValue();
-
-                rows.add(clusterToMap(key, value, timestampedValue, serviceColor));
+                rows.add(clusterToMap(key, timestampedValue, serviceColor));
             }
 
             Collections.sort(rows, (o1, o2) -> {
@@ -353,7 +353,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
         }
     }
 
-    private void handleAdd(String user,InstancesPluginRegionInput input, Map<String, Object> data) {
+    private void handleAdd(String user, InstancesPluginRegionInput input, Map<String, Object> data) {
         try {
             boolean valid = true;
             Cluster cluster = upenaStore.clusters.get(new ClusterKey(input.clusterKey));
@@ -397,6 +397,73 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
             String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
             data.put("message", "Error while trying to add Instance.\n" + trace);
         }
+    }
+
+    public String add(String user, String clusterKey, List<String> hostKeys, String serviceKey, String releaseKey) {
+        for (String hostKey : hostKeys) {
+            try {
+                Cluster cluster = upenaStore.clusters.get(new ClusterKey(clusterKey));
+                if (cluster == null) {
+                    return "Cluster key:" + clusterKey + " is invalid.";
+                }
+                Host host = upenaStore.hosts.get(new HostKey(hostKey));
+                if (host == null) {
+                    return "Host key:" + hostKey + " is invalid.";
+                }
+                Service service = upenaStore.services.get(new ServiceKey(serviceKey));
+                if (service == null) {
+                    return "Service key:" + serviceKey + " is invalid.";
+                }
+                ReleaseGroup releaseGroup = upenaStore.releaseGroups.get(new ReleaseGroupKey(releaseKey));
+                if (releaseGroup == null) {
+                    return "ReleaseGroup key:" + releaseKey + " is invalid.";
+                }
+
+                InstanceFilter filter = new InstanceFilter(
+                    new ClusterKey(clusterKey),
+                    new HostKey(hostKey),
+                    new ServiceKey(serviceKey),
+                    new ReleaseGroupKey(releaseKey),
+                    null,
+                    0, 10000);
+
+                Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(filter);
+                Set<Integer> instanceIds = new HashSet<>();
+                for (TimestampedValue<Instance> ti : found.values()) {
+                    if (!ti.getTombstoned()) {
+                        instanceIds.add(ti.getValue().instanceId);
+                    }
+                }
+                int firstFreeId = -1;
+                for (int i = 1; i < 10000; i++) {
+                    if (!instanceIds.contains(i)) {
+                        firstFreeId = i;
+                        break;
+                    }
+                }
+                if (firstFreeId == -1) {
+                    return "failed to find free instanceId";
+                }
+
+                Instance newInstance = new Instance(
+                    new ClusterKey(clusterKey),
+                    new HostKey(hostKey),
+                    new ServiceKey(serviceKey),
+                    new ReleaseGroupKey(releaseKey),
+                    firstFreeId,
+                    false, false, System.currentTimeMillis()
+                );
+                upenaStore.instances.update(null, newInstance);
+                upenaStore.record(user, "added", System.currentTimeMillis(), "", "instance-ui",
+                    instanceToHumanReadableString(newInstance) + "\n" + newInstance
+                    .toString());
+
+            } catch (Exception x) {
+                String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
+                return "Error while trying to add Instance.\n" + trace;
+            }
+        }
+        return "Added new instance/s";
     }
 
     private void handleRestart(String user, InstancesPluginRegionInput input, Map<String, Object> data) {
@@ -491,10 +558,10 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
     }
 
     private Map<String, Object> clusterToMap(InstanceKey key,
-        Instance value,
         TimestampedValue<Instance> timestampedValue,
         Map<ServiceKey, String> serviceColor) throws Exception {
 
+        Instance value = timestampedValue.getValue();
         Map<String, Object> map = new HashMap<>();
         map.put("key", key.getKey());
         long now = System.currentTimeMillis();
@@ -555,7 +622,6 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
                 name = host.hostName;
             }
         }
-
 
         map.put("host", ImmutableMap.of(
             "key", value.hostKey.getKey(),
