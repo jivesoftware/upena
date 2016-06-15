@@ -453,6 +453,47 @@
                                                             </div>
                                                         </div>
                                                     {/foreach}
+                                                {else}
+                                                    <form id="addService" method="post" action="/ui/instances/add" name="addService">
+                                                        <span>Clusters<span><br>
+                                                        <ul>
+                                                            {foreach $ac in $clusters}
+                                                                <li><input type="radio" name="clusterKey" value="{$ac.key}">{$ac.name}</li>
+                                                            {/foreach}
+                                                        </ul>
+
+                                                        {if $health.serviceKey}
+                                                            <input type="hidden" name="hostKeys" value="{$health.hostKey}">
+                                                        {else}
+                                                            <span>Hosts<span><br>
+                                                            <ul>
+                                                                {foreach $ah in $hosts}
+                                                                    <li><input type="checkbox" name="hostKeys" value="{$ah.key}">{$ah.name}</li>
+                                                                {/foreach}
+                                                            </ul>
+                                                        {/if}
+
+
+                                                        {if $health.serviceKey}
+                                                            <input type="hidden" name="serviceKey" value="{$health.serviceKey}">
+                                                        {else}
+                                                            <span>Services<span><br>
+                                                            <ul>
+                                                                {foreach $as in $services}
+                                                                    <li><input type="radio" name="serviceKey" value="{$as.key}">{$as.name}</li>
+                                                                {/foreach}
+                                                            </ul>
+                                                        {/if}
+                                                        <span>Releases<span><br>
+                                                        <ul>
+                                                            {foreach $ar in $releases}
+                                                                <li><input type="radio" name="releaseKey" value="{$ar.key}">{$ar.name}</li>
+                                                            {/foreach}
+                                                        </ul>
+                                                        <button type="submit" class="btn btn-primary">
+                                                            Add
+                                                        </button>
+                                                    </form>
                                                 {/if}
                                             </div>
                                         {/if}

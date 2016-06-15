@@ -656,7 +656,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
 
                             } else {
                                 cell.put("color", "#404040");
-                                cell.put("health", "");
+                                cell.put("health", "-");
                                 cell.put("age", "-");
                             }
                             cell.put("link", "http://" + nodeHealth.host + ":" + id.ports.get("manage").port + "/manage/ui");
