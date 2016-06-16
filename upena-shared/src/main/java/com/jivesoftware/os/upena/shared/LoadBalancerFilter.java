@@ -23,7 +23,7 @@ import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class LoadBalancerFilter implements KeyValueFilter<ClusterKey, Cluster>, Serializable {
+public class LoadBalancerFilter implements KeyValueFilter<LoadBalancerKey, LoadBalancer>, Serializable {
 
     public final String name;
     public final String description;
@@ -44,7 +44,7 @@ public class LoadBalancerFilter implements KeyValueFilter<ClusterKey, Cluster>, 
 
     @Override
     public String toString() {
-        return "ClusterFilter{"
+        return "LoadBalancerFilter{"
             + "name=" + name
             + ", description=" + description
             + ", start=" + start
@@ -53,15 +53,15 @@ public class LoadBalancerFilter implements KeyValueFilter<ClusterKey, Cluster>, 
     }
 
     @Override
-    public ConcurrentNavigableMap<ClusterKey, TimestampedValue<Cluster>> createCollector() {
+    public ConcurrentNavigableMap<LoadBalancerKey, TimestampedValue<LoadBalancer>> createCollector() {
         return new Results();
     }
 
-    public static class Results extends ConcurrentSkipListMap<ClusterKey, TimestampedValue<Cluster>> {
+    public static class Results extends ConcurrentSkipListMap<LoadBalancerKey, TimestampedValue<LoadBalancer>> {
     }
 
     @Override
-    public boolean filter(ClusterKey key, Cluster value) {
+    public boolean filter(LoadBalancerKey key, LoadBalancer value) {
         if (name != null && value.name != null) {
             if (!value.name.contains(name)) {
                 return false;
