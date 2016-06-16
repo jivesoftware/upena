@@ -5,7 +5,7 @@ import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Maps;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
-import com.jivesoftware.os.upena.deployable.region.LoadBalancerPluginRegion.LoadBalancersPluginRegionInput;
+import com.jivesoftware.os.upena.deployable.region.LoadBalancersPluginRegion.LoadBalancersPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.service.UpenaStore;
 import com.jivesoftware.os.upena.shared.LoadBalancer;
@@ -23,7 +23,7 @@ import java.util.Map;
  *
  */
 // soy.page.loadBalancersPluginRegion
-public class LoadBalancerPluginRegion implements PageRegion<LoadBalancersPluginRegionInput> {
+public class LoadBalancersPluginRegion implements PageRegion<LoadBalancersPluginRegionInput> {
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
@@ -31,7 +31,7 @@ public class LoadBalancerPluginRegion implements PageRegion<LoadBalancersPluginR
     private final SoyRenderer renderer;
     private final UpenaStore upenaStore;
 
-    public LoadBalancerPluginRegion(String template,
+    public LoadBalancersPluginRegion(String template,
         SoyRenderer renderer,
         UpenaStore upenaStore
     ) {
@@ -180,7 +180,13 @@ public class LoadBalancerPluginRegion implements PageRegion<LoadBalancersPluginR
         return renderer.render(template, data);
     }
 
-    public void add(String user, ReleaseGroupUpdate releaseGroupUpdate) throws Exception {
+    @Override
+    public String getTitle() {
+        return "LoadBalancers";
+    }
+
+
+    public void add(String user, ListenerUpdate listenerUpdate) throws Exception {
 //        LoadBalancerKey loadBalancerKey = new LoadBalancerKey(releaseGroupUpdate.loadBalancerId);
 //        LoadBalancer loadBalancer = upenaStore.loadBalancers.get(loadBalancerKey);
 //        if (loadBalancer != null) {
@@ -190,7 +196,7 @@ public class LoadBalancerPluginRegion implements PageRegion<LoadBalancersPluginR
 //        }
     }
 
-    public void remove(String user, ReleaseGroupUpdate releaseGroupUpdate) throws Exception {
+    public void remove(String user, ListenerUpdate listenerUpdate) throws Exception {
 //        LoadBalancerKey loadBalancerKey = new LoadBalancerKey(releaseGroupUpdate.loadBalancerId);
 //        LoadBalancer loadBalancer = upenaStore.loadBalancers.get(loadBalancerKey);
 //        if (loadBalancer != null) {
@@ -201,26 +207,21 @@ public class LoadBalancerPluginRegion implements PageRegion<LoadBalancersPluginR
 //        }
     }
 
-    public static class ReleaseGroupUpdate {
+    public static class ListenerUpdate {
 
         public String loadBalancerId;
         public String serviceId;
         public String releaseGroupId;
 
-        public ReleaseGroupUpdate() {
+        public ListenerUpdate() {
         }
 
-        public ReleaseGroupUpdate(String loadBalancerId, String serviceId, String releaseGroupId) {
+        public ListenerUpdate(String loadBalancerId, String serviceId, String releaseGroupId) {
             this.loadBalancerId = loadBalancerId;
             this.serviceId = serviceId;
             this.releaseGroupId = releaseGroupId;
         }
 
-    }
-
-    @Override
-    public String getTitle() {
-        return "LoadBalancers";
     }
 
 }

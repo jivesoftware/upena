@@ -1,0 +1,43 @@
+{namespace soy.page}
+
+/**
+ * @param? health
+ */
+{template .healthPopup}
+    <ul>
+        {if $health.unexpectedRestart}
+            <li><span class="label label-warning">Was unexpectedly restarted:{$health.unexpectedRestart}</span></li>
+        {/if}
+        {if $health.configIsStale}
+            <li>
+                <span class="label label-warning">Config is stale</span>
+                <table class="table table-condensed  float-table-head table-responsive">
+                    {foreach $propertyName in keys($health.configIsStale)}
+                        <tr>
+                            <td>{$propertyName}</td>
+                            <td>{$health.configIsStale[$propertyName]}</td>
+                        </tr>
+                    {/foreach}
+                </table>
+            </li>
+        {/if}
+        {if $health.healthConfigIsStale}
+            <li>
+                <span class="label label-warning">Health config is stale</span>
+                <table class="table table-condensed  float-table-head table-responsive">
+                    {foreach $propertyName in keys($health.healthConfigIsStale)}
+                        <tr>
+                            <td>{$propertyName}</td>
+                            <td>{$health.healthConfigIsStale[$propertyName]}</td>
+                        </tr>
+                    {/foreach}
+                </table>
+            </li>
+        {/if}
+        {if $health.healthConfigIsStale}
+             {foreach $h in $health.health}
+                
+             {/foreach}
+        {/if}
+    </ul>
+{/template}

@@ -2,8 +2,9 @@ package com.jivesoftware.os.upena.deployable.endpoints;
 
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
-import com.jivesoftware.os.upena.deployable.region.ClustersPluginRegion;
-import com.jivesoftware.os.upena.deployable.region.ClustersPluginRegion.ClustersPluginRegionInput;
+import com.jivesoftware.os.upena.deployable.region.LoadBalancersPluginRegion;
+import com.jivesoftware.os.upena.deployable.region.LoadBalancersPluginRegion.ListenerUpdate;
+import com.jivesoftware.os.upena.deployable.region.LoadBalancersPluginRegion.LoadBalancersPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
 import javax.inject.Singleton;
 import javax.servlet.http.HttpServletRequest;
@@ -23,14 +24,14 @@ import javax.ws.rs.core.Response;
  */
 @Singleton
 @Path("/ui/loadbalancers")
-public class LoadBalancerPluginEndpoints {
+public class LoadBalancersPluginEndpoints {
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
     private final SoyService soyService;
-    private final ClustersPluginRegion pluginRegion;
+    private final LoadBalancersPluginRegion pluginRegion;
 
-    public LoadBalancerPluginEndpoints(@Context SoyService soyService, @Context ClustersPluginRegion pluginRegion) {
+    public LoadBalancersPluginEndpoints(@Context SoyService soyService, @Context LoadBalancersPluginRegion pluginRegion) {
         this.soyService = soyService;
         this.pluginRegion = pluginRegion;
     }
@@ -42,7 +43,7 @@ public class LoadBalancerPluginEndpoints {
         try {
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(),
                 pluginRegion,
-                new ClustersPluginRegionInput("", "", "", ""));
+                new LoadBalancersPluginRegionInput("", "", "", ""));
             return Response.ok(rendered).build();
         } catch (Exception e) {
             LOG.error("clusters GET.", e);
@@ -61,7 +62,7 @@ public class LoadBalancerPluginEndpoints {
         @FormParam("action") @DefaultValue("") String action) {
         try {
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-                new ClustersPluginRegionInput(key, name, description, action));
+                new LoadBalancersPluginRegionInput(key, name, description, action));
             return Response.ok(rendered).build();
         } catch (Exception e) {
             LOG.error("clusters action  POST.", e);
@@ -73,7 +74,7 @@ public class LoadBalancerPluginEndpoints {
     @Path("/add")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response add(ClustersPluginRegion.ReleaseGroupUpdate update, @Context HttpServletRequest httpRequest) {
+    public Response add(ListenerUpdate update, @Context HttpServletRequest httpRequest) {
         try {
             pluginRegion.add(httpRequest.getRemoteUser(), update);
             return Response.ok().build();
@@ -87,7 +88,7 @@ public class LoadBalancerPluginEndpoints {
     @Path("/remove")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response remove(ClustersPluginRegion.ReleaseGroupUpdate update, @Context HttpServletRequest httpRequest) {
+    public Response remove(ListenerUpdate update, @Context HttpServletRequest httpRequest) {
         try {
             pluginRegion.remove(httpRequest.getRemoteUser(), update);
             return Response.ok().build();

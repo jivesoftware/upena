@@ -65,6 +65,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
     private final RingHost ringHost;
     private final String template;
     private final String instanceTemplate;
+    private final String popupTemplate;
     private final SoyRenderer renderer;
     private final AmzaInstance amzaInstance;
     private final UpenaStore upenaStore;
@@ -77,6 +78,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
         RingHost ringHost,
         String template,
         String instanceTemplate,
+        String popupTemplate,
         SoyRenderer renderer,
         AmzaInstance amzaInstance,
         UpenaStore upenaStore,
@@ -86,6 +88,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
         this.ringHost = ringHost;
         this.template = template;
         this.instanceTemplate = instanceTemplate;
+        this.popupTemplate = popupTemplate;
         this.renderer = renderer;
         this.amzaInstance = amzaInstance;
         this.upenaStore = upenaStore;
@@ -219,12 +222,32 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                                         return ev == null ? nannyHealth.serviceHealth.health : Math.min(ev, nannyHealth.serviceHealth.health);
                                     });
 
+                               
+                                String simpleHealthHtml = "";
+                                List<Map<String, String>> simpleServiceHealth = simpleServiceHealth(nannyHealth.instanceDescriptor.instanceKey);
+                                Map<String, Object> simpleHealthMap = Maps.newHashMap();
+                                if (nannyHealth.unexpectedRestart > -1) {
+                                    simpleHealthMap.put("unexpectedRestart", UpenaEndpoints.humanReadableUptime(now - nannyHealth.unexpectedRestart));
+                                }
+
+                                if (!nannyHealth.configIsStale.isEmpty()) {
+                                    simpleHealthMap.put("configIsStale", nannyHealth.configIsStale);
+                                }
+
+                                if (!nannyHealth.healthConfigIsStale.isEmpty()) {
+                                    simpleHealthMap.put("healthConfigIsStale", nannyHealth.healthConfigIsStale);
+                                }
+                                if (!simpleServiceHealth.isEmpty()) {
+                                    simpleHealthMap.put("health", simpleServiceHealth);
+                                }
+                                simpleHealthHtml = renderer.render(simpleHealthHtml, ImmutableMap.of("health", simpleHealthMap));
+                            
                                 ImmutableMap.Builder<String, Object> map = ImmutableMap.<String, Object>builder()
                                     .put("id", nannyHealth.instanceDescriptor.instanceKey)
                                     .put("color", color)
                                     .put("text", label)
-                                    .put("age", age);
-                                    //.put("simpleHealth",simpleServiceHealth(nannyHealth.instanceDescriptor.instanceKey));
+                                    .put("age", age)
+                                    .put("simple", simpleHealthHtml);
 
                                 if (nannyHealth.unexpectedRestart > -1) {
                                     map.put("unexpectedRestart", UpenaEndpoints.humanReadableUptime(now - nannyHealth.unexpectedRestart));
