@@ -415,6 +415,7 @@ public class UpenaMain {
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/changeLogPluginRegion.soy"), "changeLog.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/instanceHealthPluginRegion.soy"), "instanceHealthPluginRegion.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/healthPluginRegion.soy"), "health.soy");
+        soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/healthPopup.soy"), "healthPopup.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/topologyPluginRegion.soy"), "topology.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/connectivityPluginRegion.soy"), "connectivity.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/connectionsHealth.soy"), "connectionsHealth.soy");
@@ -465,6 +466,7 @@ public class UpenaMain {
             ringHost,
             "soy.page.healthPluginRegion",
             "soy.page.instanceHealthPluginRegion",
+            "soy.page.healthPopup",
             renderer,
             amzaService,
             upenaStore,

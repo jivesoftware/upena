@@ -738,6 +738,7 @@ upena.health = {
     color: {},
     text: {},
     age: {},
+    simple: {},
     warn: {},
     config: {},
     init: function () {
@@ -769,6 +770,7 @@ upena.health = {
                 upena.health.color[id] = $cell.find('.health-color');
                 upena.health.text[id] = $cell.find('.health-text');
                 upena.health.age[id] = $cell.find('.health-age');
+                upena.health.simple[id] = $cell.find('.health-simple');
                 upena.health.warn[id] = $cell.find('.health-warn');
                 upena.health.config[id] = $cell.find('.config-warn');
             }
@@ -777,6 +779,9 @@ upena.health = {
             upena.health.color[id].show();
             upena.health.text[id].html(data[i].text || '');
             upena.health.age[id].html(data[i].age);
+            if (data[i].simple) {
+                upena.health.simple[id].html(data[i].simple);
+            }
 
             if (data[i].unexpectedRestart) {
                 upena.health.warn[id].show();
