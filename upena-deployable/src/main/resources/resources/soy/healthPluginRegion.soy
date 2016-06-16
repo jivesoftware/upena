@@ -175,23 +175,26 @@
                                                 data-popover-content="#popover-{$health.uid}" data-placement="bottom"
                                                 {if $health.instances}style="text-align:center; background-color:white; border-radius: 4px;  border-color: lightgrey; border-style: solid; border-width: thin;"{/if}>
                                                 
-                                                <div class="health-color health-text" style="border-radius: 4px 4px 0 0;
+                                                <div class="tooltip health-color health-text" style="border-radius: 4px 4px 0 0;
                                                     padding: 1px 4px 1px 4px;  font-style:bold; background-color:{$health.color}; color:#222;">
                                                     {if $health.health == null}
                                                     {else}
                                                         {$health.health|noAutoescape}
                                                     {/if}
+                                                    <div class="tooltiptext">
+                                                        <span class="health-warn glyphicon glyphicon-warning-sign icon-warn" style="display:none;"></span>
+                                                        <span title="Config has changed since last restart" class="config-warn glyphicon glyphicon-asterisk icon-warn" style="display:none;"></span>
+                                                        {if $health.health != null}
+                                                            {if $health.age}
+                                                                &nbsp;&nbsp;
+                                                            {/if}
+                                                        {/if}
+                                                        <span class="health-age" style="display:inline-block; color:#777; font-style:italic;">
+                                                            {if $health.age}{$health.age}{/if}
+                                                        </span>
+                                                    </div>
                                                 </div>
-                                                <span class="health-warn glyphicon glyphicon-warning-sign icon-warn" style="display:none;"></span>
-                                                <span title="Config has changed since last restart" class="config-warn glyphicon glyphicon-asterisk icon-warn" style="display:none;"></span>
-                                                {if $health.health != null}
-                                                    {if $health.age}
-                                                        &nbsp;&nbsp;
-                                                    {/if}
-                                                {/if}
-                                                <span class="health-age" style="display:inline-block; color:#777; font-style:italic;">
-                                                    {if $health.age}{$health.age}{/if}
-                                                </span>
+                                                
                                             </div>
                                             <div id="popover-{$health.uid}" class="hide" style="background-color: rgba(255, 255, 255, 0.9);">
                                                 {if $health.hostInfo}
