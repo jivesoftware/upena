@@ -77,7 +77,7 @@
                                 <th class="rotate">
                                     <div>
 
-                                        <a style="color:#222; background-color: rgba({$service.serviceColor}, 0.5);" href="#" rel="popover" id="popoverAnchor-{$service.service}" data-popover-content="#popover-{$service.service}" data-placement="bottom" class="btn" title="{$service.service}">
+                                        <a style="border-bottom: 1px solid lightgray; color:#222; background-color: rgba({$service.serviceColor}, 0.9);" href="#" rel="popover" id="popoverAnchor-{$service.service}" data-popover-content="#popover-{$service.service}" data-placement="bottom" class="btn" title="{$service.service}">
                                             {$service.service}
                                             {if $service.warnings}
                                                 &nbsp;&nbsp;<span class="glyphicon glyphicon-warning-sign icon-warn">
@@ -160,9 +160,9 @@
                     </thead>
                     <tbody>
                         {foreach $host in $gridHost}
-                            <tr class="grid-host">
+                            <tr class="grid-host" {if $health.datacenter}style="background-color:white;"{/if}>
                                 {foreach $health in $host}
-                                    <td>
+                                    <td  {if $health.uid}style="border-left: 1px solid #ddd;"{/if}>
                                         {if $health.datacenter}
                                             <div class="datacenter-and-rack">
                                                 <img src="/static/img/datacenter.png" alt="Datacenter" style="width:20px;height:20px;">&nbsp;{$health.datacenter}&nbsp;&nbsp;
@@ -175,7 +175,8 @@
                                                 data-popover-content="#popover-{$health.uid}" data-placement="bottom"
                                                 {if $health.instances}style="text-align:center;"{/if}>
                                                 
-                                                <div id="popoverAnchor-age-{$health.uid}" data-popover-content="#popover-age-{$health.uid}" data-placement="top" data-trigger="hover" class="popover-health grid-host-panel health-color health-text" style="border-radius: 6px;
+                                                <div id="popoverAnchor-age-{$health.uid}" data-popover-content="#popover-age-{$health.uid}" data-placement="top" data-trigger="hover"
+                                                    class="popover-health grid-host-panel health-color health-text" style="border-radius: 6px;
                                                     padding: 1px 4px 1px 4px;  font-style:bold; background-color:{$health.color}; color:#222;">
                                                     {if $health.health == null}
                                                     {else}
