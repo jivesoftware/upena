@@ -33,7 +33,7 @@
                 <ul class="list-group" style="list-style-type:none">
                     {foreach $loadBalancer in $loadBalancers}
                         <li>
-                            {$loadBalancer.toString}
+                            <pre>{$loadBalancer.toString}</pre>
                         </li>
                     {/foreach}
                 </ul>
@@ -61,7 +61,7 @@
                 <ul class="list-group" style="list-style-type:none">
                     {foreach $volume in $volumes}
                         <li>
-                            {$volume.toString}
+                            <pre>{$volume.toString}</pre>
                         </li>
                     {/foreach}
                 </ul>
