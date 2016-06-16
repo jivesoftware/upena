@@ -240,7 +240,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                                 if (!simpleServiceHealth.isEmpty()) {
                                     simpleHealthMap.put("health", simpleServiceHealth);
                                 }
-                                simpleHealthHtml = renderer.render(simpleHealthHtml, ImmutableMap.of("health", simpleHealthMap));
+                                simpleHealthHtml = renderer.render(popupTemplate, ImmutableMap.of("health", simpleHealthMap));
                             
                                 ImmutableMap.Builder<String, Object> map = ImmutableMap.<String, Object>builder()
                                     .put("id", nannyHealth.instanceDescriptor.instanceKey)
