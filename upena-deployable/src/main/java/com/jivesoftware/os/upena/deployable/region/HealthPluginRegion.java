@@ -503,9 +503,11 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                     Map<String, Object> healthCell = new HashMap<>();
                     healthCell.put("datacenter", lastDatacenter);
                     healthCell.put("rack", lastRack);
+                    healthCell.put("separator", "");
                     hostRow.add(healthCell);
                     for (int s = 0; s < services.size(); s++) {
                         HashMap<String, Object> cell = new HashMap<>();
+                        cell.put("separator", "");
                         hostRow.add(cell);
                     }
                     hostRows.add(hostRow);
