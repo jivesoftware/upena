@@ -494,8 +494,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                 List<Map<String, Object>> hostRow = new ArrayList<>();
                 String currentDatacenter = com.google.common.base.Objects.firstNonNull(gridHost.datacenter, "Unknown");
                 String currentRack = com.google.common.base.Objects.firstNonNull(gridHost.rack, "Unknown");
-                if (lastDatacenter == null || !lastDatacenter.equals(currentDatacenter)
-                    || lastRack == null || !lastRack.equals(currentRack)) {
+                if (lastDatacenter == null || !lastDatacenter.equals(currentDatacenter) || lastRack == null || !lastRack.equals(currentRack)) {
 
                     lastDatacenter = currentDatacenter;
                     lastRack = currentRack;
@@ -503,11 +502,11 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                     Map<String, Object> healthCell = new HashMap<>();
                     healthCell.put("datacenter", lastDatacenter);
                     healthCell.put("rack", lastRack);
-                    healthCell.put("separator", "");
+                    healthCell.put("separator", "true");
                     hostRow.add(healthCell);
                     for (int s = 0; s < services.size(); s++) {
                         HashMap<String, Object> cell = new HashMap<>();
-                        cell.put("separator", "");
+                        cell.put("separator", "true");
                         hostRow.add(cell);
                     }
                     hostRows.add(hostRow);
@@ -526,7 +525,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                 hostRow.add(healthCell);
                 for (int s = 0; s < services.size(); s++) {
                     healthCell = new HashMap<>();
-                    healthCell.put("instanceCell", "");
+                    healthCell.put("instanceCell", "true");
                     healthCell.put("uid", "uid-" + uid);
                     uid++;
                     healthCell.put("color", "#eee");
@@ -664,6 +663,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                             }
                             cell.put("link", "http://" + nodeHealth.host + ":" + id.ports.get("manage").port + "/manage/ui");
 
+                            @SuppressWarnings("unchecked")
                             List<Map<String, String>> got = (List<Map<String, String>>) cell.get("instances");
                             if (got == null) {
                                 got = new ArrayList<>();

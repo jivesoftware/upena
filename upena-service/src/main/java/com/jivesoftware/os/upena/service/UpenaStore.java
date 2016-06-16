@@ -31,6 +31,8 @@ import com.jivesoftware.os.upena.shared.HostKey;
 import com.jivesoftware.os.upena.shared.Instance;
 import com.jivesoftware.os.upena.shared.InstanceFilter;
 import com.jivesoftware.os.upena.shared.InstanceKey;
+import com.jivesoftware.os.upena.shared.LoadBalancer;
+import com.jivesoftware.os.upena.shared.LoadBalancerKey;
 import com.jivesoftware.os.upena.shared.Project;
 import com.jivesoftware.os.upena.shared.ProjectKey;
 import com.jivesoftware.os.upena.shared.RecordedChange;
@@ -59,6 +61,7 @@ public class UpenaStore {
 
     public final TableName projectStoreKey = new TableName("master", "projects", null, null);
     public final TableName clusterStoreKey = new TableName("master", "clusters", null, null);
+    public final TableName loadbalancers = new TableName("master", "loadbalancers", null, null);
     public final TableName hostStoreKey = new TableName("master", "hosts", null, null);
     public final TableName serviceStoreKey = new TableName("master", "services", null, null);
     public final TableName releaseGroupStoreKey = new TableName("master", "releaseGroups", null, null);
@@ -68,6 +71,7 @@ public class UpenaStore {
 
     public final UpenaTable<ProjectKey, Project> projects;
     public final UpenaTable<ClusterKey, Cluster> clusters;
+    public final UpenaTable<LoadBalancerKey, LoadBalancer> loadBalancers;
     public final UpenaTable<HostKey, Host> hosts;
     public final UpenaTable<ServiceKey, Service> services;
     public final UpenaTable<ReleaseGroupKey, ReleaseGroup> releaseGroups;
@@ -88,6 +92,7 @@ public class UpenaStore {
 
         projects = new UpenaTable<>(amzaService.getTable(projectStoreKey), ProjectKey.class, Project.class, new ProjectKeyProvider(), null);
         clusters = new UpenaTable<>(amzaService.getTable(clusterStoreKey), ClusterKey.class, Cluster.class, new ClusterKeyProvider(), null);
+        loadBalancers = new UpenaTable<>(amzaService.getTable(loadbalancers), LoadBalancerKey.class, LoadBalancer.class, new LoadBalancerKeyProvider(), null);
         hosts = new UpenaTable<>(amzaService.getTable(hostStoreKey), HostKey.class, Host.class, new HostKeyProvider(), null);
         services = new UpenaTable<>(amzaService.getTable(serviceStoreKey), ServiceKey.class, Service.class, new ServiceKeyProvider(), null);
         releaseGroups = new UpenaTable<>(amzaService.getTable(releaseGroupStoreKey),
