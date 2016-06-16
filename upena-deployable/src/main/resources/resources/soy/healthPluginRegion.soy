@@ -175,14 +175,14 @@
                                                 data-popover-content="#popover-{$health.uid}" data-placement="bottom"
                                                 {if $health.instances}style="text-align:center; background-color:white; border-radius: 4px;  border-color: lightgrey; border-style: solid; border-width: thin;"{/if}>
                                                 
-                                                <div id="popoverAnchor-age{$health.uid}" data-popover-content="#popover-age{$health.uid}" data-placement="top" data-trigger="hover" class="health-color health-text" style="border-radius: 4px 4px 0 0;
+                                                <div id="popoverAnchor-age-{$health.uid}" data-popover-content="#popover-age-{$health.uid}" data-placement="top" data-trigger="hover" class="grid-host-panel health-color health-text" style="border-radius: 4px 4px 0 0;
                                                     padding: 1px 4px 1px 4px;  font-style:bold; background-color:{$health.color}; color:#222;">
                                                     {if $health.health == null}
                                                     {else}
                                                         {$health.health|noAutoescape}
                                                     {/if}
                                                 </div>
-                                                <div id="popover-age{$health.uid}" class="hide" >
+                                                <div id="popover-age-{$health.uid}" class="hide" >
                                                     <span class="health-warn glyphicon glyphicon-warning-sign icon-warn" style="display:none;"></span>
                                                     <span title="Config has changed since last restart" class="config-warn glyphicon glyphicon-asterisk icon-warn" style="display:none;"></span>
                                                     {if $health.health != null}
