@@ -1069,6 +1069,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
             for (UpenaEndpoints.Health health : serviceHealth.healthChecks) {
                 if (health.health >= 0.0d && health.health < 0.5d) {
                     Map<String, String> healthData = new HashMap<>();
+                    healthData.put("score", String.valueOf((int) (100 * health.health)));
                     healthData.put("color", trafficlightColorRGB(health.health, 1f));
                     healthData.put("name", String.valueOf(health.name));
                     healthData.put("status", String.valueOf(health.status));
