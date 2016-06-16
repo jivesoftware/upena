@@ -24,7 +24,7 @@ th.rotate {
 }
 
 th.rotate > div {
-    transform: translate3d(1px, 1px, 0) rotate(-45deg);
+    transform: translate3d(30px, 15px, 0) rotate(-45deg);
     width: 1px;
     transform-origin: left bottom;
     box-sizing: border-box;

@@ -422,7 +422,16 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                         && (!input.host.isEmpty() == hshow)
                         && (!input.service.isEmpty() == sshow)) {
 
-                        GridHost gridHost = new GridHost(nannyHealth.instanceDescriptor.datacenter, nannyHealth.instanceDescriptor.rack,
+                        String dc = nannyHealth.instanceDescriptor.datacenter;
+                        if (dc == null || dc.trim().isEmpty()) {
+                            dc = "unknown";
+                        }
+                        String rack = nannyHealth.instanceDescriptor.rack;
+                        if (rack == null || rack.trim().isEmpty()) {
+                            rack = "unknown";
+                        }
+
+                        GridHost gridHost = new GridHost(dc, rack,
                             nannyHealth.instanceDescriptor.clusterName, nodeHealth.host, nodeHealth.port);
                         if (!gridHosts.contains(gridHost)) {
                             gridHosts.add(gridHost);
@@ -492,8 +501,8 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
             for (GridHost gridHost : gridHosts) {
 
                 List<Map<String, Object>> hostRow = new ArrayList<>();
-                String currentDatacenter = com.google.common.base.Objects.firstNonNull(gridHost.datacenter, "Unknown");
-                String currentRack = com.google.common.base.Objects.firstNonNull(gridHost.rack, "Unknown");
+                String currentDatacenter = com.google.common.base.Objects.firstNonNull(gridHost.datacenter, "unknown");
+                String currentRack = com.google.common.base.Objects.firstNonNull(gridHost.rack, "unknown");
                 if (lastDatacenter == null || !lastDatacenter.equals(currentDatacenter) || lastRack == null || !lastRack.equals(currentRack)) {
 
                     lastDatacenter = currentDatacenter;
