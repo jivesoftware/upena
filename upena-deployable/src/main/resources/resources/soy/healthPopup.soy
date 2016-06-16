@@ -34,7 +34,7 @@
                 </table>
             </li>
         {/if}
-        {if $health.healthConfigIsStale}
+        {if $health.health}
              {foreach $h in $health.health}
                 <li>
                     <div style="display:inline-block; background-color:#{$h.color};">{$h.name}</div>
