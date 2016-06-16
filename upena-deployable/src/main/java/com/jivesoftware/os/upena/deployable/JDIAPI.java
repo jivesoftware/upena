@@ -214,6 +214,7 @@ public class JDIAPI {
                     }
 
                 } else {
+                    memoryHisto.histo(vm.getClass().getCanonicalName());
                     List<ReferenceType> referenceTypes = vm.allClasses();
                     long[] instanceCounts = vm.instanceCounts(referenceTypes);
                     for (int i = 0; i < instanceCounts.length; i++) {
