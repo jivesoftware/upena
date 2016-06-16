@@ -526,6 +526,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                 hostRow.add(healthCell);
                 for (int s = 0; s < services.size(); s++) {
                     healthCell = new HashMap<>();
+                    healthCell.put("instanceCell", "");
                     healthCell.put("uid", "uid-" + uid);
                     uid++;
                     healthCell.put("color", "#eee");
