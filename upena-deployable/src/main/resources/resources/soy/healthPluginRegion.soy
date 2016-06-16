@@ -76,8 +76,7 @@
                             {foreach $service in $gridServices}
                                 <th class="rotate">
                                     <div>
-
-                                        <a style="border-bottom: 1px solid lightgray; color:#222; background-color: rgba({$service.serviceColor}, 0.9);" href="#" rel="popover" id="popoverAnchor-{$service.service}" data-popover-content="#popover-{$service.service}" data-placement="bottom" class="btn" title="{$service.service}">
+                                        <a style="border-bottom: 1px solid lightgray; color:#222; background-color: transparent;" href="#" rel="popover" id="popoverAnchor-{$service.service}" data-popover-content="#popover-{$service.service}" data-placement="bottom" class="btn" title="{$service.service}">
                                             {$service.service}
                                             {if $service.warnings}
                                                 &nbsp;&nbsp;<span class="glyphicon glyphicon-warning-sign icon-warn">
@@ -162,7 +161,7 @@
                         {foreach $host in $gridHost}
                             <tr class="grid-host">
                                 {foreach $health in $host}
-                                    <td  style="{if $health.uid}border-left: 1px solid #ddd; {/if}{if $health.datacenter}background-color:white;{/if}">
+                                    <td  style="{if $health.instanceKey}border-left: 1px solid #ddd; border-top: 0px solid #ddd;{/if}{if $health.datacenter}background-color:white;{/if}">
                                         {if $health.datacenter}
                                             <div class="datacenter-and-rack">
                                                 <img src="/static/img/datacenter.png" alt="Datacenter" style="width:20px;height:20px;">&nbsp;{$health.datacenter}&nbsp;&nbsp;
@@ -177,7 +176,7 @@
                                                 
                                                 <div id="popoverAnchor-age-{$health.uid}" data-popover-content="#popover-age-{$health.uid}" data-placement="top" data-trigger="hover"
                                                     class="popover-health grid-host-panel health-color health-text" style="border-radius: 6px;
-                                                    padding: 1px 4px 1px 4px;  font-style:bold; background-color:{$health.color}; color:#222;">
+                                                    font-style:bold; background-color:{$health.color}; color:#222;">
                                                     {if $health.health == null}
                                                     {else}
                                                         {$health.health|noAutoescape}
