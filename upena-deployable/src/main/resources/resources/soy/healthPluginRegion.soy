@@ -10,7 +10,7 @@
  * @param? releases
  */
 {template .healthPluginRegion}
-    <div id="upena-health" class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.9);">
+    <div id="upena-health" class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.7);">
         <div class="panel-heading"><span class="panel-title">Health</span></div>
         <div class="panel-body">
             <form id="filter-health" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
@@ -161,7 +161,7 @@
                         {foreach $host in $gridHost}
                             <tr class="grid-host">
                                 {foreach $health in $host}
-                                    <td  style="{if $health.instanceKey}border-left: 1px solid #ddd; border-top: 0px solid #ddd;{/if}{if $health.datacenter}background-color:white;{/if}">
+                                    <td  style="{if $health.instanceCell}border-left: 1px solid #ddd; border-top: 0px solid #ddd;{/if}{if $health.separator}background-color:white;{/if}">
                                         {if $health.datacenter}
                                             <div class="datacenter-and-rack">
                                                 <img src="/static/img/datacenter.png" alt="Datacenter" style="width:20px;height:20px;">&nbsp;{$health.datacenter}&nbsp;&nbsp;
@@ -195,9 +195,9 @@
                                                     </span>
                                                 </div>
                                             </div>
-                                            <div id="popover-{$health.uid}" class="hide" style="background-color: rgba(255, 255, 255, 0.9);">
+                                            <div id="popover-{$health.uid}" class="hide" style="background-color: rgba(255, 255, 255, 0.7);">
                                                 {if $health.hostInfo}
-                                                    <div class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.9);">
+                                                    <div class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.7);">
                                                         <div class="panel-heading">Host Info</div>
                                                         <div class="panel-body">
                                                             <ul>
@@ -236,7 +236,7 @@
                                                 {/if}
                                                 {if $health.instances}
                                                     {foreach $i in $health.instances}
-                                                        <div class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.9);">
+                                                        <div class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.7);">
                                                             <div class="panel-heading">
                                                                 <span class="glyphicon glyphicon-apple"></span>{sp}
                                                                 {$i.clusterName}&nbsp;-&nbsp;{$i.serviceName|noAutoescape}
@@ -420,7 +420,7 @@
                                                                     </div>
                                                                 {/if}
                                                             </div>
-                                                            <div class="panel-body" style="background-color: rgba(255, 255, 255, 0.9);">
+                                                            <div class="panel-body" style="background-color: rgba(255, 255, 255, 0.7);">
                                                                 <ul>
                                                                     {if $health.unexpectedRestart}
                                                                         <li><span class="label label-warning">Was unexpectedly restarted:{$health.unexpectedRestart}</span></li>
