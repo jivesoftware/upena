@@ -222,9 +222,9 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                                         return ev == null ? nannyHealth.serviceHealth.health : Math.min(ev, nannyHealth.serviceHealth.health);
                                     });
 
-                               
                                 String simpleHealthHtml = "";
                                 List<Map<String, String>> simpleServiceHealth = simpleServiceHealth(nannyHealth.instanceDescriptor.instanceKey);
+                                LOG.info("simpleServiceHealth:" + simpleServiceHealth);
                                 Map<String, Object> simpleHealthMap = Maps.newHashMap();
                                 if (nannyHealth.unexpectedRestart > -1) {
                                     simpleHealthMap.put("unexpectedRestart", UpenaEndpoints.humanReadableUptime(now - nannyHealth.unexpectedRestart));
@@ -241,7 +241,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                                     simpleHealthMap.put("health", simpleServiceHealth);
                                 }
                                 simpleHealthHtml = renderer.render(popupTemplate, ImmutableMap.of("health", simpleHealthMap));
-                            
+
                                 ImmutableMap.Builder<String, Object> map = ImmutableMap.<String, Object>builder()
                                     .put("id", nannyHealth.instanceDescriptor.instanceKey)
                                     .put("color", color)
@@ -1063,14 +1063,11 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
         if (nannyHealth == null) {
             return null;
         }
-        InstanceDescriptor id = nannyHealth.instanceDescriptor;
         UpenaEndpoints.ServiceHealth serviceHealth = nannyHealth.serviceHealth;
-
         if (serviceHealth != null) {
-
             List<Map<String, String>> instanceHealths = new ArrayList<>();
             for (UpenaEndpoints.Health health : serviceHealth.healthChecks) {
-                if (-Double.MAX_VALUE != health.health && health.health < 0.5d) {
+                if (health.health >= 0.0d && health.health < 0.5d) {
                     Map<String, String> healthData = new HashMap<>();
                     healthData.put("color", trafficlightColorRGB(health.health, 1f));
                     healthData.put("name", String.valueOf(health.name));
