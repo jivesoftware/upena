@@ -168,30 +168,40 @@
                                                 <img src="/static/img/rack.png" alt="Rack" style="width:20px;height:20px;">&nbsp;{$health.rack}
                                             </div>
                                         {elseif $health.uid}
-                                            <div data-health-hook="{$health.instanceKey ? $health.instanceKey : $health.health ? $health.health : ''}">
-                                                
-                                                <div class="grid-host-panel popover-health health-color"
-                                                    id="popoverAnchor-{$health.uid}"
-                                                    {if $health.instanceKey} data-popover-instance-key="{$health.instanceKey}"{/if}
-                                                    data-popover-content="#popover-{$health.uid}"
-                                                    data-placement="bottom"
-                                                    style="float: left; font-style:bold; background-color:
-                                                        {if $health.instances}{$health.color}{else}transparent{/if}; color:#222; border-radius: 4px;">
-                                                    {if $health.instances}
+                                            <div data-health-hook="{$health.instanceKey ? $health.instanceKey : $health.health ? $health.health : ''}"
+                                                style="{if $health.instances}border-color:#ddd; border-radius: 4px;{/if}"
+                                            >
+
+                                                {if $health.instances}
+                                                    <div class="grid-host-panel popover-health health-color"
+                                                        id="popoverAnchor-{$health.uid}"
+                                                        {if $health.instanceKey} data-popover-instance-key="{$health.instanceKey}"{/if}
+                                                        data-popover-content="#popover-{$health.uid}"
+                                                        data-placement="bottom"
+                                                        style="float: left; padding: 0 2px; background-color:
+                                                            {if $health.instances}{$health.color}{else}transparent{/if}; color:#222; border-radius: 4px 0 0 4px;">
                                                         <span class="glyphicon glyphicon-menu-down"></span>
-                                                    {else}
-                                                        &bull;
-                                                    {/if}
-                                                </div>
-                                                <div id="popoverAnchor-age-{$health.uid}" data-popover-content="#popover-age-{$health.uid}" data-placement="top" data-trigger="hover"
-                                                    class="popover-health grid-host-panel health-text" style="color:#222;">
-                                                    <span class="health-warn glyphicon glyphicon-warning-sign icon-warn" style="display:none;"></span>
-                                                    <span title="Config has changed since last restart" class="config-warn glyphicon glyphicon-asterisk icon-warn" style="display:none;"></span>
-                                                    {if $health.health == null}
-                                                    {else}
-                                                        {$health.health|noAutoescape}
-                                                    {/if}
-                                                </div>
+                                                    </div>
+                                                    <div id="popoverAnchor-age-{$health.uid}" data-popover-content="#popover-age-{$health.uid}" data-placement="top" data-trigger="hover"
+                                                        class="popover-health grid-host-panel health-text" style="padding-left: 22px; background-color: white; color:#222;  border-radius: 0px 4px 4px 0;">
+                                                        <span class="health-warn glyphicon glyphicon-warning-sign icon-warn" style="display:none;"></span>
+                                                        <span title="Config has changed since last restart" class="config-warn glyphicon glyphicon-asterisk icon-warn" style="display:none;"></span>
+                                                        {if $health.health == null}
+                                                        {else}
+                                                            {$health.health|noAutoescape}
+                                                        {/if}
+                                                    </div>
+                                                {else}
+                                                    <div class="grid-host-panel popover-health health-color"
+                                                        id="popoverAnchor-{$health.uid}"
+                                                        {if $health.instanceKey} data-popover-instance-key="{$health.instanceKey}"{/if}
+                                                        data-popover-content="#popover-{$health.uid}"
+                                                        data-placement="bottom"
+                                                        style="text-align: center; background-color:transparent; color:#222; border-radius: 4px;">
+                                                        +
+                                                    </div>
+                                                {/if}
+
                                                 <div id="popover-age-{$health.uid}" class="hide" >
                                                     <div class="health-simple">
                                                     </div>

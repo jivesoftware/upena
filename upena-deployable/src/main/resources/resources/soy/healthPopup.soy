@@ -36,7 +36,10 @@
         {/if}
         {if $health.healthConfigIsStale}
              {foreach $h in $health.health}
-                
+                <li>
+                    <div style="display:inline-block; background-color:#{$h.color};">{$h.name}</div>
+                    <span>{$h.status}</span>
+                </li>
              {/foreach}
         {/if}
     </ul>
