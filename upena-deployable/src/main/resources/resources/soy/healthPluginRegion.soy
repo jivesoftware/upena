@@ -162,7 +162,7 @@
                         {foreach $host in $gridHost}
                             <tr class="grid-host">
                                 {foreach $health in $host}
-                                    <td style="border-top:0px solid #ddd;">
+                                    <td>
                                         {if $health.datacenter}
                                             <div class="datacenter-and-rack">
                                                 <img src="/static/img/datacenter.png" alt="Datacenter" style="width:20px;height:20px;">&nbsp;{$health.datacenter}&nbsp;&nbsp;
@@ -173,9 +173,9 @@
                                                 {if $health.instanceKey} data-popover-instance-key="{$health.instanceKey}" {/if}
                                                 data-health-hook="{$health.instanceKey ? $health.instanceKey : $health.health ? $health.health : ''}"
                                                 data-popover-content="#popover-{$health.uid}" data-placement="bottom"
-                                                {if $health.instances}style="text-align:center; background-color:white; border-radius: 4px;  border-color: lightgrey; border-style: solid; border-width: thin;"{/if}>
+                                                {if $health.instances}style="text-align:center;"{/if}>
                                                 
-                                                <div id="popoverAnchor-age-{$health.uid}" data-popover-content="#popover-age-{$health.uid}" data-placement="top" data-trigger="hover" class=" popover-health grid-host-panel health-color health-text" style="border-radius: 4px 4px 0 0;
+                                                <div id="popoverAnchor-age-{$health.uid}" data-popover-content="#popover-age-{$health.uid}" data-placement="top" data-trigger="hover" class="popover-health grid-host-panel health-color health-text" style="border-radius: 4px 4px 0 0;
                                                     padding: 1px 4px 1px 4px;  font-style:bold; background-color:{$health.color}; color:#222;">
                                                     {if $health.health == null}
                                                     {else}
