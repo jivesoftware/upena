@@ -178,12 +178,12 @@
                                                         {if $health.instanceKey} data-popover-instance-key="{$health.instanceKey}"{/if}
                                                         data-popover-content="#popover-{$health.uid}"
                                                         data-placement="bottom"
-                                                        style="float: left; padding: 0 2px; background-color:
+                                                        style="float: left; padding: 0 2px; width:50%; text-align:center; background-color:
                                                             {if $health.instances}{$health.color}{else}transparent{/if}; color:#222; border-radius: 4px 0 0 4px;">
                                                         <span class="glyphicon glyphicon-menu-down"></span>
                                                     </div>
                                                     <div id="popoverAnchor-age-{$health.uid}" data-popover-content="#popover-age-{$health.uid}" data-placement="top" data-trigger="hover"
-                                                        class="popover-health grid-host-panel health-text" style="padding-left: 22px; background-color: white; color:#222;  border-radius: 0px 4px 4px 0;">
+                                                        class="popover-health grid-host-panel health-text" style="text-align:center; background-color: white; color:#222;  border-radius: 0px 4px 4px 0;">
                                                         <span class="health-warn glyphicon glyphicon-warning-sign icon-warn" style="display:none;"></span>
                                                         <span title="Config has changed since last restart" class="config-warn glyphicon glyphicon-asterisk icon-warn" style="display:none;"></span>
                                                         {if $health.health == null}
@@ -205,7 +205,7 @@
                                                         {if $health.instanceKey} data-popover-instance-key="{$health.instanceKey}"{/if}
                                                         data-popover-content="#popover-{$health.uid}"
                                                         data-placement="bottom"
-                                                        style="text-align: center; background-color:transparent; color:#222; border-radius: 4px;">
+                                                        style="text-align: center; background-color:transparent; color:lightgray; border-radius: 4px;">
                                                         +
                                                     </div>
                                                 {/if}
