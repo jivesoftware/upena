@@ -10,7 +10,6 @@ import com.jivesoftware.os.upena.deployable.region.JVMPluginRegion.JVMPluginRegi
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.service.UpenaStore;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -69,19 +68,12 @@ public class JVMPluginRegion implements PageRegion<JVMPluginRegionInput> {
         try {
 
             if (input.action.equals("memoryHisto")) {
-                List<Map<String, String>> instanceCounts = new ArrayList<>();
-                jvm.memoryHisto(input.host, Integer.parseInt(input.port), (String name, long count) -> {
-                    instanceCounts.add(ImmutableMap.of("name", name, "count", String.valueOf(count)));
+                List<Map<String, String>> lines = new ArrayList<>();
+                jvm.memoryHisto(input.host, Integer.parseInt(input.port), (String name) -> {
+                    lines.add(ImmutableMap.of("line", name));
                     return true;
                 });
-                Collections.sort(instanceCounts, (Map<String, String> o1, Map<String, String> o2) -> {
-                    int c = Long.compare(Long.parseLong(o1.get("count")), Long.parseLong(o2.get("count")));
-                    if (c != 0) {
-                        return -c;
-                    }
-                    return o1.get("name").compareTo(o2.get("name"));
-                });
-                data.put("instanceCounts", instanceCounts);
+                data.put("instanceCounts", lines);
             }
 
             if (input.action.equals("threadDump")) {

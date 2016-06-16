@@ -42,6 +42,8 @@ import com.sun.jdi.event.EventSet;
 import com.sun.jdi.request.BreakpointRequest;
 import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.EventRequestManager;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -53,6 +55,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import sun.tools.attach.HotSpotVirtualMachine;
 
 /**
  *
@@ -173,7 +176,7 @@ public class JDIAPI {
 
     public interface MemoryHisto {
 
-        boolean histo(String name, long count);
+        boolean histo(String name);
     }
 
     public void memoryHisto(String hostName, int port, MemoryHisto memoryHisto) throws Exception {
@@ -201,11 +204,22 @@ public class JDIAPI {
 
             try {
                 vm.suspend();
-                List<ReferenceType> referenceTypes = vm.allClasses();
-                long[] instanceCounts = vm.instanceCounts(referenceTypes);
-                for (int i = 0; i < instanceCounts.length; i++) {
-                    ReferenceType rt = referenceTypes.get(i);
-                    memoryHisto.histo(rt.name(), instanceCounts[i]);
+                if (vm instanceof HotSpotVirtualMachine) {
+                    String LIVE_OBJECTS_OPTION = "-live";
+                    String ALL_OBJECTS_OPTION = "-all";
+                    InputStream in = ((HotSpotVirtualMachine) vm).heapHisto(ALL_OBJECTS_OPTION);
+                    String drain = drain(in);
+                    for (String string : drain.split("\\r?\\n")) {
+                        memoryHisto.histo(string);
+                    }
+
+                } else {
+                    List<ReferenceType> referenceTypes = vm.allClasses();
+                    long[] instanceCounts = vm.instanceCounts(referenceTypes);
+                    for (int i = 0; i < instanceCounts.length; i++) {
+                        ReferenceType rt = referenceTypes.get(i);
+                        memoryHisto.histo(rt.name() + "=" + instanceCounts[i]);
+                    }
                 }
             } finally {
                 vm.resume();
@@ -214,6 +228,21 @@ public class JDIAPI {
         } else {
             throw new Exception("Failed to connect to " + hostName + ":" + port);
         }
+    }
+
+    private static String drain(InputStream in) throws IOException {
+        // read to EOF and just print output
+        StringBuilder sb = new StringBuilder();
+        byte b[] = new byte[256];
+        int n;
+        do {
+            n = in.read(b);
+            if (n > 0) {
+                sb.append(new String(b, 0, n, "UTF-8"));
+            }
+        } while (n > 0);
+        in.close();
+        return sb.toString();
     }
 
     private final ConcurrentHashMap<String, BreakpointDebugger> breakpointDebugger = new ConcurrentHashMap<>();
@@ -335,7 +364,7 @@ public class JDIAPI {
         public Set<Breakpoint> getAttachedBreakpoints() {
             return attachedBreakpoints;
         }
-        
+
         public boolean isAttached(Breakpoint breakpoint) {
             return attachedBreakpoints.contains(breakpoint);
         }
