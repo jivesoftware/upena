@@ -421,7 +421,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
 
                 InstanceFilter filter = new InstanceFilter(
                     new ClusterKey(clusterKey),
-                    new HostKey(hostKey),
+                    null,
                     new ServiceKey(serviceKey),
                     new ReleaseGroupKey(releaseKey),
                     null,
