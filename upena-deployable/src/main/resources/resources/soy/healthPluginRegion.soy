@@ -160,9 +160,9 @@
                     </thead>
                     <tbody>
                         {foreach $host in $gridHost}
-                            <tr class="grid-host" {if $health.datacenter}style="background-color:white;"{/if}>
+                            <tr class="grid-host">
                                 {foreach $health in $host}
-                                    <td  {if $health.uid}style="border-left: 1px solid #ddd;"{/if}>
+                                    <td  style="{if $health.uid}border-left: 1px solid #ddd; {/if}{if $health.datacenter}background-color:white;"{/if}>
                                         {if $health.datacenter}
                                             <div class="datacenter-and-rack">
                                                 <img src="/static/img/datacenter.png" alt="Datacenter" style="width:20px;height:20px;">&nbsp;{$health.datacenter}&nbsp;&nbsp;
