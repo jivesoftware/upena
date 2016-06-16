@@ -52,6 +52,7 @@ import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.config.UpenaConfigRestEndpoints;
 import com.jivesoftware.os.upena.config.UpenaConfigStore;
 import com.jivesoftware.os.upena.deployable.UpenaEndpoints.AmzaClusterName;
+import com.jivesoftware.os.upena.deployable.endpoints.AWSPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.AsyncLookupEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.BreakpointDumperPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ChangeLogPluginEndpoints;
@@ -78,6 +79,7 @@ import com.jivesoftware.os.upena.deployable.profiler.server.endpoints.PerfServic
 import com.jivesoftware.os.upena.deployable.profiler.server.endpoints.PerfServiceEndpoint;
 import com.jivesoftware.os.upena.deployable.profiler.visualize.NameUtils;
 import com.jivesoftware.os.upena.deployable.profiler.visualize.VisualizeProfile;
+import com.jivesoftware.os.upena.deployable.region.AWSPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.BreakpointDumperPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ChangeLogPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ClustersPluginRegion;
@@ -203,7 +205,7 @@ public class UpenaMain {
         mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
         mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        
+
         final AmzaServiceConfig amzaServiceConfig = new AmzaServiceConfig();
 
         RowsStorageProvider rowsStorageProvider = rowsStorageProvider(orderIdProvider);
@@ -437,6 +439,16 @@ public class UpenaMain {
             soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/breakpointDumperPluginRegion.soy"), "breakpointDumperPluginRegion.soy");
         }
 
+        String region = System.getProperty("aws.region", null);
+        String roleArn = System.getProperty("aws.roleArn", null);
+        String accessKey = System.getProperty("aws.accessKey", null);
+        String secretKey = System.getProperty("aws.secretKey", null);
+        boolean enableAWS = false;
+        if (region != null && roleArn != null && accessKey != null && secretKey != null) {
+            soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/awsPluginRegion.soy"), "awsPluginRegion.soy");
+            enableAWS = true;
+        }
+
         SoyFileSet sfs = soyFileSetBuilder.build();
         SoyTofu tofu = sfs.compileToTofu();
         SoyRenderer renderer = new SoyRenderer(tofu, new SoyDataUtils());
@@ -546,7 +558,17 @@ public class UpenaMain {
                 new BreakpointDumperPluginRegion("soy.page.breakpointDumperPluginRegion", renderer, upenaStore, jvmaapi), null);
         }
 
+        ManagePlugin aws = null;
+        if (enableAWS) {
+            aws = new ManagePlugin("cloud", null, "AWS", "/ui/aws",
+                AWSPluginEndpoints.class,
+                new AWSPluginRegion("soy.page.awsPluginRegion", renderer, upenaStore, region, roleArn, accessKey, secretKey), null);
+        }
+
         List<ManagePlugin> plugins = new ArrayList<>();
+        if (enableAWS) {
+            plugins.add(aws);
+        }
 
         plugins.add(new ManagePlugin(null, null, "Build", null, null, null, "seperator"));
         plugins.add(repo);
