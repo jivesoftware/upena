@@ -53,22 +53,13 @@
     <div class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.9);">
         <div class="panel-heading panel-heading"><span class="panel-title">Live Histo</span></div>
             <div class="panel-body">
-            <table class="table table-hover table-condensed table-striped table-responsive">
-                <thead>
-                    <tr>
-                        <th>Count</th>
-                        <th>Class</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {foreach $ic in $instanceCounts}
-                        <tr>
-                            <td>{$ic.count}</td>
-                            <td>{$ic.name}</td>
-                        </tr>
-                    {/foreach}
-                </tbody>
-            </table>
+            <ol>
+                {foreach $ic in $instanceCounts}
+                    <li>
+                        {$ic.line}
+                    </li>
+                {/foreach}
+            </ol>
         </div>
     </div>
     {/if}
