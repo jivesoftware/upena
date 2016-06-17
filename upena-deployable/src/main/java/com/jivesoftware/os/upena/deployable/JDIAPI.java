@@ -214,6 +214,11 @@ public class JDIAPI {
                     }
 
                 } else {
+                    List<Connector> connectors = virtualMachineManager.allConnectors();
+                    for (Connector connector : connectors) {
+                        memoryHisto.histo(connector.getClass().getCanonicalName());
+
+                    }
                     memoryHisto.histo(vm.getClass().getCanonicalName());
                     List<ReferenceType> referenceTypes = vm.allClasses();
                     long[] instanceCounts = vm.instanceCounts(referenceTypes);
