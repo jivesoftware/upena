@@ -93,6 +93,7 @@ public class JVMPluginRegion implements PageRegion<JVMPluginRegionInput> {
                 data.put("threadDumps", threadDumps);
             }
 
+
         } catch (Exception e) {
             log.error("Unable to retrieve data", e);
         }
