@@ -552,6 +552,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
 
                 health.put("host", value.connectionDescriptor.getHostPort().getHost());
                 health.put("port", value.connectionDescriptor.getHostPort().getPort());
+                health.put("port", value.connectionDescriptor.getInstanceDescriptor().instanceKey);
 
                 healths.add(health);
             }
