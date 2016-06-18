@@ -369,6 +369,92 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
 
     }
 
+    public String renderInstance(String user, String instanceKey) {
+        try {
+            Instance renderInstance = upenaStore.instances.get(new InstanceKey(instanceKey));
+            String renderService = "unknown";
+
+            ConcurrentNavigableMap<ServiceKey, TimestampedValue<Service>> services = upenaStore.services.find(new ServiceFilter(null, null, 0, 10000));
+
+            Map<ServiceKey, TimestampedValue<com.jivesoftware.os.upena.shared.Service>> sort = new ConcurrentSkipListMap<>((ServiceKey o1, ServiceKey o2) -> {
+                com.jivesoftware.os.upena.shared.Service so1 = services.get(o1).getValue();
+                com.jivesoftware.os.upena.shared.Service so2 = services.get(o2).getValue();
+                int c = so1.name.compareTo(so2.name);
+                if (c != 0) {
+                    return c;
+                }
+                return o1.compareTo(o2);
+            });
+            sort.putAll(services);
+
+            int i = 0;
+            Map<String, Integer> serviceColor = new HashMap<>();
+            for (Map.Entry<ServiceKey, TimestampedValue<Service>> entrySet : sort.entrySet()) {
+                if (!entrySet.getValue().getTombstoned()) {
+                    if (entrySet.getKey().equals(renderInstance.serviceKey)) {
+                        renderService = entrySet.getValue().getValue().name;
+                    }
+                    serviceColor.put(entrySet.getValue().getValue().name, i);
+                    i++;
+                }
+            }
+            
+            Map<String, Node> nodes = new HashMap<>();
+            int id = 0;
+            buildClusterRoutes();
+            Map<String, Map<String, Map<String, ConnectionHealth>>> routes = discoveredRoutes.from_to_Family_ConnectionHealths;
+
+            for (Map.Entry<String, Map<String, Map<String, ConnectionHealth>>> entrySet : routes.entrySet()) {
+                String instanceId = entrySet.getKey();
+                Instance instance = upenaStore.instances.get(new InstanceKey(instanceId));
+               
+                Service service = null;
+                if (instance != null) {
+                    service = upenaStore.services.get(instance.serviceKey);
+                }
+                String serviceName = service != null ? service.name : instanceId;
+                Node from = nodes.get(serviceName);
+                if (from == null) {
+
+                    from = new Node(serviceName, id, serviceIdColor(serviceColor, serviceName), "12", 0);
+                    id++;
+                    nodes.put(serviceName, from);
+
+                    double serviceHealth = serviceHealth(nannyHealth(instanceId));
+                    from.maxHealth = Math.max(from.maxHealth, serviceHealth);
+                    from.minHealth = Math.min(from.minHealth, serviceHealth);
+                } else {
+                    from.count++;
+                }
+
+                Map<String, Map<String, ConnectionHealth>> hostPortFamilyConnectionHealths = entrySet.getValue();
+                for (Map.Entry<String, Map<String, ConnectionHealth>> hostPortFamilyConnectionHealth : hostPortFamilyConnectionHealths.entrySet()) {
+                    Map<String, ConnectionHealth> familyConnectionHealths = hostPortFamilyConnectionHealth.getValue();
+                    for (Map.Entry<String, ConnectionHealth> familyConnectionHealth : familyConnectionHealths.entrySet()) {
+                        ConnectionHealth connectionHealth = familyConnectionHealth.getValue();
+                        String toServiceName = connectionHealth.connectionDescriptor.getInstanceDescriptor().serviceName;
+                        Node to = nodes.get(toServiceName);
+                        if (to == null) {
+                            to = new Node(toServiceName, id, serviceIdColor(serviceColor, toServiceName), "12", 0);
+                            id++;
+                            nodes.put(toServiceName, to);
+
+                            double serviceHealth = serviceHealth(nannyHealth(connectionHealth.connectionDescriptor.getInstanceDescriptor().instanceKey));
+                            to.maxHealth = Math.max(to.maxHealth, serviceHealth);
+                            to.minHealth = Math.min(to.minHealth, serviceHealth);
+                        }
+                    }
+                }
+            }
+
+            MinMaxDouble mmd = new MinMaxDouble();
+            return renderConnectionHealth(mmd, nodes, renderService, instanceKey);
+        } catch (Exception e) {
+            log.error("Unable to retrieve data", e);
+            return "Oops:" + ExceptionUtils.getStackTrace(e);
+        }
+    }
+
     private String serviceIdColor(Map<String, Integer> serviceColor, String serviceName) {
         Integer si = serviceColor.get(serviceName);
         if (si == null) {
@@ -570,7 +656,6 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
         }
 
     }
-
 
     @Override
     public String getTitle() {
