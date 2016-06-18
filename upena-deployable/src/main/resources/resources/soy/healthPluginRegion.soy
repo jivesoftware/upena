@@ -407,40 +407,9 @@
                                                                             </button>
                                                                         </form>
                                                                     </div>
-                                                                    <div class="btn-group">
-                                                                        <form id="removeService" method="post" action="/ui/instances" name="removeService">
-                                                                            {if $health.clusterKey}
-                                                                                <input type="hidden" name="clusterKey" value="{$health.clusterKey}">
-                                                                            {/if}
-                                                                            {if $health.cluster}
-                                                                                <input type="hidden" name="cluster" value="{$health.cluster}">
-                                                                            {/if}
-                                                                            {if $health.hostKey}
-                                                                                <input type="hidden" name="hostKey" value="{$health.hostKey}">
-                                                                            {/if}
-                                                                            {if $health.host}
-                                                                                <input type="hidden" name="host" value="{$health.host}">
-                                                                            {/if}
-                                                                            {if $health.serviceKey}
-                                                                                <input type="hidden" name="serviceKey" value="{$health.serviceKey}">
-                                                                            {/if}
-                                                                            {if $health.service}
-                                                                                <input type="hidden" name="service" value="{$health.service}">
-                                                                            {/if}
-                                                                            {if $health.releaseKey}
-                                                                                <input type="hidden" name="releaseKey" value="{$health.releaseKey}">
-                                                                            {/if}
-                                                                            {if $health.release}
-                                                                                <input type="hidden" name="release" value="{$health.release}">
-                                                                            {/if}
-                                                                            {if $health.instance}
-                                                                                <input type="hidden" name="instance" value="{$health.instance}">
-                                                                            {/if}
-                                                                            <button type="submit" class="btn btn-primary">
-                                                                                Remove
-                                                                            </button>
-                                                                        </form>
-                                                                    </div>
+                                                                    <a href="/ui/connectivity/{$health.instanceKey}" class="btn btn-primary" title="Connectivity">
+                                                                        <span class="glyphicon glyphicon-transfer">Connectivity</span>
+                                                                    </a>
                                                                 {/if}
                                                             </div>
                                                             <div class="panel-body" style="background-color: rgba(255, 255, 255, 0.7);">

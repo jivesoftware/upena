@@ -16,6 +16,7 @@ import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -71,6 +72,23 @@ public class ConnectivityPluginEndpoints {
         try {
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
                 new ConnectivityPluginRegionInput(clusterKey, cluster, hostKey, host, serviceKey, service, releaseKey, release, new HashSet<>(linkType)));
+            return Response.ok(rendered).build();
+        } catch (Exception e) {
+            LOG.error("render connectivity POST.", e);
+            return Response.serverError().entity(e.getMessage()).build();
+        }
+    }
+
+    @POST
+    @Path("/{instanceKey}")
+    @Produces(MediaType.TEXT_HTML)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    public Response renderInstance(@Context HttpServletRequest httpRequest,
+        @PathParam("instanceKey") @DefaultValue("") String instanceKey) {
+
+        try {
+            String rendered = soyService.wrapWithChrome("/ui/connectivity/" + instanceKey, httpRequest.getRemoteUser(),
+                "foo", "Instance", pluginRegion.renderInstance(httpRequest.getRemoteUser(), instanceKey));
             return Response.ok(rendered).build();
         } catch (Exception e) {
             LOG.error("render connectivity POST.", e);
