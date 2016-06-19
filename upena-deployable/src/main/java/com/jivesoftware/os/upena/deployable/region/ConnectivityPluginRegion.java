@@ -3,6 +3,7 @@ package com.jivesoftware.os.upena.deployable.region;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.jivesoftware.os.amza.shared.AmzaInstance;
 import com.jivesoftware.os.amza.shared.RingHost;
@@ -293,7 +294,10 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
             MinMaxDouble mmd = new MinMaxDouble();
 
             // TODO fix with async: This is crap because it clobbers
-            from.focusHtml += renderConnections(mmd, nodes, serviceName, instanceId);
+            if (from.focusHtml == null) {
+                from.focusHtml = Lists.newArrayList();
+            }
+            ((List)from.focusHtml).add(renderConnections(mmd, nodes, serviceName, instanceId));
 
             for (Map.Entry<String, Map<String, ConnectionHealth>> to_Family_ConnectionHealth : to_Family_ConnectionHealths.entrySet()) {
 
@@ -329,8 +333,6 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
         }
 
 
-
-
         List<Map<String, String>> renderNodes = new ArrayList<>();
         for (Node n : nodes.values()) {
             Map<String, String> node = new HashMap<>();
@@ -348,7 +350,15 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
             node.put("fontSize", n.fontSize);
             node.put("label", n.label + " (" + n.count + ")");
             node.put("count", String.valueOf(n.count));
-            node.put("focusHtml", n.focusHtml);
+
+
+            if (n.focusHtml != null && n.focusHtml instanceof List) {
+                Map<String, Object> d = new HashMap<>();
+                d.put("h", n.focusHtml);
+                n.focusHtml = renderer.render(connectionOverviewTemplate, d);
+            }
+
+            node.put("focusHtml", n.focusHtml == null ?  "" : n.focusHtml.toString());
             if (n.tooltip != null) {
                 node.put("tooltip", n.tooltip);
             }
@@ -488,7 +498,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
         return health == null ? 0d : Math.max(0d, Math.min(health.serviceHealth.health, 1d));
     }
 
-    private String renderConnections(MinMaxDouble mmd, Map<String, Node> nodes, String from, String instanceId) throws Exception {
+    private Map<String,Object> renderConnections(MinMaxDouble mmd, Map<String, Node> nodes, String from, String instanceId) throws Exception {
         Map<String, Map<String, ConnectionHealth>> connectionHealths = discoveredRoutes.getConnectionHealth(instanceId);
 
         long success = 0;
@@ -581,9 +591,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
         health.put("latency999th", numberFormat.format(latency999th));
         health.put("latency999thColor", healthPluginRegion.trafficlightColorRGB(1d - mmd.zeroToOne(latency999th), 1f));
 
-        Map<String, Object> data = new HashMap<>();
-        data.put("h", health);
-        return renderer.render(connectionOverviewTemplate, data);
+        return health;
     }
 
     private String renderConnectionHealth(MinMaxDouble mmd, Map<String, Node> nodes, String from, String instanceId) throws Exception {
@@ -690,7 +698,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
         int id;
         String bgcolor;
         String fontSize;
-        String focusHtml;
+        Object focusHtml;
         String tooltip;
         int count = 1;
         double maxHealth = -Double.MAX_VALUE;
