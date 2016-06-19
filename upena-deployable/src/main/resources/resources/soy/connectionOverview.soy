@@ -2,32 +2,30 @@
 
 /**
  * 
- * @param? healths
+ * @param? h
  */
 {template .connectionOverview}
     <table class="table table-responsive">
-        {foreach $h in $healths}
-            <tr class="grid-host">
-                td>
-                    <a href="/ui/connectivity/{$h.instanceKey}" class="btn btn-default" title="{$h.from}">
-                        <span class="glyphicon glyphicon-transfer">{$h.from}</span>
-                    </a>
-                </td>
-                <td>{$h.success}</td>
-                <td>{$h.successPerSecond}</td>
-                <td>{$h.failure}</td>
-                <td>{$h.failurePerSecond}</td>
-                <td>{$h.inflight}</td>
-                <td style="background:rgba({$h.meanColor},  0.4)">{$h.mean}</td>
-                <td style="background:rgba({$h.minColor},  0.4);">{$h.min}</td>
-                <td style="background:rgba({$h.latency50thColor},  0.4)">{$h.latency50th}</td>
-                <td style="background:rgba({$h.latency75thColor},  0.4)">{$h.latency75th}</td>
-                <td style="background:rgba({$h.latency90thColor},  0.4)">{$h.latency90th}</td>
-                <td style="background:rgba({$h.latency95thColor},  0.4)">{$h.latency95th}</td>
-                <td style="background:rgba({$h.latency99thColor},  0.4)">{$h.latency99th}</td>
-                <td style="background:rgba({$h.latency999thColor},  0.4)">{$h.latency999th}</td>
-                <td style="background:rgba({$h.maxColor},  0.4)">{$h.max}</td>
-            </tr>
-        {/foreach}
+        <tr class="grid-host">
+            td>
+                <a href="/ui/connectivity/{$h.instanceKey}" class="btn btn-default" title="{$h.from}">
+                    <span class="glyphicon glyphicon-transfer">{$h.from}</span>
+                </a>
+            </td>
+            <td>{$h.success}</td>
+            <td>{$h.successPerSecond}</td>
+            <td>{$h.failure}</td>
+            <td>{$h.failurePerSecond}</td>
+            <td>{$h.inflight}</td>
+            <td style="background:rgba({$h.meanColor},  0.4)">{$h.mean}</td>
+            <td style="background:rgba({$h.minColor},  0.4);">{$h.min}</td>
+            <td style="background:rgba({$h.latency50thColor},  0.4)">{$h.latency50th}</td>
+            <td style="background:rgba({$h.latency75thColor},  0.4)">{$h.latency75th}</td>
+            <td style="background:rgba({$h.latency90thColor},  0.4)">{$h.latency90th}</td>
+            <td style="background:rgba({$h.latency95thColor},  0.4)">{$h.latency95th}</td>
+            <td style="background:rgba({$h.latency99thColor},  0.4)">{$h.latency99th}</td>
+            <td style="background:rgba({$h.latency999thColor},  0.4)">{$h.latency999th}</td>
+            <td style="background:rgba({$h.maxColor},  0.4)">{$h.max}</td>
+        </tr>
     </table>
 {/template}
