@@ -489,7 +489,6 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
     }
 
     private String renderConnections(MinMaxDouble mmd, Map<String, Node> nodes, String from, String instanceId) throws Exception {
-        List<Map<String, Object>> healths = new ArrayList<>();
         Map<String, Map<String, ConnectionHealth>> connectionHealths = discoveredRoutes.getConnectionHealth(instanceId);
 
         long success = 0;
@@ -583,7 +582,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
         health.put("latency999thColor", healthPluginRegion.trafficlightColorRGB(1d - mmd.zeroToOne(latency999th), 1f));
 
         Map<String, Object> data = new HashMap<>();
-        data.put("healths", healths);
+        data.put("h", health);
         return renderer.render(connectionOverviewTemplate, data);
     }
 
