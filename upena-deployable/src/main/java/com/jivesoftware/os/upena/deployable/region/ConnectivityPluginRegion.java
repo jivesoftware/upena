@@ -354,7 +354,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
 
             if (n.focusHtml != null && n.focusHtml instanceof List) {
                 Map<String, Object> d = new HashMap<>();
-                d.put("h", n.focusHtml);
+                d.put("healths", n.focusHtml);
                 n.focusHtml = renderer.render(connectionOverviewTemplate, d);
             }
 
