@@ -63,6 +63,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
 
     private final String template;
     private final String connectionHealthTemplate;
+    private final String connectionOverviewTemplate;
     private final SoyRenderer renderer;
     private final AmzaInstance amzaInstance;
     private final UpenaStore upenaStore;
@@ -75,6 +76,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
 
     public ConnectivityPluginRegion(String template,
         String connectionHealthTemplate,
+        String connectionOverviewTemplate,
         SoyRenderer renderer,
         AmzaInstance amzaInstance,
         UpenaStore upenaStore,
@@ -86,6 +88,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
 
         this.template = template;
         this.connectionHealthTemplate = connectionHealthTemplate;
+        this.connectionOverviewTemplate = connectionOverviewTemplate;
         this.renderer = renderer;
         this.amzaInstance = amzaInstance;
         this.upenaStore = upenaStore;
@@ -290,7 +293,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
             MinMaxDouble mmd = new MinMaxDouble();
 
             // TODO fix with async: This is crap because it clobbers
-            from.focusHtml = renderConnectionHealth(mmd, nodes, serviceName, instanceId);
+            from.focusHtml += renderConnections(mmd, nodes, serviceName, instanceId);
 
             for (Map.Entry<String, Map<String, ConnectionHealth>> to_Family_ConnectionHealth : to_Family_ConnectionHealths.entrySet()) {
 
@@ -324,6 +327,9 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
                 edge.label = numberFormat.format(successPerSecond) + "/sec";
             }
         }
+
+
+
 
         List<Map<String, String>> renderNodes = new ArrayList<>();
         for (Node n : nodes.values()) {
@@ -398,7 +404,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
                     i++;
                 }
             }
-            
+
             Map<String, Node> nodes = new HashMap<>();
             int id = 0;
             buildClusterRoutes();
@@ -407,7 +413,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
             for (Map.Entry<String, Map<String, Map<String, ConnectionHealth>>> entrySet : routes.entrySet()) {
                 String instanceId = entrySet.getKey();
                 Instance instance = upenaStore.instances.get(new InstanceKey(instanceId));
-               
+
                 Service service = null;
                 if (instance != null) {
                     service = upenaStore.services.get(instance.serviceKey);
@@ -480,6 +486,105 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
 
     private double serviceHealth(NannyHealth health) {
         return health == null ? 0d : Math.max(0d, Math.min(health.serviceHealth.health, 1d));
+    }
+
+    private String renderConnections(MinMaxDouble mmd, Map<String, Node> nodes, String from, String instanceId) throws Exception {
+        List<Map<String, Object>> healths = new ArrayList<>();
+        Map<String, Map<String, ConnectionHealth>> connectionHealths = discoveredRoutes.getConnectionHealth(instanceId);
+
+        long success = 0;
+        long failure = 0;
+        long successPerSecond = 0;
+        long failurePerSecond = 0;
+        long inflight = 0;
+
+        double latencyMin = 0;
+        double latencyMean = 0;
+        double latencyMax = 0;
+
+        double latency50th = 0;
+        double latency75th = 0;
+        double latency90th = 0;
+        double latency95th = 0;
+        double latency99th = 0;
+        double latency999th = 0;
+
+        for (Map.Entry<String, Map<String, ConnectionHealth>> hostPortHealth : connectionHealths.entrySet()) {
+
+            for (Map.Entry<String, ConnectionHealth> familyHealth : hostPortHealth.getValue().entrySet()) {
+
+                ConnectionHealth value = familyHealth.getValue();
+
+                Node fromNode = nodes.get(from);
+                if (fromNode == null) {
+                    continue;
+                }
+                success += value.success;
+                failure += value.failure;
+                successPerSecond += value.successPerSecond;
+                failurePerSecond += value.failurePerSecond;
+                inflight += (value.attempt - value.success - value.failure);
+
+                latencyMin = Math.min(latencyMin, value.latencyStats.latencyMin);
+                latencyMean = Math.max(latencyMean, value.latencyStats.latencyMean);
+                latencyMax = Math.max(latencyMax, value.latencyStats.latencyMax);
+
+                latency50th = Math.max(latency50th, value.latencyStats.latency50th);
+                latency75th = Math.max(latency999th, value.latencyStats.latency75th);
+                latency90th = Math.max(latency999th, value.latencyStats.latency90th);
+                latency95th = Math.max(latency999th, value.latencyStats.latency95th);
+                latency99th = Math.max(latency999th, value.latencyStats.latency99th);
+                latency999th = Math.max(latency999th, value.latencyStats.latency999th);
+
+                mmd.value(latencyMin);
+                mmd.value(latencyMean);
+                mmd.value(latencyMax);
+
+                mmd.value(latency50th);
+                mmd.value(latency75th);
+                mmd.value(latency90th);
+                mmd.value(latency95th);
+                mmd.value(latency99th);
+                mmd.value(latency999th);
+
+            }
+        }
+
+        Map<String, Object> health = new HashMap<>();
+
+        health.put("instanceKey", instanceId);
+        health.put("from", from);
+
+        health.put("success", numberFormat.format(success));
+        health.put("failure", numberFormat.format(failure));
+        health.put("successPerSecond", numberFormat.format(successPerSecond));
+        health.put("failurePerSecond", numberFormat.format(failurePerSecond));
+
+        health.put("inflight", numberFormat.format(inflight));
+
+        health.put("min", numberFormat.format(latencyMin));
+        health.put("minColor", healthPluginRegion.trafficlightColorRGB(1d - mmd.zeroToOne(latencyMin), 1f));
+        health.put("mean", numberFormat.format(latencyMean));
+        health.put("meanColor", healthPluginRegion.trafficlightColorRGB(1d - mmd.zeroToOne(latencyMean), 1f));
+        health.put("max", numberFormat.format(latencyMax));
+        health.put("maxColor", healthPluginRegion.trafficlightColorRGB(1d - mmd.zeroToOne(latencyMax), 1f));
+
+        health.put("latency50th", numberFormat.format(latency50th));
+        health.put("latency50thColor", healthPluginRegion.trafficlightColorRGB(1d - mmd.zeroToOne(latency50th), 1f));
+        health.put("latency75th", numberFormat.format(latency75th));
+        health.put("latency75thColor", healthPluginRegion.trafficlightColorRGB(1d - mmd.zeroToOne(latency75th), 1f));
+        health.put("latency90th", numberFormat.format(latency90th));
+        health.put("latency90thColor", healthPluginRegion.trafficlightColorRGB(1d - mmd.zeroToOne(latency90th), 1f));
+        health.put("latency95th", numberFormat.format(latency95th));
+        health.put("latency95thColor", healthPluginRegion.trafficlightColorRGB(1d - mmd.zeroToOne(latency95th), 1f));
+        health.put("latency99th", numberFormat.format(latency99th));
+        health.put("latency99thColor", healthPluginRegion.trafficlightColorRGB(1d - mmd.zeroToOne(latency99th), 1f));
+        health.put("latency999th", numberFormat.format(latency999th));
+        health.put("latency999thColor", healthPluginRegion.trafficlightColorRGB(1d - mmd.zeroToOne(latency999th), 1f));
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("healths", healths);
+        return renderer.render(connectionOverviewTemplate, data);
     }
 
     private String renderConnectionHealth(MinMaxDouble mmd, Map<String, Node> nodes, String from, String instanceId) throws Exception {
@@ -565,6 +670,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
 
         Map<String, Object> data = new HashMap<>();
         data.put("healths", healths);
+
         return renderer.render(connectionHealthTemplate, data);
     }
 

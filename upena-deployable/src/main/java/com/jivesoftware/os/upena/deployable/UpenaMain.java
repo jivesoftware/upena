@@ -418,6 +418,7 @@ public class UpenaMain {
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/healthPopup.soy"), "healthPopup.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/topologyPluginRegion.soy"), "topology.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/connectivityPluginRegion.soy"), "connectivity.soy");
+        soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/connectionOverview.soy"), "connectionOverview.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/connectionsHealth.soy"), "connectionsHealth.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/instancesPluginRegion.soy"), "instances.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/modulesPluginRegion.soy"), "modules.soy");
@@ -488,7 +489,7 @@ public class UpenaMain {
 
         ManagePlugin connectivity = new ManagePlugin("transfer", null, "Connectivity", "/ui/connectivity",
             ConnectivityPluginEndpoints.class,
-            new ConnectivityPluginRegion("soy.page.connectivityPluginRegion", "soy.page.connectionsHealth",
+            new ConnectivityPluginRegion("soy.page.connectivityPluginRegion", "soy.page.connectionsHealth", "soy.page.connectionOverview",
                 renderer, amzaService, upenaStore, healthPluginRegion, hostsPluginRegion, releasesPluginRegion, instancesPluginRegion, discoveredRoutes), null);
 
         ManagePlugin changes = new ManagePlugin("road", null, "Changes", "/ui/changeLog",

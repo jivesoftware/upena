@@ -8,6 +8,8 @@
      <div class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.9);">
         <div class="panel-heading"><span class="panel-title">Connectivity</span></div>
         <div class="panel-body">
+            <div>
+            </div>
             <table class="table table-responsive">
                 <thead>
                     <tr>
@@ -52,7 +54,7 @@
                             <td style="background:rgba({$h.latency999thColor},  0.4)">{$h.latency999th}</td>
                             <td style="background:rgba({$h.maxColor},  0.4)">{$h.max}</td>
                             <td>
-                                <a href="/ui/connectivity/{$h.instanceKey}" class="btn btn-primary" title="Connectivity">
+                                <a href="/ui/connectivity/{$h.instanceKey}" class="btn btn-default" title="{$h.host}:{$h.port}">
                                     <span class="glyphicon glyphicon-transfer">{$h.host}:{$h.port}</span>
                                 </a>
                             </td>
