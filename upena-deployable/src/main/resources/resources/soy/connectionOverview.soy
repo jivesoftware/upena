@@ -2,30 +2,53 @@
 
 /**
  * 
- * @param? h
+ * @param? healths
  */
 {template .connectionOverview}
     <table class="table table-responsive">
-        <tr class="grid-host">
-            td>
-                <a href="/ui/connectivity/{$h.instanceKey}" class="btn btn-default" title="{$h.from}">
-                    <span class="glyphicon glyphicon-transfer">{$h.from}</span>
-                </a>
-            </td>
-            <td>{$h.success}</td>
-            <td>{$h.successPerSecond}</td>
-            <td>{$h.failure}</td>
-            <td>{$h.failurePerSecond}</td>
-            <td>{$h.inflight}</td>
-            <td style="background:rgba({$h.meanColor},  0.4)">{$h.mean}</td>
-            <td style="background:rgba({$h.minColor},  0.4);">{$h.min}</td>
-            <td style="background:rgba({$h.latency50thColor},  0.4)">{$h.latency50th}</td>
-            <td style="background:rgba({$h.latency75thColor},  0.4)">{$h.latency75th}</td>
-            <td style="background:rgba({$h.latency90thColor},  0.4)">{$h.latency90th}</td>
-            <td style="background:rgba({$h.latency95thColor},  0.4)">{$h.latency95th}</td>
-            <td style="background:rgba({$h.latency99thColor},  0.4)">{$h.latency99th}</td>
-            <td style="background:rgba({$h.latency999thColor},  0.4)">{$h.latency999th}</td>
-            <td style="background:rgba({$h.maxColor},  0.4)">{$h.max}</td>
-        </tr>
+        <thead>
+            <tr>
+                <th>instance</th>
+                <th>success</th>
+                <th>success/sec</th>
+                <th>failure</th>
+                <th>failure/sec</th>
+                <th>inflight</th>
+                <th>mean</th>
+                <th>min</th>
+                <th>50th</th>
+                <th>75th</th>
+                <th>90th</th>
+                <th>95th</th>
+                <th>99th</th>
+                <th>999th</th>
+                <th>max</th>
+            </tr>
+        </thead>
+        <tbody>
+            {foreach $h in $healths}
+                <tr class="grid-host">
+                    td>
+                        <a href="/ui/connectivity/{$h.instanceKey}" class="btn btn-default" title="{$h.from}">
+                            <span class="glyphicon glyphicon-transfer">{$h.from}</span>
+                        </a>
+                    </td>
+                    <td>{$h.success}</td>
+                    <td>{$h.successPerSecond}</td>
+                    <td>{$h.failure}</td>
+                    <td>{$h.failurePerSecond}</td>
+                    <td>{$h.inflight}</td>
+                    <td style="background:rgba({$h.meanColor},  0.4)">{$h.mean}</td>
+                    <td style="background:rgba({$h.minColor},  0.4);">{$h.min}</td>
+                    <td style="background:rgba({$h.latency50thColor},  0.4)">{$h.latency50th}</td>
+                    <td style="background:rgba({$h.latency75thColor},  0.4)">{$h.latency75th}</td>
+                    <td style="background:rgba({$h.latency90thColor},  0.4)">{$h.latency90th}</td>
+                    <td style="background:rgba({$h.latency95thColor},  0.4)">{$h.latency95th}</td>
+                    <td style="background:rgba({$h.latency99thColor},  0.4)">{$h.latency99th}</td>
+                    <td style="background:rgba({$h.latency999thColor},  0.4)">{$h.latency999th}</td>
+                    <td style="background:rgba({$h.maxColor},  0.4)">{$h.max}</td>
+                </tr>
+            {/foreach}
+        </tbody>
     </table>
 {/template}
