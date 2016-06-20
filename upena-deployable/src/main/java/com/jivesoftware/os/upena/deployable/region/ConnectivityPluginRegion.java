@@ -26,11 +26,14 @@ import com.jivesoftware.os.upena.service.DiscoveredRoutes.Route;
 import com.jivesoftware.os.upena.service.DiscoveredRoutes.RouteHealths;
 import com.jivesoftware.os.upena.service.DiscoveredRoutes.Routes;
 import com.jivesoftware.os.upena.service.UpenaStore;
+import com.jivesoftware.os.upena.shared.Cluster;
 import com.jivesoftware.os.upena.shared.ClusterKey;
+import com.jivesoftware.os.upena.shared.Host;
 import com.jivesoftware.os.upena.shared.HostKey;
 import com.jivesoftware.os.upena.shared.Instance;
 import com.jivesoftware.os.upena.shared.InstanceFilter;
 import com.jivesoftware.os.upena.shared.InstanceKey;
+import com.jivesoftware.os.upena.shared.ReleaseGroup;
 import com.jivesoftware.os.upena.shared.ReleaseGroupKey;
 import com.jivesoftware.os.upena.shared.Service;
 import com.jivesoftware.os.upena.shared.ServiceFilter;
@@ -297,7 +300,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
             if (from.focusHtml == null) {
                 from.focusHtml = Lists.newArrayList();
             }
-            ((List)from.focusHtml).add(renderConnections(mmd, nodes, serviceName, instanceId));
+            ((List) from.focusHtml).add(renderConnections(mmd, nodes, serviceName, instanceId));
 
             for (Map.Entry<String, Map<String, ConnectionHealth>> to_Family_ConnectionHealth : to_Family_ConnectionHealths.entrySet()) {
 
@@ -332,7 +335,6 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
             }
         }
 
-
         List<Map<String, String>> renderNodes = new ArrayList<>();
         for (Node n : nodes.values()) {
             Map<String, String> node = new HashMap<>();
@@ -351,14 +353,13 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
             node.put("label", n.label + " (" + n.count + ")");
             node.put("count", String.valueOf(n.count));
 
-
             if (n.focusHtml != null && n.focusHtml instanceof List) {
                 Map<String, Object> d = new HashMap<>();
                 d.put("healths", n.focusHtml);
                 n.focusHtml = renderer.render(connectionOverviewTemplate, d);
             }
 
-            node.put("focusHtml", n.focusHtml == null ?  "" : n.focusHtml.toString());
+            node.put("focusHtml", n.focusHtml == null ? "" : n.focusHtml.toString());
             if (n.tooltip != null) {
                 node.put("tooltip", n.tooltip);
             }
@@ -498,7 +499,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
         return health == null ? 0d : Math.max(0d, Math.min(health.serviceHealth.health, 1d));
     }
 
-    private Map<String,Object> renderConnections(MinMaxDouble mmd, Map<String, Node> nodes, String from, String instanceId) throws Exception {
+    private Map<String, Object> renderConnections(MinMaxDouble mmd, Map<String, Node> nodes, String from, String instanceId) throws Exception {
         Map<String, Map<String, ConnectionHealth>> connectionHealths = discoveredRoutes.getConnectionHealth(instanceId);
 
         long success = 0;
@@ -675,7 +676,21 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
             return ((String) o1.get("family")).compareTo((String) o2.get("family"));
         });
 
+        List<String> description = Lists.newArrayList();
+        Instance instance = upenaStore.instances.get(new InstanceKey(instanceId));
+        if (instance != null) {
+            Cluster cluster = upenaStore.clusters.get(instance.clusterKey);
+            Host host = upenaStore.hosts.get(instance.hostKey);
+            Service service = upenaStore.services.get(instance.serviceKey);
+            ReleaseGroup release = upenaStore.releaseGroups.get(instance.releaseGroupKey);
+            description.add("Cluster:"+cluster.name);
+            description.add("Datacenter:"+host.datacenterName+" Rack:"+host.rackName+" Host:"+host.hostName+" Name:"+host.name);
+            description.add("Service:"+service.name+" Release:"+release.version);
+            description.add("Ports:"+instance.ports.toString());
+        }
+
         Map<String, Object> data = new HashMap<>();
+        data.put("description", description);
         data.put("healths", healths);
 
         return renderer.render(connectionHealthTemplate, data);
