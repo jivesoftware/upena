@@ -54,7 +54,7 @@ public class JVMPluginEndpoints {
     @GET
     @Path("/memoryHisto/{instanceKey}")
     @Produces(MediaType.TEXT_HTML)
-    public Response jmvHisto(@Context HttpServletRequest httpRequest, @PathParam("instanceKey") String instanceKey) {
+    public Response jmvMemoryHisto(@Context HttpServletRequest httpRequest, @PathParam("instanceKey") String instanceKey) {
         try {
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
                 new JVMPluginRegionInput("", "", instanceKey, "memoryHisto"));
@@ -66,7 +66,7 @@ public class JVMPluginEndpoints {
     }
 
     @GET
-    @Path("/threaddump/{instanceKey}")
+    @Path("/threadDump/{instanceKey}")
     @Produces(MediaType.TEXT_HTML)
     public Response jmvThreadDump(@Context HttpServletRequest httpRequest, @PathParam("instanceKey") String instanceKey) {
         try {
