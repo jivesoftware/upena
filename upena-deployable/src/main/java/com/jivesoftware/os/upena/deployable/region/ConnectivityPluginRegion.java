@@ -549,7 +549,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
                 mmd.value(latencyMin >= 0d && !Double.isNaN(latencyMin) ? latencyMin : 0);
                 mmd.value(latencyMean >= 0d && !Double.isNaN(latencyMean) ? latencyMean : 0);
                 mmd.value(latencyMax >= 0d && !Double.isNaN(latencyMax) ? latencyMax : 0);
-            
+
                 mmd.value(latency50th >= 0d && !Double.isNaN(latency50th) ? latency50th : 0);
                 mmd.value(latency75th >= 0d && !Double.isNaN(latency75th) ? latency75th : 0);
                 mmd.value(latency90th >= 0d && !Double.isNaN(latency90th) ? latency90th : 0);
@@ -560,10 +560,17 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
             }
         }
 
+        String name = "";
+        Instance instance = upenaStore.instances.get(new InstanceKey(instanceId));
+        if (instance != null) {
+            Host host = upenaStore.hosts.get(instance.hostKey);
+            name += instance.instanceId + " on " + host.hostName + ":" + instance.ports.get("main").port;
+        }
+
         Map<String, Object> health = new HashMap<>();
 
         health.put("instanceKey", instanceId);
-        health.put("from", from);
+        health.put("from", from + ":" + name);
 
         health.put("success", numberFormat.format(success));
         health.put("failure", numberFormat.format(failure));
@@ -630,7 +637,9 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
                 health.put("from", from);
                 health.put("fromColor", healthPluginRegion.idColorRGB(((float) fromNode.id / (float) nodes.size()), 1f));
 
-                health.put("to", value.connectionDescriptor.getInstanceDescriptor().serviceName);
+                health.put("to",
+                    value.connectionDescriptor.getInstanceDescriptor().serviceName + "(" + value.connectionDescriptor.getInstanceDescriptor().instanceName + ")");
+
                 Node toNode = nodes.get(value.connectionDescriptor.getInstanceDescriptor().serviceName);
                 health.put("toColor", healthPluginRegion.idColorRGB(((float) toNode.id / (float) nodes.size()), 1f));
 
@@ -683,10 +692,10 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
             Host host = upenaStore.hosts.get(instance.hostKey);
             Service service = upenaStore.services.get(instance.serviceKey);
             ReleaseGroup release = upenaStore.releaseGroups.get(instance.releaseGroupKey);
-            description.add("Cluster:"+cluster.name);
-            description.add("Datacenter:"+host.datacenterName+" Rack:"+host.rackName+" Host:"+host.hostName+" Name:"+host.name);
-            description.add("Service:"+service.name+" Release:"+release.version);
-            description.add("Ports:"+instance.ports.toString());
+            description.add("Cluster:" + cluster.name);
+            description.add("Datacenter:" + host.datacenterName + " Rack:" + host.rackName + " Host:" + host.hostName + " Name:" + host.name);
+            description.add("Service:" + service.name + " Release:" + release.version);
+            description.add("Ports:" + instance.ports.toString());
         }
 
         Map<String, Object> data = new HashMap<>();
