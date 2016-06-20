@@ -1,7 +1,7 @@
 {namespace soy.page}
 
 /**
- * 
+ * @param? description
  * @param? healths
  */
 {template .connectionsHealth}
@@ -9,6 +9,13 @@
         <div class="panel-heading"><span class="panel-title">Connectivity</span></div>
         <div class="panel-body">
             <div>
+                <ul>
+                    {foreach $d in $description}
+                        <li>
+                            {$d}
+                        </li>
+                    {/foreach}
+                </ul>
             </div>
             <table class="table table-responsive">
                 <thead>
