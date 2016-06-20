@@ -13,6 +13,7 @@ import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -42,7 +43,35 @@ public class JVMPluginEndpoints {
     public Response jmv(@Context HttpServletRequest httpRequest) {
         try {
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-                new JVMPluginRegionInput("", "", ""));
+                new JVMPluginRegionInput("", "", "", ""));
+            return Response.ok(rendered).build();
+        } catch (Exception e) {
+            LOG.error("jvm GET", e);
+            return Response.serverError().entity(e.getMessage()).build();
+        }
+    }
+
+    @GET
+    @Path("/memoryHisto/{instanceKey}")
+    @Produces(MediaType.TEXT_HTML)
+    public Response jmvHisto(@Context HttpServletRequest httpRequest, @PathParam("instanceKey") String instanceKey) {
+        try {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+                new JVMPluginRegionInput("", "", instanceKey, "memoryHisto"));
+            return Response.ok(rendered).build();
+        } catch (Exception e) {
+            LOG.error("jvm GET", e);
+            return Response.serverError().entity(e.getMessage()).build();
+        }
+    }
+
+    @GET
+    @Path("/threaddump/{instanceKey}")
+    @Produces(MediaType.TEXT_HTML)
+    public Response jmvThreadDump(@Context HttpServletRequest httpRequest, @PathParam("instanceKey") String instanceKey) {
+        try {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+                new JVMPluginRegionInput("", "", instanceKey, "threadDump"));
             return Response.ok(rendered).build();
         } catch (Exception e) {
             LOG.error("jvm GET", e);
@@ -60,11 +89,12 @@ public class JVMPluginEndpoints {
         @FormParam("action") @DefaultValue("") String action) {
         try {
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-                new JVMPluginRegionInput(host, port, action));
+                new JVMPluginRegionInput(host, port, "", action));
             return Response.ok(rendered).build();
         } catch (Exception e) {
             LOG.error("jvm action POST", e);
             return Response.serverError().entity(e.getMessage()).build();
         }
     }
+
 }

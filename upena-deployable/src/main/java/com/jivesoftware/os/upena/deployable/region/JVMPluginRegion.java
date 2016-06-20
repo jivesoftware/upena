@@ -9,6 +9,9 @@ import com.jivesoftware.os.upena.deployable.JDIAPI.ThreadDumpLineType;
 import com.jivesoftware.os.upena.deployable.region.JVMPluginRegion.JVMPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.service.UpenaStore;
+import com.jivesoftware.os.upena.shared.Host;
+import com.jivesoftware.os.upena.shared.Instance;
+import com.jivesoftware.os.upena.shared.InstanceKey;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -43,13 +46,15 @@ public class JVMPluginRegion implements PageRegion<JVMPluginRegionInput> {
 
     public static class JVMPluginRegionInput implements PluginInput {
 
-        final String host;
-        final String port;
+        String host;
+        String port;
+        final String instanceKey;
         final String action;
 
-        public JVMPluginRegionInput(String host, String port, String action) {
+        public JVMPluginRegionInput(String host, String port, String instanceKey, String action) {
             this.host = host;
             this.port = port;
+            this.instanceKey = instanceKey;
             this.action = action;
         }
 
@@ -61,7 +66,14 @@ public class JVMPluginRegion implements PageRegion<JVMPluginRegionInput> {
     }
 
     @Override
-    public String render(String user, JVMPluginRegionInput input) {
+    public String render(String user, JVMPluginRegionInput input) throws Exception {
+        if (input.instanceKey != null && !input.instanceKey.isEmpty()) {
+            Instance instance = upenaStore.instances.get(new InstanceKey(input.instanceKey));
+            Host host = upenaStore.hosts.get(instance.hostKey);
+            input.port = String.valueOf(instance.ports.get("debug").port);
+            input.host = host.name;
+        }
+
         Map<String, Object> data = Maps.newHashMap();
         data.put("host", input.host);
         data.put("port", input.port);
@@ -92,7 +104,6 @@ public class JVMPluginRegion implements PageRegion<JVMPluginRegionInput> {
                 });
                 data.put("threadDumps", threadDumps);
             }
-
 
         } catch (Exception e) {
             log.error("Unable to retrieve data", e);

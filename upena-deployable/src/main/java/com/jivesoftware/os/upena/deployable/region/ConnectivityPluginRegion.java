@@ -546,16 +546,16 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
                 latency99th = Math.max(latency999th, value.latencyStats.latency99th);
                 latency999th = Math.max(latency999th, value.latencyStats.latency999th);
 
-                mmd.value(latencyMin);
-                mmd.value(latencyMean);
-                mmd.value(latencyMax);
-
-                mmd.value(latency50th);
-                mmd.value(latency75th);
-                mmd.value(latency90th);
-                mmd.value(latency95th);
-                mmd.value(latency99th);
-                mmd.value(latency999th);
+                mmd.value(latencyMin >= 0d && !Double.isNaN(latencyMin) ? latencyMin : 0);
+                mmd.value(latencyMean >= 0d && !Double.isNaN(latencyMean) ? latencyMean : 0);
+                mmd.value(latencyMax >= 0d && !Double.isNaN(latencyMax) ? latencyMax : 0);
+            
+                mmd.value(latency50th >= 0d && !Double.isNaN(latency50th) ? latency50th : 0);
+                mmd.value(latency75th >= 0d && !Double.isNaN(latency75th) ? latency75th : 0);
+                mmd.value(latency90th >= 0d && !Double.isNaN(latency90th) ? latency90th : 0);
+                mmd.value(latency95th >= 0d && !Double.isNaN(latency95th) ? latency95th : 0);
+                mmd.value(latency99th >= 0d && !Double.isNaN(latency99th) ? latency99th : 0);
+                mmd.value(latency999th >= 0d && !Double.isNaN(latency999th) ? latency999th : 0);
 
             }
         }
