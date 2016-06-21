@@ -1073,6 +1073,9 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                     healthData.put("color", trafficlightColorRGB(health.health, 1f));
                     healthData.put("name", String.valueOf(health.name));
                     healthData.put("status", String.valueOf(health.status));
+                    
+                    long ageInMillis = System.currentTimeMillis() - health.timestamp;
+                    healthData.put("age", UpenaEndpoints.shortHumanReadableUptime(ageInMillis));
                     instanceHealths.add(healthData);
                 }
             }
