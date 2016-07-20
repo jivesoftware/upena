@@ -130,8 +130,8 @@ class NannyStatusCallable implements Callable<Boolean> {
             }
             int checks = 1;
             while (checks < 10) { // todo expose to config or to instance
-                healthLog.forcedHealthState("Service Startup", "Service is being verifyed. Phase: verify...", "Be patient");
-                status.set("Verfying" + checks);
+                healthLog.forcedHealthState("Service Startup", "Service is being verified. Phase: verify...", "Be patient");
+                status.set("Verifying" + checks);
                 if (invokeScript.invoke(deployLog, instancePath, "status")) {
                     deployLog.log("Service:" + instancePath.toHumanReadableName() + " 'status'", "ONLINE", null);
                     status.set("Health" + checks);
