@@ -158,7 +158,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
                 input.serviceKey.isEmpty() ? null : new ServiceKey(input.serviceKey),
                 input.releaseKey.isEmpty() ? null : new ReleaseGroupKey(input.releaseKey),
                 null,
-                0, 10000);
+                0, 100_000);
 
             Map<String, Boolean> selectedLinkTypes = new HashMap<>();
             for (String type : input.linkType) {
@@ -168,7 +168,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
 
             data.put("filters", filter);
 
-            ConcurrentNavigableMap<ServiceKey, TimestampedValue<Service>> services = upenaStore.services.find(new ServiceFilter(null, null, 0, 10000));
+            ConcurrentNavigableMap<ServiceKey, TimestampedValue<Service>> services = upenaStore.services.find(new ServiceFilter(null, null, 0, 100_000));
 
             Map<ServiceKey, TimestampedValue<com.jivesoftware.os.upena.shared.Service>> sort = new ConcurrentSkipListMap<>((ServiceKey o1, ServiceKey o2) -> {
                 com.jivesoftware.os.upena.shared.Service so1 = services.get(o1).getValue();
@@ -651,7 +651,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
     }
 
     HttpRequestHelper buildRequestHelper(String host, int port) {
-        HttpClientConfig httpClientConfig = HttpClientConfig.newBuilder().setSocketTimeoutInMillis(10000).build();
+        HttpClientConfig httpClientConfig = HttpClientConfig.newBuilder().setSocketTimeoutInMillis(10_000).build();
         HttpClientFactory httpClientFactory = new HttpClientFactoryProvider()
             .createHttpClientFactory(Arrays.<HttpClientConfiguration>asList(httpClientConfig));
         HttpClient httpClient = httpClientFactory.createClient(host, port);

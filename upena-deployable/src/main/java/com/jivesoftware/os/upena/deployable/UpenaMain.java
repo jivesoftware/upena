@@ -244,21 +244,27 @@ public class UpenaMain {
         LOG.info("-----------------------------------------------------------------------");
 
         final AtomicReference<UbaService> conductor = new AtomicReference<>();
-        final UpenaStore upenaStore = new UpenaStore(mapper, amzaService, (instanceChanges) -> {
-            Executors.newSingleThreadExecutor().submit(() -> {
-                UbaService got = conductor.get();
-                if (got != null) {
-                    try {
-                        got.instanceChanged(instanceChanges);
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
+        final UpenaStore upenaStore = new UpenaStore(mapper,
+            amzaService, (instanceChanges) -> {
+                Executors.newSingleThreadExecutor().submit(() -> {
+                    UbaService got = conductor.get();
+                    if (got != null) {
+                        try {
+                            got.instanceChanged(instanceChanges);
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                        }
                     }
-                }
-            });
-        }, (changes) -> {
-        }, (change) -> {
-            LOG.info("TODO: tie into conductor. " + change);
-        });
+                });
+            },
+            (changes) -> {
+            },
+            (change) -> {
+                LOG.info("TODO: tie into conductor. " + change);
+            },
+            Integer.parseInt(System.getProperty("min.service.port", "10000")),
+            Integer.parseInt(System.getProperty("max.service.port", String.valueOf(Short.MAX_VALUE)))
+        );
         upenaStore.attachWatchers();
 
         UpenaService upenaService = new UpenaService(datacenter, rack, publicHost, upenaStore);
@@ -332,7 +338,7 @@ public class UpenaMain {
             clusterName,
             discoveredRoutes);
 
-        InitializeRestfulServer initializeRestfulServer = new InitializeRestfulServer(port, "UpenaNode", 128, 10000);
+        InitializeRestfulServer initializeRestfulServer = new InitializeRestfulServer(port, "UpenaNode", 128, 10_000);
         initializeRestfulServer.addClasspathResource("/resources");
         initializeRestfulServer.addContextHandler("/", jerseyEndpoints);
 

@@ -99,7 +99,7 @@ public class ServicesPluginRegion implements PageRegion<ServicesPluginRegionInpu
             filters.put("description", input.description);
             data.put("filters", filters);
 
-            ServiceFilter filter = new ServiceFilter(null, null, 0, 10000);
+            ServiceFilter filter = new ServiceFilter(null, null, 0, 100_000);
             if (input.action != null) {
                 if (input.action.equals("filter")) {
                     filter = handleFilter(input, data);
@@ -126,7 +126,7 @@ public class ServicesPluginRegion implements PageRegion<ServicesPluginRegionInpu
                     key,
                     null,
                     null,
-                    0, 10000);
+                    0, 100_000);
 
                 Map<InstanceKey, TimestampedValue<Instance>> instances = upenaStore.instances.find(instanceFilter);
 
@@ -164,7 +164,7 @@ public class ServicesPluginRegion implements PageRegion<ServicesPluginRegionInpu
         filter = new ServiceFilter(
             input.name.isEmpty() ? null : input.name,
             input.description.isEmpty() ? null : input.description,
-            0, 10000);
+            0, 100_000);
         data.put("message", "Filtering: name.contains '" + input.name + "' description.contains '" + input.description + "'");
         return filter;
     }
@@ -234,7 +234,7 @@ public class ServicesPluginRegion implements PageRegion<ServicesPluginRegionInpu
             filter = new ServiceFilter(
                 input.name.isEmpty() ? null : input.name,
                 input.description.isEmpty() ? null : input.description,
-                0, 10000);
+                0, 100_000);
 
             ListOfService values = new ListOfService();
             Map<ServiceKey, TimestampedValue<Service>> found = upenaStore.services.find(filter);

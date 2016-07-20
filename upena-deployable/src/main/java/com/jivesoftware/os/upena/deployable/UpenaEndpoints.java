@@ -287,7 +287,7 @@ public class UpenaEndpoints {
     @GET
     @Consumes("application/json")
     @Path("/routes/health/{sinceTimestampMillis}")
-    public Response getRoutesHealth(@PathParam("timestamp") long sinceTimestampMillis) {
+    public Response getRoutesHealth(@PathParam("sinceTimestampMillis") long sinceTimestampMillis) {
         try {
             return ResponseHelper.INSTANCE.jsonResponse(new RouteHealths(discoveredRoutes.routesHealth(sinceTimestampMillis)));
         } catch (Exception x) {
@@ -331,7 +331,7 @@ public class UpenaEndpoints {
     }
 
     HttpRequestHelper buildRequestHelper(String host, int port) {
-        HttpClientConfig httpClientConfig = HttpClientConfig.newBuilder().setSocketTimeoutInMillis(10000).build();
+        HttpClientConfig httpClientConfig = HttpClientConfig.newBuilder().setSocketTimeoutInMillis(10_000).build();
         HttpClientFactory httpClientFactory = new HttpClientFactoryProvider()
             .createHttpClientFactory(Arrays.<HttpClientConfiguration>asList(httpClientConfig));
         HttpClient httpClient = httpClientFactory.createClient(host, port);

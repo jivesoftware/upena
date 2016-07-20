@@ -173,7 +173,7 @@ public class ModulesPluginRegion implements PageRegion<ModulesPluginRegionInput>
                 input.serviceKey.isEmpty() ? null : new ServiceKey(input.serviceKey),
                 input.releaseKey.isEmpty() ? null : new ReleaseGroupKey(input.releaseKey),
                 null,
-                0, 10000);
+                0, 100_000);
 
             Set<ReleaseGroup> releaseGroups = new HashSet<>();
 
@@ -190,7 +190,7 @@ public class ModulesPluginRegion implements PageRegion<ModulesPluginRegionInput>
 
             if (releaseGroups.isEmpty()) {
 
-                ReleaseGroupFilter releaseGroupFilter = new ReleaseGroupFilter(null, null, null, null, null, 0, 10000);
+                ReleaseGroupFilter releaseGroupFilter = new ReleaseGroupFilter(null, null, null, null, null, 0, 100_000);
                 ConcurrentNavigableMap<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> foundGroups = upenaStore.releaseGroups.find(releaseGroupFilter);
                 for (Map.Entry<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> fg : foundGroups.entrySet()) {
                     if (!fg.getValue().getTombstoned()) {

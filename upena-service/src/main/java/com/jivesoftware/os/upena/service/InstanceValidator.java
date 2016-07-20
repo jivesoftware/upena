@@ -28,8 +28,13 @@ import java.util.concurrent.ConcurrentNavigableMap;
 
 public class InstanceValidator implements UpenaValueValidator<InstanceKey, Instance> {
 
-    private final int minPort = 10000;
-    private final int maxPort = Short.MAX_VALUE;
+    private final int minPort;
+    private final int maxPort;
+
+    public InstanceValidator(int minPort, int maxPort) {
+        this.minPort = minPort;
+        this.maxPort = maxPort;
+    }
 
     @Override
     public Instance valiadate(UpenaTable<InstanceKey, Instance> table, InstanceKey key, Instance value) throws Exception {
@@ -57,11 +62,9 @@ public class InstanceValidator implements UpenaValueValidator<InstanceKey, Insta
                 port.port = nextFreePort(usedPorts, lastPort);
                 lastPort = port.port;
                 value.ports.put(portName, port);
-            } else {
-                if (usedPorts.contains(port.port)) {
-                    port.port = nextFreePort(usedPorts, lastPort);
-                    lastPort = port.port;
-                }
+            } else if (usedPorts.contains(port.port)) {
+                port.port = nextFreePort(usedPorts, lastPort);
+                lastPort = port.port;
             }
         }
         return value;

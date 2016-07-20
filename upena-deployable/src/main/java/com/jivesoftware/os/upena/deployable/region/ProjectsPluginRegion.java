@@ -170,14 +170,14 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
 
             data.put("filters", filters);
 
-            ProjectFilter filter = new ProjectFilter(null, null, 0, 10000);
+            ProjectFilter filter = new ProjectFilter(null, null, 0, 100_000);
             if (input.action != null) {
                 ProjectKey projectKey = new ProjectKey(input.key);
                 if (input.action.equals("filter")) {
                     filter = new ProjectFilter(
                         input.name.isEmpty() ? null : input.name,
                         input.description.isEmpty() ? null : input.description,
-                        0, 10000);
+                        0, 100_000);
                     data.put("message", "Filtering: name.contains '" + input.name + "' description.contains '" + input.description + "'");
                 } else if (input.action.equals("cancel")) {
                     AtomicLong removed = runningProjects.remove(projectKey);
@@ -1139,7 +1139,7 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
             if (running.exists()) {
                 List<String> lines = FileUtils.readLines(running);
                 if (refresh) {
-                    log.addAll(lines.subList(Math.max(0, lines.size() - 10000), lines.size()));
+                    log.addAll(lines.subList(Math.max(0, lines.size() - 10_000), lines.size()));
                 } else {
                     log.addAll(lines);
                 }
@@ -1149,7 +1149,7 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
             if (failed.exists()) {
                 List<String> lines = FileUtils.readLines(failed);
                 if (refresh) {
-                    log.addAll(lines.subList(Math.max(0, lines.size() - 10000), lines.size()));
+                    log.addAll(lines.subList(Math.max(0, lines.size() - 10_000), lines.size()));
                 } else {
                     log.addAll(lines);
                 }
@@ -1161,7 +1161,7 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
             if (success.exists()) {
                 List<String> lines = FileUtils.readLines(success);
                 if (refresh) {
-                    log.addAll(lines.subList(Math.max(0, lines.size() - 10000), lines.size()));
+                    log.addAll(lines.subList(Math.max(0, lines.size() - 10_000), lines.size()));
                 } else {
                     log.addAll(lines);
                 }

@@ -149,7 +149,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
                 input.serviceKey.isEmpty() ? null : new ServiceKey(input.serviceKey),
                 input.releaseKey.isEmpty() ? null : new ReleaseGroupKey(input.releaseKey),
                 input.instanceId.isEmpty() ? null : Integer.parseInt(input.instanceId),
-                0, 10000);
+                0, 100_000);
 
             if (input.action != null) {
                 if (input.action.equals("filter")) {
@@ -425,7 +425,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
                     new ServiceKey(serviceKey),
                     new ReleaseGroupKey(releaseKey),
                     null,
-                    0, 10000);
+                    0, 100_000);
 
                 Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(filter);
                 Set<Integer> instanceIds = new HashSet<>();
@@ -435,7 +435,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
                     }
                 }
                 int firstFreeId = -1;
-                for (int i = 1; i < 10000; i++) {
+                for (int i = 1; i < Short.MAX_VALUE; i++) {
                     if (!instanceIds.contains(i)) {
                         firstFreeId = i;
                         break;

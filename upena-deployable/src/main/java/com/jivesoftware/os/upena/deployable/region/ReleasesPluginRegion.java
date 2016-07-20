@@ -10,12 +10,15 @@ import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.deployable.region.ReleasesPluginRegion.ReleasesPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.service.UpenaStore;
+import com.jivesoftware.os.upena.shared.Cluster;
+import com.jivesoftware.os.upena.shared.Host;
 import com.jivesoftware.os.upena.shared.Instance;
 import com.jivesoftware.os.upena.shared.InstanceFilter;
 import com.jivesoftware.os.upena.shared.InstanceKey;
 import com.jivesoftware.os.upena.shared.ReleaseGroup;
 import com.jivesoftware.os.upena.shared.ReleaseGroupFilter;
 import com.jivesoftware.os.upena.shared.ReleaseGroupKey;
+import com.jivesoftware.os.upena.shared.Service;
 import com.jivesoftware.os.upena.shared.ServiceKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
 import com.jivesoftware.os.upena.uba.service.RepositoryProvider;
@@ -27,6 +30,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
 
 /**
  *
@@ -186,7 +190,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
             filters.put("autoRelease", String.valueOf(input.autoRelease));
             data.put("filters", filters);
 
-            ReleaseGroupFilter filter = new ReleaseGroupFilter(null, null, null, null, null, 0, 10000);
+            ReleaseGroupFilter filter = new ReleaseGroupFilter(null, null, null, null, null, 0, 100_000);
             if (input.action != null) {
                 if (input.action.equals("filter")) {
                     filter = new ReleaseGroupFilter(
@@ -195,7 +199,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
                         input.version.isEmpty() ? null : input.version,
                         input.repository.isEmpty() ? null : input.repository,
                         input.email.isEmpty() ? null : input.email,
-                        0, 10000);
+                        0, 100_000);
                     data.put("message", "Filtering: "
                         + "name.contains '" + input.name + "' "
                         + "description.contains '" + input.description + "' "
@@ -283,6 +287,64 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
                         String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
                         data.put("message", "Error while trying to add Release:" + input.name + "\n" + trace);
                     }
+                } else if (input.action.equals("rolling-upgrade")) {
+                    filters.clear();
+                    try {
+                        ReleaseGroup release = upenaStore.releaseGroups.get(new ReleaseGroupKey(input.key));
+                        if (release == null) {
+                            data.put("message", "Couldn't update no existent cluster. Someone else likely just removed it since your last refresh.");
+                        } else {
+
+                            List<String> errors = new CheckReleasable(repositoryProvider).isReleasable(input.repository, input.version);
+                            if (errors.isEmpty()) {
+
+
+                                InstanceFilter instanceFilter = new InstanceFilter(
+                                null,
+                                null,
+                                null,
+                                new ReleaseGroupKey(input.key),
+                                null,
+                                0, 100_000);
+
+                                long now = System.currentTimeMillis();
+                                long stagger = TimeUnit.SECONDS.toMillis(30);
+                                now += stagger;
+                                List<String> restart = new ArrayList<>();
+                                Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(instanceFilter);
+                                for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {
+                                    InstanceKey key = entrySet.getKey();
+                                    TimestampedValue<Instance> timestampedValue = entrySet.getValue();
+                                    Instance instance = timestampedValue.getValue();
+                                    if (instance.enabled) {
+                                        instance.restartTimestampGMTMillis = now;
+                                        upenaStore.instances.update(key, instance);
+                                        now += stagger;
+                                        restart.add(instanceToHumanReadableString(instance));
+                                    }
+                                }
+                                if (!restart.isEmpty()) {
+                                    upenaStore.record(user, "restart", System.currentTimeMillis(), "", "instance-ui", restart.toString());
+                                }
+
+                                ReleaseGroup updated = new ReleaseGroup(input.name,
+                                    input.email,
+                                    input.version,
+                                    input.upgrade,
+                                    input.repository,
+                                    input.description,
+                                    input.autoRelease);
+                                upenaStore.releaseGroups.update(new ReleaseGroupKey(input.key), updated);
+                                data.put("message", "Upgrade Release:" + input.name);
+                                upenaStore.record(user, "upgrade", System.currentTimeMillis(), "", "release-ui", updated.toString());
+                            } else {
+                                data.put("message", Joiner.on("\n").join(errors));
+                            }
+                        }
+                    } catch (Exception x) {
+                        String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
+                        data.put("message", "Error while trying to add Release:" + input.name + "\n" + trace);
+                    }
                 } else if (input.action.equals("rollback")) {
                     filters.clear();
                     try {
@@ -346,7 +408,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
                     null,
                     key,
                     null,
-                    0, 10000);
+                    0, 100_000);
 
                 Map<InstanceKey, TimestampedValue<Instance>> instances = upenaStore.instances.find(instanceFilter);
                 HashMultiset<ServiceKey> serviceKeyCount = HashMultiset.create();
@@ -434,7 +496,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
                 input.version.isEmpty() ? null : input.version,
                 input.repository.isEmpty() ? null : input.repository,
                 input.email.isEmpty() ? null : input.email,
-                0, 10000);
+                0, 100_000);
 
             ListOfReleaseGroup values = new ListOfReleaseGroup();
             Map<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> found = upenaStore.releaseGroups.find(filter);
@@ -473,6 +535,19 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
     }
 
     static class ListOfReleaseGroup extends ArrayList<ReleaseGroup> {
+    }
+
+    public String instanceToHumanReadableString(Instance instance) throws Exception {
+        Cluster cluster = upenaStore.clusters.get(instance.clusterKey);
+        Host host = upenaStore.hosts.get(instance.hostKey);
+        Service service = upenaStore.services.get(instance.serviceKey);
+        ReleaseGroup release = upenaStore.releaseGroups.get(instance.releaseGroupKey);
+        return ((cluster == null) ? "unknownCluster" : cluster.name) + "/"
+            + ((host == null) ? "unknownHost" : host.name) + "/"
+            + ((service == null) ? "unknownService" : service.name) + "/"
+            + String.valueOf(instance.instanceId) + "/"
+            + ((release == null) ? "unknownRelease" : release.name);
+
     }
 
 }
