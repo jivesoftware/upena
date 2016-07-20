@@ -101,7 +101,7 @@ public class HostsPluginRegion implements PageRegion<HostsPluginRegionInput> {
             filters.put("port", String.valueOf(input.port));
             filters.put("workingDirectory", input.workingDirectory);
 
-            HostFilter filter = new HostFilter(null, null, null, null, null, 0, 10000);
+            HostFilter filter = new HostFilter(null, null, null, null, null, 0, 100_000);
             if (input.action != null) {
                 if (input.action.equals("filter")) {
                     filter = new HostFilter(
@@ -110,7 +110,7 @@ public class HostsPluginRegion implements PageRegion<HostsPluginRegionInput> {
                         input.port.isEmpty() ? null : Integer.valueOf(input.port),
                         input.workingDirectory.isEmpty() ? null : input.workingDirectory,
                         null,
-                        0, 10000);
+                        0, 100_000);
                     data.put("message", "Filtering: "
                         + "name.contains '" + input.name + "' "
                         + "host.contains '" + input.host + "' "
@@ -194,7 +194,7 @@ public class HostsPluginRegion implements PageRegion<HostsPluginRegionInput> {
                     null,
                     null,
                     null,
-                    0, 10000);
+                    0, 100_000);
 
                 Map<InstanceKey, TimestampedValue<Instance>> instances = upenaStore.instances.find(instanceFilter);
                 HashMultiset<ServiceKey> serviceKeyCount = HashMultiset.create();

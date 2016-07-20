@@ -186,7 +186,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
             filters.put("autoRelease", String.valueOf(input.autoRelease));
             data.put("filters", filters);
 
-            ReleaseGroupFilter filter = new ReleaseGroupFilter(null, null, null, null, null, 0, 10000);
+            ReleaseGroupFilter filter = new ReleaseGroupFilter(null, null, null, null, null, 0, 100_000);
             if (input.action != null) {
                 if (input.action.equals("filter")) {
                     filter = new ReleaseGroupFilter(
@@ -195,7 +195,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
                         input.version.isEmpty() ? null : input.version,
                         input.repository.isEmpty() ? null : input.repository,
                         input.email.isEmpty() ? null : input.email,
-                        0, 10000);
+                        0, 100_000);
                     data.put("message", "Filtering: "
                         + "name.contains '" + input.name + "' "
                         + "description.contains '" + input.description + "' "
@@ -346,7 +346,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
                     null,
                     key,
                     null,
-                    0, 10000);
+                    0, 100_000);
 
                 Map<InstanceKey, TimestampedValue<Instance>> instances = upenaStore.instances.find(instanceFilter);
                 HashMultiset<ServiceKey> serviceKeyCount = HashMultiset.create();
@@ -434,7 +434,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
                 input.version.isEmpty() ? null : input.version,
                 input.repository.isEmpty() ? null : input.repository,
                 input.email.isEmpty() ? null : input.email,
-                0, 10000);
+                0, 100_000);
 
             ListOfReleaseGroup values = new ListOfReleaseGroup();
             Map<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> found = upenaStore.releaseGroups.find(filter);

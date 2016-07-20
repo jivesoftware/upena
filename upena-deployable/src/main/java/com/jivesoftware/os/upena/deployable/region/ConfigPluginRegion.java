@@ -181,7 +181,7 @@ public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
             input.aReleaseKey.isEmpty() ? null : new ReleaseGroupKey(input.aReleaseKey),
             input.aInstance.isEmpty() ? null : Integer.parseInt(input.aInstance),
             0,
-            10000);
+            100_000);
 
         ExportImportCluster exportImportCluster = new ExportImportCluster();
         if (filter.clusterKey != null
@@ -541,7 +541,7 @@ public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
             releaseKey.isEmpty() ? null : new ReleaseGroupKey(releaseKey),
             instance.isEmpty() ? null : Integer.parseInt(instance),
             0,
-            10000);
+            100_000);
         if (filter.clusterKey != null
             || filter.hostKey != null
             || filter.serviceKey != null

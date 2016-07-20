@@ -418,7 +418,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
             });
 
             // Services
-            Map<ServiceKey, TimestampedValue<Service>> foundServices = upenaStore.services.find(new ServiceFilter(null, null, 0, 10000));
+            Map<ServiceKey, TimestampedValue<Service>> foundServices = upenaStore.services.find(new ServiceFilter(null, null, 0, 100_000));
             List<Map<String, String>> serviceResults = Lists.newArrayList();
             for (Map.Entry<ServiceKey, TimestampedValue<Service>> entry : foundServices.entrySet()) {
                 serviceResults.add(ImmutableMap.of("key", entry.getKey().getKey(), "name", entry.getValue().getValue().name));
@@ -496,7 +496,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
             }
 
             // Hosts
-            Map<HostKey, TimestampedValue<Host>> foundHosts = upenaStore.hosts.find(new HostFilter(null, null, null, null, null, 0, 10000));
+            Map<HostKey, TimestampedValue<Host>> foundHosts = upenaStore.hosts.find(new HostFilter(null, null, null, null, null, 0, 100_000));
             List<Map<String, String>> hostResults = Lists.newArrayList();
             for (Map.Entry<HostKey, TimestampedValue<Host>> entry : foundHosts.entrySet()) {
                 String name = entry.getValue().getValue().hostName + "/" + entry.getValue().getValue().name;
@@ -727,7 +727,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
             data.put("gridHost", hostRows);
 
             // Clusters
-            Map<ClusterKey, TimestampedValue<Cluster>> foundClusters = upenaStore.clusters.find(new ClusterFilter(null, null, 0, 10000));
+            Map<ClusterKey, TimestampedValue<Cluster>> foundClusters = upenaStore.clusters.find(new ClusterFilter(null, null, 0, 100_000));
             List<Map<String, String>> clusterResults = Lists.newArrayList();
             for (Map.Entry<ClusterKey, TimestampedValue<Cluster>> entry : foundClusters.entrySet()) {
                 clusterResults.add(ImmutableMap.of("key", entry.getKey().getKey(), "name", entry.getValue().getValue().name));
@@ -737,7 +737,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
 
             // Releases
             Map<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> foundReleases = upenaStore.releaseGroups.find(new ReleaseGroupFilter(null, null, null, null,
-                null, 0, 10000));
+                null, 0, 100_000));
             List<Map<String, String>> releaseResults = Lists.newArrayList();
             for (Map.Entry<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> entry : foundReleases.entrySet()) {
                 releaseResults.add(ImmutableMap.of("key", entry.getKey().getKey(), "name", entry.getValue().getValue().name));
@@ -920,7 +920,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
     }
 
     HttpRequestHelper buildRequestHelper(String host, int port) {
-        HttpClientConfig httpClientConfig = HttpClientConfig.newBuilder().setSocketTimeoutInMillis(10000).build();
+        HttpClientConfig httpClientConfig = HttpClientConfig.newBuilder().setSocketTimeoutInMillis(10_000).build();
         HttpClientFactory httpClientFactory = new HttpClientFactoryProvider()
             .createHttpClientFactory(Arrays.<HttpClientConfiguration>asList(httpClientConfig));
         HttpClient httpClient = httpClientFactory.createClient(host, port);

@@ -161,7 +161,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
                 input.serviceKey.isEmpty() ? null : new ServiceKey(input.serviceKey),
                 input.releaseKey.isEmpty() ? null : new ReleaseGroupKey(input.releaseKey),
                 null,
-                0, 10000);
+                0, 100_000);
 
             Map<String, Boolean> selectedLinkTypes = new HashMap<>();
             for (String type : input.linkType) {
@@ -171,7 +171,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
 
             data.put("filters", filter);
 
-            ConcurrentNavigableMap<ServiceKey, TimestampedValue<Service>> services = upenaStore.services.find(new ServiceFilter(null, null, 0, 10000));
+            ConcurrentNavigableMap<ServiceKey, TimestampedValue<Service>> services = upenaStore.services.find(new ServiceFilter(null, null, 0, 100_000));
 
             Map<ServiceKey, TimestampedValue<com.jivesoftware.os.upena.shared.Service>> sort = new ConcurrentSkipListMap<>((ServiceKey o1, ServiceKey o2) -> {
                 com.jivesoftware.os.upena.shared.Service so1 = services.get(o1).getValue();
@@ -391,7 +391,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
             Instance renderInstance = upenaStore.instances.get(new InstanceKey(instanceKey));
             String renderService = "unknown";
 
-            ConcurrentNavigableMap<ServiceKey, TimestampedValue<Service>> services = upenaStore.services.find(new ServiceFilter(null, null, 0, 10000));
+            ConcurrentNavigableMap<ServiceKey, TimestampedValue<Service>> services = upenaStore.services.find(new ServiceFilter(null, null, 0, 100_000));
 
             Map<ServiceKey, TimestampedValue<com.jivesoftware.os.upena.shared.Service>> sort = new ConcurrentSkipListMap<>((ServiceKey o1, ServiceKey o2) -> {
                 com.jivesoftware.os.upena.shared.Service so1 = services.get(o1).getValue();
@@ -850,7 +850,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
     }
 
     HttpRequestHelper buildRequestHelper(String host, int port) {
-        HttpClientConfig httpClientConfig = HttpClientConfig.newBuilder().setSocketTimeoutInMillis(10000).build();
+        HttpClientConfig httpClientConfig = HttpClientConfig.newBuilder().setSocketTimeoutInMillis(10_000).build();
         HttpClientFactory httpClientFactory = new HttpClientFactoryProvider()
             .createHttpClientFactory(Arrays.<HttpClientConfiguration>asList(httpClientConfig));
         HttpClient httpClient = httpClientFactory.createClient(host, port);

@@ -79,13 +79,13 @@ public class LoadBalancersPluginRegion implements PageRegion<LoadBalancersPlugin
             filters.put("description", input.description);
             data.put("filters", filters);
 
-            LoadBalancerFilter filter = new LoadBalancerFilter(null, null, 0, 10000);
+            LoadBalancerFilter filter = new LoadBalancerFilter(null, null, 0, 100_000);
             if (input.action != null) {
                 if (input.action.equals("filter")) {
                     filter = new LoadBalancerFilter(
                         input.name.isEmpty() ? null : input.name,
                         input.description.isEmpty() ? null : input.description,
-                        0, 10000);
+                        0, 100_000);
                     data.put("message", "Filtering: name.contains '" + input.name + "' description.contains '" + input.description + "'");
                 } else if (input.action.equals("add")) {
                     filters.clear();
@@ -146,7 +146,7 @@ public class LoadBalancersPluginRegion implements PageRegion<LoadBalancersPlugin
                 LoadBalancerFilter loadBalancerFilter = new LoadBalancerFilter(
                     null,
                     null,
-                    0, 10000);
+                    0, 100_000);
 
                 HashMultiset<ServiceKey> serviceKeyCount = HashMultiset.create();
                 Map<LoadBalancerKey, TimestampedValue<LoadBalancer>> instances = upenaStore.loadBalancers.find(loadBalancerFilter);

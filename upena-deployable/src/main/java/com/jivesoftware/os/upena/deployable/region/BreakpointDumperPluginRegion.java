@@ -173,7 +173,7 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
                         input.serviceKey.isEmpty() ? null : new ServiceKey(input.serviceKey),
                         input.releaseKey.isEmpty() ? null : new ReleaseGroupKey(input.releaseKey),
                         input.instanceId.isEmpty() ? null : Integer.parseInt(input.instanceId),
-                        0, 10000);
+                        0, 100_000);
 
                     Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(filter);
                     for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {

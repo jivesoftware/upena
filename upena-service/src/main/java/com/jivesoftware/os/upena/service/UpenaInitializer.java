@@ -28,9 +28,11 @@ public class UpenaInitializer {
         InstanceChanges instanceChanges,
         InstanceChanges instanceRemoved,
         TenantChanges tenantChanges,
+        int minServicePort,
+        int maxServicePort,
         AmzaService amzaService) throws SocketException, Exception {
 
-        UpenaStore upenaStore = new UpenaStore(mapper, amzaService, instanceChanges, instanceRemoved, tenantChanges);
+        UpenaStore upenaStore = new UpenaStore(mapper, amzaService, instanceChanges, instanceRemoved, tenantChanges, minServicePort, maxServicePort);
         upenaStore.attachWatchers();
         UpenaService composerService = new UpenaService(datacenter, rack, publicHost, upenaStore);
         return composerService;

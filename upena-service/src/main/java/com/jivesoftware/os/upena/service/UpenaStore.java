@@ -83,7 +83,9 @@ public class UpenaStore {
         AmzaService amzaService,
         InstanceChanges instanceChanges,
         InstanceChanges instanceRemoved,
-        TenantChanges tenantChanges) throws Exception {
+        TenantChanges tenantChanges,
+        int minServicePort,
+        int maxServicePort) throws Exception {
         this.mapper = mapper;
         this.amzaService = amzaService;
         this.instanceChanges = instanceChanges;
@@ -98,7 +100,7 @@ public class UpenaStore {
         releaseGroups = new UpenaTable<>(amzaService.getTable(releaseGroupStoreKey),
             ReleaseGroupKey.class, ReleaseGroup.class, new ReleaseGroupKeyProvider(), null);
         instances = new UpenaTable<>(amzaService.getTable(instanceStoreKey),
-            InstanceKey.class, Instance.class, new InstanceKeyProvider(), new InstanceValidator());
+            InstanceKey.class, Instance.class, new InstanceKeyProvider(), new InstanceValidator(minServicePort, maxServicePort));
         tenants = new UpenaTable<>(amzaService.getTable(tenantStoreKey), TenantKey.class, Tenant.class, new TenantKeyProvider(), null);
 
         changeLog = amzaService.getTable(changeLogStoreKey);

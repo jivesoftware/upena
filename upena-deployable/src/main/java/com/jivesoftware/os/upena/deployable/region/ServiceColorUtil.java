@@ -18,7 +18,7 @@ public class ServiceColorUtil {
 
     public static Map<ServiceKey, Integer> serviceKeysOrder(UpenaStore upenaStore) throws Exception {
         ConcurrentNavigableMap<ServiceKey, TimestampedValue<com.jivesoftware.os.upena.shared.Service>> listServices = upenaStore.services.find(
-            new ServiceFilter(null, null, 0, 10000));
+            new ServiceFilter(null, null, 0, 100_000));
         int i = 0;
 
         Map<ServiceKey, TimestampedValue<com.jivesoftware.os.upena.shared.Service>> sort = new ConcurrentSkipListMap<>((ServiceKey o1, ServiceKey o2) -> {
@@ -45,7 +45,7 @@ public class ServiceColorUtil {
 
     public static Map<ServiceKey, String> serviceKeysColor(UpenaStore upenaStore) throws Exception {
         ConcurrentNavigableMap<ServiceKey, TimestampedValue<com.jivesoftware.os.upena.shared.Service>> listServices = upenaStore.services.find(
-            new ServiceFilter(null, null, 0, 10000));
+            new ServiceFilter(null, null, 0, 100_000));
         int i = 0;
 
         Map<ServiceKey, TimestampedValue<com.jivesoftware.os.upena.shared.Service>> sort = new ConcurrentSkipListMap<>((ServiceKey o1, ServiceKey o2) -> {
