@@ -37,6 +37,7 @@ import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang.time.DurationFormatUtils;
+import org.apache.commons.lang.StringUtils;
 
 /**
  *
@@ -148,7 +149,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
                 input.hostKey.isEmpty() ? null : new HostKey(input.hostKey),
                 input.serviceKey.isEmpty() ? null : new ServiceKey(input.serviceKey),
                 input.releaseKey.isEmpty() ? null : new ReleaseGroupKey(input.releaseKey),
-                input.instanceId.isEmpty() ? null : Integer.parseInt(input.instanceId),
+                input.instanceId.isEmpty() || !StringUtils.isNumeric(input.instanceId) ? null : Integer.parseInt(input.instanceId),
                 0, 100_000);
 
             if (input.action != null) {
@@ -376,6 +377,10 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
                 data.put("message", "ReleaseGroup key:" + input.releaseKey + " is invalid.");
                 valid = false;
             }
+            if (input.instanceId.isEmpty() || !StringUtils.isNumeric(input.instanceId)) {
+                data.put("message", "instanceId:" + input.instanceId + " is invalid.");
+                valid = false;
+            }
 
             if (valid) {
                 Instance newInstance = new Instance(
@@ -511,6 +516,10 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
                 ReleaseGroup releaseGroup = upenaStore.releaseGroups.get(new ReleaseGroupKey(input.releaseKey));
                 if (releaseGroup == null) {
                     data.put("message", "ReleaseGroup key:" + input.releaseKey + " is invalid.");
+                    valid = false;
+                }
+                if (input.instanceId.isEmpty() || !StringUtils.isNumeric(input.instanceId)) {
+                    data.put("message", "instanceId:" + input.instanceId + " is invalid.");
                     valid = false;
                 }
 

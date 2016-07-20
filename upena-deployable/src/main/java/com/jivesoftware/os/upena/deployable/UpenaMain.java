@@ -157,6 +157,10 @@ public class UpenaMain {
                 System.out.println("    -Damza.port=1175");
                 System.out.println("         (change the port upena uses to interact with other upena nodes.) ");
                 System.out.println("");
+                System.out.println("    -Dmin.service.port=10000");
+                System.out.println("    -Dmax.service.port=32767");
+                System.out.println("         (adjust range to avoid port collision.) ");
+                System.out.println("");
                 System.out.println("     Only applicable if you have specified a <clusterName>.");
                 System.out.println("          -Damza.discovery.group=225.4.5.6");
                 System.out.println("          -Damza.discovery.port=1123");
@@ -177,9 +181,9 @@ public class UpenaMain {
 
     public void run(String[] args) throws Exception {
 
-        JDIAPI jvmaapi = null;
+        JDIAPI jvmapi = null;
         try {
-            jvmaapi = new JDIAPI();
+            jvmapi = new JDIAPI();
         } catch (NoClassDefFoundError x) {
             LOG.warn("Failed to local tools.jar. Please manually add to classpath. Breakpoint debugger will be disabled.");
         }
@@ -324,7 +328,7 @@ public class UpenaMain {
             .addInjectable(PathToRepo.class, localPathToRepo);
 
         injectUI(mapper,
-            jvmaapi,
+            jvmapi,
             amzaService,
             localPathToRepo,
             repositoryProvider,
@@ -392,6 +396,8 @@ public class UpenaMain {
                     } catch (Exception x) {
                         LOG.warn("Malformed hostPortTuple {}", hostPort);
                     }
+                } else {
+                    LOG.warn("Malformed hostPortTuple {}", hostPort);
                 }
             }
         }
