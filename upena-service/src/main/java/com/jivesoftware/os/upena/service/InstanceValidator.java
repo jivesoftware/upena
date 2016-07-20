@@ -37,7 +37,7 @@ public class InstanceValidator implements UpenaValueValidator<InstanceKey, Insta
     }
 
     @Override
-    public Instance valiadate(UpenaTable<InstanceKey, Instance> table, InstanceKey key, Instance value) throws Exception {
+    public Instance validate(UpenaTable<InstanceKey, Instance> table, InstanceKey key, Instance value) throws Exception {
         Set<Integer> usedPorts = usedPorts(table, value.hostKey, key);
         return populatePorts(usedPorts, value);
     }

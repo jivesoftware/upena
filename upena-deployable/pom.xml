@@ -40,7 +40,6 @@
                         <configuration>
                             <attach>true</attach>
                             <prefix>./lib</prefix>
-                            <mdep.cpFile>classes/classpath</mdep.cpFile>
                         </configuration>
                     </execution>
                 </executions>
