@@ -34,7 +34,7 @@ public class UpenaTable<K extends Key, V extends Stored> {
 
     static public interface UpenaValueValidator<KK extends Key, VV extends Stored> {
 
-        VV valiadate(UpenaTable<KK, VV> table, KK key, VV value) throws Exception;
+        VV validate(UpenaTable<KK, VV> table, KK key, VV value) throws Exception;
     }
 
     private static final ObjectMapper mapper = new ObjectMapper();
@@ -105,7 +105,7 @@ public class UpenaTable<K extends Key, V extends Stored> {
             key = keyProvider.getNodeKey(this, value);
         }
         if (valueValidator != null) {
-            value = valueValidator.valiadate(this, key, value);
+            value = valueValidator.validate(this, key, value);
         }
         byte[] rawKey = mapper.writeValueAsBytes(key);
         byte[] rawValue = mapper.writeValueAsBytes(value);
