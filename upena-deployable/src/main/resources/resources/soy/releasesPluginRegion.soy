@@ -32,8 +32,6 @@
             <tr>
                 <th>Instances</th>
                 <th>Name</th>
-                <th>Version</th>
-                <th>Auto Release</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -44,20 +42,14 @@
                     <tr style="background-color:#ddd;">
                         <td>
                         </td>
-                        <td style="width:400px;">
-                            <div>
-                                <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                    placeholder="Name" value="{$filters.name?:''}" name="name" id="namePicker" class="form-control">
-                            </div>
-                        </td>
                         <td>
+                            <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                placeholder="Name" value="{$filters.name?:''}" name="name" id="namePicker" class="form-control">
                             <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
                             placeholder="Repository" value="{$filters.repository?:''}" name="repository" id="descriptionPicker" class="form-control">
                             <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
                             placeholder="Version" value="{$filters.version?:''}" name="version" id="descriptionPicker" class="form-control">
-                        </td>
-                        <td bgcolor>
-                            <input class="form-control" type="checkbox" name="autoRelease" value="true" {if $filters.autoRelease}checked="checked"{/if}>
+                            Autorelease<input type="checkbox" name="autoRelease" value="true" {if $filters.autoRelease}checked="checked"{/if}>
                         </td>
                         <td>
                             <button data-toggle="tooltip" title="Filter" type="submit" name="action" value="filter" class="btn btn-primary ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-search">&nbspFilter</span></button>
@@ -69,72 +61,96 @@
             {/if}
 
             {foreach $r in $releases}
-                <form id="edit-{$r.key}" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
-                     method="post" name="editHost">
-                    <tr>
-                        <td style="width:100px;">
-                             {foreach $ic in $r.instanceCounts}
-                                <div title="ServiceName" class="coloredBox" style="background-color:rgba({$ic.color},0.4);">{$ic.count}</div>
-                            {/foreach}
-                        </td>
-                        <td style="width:200px;">
-                            <div>
-                                <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                    placeholder="Name" value="{$r.name}" name="name" id="namePicker" class="form-control">
-                            </div>
-                        </td>
-                        <td>
-                            <input type="text" name="repository" class="form-control" value={$r.repository?:''}>
-                            <ul style="list-style-type:none">
-                                {if $r.rollback}
+                <tr>
+                    <td>
+                         {foreach $ic in $r.instanceCounts}
+                            <div title="ServiceName" class="coloredBox" style="background-color:rgba({$ic.color},0.4);">{$ic.count}</div>
+                        {/foreach}
+                    </td>
+                    <td>
+                        <ul style="list-style-type:none">
+                            <li>
+                                <div style="display: inline;">
+                                    <a href="#" rel="popover" id="popoverAnchor-release-{$r.key}" data-popover-content="#popover-release-{$r.key}" data-placement="bottom" class="btn btn-default" title="{$r.name} @ {$r.version?:''}">
+                                        <span class="glyphicon glyphicon-menu-down">{sp}{$r.name}{sp}@{sp}{$r.version?:''}</span>
+                                    </a>
+                                </div>
+                                <div id="popover-release-{$r.key}" class="hide">
+                                    <ul style="list-style-type:none">
+                                        {if $r.rollback}
+                                            <li>
+                                                <form id="edit-{$r.key}" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                                                    method="post" name="roleback">
+
+                                                    <div style="display: inline;">{$r.rollback}&nbsp;&nbsp;&nbsp;</div>
+                                                    <div style="display: inline;"><input type="hidden" name="rollback" value="{$r.rollback}"></div>
+                                                    <div style="display: inline;">
+                                                        <button onclick="return confirm('Are you sure you want to rollback?')" title="Rollback" type="submit" name="action" value="rollback" class="btn btn-default" style="color: orange;">
+                                                            Rollback
+                                                        </button>
+                                                    </div>
+                                                </form>
+                                            </li>
+                                        {/if}
+
+                                        <form id="edit-{$r.key}" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                                            method="post" name="updateRelease">
+                                                <li>Name:</li>
+                                                <li><input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                                placeholder="Name" value="{$r.name}" name="name" id="namePicker" class="form-control"></li>
+
+                                                <li>Name:</li>
+                                                <li><input type="text" name="repository" class="form-control" value={$r.repository?:''}></li>
+
+                                                <li>Name:</li>
+                                                <li><input size="256" id="{$r.key}" type="text" name="version" class="form-control" value={$r.version?:''}></li>
+
+                                                <li>Auto release:<input type="checkbox" name="autoRelease" value="true" {if $r.autoRelease}checked="checked"{/if}></li>
+
+                                                <li><button title="Upgrade" type="submit" name="action" value="update" class="btn btn-default">Update</button></li>
+                                        </form>
+
+
+                                    </ul>
+
+                                </div>
+                            </li>
+
+
+
+                            {if $r.runningLatest}
+                                {if $r.runningLatest != 'true'}
                                     <li>
-                                        <div style="display: inline;">{$r.rollback}&nbsp;&nbsp;&nbsp;</div>
-                                        <input style="display: inline;" type="hidden" name="rollback" value="{$r.rollback}">
-                                        <div style="display: inline;">
-                                            <button onclick="return confirm('Are you sure you want to rollback?')" title="Rollback" type="submit" name="action" value="rollback" class="btn btn-default" style="color: orange;">
-                                                Rollback
-                                            </button>
-                                        </div>
+                                        <form id="edit-{$r.key}" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                                            method="post" name="upgrade">
+                                            <div>
+                                                <div style="display: inline;">{$r.upgrade}&nbsp;&nbsp;&nbsp;</div>
+                                                <input type="hidden" name="upgrade" value="{$r.upgrade}">
+                                                <div style="display: inline;">
+                                                    <button title="Rolling Upgrade" type="submit" name="action" value="rolling-upgrade" class="btn btn-default" style="color: green;">
+                                                        Rolling
+                                                    </button>
+                                                </div>
+                                                <div style="display: inline;">
+                                                    <button title="Upgrade" type="submit" name="action" value="upgrade" class="btn btn-default" style="color: green;">
+                                                        Upgrade
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </form>
                                     </li>
                                 {/if}
-
-                                <li>
-                                    <div style="display: inline;">
-                                        <input size="256" id="{$r.key}" type="text" name="version" class="form-control" value={$r.version?:''}>
-                                    </div>
-                                    <div style="display: inline;">
-                                        <button title="Upgrade" type="submit" name="action" value="update" class="btn btn-default">Update</button>
-                                    </div>
-                                </li>
-
-                                {if $r.runningLatest}
-                                    {if $r.runningLatest != 'true'}
-                                        <li>
-                                            <div style="display: inline;">{$r.upgrade}&nbsp;&nbsp;&nbsp;</div>
-                                            <input type="hidden" name="upgrade" value="{$r.upgrade}">
-                                            <div style="display: inline;">
-                                                <button title="Rolling Upgrade" type="submit" name="action" value="rolling-upgrade" class="btn btn-default" style="color: green;">
-                                                    Rolling
-                                                </button>
-                                                <button title="Upgrade" type="submit" name="action" value="upgrade" class="btn btn-default" style="color: green;">
-                                                    Upgrade
-                                                </button>
-                                            </div>
-                                        </li>
-                                    {/if}
-                                {/if}
-                            </ul>
-
-                        </td>
-                        <td>
-                            <input class="form-control" type="checkbox" name="autoRelease" value="true" {if $r.autoRelease}checked="checked"{/if}>
-                        </td>
-                        <td  style="width:100px;">
-                            <input type="hidden" name="key" value="{$r.key}">
-                            <button onclick="return confirm('Are you sure you want to delete?')" title="Remove" type="submit" name="action" value="remove" class="btn btn-default"><span class="glyphicon glyphicon-trash">&nbspRemove</span></button>
-                        <td>
-                    </tr>
-                </form>
+                            {/if}
+                        </ul>
+                    </td>
+                    <td>
+                        <form id="edit-{$r.key}" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                         method="post" name="editHost">
+                                <input type="hidden" name="key" value="{$r.key}">
+                                <button onclick="return confirm('Are you sure you want to delete?')" title="Remove" type="submit" name="action" value="remove" class="btn btn-default"><span class="glyphicon glyphicon-trash">&nbspRemove</span></button>
+                        </form>
+                    <td>
+                </tr>
             {/foreach}
         </tbody>
     </table>
