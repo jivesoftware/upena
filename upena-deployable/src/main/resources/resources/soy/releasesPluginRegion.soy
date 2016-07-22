@@ -81,7 +81,7 @@
                                             <li>
                                                 <form id="edit-{$r.key}" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
                                                     method="post" name="roleback">
-
+                                                    <input type="hidden" name="key" value="{$r.key}">
                                                     <div style="display: inline;">{$r.rollback}&nbsp;&nbsp;&nbsp;</div>
                                                     <div style="display: inline;"><input type="hidden" name="rollback" value="{$r.rollback}"></div>
                                                     <div style="display: inline;">
@@ -95,7 +95,8 @@
 
                                         <form id="edit-{$r.key}" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
                                             method="post" name="updateRelease">
-                                                <li>Name:</li>
+
+                                                <li>Name:<input type="hidden" name="key" value="{$r.key}"></li>
                                                 <li><input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
                                                 placeholder="Name" value="{$r.name}" name="name" id="namePicker" class="form-control"></li>
 
@@ -123,6 +124,7 @@
                                     <li>
                                         <form id="edit-{$r.key}" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
                                             method="post" name="upgrade">
+                                            <input type="hidden" name="key" value="{$r.key}">
                                             <div>
                                                 <div style="display: inline;">{$r.upgrade}&nbsp;&nbsp;&nbsp;</div>
                                                 <input type="hidden" name="upgrade" value="{$r.upgrade}">
