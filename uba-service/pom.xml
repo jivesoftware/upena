@@ -4,9 +4,9 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.jivesoftware.os.upena.inheritance.poms</groupId>
-        <artifactId>shared-lib-build-management</artifactId>
-        <version>0.621-SNAPSHOT</version>
-        <relativePath>../inheritance-poms/shared-lib-build-management/pom.xml</relativePath>
+        <artifactId>global-version-management</artifactId>
+        <version>0.622</version>
+        <relativePath>../inheritance-poms/global-version-management/pom.xml</relativePath>
     </parent>
     <groupId>com.jivesoftware.os.upena</groupId>
     <artifactId>uba-service</artifactId>
@@ -93,7 +93,7 @@
         <dependency>
             <groupId>com.jivesoftware.os.upena</groupId>
             <artifactId>uba-shared</artifactId>
-            <version>0.621-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.jivesoftware.os.routing.bird</groupId>
