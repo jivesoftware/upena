@@ -13,17 +13,7 @@
         <relativePath>global-repo-management/pom.xml</relativePath>
     </parent>
     <modules>
-        <module>global-build-management</module>
-        <module>global-plugin-management</module>
         <module>global-repo-management</module>
         <module>global-version-management</module>
-        <module>shared-lib-build-management</module>
-        <module>shared-lib-version-management</module>
-        <module>executable-build-management</module>
-        <module>executable-version-management</module>
-        <module>maven-plugins-build-management</module>
-        <module>maven-plugins-version-management</module>
-        <module>upena-deployable-build-management</module>
-        <module>upena-deployable-version-management</module>
     </modules>
 </project>
