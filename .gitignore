@@ -18,3 +18,5 @@ nbactions.xml
 target/
 .checkstyle
 .checkstyle-cachefile
+.DS_Store
+dependency-reduced-pom.xml

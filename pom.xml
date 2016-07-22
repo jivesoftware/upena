@@ -4,15 +4,16 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.jivesoftware.jive</groupId>
     <artifactId>upena</artifactId>
-    <version>0.619</version>
+    <version>0.620</version>
     <packaging>pom</packaging>
     <parent>
         <groupId>com.jivesoftware.os.upena.inheritance.poms</groupId>
         <artifactId>global-repo-management</artifactId>
-        <version>0.619</version>
+        <version>0.620</version>
         <relativePath>inheritance-poms/global-repo-management/pom.xml</relativePath>
     </parent>
     <modules>
+        <module>upena-amza</module>
         <module>upena-status</module>
         <module>upena-service</module>
         <module>upena-shared</module>

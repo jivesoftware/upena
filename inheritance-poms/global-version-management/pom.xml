@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.jivesoftware.os.upena.inheritance.poms</groupId>
         <artifactId>global-repo-management</artifactId>
-        <version>0.619</version>
+        <version>0.620</version>
         <relativePath>../global-repo-management/pom.xml</relativePath>
     </parent>
     <artifactId>global-version-management</artifactId>
@@ -14,9 +14,8 @@
         <jetty-version>9.3.3.v20150827</jetty-version>
         <glassfish-version>2.22</glassfish-version>
         <mlogger-version>0.15</mlogger-version>
-        <jive.utils.version>0.93</jive.utils.version>
-        <amza.version>0.21</amza.version>
-        <routing.bird.version>0.42</routing.bird.version>
+        <jive.utils.version>0.104</jive.utils.version>
+        <routing.bird.version>0.81</routing.bird.version>
         <jackson-version>2.2.3</jackson-version>
         <aetherVersion>1.0.2.v20150114</aetherVersion>
     </properties>
@@ -53,6 +52,18 @@
                 <artifactId>jetty-security</artifactId>
                 <version>${jetty-version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpcore</artifactId>
+                <version>4.4.1</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpclient</artifactId>
+                <version>4.4.1</version>
+            </dependency>
+
 
 
             <dependency>
@@ -186,28 +197,6 @@
                 <groupId>com.jivesoftware.os.routing.bird</groupId>
                 <artifactId>merlin-config</artifactId>
                 <version>${routing.bird.version}</version>
-            </dependency>
-            
-            <dependency>
-                <groupId>com.jivesoftware.os.amza</groupId>
-                <artifactId>amza-service</artifactId>
-                <version>${amza.version}</version>
-                <type>jar</type>
-            </dependency>
-            <dependency>
-                <groupId>com.jivesoftware.os.amza</groupId>
-                <artifactId>amza-storage</artifactId>
-                <version>${amza.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.jivesoftware.os.amza</groupId>
-                <artifactId>amza-transport</artifactId>
-                <version>${amza.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.jivesoftware.os.amza</groupId>
-                <artifactId>amza-shared</artifactId>
-                <version>${amza.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.reflections</groupId>

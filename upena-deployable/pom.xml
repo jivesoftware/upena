@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.jivesoftware.os.upena.inheritance.poms</groupId>
         <artifactId>executable-build-management</artifactId>
-        <version>0.619</version>
+        <version>0.620</version>
         <relativePath>../inheritance-poms/executable-build-management/pom.xml</relativePath>
     </parent>
     <groupId>com.jivesoftware.os.upena</groupId>
@@ -16,17 +16,6 @@
     </properties>
     <build>
         <plugins>
-            <plugin>
-                <groupId>io.takari.maven.plugins</groupId>
-                <artifactId>takari-lifecycle-plugin</artifactId>
-                <version>1.11.7</version>
-                <extensions>true</extensions>
-                <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                    <compilerId>jdt</compilerId>
-                </configuration>
-            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
@@ -40,7 +29,6 @@
                         <configuration>
                             <attach>true</attach>
                             <prefix>./lib</prefix>
-                            <mdep.cpFile>classes/classpath</mdep.cpFile>
                         </configuration>
                     </execution>
                 </executions>
@@ -139,7 +127,6 @@
         <dependency>
             <groupId>javax.inject</groupId>
             <artifactId>javax.inject</artifactId>
-            <version>1</version>
         </dependency>
         <dependency>
             <groupId>com.jivesoftware.os.mlogger</groupId>
@@ -172,15 +159,12 @@
         <dependency>
             <groupId>com.jivesoftware.os.upena</groupId>
             <artifactId>upena-shared</artifactId>
-            <version>0.619</version>
+            <version>0.620</version>
         </dependency>
         <dependency>
-            <groupId>com.jivesoftware.os.amza</groupId>
-            <artifactId>amza-service</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.jivesoftware.os.amza</groupId>
-            <artifactId>amza-shared</artifactId>
+            <groupId>com.jivesoftware.os.upena</groupId>
+            <artifactId>upena-amza</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.jivesoftware.os.routing.bird</groupId>
@@ -193,29 +177,21 @@
         <dependency>
             <groupId>com.jivesoftware.os.upena</groupId>
             <artifactId>uba-service</artifactId>
-            <version>0.619</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.jivesoftware.os.upena</groupId>
             <artifactId>upena-service</artifactId>
-            <version>0.619</version>
+            <version>0.620</version>
         </dependency>
         <dependency>
             <groupId>com.jivesoftware.os.jive.utils</groupId>
             <artifactId>ordered-id</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.jivesoftware.os.amza</groupId>
-            <artifactId>amza-storage</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.jivesoftware.os.amza</groupId>
-            <artifactId>amza-transport</artifactId>
-        </dependency>
-        <dependency>
             <groupId>com.jivesoftware.os.upena</groupId>
             <artifactId>upena-config</artifactId>
-            <version>0.619</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>de.ruedigermoeller</groupId>
@@ -225,7 +201,6 @@
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
-            <version>3.1.0</version>
         </dependency>
         <dependency>
             <groupId>com.google.template</groupId>

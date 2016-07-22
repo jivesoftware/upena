@@ -248,26 +248,34 @@ public class UpenaStore {
             }));
         amzaService.watch(instanceStoreKey, new UpenaStoreChanges<>(mapper, InstanceKey.class, Instance.class,
             (key, value) -> {
-                List<InstanceChanged> changes = new ArrayList<>();
-                changes.add(new InstanceChanged(value.getValue().hostKey.getKey(), key.getKey()));
-                instanceChanges.changed(changes);
+                if (value.getValue() != null) {
+                    List<InstanceChanged> changes = new ArrayList<>();
+                    changes.add(new InstanceChanged(value.getValue().hostKey.getKey(), key.getKey()));
+                    instanceChanges.changed(changes);
+                }
             },
             (key, value) -> {
-                List<InstanceChanged> changes = new ArrayList<>();
-                changes.add(new InstanceChanged(value.getValue().hostKey.getKey(), key.getKey()));
-                instanceRemoved.changed(changes);
+                if (value.getValue() != null) {
+                    List<InstanceChanged> changes = new ArrayList<>();
+                    changes.add(new InstanceChanged(value.getValue().hostKey.getKey(), key.getKey()));
+                    instanceRemoved.changed(changes);
+                }
             }));
 
         amzaService.watch(tenantStoreKey, new UpenaStoreChanges<>(mapper, TenantKey.class, Tenant.class,
             (key, value) -> {
-                List<TenantChanged> changes = new ArrayList<>();
-                changes.add(new TenantChanged(value.getValue().tenantId));
-                tenantChanges.changed(changes);
+                if (value.getValue() != null) {
+                    List<TenantChanged> changes = new ArrayList<>();
+                    changes.add(new TenantChanged(value.getValue().tenantId));
+                    tenantChanges.changed(changes);
+                }
             },
             (key, value) -> {
-                List<TenantChanged> changes = new ArrayList<>();
-                changes.add(new TenantChanged(value.getValue().tenantId));
-                tenantChanges.changed(changes);
+                if (value.getValue() != null) {
+                    List<TenantChanged> changes = new ArrayList<>();
+                    changes.add(new TenantChanged(value.getValue().tenantId));
+                    tenantChanges.changed(changes);
+                }
             }));
 
     }
