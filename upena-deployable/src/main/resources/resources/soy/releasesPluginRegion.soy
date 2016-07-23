@@ -82,6 +82,9 @@
                                                 <form id="edit-{$r.key}" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
                                                     method="post" name="roleback">
                                                     <input type="hidden" name="key" value="{$r.key}">
+                                                    <input type="hidden" name="name" value="{$r.name}">
+                                                    <input type="hidden" name="repository" value="{$r.repository}">
+                                                    <input type="hidden" name="version" value="{$r.version}">
                                                     <div style="display: inline;">{$r.rollback}&nbsp;&nbsp;&nbsp;</div>
                                                     <div style="display: inline;"><input type="hidden" name="rollback" value="{$r.rollback}"></div>
                                                     <div style="display: inline;">
@@ -125,6 +128,9 @@
                                         <form id="edit-{$r.key}" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
                                             method="post" name="upgrade">
                                             <input type="hidden" name="key" value="{$r.key}">
+                                            <input type="hidden" name="name" value="{$r.name}">
+                                            <input type="hidden" name="repository" value="{$r.repository}">
+                                            <input type="hidden" name="version" value="{$r.version}">
                                             <div>
                                                 <div style="display: inline;">{$r.upgrade}&nbsp;&nbsp;&nbsp;</div>
                                                 <input type="hidden" name="upgrade" value="{$r.upgrade}">
@@ -149,6 +155,9 @@
                         <form id="edit-{$r.key}" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
                          method="post" name="editHost">
                                 <input type="hidden" name="key" value="{$r.key}">
+                                <input type="hidden" name="name" value="{$r.name}">
+                                <input type="hidden" name="repository" value="{$r.repository}">
+                                <input type="hidden" name="version" value="{$r.version}">
                                 <button onclick="return confirm('Are you sure you want to delete?')" title="Remove" type="submit" name="action" value="remove" class="btn btn-default"><span class="glyphicon glyphicon-trash">&nbspRemove</span></button>
                         </form>
                     <td>
