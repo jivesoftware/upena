@@ -254,7 +254,9 @@ public class Nanny {
             ubaLog);
         Future<Boolean> waitForDestory = threadPoolExecutor.submit(nannyTask);
         Boolean result = waitForDestory.get();
-        nannyTask.wipeoutFiles();
+        if (result) {
+            nannyTask.wipeoutFiles();
+        }
         return result;
 
     }
@@ -272,7 +274,11 @@ public class Nanny {
         Future<Boolean> waitForDestory = threadPoolExecutor.submit(nannyTask);
         status.set("Killing");
         Boolean result = waitForDestory.get();
-        status.set("Killed");
+        if (result) {
+            status.set("Killed " + result);
+        } else {
+            status.set("Failed to kill");
+        }
         return result;
 
     }

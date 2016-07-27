@@ -58,6 +58,13 @@ class NannyDestroyCallable implements Callable<Boolean> {
                             Thread.sleep(1000); // todo expose to config or to instance
                         }
                     }
+                    if (checks > 10) {
+                        ubaLog.record("failed to killed status never OFFLINE", id.toString(), invokeScript.scriptPath(instancePath, "status"));
+                        return false;
+                    }
+                } else {
+                    ubaLog.record("failed to killed missing script", id.toString(), invokeScript.scriptPath(instancePath, "kill"));
+                    return false;
                 }
             }
         }
