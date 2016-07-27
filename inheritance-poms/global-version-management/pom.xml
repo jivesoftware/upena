@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.jivesoftware.os.upena.inheritance.poms</groupId>
         <artifactId>global-repo-management</artifactId>
-        <version>0.625</version>
+        <version>0.626</version>
         <relativePath>../global-repo-management/pom.xml</relativePath>
     </parent>
     <artifactId>global-version-management</artifactId>
@@ -15,7 +15,7 @@
         <glassfish-version>2.22</glassfish-version>
         <mlogger-version>0.15</mlogger-version>
         <jive.utils.version>0.104</jive.utils.version>
-        <routing.bird.version>0.81</routing.bird.version>
+        <routing.bird.version>0.82</routing.bird.version>
         <jackson-version>2.2.3</jackson-version>
         <aetherVersion>1.0.2.v20150114</aetherVersion>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
