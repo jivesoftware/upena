@@ -1,6 +1,7 @@
 package com.jivesoftware.os.upena.deployable.server;
 
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.collect.Lists;
@@ -39,7 +40,8 @@ public class JerseyEndpoints implements HasServletContextHandler {
 
     public JerseyEndpoints() {
         this.mapper = new ObjectMapper()
-            .configure(JsonGenerator.Feature.WRITE_NUMBERS_AS_STRINGS, true);
+            .configure(JsonGenerator.Feature.WRITE_NUMBERS_AS_STRINGS, true)
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
     public JerseyEndpoints addProvider(Class<?> provider) {
