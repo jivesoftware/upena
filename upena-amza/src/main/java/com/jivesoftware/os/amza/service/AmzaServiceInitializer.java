@@ -15,8 +15,6 @@
  */
 package com.jivesoftware.os.amza.service;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Optional;
 import com.jivesoftware.os.amza.service.storage.TableStoreProvider;
 import com.jivesoftware.os.amza.service.storage.replication.HostRingProvider;
@@ -72,8 +70,6 @@ public class AmzaServiceInitializer {
         };
         AmzaTableWatcher amzaTableWatcher = new AmzaTableWatcher(tableStateChanges);
 
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         File workingDirectory = new File(config.workingDirectory);
 
         TableStoreProvider storesProvider = new TableStoreProvider(workingDirectory, "amza/stores", amzaStores, amzaTableWatcher);
