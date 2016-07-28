@@ -22,6 +22,8 @@ import com.jivesoftware.os.amza.shared.TableName;
 import com.jivesoftware.os.amza.shared.UpdatesTaker;
 import com.jivesoftware.os.amza.storage.RowMarshaller;
 import com.jivesoftware.os.amza.storage.binary.BinaryRowMarshaller;
+import com.jivesoftware.os.mlogger.core.MetricLogger;
+import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.routing.bird.http.client.HttpClient;
 import com.jivesoftware.os.routing.bird.http.client.HttpClientConfig;
 import com.jivesoftware.os.routing.bird.http.client.HttpClientConfiguration;
@@ -34,17 +36,23 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class HttpUpdatesTaker implements UpdatesTaker {
 
+    private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
+
     private final ConcurrentHashMap<RingHost, HttpRequestHelper> requestHelpers = new ConcurrentHashMap<>();
 
     @Override
     public void takeUpdates(RingHost ringHost,
-            TableName partitionName,
-            long transationId,
-            RowScan tookRowUpdates) throws Exception {
+        TableName tableName,
+        long transationId,
+        RowScan tookRowUpdates) throws Exception {
 
-        RowUpdates changeSet = new RowUpdates(transationId, partitionName, new ArrayList<byte[]>());
+        RowUpdates changeSet = new RowUpdates(transationId, tableName, new ArrayList<byte[]>());
         RowUpdates took = getRequestHelper(ringHost).executeRequest(changeSet, "/amza/changes/take", RowUpdates.class, null);
         if (took == null) {
+            return;
+        }
+        if (!took.getTableName().equals(tableName)) {
+            LOG.error("Took from table:{} but received for table:{}", took.getTableName(), tableName);
             return;
         }
         final BinaryRowMarshaller rowMarshaller = new BinaryRowMarshaller();
