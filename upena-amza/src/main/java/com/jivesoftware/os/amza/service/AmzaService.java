@@ -228,7 +228,11 @@ public class AmzaService implements HostRingProvider, AmzaInstance {
                 @Override
                 public boolean row(long orderId, RowIndexKey key, RowIndexValue value) throws Exception {
                     if (!value.getTombstoned()) {
-                        ringHosts.add(marshaller.deserialize(value.getValue(), RingHost.class));
+                        try {
+                            ringHosts.add(marshaller.deserialize(value.getValue(), RingHost.class));
+                        } catch (Exception x) {
+                            LOG.error("FAILED to deserialize RingHost:{}", new Object[]{value.getValue()}, x);
+                        }
                     }
                     return true;
                 }
