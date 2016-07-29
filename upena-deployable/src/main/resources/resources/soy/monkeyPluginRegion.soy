@@ -1,0 +1,124 @@
+{namespace soy.page}
+
+/**
+ * @param? filters
+ * @param? monkeys
+ * @param? message
+ */
+{template .monkeyPluginRegion}
+    {if $monkeys}
+        <div class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.9);">
+            <div class="panel-heading"><span class="panel-title">Chaos Monkey</span></div>
+            <div class="panel-body">
+                {if $message}
+                    <pre>{$message}</pre>
+                {/if}
+                <table class="table table-hover table-condensed table-responsive">
+                    <thead>
+                        <tr>
+                            <th>Enabled</th>
+                            <th>Cluster</th>
+                            <th>Host</th>
+                            <th>Service</th>
+                            <th>Strategy</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <form id="add-monkey" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                            data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="addMonkey">
+                            <tr style="background-color:#ddd;">
+                                <td bgcolor>
+                                    <input class="form-control" type="checkbox" name="enabled" value="true" {if $filters.enabled}checked="checked"{/if}>
+                                </td>
+                                <td>
+                                    <div>
+                                        <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                            placeholder="Cluster" value="{$filters.cluster?:''}" name="cluster" id="clusterPicker"
+                                            class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/clusters">
+                                        <input type="hidden" name="clusterKey" value="{$filters.clusterKey?:''}" />
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>
+                                        <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                            placeholder="Host" value="{$filters.host?:''}" name="host" id="hostPicker"
+                                            class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/hosts">
+                                        <input type="hidden" name="hostKey" value="{$filters.hostKey?:''}" />
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>
+                                        <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                            placeholder="Service" value="{$filters.service?:''}" name="service" id="servicePicker"
+                                            class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/services">
+                                        <input type="hidden" name="serviceKey" value="{$filters.serviceKey?:''}" />
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>
+                                        <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                            placeholder="Strategy" value="{$filters.strategy?:''}" name="strategy" id="strategyPicker"
+                                            class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/strategies">
+                                        <input type="hidden" name="strategyKey" value="{$filters.strategyKey?:''}" />
+                                    </div>
+                                </td>
+                                <td>
+                                    <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-search">&nbsp;Filter</span></button>
+                                    <button title="Add" type="submit" name="action" value="add" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-plus">&nbsp;Add</span></button>
+                                </td>
+                            </tr>
+                        </form>
+
+                        {foreach $m in $monkeys}
+                            <form id="edit-monkey" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                                data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="editMonkey">
+                                <tr>
+                                    <td>
+                                        <input class="form-control" type="checkbox" name="enabled" value="true" {if $m.enabled}checked="checked"{/if}>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                                placeholder="Cluster" value="{$m.cluster.name}" name="cluster" class="upena-hs-field form-control"
+                                                data-upena-lookup="/ui/lookup/clusters" />
+                                            <input type="hidden" name="clusterKey" value="{$m.cluster.key}" />
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                                placeholder="Host" value="{$m.host.name}" name="host" class="upena-hs-field form-control"
+                                                data-upena-lookup="/ui/lookup/hosts" />
+                                            <input type="hidden" name="hostKey" value="{$m.host.key}" />
+                                        </div>
+                                    </td>
+                                    <td>
+                                       <div>
+                                            <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                                placeholder="Service" value="{$m.service.name}" name="service" class="upena-hs-field form-control"
+                                                data-upena-lookup="/ui/lookup/services" />
+                                            <input type="hidden" name="serviceKey" value="{$m.service.key}" />
+                                        </div>
+                                    </td>
+                                    <td>
+                                       <div>
+                                            <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                                placeholder="Strategy" value="{$m.strategy.name}" name="strategy" class="upena-hs-field form-control"
+                                                data-upena-lookup="/ui/lookup/strategies" />
+                                            <input type="hidden" name="strategyKey" value="{$m.strategy.key}" />
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <input type="hidden" name="key" value="{$m.key}">
+                                        <button title="Update" type="submit" name="action" value="update" class="btn btn-default"><span class="glyphicon glyphicon-save ladda-button"  data-spinner-color="#222" data-style="expand-right">&nbsp;Update</span></button>
+                                        <button onclick="return confirm('Are you sure you want to delete?')" title="Remove" type="submit" name="action" value="remove" class="btn btn-default"><span class="glyphicon glyphicon-trash">&nbsp;Remove</span></button>
+                                    </td>
+                                </tr>
+                            </form>
+                        {/foreach}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {/if}
+{/template}

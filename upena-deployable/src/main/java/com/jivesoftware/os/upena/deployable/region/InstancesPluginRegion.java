@@ -127,8 +127,8 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
 
     private Map<String, Object> renderData(InstancesPluginRegionInput input, String user) {
         Map<String, Object> data = Maps.newHashMap();
-        try {
 
+        try {
             Map<ServiceKey, String> serviceColor = ServiceColorUtil.serviceKeysColor(upenaStore);
 
             Map<String, Object> filters = new HashMap<>();
@@ -475,7 +475,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
         try {
             Instance instance = upenaStore.instances.get(new InstanceKey(input.key));
             if (instance == null) {
-                data.put("message", "Couldn't update no existent Instance. Someone else likely just removed it since your last refresh.");
+                data.put("message", "Could not update. No existing instance. Someone may have removed it since your last refresh.");
             } else if (instance.enabled) {
                 InstanceKey key = new InstanceKey(input.key);
                 instance.restartTimestampGMTMillis = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(5);
@@ -494,7 +494,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
         try {
             Instance instance = upenaStore.instances.get(new InstanceKey(input.key));
             if (instance == null) {
-                data.put("message", "Couldn't update no existent Instance. Someone else likely just removed it since your last refresh.");
+                data.put("message", "Could not update. No existing instance. Someone may have removed it since your last refresh.");
             } else {
                 boolean valid = true;
                 ClusterKey clusterKey = new ClusterKey(input.clusterKey);
@@ -595,7 +595,6 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
             simpleDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
             long snowflakeTime = timestampedValue.getTimestamp();
             long time = JiveEpochTimestampProvider.JIVE_EPOCH + new SnowflakeIdPacker().unpack(snowflakeTime)[0];
-            //String gmtTimeString = simpleDateFormat.format(new Date(time));
             map.put("status", "Modified:" + DurationFormatUtils.formatDurationHMS(System.currentTimeMillis() - time) + " ago.");
         }
 
@@ -656,7 +655,6 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
             + ((service == null) ? "unknownService" : service.name) + "/"
             + String.valueOf(instance.instanceId) + "/"
             + ((release == null) ? "unknownRelease" : release.name);
-
     }
 
     public static class PortUpdate {
@@ -666,9 +664,6 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
         public int port;
         public String propertyName;
         public String propertyValue;
-
-        public PortUpdate() {
-        }
 
         public PortUpdate(String instanceId, String portName, int port, String propertyName, String propertyValue) {
             this.instanceId = instanceId;

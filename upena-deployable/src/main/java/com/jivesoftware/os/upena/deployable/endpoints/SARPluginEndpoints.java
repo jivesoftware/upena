@@ -32,7 +32,6 @@ public class SARPluginEndpoints {
     }
 
     @GET
-    @Path("/")
     @Produces(MediaType.TEXT_HTML)
     public Response sar(@Context HttpServletRequest httpRequest) {
         try {

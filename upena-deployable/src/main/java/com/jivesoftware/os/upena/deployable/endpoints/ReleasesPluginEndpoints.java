@@ -46,7 +46,6 @@ public class ReleasesPluginEndpoints {
     }
 
     @GET
-    @Path("/")
     @Produces(MediaType.TEXT_HTML)
     public Response releases(@Context HttpServletRequest httpRequest) {
         try {
@@ -60,7 +59,6 @@ public class ReleasesPluginEndpoints {
     }
 
     @POST
-    @Path("/")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response action(@Context HttpServletRequest httpRequest,
         @FormParam("key") @DefaultValue("") String key,
@@ -80,7 +78,6 @@ public class ReleasesPluginEndpoints {
                     autoRelease, "export"), httpRequest.getRemoteUser());
                 return Response.ok(export, MediaType.APPLICATION_OCTET_STREAM_TYPE).build();
             } else {
-
                 String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
                     new ReleasesPluginRegionInput(key, name, description, rollback, version, upgrade, repository, email, autoRelease, action));
                 return Response.ok(rendered, MediaType.TEXT_HTML).build();

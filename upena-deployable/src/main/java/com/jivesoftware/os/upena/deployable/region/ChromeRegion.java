@@ -66,8 +66,8 @@ public class ChromeRegion<I extends PluginInput, R extends PageRegion<I>> implem
             if (name.equals(input1.name)) {
                 map.put("active", String.valueOf(name.equals(input1.name)));
             }
-            if (input1.seperator != null) {
-                map.put("seperator", input1.seperator);
+            if (input1.separator != null) {
+                map.put("separator", input1.separator);
             }
             map.put("name", input1.name);
             map.put("path", input1.path);

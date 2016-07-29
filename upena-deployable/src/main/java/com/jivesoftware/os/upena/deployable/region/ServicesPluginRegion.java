@@ -3,13 +3,10 @@ package com.jivesoftware.os.upena.deployable.region;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Maps;
-import com.jivesoftware.os.amza.shared.AmzaInstance;
-import com.jivesoftware.os.amza.shared.RingHost;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.deployable.region.ServicesPluginRegion.ServicesPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
-import com.jivesoftware.os.upena.service.UpenaService;
 import com.jivesoftware.os.upena.service.UpenaStore;
 import com.jivesoftware.os.upena.shared.Instance;
 import com.jivesoftware.os.upena.shared.InstanceFilter;
@@ -18,7 +15,6 @@ import com.jivesoftware.os.upena.shared.Service;
 import com.jivesoftware.os.upena.shared.ServiceFilter;
 import com.jivesoftware.os.upena.shared.ServiceKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
-import com.jivesoftware.os.upena.uba.service.UbaService;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -36,28 +32,16 @@ public class ServicesPluginRegion implements PageRegion<ServicesPluginRegionInpu
     private final ObjectMapper mapper;
     private final String template;
     private final SoyRenderer renderer;
-    private final AmzaInstance amzaInstance;
     private final UpenaStore upenaStore;
-    private final UpenaService upenaService;
-    private final UbaService ubaService;
-    private final RingHost ringHost;
 
     public ServicesPluginRegion(ObjectMapper mapper,
         String template,
         SoyRenderer renderer,
-        AmzaInstance amzaInstance,
-        UpenaStore upenaStore,
-        UpenaService upenaService,
-        UbaService ubaService,
-        RingHost ringHost) {
+        UpenaStore upenaStore) {
         this.mapper = mapper;
         this.template = template;
         this.renderer = renderer;
-        this.amzaInstance = amzaInstance;
         this.upenaStore = upenaStore;
-        this.upenaService = upenaService;
-        this.ubaService = ubaService;
-        this.ringHost = ringHost;
     }
 
     @Override
@@ -91,7 +75,6 @@ public class ServicesPluginRegion implements PageRegion<ServicesPluginRegionInpu
         Map<String, Object> data = Maps.newHashMap();
 
         try {
-
             Map<ServiceKey, String> serviceColor = ServiceColorUtil.serviceKeysColor(upenaStore);
 
             Map<String, String> filters = new HashMap<>();
@@ -108,14 +91,13 @@ public class ServicesPluginRegion implements PageRegion<ServicesPluginRegionInpu
                 } else if (input.action.equals("update")) {
                     handleUpdate(user, filters, input, data);
                 } else if (input.action.equals("remove")) {
-                    handeRemove(user, input, data);
+                    handleRemove(user, input, data);
                 }
             }
 
             List<Map<String, String>> rows = new ArrayList<>();
             Map<ServiceKey, TimestampedValue<Service>> found = upenaStore.services.find(filter);
             for (Map.Entry<ServiceKey, TimestampedValue<Service>> entrySet : found.entrySet()) {
-
                 ServiceKey key = entrySet.getKey();
                 TimestampedValue<Service> timestampedValue = entrySet.getValue();
                 Service value = timestampedValue.getValue();
@@ -151,7 +133,6 @@ public class ServicesPluginRegion implements PageRegion<ServicesPluginRegionInpu
             });
 
             data.put("services", rows);
-
         } catch (Exception e) {
             log.error("Unable to retrieve data", e);
         }
@@ -188,21 +169,20 @@ public class ServicesPluginRegion implements PageRegion<ServicesPluginRegionInpu
         try {
             Service service = upenaStore.services.get(new ServiceKey(input.key));
             if (service == null) {
-                data.put("message", "Couldn't update no existent Service. Someone else likely just removed it since your last refresh.");
+                data.put("message", "Update failed. No existing service. Someone may have removed it since your last refresh.");
             } else {
                 Service update = new Service(input.name, input.description);
                 upenaStore.services.update(new ServiceKey(input.key), update);
                 upenaStore.record(user, "updated", System.currentTimeMillis(), "", "service-ui", update.toString());
                 data.put("message", "Service Cluster:" + input.name);
             }
-
         } catch (Exception x) {
             String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
             data.put("message", "Error while trying to add Service:" + input.name + "\n" + trace);
         }
     }
 
-    private void handeRemove(String user, ServicesPluginRegionInput input, Map<String, Object> data) {
+    private void handleRemove(String user, ServicesPluginRegionInput input, Map<String, Object> data) {
         if (input.key.isEmpty()) {
             data.put("message", "Failed to remove Service:" + input.name);
         } else {
@@ -227,9 +207,7 @@ public class ServicesPluginRegion implements PageRegion<ServicesPluginRegionInpu
     }
 
     public String doExport(ServicesPluginRegionInput input, String user) {
-
         try {
-
             ServiceFilter filter;
             filter = new ServiceFilter(
                 input.name.isEmpty() ? null : input.name,
@@ -245,7 +223,6 @@ public class ServicesPluginRegion implements PageRegion<ServicesPluginRegionInpu
             }
 
             return mapper.writeValueAsString(values);
-
         } catch (Exception e) {
             log.error("Unable to retrieve data", e);
             return e.toString();
