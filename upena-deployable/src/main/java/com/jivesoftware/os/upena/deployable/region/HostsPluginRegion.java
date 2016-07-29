@@ -92,7 +92,6 @@ public class HostsPluginRegion implements PageRegion<HostsPluginRegionInput> {
         Map<String, Object> data = Maps.newHashMap();
 
         try {
-
             Map<ServiceKey, String> serviceColor = ServiceColorUtil.serviceKeysColor(upenaStore);
 
             Map<String, String> filters = new HashMap<>();
@@ -100,6 +99,7 @@ public class HostsPluginRegion implements PageRegion<HostsPluginRegionInput> {
             filters.put("host", input.host);
             filters.put("port", String.valueOf(input.port));
             filters.put("workingDirectory", input.workingDirectory);
+            data.put("filters", filters);
 
             HostFilter filter = new HostFilter(null, null, null, null, null, 0, 100_000);
             if (input.action != null) {
@@ -249,7 +249,6 @@ public class HostsPluginRegion implements PageRegion<HostsPluginRegionInput> {
     @Override
     public String getTitle() {
         return "Upena Hosts";
-
     }
 
 }

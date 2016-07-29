@@ -37,7 +37,6 @@ public class ChangeLogPluginEndpoints {
     }
 
     @GET
-    @Path("/")
     @Produces(MediaType.TEXT_HTML)
     public Response changelog(@Context SecurityContext sc, @Context HttpServletRequest httpRequest) {
         try {
@@ -51,7 +50,6 @@ public class ChangeLogPluginEndpoints {
     }
 
     @POST
-    @Path("/")
     @Produces(MediaType.TEXT_HTML)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response action(@Context SecurityContext sc, @Context HttpServletRequest httpRequest,

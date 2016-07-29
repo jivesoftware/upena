@@ -59,7 +59,7 @@ public class UpenaAutoRelease {
         try {
             MavenXpp3Reader reader = new MavenXpp3Reader();
             Model model = reader.read(new FileReader(pom));
-            
+
             RepositorySystem system = repositoryProvider.newRepositorySystem();
             DefaultRepositorySystemSession session = repositoryProvider.newRepositorySystemSession(system);
             List<RemoteRepository> repositories = repositoryProvider.newRepositories(system, session, null, (String) null);
@@ -67,34 +67,32 @@ public class UpenaAutoRelease {
             VersionRangeResult resolveVersion = system.resolveVersionRange(session, new VersionRangeRequest(artifact, repositories, null));
 
             if (resolveVersion != null) {
-                
                 String find = model.getGroupId() + ":" + model.getArtifactId() + ":";
                 ReleaseGroupFilter filter = new ReleaseGroupFilter(null, null, find, null, null, 0, 1000);
-                
+
                 ConcurrentNavigableMap<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> found = upenaStore.releaseGroups.find(filter);
                 for (Map.Entry<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> entry : found.entrySet()) {
                     ReleaseGroup releaseGroup = entry.getValue().getValue();
                     if (releaseGroup.autoRelease) {
-                
-                        String[] deployablecoordinates = releaseGroup.version.trim().split(",");
+                        String[] deployableCoordinates = releaseGroup.version.trim().split(",");
 
                         boolean changed = false;
                         StringBuilder newVersion = new StringBuilder();
-                        for (String deployablecoordinate : deployablecoordinates) {
-                            String[] versionParts = deployablecoordinate.trim().split(":");
+                        for (String deployableCoordinate : deployableCoordinates) {
+                            String[] versionParts = deployableCoordinate.trim().split(":");
                             if (versionParts.length != 4) {
                                 LOG.warn("deployable coordinates must be of the following form: groupId:artifactId:packaging:version");
                                 if (newVersion.length() != 0) {
                                     newVersion.append(',');
                                 }
-                                newVersion.append(deployablecoordinate);
+                                newVersion.append(deployableCoordinate);
                             } else {
                                 if (newVersion.length() != 0) {
                                     newVersion.append(',');
                                 }
+
                                 // TODO use ComparableVersion and ensure is newer
                                 if (!resolveVersion.getHighestVersion().toString().equals(versionParts[versionParts.length - 1])) {
-
                                     versionParts[versionParts.length - 1] = resolveVersion.getHighestVersion().toString();
                                     newVersion.append(Joiner.on(":").join(versionParts));
                                     changed = true;
@@ -115,13 +113,9 @@ public class UpenaAutoRelease {
                     }
                 }
             }
-
         } catch (Exception x) {
             LOG.error("Failed to open " + pom, x);
         }
     }
 
-    private void buildCompleted() {
-
-    }
 }

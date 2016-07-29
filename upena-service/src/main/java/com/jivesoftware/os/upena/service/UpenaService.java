@@ -48,20 +48,15 @@ import java.util.concurrent.ConcurrentNavigableMap;
 
 public class UpenaService {
 
-    private final String datacenter;
-    private final String rack;
-    private final String publicHost;
     private final UpenaStore upenaStore;
+    private final ChaosService chaosService;
 
-    public UpenaService(String datacenter, String rack, String publicHost, UpenaStore upenaStore) throws Exception {
-        this.datacenter = datacenter;
-        this.rack = rack;
-        this.publicHost = publicHost;
+    public UpenaService(UpenaStore upenaStore, ChaosService chaosService) throws Exception {
         this.upenaStore = upenaStore;
+        this.chaosService = chaosService;
     }
 
     public ConnectionDescriptorsResponse connectionRequest(ConnectionDescriptorsRequest connectionsRequest) throws Exception {
-
         InstanceKey instanceKey = new InstanceKey(connectionsRequest.getInstanceId());
         Instance instance = upenaStore.instances.get(instanceKey);
         if (instance == null) {
@@ -74,26 +69,27 @@ public class UpenaService {
 
         Cluster cluster = upenaStore.clusters.get(instance.clusterKey);
         if (cluster == null) {
-            return failedConnectionResponse(connectionsRequest, "Instance has been decommisioned clusterKey:" + instance.clusterKey + " no longer exists.");
+            return failedConnectionResponse(connectionsRequest, "Instance has been decommissioned clusterKey:" + instance.clusterKey + " no longer exists.");
         }
 
         Host host = upenaStore.hosts.get(instance.hostKey);
         if (host == null) {
-            return failedConnectionResponse(connectionsRequest, "Instance has been decommisioned hostKey:" + instance.hostKey + " no longer exists.");
+            return failedConnectionResponse(connectionsRequest, "Instance has been decommissioned hostKey:" + instance.hostKey + " no longer exists.");
         }
 
         ReleaseGroup releaseGroup = upenaStore.releaseGroups.get(instance.releaseGroupKey);
         if (releaseGroup == null) {
             return failedConnectionResponse(connectionsRequest,
-                "Instance has been decommisioned releaseGroupKey:" + instance.releaseGroupKey + " no longer exists.");
+                "Instance has been decommissioned releaseGroupKey:" + instance.releaseGroupKey + " no longer exists.");
         }
+
         List<String> messages = new ArrayList<>();
         Tenant tenant = null;
         if (connectionsRequest.getTenantId() != null && !connectionsRequest.getTenantId().equals("*") && connectionsRequest.getTenantId().length() > 0) {
-            TenantKey tenantkey = new TenantKey(connectionsRequest.getTenantId());
-            tenant = upenaStore.tenants.get(tenantkey);
+            TenantKey tenantKey = new TenantKey(connectionsRequest.getTenantId());
+            tenant = upenaStore.tenants.get(tenantKey);
             if (tenant == null) {
-                messages.add("no tenant defined for tenantkey:" + tenantkey);
+                messages.add("no tenant defined for tenantKey:" + tenantKey);
             }
         }
 
@@ -126,7 +122,7 @@ public class UpenaService {
             releaseGroupKey = cluster.defaultReleaseGroups.get(wantToConnectToServiceKey); // Use instance assigned to the instances cluster.
             if (releaseGroupKey == null) {
                 return failedConnectionResponse(connectionsRequest,
-                    "Cluster:" + cluster + " doesen't have a release group declared for " + "serviceKey:" + wantToConnectToServiceKey + " .");
+                    "Cluster:" + cluster + " does not have a release group declared for " + "serviceKey:" + wantToConnectToServiceKey + " .");
             }
             ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> got = findInstances(messages,
                 instance.clusterKey, releaseGroupKey, wantToConnectToServiceKey);
@@ -137,6 +133,12 @@ public class UpenaService {
 
         if (primaryConnections == null || primaryConnections.isEmpty()) {
             return failedConnectionResponse(connectionsRequest, "No declared instance for: " + connectionsRequest);
+        }
+
+        String monkeyAffect = chaosService.monkeyAffect(instance);
+        if (!monkeyAffect.isEmpty()) {
+            primaryConnections = chaosService.unleashMonkey(instance, primaryConnections);
+            messages.add("Monkey affect: [" + monkeyAffect + "]");
         }
 
         messages.add("Success");
@@ -164,9 +166,9 @@ public class UpenaService {
 
         if (releaseGroupKey.getKey() != null
             && releaseGroupKey.getKey().length() > 0) {
-            InstanceFilter explicityReleaseGroupFilter = new InstanceFilter(clusterKey,
+            InstanceFilter explicitReleaseGroupFilter = new InstanceFilter(clusterKey,
                 null, wantToConnectToServiceKey, releaseGroupKey, null, 0, Integer.MAX_VALUE);
-            return upenaStore.instances.find(explicityReleaseGroupFilter);
+            return upenaStore.instances.find(explicitReleaseGroupFilter);
         }
         return null;
     }
@@ -174,28 +176,33 @@ public class UpenaService {
     List<ConnectionDescriptor> buildConnections(List<String> messages,
         ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> instances, String portName) throws Exception {
         List<ConnectionDescriptor> connections = new ArrayList<>();
+
         for (Entry<InstanceKey, TimestampedValue<Instance>> entry : instances.entrySet()) {
+            InstanceKey key = entry.getKey();
             Instance value = entry.getValue().getValue();
-            InstanceDescriptor instanceDescriptor = toInstanceDescriptor(entry.getKey(), entry.getValue().getValue());
-            if (instanceDescriptor != null) {
-                Host host = upenaStore.hosts.get(value.hostKey);
-                if (host == null) {
-                    // garbage instance. should be removed?
-                } else {
-                    Port port = value.ports.get(portName);
-                    if (port == null) {
-                        messages.add("instanceKey:" + entry.getKey() + " doesn't have a port declared for '" + portName + "'");
+            if (value.enabled) {
+                InstanceDescriptor instanceDescriptor = toInstanceDescriptor(key, value);
+                if (instanceDescriptor != null) {
+                    Host host = upenaStore.hosts.get(value.hostKey);
+                    if (host == null) {
+                        // garbage instance. should be removed?
                     } else {
-                        Map<String, String> properties = new HashMap<>();
-                        properties.putAll(port.properties);
-                        InstanceDescriptor descriptor = toInstanceDescriptor(entry.getKey(), entry.getValue().getValue());
-                        if (descriptor != null) {
-                            connections.add(new ConnectionDescriptor(descriptor, new HostPort(host.hostName, port.port), properties));
+                        Port port = value.ports.get(portName);
+                        if (port == null) {
+                            messages.add("instanceKey:" + key + " does not have a port declared for '" + portName + "'");
+                        } else {
+                            Map<String, String> properties = new HashMap<>();
+                            properties.putAll(port.properties);
+                            connections.add(new ConnectionDescriptor(
+                                instanceDescriptor, new HostPort(host.hostName, port.port), properties, null));
                         }
                     }
                 }
+            } else {
+                messages.add("instanceKey:" + key + " is not enabled");
             }
         }
+
         return connections;
     }
 
@@ -271,6 +278,6 @@ public class UpenaService {
         }
 
         return instanceDescriptor;
-
     }
+
 }

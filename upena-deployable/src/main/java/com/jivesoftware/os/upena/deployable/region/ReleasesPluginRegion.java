@@ -67,7 +67,6 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
     }
 
     public Object renderChangelog(String releaseKey) throws Exception {
-
         ReleaseGroup releaseGroup = upenaStore.releaseGroups.get(new ReleaseGroupKey(releaseKey));
         if (releaseGroup == null) {
             return "No release group for " + releaseKey;
@@ -122,7 +121,6 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
     }
 
     public static class ReleasesPluginRegionInput implements PluginInput {
-
         final String key;
         final String name;
         final String description;
@@ -161,7 +159,6 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
         public String name() {
             return "Releases";
         }
-
     }
 
     @Override
@@ -474,7 +471,6 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
             });
 
             data.put("releases", rows);
-
         } catch (Exception e) {
             log.error("Unable to retrieve data", e);
         }
@@ -487,9 +483,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
     }
 
     public String doExport(ReleasesPluginRegionInput input, String user) {
-
         try {
-
             ReleaseGroupFilter filter = new ReleaseGroupFilter(
                 input.name.isEmpty() ? null : input.name,
                 input.description.isEmpty() ? null : input.description,
@@ -547,7 +541,6 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
             + ((service == null) ? "unknownService" : service.name) + "/"
             + String.valueOf(instance.instanceId) + "/"
             + ((release == null) ? "unknownRelease" : release.name);
-
     }
 
 }

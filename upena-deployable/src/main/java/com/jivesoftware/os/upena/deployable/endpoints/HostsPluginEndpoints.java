@@ -36,7 +36,6 @@ public class HostsPluginEndpoints {
     }
 
     @GET
-    @Path("/")
     @Produces(MediaType.TEXT_HTML)
     public Response hosts(@Context HttpServletRequest httpRequest) {
         try {
@@ -45,12 +44,11 @@ public class HostsPluginEndpoints {
             return Response.ok(rendered).build();
         } catch (Exception e) {
             LOG.error("hosts GET", e);
-           return Response.serverError().entity(e.getMessage()).build();
+            return Response.serverError().entity(e.getMessage()).build();
         }
     }
 
     @POST
-    @Path("/")
     @Produces(MediaType.TEXT_HTML)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response action(@Context HttpServletRequest httpRequest,

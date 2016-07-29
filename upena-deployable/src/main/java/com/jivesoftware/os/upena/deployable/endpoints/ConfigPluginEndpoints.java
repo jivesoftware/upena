@@ -42,7 +42,6 @@ public class ConfigPluginEndpoints {
     }
 
     @GET
-    @Path("/")
     @Produces(MediaType.TEXT_HTML)
     public Response config(@Context HttpServletRequest httpRequest) {
         try {
@@ -57,7 +56,6 @@ public class ConfigPluginEndpoints {
     }
 
     @POST
-    @Path("/")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response action(@Context HttpServletRequest httpRequest,
         @FormParam("aClusterKey") @DefaultValue("") String aClusterKey,
@@ -144,7 +142,7 @@ public class ConfigPluginEndpoints {
         @FormDataParam("file") FormDataContentDisposition contentDispositionHeader) {
         try {
             saveFile(fileInputStream);
-            String output = "You config was uploaded";
+            String output = "Your config was uploaded";
             return Response.status(200).entity(output).build();
         } catch (Exception e) {
             LOG.error("config upload POST.", e);

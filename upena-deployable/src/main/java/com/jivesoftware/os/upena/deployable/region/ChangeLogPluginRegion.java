@@ -7,6 +7,7 @@ import com.jivesoftware.os.upena.deployable.region.ChangeLogPluginRegion.ChangeL
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.service.UpenaStore;
 import com.jivesoftware.os.upena.shared.RecordedChange;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -37,7 +38,6 @@ public class ChangeLogPluginRegion implements PageRegion<ChangeLogPluginRegionIn
     public String getRootPath() {
         return "/ui/changeLog";
     }
-
 
     public static class ChangeLogPluginRegionInput implements PluginInput {
 
@@ -71,7 +71,6 @@ public class ChangeLogPluginRegion implements PageRegion<ChangeLogPluginRegionIn
         Map<String, Object> data = Maps.newHashMap();
 
         try {
-
             Map<String, String> filters = new HashMap<>();
             filters.put("who", input.who);
             filters.put("what", input.what);
@@ -88,7 +87,8 @@ public class ChangeLogPluginRegion implements PageRegion<ChangeLogPluginRegionIn
                 input.what,
                 input.why,
                 input.where,
-                input.how, (RecordedChange change) -> {
+                input.how,
+                (RecordedChange change) -> {
                     Map<String, String> row = new HashMap<>();
                     row.put("who", change.who);
                     row.put("what", change.what);
@@ -98,7 +98,7 @@ public class ChangeLogPluginRegion implements PageRegion<ChangeLogPluginRegionIn
                     row.put("how", change.how);
                     rows.add(row);
                     return true;
-            });
+                });
 
             data.put("log", rows);
 
@@ -112,7 +112,6 @@ public class ChangeLogPluginRegion implements PageRegion<ChangeLogPluginRegionIn
     @Override
     public String getTitle() {
         return "Change Log";
-
     }
 
     public static String humanReadableUptime(long millis) {
@@ -125,7 +124,6 @@ public class ChangeLogPluginRegion implements PageRegion<ChangeLogPluginRegionIn
         long minutes = java.util.concurrent.TimeUnit.MILLISECONDS.toMinutes(millis);
         millis -= java.util.concurrent.TimeUnit.MINUTES.toMillis(minutes);
         long seconds = java.util.concurrent.TimeUnit.MILLISECONDS.toSeconds(millis);
-        millis -= java.util.concurrent.TimeUnit.SECONDS.toMillis(seconds);
 
         StringBuilder sb = new StringBuilder(64);
         if (hours < 10) {
@@ -143,6 +141,6 @@ public class ChangeLogPluginRegion implements PageRegion<ChangeLogPluginRegionIn
         }
         sb.append(seconds);
 
-        return (sb.toString());
+        return sb.toString();
     }
 }

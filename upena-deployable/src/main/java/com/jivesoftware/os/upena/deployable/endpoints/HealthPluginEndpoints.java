@@ -40,7 +40,6 @@ public class HealthPluginEndpoints {
     }
 
     @GET
-    @Path("/")
     @Produces(MediaType.TEXT_HTML)
     public Response filter(@Context HttpServletRequest httpRequest,
         @QueryParam("datacenter") @DefaultValue("") String datacenter,

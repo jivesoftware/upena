@@ -35,8 +35,6 @@ import com.jivesoftware.os.upena.deployable.soy.SoyService;
 import com.jivesoftware.os.upena.service.DiscoveredRoutes;
 import com.jivesoftware.os.upena.service.DiscoveredRoutes.RouteHealths;
 import com.jivesoftware.os.upena.service.DiscoveredRoutes.Routes;
-import com.jivesoftware.os.upena.service.UpenaService;
-import com.jivesoftware.os.upena.service.UpenaStore;
 import com.jivesoftware.os.upena.shared.HostKey;
 import com.jivesoftware.os.upena.shared.PathToRepo;
 import com.jivesoftware.os.upena.uba.service.Nanny;
@@ -94,9 +92,7 @@ public class UpenaEndpoints {
     }
 
     private final AmzaInstance amzaInstance;
-    private final UpenaStore upenaStore;
     private final UpenaConfigStore upenaConfigStore;
-    private final UpenaService upenaService;
     private final UbaService ubaService;
     private final RingHost ringHost;
     private final HostKey ringHostKey;
@@ -108,9 +104,7 @@ public class UpenaEndpoints {
 
     public UpenaEndpoints(@Context AmzaClusterName amzaClusterName,
         @Context AmzaInstance amzaInstance,
-        @Context UpenaStore upenaStore,
         @Context UpenaConfigStore upenaConfigStore,
-        @Context UpenaService upenaService,
         @Context UbaService ubaService,
         @Context RingHost ringHost,
         @Context HostKey ringHostKey,
@@ -120,9 +114,7 @@ public class UpenaEndpoints {
         @Context UpenaAutoRelease autoRelease) {
         this.amzaClusterName = amzaClusterName;
         this.amzaInstance = amzaInstance;
-        this.upenaStore = upenaStore;
         this.upenaConfigStore = upenaConfigStore;
-        this.upenaService = upenaService;
         this.ubaService = ubaService;
         this.ringHost = ringHost;
         this.ringHostKey = ringHostKey;
@@ -205,7 +197,6 @@ public class UpenaEndpoints {
     }
 
     @GET
-    @Path("/")
     @Produces(MediaType.TEXT_HTML)
     public Response get(@Context HttpServletRequest httpRequest,
         @Context UriInfo uriInfo) throws Exception {

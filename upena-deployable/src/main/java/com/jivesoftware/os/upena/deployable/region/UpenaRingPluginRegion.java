@@ -7,9 +7,7 @@ import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.deployable.region.UpenaRingPluginRegion.UpenaRingPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
-import com.jivesoftware.os.upena.service.UpenaService;
-import com.jivesoftware.os.upena.service.UpenaStore;
-import com.jivesoftware.os.upena.uba.service.UbaService;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,27 +24,14 @@ public class UpenaRingPluginRegion implements PageRegion<UpenaRingPluginRegionIn
     private final String template;
     private final SoyRenderer renderer;
     private final AmzaInstance amzaInstance;
-    private final UpenaStore upenaStore;
-    private final UpenaService upenaService;
-    private final UbaService ubaService;
-    private final RingHost ringHost;
 
     public UpenaRingPluginRegion(String template,
         SoyRenderer renderer,
-        AmzaInstance amzaInstance,
-        UpenaStore upenaStore,
-        UpenaService upenaService,
-        UbaService ubaService,
-        RingHost ringHost) {
+        AmzaInstance amzaInstance) {
         this.template = template;
         this.renderer = renderer;
         this.amzaInstance = amzaInstance;
-        this.upenaStore = upenaStore;
-        this.upenaService = upenaService;
-        this.ubaService = ubaService;
-        this.ringHost = ringHost;
     }
-
 
     @Override
     public String getRootPath() {
@@ -77,7 +62,6 @@ public class UpenaRingPluginRegion implements PageRegion<UpenaRingPluginRegionIn
         Map<String, Object> data = Maps.newHashMap();
 
         try {
-
             if (input.action.equals("add")) {
                 amzaInstance.addRingHost("master", new RingHost(input.host, Integer.parseInt(input.port)));
             } else if (input.action.equals("remove")) {
@@ -86,7 +70,6 @@ public class UpenaRingPluginRegion implements PageRegion<UpenaRingPluginRegionIn
 
             List<Map<String, String>> rows = new ArrayList<>();
             for (RingHost host : amzaInstance.getRing("master")) {
-
                 Map<String, String> row = new HashMap<>();
                 row.put("host", host.getHost());
                 row.put("port", String.valueOf(host.getPort()));
@@ -94,7 +77,6 @@ public class UpenaRingPluginRegion implements PageRegion<UpenaRingPluginRegionIn
             }
 
             data.put("ring", rows);
-
         } catch (Exception e) {
             log.error("Unable to retrieve data", e);
         }

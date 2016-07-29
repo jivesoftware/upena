@@ -167,7 +167,6 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
             Map<String, String> filters = new HashMap<>();
             filters.put("name", input.name);
             filters.put("description", input.description);
-
             data.put("filters", filters);
 
             ProjectFilter filter = new ProjectFilter(null, null, 0, 100_000);
@@ -182,9 +181,9 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
                 } else if (input.action.equals("cancel")) {
                     AtomicLong removed = runningProjects.remove(projectKey);
                     if (removed != null) {
-                        data.put("message", "Build for project " + input.key + " was cacneled. ");
+                        data.put("message", "Build for project " + input.key + " was canceled. ");
                     } else {
-                        data.put("message", "No progect was found for " + input.key + ". Cancel request ignored.");
+                        data.put("message", "No project was found for " + input.key + ". Cancel request ignored.");
                     }
                 } else if (input.action.equals("build")) {
                     filters.clear();
@@ -193,7 +192,7 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
                     try {
                         Project project = upenaStore.projects.get(projectKey);
                         if (project == null) {
-                            data.put("message", "Couldn't checkout no existent project. Someone else likely just removed it since your last refresh.");
+                            data.put("message", "Could not checkout. No existing project. Someone may have removed it since your last refresh.");
                         } else {
                             File root = new File(project.localPath);
                             FileUtils.forceMkdir(root);

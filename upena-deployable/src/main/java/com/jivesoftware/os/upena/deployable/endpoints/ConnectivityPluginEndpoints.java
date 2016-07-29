@@ -40,7 +40,6 @@ public class ConnectivityPluginEndpoints {
     }
 
     @GET
-    @Path("/")
     @Produces(MediaType.TEXT_HTML)
     public Response render(@Context HttpServletRequest httpRequest) {
         try {
@@ -55,7 +54,6 @@ public class ConnectivityPluginEndpoints {
     }
 
     @POST
-    @Path("/")
     @Produces(MediaType.TEXT_HTML)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response renderWithOptions(@Context HttpServletRequest httpRequest,

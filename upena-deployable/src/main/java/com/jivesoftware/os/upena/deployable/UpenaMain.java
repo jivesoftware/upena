@@ -64,6 +64,7 @@ import com.jivesoftware.os.upena.deployable.endpoints.HostsPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.InstancesPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.JVMPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ModulesPluginEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.MonkeyPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ProfilerPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ProjectsPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ProxyPluginEndpoints;
@@ -94,6 +95,7 @@ import com.jivesoftware.os.upena.deployable.region.JVMPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ManagePlugin;
 import com.jivesoftware.os.upena.deployable.region.MenuRegion;
 import com.jivesoftware.os.upena.deployable.region.ModulesPluginRegion;
+import com.jivesoftware.os.upena.deployable.region.MonkeyPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ProfilerPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ProjectsPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ProxyPluginRegion;
@@ -109,6 +111,7 @@ import com.jivesoftware.os.upena.deployable.server.RestfulServer;
 import com.jivesoftware.os.upena.deployable.soy.SoyDataUtils;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
+import com.jivesoftware.os.upena.service.ChaosService;
 import com.jivesoftware.os.upena.service.DiscoveredRoutes;
 import com.jivesoftware.os.upena.service.UpenaRestEndpoints;
 import com.jivesoftware.os.upena.service.UpenaService;
@@ -202,7 +205,8 @@ public class UpenaMain {
         String publicHost = System.getProperty("public.host.name", hostname);
 
         final RingHost ringHost = new RingHost(hostname, port); // TODO include rackId
-        // todo need a better way to create writter id.
+
+        // todo need a better way to create writer id.
         final TimestampedOrderIdProvider orderIdProvider = new OrderIdProviderImpl(new ConstantWriterIdProvider(new Random().nextInt(512)));
 
         final ObjectMapper mapper = new ObjectMapper();
@@ -271,7 +275,9 @@ public class UpenaMain {
         );
         upenaStore.attachWatchers();
 
-        UpenaService upenaService = new UpenaService(datacenter, rack, publicHost, upenaStore);
+        ChaosService chaosService = new ChaosService(upenaStore);
+
+        UpenaService upenaService = new UpenaService(upenaStore, chaosService);
 
         LOG.info("-----------------------------------------------------------------------");
         LOG.info("|      Upena Service Online");
@@ -336,8 +342,6 @@ public class UpenaMain {
             ringHost,
             upenaStore,
             upenaConfigStore,
-            upenaService,
-            ubaService,
             jerseyEndpoints,
             clusterName,
             discoveredRoutes);
@@ -404,7 +408,7 @@ public class UpenaMain {
     }
 
     private void injectUI(ObjectMapper mapper,
-        JDIAPI jvmaapi,
+        JDIAPI jvmapi,
         AmzaService amzaService,
         PathToRepo localPathToRepo,
         RepositoryProvider repositoryProvider,
@@ -412,8 +416,6 @@ public class UpenaMain {
         RingHost ringHost,
         UpenaStore upenaStore,
         UpenaConfigStore upenaConfigStore,
-        UpenaService upenaService,
-        UbaService ubaService,
         JerseyEndpoints jerseyEndpoints,
         String clusterName,
         DiscoveredRoutes discoveredRoutes) throws SoySyntaxException {
@@ -422,7 +424,7 @@ public class UpenaMain {
 
         LOG.info("Add....");
 
-        soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/chrome.soy"), "chome.soy");
+        soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/chrome.soy"), "chrome.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/homeRegion.soy"), "home.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/changeLogPluginRegion.soy"), "changeLog.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/instanceHealthPluginRegion.soy"), "instanceHealthPluginRegion.soy");
@@ -447,8 +449,9 @@ public class UpenaMain {
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/projectBuildOutputTail.soy"), "projectOutputTail.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/repoPluginRegion.soy"), "repoPluginRegion.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/proxyPluginRegion.soy"), "proxyPluginRegion.soy");
+        soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/monkeyPluginRegion.soy"), "monkeyPluginRegion.soy");
 
-        if (jvmaapi != null) {
+        if (jvmapi != null) {
             soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/jvmPluginRegion.soy"), "jvmPluginRegion.soy");
             soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/breakpointDumperPluginRegion.soy"), "breakpointDumperPluginRegion.soy");
         }
@@ -533,7 +536,7 @@ public class UpenaMain {
 
         ManagePlugin services = new ManagePlugin(null, "service-white", "Services", "/ui/services",
             ServicesPluginEndpoints.class,
-            new ServicesPluginRegion(mapper, "soy.page.servicesPluginRegion", renderer, amzaService, upenaStore, upenaService, ubaService, ringHost), null);
+            new ServicesPluginRegion(mapper, "soy.page.servicesPluginRegion", renderer, upenaStore), null);
 
         ManagePlugin releases = new ManagePlugin(null, "release-white", "Releases", "/ui/releases",
             ReleasesPluginEndpoints.class, releasesPluginRegion, null);
@@ -544,11 +547,11 @@ public class UpenaMain {
 
         ManagePlugin proxy = new ManagePlugin("random", null, "Proxies", "/ui/proxy",
             ProxyPluginEndpoints.class,
-            new ProxyPluginRegion("soy.page.proxyPluginRegion", renderer, amzaService, upenaStore, upenaService, ubaService, ringHost), null);
+            new ProxyPluginRegion("soy.page.proxyPluginRegion", renderer), null);
 
         ManagePlugin ring = new ManagePlugin("leaf", null, "Upena", "/ui/ring",
             UpenaRingPluginEndpoints.class,
-            new UpenaRingPluginRegion("soy.page.upenaRingPluginRegion", renderer, amzaService, upenaStore, upenaService, ubaService, ringHost), null);
+            new UpenaRingPluginRegion("soy.page.upenaRingPluginRegion", renderer, amzaService), null);
 
         ManagePlugin sar = new ManagePlugin("dashboard", null, "SAR", "/ui/sar",
             SARPluginEndpoints.class,
@@ -563,33 +566,37 @@ public class UpenaMain {
 
         ManagePlugin jvm = null;
         ManagePlugin breakpointDumper = null;
-        if (jvmaapi != null) {
+        if (jvmapi != null) {
             jvm = new ManagePlugin("camera", null, "JVM", "/ui/jvm",
                 JVMPluginEndpoints.class,
-                new JVMPluginRegion("soy.page.jvmPluginRegion", renderer, upenaStore, jvmaapi), null);
+                new JVMPluginRegion("soy.page.jvmPluginRegion", renderer, upenaStore, jvmapi), null);
 
             breakpointDumper = new ManagePlugin("record", null, "Breakpoint Dumper", "/ui/breakpoint",
                 BreakpointDumperPluginEndpoints.class,
-                new BreakpointDumperPluginRegion("soy.page.breakpointDumperPluginRegion", renderer, upenaStore, jvmaapi), null);
+                new BreakpointDumperPluginRegion("soy.page.breakpointDumperPluginRegion", renderer, upenaStore, jvmapi), null);
         }
 
         ManagePlugin aws = null;
         if (enableAWS) {
             aws = new ManagePlugin("cloud", null, "AWS", "/ui/aws",
                 AWSPluginEndpoints.class,
-                new AWSPluginRegion("soy.page.awsPluginRegion", renderer, upenaStore, region, roleArn, accessKey, secretKey), null);
+                new AWSPluginRegion("soy.page.awsPluginRegion", renderer, region, roleArn, accessKey, secretKey), null);
         }
+
+        ManagePlugin monkey = new ManagePlugin("cog", null, "Chaos", "/ui/chaos",
+            MonkeyPluginEndpoints.class,
+            new MonkeyPluginRegion("soy.page.monkeyPluginRegion", renderer, upenaStore), null);
 
         List<ManagePlugin> plugins = new ArrayList<>();
         if (enableAWS) {
             plugins.add(aws);
         }
 
-        plugins.add(new ManagePlugin(null, null, "Build", null, null, null, "seperator"));
+        plugins.add(new ManagePlugin(null, null, "Build", null, null, null, "separator"));
         plugins.add(repo);
         plugins.add(projects);
         plugins.add(modules);
-        plugins.add(new ManagePlugin(null, null, "Config", null, null, null, "seperator"));
+        plugins.add(new ManagePlugin(null, null, "Config", null, null, null, "separator"));
         plugins.add(changes);
         plugins.add(config);
         plugins.add(clusters);
@@ -598,10 +605,11 @@ public class UpenaMain {
         plugins.add(instances);
         plugins.add(releases);
         plugins.add(topology);
-        plugins.add(new ManagePlugin(null, null, "Health", null, null, null, "seperator"));
+        plugins.add(new ManagePlugin(null, null, "Health", null, null, null, "separator"));
         plugins.add(health);
         plugins.add(connectivity);
-        plugins.add(new ManagePlugin(null, null, "Tools", null, null, null, "seperator"));
+        plugins.add(monkey);
+        plugins.add(new ManagePlugin(null, null, "Tools", null, null, null, "separator"));
         plugins.add(proxy);
         if (jvm != null) {
             plugins.add(jvm);
@@ -620,7 +628,7 @@ public class UpenaMain {
 
         for (ManagePlugin plugin : plugins) {
             soyService.registerPlugin(plugin);
-            if (plugin.seperator == null) {
+            if (plugin.separator == null) {
                 jerseyEndpoints.addEndpoint(plugin.endpointsClass);
                 jerseyEndpoints.addInjectable(plugin.region.getClass(), plugin.region);
             }

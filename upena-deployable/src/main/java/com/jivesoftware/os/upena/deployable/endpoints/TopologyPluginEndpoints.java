@@ -39,7 +39,6 @@ public class TopologyPluginEndpoints {
     }
 
     @GET
-    @Path("/")
     @Produces(MediaType.TEXT_HTML)
     public Response topology(@Context HttpServletRequest httpRequest) {
         try {
@@ -53,7 +52,6 @@ public class TopologyPluginEndpoints {
     }
 
     @POST
-    @Path("/")
     @Produces(MediaType.TEXT_HTML)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response renderWithOptions(@Context HttpServletRequest httpRequest,

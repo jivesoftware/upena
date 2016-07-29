@@ -41,7 +41,6 @@ public class ServicesPluginEndpoints {
     }
 
     @GET
-    @Path("/")
     @Produces(MediaType.TEXT_HTML)
     public Response services(@Context HttpServletRequest httpRequest) {
         try {
@@ -55,7 +54,6 @@ public class ServicesPluginEndpoints {
     }
 
     @POST
-    @Path("/")
     @Produces(MediaType.TEXT_HTML)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response action(@Context HttpServletRequest httpRequest,
@@ -68,7 +66,6 @@ public class ServicesPluginEndpoints {
                 String export = pluginRegion.doExport(new ServicesPluginRegionInput(key, name, description, "export"), httpRequest.getRemoteUser());
                 return Response.ok(export, MediaType.APPLICATION_OCTET_STREAM_TYPE).build();
             } else {
-
                 String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
                     new ServicesPluginRegionInput(key, name, description, action));
                 return Response.ok(rendered).build();

@@ -38,7 +38,6 @@ public class RepoPluginEndpoints {
     }
 
     @GET
-    @Path("/")
     @Produces(MediaType.TEXT_HTML)
     public Response repo(@Context HttpServletRequest httpRequest) {
         try {
@@ -52,7 +51,6 @@ public class RepoPluginEndpoints {
     }
 
     @POST
-    @Path("/")
     @Produces(MediaType.TEXT_HTML)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response action(@Context HttpServletRequest httpRequest,
