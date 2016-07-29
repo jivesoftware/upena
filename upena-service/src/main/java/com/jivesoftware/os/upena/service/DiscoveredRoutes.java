@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -19,7 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class DiscoveredRoutes {
 
-    public final Map<ConnectionDescriptorsRequest, TimestampedConnectionDescriptorsResponse> discoveredConnection = new ConcurrentHashMap<>();
+    public final Map<ConnectionDescriptorsRequestKey, TimestampedConnectionDescriptorsResponse> discoveredConnection = new ConcurrentHashMap<>();
     public final Map<String, Map<String, Map<String, ConnectionHealth>>> from_to_Family_ConnectionHealths = new ConcurrentHashMap<>();
 
     public List<InstanceConnectionHealth> routesHealth(long sinceTimestampMillis) {
@@ -72,7 +73,11 @@ public class DiscoveredRoutes {
     }
 
     public void discovered(ConnectionDescriptorsRequest request, ConnectionDescriptorsResponse response) {
-        discoveredConnection.compute(request, (ConnectionDescriptorsRequest t, TimestampedConnectionDescriptorsResponse u) -> {
+        ConnectionDescriptorsRequestKey connectionDescriptorsRequestKey = new ConnectionDescriptorsRequestKey(request.getTenantId(),
+            request.getInstanceId(),
+            request.getConnectToServiceNamed(),
+            request.getPortName());
+        discoveredConnection.compute(connectionDescriptorsRequestKey, (ConnectionDescriptorsRequestKey t, TimestampedConnectionDescriptorsResponse u) -> {
             if (u == null) {
                 return new TimestampedConnectionDescriptorsResponse(System.currentTimeMillis(), response);
             } else {
@@ -80,6 +85,71 @@ public class DiscoveredRoutes {
                 return (u.timestamp > now) ? u : new TimestampedConnectionDescriptorsResponse(now, response);
             }
         });
+    }
+
+    public static class ConnectionDescriptorsRequestKey {
+
+        private final String tenantId;
+        private final String instanceId;
+        private final String connectToServiceNamed;
+        private final String portName;
+
+        public ConnectionDescriptorsRequestKey(String tenantId, String instanceId, String connectToServiceNamed, String portName) {
+            this.tenantId = tenantId;
+            this.instanceId = instanceId;
+            this.connectToServiceNamed = connectToServiceNamed;
+            this.portName = portName;
+        }
+
+        public String getTenantId() {
+            return tenantId;
+        }
+
+        public String getInstanceId() {
+            return instanceId;
+        }
+
+        public String getConnectToServiceNamed() {
+            return connectToServiceNamed;
+        }
+
+        public String getPortName() {
+            return portName;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 73 * hash + Objects.hashCode(this.tenantId);
+            hash = 73 * hash + Objects.hashCode(this.instanceId);
+            hash = 73 * hash + Objects.hashCode(this.connectToServiceNamed);
+            hash = 73 * hash + Objects.hashCode(this.portName);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final ConnectionDescriptorsRequestKey other = (ConnectionDescriptorsRequestKey) obj;
+            if (!Objects.equals(this.tenantId, other.tenantId)) {
+                return false;
+            }
+            if (!Objects.equals(this.instanceId, other.instanceId)) {
+                return false;
+            }
+            if (!Objects.equals(this.connectToServiceNamed, other.connectToServiceNamed)) {
+                return false;
+            }
+            if (!Objects.equals(this.portName, other.portName)) {
+                return false;
+            }
+            return true;
+        }
     }
 
     public static class TimestampedConnectionDescriptorsResponse {
@@ -104,8 +174,8 @@ public class DiscoveredRoutes {
 
     public List<Route> routes() {
         List<Route> routes = new ArrayList<>();
-        for (Entry<ConnectionDescriptorsRequest, TimestampedConnectionDescriptorsResponse> e : discoveredConnection.entrySet()) {
-            ConnectionDescriptorsRequest key = e.getKey();
+        for (Entry<ConnectionDescriptorsRequestKey, TimestampedConnectionDescriptorsResponse> e : discoveredConnection.entrySet()) {
+            ConnectionDescriptorsRequestKey key = e.getKey();
             TimestampedConnectionDescriptorsResponse value = e.getValue();
             ConnectionDescriptorsResponse response = value.getResponse();
             long timestamp = value.getTimestamp();
