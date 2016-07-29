@@ -22,7 +22,7 @@ import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.deployable.region.AWSPluginRegion.AWSPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
-import com.jivesoftware.os.upena.service.UpenaStore;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -37,26 +37,23 @@ public class AWSPluginRegion implements PageRegion<AWSPluginRegionInput> {
 
     private final String template;
     private final SoyRenderer renderer;
-    private final UpenaStore upenaStore;
     private final String region;
     private final String roleArn;
-    private final String acccessKey;
+    private final String accessKey;
     private final String secretKey;
 
     public AWSPluginRegion(String template,
         SoyRenderer renderer,
-        UpenaStore upenaStore,
         String region,
         String roleArn,
-        String acccessKey,
+        String accessKey,
         String secretKey
     ) {
         this.template = template;
         this.renderer = renderer;
-        this.upenaStore = upenaStore;
         this.region = region;
         this.roleArn = roleArn;
-        this.acccessKey = acccessKey;
+        this.accessKey = accessKey;
         this.secretKey = secretKey;
     }
 
@@ -84,10 +81,10 @@ public class AWSPluginRegion implements PageRegion<AWSPluginRegionInput> {
     public String render(String user, AWSPluginRegionInput input) {
         Map<String, Object> data = Maps.newHashMap();
         data.put("action", input.action);
-        try {
 
+        try {
             if (input.action.equals("loadBalancers")) {
-                AWSCredentials credentials = (roleArn != null) ? getFederatedSession(roleArn, acccessKey, secretKey) : getBasicSession(acccessKey, secretKey);
+                AWSCredentials credentials = (roleArn != null) ? getFederatedSession(roleArn, accessKey, secretKey) : getBasicSession(accessKey, secretKey);
                 AmazonElasticLoadBalancingClient elbc = new AmazonElasticLoadBalancingClient(credentials);
                 DescribeLoadBalancersResult loadBalancersResult = elbc.describeLoadBalancers();
 
@@ -99,7 +96,7 @@ public class AWSPluginRegion implements PageRegion<AWSPluginRegionInput> {
                 }
                 data.put("loadBalancers", list);
             } else if (input.action.equals("instances")) {
-                AWSCredentials credentials = (roleArn != null) ? getFederatedSession(roleArn, acccessKey, secretKey) : getBasicSession(acccessKey, secretKey);
+                AWSCredentials credentials = (roleArn != null) ? getFederatedSession(roleArn, accessKey, secretKey) : getBasicSession(accessKey, secretKey);
                 AmazonEC2Client ec2 = getClientForAccount(credentials, Regions.fromName(this.region));
 
                 DescribeInstanceStatusResult describeInstanceStatus = ec2.describeInstanceStatus();
@@ -111,7 +108,7 @@ public class AWSPluginRegion implements PageRegion<AWSPluginRegionInput> {
                 }
                 data.put("instances", list);
             } else if (input.action.equals("volumes")) {
-                AWSCredentials credentials = (roleArn != null) ? getFederatedSession(roleArn, acccessKey, secretKey) : getBasicSession(acccessKey, secretKey);
+                AWSCredentials credentials = (roleArn != null) ? getFederatedSession(roleArn, accessKey, secretKey) : getBasicSession(accessKey, secretKey);
                 AmazonEC2Client ec2 = getClientForAccount(credentials, Regions.fromName(this.region));
                 DescribeVolumesResult describeVolumes = ec2.describeVolumes();
                 List<Map<String, Object>> list = Lists.newArrayList();
@@ -122,7 +119,6 @@ public class AWSPluginRegion implements PageRegion<AWSPluginRegionInput> {
                 }
                 data.put("volumes", list);
             }
-
         } catch (Exception x) {
             log.error("Unable to retrieve data", x);
             String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
@@ -142,9 +138,9 @@ public class AWSPluginRegion implements PageRegion<AWSPluginRegionInput> {
         return "AWS";
     }
 
-    private static AWSCredentials getBasicSession(String acccessKey,
+    private static AWSCredentials getBasicSession(String accessKey,
         String secretKey) {
-        return new BasicAWSCredentials(acccessKey, secretKey);
+        return new BasicAWSCredentials(accessKey, secretKey);
     }
 
     private static AWSCredentials getFederatedSession(String roleArn, String acccessKey, String secretKey) {
@@ -152,7 +148,7 @@ public class AWSPluginRegion implements PageRegion<AWSPluginRegionInput> {
 
         AssumeRoleRequest assumeRequest = new AssumeRoleRequest()
             .withRoleArn(roleArn)
-            .withDurationSeconds(3600)
+            .withDurationSeconds(3_600)
             .withRoleSessionName("upena");  // TODO expose ?
 
         AssumeRoleResult assumeResult = stsClient.assumeRole(assumeRequest);

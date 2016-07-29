@@ -29,28 +29,13 @@ public class ProxyPluginRegion implements PageRegion<ProxyInput> {
 
     private final String template;
     private final SoyRenderer renderer;
-    private final AmzaInstance amzaInstance;
-    private final UpenaStore upenaStore;
-    private final UpenaService upenaService;
-    private final UbaService ubaService;
-    private final RingHost ringHost;
 
     private final Map<String, UpenaProxy> proxies = new ConcurrentHashMap<>();
 
     public ProxyPluginRegion(String template,
-        SoyRenderer renderer,
-        AmzaInstance amzaInstance,
-        UpenaStore upenaStore,
-        UpenaService upenaService,
-        UbaService ubaService,
-        RingHost ringHost) {
+        SoyRenderer renderer) {
         this.template = template;
         this.renderer = renderer;
-        this.amzaInstance = amzaInstance;
-        this.upenaStore = upenaStore;
-        this.upenaService = upenaService;
-        this.ubaService = ubaService;
-        this.ringHost = ringHost;
     }
 
     @Override

@@ -36,7 +36,6 @@ public class ClustersPluginEndpoints {
     }
 
     @GET
-    @Path("/")
     @Produces(MediaType.TEXT_HTML)
     public Response clusters(@Context HttpServletRequest httpRequest) {
         try {
@@ -51,7 +50,6 @@ public class ClustersPluginEndpoints {
     }
 
     @POST
-    @Path("/")
     @Produces(MediaType.TEXT_HTML)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response action(@Context HttpServletRequest httpRequest,

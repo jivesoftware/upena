@@ -36,7 +36,6 @@ public class ModulesPluginEndpoints {
     }
 
     @GET
-    @Path("/")
     @Produces(MediaType.TEXT_HTML)
     public Response modules(@Context HttpServletRequest httpRequest) {
         try {
@@ -49,7 +48,6 @@ public class ModulesPluginEndpoints {
     }
 
     @POST
-    @Path("/")
     @Produces(MediaType.TEXT_HTML)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response renderWithOptions(@Context HttpServletRequest httpRequest,

@@ -11,15 +11,16 @@ public class ManagePlugin {
     public final String path;
     public final Class<?> endpointsClass;
     public final Region<?> region;
-    public final String seperator;
+    public final String separator;
 
-    public ManagePlugin(String glyphicon, String icon, String name, String path, Class<?> endpointsClass, Region<?> region, String seperator) {
+    public ManagePlugin(String glyphicon, String icon, String name, String path, Class<?> endpointsClass, Region<?> region, String separator) {
         this.glyphicon = glyphicon;
         this.icon = icon;
         this.name = name;
         this.path = path;
         this.endpointsClass = endpointsClass;
         this.region = region;
-        this.seperator = seperator;
+        this.separator = separator;
     }
+
 }

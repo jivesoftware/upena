@@ -33,6 +33,8 @@ import com.jivesoftware.os.upena.shared.InstanceFilter;
 import com.jivesoftware.os.upena.shared.InstanceKey;
 import com.jivesoftware.os.upena.shared.LoadBalancer;
 import com.jivesoftware.os.upena.shared.LoadBalancerKey;
+import com.jivesoftware.os.upena.shared.Monkey;
+import com.jivesoftware.os.upena.shared.MonkeyKey;
 import com.jivesoftware.os.upena.shared.Project;
 import com.jivesoftware.os.upena.shared.ProjectKey;
 import com.jivesoftware.os.upena.shared.RecordedChange;
@@ -43,6 +45,7 @@ import com.jivesoftware.os.upena.shared.ServiceKey;
 import com.jivesoftware.os.upena.shared.Tenant;
 import com.jivesoftware.os.upena.shared.TenantKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
@@ -55,6 +58,7 @@ public class UpenaStore {
 
     private final ObjectMapper mapper;
     private final AmzaService amzaService;
+
     private final InstanceChanges instanceChanges;
     private final InstanceChanges instanceRemoved;
     private final TenantChanges tenantChanges;
@@ -67,6 +71,7 @@ public class UpenaStore {
     public final TableName releaseGroupStoreKey = new TableName("master", "releaseGroups", null, null);
     public final TableName instanceStoreKey = new TableName("master", "intances", null, null);
     public final TableName tenantStoreKey = new TableName("master", "tenants", null, null);
+    public final TableName monkeyStoreKey = new TableName("master", "monkeys", null, null);
     public final TableName changeLogStoreKey = new TableName("master", "changeLog", null, null);
 
     public final UpenaTable<ProjectKey, Project> projects;
@@ -77,6 +82,7 @@ public class UpenaStore {
     public final UpenaTable<ReleaseGroupKey, ReleaseGroup> releaseGroups;
     public final UpenaTable<InstanceKey, Instance> instances;
     public final UpenaTable<TenantKey, Tenant> tenants;
+    public final UpenaTable<MonkeyKey, Monkey> monkeys;
     public final AmzaTable changeLog;
 
     public UpenaStore(ObjectMapper mapper,
@@ -102,9 +108,9 @@ public class UpenaStore {
         instances = new UpenaTable<>(amzaService.getTable(instanceStoreKey),
             InstanceKey.class, Instance.class, new InstanceKeyProvider(), new InstanceValidator(minServicePort, maxServicePort));
         tenants = new UpenaTable<>(amzaService.getTable(tenantStoreKey), TenantKey.class, Tenant.class, new TenantKeyProvider(), null);
+        monkeys = new UpenaTable<>(amzaService.getTable(monkeyStoreKey), MonkeyKey.class, Monkey.class, new MonkeyKeyProvider(), null);
 
         changeLog = amzaService.getTable(changeLogStoreKey);
-
     }
 
     public void record(String who, String what, long whenTimestampMillis, String why, String where, String how) throws Exception {
@@ -169,7 +175,6 @@ public class UpenaStore {
     }
 
     public interface LogStream {
-
         boolean stream(RecordedChange change) throws Exception;
     }
 
@@ -277,6 +282,6 @@ public class UpenaStore {
                     tenantChanges.changed(changes);
                 }
             }));
-
     }
+
 }

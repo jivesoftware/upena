@@ -70,7 +70,6 @@ public class ClustersPluginRegion implements PageRegion<ClustersPluginRegionInpu
         public String name() {
             return "Clusters";
         }
-
     }
 
     @Override
@@ -78,7 +77,6 @@ public class ClustersPluginRegion implements PageRegion<ClustersPluginRegionInpu
         Map<String, Object> data = Maps.newHashMap();
 
         try {
-
             Map<ServiceKey, String> serviceColor = ServiceColorUtil.serviceKeysColor(upenaStore);
 
             Map<String, String> filters = new HashMap<>();
@@ -112,7 +110,7 @@ public class ClustersPluginRegion implements PageRegion<ClustersPluginRegionInpu
                     try {
                         Cluster cluster = upenaStore.clusters.get(new ClusterKey(input.key));
                         if (cluster == null) {
-                            data.put("message", "Couldn't update no existent cluster. Someone else likely just removed it since your last refresh.");
+                            data.put("message", "Could not update. No existing cluster. Someone else may have removed it since your last refresh.");
                         } else {
                             Cluster updatedCluster = new Cluster(input.name, input.description,
                                 cluster.defaultReleaseGroups);
@@ -166,7 +164,6 @@ public class ClustersPluginRegion implements PageRegion<ClustersPluginRegionInpu
                     }
                 }
 
-
                 List<Map<String, String>> defaultReleaseGroups = new ArrayList<>();
                 for (Entry<ServiceKey, ReleaseGroupKey> e : value.defaultReleaseGroups.entrySet()) {
                     Map<String, String> row = new HashMap<>();
@@ -192,8 +189,6 @@ public class ClustersPluginRegion implements PageRegion<ClustersPluginRegionInpu
                     }
                     defaultReleaseGroups.add(row);
                 }
-
-                
 
                 Map<String, Object> row = new HashMap<>();
                 row.put("key", key.getKey());

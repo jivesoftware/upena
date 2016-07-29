@@ -6,6 +6,7 @@ import com.google.common.collect.Lists;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.deployable.lookup.AsyncLookupService;
+import com.jivesoftware.os.upena.shared.ChaosStrategyKey;
 import com.jivesoftware.os.upena.shared.Cluster;
 import com.jivesoftware.os.upena.shared.ClusterKey;
 import com.jivesoftware.os.upena.shared.Host;
@@ -15,6 +16,7 @@ import com.jivesoftware.os.upena.shared.ReleaseGroupKey;
 import com.jivesoftware.os.upena.shared.Service;
 import com.jivesoftware.os.upena.shared.ServiceKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -81,7 +83,6 @@ public class AsyncLookupEndpoints {
             Map<HostKey, TimestampedValue<Host>> hosts = asyncLookupService.findHosts(remoteHost, remotePort, contains);
             List<Map<String, String>> results = Lists.newArrayList();
             for (Map.Entry<HostKey, TimestampedValue<Host>> entry : hosts.entrySet()) {
-
                 String name = entry.getValue().getValue().hostName + "/" + entry.getValue().getValue().name;
                 if (entry.getValue().getValue().name.equals(entry.getValue().getValue().hostName)) {
                     name = entry.getValue().getValue().hostName;
@@ -150,6 +151,33 @@ public class AsyncLookupEndpoints {
             return Response.ok(objectMapper.writeValueAsString(results)).build();
         } catch (Exception e) {
             LOG.error("find releases.", e);
+            return Response.serverError().entity(e.getMessage()).build();
+        }
+    }
+
+    @GET
+    @Path("/strategies")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response findStrategies(@QueryParam("remoteHost") @DefaultValue("") String remoteHost,
+        @QueryParam("remotePort") @DefaultValue("-1") int remotePort,
+        @QueryParam("contains") String contains) {
+        try {
+            List<Map<String, String>> results = Lists.newArrayList();
+            for (ChaosStrategyKey s: ChaosStrategyKey.values()){
+                results.add(ImmutableMap.of("key", s.key, "name", s.name));
+            }
+
+            Collections.sort(results, (Map<String, String> o1, Map<String, String> o2) -> {
+                int c = o1.get("name").compareTo(o2.get("name"));
+                if (c != 0) {
+                    return c;
+                }
+                return o1.get("key").compareTo(o2.get("key"));
+            });
+
+            return Response.ok(objectMapper.writeValueAsString(results)).build();
+        } catch (Exception e) {
+            LOG.error("find strategies.", e);
             return Response.serverError().entity(e.getMessage()).build();
         }
     }

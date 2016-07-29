@@ -143,7 +143,6 @@
     </nav>
 {/template}
 
-
 /**
  *
  * @param cluster
@@ -169,10 +168,9 @@
             </ul>
         </li>
          {foreach $plugin in $plugins}
-            {if $plugin.seperator}
+            {if $plugin.separator}
                 <li style="border-bottom: 2px groove #333; font-style: italic; color: gray;"></li>
             {elseif $plugin.active}
-            
                 <li class="active">
                     <a class="ladda-button" data-spinner-color="#222" data-style="expand-right" href="{$plugin.path}" title="{$plugin.name}">
                         {if $plugin.icon}
@@ -234,7 +232,6 @@
 
 {/template}
 
-
 /**
  *
  */
@@ -251,4 +248,3 @@
         <a class="btn btn-default btn-xs" aria-expanded="false" href="https://github.com/jivesoftware/upena">Upena on GitHub</a>
     </div>
 {/template}
-

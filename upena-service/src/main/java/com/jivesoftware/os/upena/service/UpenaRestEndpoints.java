@@ -42,6 +42,7 @@ import com.jivesoftware.os.upena.shared.Tenant;
 import com.jivesoftware.os.upena.shared.TenantFilter;
 import com.jivesoftware.os.upena.shared.TenantKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentNavigableMap;
@@ -466,7 +467,6 @@ public class UpenaRestEndpoints {
     @Consumes("application/json")
     @Path("/tenant/find")
     public Response findTenant(TenantFilter filter) {
-
         try {
             Map<TenantKey, TimestampedValue<Tenant>> found = upenaStore.tenants.find(filter);
             LOG.debug("filter:" + filter + " found:" + found.size() + " items.");
