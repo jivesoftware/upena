@@ -36,6 +36,7 @@ import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -109,6 +110,13 @@ public class RowTable implements RowsStorage {
                 @Override
                 public boolean row(long transactionId, RowIndexKey updateRowKey, RowIndexValue updateRowValue) throws Exception {
                     RowIndexValue currentRowValue = rowsIndex.get(Collections.singletonList(updateRowKey)).get(0);
+                    if (tableName.getRingName().equals("MASTER") && tableName.getTableName().startsWith("RING_INDEX_")) {
+                        if (!Arrays.equals(updateRowValue.getValue(), updateRowKey.getKey())) {
+                            LOG.warn("Ring index key-value mismatch: {} != {}",
+                                new Object[] { Arrays.toString(updateRowKey.getKey()), Arrays.toString(updateRowValue.getValue()) },
+                                new Throwable("Stack trace"));
+                        }
+                    }
                     if (currentRowValue == null) {
                         appliedRows.put(updateRowKey, updateRowValue);
                     } else {
