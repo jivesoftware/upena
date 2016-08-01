@@ -15,7 +15,9 @@
  */
 package com.jivesoftware.os.amza.service;
 
+import com.google.common.collect.Lists;
 import com.jivesoftware.os.amza.service.storage.RowStoreUpdates;
+import com.jivesoftware.os.amza.service.storage.RowsStorageUpdates;
 import com.jivesoftware.os.amza.service.storage.TableStore;
 import com.jivesoftware.os.amza.service.storage.TableStoreProvider;
 import com.jivesoftware.os.amza.service.storage.replication.HostRing;
@@ -224,19 +226,26 @@ public class AmzaService implements HostRingProvider, AmzaInstance {
             return new ArrayList<>();
         } else {
             final Set<RingHost> ringHosts = new HashSet<>();
-            ringIndex.rowScan(new RowScan<Exception>() {
-                @Override
-                public boolean row(long orderId, RowIndexKey key, RowIndexValue value) throws Exception {
-                    if (!value.getTombstoned()) {
-                        try {
-                            ringHosts.add(marshaller.deserialize(value.getValue(), RingHost.class));
-                        } catch (Exception x) {
-                            LOG.error("FAILED to deserialize RingHost:{}", new Object[]{value.getValue()}, x);
-                        }
+            List<RowIndexKey> badKeys = Lists.newArrayList();
+            ringIndex.rowScan((orderId, key, value) -> {
+                if (!value.getTombstoned()) {
+                    try {
+                        ringHosts.add(marshaller.deserialize(value.getValue(), RingHost.class));
+                    } catch (Exception x) {
+                        LOG.error("FAILED to deserialize RingHost:{}", new Object[]{value.getValue()}, x);
+                        badKeys.add(key);
                     }
-                    return true;
                 }
+                return true;
             });
+            if (!badKeys.isEmpty()) {
+                RowStoreUpdates updates = ringIndex.startTransaction(orderIdProvider.nextId());
+                for (RowIndexKey key : badKeys) {
+                    updates.remove(key);
+                }
+                updates.commit();
+                LOG.info("Removed {} bad keys", badKeys.size());
+            }
             return new ArrayList<>(ringHosts);
         }
     }
