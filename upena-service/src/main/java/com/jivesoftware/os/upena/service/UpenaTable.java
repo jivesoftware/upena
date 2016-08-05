@@ -16,6 +16,7 @@
 package com.jivesoftware.os.upena.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Lists;
 import com.jivesoftware.os.amza.service.AmzaTable;
 import com.jivesoftware.os.amza.shared.RowIndexKey;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
@@ -25,6 +26,7 @@ import com.jivesoftware.os.upena.shared.Key;
 import com.jivesoftware.os.upena.shared.KeyValueFilter;
 import com.jivesoftware.os.upena.shared.Stored;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
+import java.util.List;
 import java.util.concurrent.ConcurrentNavigableMap;
 
 public class UpenaTable<K extends Key, V extends Stored> {
@@ -90,6 +92,7 @@ public class UpenaTable<K extends Key, V extends Stored> {
     public ConcurrentNavigableMap<K, TimestampedValue<V>> find(final KeyValueFilter<K, V> filter) throws Exception {
 
         final ConcurrentNavigableMap<K, TimestampedValue<V>> results = filter.createCollector();
+        List<RowIndexKey> badKeys = Lists.newArrayList();
         store.scan((transactionId, key, value) -> {
             try {
                 if (!value.getTombstoned()) {
@@ -102,9 +105,16 @@ public class UpenaTable<K extends Key, V extends Stored> {
                 }
             } catch (Exception x) {
                 LOG.warn("Failed to scan. {}", new Object[]{filter}, x);
+                badKeys.add(key);
             }
             return true;
         });
+        if (!badKeys.isEmpty()) {
+            for (RowIndexKey key : badKeys) {
+                store.remove(key);
+            }
+            LOG.info("Removed {} bad keys", badKeys.size());
+        }
         return results;
     }
 

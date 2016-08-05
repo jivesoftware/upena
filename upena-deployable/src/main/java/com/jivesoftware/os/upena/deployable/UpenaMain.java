@@ -127,6 +127,8 @@ import com.jivesoftware.os.upena.uba.service.endpoints.UbaServiceRestEndpoints;
 import de.ruedigermoeller.serialization.FSTConfiguration;
 import java.io.File;
 import java.net.InetAddress;
+import java.nio.channels.FileChannel;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NavigableMap;
@@ -183,6 +185,26 @@ public class UpenaMain {
     }
 
     public void run(String[] args) throws Exception {
+
+        long start = System.currentTimeMillis();
+        Exception failed = null;
+        while (start + TimeUnit.SECONDS.toMillis(10) > System.currentTimeMillis()) {
+            try {
+                String workingDir = System.getProperty("user.dir");
+                File lockFile = new File(workingDir, "onlyLetOneRunningAtATime");
+                lockFile.createNewFile();
+                FileChannel.open(lockFile.toPath(), StandardOpenOption.WRITE).lock();
+                failed = null;
+                break;
+            } catch (Exception x) {
+                failed = x;
+                System.out.println("Failed to aquire lock on onlyLetOneRunningAtATime");
+                Thread.sleep(1000);
+            }
+        }
+        if (failed != null) {
+            throw failed;
+        }
 
         JDIAPI jvmapi = null;
         try {
@@ -283,7 +305,6 @@ public class UpenaMain {
         LOG.info("|      Upena Service Online");
         LOG.info("-----------------------------------------------------------------------");
 
-        String workingDir = System.getProperty("user.dir");
         File defaultPathToRepo = new File(new File(System.getProperty("user.home"), ".m2"), "repository");
         PathToRepo localPathToRepo = new PathToRepo(new File(System.getProperty("pathToRepo", defaultPathToRepo.getAbsolutePath())));
         RepositoryProvider repositoryProvider = new RepositoryProvider(localPathToRepo);
