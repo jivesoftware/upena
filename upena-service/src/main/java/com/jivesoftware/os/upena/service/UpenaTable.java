@@ -18,6 +18,8 @@ package com.jivesoftware.os.upena.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jivesoftware.os.amza.service.AmzaTable;
 import com.jivesoftware.os.amza.shared.RowIndexKey;
+import com.jivesoftware.os.mlogger.core.MetricLogger;
+import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.shared.BasicTimestampedValue;
 import com.jivesoftware.os.upena.shared.Key;
 import com.jivesoftware.os.upena.shared.KeyValueFilter;
@@ -26,6 +28,8 @@ import com.jivesoftware.os.upena.shared.TimestampedValue;
 import java.util.concurrent.ConcurrentNavigableMap;
 
 public class UpenaTable<K extends Key, V extends Stored> {
+
+    private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
     static public interface UpenaKeyProvider<KK extends Key, VV extends Stored> {
 
@@ -87,13 +91,17 @@ public class UpenaTable<K extends Key, V extends Stored> {
 
         final ConcurrentNavigableMap<K, TimestampedValue<V>> results = filter.createCollector();
         store.scan((transactionId, key, value) -> {
-            if (!value.getTombstoned()) {
-                K k = mapper.readValue(key.getKey(), keyClass);
-                V v = mapper.readValue(value.getValue(), valueClass);
+            try {
+                if (!value.getTombstoned()) {
+                    K k = mapper.readValue(key.getKey(), keyClass);
+                    V v = mapper.readValue(value.getValue(), valueClass);
 
-                if (filter.filter(k, v)) {
-                    results.put(k, new BasicTimestampedValue(v, value.getTimestampId(), value.getTombstoned()));
+                    if (filter.filter(k, v)) {
+                        results.put(k, new BasicTimestampedValue(v, value.getTimestampId(), value.getTombstoned()));
+                    }
                 }
+            } catch (Exception x) {
+                LOG.warn("Failed to scan. {}", new Object[]{filter}, x);
             }
             return true;
         });
