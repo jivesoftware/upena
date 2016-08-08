@@ -186,11 +186,11 @@ public class UpenaMain {
 
     public void run(String[] args) throws Exception {
 
+        String workingDir = System.getProperty("user.dir");
         long start = System.currentTimeMillis();
         Exception failed = null;
         while (start + TimeUnit.SECONDS.toMillis(10) > System.currentTimeMillis()) {
             try {
-                String workingDir = System.getProperty("user.dir");
                 File lockFile = new File(workingDir, "onlyLetOneRunningAtATime");
                 lockFile.createNewFile();
                 FileChannel.open(lockFile.toPath(), StandardOpenOption.WRITE).lock();
