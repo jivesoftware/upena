@@ -22,46 +22,16 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public enum ChaosStrategyKey {
 
-    RANDOMIZE_PORT("1", "Randomize port"),
-    RANDOMIZE_HOSTNAME("2", "Randomize host name");
+    RANDOMIZE_PORT("Randomize port"),
+    RANDOMIZE_HOSTNAME("Randomize host name"),
+    SPLIT_BRAIN("Split-brain"),
+    RANDOM_CONNECTION_LATENCY("Random connection latency");
 
-    public final String key;
-    public final String name;
+    public final String description;
 
     @JsonCreator
-    ChaosStrategyKey(@JsonProperty("key") String key,
-                     @JsonProperty("name") String name) {
-        this.key = key;
-        this.name = name;
+    ChaosStrategyKey(@JsonProperty("description") String description) {
+        this.description = description;
     }
 
-    public static boolean isValid(String key) {
-        if (key == null || key.isEmpty())
-            return false;
-
-        for (ChaosStrategyKey v : values()) {
-            if (v.key.equals(key)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public static ChaosStrategyKey valueOfKey(String key) {
-        for (ChaosStrategyKey v : values()) {
-            if (v.key.equals(key)) {
-                return v;
-            }
-        }
-        throw new IllegalArgumentException("No enum const " + ChaosStrategyKey.class + "@key." + key);
-    }
-
-    @Override
-    public String toString() {
-        return "ChaosStrategyKey{" +
-                "key=" + key +
-                ", name='" + name + '\'' +
-                '}';
-    }
 }

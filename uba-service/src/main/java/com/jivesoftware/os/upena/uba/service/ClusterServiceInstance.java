@@ -29,27 +29,24 @@ public class ClusterServiceInstance implements Comparable<ClusterServiceInstance
 
     @Override
     public int compareTo(ClusterServiceInstance other) {
-        if (other == null) {
-            return -1;
-        }
         int c = this.hostName.compareTo(other.hostName);
-        if (c < 0) {
+        if (c != 0) {
             return c;
         }
         c = this.serviceName.compareTo(other.serviceName);
-        if (c < 0) {
+        if (c != 0) {
             return c;
         }
         c = this.instanceName.compareTo(other.instanceName);
-        if (c < 0) {
+        if (c != 0) {
             return c;
         }
         c = new Integer(port).compareTo(other.port);
-        if (c < 0) {
+        if (c != 0) {
             return c;
         }
         c = new Integer(jmxPort).compareTo(other.jmxPort);
-        if (c < 0) {
+        if (c != 0) {
             return c;
         }
         c = new Integer(debuggingPort).compareTo(other.debuggingPort);

@@ -34,12 +34,10 @@ public class UpenaTable<K extends Key, V extends Stored> {
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
     static public interface UpenaKeyProvider<KK extends Key, VV extends Stored> {
-
         KK getNodeKey(UpenaTable<KK, VV> table, VV value);
     }
 
     static public interface UpenaValueValidator<KK extends Key, VV extends Stored> {
-
         VV validate(UpenaTable<KK, VV> table, KK key, VV value) throws Exception;
     }
 
@@ -85,12 +83,11 @@ public class UpenaTable<K extends Key, V extends Stored> {
     }
 
     public interface Stream<K, V> {
-
         boolean stream(K key, V value) throws Exception;
     }
 
+    @SuppressWarnings("unchecked")
     public ConcurrentNavigableMap<K, TimestampedValue<V>> find(final KeyValueFilter<K, V> filter) throws Exception {
-
         final ConcurrentNavigableMap<K, TimestampedValue<V>> results = filter.createCollector();
         List<RowIndexKey> badKeys = Lists.newArrayList();
         store.scan((transactionId, key, value) -> {

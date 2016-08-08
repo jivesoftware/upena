@@ -106,7 +106,7 @@ public class MonkeyPluginRegion implements PageRegion<MonkeyPluginRegion.MonkeyP
                     input.clusterKey.isEmpty() ? null : new ClusterKey(input.clusterKey),
                     input.hostKey.isEmpty() ? null : new HostKey(input.hostKey),
                     input.serviceKey.isEmpty() ? null : new ServiceKey(input.serviceKey),
-                    input.strategyKey.isEmpty() ? null : ChaosStrategyKey.valueOfKey(input.strategyKey),
+                    input.strategyKey.isEmpty() ? null : ChaosStrategyKey.valueOf(input.strategyKey),
                     0, 100_000);
 
             if (input.action.equals("filter")) {
@@ -135,8 +135,16 @@ public class MonkeyPluginRegion implements PageRegion<MonkeyPluginRegion.MonkeyP
                     return c;
                 }
 
-                String hostName1 = (String) ((Map) o1.get("host")).get("name");
-                String hostName2 = (String) ((Map) o2.get("host")).get("name");
+                String hostName1 = "";
+                Map mHost1 = (Map) o1.get("host");
+                if (mHost1 != null) {
+                    hostName1 = (String) mHost1.get("name");
+                }
+                String hostName2 = "";
+                Map mHost2 = (Map) o2.get("host");
+                if (mHost2 != null) {
+                    hostName2 = (String) mHost2.get("name");
+                }
                 c = hostName1.compareTo(hostName2);
                 if (c != 0) {
                     return c;
@@ -181,28 +189,37 @@ public class MonkeyPluginRegion implements PageRegion<MonkeyPluginRegion.MonkeyP
                 data.put("message", "Cluster key:" + input.clusterKey + " is invalid.");
                 valid = false;
             }
-            Host host = upenaStore.hosts.get(new HostKey(input.hostKey));
-            if (host == null) {
-                data.put("message", "Host key:" + input.hostKey + " is invalid.");
-                valid = false;
-            }
             Service service = upenaStore.services.get(new ServiceKey(input.serviceKey));
             if (service == null) {
                 data.put("message", "Service key:" + input.serviceKey + " is invalid.");
                 valid = false;
             }
-            if (!ChaosStrategyKey.isValid(input.strategyKey)) {
-                data.put("message", "Strategy key:" + input.strategyKey + " is invalid.");
+            if (input.strategyKey.isEmpty()) {
+                data.put("message", "Strategy key is empty.");
                 valid = false;
+            }
+            Host host = upenaStore.hosts.get(new HostKey(input.hostKey));
+            if (host == null) {
+                if (!input.strategyKey.isEmpty() &&
+                        ChaosStrategyKey.valueOf(input.strategyKey) != ChaosStrategyKey.SPLIT_BRAIN) {
+                    data.put("message", "Host key:" + input.hostKey + " is invalid.");
+                    valid = false;
+                }
+            } else {
+                if (!input.strategyKey.isEmpty() &&
+                        ChaosStrategyKey.valueOf(input.strategyKey) == ChaosStrategyKey.SPLIT_BRAIN) {
+                    data.put("message", "Host not applicable to split-brain.");
+                    valid = false;
+                }
             }
 
             if (valid) {
                 Monkey newMonkey = new Monkey(
                         input.enabled,
                         new ClusterKey(input.clusterKey),
-                        new HostKey(input.hostKey),
+                        input.hostKey.isEmpty() ? null : new HostKey(input.hostKey),
                         new ServiceKey(input.serviceKey),
-                        ChaosStrategyKey.valueOfKey(input.strategyKey));
+                        ChaosStrategyKey.valueOf(input.strategyKey));
                 upenaStore.monkeys.update(null, newMonkey);
                 upenaStore.record(user, "added", System.currentTimeMillis(), "", "monkey-ui",
                         monkeyToHumanReadableString(newMonkey) + "\n" + newMonkey.toString());
@@ -230,19 +247,28 @@ public class MonkeyPluginRegion implements PageRegion<MonkeyPluginRegion.MonkeyP
                     data.put("message", "Cluster key:" + input.clusterKey + " is invalid.");
                     valid = false;
                 }
-                Host host = upenaStore.hosts.get(new HostKey(input.hostKey));
-                if (host == null) {
-                    data.put("message", "Host key:" + input.hostKey + " is invalid.");
-                    valid = false;
-                }
                 Service service = upenaStore.services.get(new ServiceKey(input.serviceKey));
                 if (service == null) {
                     data.put("message", "Service key:" + input.serviceKey + " is invalid.");
                     valid = false;
                 }
-                if (!ChaosStrategyKey.isValid(input.strategyKey)) {
-                    data.put("message", "strategy key:" + input.strategyKey + " is invalid.");
+                if (input.strategyKey.isEmpty()) {
+                    data.put("message", "Strategy key is empty.");
                     valid = false;
+                }
+                Host host = upenaStore.hosts.get(new HostKey(input.hostKey));
+                if (host == null) {
+                    if (!input.strategyKey.isEmpty() &&
+                            ChaosStrategyKey.valueOf(input.strategyKey) != ChaosStrategyKey.SPLIT_BRAIN) {
+                        data.put("message", "Host key:" + input.hostKey + " is invalid.");
+                        valid = false;
+                    }
+                } else {
+                    if (!input.strategyKey.isEmpty() &&
+                            ChaosStrategyKey.valueOf(input.strategyKey) == ChaosStrategyKey.SPLIT_BRAIN) {
+                        data.put("message", "Host not applicable to split-brain.");
+                        valid = false;
+                    }
                 }
 
                 if (valid) {
@@ -251,7 +277,7 @@ public class MonkeyPluginRegion implements PageRegion<MonkeyPluginRegion.MonkeyP
                             new ClusterKey(input.clusterKey),
                             new HostKey(input.hostKey),
                             new ServiceKey(input.serviceKey),
-                            ChaosStrategyKey.valueOfKey(input.strategyKey));
+                            ChaosStrategyKey.valueOf(input.strategyKey));
                     upenaStore.monkeys.update(new MonkeyKey(input.key), updatedMonkey);
 
                     upenaStore.record(user, "updated", System.currentTimeMillis(), "", "monkey-ui",
@@ -302,7 +328,7 @@ public class MonkeyPluginRegion implements PageRegion<MonkeyPluginRegion.MonkeyP
                 "key", value.clusterKey.getKey(),
                 "name", cluster != null ? cluster.name : "unknownCluster"));
 
-        String hostName = "unknownHost";
+        String hostName = "";
         if (host != null) {
             hostName = host.hostName + "/" + host.name;
             if (host.name.equals(host.hostName)) {
@@ -310,7 +336,7 @@ public class MonkeyPluginRegion implements PageRegion<MonkeyPluginRegion.MonkeyP
             }
         }
         map.put("host", ImmutableMap.of(
-                "key", value.hostKey.getKey(),
+                "key", (value.hostKey != null) ? value.hostKey.getKey() : "",
                 "name", hostName));
 
         map.put("service", ImmutableMap.of(
@@ -318,8 +344,8 @@ public class MonkeyPluginRegion implements PageRegion<MonkeyPluginRegion.MonkeyP
                 "name", service != null ? service.name : "unknownService"));
 
         map.put("strategy", ImmutableMap.of(
-                "key", value.strategyKey.key,
-                "name", value.strategyKey.name));
+                "key", value.strategyKey.name(),
+                "name", value.strategyKey.description));
 
         return map;
     }
@@ -331,7 +357,7 @@ public class MonkeyPluginRegion implements PageRegion<MonkeyPluginRegion.MonkeyP
         return ((cluster == null) ? "unknownCluster" : cluster.name) + "/"
                 + ((host == null) ? "unknownHost" : host.name) + "/"
                 + ((service == null) ? "unknownService" : service.name) + "/"
-                + monkey.strategyKey.name;
+                + monkey.strategyKey.description;
     }
 
     @Override

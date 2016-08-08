@@ -73,7 +73,7 @@ public class AmzaDiscovery {
                             String received = new String(packet.getData(), 0, packet.getLength());
                             String[] clusterHostPort = received.split(":");
                             if (clusterHostPort.length == 3 && clusterHostPort[0] != null && clusterHostPort[0].equals(clusterName)) {
-                                LOG.debug("recieved:" + Arrays.toString(clusterHostPort));
+                                LOG.debug("received:" + Arrays.toString(clusterHostPort));
                                 String host = clusterHostPort[1];
                                 int port = Integer.parseInt(clusterHostPort[2].trim());
                                 RingHost anotherRingHost = new RingHost(host, port); // TODO need to broadcast rack id

@@ -38,8 +38,6 @@ import javax.ws.rs.core.StreamingOutput;
 @Path("/propagator")
 public class UpenaPropagatorEndpoints {
 
-    private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
-
     @GET
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     @Path("/download")

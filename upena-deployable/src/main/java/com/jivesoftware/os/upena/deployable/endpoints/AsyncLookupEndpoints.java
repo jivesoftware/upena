@@ -164,10 +164,10 @@ public class AsyncLookupEndpoints {
         try {
             List<Map<String, String>> results = Lists.newArrayList();
             for (ChaosStrategyKey s: ChaosStrategyKey.values()){
-                results.add(ImmutableMap.of("key", s.key, "name", s.name));
+                results.add(ImmutableMap.of("key", s.name(), "name", s.description));
             }
 
-            Collections.sort(results, (Map<String, String> o1, Map<String, String> o2) -> {
+            results.sort((Map<String, String> o1, Map<String, String> o2) -> {
                 int c = o1.get("name").compareTo(o2.get("name"));
                 if (c != 0) {
                     return c;
