@@ -174,7 +174,6 @@ public class UpenaMain {
                 System.out.println("java -jar upena.jar " + InetAddress.getLocalHost().getHostName() + " dev");
                 System.out.println("");
                 System.exit(1);
-
             } else {
                 new UpenaMain().run(args);
             }
@@ -198,7 +197,7 @@ public class UpenaMain {
                 break;
             } catch (Exception x) {
                 failed = x;
-                System.out.println("Failed to aquire lock on onlyLetOneRunningAtATime");
+                System.out.println("Failed to acquire lock on onlyLetOneRunningAtATime");
                 Thread.sleep(1000);
             }
         }
@@ -213,10 +212,8 @@ public class UpenaMain {
             LOG.warn("Failed to local tools.jar. Please manually add to classpath. Breakpoint debugger will be disabled.");
         }
 
-        String hostname = InetAddress.getLocalHost().getHostName();
-        if (args != null && args.length > 0) {
-            hostname = args[0];
-        }
+        String hostname = args[0];
+
         int port = Integer.parseInt(System.getProperty("amza.port", "1175"));
         String multicastGroup = System.getProperty("amza.discovery.group", "225.4.5.6");
         int multicastPort = Integer.parseInt(System.getProperty("amza.discovery.port", "1123"));

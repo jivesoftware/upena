@@ -13,10 +13,10 @@
             
             <div class="panel-body">
                 Expand this cluster by running the following on a new node:<br><br>
-                wget -O upena.jar {$wgetURL} <br>
+                wget -O upena.jar {$wgetURL}<br>
 
                 Basic:<br>
-                nohup java -jar upena.jar `hostname` {$upenaClusterName} &
+                nohup java -jar upena.jar `hostname` {$upenaClusterName} &amp;
 
                 Advanced:<br>
                 nohup java -Dhost.datacenter=<datacenterName> -Dhost.rack=<rackName/availability zone> -classpath "/usr/java/latest/lib/tools.jar:./upena.jar" com.jivesoftware.os.upena.deployable.UpenaMain <hostname> <clusterName>

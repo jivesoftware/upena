@@ -27,7 +27,7 @@ public class MonkeyKeyProvider implements UpenaTable.UpenaKeyProvider<MonkeyKey,
 
     @Override
     public MonkeyKey getNodeKey(UpenaTable<MonkeyKey, Monkey> table, Monkey value) {
-        String compositeKey = value.clusterKey + "|" + value.hostKey + "|" + value.serviceKey + "|" + value.strategyKey.key;
+        String compositeKey = value.clusterKey + "|" + value.hostKey + "|" + value.serviceKey + "|" + value.strategyKey;
         String k = Long.toString(Math.abs(jenkinsHash.hash(compositeKey.getBytes(UTF8), 5)));
         return new MonkeyKey(k);
     }

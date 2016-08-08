@@ -135,10 +135,18 @@ public class UpenaService {
             return failedConnectionResponse(connectionsRequest, "No declared instance for: " + connectionsRequest);
         }
 
-        String monkeyAffect = chaosService.monkeyAffect(instance);
-        if (!monkeyAffect.isEmpty()) {
-            primaryConnections = chaosService.unleashMonkey(instance, primaryConnections);
-            messages.add("Monkey affect: [" + monkeyAffect + "]");
+        // handle instance and service monkeys
+        for (HostKey hk : Arrays.asList(instance.hostKey, new HostKey(""))) {
+            String monkeyAffectInstances = chaosService.monkeyAffect(instance.clusterKey, hk, instance.serviceKey);
+            if (!monkeyAffectInstances.isEmpty()) {
+                primaryConnections = chaosService.unleashMonkey(
+                        instance.clusterKey,
+                        hk,
+                        instance.serviceKey,
+                        instance.instanceId,
+                        primaryConnections);
+                messages.add("Monkey affect: [" + monkeyAffectInstances + "]");
+            }
         }
 
         messages.add("Success");
