@@ -19,7 +19,6 @@ import com.jivesoftware.os.routing.bird.shared.ConnectionDescriptor;
 import com.jivesoftware.os.routing.bird.shared.HostPort;
 import com.jivesoftware.os.upena.shared.ChaosStrategyKey;
 import com.jivesoftware.os.upena.shared.ClusterKey;
-import com.jivesoftware.os.upena.shared.Instance;
 import com.jivesoftware.os.upena.shared.HostKey;
 import com.jivesoftware.os.upena.shared.Monkey;
 import com.jivesoftware.os.upena.shared.MonkeyFilter;
@@ -27,7 +26,6 @@ import com.jivesoftware.os.upena.shared.MonkeyKey;
 import com.jivesoftware.os.upena.shared.ServiceKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
 
-import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -50,11 +48,13 @@ public class ChaosService {
         this.upenaStore = upenaStore;
     }
 
-    String monkeyAffect(Instance instance) throws Exception {
+    String monkeyAffect(ClusterKey clusterKey,
+                        HostKey hostKey,
+                        ServiceKey serviceKey) throws Exception {
         String affect = "";
 
         ConcurrentNavigableMap<MonkeyKey, TimestampedValue<Monkey>> gotMonkeys =
-                findMonkeys(instance.clusterKey, instance.hostKey, instance.serviceKey);
+                findMonkeys(clusterKey, hostKey, serviceKey);
 
         String prefix = "'";
         String postfix = "'";
@@ -65,31 +65,51 @@ public class ChaosService {
                 if (!affect.isEmpty()) {
                     prefix = ", '";
                 }
-                affect += prefix + value.strategyKey.name + postfix;
+                affect += prefix + value.strategyKey + postfix;
             }
         }
 
         return affect;
     }
 
-    List<ConnectionDescriptor> unleashMonkey(Instance instance, List<ConnectionDescriptor> connections) throws Exception {
+    List<ConnectionDescriptor> unleashMonkey(ClusterKey clusterKey,
+                                             HostKey hostKey,
+                                             ServiceKey serviceKey,
+                                             int instanceId,
+                                             List<ConnectionDescriptor> connections) throws Exception {
         List<ConnectionDescriptor> monkeyConnections = connections;
 
         ConcurrentNavigableMap<MonkeyKey, TimestampedValue<Monkey>> gotMonkeys =
-                findMonkeys(instance.clusterKey, instance.hostKey, instance.serviceKey);
+                findMonkeys(clusterKey, hostKey, serviceKey);
 
         for (Map.Entry<MonkeyKey, TimestampedValue<Monkey>> entry : gotMonkeys.entrySet()) {
             Monkey value = entry.getValue().getValue();
 
             if (value.enabled) {
-                if (value.strategyKey == ChaosStrategyKey.RANDOMIZE_HOSTNAME) {
+                {
                     List<ConnectionDescriptor> connectionsTemp = new ArrayList<>();
 
                     for (ConnectionDescriptor connectionDescriptor : monkeyConnections) {
                         Map<String, String> newMonkeys =
                                 (connectionDescriptor.getMonkeys() != null) ? connectionDescriptor.getMonkeys() : new HashMap<>();
-                        newMonkeys.put(ChaosStrategyKey.RANDOMIZE_HOSTNAME.key,
-                                ChaosStrategyKey.RANDOMIZE_HOSTNAME.name);
+                        newMonkeys.put(value.strategyKey.toString(),
+                                value.strategyKey.description);
+
+                        ConnectionDescriptor newConnectionDescriptor = new ConnectionDescriptor(
+                                connectionDescriptor.getInstanceDescriptor(),
+                                connectionDescriptor.getHostPort(),
+                                connectionDescriptor.getProperties(),
+                                newMonkeys);
+                        connectionsTemp.add(newConnectionDescriptor);
+                    }
+
+                    monkeyConnections = connectionsTemp;
+                }
+
+                if (value.strategyKey == ChaosStrategyKey.RANDOMIZE_HOSTNAME) {
+                    List<ConnectionDescriptor> connectionsTemp = new ArrayList<>();
+
+                    for (ConnectionDescriptor connectionDescriptor : monkeyConnections) {
                         HostPort newHostPort = new HostPort(
                                 randomizeHost(connectionDescriptor.getHostPort().getHost()),
                                 connectionDescriptor.getHostPort().getPort());
@@ -98,7 +118,7 @@ public class ChaosService {
                                 connectionDescriptor.getInstanceDescriptor(),
                                 newHostPort,
                                 connectionDescriptor.getProperties(),
-                                newMonkeys);
+                                connectionDescriptor.getMonkeys());
                         connectionsTemp.add(newConnectionDescriptor);
                     }
 
@@ -107,9 +127,6 @@ public class ChaosService {
                     List<ConnectionDescriptor> connectionsTemp = new ArrayList<>();
 
                     for (ConnectionDescriptor connectionDescriptor : monkeyConnections) {
-                        Map<String, String> newMonkeys = (connectionDescriptor.getMonkeys() != null) ? connectionDescriptor.getMonkeys() : new HashMap<>();
-                        newMonkeys.put(ChaosStrategyKey.RANDOMIZE_PORT.key,
-                                ChaosStrategyKey.RANDOMIZE_PORT.name);
                         HostPort newHostPort = new HostPort(
                                 connectionDescriptor.getHostPort().getHost(),
                                 randomizePort(connectionDescriptor.getHostPort().getPort()));
@@ -118,7 +135,47 @@ public class ChaosService {
                                 connectionDescriptor.getInstanceDescriptor(),
                                 newHostPort,
                                 connectionDescriptor.getProperties(),
-                                newMonkeys);
+                                connectionDescriptor.getMonkeys());
+                        connectionsTemp.add(newConnectionDescriptor);
+                    }
+
+                    monkeyConnections = connectionsTemp;
+                } else if (value.strategyKey == ChaosStrategyKey.SPLIT_BRAIN) {
+                    //
+                    // sort connections by instance name+key and
+                    // return list of connections from whichever half the instance lives
+                    // with the second half being the bigger half
+                    //
+
+                    monkeyConnections.sort((ConnectionDescriptor o1, ConnectionDescriptor o2) -> {
+                        int c = Integer.compare(o1.getInstanceDescriptor().instanceName, o2.getInstanceDescriptor().instanceName);
+                        if (c != 0) {
+                            return c;
+                        }
+                        return o1.getInstanceDescriptor().instanceKey.compareTo(o2.getInstanceDescriptor().instanceKey);
+                    });
+
+                    ConnectionDescriptor[] monkeyConnectionsArray =
+                            monkeyConnections.toArray(new ConnectionDescriptor[monkeyConnections.size()]);
+
+                    int iterBegin = 0;
+                    int iterEnd = monkeyConnectionsArray.length / 2;
+                    for (int i = iterEnd; i < monkeyConnectionsArray.length; i++) {
+                        if (monkeyConnectionsArray[i].getInstanceDescriptor().instanceName == instanceId) {
+                            iterBegin = iterEnd;
+                            iterEnd = monkeyConnectionsArray.length;
+                            break;
+                        }
+                    }
+
+                    List<ConnectionDescriptor> connectionsTemp = new ArrayList<>();
+
+                    for (int i = iterBegin; i < iterEnd; i++) {
+                        ConnectionDescriptor newConnectionDescriptor = new ConnectionDescriptor(
+                                monkeyConnectionsArray[i].getInstanceDescriptor(),
+                                monkeyConnectionsArray[i].getHostPort(),
+                                monkeyConnectionsArray[i].getProperties(),
+                                monkeyConnectionsArray[i].getMonkeys());
                         connectionsTemp.add(newConnectionDescriptor);
                     }
 
@@ -145,20 +202,16 @@ public class ChaosService {
         if (matcher.matches()) {
             List<String> octets = Arrays.asList(existingHost.split("\\."));
             Collections.shuffle(octets);
-
-            for (String octet : octets) {
+            octets.forEach(octet -> {
                 if (randHost.length() > 0) {
                     randHost.append(".");
                 }
                 randHost.append(octet);
-            }
+            });
         } else {
             List<String> letters = Arrays.asList(existingHost.split(""));
             Collections.shuffle(letters);
-
-            for (String letter : letters) {
-                randHost.append(letter);
-            }
+            letters.forEach(randHost::append);
         }
 
         return randHost.toString();
