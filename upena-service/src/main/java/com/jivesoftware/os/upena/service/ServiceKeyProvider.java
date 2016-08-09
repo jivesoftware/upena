@@ -22,11 +22,11 @@ import java.nio.charset.Charset;
 
 public class ServiceKeyProvider implements UpenaKeyProvider<ServiceKey, Service> {
 
-    private final JenkinsHash jenkinsHash = new JenkinsHash();
     private final Charset UTF8 = Charset.forName("utf-8");
 
     @Override
     public ServiceKey getNodeKey(UpenaTable<ServiceKey, Service> table, Service value) {
+        JenkinsHash jenkinsHash = new JenkinsHash();
         String k = Long.toString(jenkinsHash.hash(value.name.getBytes(UTF8), 3));
         return new ServiceKey(k);
     }
