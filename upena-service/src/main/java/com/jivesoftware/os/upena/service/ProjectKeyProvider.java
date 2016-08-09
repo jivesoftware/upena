@@ -22,11 +22,11 @@ import java.nio.charset.Charset;
 
 public class ProjectKeyProvider implements UpenaKeyProvider<ProjectKey, Project> {
 
-    private final JenkinsHash jenkinsHash = new JenkinsHash();
     private final Charset UTF8 = Charset.forName("utf-8");
 
     @Override
     public ProjectKey getNodeKey(UpenaTable<ProjectKey, Project> table, Project value) {
+        JenkinsHash jenkinsHash = new JenkinsHash();
         String k = Long.toString(Math.abs(jenkinsHash.hash(value.name.getBytes(UTF8), 1)));
         return new ProjectKey(k);
     }

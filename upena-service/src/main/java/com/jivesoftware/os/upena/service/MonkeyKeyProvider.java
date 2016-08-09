@@ -17,16 +17,15 @@ package com.jivesoftware.os.upena.service;
 
 import com.jivesoftware.os.upena.shared.Monkey;
 import com.jivesoftware.os.upena.shared.MonkeyKey;
-
 import java.nio.charset.Charset;
 
 public class MonkeyKeyProvider implements UpenaTable.UpenaKeyProvider<MonkeyKey, Monkey> {
 
-    private final JenkinsHash jenkinsHash = new JenkinsHash();
     private final Charset UTF8 = Charset.forName("utf-8");
 
     @Override
     public MonkeyKey getNodeKey(UpenaTable<MonkeyKey, Monkey> table, Monkey value) {
+        JenkinsHash jenkinsHash = new JenkinsHash();
         String compositeKey = value.clusterKey + "|" + value.hostKey + "|" + value.serviceKey + "|" + value.strategyKey;
         String k = Long.toString(Math.abs(jenkinsHash.hash(compositeKey.getBytes(UTF8), 5)));
         return new MonkeyKey(k);
