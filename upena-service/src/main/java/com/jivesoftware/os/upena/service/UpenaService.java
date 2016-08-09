@@ -33,7 +33,6 @@ import com.jivesoftware.os.upena.shared.InstanceKey;
 import com.jivesoftware.os.upena.shared.ReleaseGroup;
 import com.jivesoftware.os.upena.shared.ReleaseGroupKey;
 import com.jivesoftware.os.upena.shared.Service;
-import com.jivesoftware.os.upena.shared.ServiceFilter;
 import com.jivesoftware.os.upena.shared.ServiceKey;
 import com.jivesoftware.os.upena.shared.Tenant;
 import com.jivesoftware.os.upena.shared.TenantKey;
@@ -94,16 +93,13 @@ public class UpenaService {
         }
 
         String connectToServiceNamed = connectionsRequest.getConnectToServiceNamed();
-        ServiceFilter serviceFilter = new ServiceFilter(connectToServiceNamed, null, 0, Integer.MAX_VALUE);
-        ConcurrentNavigableMap<ServiceKey, TimestampedValue<Service>> gotServices = upenaStore.services.find(serviceFilter);
-        if (gotServices.isEmpty()) {
+        ServiceKey serviceKey = upenaStore.services.toKey(new Service(connectToServiceNamed, ""));
+        Service service = upenaStore.services.get(serviceKey);
+        if (service == null) {
             return failedConnectionResponse(connectionsRequest, "Undeclared service connectToServiceNamed:" + connectToServiceNamed);
         }
-        if (gotServices.size() > 1) {
-            return failedConnectionResponse(connectionsRequest, "More that one service declared for connectToServiceNamed:" + connectToServiceNamed);
-        }
 
-        ServiceKey wantToConnectToServiceKey = new ServiceKey(gotServices.firstKey().getKey());
+        ServiceKey wantToConnectToServiceKey = serviceKey;
 
         ReleaseGroupKey releaseGroupKey = null;
         List<ConnectionDescriptor> primaryConnections = null;
