@@ -103,10 +103,10 @@
                                                 <li><input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
                                                 placeholder="Name" value="{$r.name}" name="name" id="namePicker" class="form-control"></li>
 
-                                                <li>Name:</li>
+                                                <li>Repository:</li>
                                                 <li><input type="text" name="repository" class="form-control" value={$r.repository?:''}></li>
 
-                                                <li>Name:</li>
+                                                <li>groupId:artifactId:type:version</li>
                                                 <li><input size="256" id="{$r.key}" type="text" name="version" class="form-control" value={$r.version?:''}></li>
 
                                                 <li>Auto release:<input type="checkbox" name="autoRelease" value="true" {if $r.autoRelease}checked="checked"{/if}></li>
