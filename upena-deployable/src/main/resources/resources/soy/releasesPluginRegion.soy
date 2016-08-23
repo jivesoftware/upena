@@ -52,18 +52,18 @@
                             Autorelease<input type="checkbox" name="autoRelease" value="true" {if $filters.autoRelease}checked="checked"{/if}>
                         </td>
                         <td>
-                            <button data-toggle="tooltip" title="Filter" type="submit" name="action" value="filter" class="btn btn-primary ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-search">&nbspFilter</span></button>
-                            <button data-toggle="tooltip" title="Add" type="submit" name="action" value="add" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-plus">&nbspAdd</span></button>
-                            <button title="Export" type="submit" name="action" value="export" class="btn btn-default"><span class="glyphicon glyphicon-export">&nbspExport</span></button>
-                        <td>
+                            <button data-toggle="tooltip" title="Filter" type="submit" name="action" value="filter" class="btn btn-primary ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-search">&nbsp;Filter</span></button>
+                            <button data-toggle="tooltip" title="Add" type="submit" name="action" value="add" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-plus">&nbsp;Add</span></button>
+                            <button title="Export" type="submit" name="action" value="export" class="btn btn-default"><span class="glyphicon glyphicon-export">&nbsp;Export</span></button>
+                            <button onclick="return confirm('Are you sure you want to upgrade all releases?')" title="Upgrade All" type="submit" name="action" value="upgrade-all" class="btn btn-default"><span class="glyphicon glyphicon-fast-forward">&nbsp;Upgrade-All</span></button>
+                        </td>
                     </tr>
                 </form>
             {/if}
-
             {foreach $r in $releases}
                 <tr>
                     <td>
-                         {foreach $ic in $r.instanceCounts}
+                        {foreach $ic in $r.instanceCounts}
                             <div title="ServiceName" class="coloredBox" style="background-color:rgba({$ic.color},0.4);">{$ic.count}</div>
                         {/foreach}
                     </td>
@@ -88,20 +88,16 @@
                                                     <div style="display: inline;">{$r.rollback}&nbsp;&nbsp;&nbsp;</div>
                                                     <div style="display: inline;"><input type="hidden" name="rollback" value="{$r.rollback}"></div>
                                                     <div style="display: inline;">
-                                                        <button onclick="return confirm('Are you sure you want to rollback?')" title="Rollback" type="submit" name="action" value="rollback" class="btn btn-default" style="color: orange;">
-                                                            Rollback
-                                                        </button>
+                                                        <button onclick="return confirm('Are you sure you want to rollback?')" title="Rollback" type="submit" name="action" value="rollback" class="btn btn-default" style="color: orange;">Rollback</button>
                                                     </div>
                                                 </form>
                                             </li>
                                         {/if}
-
                                         <form id="edit-{$r.key}" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
                                             method="post" name="updateRelease">
 
                                                 <li>Name:<input type="hidden" name="key" value="{$r.key}"></li>
-                                                <li><input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                                placeholder="Name" value="{$r.name}" name="name" id="namePicker" class="form-control"></li>
+                                                <li><input type="text" autocomplete="off" role="combobox" style="padding-left:10px;" placeholder="Name" value="{$r.name}" name="name" id="namePicker" class="form-control"></li>
 
                                                 <li>Repository:</li>
                                                 <li><input type="text" name="repository" class="form-control" value={$r.repository?:''}></li>
@@ -113,15 +109,9 @@
 
                                                 <li><button title="Upgrade" type="submit" name="action" value="update" class="btn btn-default">Update</button></li>
                                         </form>
-
-
                                     </ul>
-
                                 </div>
                             </li>
-
-
-
                             {if $r.runningLatest}
                                 {if $r.runningLatest != 'true'}
                                     <li>
@@ -135,14 +125,10 @@
                                                 <div style="display: inline;">{$r.upgrade}&nbsp;&nbsp;&nbsp;</div>
                                                 <input type="hidden" name="upgrade" value="{$r.upgrade}">
                                                 <div style="display: inline;">
-                                                    <button title="Rolling Upgrade" type="submit" name="action" value="rolling-upgrade" class="btn btn-default" style="color: green;">
-                                                        Rolling
-                                                    </button>
+                                                    <button title="Rolling Upgrade" type="submit" name="action" value="rolling-upgrade" class="btn btn-default" style="color: green;">Rolling</button>
                                                 </div>
                                                 <div style="display: inline;">
-                                                    <button title="Upgrade" type="submit" name="action" value="upgrade" class="btn btn-default" style="color: green;">
-                                                        Upgrade
-                                                    </button>
+                                                    <button title="Upgrade" type="submit" name="action" value="upgrade" class="btn btn-default" style="color: green;">Upgrade</button>
                                                 </div>
                                             </div>
                                         </form>
@@ -158,7 +144,7 @@
                                 <input type="hidden" name="name" value="{$r.name}">
                                 <input type="hidden" name="repository" value="{$r.repository}">
                                 <input type="hidden" name="version" value="{$r.version}">
-                                <button onclick="return confirm('Are you sure you want to delete?')" title="Remove" type="submit" name="action" value="remove" class="btn btn-default"><span class="glyphicon glyphicon-trash">&nbspRemove</span></button>
+                                <button onclick="return confirm('Are you sure you want to delete?')" title="Remove" type="submit" name="action" value="remove" class="btn btn-default"><span class="glyphicon glyphicon-trash">&nbsp;Remove</span></button>
                         </form>
                     <td>
                 </tr>
@@ -171,7 +157,7 @@
                 <span class="btn btn-default btn-file"><span>Browse...</span><input type="file" name="file"/></span>
                 <span class="fileinput-filename"></span><span class="fileinput-new">&nbsp;&nbsp;&nbsp;No file chosen&nbsp;&nbsp;&nbsp;</span>
             </div>
-            <button title="Import" type="submit"  value="import" class="btn btn-default"><span class="glyphicon glyphicon-import">&nbspImport</span></button>
+            <button title="Import" type="submit"  value="import" class="btn btn-default"><span class="glyphicon glyphicon-import">&nbsp;Import</span></button>
         </form>
     </div>
 {/template}
