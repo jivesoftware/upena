@@ -2,7 +2,6 @@ package com.jivesoftware.os.upena.deployable.endpoints;
 
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
-import com.jivesoftware.os.routing.bird.shared.ResponseHelper;
 import com.jivesoftware.os.upena.deployable.region.ReleasesPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ReleasesPluginRegion.ReleasesPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
@@ -37,8 +36,6 @@ public class ReleasesPluginEndpoints {
 
     private final SoyService soyService;
     private final ReleasesPluginRegion pluginRegion;
-
-    private final ResponseHelper responseHelper = ResponseHelper.INSTANCE;
 
     public ReleasesPluginEndpoints(@Context SoyService soyService, @Context ReleasesPluginRegion pluginRegion) {
         this.soyService = soyService;
