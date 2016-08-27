@@ -21,10 +21,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class LoadBalancerKey extends Key<LoadBalancerKey> implements Stored<LoadBalancerKey>, Serializable {
+public class LBKey extends Key<LBKey> implements Stored<LBKey>, Serializable {
 
     @JsonCreator
-    public LoadBalancerKey(@JsonProperty("key") String key) {
+    public LBKey(@JsonProperty("key") String key) {
         super(key);
     }
 }

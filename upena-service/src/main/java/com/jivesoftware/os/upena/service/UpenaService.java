@@ -93,13 +93,21 @@ public class UpenaService {
         }
 
         String connectToServiceNamed = connectionsRequest.getConnectToServiceNamed();
-        ServiceKey serviceKey = upenaStore.services.toKey(new Service(connectToServiceNamed, ""));
-        Service service = upenaStore.services.get(serviceKey);
+        ServiceKey[] serviceKey = new ServiceKey[1];
+        upenaStore.services.scan((key, value) -> {
+            if (value != null && value.name.equals(connectToServiceNamed)) {
+                serviceKey[0] = key;
+                return false;
+            }
+            return true;
+        });
+
+        Service service = serviceKey[0] == null ? null : upenaStore.services.get(serviceKey[0]);
         if (service == null) {
             return failedConnectionResponse(connectionsRequest, "Undeclared service connectToServiceNamed:" + connectToServiceNamed);
         }
 
-        ServiceKey wantToConnectToServiceKey = serviceKey;
+        ServiceKey wantToConnectToServiceKey = serviceKey[0];
 
         ReleaseGroupKey releaseGroupKey = null;
         List<ConnectionDescriptor> primaryConnections = null;
@@ -136,11 +144,11 @@ public class UpenaService {
             String monkeyAffectInstances = chaosService.monkeyAffect(instance.clusterKey, hk, instance.serviceKey);
             if (!monkeyAffectInstances.isEmpty()) {
                 primaryConnections = chaosService.unleashMonkey(
-                        instance.clusterKey,
-                        hk,
-                        instance.serviceKey,
-                        instance.instanceId,
-                        primaryConnections);
+                    instance.clusterKey,
+                    hk,
+                    instance.serviceKey,
+                    instance.instanceId,
+                    primaryConnections);
                 messages.add("Monkey affect: [" + monkeyAffectInstances + "]");
             }
         }

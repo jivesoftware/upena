@@ -1,11 +1,13 @@
 package com.jivesoftware.os.upena.deployable.endpoints;
 
+import com.google.common.collect.Lists;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.deployable.region.LoadBalancersPluginRegion;
-import com.jivesoftware.os.upena.deployable.region.LoadBalancersPluginRegion.ListenerUpdate;
 import com.jivesoftware.os.upena.deployable.region.LoadBalancersPluginRegion.LoadBalancersPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
+import java.util.Collections;
+import java.util.List;
 import javax.inject.Singleton;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -18,6 +20,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.apache.commons.lang.StringUtils;
 
 /**
  *
@@ -38,14 +41,15 @@ public class LoadBalancersPluginEndpoints {
 
     @GET
     @Produces(MediaType.TEXT_HTML)
-    public Response clusters(@Context HttpServletRequest httpRequest) {
+    public Response loadBalancers(@Context HttpServletRequest httpRequest) {
         try {
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(),
                 pluginRegion,
-                new LoadBalancersPluginRegionInput("", "", "", ""));
+                new LoadBalancersPluginRegionInput("", "", "", "", 0, 0, Collections.emptyList(), "", "", "", Collections.emptyList(),
+                    Collections.emptyList(), Collections.emptyMap(), "", "", "", "", "", "", ""));
             return Response.ok(rendered).build();
         } catch (Exception e) {
-            LOG.error("clusters GET.", e);
+            LOG.error("loadBalancers GET.", e);
             return Response.serverError().entity(e.getMessage()).build();
         }
     }
@@ -57,43 +61,100 @@ public class LoadBalancersPluginEndpoints {
         @FormParam("key") @DefaultValue("") String key,
         @FormParam("name") @DefaultValue("") String name,
         @FormParam("description") @DefaultValue("") String description,
+        @FormParam("clusterKey") @DefaultValue("") String clusterKey,
+        @FormParam("cluster") @DefaultValue("") String cluster,
+        @FormParam("serviceKey") @DefaultValue("") String serviceKey,
+        @FormParam("service") @DefaultValue("") String service,
+        @FormParam("releaseKey") @DefaultValue("") String releaseGroupKey,
+        @FormParam("release") @DefaultValue("") String releaseGroup,
         @FormParam("action") @DefaultValue("") String action) {
+
         try {
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-                new LoadBalancersPluginRegionInput(key, name, description, action));
+                new LoadBalancersPluginRegionInput(key, name, description, null, -1, -1, null, null, null,
+                    null, null, null, Collections.emptyMap(), clusterKey, cluster, serviceKey, service, releaseGroupKey, releaseGroup,
+                    action));
             return Response.ok(rendered).build();
         } catch (Exception e) {
-            LOG.error("clusters action  POST.", e);
+            LOG.error("loadBalancers action  POST.", e);
             return Response.serverError().entity(e.getMessage()).build();
         }
     }
 
     @POST
-    @Path("/add")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response add(ListenerUpdate update, @Context HttpServletRequest httpRequest) {
+    @Path("/config")
+    @Produces(MediaType.TEXT_HTML)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    public Response config(@Context HttpServletRequest httpRequest,
+        @FormParam("key") @DefaultValue("") String key,
+        @FormParam("scheme") @DefaultValue("") String scheme,
+        @FormParam("loadBalancerPort") @DefaultValue("-1") int loadBalancerPort,
+        @FormParam("instancePort") @DefaultValue("-1") int instancePort,
+        @FormParam("availabilityZones") @DefaultValue("") String availabilityZones,
+        @FormParam("protocol") @DefaultValue("") String protocol,
+        @FormParam("certificate") @DefaultValue("") String certificate,
+        @FormParam("serviceProtocol") @DefaultValue("") String serviceProtocol,
+        @FormParam("securityGroups") @DefaultValue("")String securityGroups,
+        @FormParam("subnets") @DefaultValue("") String subnets) {
+
         try {
-            pluginRegion.add(httpRequest.getRemoteUser(), update);
-            return Response.ok().build();
-        } catch (Exception x) {
-            LOG.error("clusters add POST.", x);
-            return Response.serverError().build();
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+                new LoadBalancersPluginRegionInput(key, null, null,
+                    scheme,
+                    loadBalancerPort,
+                    instancePort,
+                    sanitizedList(availabilityZones),
+                    protocol,
+                    certificate,
+                    serviceProtocol,
+                    sanitizedList(securityGroups),
+                    sanitizedList(subnets),
+                    Collections.emptyMap(),
+                    null, null, null, null, null, null,
+                    "update"));
+            return Response.ok(rendered).build();
+        } catch (Exception e) {
+            LOG.error("loadBalancers action  POST.", e);
+            return Response.serverError().entity(e.getMessage()).build();
         }
+    }
+    
+     private List<String> sanitizedList(String string) {
+        if (string == null) {
+            return Collections.emptyList();
+        }
+        if (string.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<String> sanitized = Lists.newArrayList();
+        for (String s : string.split(",")) {
+            s = s.trim();
+            if (!StringUtils.isBlank(s)) {
+                sanitized.add(s);
+            }
+        }
+        return sanitized;
     }
 
-    @POST
-    @Path("/remove")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response remove(ListenerUpdate update, @Context HttpServletRequest httpRequest) {
-        try {
-            pluginRegion.remove(httpRequest.getRemoteUser(), update);
-            return Response.ok().build();
-        } catch (Exception x) {
-            LOG.error("clusters remove  POST.", x);
-            return Response.serverError().build();
-        }
-    }
+
+
+//    @POST
+//    @Path("/tag")
+//    @Produces(MediaType.APPLICATION_JSON)
+//    @Consumes(MediaType.APPLICATION_JSON)
+//    public Response tag(@Context HttpServletRequest httpRequest,
+//        @FormParam("key") @DefaultValue("") String key,
+//        @FormParam("tagName") @DefaultValue("") String tagName,
+//        @FormParam("tagValue") @DefaultValue("") String tagValue,
+//        @FormParam("action") @DefaultValue("") String action
+//    ) {
+//        try {
+//            pluginRegion.tag(httpRequest.getRemoteUser(), key, tagName, tagValue, action);
+//            return Response.ok().build();
+//        } catch (Exception x) {
+//            LOG.error("clusters add POST.", x);
+//            return Response.serverError().build();
+//        }
+//    }
 
 }

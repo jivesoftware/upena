@@ -19,10 +19,13 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
+import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ReleaseGroup implements Stored<ReleaseGroup>, Serializable {
+
 
     public final String name;
     public final String email;
@@ -31,6 +34,7 @@ public class ReleaseGroup implements Stored<ReleaseGroup>, Serializable {
     public final String repository;
     public final String description;
     public final boolean autoRelease;
+    public final Map<String, String> properties = new ConcurrentHashMap<>();
 
     @JsonCreator
     public ReleaseGroup(@JsonProperty("name") String name,
@@ -58,6 +62,7 @@ public class ReleaseGroup implements Stored<ReleaseGroup>, Serializable {
             + ", repository=" + repository
             + ", description=" + description
             + ", autoRelease=" + autoRelease
+            + ", properties=" + properties
             + '}';
     }
 

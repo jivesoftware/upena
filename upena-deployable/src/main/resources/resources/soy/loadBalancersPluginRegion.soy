@@ -1,0 +1,254 @@
+{namespace soy.page}
+
+/**
+ * Upena LoadBalancer plugin page
+ * 
+ * @param? loadBalancers
+ * @param? unattachedLoadBalancers
+ * @param? message
+ * @param? filters
+ */
+{template .loadBalancersPluginRegion}
+    {if $loadBalancers}
+        <div id="upena-loadbalancers" class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.9);">
+            <div class="panel-heading"><span class="panel-title">Load Balancers</span></div>
+            {if $message}
+                <pre>{$message}</pre>
+            {/if}
+               
+            <div class="panel-body">
+                {call .loadBalancersPluginRegionList}
+                    {param loadBalancers: $loadBalancers /}
+                    {param filters: $filters /}
+                {/call}
+            </div>
+        </div>
+    {/if}
+    {if $unattachedLoadBalancers}
+        <div id="upena-unattachedLoadBalancers" class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.9);">
+            <div class="panel-heading"><span class="panel-title">Unattached Load Balancers</span></div>
+            {if $message}
+                <pre>{$message}</pre>
+            {/if}
+
+            <div class="panel-body">
+                {call .unattachedLoadBalancersPluginRegionList}
+                    {param unattachedLoadBalancers: $unattachedLoadBalancers /}
+                {/call}
+            </div>
+        </div>
+    {/if}
+
+{/template}
+
+/**
+ * @param? loadBalancers
+ * @param? filters
+ */
+{template .loadBalancersPluginRegionList}
+   <table class="table table-hover table-condensed table-responsive">
+        <thead>
+            <tr>
+                <th>Status</th>
+                <th>Name</th>
+                <th>Cluster</th>
+                <th>Service</th>
+                <th>Release</th>
+                <th>Config</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <form id="filter-form" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="loadBalancer">
+                <tr style="background-color:#ddd;">
+                    <td>
+                    </td>
+                    <td>
+                        <input type="text" name="name" value="{$filters.name?:''}"></li>
+                    </td>
+                    <td>
+                        <div>
+                            <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                placeholder="Cluster" value="{$filters.cluster?:''}" name="cluster" id="clusterPicker"
+                                class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/clusters">
+                            <input type="hidden" name="clusterKey" value="{$filters.clusterKey?:''}" />
+                        </div>
+                    </td>
+                    <td>
+                        <div>
+                            <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                placeholder="Service" value="{$filters.service?:''}" name="service" id="servicePicker"
+                                class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/services">
+                            <input type="hidden" name="serviceKey" value="{$filters.serviceKey?:''}" />
+                        </div>
+                    </td>
+                    <td>
+                        <div>
+                            <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                placeholder="Release" value="{$filters.release?:''}" name="release" id="releasePicker"
+                                class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/releases">
+                            <input type="hidden" name="releaseKey" value="{$filters.releaseKey?:''}" />
+                        </div>
+                    </td>
+                    <td>
+                    </td>
+                    <td>
+                        <button id="filter" title="Filter" type="submit" name="action" value="filter" class="btn btn-primary ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-search">&nbspFilter</span></button>
+                        <button title="Add" type="submit" name="action" value="add" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-plus">&nbspAdd</span></button>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="7">
+                        <button form="filter-form" type="submit" name="action" value="apply" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">Apply</button>
+                    </td>
+                </tr>
+            </form>
+
+            {foreach $i in $loadBalancers}
+               
+                    <tr>
+                        <td>
+                            <div style="float:left; width:100px;">
+                                <a href="#" rel="popover" id="popoverAnchor-status-{$i.key}" data-popover-content="#statusPopover-{$i.key}" data-placement="right" class="btn btn-primary" title="Status">
+                                    <span class="glyphicon glyphicon-menu-down"></span>Status
+                                </a>
+                                <div id="statusPopover-{$i.key}" class="hide" style="overflow:scroll; height:400px;">
+                                    <ul style="list-style-type:none">
+                                        {foreach $p in $i.status.properties}
+                                            <li>{$p}</li>
+                                         {/foreach}
+                                    </ul>
+                                </div>
+                            </div>
+                            <div style="float:left;">
+                                <ul style="list-style-type:none">
+                                     {foreach $m in $i.status.messages}
+                                        <li>{$m}</li>
+                                     {/foreach}
+                                </ul>
+                            </div>
+                            
+                        </td>
+                            <form id="edit-lb" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                       data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="edit-lb">
+                                <td>
+                                    <div>
+                                        {$i.name}
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>
+                                        <input type="hidden" name="key" value="{$i.key}">
+                                        <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                            placeholder="Cluster" value="{$i.cluster}" name="cluster" class="upena-hs-field form-control"
+                                            data-upena-lookup="/ui/lookup/clusters" />
+                                        <input type="hidden" name="clusterKey" value="{$i.clusterKey}" />
+                                    </div>
+                                </td>
+                                <td>
+                                   <div>
+                                        <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                            placeholder="Service" value="{$i.service}" name="service" class="upena-hs-field form-control"
+                                            data-upena-lookup="/ui/lookup/services" />
+                                        <input type="hidden" name="serviceKey" value="{$i.serviceKey}" />
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>
+                                        <input type="text" style="padding-left:10px;"
+                                            placeholder="Release" value="{$i.release}" name="release" class="upena-hs-field form-control"
+                                            data-upena-lookup="/ui/lookup/releases" />
+                                        <input type="hidden" name="releaseKey" value="{$i.releaseKey}" />
+                                    </div>
+                                </td>
+                            </form>
+                        <td>
+                            <a href="#" rel="popover" id="popoverAnchor-{$i.key}" data-popover-content="#configPopover-{$i.key}" data-placement="left" class="btn btn-primary" title="Config">
+                                <span class="glyphicon glyphicon-menu-down"></span>Config
+                            </a>
+                            <div id="configPopover-{$i.key}" class="hide" style="overflow:scroll; height:400px;">
+                                <ul style="list-style-type:none">
+                                    <form id="edit-{$i.key}" class="loadbalancer-config j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                                        method="post" name="updateLoadBalancer" action="/ui/loadbalancers/config">
+                                            <li>Config:<input type="hidden" name="key" value="{$i.key}"></li>
+                                            <li>Scheme:<input type="text" name="scheme" value="{$i.scheme}"></li>
+                                            <li>Load Balancer Port:<input type="text" name="loadBalancerPort" value="{$i.loadBalancerPort}"></li>
+                                            <li>Instance Port:<input type="text" name="instancePort" value="{$i.instancePort}"></li>
+                                            
+                                            <li>Protocol:<input type="text" name="protocol" value="{$i.protocol}"></li>
+                                            <li>Certificate:<input type="text" name="certificate" value="{$i.certificate}"></li>
+                                            <li>Service Protocol:<input type="text" name="serviceProtocol" value="{$i.serviceProtocol}"></li>
+
+                                            <li>Availability Zones:<input type="text" name="availabilityZones" value="{$i.availabilityZones}"></li>
+                                            <li>Security Groups:<input type="text" name="securityGroups" value="{$i.securityGroups}"></li>
+                                            <li>Subnets:<input type="text" name="subnets" value="{$i.subnets}"></li>
+                                            <li><button title="Update" type="submit" name="action" value="update" class="btn btn-default"><span class="glyphicon glyphicon-save ladda-button"  data-spinner-color="#222" data-style="expand-right">&nbspUpdate</span></button></li>
+
+                                    </form>
+                                </ul>
+                            </div>
+                        </td>
+                        <td>
+                            <button form="edit-lb" title="Update" type="submit" name="action" value="update" class="btn btn-default"><span class="glyphicon glyphicon-save ladda-button"  data-spinner-color="#222" data-style="expand-right">&nbspUpdate</span></button>
+                            <button form="edit-lb" onclick="return confirm('Are you sure you want to delete?')" title="Remove" type="submit" name="action" value="remove" class="btn btn-default"><span class="glyphicon glyphicon-trash">&nbspRemove</span></button>
+                        </td>
+                    </tr>
+            {/foreach}
+        </tbody>
+    </table>
+{/template}
+
+
+/**
+ * @param? unattachedLoadBalancers
+ */
+{template .unattachedLoadBalancersPluginRegionList}
+    <table class="table table-hover table-condensed table-responsive">
+        <thead>
+            <tr>
+                <th>Status</th>
+                <th>Name</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {foreach $i in $unattachedLoadBalancers}
+                <form id="remove-unattachedLoadBalancers-{$i.key}" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                       data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="edit-lb">
+                    <tr>
+                        <td>
+                            <div style="float:left; width:100px;">
+                                <a href="#" rel="popover" id="popoverAnchor-status-{$i.key}" data-popover-content="#statusPopover-{$i.key}" data-placement="right" class="btn btn-primary" title="Status">
+                                    <span class="glyphicon glyphicon-menu-down"></span>Status
+                                </a>
+                                <div id="statusPopover-{$i.key}" class="hide" style="overflow:scroll; height:400px;">
+                                    <ul style="list-style-type:none">
+                                        {foreach $p in $i.status.properties}
+                                            <li>{$p}</li>
+                                         {/foreach}
+                                    </ul>
+                                </div>
+                            </div>
+                            <div style="float:left;">
+                                <ul style="list-style-type:none">
+                                     {foreach $m in $i.status.messages}
+                                        <li>{$m}</li>
+                                     {/foreach}
+                                </ul>
+                            </div>
+                        </td>
+                        <td>
+                             <input type="hidden" name="key" value="{$i.key}">
+                             <input type="hidden" name="name" value="{$i.arn}">
+                            {$i.key}
+                        </td>
+                        <td>
+                            <button form="remove-unattachedLoadBalancers-{$i.key}" onclick="return confirm('Are you sure you want to delete?')" title="Remove" type="submit" name="action" value="remove-unattached" class="btn btn-default"><span class="glyphicon glyphicon-trash">&nbspRemove</span></button>
+                        </td>
+                    </tr>
+                </form>
+            {/foreach}
+        </tbody>
+    </table>
+{/template}

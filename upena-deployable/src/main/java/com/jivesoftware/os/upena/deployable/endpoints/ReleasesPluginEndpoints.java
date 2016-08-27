@@ -3,6 +3,7 @@ package com.jivesoftware.os.upena.deployable.endpoints;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.deployable.region.ReleasesPluginRegion;
+import com.jivesoftware.os.upena.deployable.region.ReleasesPluginRegion.PropertyUpdate;
 import com.jivesoftware.os.upena.deployable.region.ReleasesPluginRegion.ReleasesPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
 import java.io.InputStream;
@@ -124,6 +125,36 @@ public class ReleasesPluginEndpoints {
         } catch (Throwable t) {
             LOG.error("Failed to import", t);
             return Response.serverError().entity(t.getMessage()).build();
+        }
+    }
+
+
+    @POST
+    @Path("/property/add")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response add(@Context HttpServletRequest httpRequest, PropertyUpdate update) {
+
+        try {
+            pluginRegion.add(httpRequest.getRemoteUser(), update);
+            return Response.ok().build();
+        } catch (Exception x) {
+            LOG.error("Failed to add ports for:" + update, x);
+            return Response.serverError().build();
+        }
+    }
+
+    @POST
+    @Path("/property/remove")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response remove(@Context HttpServletRequest httpRequest, PropertyUpdate update) {
+        try {
+            pluginRegion.remove(httpRequest.getRemoteUser(), update);
+            return Response.ok().build();
+        } catch (Exception x) {
+            LOG.error("Failed to remove to ports for:" + update, x);
+            return Response.serverError().build();
         }
     }
 

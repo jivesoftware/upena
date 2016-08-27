@@ -155,6 +155,32 @@ upena.instances = {
     }
 };
 
+upena.loadBalancers = {
+    init: function() {
+        $(".loadbalancer-config").each(function (i, element) {
+             upena.loadBalancers.options = {
+                //target: '#digestContentBody', // target element(s) to be updated with server response
+                beforeSubmit: function () {
+                    $('#digest-spinner').css('display', 'inline-block');
+                },
+                beforeSend: function (xhr) {
+                    upena.loadBalancers.formXhr = xhr;
+                },
+                success: function (responseText) {
+                    $('#filter').click();
+                  },
+                error: function () {
+                    upena.digest.formReset();
+                }
+            };
+
+            var $form = $(element);
+
+            // bind form using 'ajaxForm'
+            $form.ajaxForm(upena.loadBalancers.options);
+        });
+    }
+}
 
 upena.clusterReleaseGroups = {
     add: function (clusterId) {
@@ -186,6 +212,40 @@ upena.clusterReleaseGroups = {
         });
     }
 };
+
+upena.release = {
+    addProperty: function (id) {
+        var name = $('#propertyName-' + id).val();
+        var value = $('#propertyValue-' + id).val();
+
+        console.log(id + " " + name + " " + value);
+        $.ajax("/ui/releases/property/add", {
+            data: JSON.stringify({'releaseKey': id, 'name': name, 'value': value}),
+            method: "post",
+            contentType: "application/json",
+            success: function () {
+                window.location.reload(true);
+            },
+            error: function () {
+                alert('Save failed!');
+            }
+        });
+    },
+    removeProperty: function (id, name, value) {
+        $.ajax("/ui/releases/property/remove", {
+            data: JSON.stringify({'releaseKey': id, 'name': name, 'value': value}),
+            method: "post",
+            contentType: "application/json",
+            success: function () {
+                window.location.reload(true);
+            },
+            error: function () {
+                alert('Save failed!');
+            }
+        });
+    }
+}
+
 upena.instancePorts = {
     addPort: function (instanceId) {
         var portName = $('#portName-' + instanceId).val();
@@ -1002,6 +1062,10 @@ $(document).ready(function () {
 
 
     Ladda.bind('.ladda-button', {timeout: 60000});
+
+    if ($("#upena-loadbalancers").length) {
+        upena.loadBalancers.init();
+    }
 
     if ($('.upena-hs-field').length) {
         upena.hs.init();

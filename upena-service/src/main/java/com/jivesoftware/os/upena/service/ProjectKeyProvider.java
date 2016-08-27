@@ -15,19 +15,22 @@
  */
 package com.jivesoftware.os.upena.service;
 
+import com.jivesoftware.os.jive.utils.ordered.id.OrderIdProvider;
 import com.jivesoftware.os.upena.service.UpenaTable.UpenaKeyProvider;
 import com.jivesoftware.os.upena.shared.Project;
 import com.jivesoftware.os.upena.shared.ProjectKey;
-import java.nio.charset.Charset;
 
 public class ProjectKeyProvider implements UpenaKeyProvider<ProjectKey, Project> {
 
-    private final Charset UTF8 = Charset.forName("utf-8");
+    private final OrderIdProvider idProvider;
+
+    public ProjectKeyProvider(OrderIdProvider idProvider) {
+        this.idProvider = idProvider;
+    }
 
     @Override
     public ProjectKey getNodeKey(UpenaTable<ProjectKey, Project> table, Project value) {
-        JenkinsHash jenkinsHash = new JenkinsHash();
-        String k = Long.toString(Math.abs(jenkinsHash.hash(value.name.getBytes(UTF8), 1)));
+        String k = Long.toString(Math.abs(idProvider.nextId()));
         return new ProjectKey(k);
     }
 }

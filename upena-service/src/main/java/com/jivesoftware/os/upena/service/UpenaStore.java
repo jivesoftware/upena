@@ -20,6 +20,7 @@ import com.jivesoftware.os.amza.service.AmzaService;
 import com.jivesoftware.os.amza.service.AmzaTable;
 import com.jivesoftware.os.amza.shared.RowIndexKey;
 import com.jivesoftware.os.amza.shared.TableName;
+import com.jivesoftware.os.jive.utils.ordered.id.OrderIdProvider;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.routing.bird.shared.InstanceChanged;
@@ -31,8 +32,8 @@ import com.jivesoftware.os.upena.shared.HostKey;
 import com.jivesoftware.os.upena.shared.Instance;
 import com.jivesoftware.os.upena.shared.InstanceFilter;
 import com.jivesoftware.os.upena.shared.InstanceKey;
-import com.jivesoftware.os.upena.shared.LoadBalancer;
-import com.jivesoftware.os.upena.shared.LoadBalancerKey;
+import com.jivesoftware.os.upena.shared.LB;
+import com.jivesoftware.os.upena.shared.LBKey;
 import com.jivesoftware.os.upena.shared.Monkey;
 import com.jivesoftware.os.upena.shared.MonkeyKey;
 import com.jivesoftware.os.upena.shared.Project;
@@ -55,6 +56,7 @@ public class UpenaStore {
 
     private final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
+    private final OrderIdProvider idProvider;
     private final ObjectMapper mapper;
     private final AmzaService amzaService;
 
@@ -75,7 +77,7 @@ public class UpenaStore {
 
     public final UpenaTable<ProjectKey, Project> projects;
     public final UpenaTable<ClusterKey, Cluster> clusters;
-    public final UpenaTable<LoadBalancerKey, LoadBalancer> loadBalancers;
+    public final UpenaTable<LBKey, LB> loadBalancers;
     public final UpenaTable<HostKey, Host> hosts;
     public final UpenaTable<ServiceKey, Service> services;
     public final UpenaTable<ReleaseGroupKey, ReleaseGroup> releaseGroups;
@@ -84,30 +86,33 @@ public class UpenaStore {
     public final UpenaTable<MonkeyKey, Monkey> monkeys;
     public final AmzaTable changeLog;
 
-    public UpenaStore(ObjectMapper mapper,
+    public UpenaStore(OrderIdProvider idProvider,
+        ObjectMapper mapper,
         AmzaService amzaService,
         InstanceChanges instanceChanges,
         InstanceChanges instanceRemoved,
         TenantChanges tenantChanges,
         int minServicePort,
         int maxServicePort) throws Exception {
+
+        this.idProvider = idProvider;
         this.mapper = mapper;
         this.amzaService = amzaService;
         this.instanceChanges = instanceChanges;
         this.instanceRemoved = instanceRemoved;
         this.tenantChanges = tenantChanges;
 
-        projects = new UpenaTable<>(amzaService.getTable(projectStoreKey), ProjectKey.class, Project.class, new ProjectKeyProvider(), null);
-        clusters = new UpenaTable<>(amzaService.getTable(clusterStoreKey), ClusterKey.class, Cluster.class, new ClusterKeyProvider(), null);
-        loadBalancers = new UpenaTable<>(amzaService.getTable(loadbalancers), LoadBalancerKey.class, LoadBalancer.class, new LoadBalancerKeyProvider(), null);
+        projects = new UpenaTable<>(amzaService.getTable(projectStoreKey), ProjectKey.class, Project.class, new ProjectKeyProvider(idProvider), null);
+        clusters = new UpenaTable<>(amzaService.getTable(clusterStoreKey), ClusterKey.class, Cluster.class, new ClusterKeyProvider(idProvider), null);
+        loadBalancers = new UpenaTable<>(amzaService.getTable(loadbalancers), LBKey.class, LB.class, new LBKeyProvider(idProvider), null);
         hosts = new UpenaTable<>(amzaService.getTable(hostStoreKey), HostKey.class, Host.class, new HostKeyProvider(), null);
-        services = new UpenaTable<>(amzaService.getTable(serviceStoreKey), ServiceKey.class, Service.class, new ServiceKeyProvider(), null);
+        services = new UpenaTable<>(amzaService.getTable(serviceStoreKey), ServiceKey.class, Service.class, new ServiceKeyProvider(idProvider), null);
         releaseGroups = new UpenaTable<>(amzaService.getTable(releaseGroupStoreKey),
-            ReleaseGroupKey.class, ReleaseGroup.class, new ReleaseGroupKeyProvider(), null);
+            ReleaseGroupKey.class, ReleaseGroup.class, new ReleaseGroupKeyProvider(idProvider), null);
         instances = new UpenaTable<>(amzaService.getTable(instanceStoreKey),
-            InstanceKey.class, Instance.class, new InstanceKeyProvider(), new InstanceValidator(minServicePort, maxServicePort));
+            InstanceKey.class, Instance.class, new InstanceKeyProvider(idProvider), new InstanceValidator(minServicePort, maxServicePort));
         tenants = new UpenaTable<>(amzaService.getTable(tenantStoreKey), TenantKey.class, Tenant.class, new TenantKeyProvider(), null);
-        monkeys = new UpenaTable<>(amzaService.getTable(monkeyStoreKey), MonkeyKey.class, Monkey.class, new MonkeyKeyProvider(), null);
+        monkeys = new UpenaTable<>(amzaService.getTable(monkeyStoreKey), MonkeyKey.class, Monkey.class, new MonkeyKeyProvider(idProvider), null);
 
         changeLog = amzaService.getTable(changeLogStoreKey);
     }

@@ -30,6 +30,7 @@ public class Host implements Stored<Host>, Serializable {
     public final String hostName;
     public final int port;
     public final String workingDirectory;
+    public final String instanceId;
     public final ClusterKey clusterKey;
 
     @JsonCreator
@@ -39,6 +40,7 @@ public class Host implements Stored<Host>, Serializable {
         @JsonProperty("hostName") String hostName,
         @JsonProperty("port") int port,
         @JsonProperty("workingDirectory") String workingDirectory,
+        @JsonProperty("instanceId") String instanceId,
         @JsonProperty("clusterKey") ClusterKey clusterKey) {
         this.name = name;
         this.datacenterName = datacenterName;
@@ -46,6 +48,7 @@ public class Host implements Stored<Host>, Serializable {
         this.hostName = hostName;
         this.port = port;
         this.workingDirectory = workingDirectory;
+        this.instanceId = instanceId;
         this.clusterKey = clusterKey;
     }
 
@@ -58,6 +61,7 @@ public class Host implements Stored<Host>, Serializable {
             + ", hostName=" + hostName
             + ", port=" + port
             + ", workingDirectory=" + workingDirectory
+            + ", instanceId=" + workingDirectory
             + ", clusterKey=" + clusterKey
             + '}';
     }
@@ -107,6 +111,9 @@ public class Host implements Stored<Host>, Serializable {
             return false;
         }
         if (!Objects.equals(this.workingDirectory, other.workingDirectory)) {
+            return false;
+        }
+        if (!Objects.equals(this.instanceId, other.instanceId)) {
             return false;
         }
         if (!Objects.equals(this.clusterKey, other.clusterKey)) {

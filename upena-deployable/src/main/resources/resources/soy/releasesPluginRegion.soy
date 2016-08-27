@@ -32,6 +32,7 @@
             <tr>
                 <th>Instances</th>
                 <th>Name</th>
+                <th>Config</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -51,9 +52,10 @@
                             placeholder="Version" value="{$filters.version?:''}" name="version" id="descriptionPicker" class="form-control">
                             Autorelease<input type="checkbox" name="autoRelease" value="true" {if $filters.autoRelease}checked="checked"{/if}>
                         </td>
+                        <td></td>
                         <td>
-                            <button data-toggle="tooltip" title="Filter" type="submit" name="action" value="filter" class="btn btn-primary ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-search">&nbsp;Filter</span></button>
-                            <button data-toggle="tooltip" title="Add" type="submit" name="action" value="add" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-plus">&nbsp;Add</span></button>
+                            <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-search">&nbsp;Filter</span></button>
+                            <button title="Add" type="submit" name="action" value="add" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-plus">&nbsp;Add</span></button>
                             <button title="Export" type="submit" name="action" value="export" class="btn btn-default"><span class="glyphicon glyphicon-export">&nbsp;Export</span></button>
                             <button onclick="return confirm('Are you sure you want to upgrade all releases?')" title="Upgrade All" type="submit" name="action" value="upgrade-all" class="btn btn-default"><span class="glyphicon glyphicon-fast-forward">&nbsp;Upgrade-All</span></button>
                         </td>
@@ -136,6 +138,56 @@
                                 {/if}
                             {/if}
                         </ul>
+                    </td>
+                    <td>
+                        <a href="#" rel="popover" id="propertyPopoverAnchor-config-{$r.key}" data-popover-content="#propertyPopover-config-{$r.key}" data-placement="left" class="btn btn-primary" title="Config">
+                            <span class="glyphicon glyphicon-menu-down"></span>Config
+                        </a>
+                        <div id="propertyPopover-config-{$r.key}" class="hide" style="overflow:scroll; height:400px;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Property</th>
+                                        <th>Value</th>
+                                        <th>Default</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {foreach $nv in $r.properties}
+                                        <tr>
+                                            <td>
+                                                {$nv.name}
+                                            </td>
+                                            <td>
+                                                {$nv.value}
+                                            </td>
+                                            <td>
+                                                {$nv.default}
+                                            </td>
+                                            <td>
+                                                <button title="Remove" onClick="upena.release.removeProperty('{$r.key}', '{$nv.name}', '{$nv.value}')" class="btn btn-default">
+                                                    <span class="glyphicon glyphicon-trash">&nbspRemove</span>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    {/foreach}
+                                    <tr>
+                                        <td>
+                                            <input type="text" id="propertyName-{$r.key}" style="padding-left:10px;"
+                                                placeholder="property name" value="">
+                                        </td>
+                                        <td>
+                                            <input type="text" id="propertyValue-{$r.key}" style="padding-left:10px;"
+                                                placeholder="property value" value="">
+                                        </td>
+                                        <td>
+                                            <button title="Add" onClick="upena.release.addProperty('{$r.key}')" class="btn btn-default"><span class="glyphicon glyphicon-plus">&nbspAdd</span></button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </td>
                     <td>
                         <form id="edit-{$r.key}" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"

@@ -8,6 +8,7 @@ import com.jivesoftware.os.jive.utils.ordered.id.SnowflakeIdPacker;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.deployable.UpenaEndpoints;
+import com.jivesoftware.os.upena.deployable.aws.AWSClientFactory;
 import com.jivesoftware.os.upena.deployable.region.InstancesPluginRegion.InstancesPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.service.UpenaStore;
@@ -36,8 +37,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
-import org.apache.commons.lang.time.DurationFormatUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.DurationFormatUtils;
 
 /**
  *
@@ -51,19 +52,26 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
     private final String simpleTemplate;
     private final SoyRenderer renderer;
     private final UpenaStore upenaStore;
+    private final HostKey selfHostKey;
+
     private final HealthPluginRegion healthPluginRegion;
+    private final AWSClientFactory awsClientFactory;
 
     public InstancesPluginRegion(String template,
         String simpleTemplate,
         SoyRenderer renderer,
         UpenaStore upenaStore,
-        HealthPluginRegion healthPluginRegion
+        HostKey selfHostKey,
+        HealthPluginRegion healthPluginRegion,
+        AWSClientFactory awsClientFactory
     ) {
         this.template = template;
         this.simpleTemplate = simpleTemplate;
         this.renderer = renderer;
         this.upenaStore = upenaStore;
+        this.selfHostKey = selfHostKey;
         this.healthPluginRegion = healthPluginRegion;
+        this.awsClientFactory = awsClientFactory;
     }
 
     @Override
@@ -664,6 +672,9 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
         public int port;
         public String propertyName;
         public String propertyValue;
+
+        public PortUpdate() {
+        }
 
         public PortUpdate(String instanceId, String portName, int port, String propertyName, String propertyValue) {
             this.instanceId = instanceId;

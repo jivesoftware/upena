@@ -1,28 +1,30 @@
 package com.jivesoftware.os.upena.deployable.region;
 
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.auth.BasicSessionCredentials;
-import com.amazonaws.regions.Regions;
 import com.amazonaws.services.ec2.AmazonEC2Client;
 import com.amazonaws.services.ec2.model.DescribeInstanceStatusResult;
 import com.amazonaws.services.ec2.model.DescribeVolumesResult;
 import com.amazonaws.services.ec2.model.InstanceStatus;
 import com.amazonaws.services.ec2.model.Volume;
-import com.amazonaws.services.elasticloadbalancing.AmazonElasticLoadBalancingClient;
-import com.amazonaws.services.elasticloadbalancing.model.DescribeLoadBalancersResult;
-import com.amazonaws.services.elasticloadbalancing.model.LoadBalancerDescription;
-import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClient;
-import com.amazonaws.services.securitytoken.model.AssumeRoleRequest;
-import com.amazonaws.services.securitytoken.model.AssumeRoleResult;
+import com.amazonaws.services.elasticloadbalancingv2.AmazonElasticLoadBalancingClient;
+import com.amazonaws.services.elasticloadbalancingv2.model.DescribeLoadBalancersRequest;
+import com.amazonaws.services.elasticloadbalancingv2.model.DescribeLoadBalancersResult;
+import com.amazonaws.services.elasticloadbalancingv2.model.DescribeTargetGroupsRequest;
+import com.amazonaws.services.elasticloadbalancingv2.model.DescribeTargetGroupsResult;
+import com.amazonaws.services.elasticloadbalancingv2.model.DescribeTargetHealthRequest;
+import com.amazonaws.services.elasticloadbalancingv2.model.DescribeTargetHealthResult;
+import com.amazonaws.services.elasticloadbalancingv2.model.LoadBalancer;
+import com.amazonaws.services.elasticloadbalancingv2.model.TargetDescription;
+import com.amazonaws.services.elasticloadbalancingv2.model.TargetGroup;
+import com.amazonaws.services.elasticloadbalancingv2.model.TargetHealth;
+import com.amazonaws.services.elasticloadbalancingv2.model.TargetHealthDescription;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
+import com.jivesoftware.os.upena.deployable.aws.AWSClientFactory;
 import com.jivesoftware.os.upena.deployable.region.AWSPluginRegion.AWSPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -37,24 +39,15 @@ public class AWSPluginRegion implements PageRegion<AWSPluginRegionInput> {
 
     private final String template;
     private final SoyRenderer renderer;
-    private final String region;
-    private final String roleArn;
-    private final String accessKey;
-    private final String secretKey;
+    private final AWSClientFactory awsClientFactory;
 
     public AWSPluginRegion(String template,
         SoyRenderer renderer,
-        String region,
-        String roleArn,
-        String accessKey,
-        String secretKey
+        AWSClientFactory awsClientFactory
     ) {
         this.template = template;
         this.renderer = renderer;
-        this.region = region;
-        this.roleArn = roleArn;
-        this.accessKey = accessKey;
-        this.secretKey = secretKey;
+        this.awsClientFactory = awsClientFactory;
     }
 
     @Override
@@ -84,20 +77,53 @@ public class AWSPluginRegion implements PageRegion<AWSPluginRegionInput> {
 
         try {
             if (input.action.equals("loadBalancers")) {
-                AWSCredentials credentials = (roleArn != null) ? getFederatedSession(roleArn, accessKey, secretKey) : getBasicSession(accessKey, secretKey);
-                AmazonElasticLoadBalancingClient elbc = new AmazonElasticLoadBalancingClient(credentials);
-                DescribeLoadBalancersResult loadBalancersResult = elbc.describeLoadBalancers();
 
+                AmazonElasticLoadBalancingClient elbc = awsClientFactory.getELBC("aws-plugin");
+                DescribeLoadBalancersRequest describeLoadBalancersRequest = new DescribeLoadBalancersRequest();
+                DescribeLoadBalancersResult loadBalancersResult = elbc.describeLoadBalancers(describeLoadBalancersRequest);
                 List<Map<String, Object>> list = Lists.newArrayList();
-                for (LoadBalancerDescription loadBalancerDescription : loadBalancersResult.getLoadBalancerDescriptions()) {
-                    Map<String, Object> item = Maps.newHashMap();
-                    item.put("toString", prettyString(loadBalancerDescription.toString()));
-                    list.add(item);
+                if (loadBalancersResult != null && loadBalancersResult.getLoadBalancers() != null) {
+                    for (LoadBalancer loadBalancerDescription : loadBalancersResult.getLoadBalancers()) {
+                        Map<String, Object> item = Maps.newHashMap();
+                        item.put("toString", prettyString(loadBalancerDescription.toString()));
+                        list.add(item);
+                    }
                 }
+
+                DescribeTargetGroupsRequest describeTargetGroupsRequest = new DescribeTargetGroupsRequest();
+                DescribeTargetGroupsResult describeTargetGroups = elbc.describeTargetGroups(describeTargetGroupsRequest);
+                if (describeTargetGroups != null && describeTargetGroups.getTargetGroups() != null) {
+                    for (TargetGroup targetGroup : describeTargetGroups.getTargetGroups()) {
+                        Map<String, Object> item = Maps.newHashMap();
+                        item.put("toString", prettyString(targetGroup.toString()));
+                        list.add(item);
+
+                        DescribeTargetHealthRequest describeTargetHealthRequest = new DescribeTargetHealthRequest();
+                        describeTargetHealthRequest.setTargetGroupArn(targetGroup.getTargetGroupArn());
+                        DescribeTargetHealthResult describeTargetHealth = elbc.describeTargetHealth(describeTargetHealthRequest);
+                        if (describeTargetHealth != null && describeTargetHealth.getTargetHealthDescriptions() != null) {
+                            for (TargetHealthDescription targetHealthDescription : describeTargetHealth.getTargetHealthDescriptions()) {
+                                //String healthCheckPort = targetHealthDescription.getHealthCheckPort();
+                                TargetDescription targetDescription = targetHealthDescription.getTarget();
+                                item = Maps.newHashMap();
+                                item.put("toString", prettyString(targetDescription.toString()));
+                                list.add(item);
+
+                                TargetHealth targetHealth = targetHealthDescription.getTargetHealth();
+
+                                item = Maps.newHashMap();
+                                item.put("toString", prettyString(targetHealth.toString()));
+                                list.add(item);
+                            }
+                        }
+
+                    }
+                }
+
                 data.put("loadBalancers", list);
+
             } else if (input.action.equals("instances")) {
-                AWSCredentials credentials = (roleArn != null) ? getFederatedSession(roleArn, accessKey, secretKey) : getBasicSession(accessKey, secretKey);
-                AmazonEC2Client ec2 = getClientForAccount(credentials, Regions.fromName(this.region));
+                AmazonEC2Client ec2 = awsClientFactory.getEC2("aws-plugin");
 
                 DescribeInstanceStatusResult describeInstanceStatus = ec2.describeInstanceStatus();
                 List<Map<String, Object>> list = Lists.newArrayList();
@@ -108,8 +134,7 @@ public class AWSPluginRegion implements PageRegion<AWSPluginRegionInput> {
                 }
                 data.put("instances", list);
             } else if (input.action.equals("volumes")) {
-                AWSCredentials credentials = (roleArn != null) ? getFederatedSession(roleArn, accessKey, secretKey) : getBasicSession(accessKey, secretKey);
-                AmazonEC2Client ec2 = getClientForAccount(credentials, Regions.fromName(this.region));
+                AmazonEC2Client ec2 = awsClientFactory.getEC2("aws-plugin");
                 DescribeVolumesResult describeVolumes = ec2.describeVolumes();
                 List<Map<String, Object>> list = Lists.newArrayList();
                 for (Volume volume : describeVolumes.getVolumes()) {
@@ -137,35 +162,4 @@ public class AWSPluginRegion implements PageRegion<AWSPluginRegionInput> {
     public String getTitle() {
         return "AWS";
     }
-
-    private static AWSCredentials getBasicSession(String accessKey,
-        String secretKey) {
-        return new BasicAWSCredentials(accessKey, secretKey);
-    }
-
-    private static AWSCredentials getFederatedSession(String roleArn, String acccessKey, String secretKey) {
-        AWSSecurityTokenServiceClient stsClient = new AWSSecurityTokenServiceClient(new BasicAWSCredentials(acccessKey, secretKey));
-
-        AssumeRoleRequest assumeRequest = new AssumeRoleRequest()
-            .withRoleArn(roleArn)
-            .withDurationSeconds(3_600)
-            .withRoleSessionName("upena");  // TODO expose ?
-
-        AssumeRoleResult assumeResult = stsClient.assumeRole(assumeRequest);
-
-        BasicSessionCredentials temporaryCredentials = new BasicSessionCredentials(
-            assumeResult.getCredentials()
-            .getAccessKeyId(), assumeResult.getCredentials().getSecretAccessKey(),
-            assumeResult.getCredentials().getSessionToken());
-        return temporaryCredentials;
-    }
-
-    private static AmazonEC2Client getClientForAccount(AWSCredentials credentials, Regions regions) {
-
-        AmazonEC2Client amazonEC2Client = new AmazonEC2Client(credentials);
-        amazonEC2Client.setRegion(com.amazonaws.regions.Region.getRegion(regions));
-
-        return amazonEC2Client;
-    }
-
 }
