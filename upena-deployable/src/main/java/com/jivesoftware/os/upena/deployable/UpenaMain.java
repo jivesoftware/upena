@@ -441,7 +441,7 @@ public class UpenaMain {
 
         
         String vpc = System.getProperty("aws.vpc", null);
-        UpenaAWSLoadBalancerNanny upenaAWSLoadBalancerNanny = new UpenaAWSLoadBalancerNanny(vpc, upenaStore, hostKey, awsClientFactory);
+        UpenaAWSLoadBalancerNanny upenaAWSLoadBalancerNanny = new UpenaAWSLoadBalancerNanny(vpc, upenaStore, hostKey, awsClientFactory, port);
 
         Executors.newScheduledThreadPool(1).scheduleWithFixedDelay(() -> {
             try {
