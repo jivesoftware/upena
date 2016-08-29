@@ -369,6 +369,7 @@ public class UpenaAWSLoadBalancerNanny {
     private void ensureTargetsRegistered(ListMultimap<String, Instance> targetGroupInstances, Map<String, TargetGroup> targetGroups,
         AmazonElasticLoadBalancingClient elbc) throws Exception {
         // ensure instance is registered
+        Host self = upenaStore.hosts.get(selfHostKey);
         for (Map.Entry<String, Collection<Instance>> entry : targetGroupInstances.asMap().entrySet()) {
             String targetGroupArn = targetGroups.get(entry.getKey()).getTargetGroupArn();
 
@@ -390,7 +391,6 @@ public class UpenaAWSLoadBalancerNanny {
             List<TargetDescription> addTargetDescriptions = Lists.newArrayList();
             for (Instance instance : entry.getValue()) {
                 TargetDescription targetDescription = new TargetDescription();
-                Host self = upenaStore.hosts.get(selfHostKey);
                 targetDescription.setId(self.instanceId);
 
                 Instance.Port port = instance.ports.get("main"); // Hmmm
@@ -410,11 +410,19 @@ public class UpenaAWSLoadBalancerNanny {
             }
 
             if (!targetDescriptionsHealth.isEmpty()) {
-                DeregisterTargetsRequest deregisterTargetsRequest = new DeregisterTargetsRequest();
-                deregisterTargetsRequest.setTargetGroupArn(targetGroupArn);
-                deregisterTargetsRequest.setTargets(targetDescriptionsHealth.keySet());
-                LOG.info("Deregistering {}", deregisterTargetsRequest);
-                elbc.deregisterTargets(deregisterTargetsRequest);
+                List<TargetDescription> remove = Lists.newArrayList();
+                for (TargetDescription targetDescription : targetDescriptionsHealth.keySet()) {
+                    if (targetDescription.getId().equals(self.instanceId)) {
+                        remove.add(targetDescription);
+                    }
+                }
+                if (!remove.isEmpty()) {
+                    DeregisterTargetsRequest deregisterTargetsRequest = new DeregisterTargetsRequest();
+                    deregisterTargetsRequest.setTargetGroupArn(targetGroupArn);
+                    deregisterTargetsRequest.setTargets(targetDescriptionsHealth.keySet());
+                    LOG.info("Deregistering {}", deregisterTargetsRequest);
+                    elbc.deregisterTargets(deregisterTargetsRequest);
+                }
             }
         }
     }
