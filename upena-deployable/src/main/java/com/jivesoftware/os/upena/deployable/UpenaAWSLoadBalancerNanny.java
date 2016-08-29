@@ -35,7 +35,6 @@ import com.jivesoftware.os.upena.deployable.aws.AWSClientFactory;
 import com.jivesoftware.os.upena.service.JenkinsHash;
 import com.jivesoftware.os.upena.service.UpenaStore;
 import com.jivesoftware.os.upena.shared.Cluster;
-import com.jivesoftware.os.upena.shared.ClusterKey;
 import com.jivesoftware.os.upena.shared.Host;
 import com.jivesoftware.os.upena.shared.HostKey;
 import com.jivesoftware.os.upena.shared.Instance;
@@ -45,7 +44,6 @@ import com.jivesoftware.os.upena.shared.ReleaseGroup;
 import com.jivesoftware.os.upena.shared.ReleaseGroupKey;
 import com.jivesoftware.os.upena.shared.ReleaseGroupPropertyKey;
 import com.jivesoftware.os.upena.shared.Service;
-import com.jivesoftware.os.upena.shared.ServiceKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
@@ -67,14 +65,12 @@ public class UpenaAWSLoadBalancerNanny {
     private final UpenaStore upenaStore;
     private final HostKey selfHostKey;
     private final AWSClientFactory awsClientFactory;
-    private final int upenaPort;
 
-    public UpenaAWSLoadBalancerNanny(String vpcId, UpenaStore upenaStore, HostKey selfHostKey, AWSClientFactory awsClientFactory, int upenaPort) {
+    public UpenaAWSLoadBalancerNanny(String vpcId, UpenaStore upenaStore, HostKey selfHostKey, AWSClientFactory awsClientFactory) {
         this.vpcId = vpcId;
         this.upenaStore = upenaStore;
         this.selfHostKey = selfHostKey;
         this.awsClientFactory = awsClientFactory;
-        this.upenaPort = upenaPort;
     }
 
     public void ensureSelf() throws Exception {
@@ -93,15 +89,13 @@ public class UpenaAWSLoadBalancerNanny {
 
         Set<String> missingTargetGroups = new HashSet<>();
         ListMultimap<String, Instance> targetGroupInstances = ArrayListMultimap.create();
-        Map<String, ClusterKey> targetGroupCluster = Maps.newHashMap();
-        Map<String, ServiceKey> targetGroupService = Maps.newHashMap();
         Map<String, ReleaseGroupKey> targetGroupRelease = Maps.newHashMap();
         Map<String, TargetGroup> targetGroups = Maps.newHashMap();
         Map<String, String> targetGroupIdToName = Maps.newHashMap();
         AmazonElasticLoadBalancingClient elbc = awsClientFactory.getELBC("lbNanny");
 
-        figureOutTargetGroups(found, missingTargetGroups, targetGroupInstances, targetGroupCluster, targetGroupService, targetGroupRelease, targetGroupIdToName);
-        ensureTargetGroups(elbc, targetGroups, missingTargetGroups, targetGroupCluster, targetGroupService, targetGroupRelease, targetGroupIdToName);
+        figureOutTargetGroups(found, missingTargetGroups, targetGroupInstances, targetGroupRelease, targetGroupIdToName);
+        ensureTargetGroups(elbc, targetGroups, missingTargetGroups, targetGroupRelease, targetGroupIdToName);
         ensureTargetsRegistered(targetGroupInstances, targetGroups, elbc);
 
     }
@@ -109,8 +103,6 @@ public class UpenaAWSLoadBalancerNanny {
     private void figureOutTargetGroups(ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> found,
         Set<String> desiredTargetGroups,
         ListMultimap<String, Instance> targetGroupInstances,
-        Map<String, ClusterKey> targetGroupCluster,
-        Map<String, ServiceKey> targetGroupService,
         Map<String, ReleaseGroupKey> targetGroupRelease,
         Map<String, String> targetGroupIdToName) throws Exception {
         JenkinsHash jenkinsHash = new JenkinsHash();
@@ -133,8 +125,6 @@ public class UpenaAWSLoadBalancerNanny {
             desiredTargetGroups.add(targetGroupKey);
 
             targetGroupInstances.put(targetGroupKey, instance);
-            targetGroupCluster.put(targetGroupKey, instance.clusterKey);
-            targetGroupService.put(targetGroupKey, instance.serviceKey);
             targetGroupRelease.put(targetGroupKey, instance.releaseGroupKey);
 
         }
@@ -143,8 +133,6 @@ public class UpenaAWSLoadBalancerNanny {
     private void ensureTargetGroups(AmazonElasticLoadBalancingClient elbc,
         Map<String, TargetGroup> targetGroups,
         Set<String> missingTargetGroups,
-        Map<String, ClusterKey> targetGroupCluster,
-        Map<String, ServiceKey> targetGroupService,
         Map<String, ReleaseGroupKey> targetGroupRelease,
         Map<String, String> targetGroupIdToName) throws Exception {
 
@@ -298,10 +286,7 @@ public class UpenaAWSLoadBalancerNanny {
 
             for (String missingTargetGroup : missingTargetGroups) {
 
-                ClusterKey clusterKey = targetGroupCluster.get(missingTargetGroup);
-                ServiceKey serviceKey = targetGroupService.get(missingTargetGroup);
                 ReleaseGroupKey releaseGroupKey = targetGroupRelease.get(missingTargetGroup);
-
                 ReleaseGroup releaseGroup = upenaStore.releaseGroups.get(releaseGroupKey);
 
                 boolean[] modified = {false};
@@ -309,17 +294,15 @@ public class UpenaAWSLoadBalancerNanny {
                 CreateTargetGroupRequest createTargetGroupRequest = new CreateTargetGroupRequest();
                 createTargetGroupRequest.setName(missingTargetGroup);
                 createTargetGroupRequest.setVpcId(vpcId);
-                createTargetGroupRequest.setPort(upenaPort);
+                createTargetGroupRequest.setPort(1);
 
                 createTargetGroupRequest.setMatcher(
                     new Matcher().withHttpCode(getOrDefault(releaseGroup.properties, ReleaseGroupPropertyKey.matcher)));
                 createTargetGroupRequest.setProtocol(
                     ProtocolEnum.valueOf(getOrDefault(releaseGroup.properties, ReleaseGroupPropertyKey.protocol).toUpperCase()));
-//                createTargetGroupRequest.setHealthCheckPath(
-//                    getOrDefault(releaseGroup.properties, ReleaseGroupPropertyKey.healthCheckPath));
-
-                createTargetGroupRequest.setHealthCheckPath("/hasService/" + clusterKey.getKey() + "/" + serviceKey.getKey() + "/" + releaseGroupKey.getKey());
-
+                createTargetGroupRequest.setHealthCheckPath(
+                    getOrDefault(releaseGroup.properties, ReleaseGroupPropertyKey.healthCheckPath));
+                //createTargetGroupRequest.setHealthCheckPort(Integer.MIN_VALUE);
                 createTargetGroupRequest.setHealthCheckProtocol(
                     ProtocolEnum.valueOf(getOrDefault(releaseGroup.properties, ReleaseGroupPropertyKey.healthCheckProtocol).toUpperCase()));
                 createTargetGroupRequest.setHealthCheckTimeoutSeconds(
