@@ -156,6 +156,18 @@ public class UpenaAWSLoadBalancerNanny {
                 String targetGroupName = targetGroup.getTargetGroupName();
                 missingTargetGroups.remove(targetGroupName);
 
+                ClusterKey clusterKey = targetGroupCluster.get(targetGroupName);
+                if (clusterKey == null) {
+                    // Ignore unknown
+                    continue;
+                }
+
+                ServiceKey serviceKey = targetGroupService.get(targetGroupName);
+                if (serviceKey == null) {
+                    // Ignore unknown
+                    continue;
+                }
+
                 ReleaseGroupKey releaseGroupKey = targetGroupRelease.get(targetGroupName);
                 if (releaseGroupKey == null) {
                     // Ignore unknown
@@ -185,6 +197,9 @@ public class UpenaAWSLoadBalancerNanny {
                         modifyTargetGroupRequest.setHealthCheckIntervalSeconds(Integer.parseInt(newValue));
                     }
                 );
+
+                String healthCheckPath = "/hasService/" + clusterKey.getKey() + "/" + serviceKey.getKey() + "/" + releaseGroupKey.getKey();
+                releaseGroup.properties.put(ReleaseGroupPropertyKey.healthCheckPath.key(), healthCheckPath); // HACK!!!
 
                 updateIfChanged(
                     targetGroup.getHealthCheckPath(),
@@ -318,7 +333,8 @@ public class UpenaAWSLoadBalancerNanny {
 //                createTargetGroupRequest.setHealthCheckPath(
 //                    getOrDefault(releaseGroup.properties, ReleaseGroupPropertyKey.healthCheckPath));
 
-                createTargetGroupRequest.setHealthCheckPath("/hasService/" + clusterKey.getKey() + "/" + serviceKey.getKey() + "/" + releaseGroupKey.getKey());
+                String healthCheckPath = "/hasService/" + clusterKey.getKey() + "/" + serviceKey.getKey() + "/" + releaseGroupKey.getKey();
+                createTargetGroupRequest.setHealthCheckPath(healthCheckPath);
 
                 createTargetGroupRequest.setHealthCheckProtocol(
                     ProtocolEnum.valueOf(getOrDefault(releaseGroup.properties, ReleaseGroupPropertyKey.healthCheckProtocol).toUpperCase()));
