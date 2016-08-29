@@ -443,16 +443,13 @@ public class UpenaMain {
         String vpc = System.getProperty("aws.vpc", null);
         UpenaAWSLoadBalancerNanny upenaAWSLoadBalancerNanny = new UpenaAWSLoadBalancerNanny(vpc, upenaStore, hostKey, awsClientFactory);
 
-        Executors.newScheduledThreadPool(1).scheduleWithFixedDelay(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    upenaAWSLoadBalancerNanny.ensureSelf();
-                } catch (Exception x) {
-                    LOG.warn("Failures while nannying load loadbalancer.", x);
-                }
+        Executors.newScheduledThreadPool(1).scheduleWithFixedDelay(() -> {
+            try {
+                upenaAWSLoadBalancerNanny.ensureSelf();
+            } catch (Exception x) {
+                LOG.warn("Failures while nannying load loadbalancer.", x);
             }
-        }, 10, 10, TimeUnit.SECONDS); // TODO better
+        }, 1, 1, TimeUnit.MINUTES); // TODO better
     }
 
     private void injectUI(AWSClientFactory awsClientFactory,

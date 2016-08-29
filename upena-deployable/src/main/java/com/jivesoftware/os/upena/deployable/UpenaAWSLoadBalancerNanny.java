@@ -259,12 +259,14 @@ public class UpenaAWSLoadBalancerNanny {
                 if (describeTagsResult != null && describeTagsResult.getTagDescriptions() != null) {
 
                     for (TagDescription tagDescription : describeTagsResult.getTagDescriptions()) {
-                        for (Tag tag : tagDescription.getTags()) {
-                            if (tag.getKey().equals("upena_name")) {
-                                if (tag.getValue().equals(targetGroupIdToName.get(targetGroup.getTargetGroupName()))) {
-                                    foundUpenaName = true;
+                        if (tagDescription.getTags() != null) {
+                            for (Tag tag : tagDescription.getTags()) {
+                                if (tag.getKey().equals("upena_name")) {
+                                    if (tag.getValue().equals(targetGroupIdToName.get(targetGroup.getTargetGroupName()))) {
+                                        foundUpenaName = true;
+                                    }
+                                    break;
                                 }
-                                break;
                             }
                         }
                     }
@@ -380,7 +382,7 @@ public class UpenaAWSLoadBalancerNanny {
                     //String healthCheckPort = targetHealthDescription.getHealthCheckPort();
                     TargetDescription targetDescription = targetHealthDescription.getTarget();
                     TargetHealth targetHealth = targetHealthDescription.getTargetHealth();
-                    
+
                     targetDescriptionsHealth.put(targetDescription, targetHealth);
                 }
             }
