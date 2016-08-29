@@ -35,8 +35,16 @@ import com.jivesoftware.os.upena.deployable.soy.SoyService;
 import com.jivesoftware.os.upena.service.DiscoveredRoutes;
 import com.jivesoftware.os.upena.service.DiscoveredRoutes.RouteHealths;
 import com.jivesoftware.os.upena.service.DiscoveredRoutes.Routes;
+import com.jivesoftware.os.upena.service.UpenaStore;
+import com.jivesoftware.os.upena.shared.ClusterKey;
 import com.jivesoftware.os.upena.shared.HostKey;
+import com.jivesoftware.os.upena.shared.Instance;
+import com.jivesoftware.os.upena.shared.InstanceFilter;
+import com.jivesoftware.os.upena.shared.InstanceKey;
 import com.jivesoftware.os.upena.shared.PathToRepo;
+import com.jivesoftware.os.upena.shared.ReleaseGroupKey;
+import com.jivesoftware.os.upena.shared.ServiceKey;
+import com.jivesoftware.os.upena.shared.TimestampedValue;
 import com.jivesoftware.os.upena.uba.service.Nanny;
 import com.jivesoftware.os.upena.uba.service.UbaService;
 import java.io.File;
@@ -51,6 +59,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.TimeUnit;
 import javax.inject.Singleton;
 import javax.servlet.ServletException;
@@ -100,6 +109,7 @@ public class UpenaEndpoints {
     private final DiscoveredRoutes discoveredRoutes;
     private final PathToRepo localPathToRepo;
     private final UpenaAutoRelease autoRelease;
+    private final UpenaStore upenaStore;
     private final long startupTime = System.currentTimeMillis();
 
     public UpenaEndpoints(@Context AmzaClusterName amzaClusterName,
@@ -111,7 +121,8 @@ public class UpenaEndpoints {
         @Context SoyService soyService,
         @Context DiscoveredRoutes discoveredRoutes,
         @Context PathToRepo localPathToRepo,
-        @Context UpenaAutoRelease autoRelease) {
+        @Context UpenaAutoRelease autoRelease,
+        @Context UpenaStore upenaStore) {
         this.amzaClusterName = amzaClusterName;
         this.amzaInstance = amzaInstance;
         this.upenaConfigStore = upenaConfigStore;
@@ -122,6 +133,7 @@ public class UpenaEndpoints {
         this.discoveredRoutes = discoveredRoutes;
         this.localPathToRepo = localPathToRepo;
         this.autoRelease = autoRelease;
+        this.upenaStore = upenaStore;
     }
 
     @GET
@@ -213,6 +225,43 @@ public class UpenaEndpoints {
         httpRequest.logout();
         String rendered = soyService.render(httpRequest.getRemoteUser(), uriInfo.getAbsolutePath() + "propagator/download", amzaClusterName.name);
         return Response.ok(rendered).build();
+    }
+
+    @GET
+    @Path("/hasService/{cluserKey}/{serviceKey}/{releaseKey}")
+    public Response hasService(@PathParam("clusterName") String clusterKey,
+        @PathParam("serviceKey") String serviceKey,
+        @PathParam("releaseKey") String releaseKey
+    ) {
+        try {
+            InstanceFilter instanceFilter = new InstanceFilter(
+                new ClusterKey(clusterKey),
+                ringHostKey,
+                new ServiceKey(serviceKey),
+                new ReleaseGroupKey(releaseKey),
+                null,
+                0,
+                1);
+
+            ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(instanceFilter);
+            boolean enabled = false;
+            for (TimestampedValue<Instance> value : found.values()) {
+                if (!value.getTombstoned() && value.getValue().enabled) {
+                    enabled = true;
+                    break;
+                }
+            }
+
+            if (enabled) {
+                return Response.ok().build();
+            } else {
+                return Response.accepted().build();
+            }
+
+        } catch (Exception x) {
+            LOG.error("Failed to check has service. {} {} ", new Object[]{clusterKey, serviceKey, releaseKey}, x);
+            return Response.serverError().entity(x.toString()).type(MediaType.TEXT_PLAIN).build();
+        }
     }
 
     @GET
@@ -360,7 +409,7 @@ public class UpenaEndpoints {
             if (nanny.getValue().getStartTimeMillis() > 0) {
                 uptime = shortHumanReadableUptime(System.currentTimeMillis() - nanny.getValue().getStartTimeMillis());
             } else {
-                 uptime = ">"+shortHumanReadableUptime(System.currentTimeMillis() - startupTime);
+                uptime = ">" + shortHumanReadableUptime(System.currentTimeMillis() - startupTime);
             }
 
             NannyHealth nannyHealth = new NannyHealth(uptime, id, log, serviceHealth);
