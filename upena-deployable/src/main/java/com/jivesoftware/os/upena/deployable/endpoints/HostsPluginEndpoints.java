@@ -29,7 +29,7 @@ public class HostsPluginEndpoints {
 
     private final SoyService soyService;
     private final HostsPluginRegion pluginRegion;
-   
+
     public HostsPluginEndpoints(@Context SoyService soyService, @Context HostsPluginRegion pluginRegion) {
         this.soyService = soyService;
         this.pluginRegion = pluginRegion;
@@ -40,7 +40,7 @@ public class HostsPluginEndpoints {
     public Response hosts(@Context HttpServletRequest httpRequest) {
         try {
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-                new HostsPluginRegionInput("", "", "", "", "", "", "", ""));
+                new HostsPluginRegionInput("", "", "", "", "", "", "", "", ""));
             return Response.ok(rendered).build();
         } catch (Exception e) {
             LOG.error("hosts GET", e);
@@ -59,10 +59,11 @@ public class HostsPluginEndpoints {
         @FormParam("host") @DefaultValue("") String host,
         @FormParam("port") @DefaultValue("") String port,
         @FormParam("workingDirectory") @DefaultValue("") String workingDirectory,
+        @FormParam("instanceId") @DefaultValue("") String instanceId,
         @FormParam("action") @DefaultValue("") String action) {
         try {
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-                new HostsPluginRegionInput(key, name, datacenter, rack, host, port, workingDirectory, action));
+                new HostsPluginRegionInput(key, name, datacenter, rack, host, port, workingDirectory, instanceId, action));
             return Response.ok(rendered).build();
         } catch (Exception e) {
             LOG.error("hosts action POST", e);

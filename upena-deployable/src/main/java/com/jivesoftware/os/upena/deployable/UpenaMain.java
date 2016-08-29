@@ -52,6 +52,7 @@ import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.config.UpenaConfigRestEndpoints;
 import com.jivesoftware.os.upena.config.UpenaConfigStore;
 import com.jivesoftware.os.upena.deployable.UpenaEndpoints.AmzaClusterName;
+import com.jivesoftware.os.upena.deployable.aws.AWSClientFactory;
 import com.jivesoftware.os.upena.deployable.endpoints.AWSPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.AsyncLookupEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.BreakpointDumperPluginEndpoints;
@@ -63,6 +64,7 @@ import com.jivesoftware.os.upena.deployable.endpoints.HealthPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.HostsPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.InstancesPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.JVMPluginEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.LoadBalancersPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ModulesPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.MonkeyPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ProfilerPluginEndpoints;
@@ -92,6 +94,7 @@ import com.jivesoftware.os.upena.deployable.region.HomeRegion;
 import com.jivesoftware.os.upena.deployable.region.HostsPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.InstancesPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.JVMPluginRegion;
+import com.jivesoftware.os.upena.deployable.region.LoadBalancersPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ManagePlugin;
 import com.jivesoftware.os.upena.deployable.region.MenuRegion;
 import com.jivesoftware.os.upena.deployable.region.ModulesPluginRegion;
@@ -113,6 +116,7 @@ import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
 import com.jivesoftware.os.upena.service.ChaosService;
 import com.jivesoftware.os.upena.service.DiscoveredRoutes;
+import com.jivesoftware.os.upena.service.HostKeyProvider;
 import com.jivesoftware.os.upena.service.UpenaRestEndpoints;
 import com.jivesoftware.os.upena.service.UpenaService;
 import com.jivesoftware.os.upena.service.UpenaStore;
@@ -271,7 +275,9 @@ public class UpenaMain {
         LOG.info("-----------------------------------------------------------------------");
 
         final AtomicReference<UbaService> conductor = new AtomicReference<>();
-        final UpenaStore upenaStore = new UpenaStore(mapper,
+        final UpenaStore upenaStore = new UpenaStore(
+            orderIdProvider,
+            mapper,
             amzaService, (instanceChanges) -> {
                 Executors.newSingleThreadExecutor().submit(() -> {
                     UbaService got = conductor.get();
@@ -306,9 +312,12 @@ public class UpenaMain {
         PathToRepo localPathToRepo = new PathToRepo(new File(System.getProperty("pathToRepo", defaultPathToRepo.getAbsolutePath())));
         RepositoryProvider repositoryProvider = new RepositoryProvider(localPathToRepo);
 
-        Host host = new Host(publicHost, datacenter, rack, ringHost.getHost(), ringHost.getPort(), workingDir, null);
+        Host host = new Host(publicHost, datacenter, rack, ringHost.getHost(), ringHost.getPort(), workingDir, null, null);
+        HostKey hostKey = new HostKeyProvider().getNodeKey(upenaStore.hosts, host);
 
-        HostKey hostKey = upenaStore.hosts.toKey(host);
+        String hostInstanceId = System.getProperty("host.instance.id", hostKey.getKey());
+        host = new Host(publicHost, datacenter, rack, ringHost.getHost(), ringHost.getPort(), workingDir, hostInstanceId, null);
+
         Host gotHost = upenaStore.hosts.get(hostKey);
         if (gotHost == null || !gotHost.equals(host)) {
             upenaStore.hosts.update(hostKey, host);
@@ -351,7 +360,13 @@ public class UpenaMain {
             .addInjectable(UpenaAutoRelease.class, new UpenaAutoRelease(repositoryProvider, upenaStore))
             .addInjectable(PathToRepo.class, localPathToRepo);
 
-        injectUI(mapper,
+        String region = System.getProperty("aws.region", null);
+        String roleArn = System.getProperty("aws.roleArn", null);
+        
+        AWSClientFactory awsClientFactory = new AWSClientFactory(region, roleArn);
+
+        injectUI(awsClientFactory,
+            mapper,
             jvmapi,
             amzaService,
             localPathToRepo,
@@ -423,9 +438,25 @@ public class UpenaMain {
                 }
             }
         }
+
+        
+        String vpc = System.getProperty("aws.vpc", null);
+        UpenaAWSLoadBalancerNanny upenaAWSLoadBalancerNanny = new UpenaAWSLoadBalancerNanny(vpc, upenaStore, hostKey, awsClientFactory);
+
+        Executors.newScheduledThreadPool(1).scheduleWithFixedDelay(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    upenaAWSLoadBalancerNanny.ensureSelf();
+                } catch (Exception x) {
+                    LOG.warn("Failures while nannying load loadbalancer.", x);
+                }
+            }
+        }, 10, 10, TimeUnit.SECONDS); // TODO better
     }
 
-    private void injectUI(ObjectMapper mapper,
+    private void injectUI(AWSClientFactory awsClientFactory,
+        ObjectMapper mapper,
         JDIAPI jvmapi,
         AmzaService amzaService,
         PathToRepo localPathToRepo,
@@ -468,21 +499,14 @@ public class UpenaMain {
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/repoPluginRegion.soy"), "repoPluginRegion.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/proxyPluginRegion.soy"), "proxyPluginRegion.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/monkeyPluginRegion.soy"), "monkeyPluginRegion.soy");
+        soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/loadBalancersPluginRegion.soy"), "loadBalancersPluginRegion.soy");
 
         if (jvmapi != null) {
             soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/jvmPluginRegion.soy"), "jvmPluginRegion.soy");
             soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/breakpointDumperPluginRegion.soy"), "breakpointDumperPluginRegion.soy");
         }
 
-        String region = System.getProperty("aws.region", null);
-        String roleArn = System.getProperty("aws.roleArn", null);
-        String accessKey = System.getProperty("aws.accessKey", null);
-        String secretKey = System.getProperty("aws.secretKey", null);
-        boolean enableAWS = false;
-        if (region != null && roleArn != null && accessKey != null && secretKey != null) {
-            soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/awsPluginRegion.soy"), "awsPluginRegion.soy");
-            enableAWS = true;
-        }
+        soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/awsPluginRegion.soy"), "awsPluginRegion.soy");
 
         SoyFileSet sfs = soyFileSetBuilder.build();
         SoyTofu tofu = sfs.compileToTofu();
@@ -510,7 +534,7 @@ public class UpenaMain {
             renderer, upenaStore);
         HostsPluginRegion hostsPluginRegion = new HostsPluginRegion("soy.page.hostsPluginRegion", renderer, upenaStore);
         InstancesPluginRegion instancesPluginRegion = new InstancesPluginRegion("soy.page.instancesPluginRegion",
-            "soy.page.instancesPluginRegionList", renderer, upenaStore, healthPluginRegion);
+            "soy.page.instancesPluginRegionList", renderer, upenaStore, hostKey, healthPluginRegion, awsClientFactory);
 
         ManagePlugin health = new ManagePlugin("fire", null, "Health", "/ui/health",
             HealthPluginEndpoints.class, healthPluginRegion, null);
@@ -529,7 +553,7 @@ public class UpenaMain {
             ChangeLogPluginEndpoints.class,
             new ChangeLogPluginRegion("soy.page.changeLogPluginRegion", renderer, upenaStore), null);
 
-        ManagePlugin instances = new ManagePlugin(null, "instance-white", "Instances", "/ui/instances",
+        ManagePlugin instances = new ManagePlugin("star", null, "Instances", "/ui/instances",
             InstancesPluginEndpoints.class, instancesPluginRegion, null);
 
         ManagePlugin config = new ManagePlugin("cog", null, "Config", "/ui/config",
@@ -545,18 +569,18 @@ public class UpenaMain {
             new ProjectsPluginRegion("soy.page.projectsPluginRegion", "soy.page.projectBuildOutput", "soy.page.projectBuildOutputTail", renderer, upenaStore,
                 localPathToRepo), null);
 
-        ManagePlugin clusters = new ManagePlugin(null, "cluster-white", "Clusters", "/ui/clusters",
+        ManagePlugin clusters = new ManagePlugin("cloud", null, "Clusters", "/ui/clusters",
             ClustersPluginEndpoints.class,
             new ClustersPluginRegion("soy.page.clustersPluginRegion", renderer, upenaStore), null);
 
-        ManagePlugin hosts = new ManagePlugin(null, "host-white", "Hosts", "/ui/hosts",
+        ManagePlugin hosts = new ManagePlugin("tasks", null, "Hosts", "/ui/hosts",
             HostsPluginEndpoints.class, hostsPluginRegion, null);
 
-        ManagePlugin services = new ManagePlugin(null, "service-white", "Services", "/ui/services",
+        ManagePlugin services = new ManagePlugin("tint", null, "Services", "/ui/services",
             ServicesPluginEndpoints.class,
             new ServicesPluginRegion(mapper, "soy.page.servicesPluginRegion", renderer, upenaStore), null);
 
-        ManagePlugin releases = new ManagePlugin(null, "release-white", "Releases", "/ui/releases",
+        ManagePlugin releases = new ManagePlugin("send", null, "Releases", "/ui/releases",
             ReleasesPluginEndpoints.class, releasesPluginRegion, null);
 
         ManagePlugin modules = new ManagePlugin("wrench", null, "Modules", "/ui/modules",
@@ -574,6 +598,10 @@ public class UpenaMain {
         ManagePlugin sar = new ManagePlugin("dashboard", null, "SAR", "/ui/sar",
             SARPluginEndpoints.class,
             new SARPluginRegion("soy.page.sarPluginRegion", renderer, amzaService, ringHost), null);
+
+        ManagePlugin loadBalancer = new ManagePlugin("scale", null, "Load Balancer", "/ui/loadbalancers",
+            LoadBalancersPluginEndpoints.class,
+            new LoadBalancersPluginRegion("soy.page.loadBalancersPluginRegion", renderer, upenaStore, awsClientFactory), null);
 
         ServicesCallDepthStack servicesCallDepthStack = new ServicesCallDepthStack();
         PerfService perfService = new PerfService(servicesCallDepthStack);
@@ -595,20 +623,16 @@ public class UpenaMain {
         }
 
         ManagePlugin aws = null;
-        if (enableAWS) {
-            aws = new ManagePlugin("cloud", null, "AWS", "/ui/aws",
-                AWSPluginEndpoints.class,
-                new AWSPluginRegion("soy.page.awsPluginRegion", renderer, region, roleArn, accessKey, secretKey), null);
-        }
+        aws = new ManagePlugin("globe", null, "AWS", "/ui/aws",
+            AWSPluginEndpoints.class,
+            new AWSPluginRegion("soy.page.awsPluginRegion", renderer, awsClientFactory), null);
 
-        ManagePlugin monkey = new ManagePlugin("cog", null, "Chaos", "/ui/chaos",
+        ManagePlugin monkey = new ManagePlugin("flash", null, "Chaos", "/ui/chaos",
             MonkeyPluginEndpoints.class,
             new MonkeyPluginRegion("soy.page.monkeyPluginRegion", renderer, upenaStore), null);
 
         List<ManagePlugin> plugins = new ArrayList<>();
-        if (enableAWS) {
-            plugins.add(aws);
-        }
+        plugins.add(aws);
 
         plugins.add(new ManagePlugin(null, null, "Build", null, null, null, "separator"));
         plugins.add(repo);
@@ -617,6 +641,7 @@ public class UpenaMain {
         plugins.add(new ManagePlugin(null, null, "Config", null, null, null, "separator"));
         plugins.add(changes);
         plugins.add(config);
+        plugins.add(loadBalancer);
         plugins.add(clusters);
         plugins.add(hosts);
         plugins.add(services);

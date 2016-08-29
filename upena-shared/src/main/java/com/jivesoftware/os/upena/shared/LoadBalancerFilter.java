@@ -23,52 +23,66 @@ import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class LoadBalancerFilter implements KeyValueFilter<LoadBalancerKey, LoadBalancer>, Serializable {
+public class LoadBalancerFilter implements KeyValueFilter<LBKey, LB>, Serializable {
 
     public final String name;
-    public final String description;
+    public final String clusterKey;
+    public final String serviceKey;
+    public final String releaseGroupKey;
     public final int start;
     public final int count;
     public int hit;
 
     @JsonCreator
     public LoadBalancerFilter(@JsonProperty("name") String name,
-        @JsonProperty("description") String description,
+        @JsonProperty("clusterKey") String clusterKey,
+        @JsonProperty("serviceKey") String serviceKey,
+        @JsonProperty("releaseGroupKey") String releaseGroupKey,
         @JsonProperty("start") int start,
         @JsonProperty("count") int count) {
         this.name = name;
-        this.description = description;
+        this.clusterKey = clusterKey;
+        this.serviceKey = serviceKey;
+        this.releaseGroupKey = releaseGroupKey;
         this.start = start;
         this.count = count;
     }
 
     @Override
     public String toString() {
-        return "LoadBalancerFilter{"
-            + "name=" + name
-            + ", description=" + description
-            + ", start=" + start
-            + ", count=" + count
-            + '}';
+        return "LoadBalancerFilter{" + "name=" + name + ", clusterKey=" + clusterKey + ", serviceKey=" + serviceKey
+            + ", releaseGroupKey=" + releaseGroupKey + ", start=" + start + ", count=" + count + ", hit=" + hit + '}';
     }
 
+    
+
     @Override
-    public ConcurrentNavigableMap<LoadBalancerKey, TimestampedValue<LoadBalancer>> createCollector() {
+    public ConcurrentNavigableMap<LBKey, TimestampedValue<LB>> createCollector() {
         return new Results();
     }
 
-    public static class Results extends ConcurrentSkipListMap<LoadBalancerKey, TimestampedValue<LoadBalancer>> {
+    public static class Results extends ConcurrentSkipListMap<LBKey, TimestampedValue<LB>> {
     }
 
     @Override
-    public boolean filter(LoadBalancerKey key, LoadBalancer value) {
-        if (name != null && value.name != null) {
+    public boolean filter(LBKey key, LB value) {
+         if (name != null && !name.isEmpty() && value.name != null) {
             if (!value.name.contains(name)) {
                 return false;
             }
         }
-        if (description != null && value.description != null) {
-            if (!value.description.contains(description)) {
+        if (clusterKey != null && !clusterKey.isEmpty() && value.clusterKey != null) {
+            if (!value.clusterKey.equals(clusterKey)) {
+                return false;
+            }
+        }
+        if (serviceKey != null && !serviceKey.isEmpty() && value.serviceKey != null) {
+            if (!value.serviceKey.equals(serviceKey)) {
+                return false;
+            }
+        }
+        if (releaseGroupKey != null && !releaseGroupKey.isEmpty()  && value.releaseGroupKey != null) {
+            if (!value.releaseGroupKey.equals(releaseGroupKey)) {
                 return false;
             }
         }

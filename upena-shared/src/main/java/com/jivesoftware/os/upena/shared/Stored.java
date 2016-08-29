@@ -23,7 +23,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
     include = JsonTypeInfo.As.PROPERTY,
     property = "objectType")
 @JsonSubTypes({
-    @JsonSubTypes.Type(value = LoadBalancerKey.class, name = "loadBalancerKey"),
+    @JsonSubTypes.Type(value = LBKey.class, name = "loadBalancerKey"),
     @JsonSubTypes.Type(value = ClusterKey.class, name = "branchKey"),
     @JsonSubTypes.Type(value = Cluster.class, name = "branch"),
     @JsonSubTypes.Type(value = HostKey.class, name = "hostKey"),

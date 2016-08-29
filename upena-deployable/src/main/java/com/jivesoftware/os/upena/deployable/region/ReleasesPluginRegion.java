@@ -18,6 +18,7 @@ import com.jivesoftware.os.upena.shared.InstanceKey;
 import com.jivesoftware.os.upena.shared.ReleaseGroup;
 import com.jivesoftware.os.upena.shared.ReleaseGroupFilter;
 import com.jivesoftware.os.upena.shared.ReleaseGroupKey;
+import com.jivesoftware.os.upena.shared.ReleaseGroupPropertyKey;
 import com.jivesoftware.os.upena.shared.Service;
 import com.jivesoftware.os.upena.shared.ServiceKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
@@ -30,6 +31,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -121,6 +123,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
     }
 
     public static class ReleasesPluginRegionInput implements PluginInput {
+
         final String key;
         final String name;
         final String description;
@@ -291,12 +294,12 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
                             List<String> errors = new CheckReleasable(repositoryProvider).isReleasable(input.repository, input.version);
                             if (errors.isEmpty()) {
                                 InstanceFilter instanceFilter = new InstanceFilter(
-                                null,
-                                null,
-                                null,
-                                new ReleaseGroupKey(input.key),
-                                null,
-                                0, 100_000);
+                                    null,
+                                    null,
+                                    null,
+                                    new ReleaseGroupKey(input.key),
+                                    null,
+                                    0, 100_000);
 
                                 long now = System.currentTimeMillis();
                                 long stagger = TimeUnit.SECONDS.toMillis(30);
@@ -384,12 +387,12 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
                 } else if (input.action.equals("upgrade-all")) {
                     try {
                         filter = new ReleaseGroupFilter(
-                                input.name.isEmpty() ? null : input.name,
-                                input.email.isEmpty() ? null : input.email,
-                                input.version.isEmpty() ? null : input.version,
-                                input.repository.isEmpty() ? null : input.repository,
-                                input.description.isEmpty() ? null : input.description,
-                                0, 100_000);
+                            input.name.isEmpty() ? null : input.name,
+                            input.email.isEmpty() ? null : input.email,
+                            input.version.isEmpty() ? null : input.version,
+                            input.repository.isEmpty() ? null : input.repository,
+                            input.description.isEmpty() ? null : input.description,
+                            0, 100_000);
 
                         List<String> messages = new ArrayList<>();
                         Map<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> found = upenaStore.releaseGroups.find(filter);
@@ -400,7 +403,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
                             boolean newerVersionAvailable = false;
                             StringBuilder newerVersion = new StringBuilder();
                             LinkedHashMap<String, String> latestRelease =
-                                    new CheckForLatestRelease(repositoryProvider).isLatestRelease(value.repository, value.version);
+                                new CheckForLatestRelease(repositoryProvider).isLatestRelease(value.repository, value.version);
                             for (Entry<String, String> latestEntry : latestRelease.entrySet()) {
                                 if (newerVersion.length() > 0) {
                                     newerVersion.append(",");
@@ -415,12 +418,12 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
                                 List<String> errors = new CheckReleasable(repositoryProvider).isReleasable(value.repository, newerVersion.toString());
                                 if (errors.isEmpty()) {
                                     ReleaseGroup updated = new ReleaseGroup(value.name,
-                                            value.email,
-                                            value.version,
-                                            newerVersion.toString(),
-                                            value.repository,
-                                            value.description,
-                                            value.autoRelease);
+                                        value.email,
+                                        value.version,
+                                        newerVersion.toString(),
+                                        value.repository,
+                                        value.description,
+                                        value.autoRelease);
                                     upenaStore.releaseGroups.update(key, updated);
                                     messages.add("Updated Release:" + value.name);
                                     upenaStore.record(user, "updated", System.currentTimeMillis(), "", "release-ui", updated.toString());
@@ -482,6 +485,22 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
                 }
                 row.put("version", value.version);
                 row.put("description", value.description);
+
+                List<Map<String, String>> properties = new ArrayList<>();
+                Set<String> declaredProperties = new HashSet<>();
+                for (Entry<String, String> p : value.properties.entrySet()) {
+                    ReleaseGroupPropertyKey releaseGroupPropertyKey = ReleaseGroupPropertyKey.forKey(p.getKey());
+                    String defaultValue = releaseGroupPropertyKey != null ? releaseGroupPropertyKey.getDefaultValue() : "";
+                    declaredProperties.add(p.getKey());
+                    properties.add(ImmutableMap.of("name", p.getKey(), "value", p.getValue(), "default", defaultValue));
+                }
+                for (ReleaseGroupPropertyKey rgpk : ReleaseGroupPropertyKey.values()) {
+                    if (!declaredProperties.contains(rgpk.key())) {
+                        properties.add(ImmutableMap.of("name", rgpk.key(), "value", "", "default", rgpk.getDefaultValue()));
+                    }
+                }
+
+                row.put("properties", properties);
 
                 boolean newerVersionAvailable = false;
                 StringBuilder newerVersion = new StringBuilder();
@@ -587,6 +606,46 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
             + ((service == null) ? "unknownService" : service.name) + "/"
             + String.valueOf(instance.instanceId) + "/"
             + ((release == null) ? "unknownRelease" : release.name);
+    }
+
+    public void add(String remoteUser, PropertyUpdate update) throws Exception {
+        ReleaseGroupKey releaseGroupKey = new ReleaseGroupKey(update.releaseKey);
+        ReleaseGroup releaseGroup = upenaStore.releaseGroups.get(releaseGroupKey);
+        if (releaseGroup != null) {
+            releaseGroup.properties.put(update.name, update.value);
+            upenaStore.releaseGroups.update(releaseGroupKey, releaseGroup);
+        }
+    }
+
+    public void remove(String remoteUser, PropertyUpdate update) throws Exception {
+        ReleaseGroupKey releaseGroupKey = new ReleaseGroupKey(update.releaseKey);
+        ReleaseGroup releaseGroup = upenaStore.releaseGroups.get(releaseGroupKey);
+        if (releaseGroup != null) {
+            releaseGroup.properties.remove(update.name);
+            upenaStore.releaseGroups.update(releaseGroupKey, releaseGroup);
+        }
+    }
+
+    public static class PropertyUpdate {
+
+        public String releaseKey;
+        public String name;
+        public String value;
+
+        public PropertyUpdate() {
+        }
+
+        public PropertyUpdate(String releaseKey, String name, String value) {
+            this.releaseKey = releaseKey;
+            this.name = name;
+            this.value = value;
+        }
+
+        @Override
+        public String toString() {
+            return "PropertyUpdate{" + "releaseKey=" + releaseKey + ", name=" + name + ", value=" + value + '}';
+        }
+
     }
 
 }

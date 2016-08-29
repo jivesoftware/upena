@@ -5,18 +5,19 @@
     <parent>
         <groupId>com.jivesoftware.os.upena.inheritance.poms</groupId>
         <artifactId>global-repo-management</artifactId>
-        <version>0.639</version>
+        <version>0.640</version>
         <relativePath>../global-repo-management/pom.xml</relativePath>
     </parent>
     <artifactId>global-version-management</artifactId>
     <packaging>pom</packaging>
     <properties>
+        <aws-version>1.11.29</aws-version>
         <jetty-version>9.3.3.v20150827</jetty-version>
         <glassfish-version>2.22</glassfish-version>
         <mlogger-version>0.15</mlogger-version>
         <jive.utils.version>0.104</jive.utils.version>
         <routing.bird.version>0.85</routing.bird.version>
-        <jackson-version>2.2.3</jackson-version>
+        <jackson-version>2.6.6</jackson-version>
         <aetherVersion>1.0.2.v20150114</aetherVersion>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <test.excludedGroups>blocked-by-jira,slow</test.excludedGroups>
@@ -25,6 +26,44 @@
     
     <dependencyManagement>
         <dependencies>
+
+            <dependency>
+                <groupId>com.jcraft</groupId>
+                <artifactId>jsch</artifactId>
+                <version>0.1.51</version>
+            </dependency>
+            <dependency>
+                <groupId>com.amazonaws</groupId>
+                <artifactId>aws-java-sdk-ec2</artifactId>
+                <version>${aws-version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.amazonaws</groupId>
+                <artifactId>aws-java-sdk-core</artifactId>
+                <version>${aws-version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.amazonaws</groupId>
+                <artifactId>aws-java-sdk-sts</artifactId>
+                <version>${aws-version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.amazonaws</groupId>
+                <artifactId>aws-java-sdk-elasticloadbalancingv2</artifactId>
+                <version>${aws-version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.javassist</groupId>
+                <artifactId>javassist</artifactId>
+                <version>3.18.2-GA</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-logging</groupId>
+                <artifactId>commons-logging</artifactId>
+                <version>1.2</version>
+            </dependency>
+
             <!--BEGIN: force stuff back to older jetty / jersey etc to be compatible with amza 0.21-->
             <dependency>
                 <groupId>org.eclipse.jetty</groupId>

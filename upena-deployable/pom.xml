@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.jivesoftware.os.upena.inheritance.poms</groupId>
         <artifactId>global-version-management</artifactId>
-        <version>0.639</version>
+        <version>0.640</version>
         <relativePath>../inheritance-poms/global-version-management/pom.xml</relativePath>
     </parent>
     <groupId>com.jivesoftware.os.upena</groupId>
@@ -135,7 +135,6 @@
         <dependency>
             <groupId>com.jcraft</groupId>
             <artifactId>jsch</artifactId>
-            <version>0.1.49</version>
         </dependency>
        
         <dependency>
@@ -159,7 +158,7 @@
         <dependency>
             <groupId>com.jivesoftware.os.upena</groupId>
             <artifactId>upena-shared</artifactId>
-            <version>0.639</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.jivesoftware.os.upena</groupId>
@@ -178,11 +177,17 @@
             <groupId>com.jivesoftware.os.upena</groupId>
             <artifactId>uba-service</artifactId>
             <version>${project.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.jivesoftware.os.upena</groupId>
             <artifactId>upena-service</artifactId>
-            <version>0.639</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.jivesoftware.os.jive.utils</groupId>
@@ -285,27 +290,22 @@
             <artifactId>log4j-api</artifactId>
             <version>2.1</version>
         </dependency>
-       
-        
-        <dependency>
+
+         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-ec2</artifactId>
-            <version>1.11.5</version>
         </dependency>
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-core</artifactId>
-            <version>1.11.5</version>
         </dependency>
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-sts</artifactId>
-            <version>1.11.5</version>
         </dependency>
         <dependency>
             <groupId>com.amazonaws</groupId>
-            <artifactId>aws-java-sdk-elasticloadbalancing</artifactId>
-            <version>1.11.5</version>
+            <artifactId>aws-java-sdk-elasticloadbalancingv2</artifactId>
         </dependency>
     </dependencies>
 </project>

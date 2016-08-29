@@ -59,6 +59,7 @@ public class HostsPluginRegion implements PageRegion<HostsPluginRegionInput> {
         final String host;
         final String port;
         final String workingDirectory;
+        final String instanceId;
         final String action;
 
         public HostsPluginRegionInput(String key,
@@ -68,6 +69,7 @@ public class HostsPluginRegion implements PageRegion<HostsPluginRegionInput> {
             String host,
             String port,
             String workingDirectory,
+            String instanceId,
             String action) {
 
             this.key = key;
@@ -77,6 +79,7 @@ public class HostsPluginRegion implements PageRegion<HostsPluginRegionInput> {
             this.host = host;
             this.port = port;
             this.workingDirectory = workingDirectory;
+            this.instanceId = instanceId;
             this.action = action;
         }
 
@@ -99,6 +102,7 @@ public class HostsPluginRegion implements PageRegion<HostsPluginRegionInput> {
             filters.put("host", input.host);
             filters.put("port", String.valueOf(input.port));
             filters.put("workingDirectory", input.workingDirectory);
+            filters.put("instanceId", input.instanceId);
             data.put("filters", filters);
 
             HostFilter filter = new HostFilter(null, null, null, null, null, 0, 100_000);
@@ -126,6 +130,7 @@ public class HostsPluginRegion implements PageRegion<HostsPluginRegionInput> {
                             input.host,
                             Integer.parseInt(input.port),
                             input.workingDirectory,
+                            input.instanceId,
                             null
                         );
                         upenaStore.hosts.update(null, newHost);
@@ -150,6 +155,7 @@ public class HostsPluginRegion implements PageRegion<HostsPluginRegionInput> {
                                 input.host,
                                 Integer.parseInt(input.port),
                                 input.workingDirectory,
+                                input.instanceId,
                                 null);
                             upenaStore.hosts.update(new HostKey(input.key), updatedHost);
                             upenaStore.record(user, "updated", System.currentTimeMillis(), "", "host-ui", updatedHost.toString());
@@ -222,6 +228,8 @@ public class HostsPluginRegion implements PageRegion<HostsPluginRegionInput> {
                 row.put("host", value.hostName);
                 row.put("port", String.valueOf(value.port));
                 row.put("workingDirectory", value.workingDirectory);
+                row.put("instanceId", value.instanceId);
+
                 row.put("name", value.name);
                 rows.add(row);
             }

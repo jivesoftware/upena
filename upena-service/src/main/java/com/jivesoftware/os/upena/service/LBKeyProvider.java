@@ -15,19 +15,23 @@
  */
 package com.jivesoftware.os.upena.service;
 
+import com.jivesoftware.os.jive.utils.ordered.id.OrderIdProvider;
 import com.jivesoftware.os.upena.service.UpenaTable.UpenaKeyProvider;
-import com.jivesoftware.os.upena.shared.LoadBalancer;
-import com.jivesoftware.os.upena.shared.LoadBalancerKey;
-import java.nio.charset.Charset;
+import com.jivesoftware.os.upena.shared.LB;
+import com.jivesoftware.os.upena.shared.LBKey;
 
-public class LoadBalancerKeyProvider implements UpenaKeyProvider<LoadBalancerKey, LoadBalancer> {
+public class LBKeyProvider implements UpenaKeyProvider<LBKey, LB> {
 
-    private final Charset UTF8 = Charset.forName("utf-8");
+    private final OrderIdProvider idProvider;
+
+    public LBKeyProvider(OrderIdProvider idProvider) {
+        this.idProvider = idProvider;
+    }
+
 
     @Override
-    public LoadBalancerKey getNodeKey(UpenaTable<LoadBalancerKey, LoadBalancer> table, LoadBalancer value) {
-        JenkinsHash jenkinsHash = new JenkinsHash();
-        String k = Long.toString(Math.abs(jenkinsHash.hash(value.name.getBytes(UTF8), 1)));
-        return new LoadBalancerKey(k);
+    public LBKey getNodeKey(UpenaTable<LBKey, LB> table, LB value) {
+        String k = Long.toString(Math.abs(idProvider.nextId()));
+        return new LBKey(k);
     }
 }

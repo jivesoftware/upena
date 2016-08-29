@@ -61,9 +61,6 @@ public class UpenaTable<K extends Key, V extends Stored> {
         this.valueValidator = valueValidator;
     }
 
-    public K toKey(V value) {
-        return keyProvider.getNodeKey(this, value);
-    }
 
     public V get(K key) throws Exception {
         byte[] rawKey = mapper.writeValueAsBytes(key);

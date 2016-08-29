@@ -15,19 +15,22 @@
  */
 package com.jivesoftware.os.upena.service;
 
+import com.jivesoftware.os.jive.utils.ordered.id.OrderIdProvider;
 import com.jivesoftware.os.upena.service.UpenaTable.UpenaKeyProvider;
 import com.jivesoftware.os.upena.shared.Cluster;
 import com.jivesoftware.os.upena.shared.ClusterKey;
-import java.nio.charset.Charset;
 
 public class ClusterKeyProvider implements UpenaKeyProvider<ClusterKey, Cluster> {
 
-    private final Charset UTF8 = Charset.forName("utf-8");
+    private final OrderIdProvider idProvider;
+
+    public ClusterKeyProvider(OrderIdProvider idProvider) {
+        this.idProvider = idProvider;
+    }
 
     @Override
     public ClusterKey getNodeKey(UpenaTable<ClusterKey, Cluster> table, Cluster value) {
-        JenkinsHash jenkinsHash = new JenkinsHash();
-        String k = Long.toString(Math.abs(jenkinsHash.hash(value.name.getBytes(UTF8), 1)));
+        String k = Long.toString(Math.abs(idProvider.nextId()));
         return new ClusterKey(k);
     }
 }

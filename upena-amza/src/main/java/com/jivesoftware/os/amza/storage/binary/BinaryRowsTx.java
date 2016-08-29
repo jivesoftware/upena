@@ -193,6 +193,9 @@ public class BinaryRowsTx implements RowsTx<byte[]> {
                     long sizeAfterCompaction = compactTo.length();
                     Files.move(tableFile, backup);
                     Files.move(compactTo, tableFile);
+                    if (!dir.delete()) {
+                        LOG.warn("Failed to delete " + dir);
+                    }
 
                     // Reopen the world
                     filer.close();

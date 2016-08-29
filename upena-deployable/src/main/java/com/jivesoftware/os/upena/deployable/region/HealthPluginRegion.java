@@ -886,7 +886,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
 
     ConcurrentMap<RingHost, UpenaEndpoints.NodeHealth> buildClusterHealth() throws Exception {
 
-        for (final RingHost ringHost : amzaInstance.getRing("MASTER")) {
+        for (RingHost ringHost : amzaInstance.getRing("MASTER")) {
             if (currentlyExecuting.putIfAbsent(ringHost, true) == null) {
                 executorService.submit(() -> {
                     try {
@@ -1073,7 +1073,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                     healthData.put("color", trafficlightColorRGB(health.health, 1f));
                     healthData.put("name", String.valueOf(health.name));
                     healthData.put("status", String.valueOf(health.status));
-                    
+
                     long ageInMillis = System.currentTimeMillis() - health.timestamp;
                     healthData.put("age", UpenaEndpoints.shortHumanReadableUptime(ageInMillis));
                     instanceHealths.add(healthData);
