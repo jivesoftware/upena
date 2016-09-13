@@ -474,9 +474,11 @@ public class JDIAPI {
                                     if (attached.get()) {
                                         continue;
                                     } else {
+                                        log.add("Dettaching from breakpoints");
                                         break;
                                     }
                                 }
+                                log.add("Consuming events");
                                 EventIterator evtIter = evtSet.eventIterator();
                                 while (evtIter.hasNext()) {
                                     try {
@@ -577,8 +579,10 @@ public class JDIAPI {
                             }
                         }
                     }
+                    log.add("Exiting Debugger");
                 } finally {
                     if (vm != null) {
+                        log.add("Shutting down debugger.");
                         vm.resume();
                         vm.dispose();
                     }
