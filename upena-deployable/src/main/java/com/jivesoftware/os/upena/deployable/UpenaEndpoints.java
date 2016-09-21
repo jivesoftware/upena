@@ -243,7 +243,7 @@ public class UpenaEndpoints {
                 }
             }
             if (minHealth < health) {
-                upenaStore.record("remote", "checkHealth", System.currentTimeMillis(), "failed", "endpoint", sb.toString());
+                upenaStore.record(upenaHealth.host, "checkHealth", System.currentTimeMillis(), "failed", "endpoint", sb.toString());
                 return Response.status(Response.Status.NOT_ACCEPTABLE).entity(sb.toString()).type(MediaType.TEXT_PLAIN).build();
             } else {
                 return Response.ok(minHealth, MediaType.TEXT_PLAIN).build();
