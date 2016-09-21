@@ -35,6 +35,7 @@ import com.jivesoftware.os.upena.deployable.soy.SoyService;
 import com.jivesoftware.os.upena.service.DiscoveredRoutes;
 import com.jivesoftware.os.upena.service.DiscoveredRoutes.RouteHealths;
 import com.jivesoftware.os.upena.service.DiscoveredRoutes.Routes;
+import com.jivesoftware.os.upena.service.UpenaStore;
 import com.jivesoftware.os.upena.shared.HostKey;
 import com.jivesoftware.os.upena.shared.PathToRepo;
 import com.jivesoftware.os.upena.uba.service.Nanny;
@@ -100,6 +101,7 @@ public class UpenaEndpoints {
     private final DiscoveredRoutes discoveredRoutes;
     private final PathToRepo localPathToRepo;
     private final UpenaAutoRelease autoRelease;
+    private final UpenaStore upenaStore;
     private final long startupTime = System.currentTimeMillis();
 
     public UpenaEndpoints(@Context AmzaClusterName amzaClusterName,
@@ -111,7 +113,8 @@ public class UpenaEndpoints {
         @Context SoyService soyService,
         @Context DiscoveredRoutes discoveredRoutes,
         @Context PathToRepo localPathToRepo,
-        @Context UpenaAutoRelease autoRelease) {
+        @Context UpenaAutoRelease autoRelease,
+        @Context UpenaStore upenaStore) {
         this.amzaClusterName = amzaClusterName;
         this.amzaInstance = amzaInstance;
         this.upenaConfigStore = upenaConfigStore;
@@ -122,6 +125,7 @@ public class UpenaEndpoints {
         this.discoveredRoutes = discoveredRoutes;
         this.localPathToRepo = localPathToRepo;
         this.autoRelease = autoRelease;
+        this.upenaStore = upenaStore;
     }
 
     @GET
@@ -239,8 +243,8 @@ public class UpenaEndpoints {
                 }
             }
             if (minHealth < health) {
+                upenaStore.record("remote", "checkHealth", System.currentTimeMillis(), "failed", "endpoint", sb.toString());
                 return Response.status(Response.Status.NOT_ACCEPTABLE).entity(sb.toString()).type(MediaType.TEXT_PLAIN).build();
-
             } else {
                 return Response.ok(minHealth, MediaType.TEXT_PLAIN).build();
             }
@@ -360,7 +364,7 @@ public class UpenaEndpoints {
             if (nanny.getValue().getStartTimeMillis() > 0) {
                 uptime = shortHumanReadableUptime(System.currentTimeMillis() - nanny.getValue().getStartTimeMillis());
             } else {
-                 uptime = ">"+shortHumanReadableUptime(System.currentTimeMillis() - startupTime);
+                uptime = ">" + shortHumanReadableUptime(System.currentTimeMillis() - startupTime);
             }
 
             NannyHealth nannyHealth = new NannyHealth(uptime, id, log, serviceHealth);
