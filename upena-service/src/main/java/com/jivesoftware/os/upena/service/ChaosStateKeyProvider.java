@@ -16,21 +16,21 @@
 package com.jivesoftware.os.upena.service;
 
 import com.jivesoftware.os.jive.utils.ordered.id.OrderIdProvider;
-import com.jivesoftware.os.upena.shared.Monkey;
-import com.jivesoftware.os.upena.shared.MonkeyKey;
+import com.jivesoftware.os.upena.shared.ChaosState;
+import com.jivesoftware.os.upena.shared.ChaosStateKey;
 
-class MonkeyKeyProvider implements UpenaTable.UpenaKeyProvider<MonkeyKey, Monkey> {
+class ChaosStateKeyProvider implements UpenaTable.UpenaKeyProvider<ChaosStateKey, ChaosState> {
 
     private final OrderIdProvider idProvider;
 
-    MonkeyKeyProvider(OrderIdProvider idProvider) {
+    ChaosStateKeyProvider(OrderIdProvider idProvider) {
         this.idProvider = idProvider;
     }
 
     @Override
-    public MonkeyKey getNodeKey(UpenaTable<MonkeyKey, Monkey> table, Monkey value) {
+    public ChaosStateKey getNodeKey(UpenaTable<ChaosStateKey, ChaosState> table, ChaosState value) {
         String k = Long.toString(idProvider.nextId());
-        return new MonkeyKey(k);
+        return new ChaosStateKey(k);
     }
 
 }

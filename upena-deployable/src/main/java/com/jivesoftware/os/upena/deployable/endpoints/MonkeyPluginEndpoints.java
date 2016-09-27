@@ -19,6 +19,7 @@ import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.deployable.region.MonkeyPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.MonkeyPluginRegion.MonkeyPluginRegionInput;
+import com.jivesoftware.os.upena.deployable.region.MonkeyPluginRegion.MonkeyPropertyUpdate;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
 
 import javax.inject.Singleton;
@@ -87,4 +88,33 @@ public class MonkeyPluginEndpoints {
             return Response.serverError().entity(e.getMessage()).build();
         }
     }
+
+    @POST
+    @Path("/property/add")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response add(@Context HttpServletRequest httpRequest, MonkeyPropertyUpdate update) {
+        try {
+            pluginRegion.add(update);
+            return Response.ok().build();
+        } catch (Exception x) {
+            LOG.error("Failed to add ports for:" + update, x);
+            return Response.serverError().build();
+        }
+    }
+
+    @POST
+    @Path("/property/remove")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response remove(@Context HttpServletRequest httpRequest, MonkeyPropertyUpdate update) {
+        try {
+            pluginRegion.remove(update);
+            return Response.ok().build();
+        } catch (Exception x) {
+            LOG.error("Failed to remove to ports for:" + update, x);
+            return Response.serverError().build();
+        }
+    }
+
 }

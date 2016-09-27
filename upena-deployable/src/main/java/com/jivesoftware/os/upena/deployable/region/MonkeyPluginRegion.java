@@ -22,13 +22,30 @@ import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.service.UpenaStore;
-import com.jivesoftware.os.upena.shared.*;
+import com.jivesoftware.os.upena.shared.ChaosState;
+import com.jivesoftware.os.upena.shared.ChaosStateFilter;
+import com.jivesoftware.os.upena.service.ChaosStateGenerator.PartitionStrategy;
+import com.jivesoftware.os.upena.service.ChaosStateHelper;
+import com.jivesoftware.os.upena.shared.ChaosStateKey;
+import com.jivesoftware.os.upena.shared.ChaosStrategyKey;
+import com.jivesoftware.os.upena.shared.Cluster;
+import com.jivesoftware.os.upena.shared.ClusterKey;
+import com.jivesoftware.os.upena.shared.Host;
+import com.jivesoftware.os.upena.shared.HostKey;
+import com.jivesoftware.os.upena.shared.Monkey;
+import com.jivesoftware.os.upena.shared.MonkeyFilter;
+import com.jivesoftware.os.upena.shared.MonkeyKey;
+import com.jivesoftware.os.upena.shared.Service;
+import com.jivesoftware.os.upena.shared.ServiceKey;
+import com.jivesoftware.os.upena.shared.TimestampedValue;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentNavigableMap;
 
 // soy.page.monkeyPluginRegion
 public class MonkeyPluginRegion implements PageRegion<MonkeyPluginRegion.MonkeyPluginRegionInput> {
@@ -50,6 +67,11 @@ public class MonkeyPluginRegion implements PageRegion<MonkeyPluginRegion.MonkeyP
     @Override
     public String getRootPath() {
         return "/ui/chaos";
+    }
+
+    @Override
+    public String getTitle() {
+        return "Upena Chaos";
     }
 
     public static class MonkeyPluginRegionInput implements PluginInput {
@@ -201,25 +223,40 @@ public class MonkeyPluginRegion implements PageRegion<MonkeyPluginRegion.MonkeyP
             Host host = upenaStore.hosts.get(new HostKey(input.hostKey));
             if (host == null) {
                 if (!input.strategyKey.isEmpty() &&
-                        ChaosStrategyKey.valueOf(input.strategyKey) != ChaosStrategyKey.SPLIT_BRAIN) {
+                        ChaosStrategyKey.valueOf(input.strategyKey) != ChaosStrategyKey.SPLIT_BRAIN &&
+                        ChaosStrategyKey.valueOf(input.strategyKey) != ChaosStrategyKey.RANDOM_NETWORK_PARTITION &&
+                        ChaosStrategyKey.valueOf(input.strategyKey) != ChaosStrategyKey.ADHOC_NETWORK_PARTITION) {
                     data.put("message", "Host key:" + input.hostKey + " is invalid.");
                     valid = false;
                 }
             } else {
                 if (!input.strategyKey.isEmpty() &&
-                        ChaosStrategyKey.valueOf(input.strategyKey) == ChaosStrategyKey.SPLIT_BRAIN) {
-                    data.put("message", "Host not applicable to split-brain.");
+                        (ChaosStrategyKey.valueOf(input.strategyKey) == ChaosStrategyKey.SPLIT_BRAIN ||
+                                ChaosStrategyKey.valueOf(input.strategyKey) == ChaosStrategyKey.RANDOM_NETWORK_PARTITION ||
+                                ChaosStrategyKey.valueOf(input.strategyKey) == ChaosStrategyKey.ADHOC_NETWORK_PARTITION)) {
+                    data.put("message", "Host not applicable.");
                     valid = false;
                 }
             }
 
             if (valid) {
+                ChaosStrategyKey chaosStrategyKey = ChaosStrategyKey.valueOf(input.strategyKey);
+
                 Monkey newMonkey = new Monkey(
                         input.enabled,
                         new ClusterKey(input.clusterKey),
                         input.hostKey.isEmpty() ? null : new HostKey(input.hostKey),
                         new ServiceKey(input.serviceKey),
                         ChaosStrategyKey.valueOf(input.strategyKey));
+
+                if (chaosStrategyKey == ChaosStrategyKey.RANDOM_NETWORK_PARTITION ||
+                        chaosStrategyKey == ChaosStrategyKey.ADHOC_NETWORK_PARTITION) {
+                    Map<String, String> properties = new HashMap<>();
+                    properties.put(ChaosStateHelper.PARTITION_TYPE, PartitionStrategy.HALVE.toString());
+                    properties.put(ChaosStateHelper.PARTITION_INTERVAL, "600000");
+                    newMonkey.properties = properties;
+                }
+
                 upenaStore.monkeys.update(null, newMonkey);
                 upenaStore.record(user, "added", System.currentTimeMillis(), "", "monkey-ui",
                         monkeyToHumanReadableString(newMonkey) + "\n" + newMonkey.toString());
@@ -259,26 +296,45 @@ public class MonkeyPluginRegion implements PageRegion<MonkeyPluginRegion.MonkeyP
                 Host host = upenaStore.hosts.get(new HostKey(input.hostKey));
                 if (host == null) {
                     if (!input.strategyKey.isEmpty() &&
-                            ChaosStrategyKey.valueOf(input.strategyKey) != ChaosStrategyKey.SPLIT_BRAIN) {
+                            ChaosStrategyKey.valueOf(input.strategyKey) != ChaosStrategyKey.SPLIT_BRAIN &&
+                            ChaosStrategyKey.valueOf(input.strategyKey) != ChaosStrategyKey.RANDOM_NETWORK_PARTITION &&
+                            ChaosStrategyKey.valueOf(input.strategyKey) != ChaosStrategyKey.ADHOC_NETWORK_PARTITION) {
                         data.put("message", "Host key:" + input.hostKey + " is invalid.");
                         valid = false;
                     }
                 } else {
                     if (!input.strategyKey.isEmpty() &&
-                            ChaosStrategyKey.valueOf(input.strategyKey) == ChaosStrategyKey.SPLIT_BRAIN) {
-                        data.put("message", "Host not applicable to split-brain.");
+                            (ChaosStrategyKey.valueOf(input.strategyKey) == ChaosStrategyKey.SPLIT_BRAIN ||
+                                    ChaosStrategyKey.valueOf(input.strategyKey) == ChaosStrategyKey.RANDOM_NETWORK_PARTITION ||
+                                    ChaosStrategyKey.valueOf(input.strategyKey) == ChaosStrategyKey.ADHOC_NETWORK_PARTITION)) {
+                        data.put("message", "Host not applicable.");
                         valid = false;
                     }
                 }
 
                 if (valid) {
+                    MonkeyKey monkeyKey = new MonkeyKey(input.key);
+                    Monkey existingMonkey = upenaStore.monkeys.get(monkeyKey);
+
                     Monkey updatedMonkey = new Monkey(
                             input.enabled,
                             new ClusterKey(input.clusterKey),
                             new HostKey(input.hostKey),
                             new ServiceKey(input.serviceKey),
                             ChaosStrategyKey.valueOf(input.strategyKey));
+                    updatedMonkey.properties = existingMonkey.properties;
+
                     upenaStore.monkeys.update(new MonkeyKey(input.key), updatedMonkey);
+
+                    if (!input.enabled) {
+                        ConcurrentNavigableMap<ChaosStateKey, TimestampedValue<ChaosState>> gotChaosStates =
+                                upenaStore.chaosStates.find(new ChaosStateFilter(
+                                        updatedMonkey.serviceKey,
+                                        0, Integer.MAX_VALUE));
+                        for (Entry<ChaosStateKey, TimestampedValue<ChaosState>> entry : gotChaosStates.entrySet()) {
+                            upenaStore.chaosStates.remove(entry.getKey());
+                        }
+                    }
 
                     upenaStore.record(user, "updated", System.currentTimeMillis(), "", "monkey-ui",
                             monkeyToHumanReadableString(monkey) + "\n"
@@ -302,6 +358,15 @@ public class MonkeyPluginRegion implements PageRegion<MonkeyPluginRegion.MonkeyP
                 Monkey removing = upenaStore.monkeys.get(monkeyKey);
                 if (removing != null) {
                     upenaStore.monkeys.remove(monkeyKey);
+
+                    ConcurrentNavigableMap<ChaosStateKey, TimestampedValue<ChaosState>> gotChaosStates =
+                            upenaStore.chaosStates.find(new ChaosStateFilter(
+                                    removing.serviceKey,
+                                    0, Integer.MAX_VALUE));
+                    for (Entry<ChaosStateKey, TimestampedValue<ChaosState>> entry : gotChaosStates.entrySet()) {
+                        upenaStore.chaosStates.remove(entry.getKey());
+                    }
+
                     upenaStore.record(user, "removed", System.currentTimeMillis(), "", "monkey-ui", removing.toString());
                 }
             } catch (Exception x) {
@@ -347,6 +412,14 @@ public class MonkeyPluginRegion implements PageRegion<MonkeyPluginRegion.MonkeyP
                 "key", value.strategyKey.name(),
                 "name", value.strategyKey.description));
 
+        if (value.properties != null) {
+            List<Map<String, String>> properties = new ArrayList<>();
+            for (Entry<String, String> entry : value.properties.entrySet()) {
+                properties.add(ImmutableMap.of("name", entry.getKey(), "value", entry.getValue()));
+            }
+            map.put("properties", properties);
+        }
+
         return map;
     }
 
@@ -360,9 +433,60 @@ public class MonkeyPluginRegion implements PageRegion<MonkeyPluginRegion.MonkeyP
                 + monkey.strategyKey.description;
     }
 
-    @Override
-    public String getTitle() {
-        return "Upena Chaos";
+    public void add(MonkeyPropertyUpdate update) throws Exception {
+        MonkeyKey monkeyKey = new MonkeyKey(update.monkeyKey);
+        Monkey monkey = upenaStore.monkeys.get(monkeyKey);
+        if (monkey != null) {
+            monkey.properties.put(update.name, update.value);
+            upenaStore.monkeys.update(monkeyKey, monkey);
+
+            ConcurrentNavigableMap<ChaosStateKey, TimestampedValue<ChaosState>> gotChaosStates =
+                    upenaStore.chaosStates.find(new ChaosStateFilter(
+                            monkey.serviceKey,
+                            0, Integer.MAX_VALUE));
+            for (Entry<ChaosStateKey, TimestampedValue<ChaosState>> entry : gotChaosStates.entrySet()) {
+                upenaStore.chaosStates.remove(entry.getKey());
+            }
+        }
+    }
+
+    public void remove(MonkeyPropertyUpdate update) throws Exception {
+        MonkeyKey monkeyKey = new MonkeyKey(update.monkeyKey);
+        Monkey monkey = upenaStore.monkeys.get(monkeyKey);
+        if (monkey != null) {
+            monkey.properties.remove(update.name);
+            upenaStore.monkeys.update(monkeyKey, monkey);
+
+            ConcurrentNavigableMap<ChaosStateKey, TimestampedValue<ChaosState>> gotChaosStates =
+                    upenaStore.chaosStates.find(new ChaosStateFilter(
+                            monkey.serviceKey,
+                            0, Integer.MAX_VALUE));
+            for (Entry<ChaosStateKey, TimestampedValue<ChaosState>> entry : gotChaosStates.entrySet()) {
+                upenaStore.chaosStates.remove(entry.getKey());
+            }
+        }
+    }
+
+    public static class MonkeyPropertyUpdate {
+
+        public String monkeyKey;
+        public String name;
+        public String value;
+
+        public MonkeyPropertyUpdate() {
+        }
+
+        public MonkeyPropertyUpdate(String monkeyKey, String name, String value) {
+            this.monkeyKey = monkeyKey;
+            this.name = name;
+            this.value = value;
+        }
+
+        @Override
+        public String toString() {
+            return "MonkeyPropertyUpdate{" + "monkeyKey=" + monkeyKey + ", name=" + name + ", value=" + value + '}';
+        }
+
     }
 
 }
