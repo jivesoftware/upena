@@ -20,6 +20,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.io.Serializable;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Monkey implements Stored<Monkey>, Serializable {
@@ -29,6 +31,7 @@ public class Monkey implements Stored<Monkey>, Serializable {
     public final HostKey hostKey;
     public final ServiceKey serviceKey;
     public final ChaosStrategyKey strategyKey;
+    public Map<String, String> properties = new ConcurrentHashMap<>();
 
     @JsonCreator
     public Monkey(@JsonProperty("enabled") boolean enabled,
@@ -51,6 +54,7 @@ public class Monkey implements Stored<Monkey>, Serializable {
                 + ", hostKey=" + hostKey
                 + ", serviceKey=" + serviceKey
                 + ", strategyKey=" + strategyKey
+                + ", properties=" + properties
                 + '}';
     }
 

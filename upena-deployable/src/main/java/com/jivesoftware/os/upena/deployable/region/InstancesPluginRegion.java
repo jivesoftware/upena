@@ -700,6 +700,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
     public void add(String user, PortUpdate update) throws Exception {
         InstanceKey instanceKey = new InstanceKey(update.instanceId);
         Instance instance = upenaStore.instances.get(instanceKey);
+
         Port port = instance.ports.get(update.portName);
         if (port == null) {
             port = new Port(update.port, new HashMap<>());
@@ -712,10 +713,10 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
         } else {
             port.port = update.port;
         }
+
+        upenaStore.instances.update(instanceKey, instance);
         upenaStore.record(user, "updated", System.currentTimeMillis(), "", "instance-ui", instanceToHumanReadableString(instance) + "\n" + instance
             .toString());
-        upenaStore.instances.update(instanceKey, instance);
-
     }
 
     public void remove(String user, PortUpdate update) throws Exception {

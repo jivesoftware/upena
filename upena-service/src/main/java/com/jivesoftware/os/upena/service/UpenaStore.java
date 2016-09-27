@@ -25,6 +25,8 @@ import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.routing.bird.shared.InstanceChanged;
 import com.jivesoftware.os.routing.bird.shared.TenantChanged;
+import com.jivesoftware.os.upena.shared.ChaosState;
+import com.jivesoftware.os.upena.shared.ChaosStateKey;
 import com.jivesoftware.os.upena.shared.Cluster;
 import com.jivesoftware.os.upena.shared.ClusterKey;
 import com.jivesoftware.os.upena.shared.Host;
@@ -73,6 +75,8 @@ public class UpenaStore {
     public final TableName instanceStoreKey = new TableName("master", "intances", null, null);
     public final TableName tenantStoreKey = new TableName("master", "tenants", null, null);
     public final TableName monkeyStoreKey = new TableName("master", "monkeys", null, null);
+    public final TableName chaosStateStoreKey = new TableName("master", "chaosState", null, null);
+
     public final TableName changeLogStoreKey = new TableName("master", "changeLog", null, null);
 
     public final UpenaTable<ProjectKey, Project> projects;
@@ -84,6 +88,8 @@ public class UpenaStore {
     public final UpenaTable<InstanceKey, Instance> instances;
     public final UpenaTable<TenantKey, Tenant> tenants;
     public final UpenaTable<MonkeyKey, Monkey> monkeys;
+    public final UpenaTable<ChaosStateKey, ChaosState> chaosStates;
+
     public final AmzaTable changeLog;
 
     public UpenaStore(OrderIdProvider idProvider,
@@ -113,6 +119,7 @@ public class UpenaStore {
             InstanceKey.class, Instance.class, new InstanceKeyProvider(idProvider), new InstanceValidator(minServicePort, maxServicePort));
         tenants = new UpenaTable<>(amzaService.getTable(tenantStoreKey), TenantKey.class, Tenant.class, new TenantKeyProvider(), null);
         monkeys = new UpenaTable<>(amzaService.getTable(monkeyStoreKey), MonkeyKey.class, Monkey.class, new MonkeyKeyProvider(idProvider), null);
+        chaosStates = new UpenaTable<>(amzaService.getTable(chaosStateStoreKey), ChaosStateKey.class, ChaosState.class, new ChaosStateKeyProvider(idProvider), null);
 
         changeLog = amzaService.getTable(changeLogStoreKey);
     }

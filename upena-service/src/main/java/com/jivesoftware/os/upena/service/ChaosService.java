@@ -15,11 +15,18 @@
  */
 package com.jivesoftware.os.upena.service;
 
+import com.jivesoftware.os.mlogger.core.MetricLogger;
+import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.routing.bird.shared.ConnectionDescriptor;
 import com.jivesoftware.os.routing.bird.shared.HostPort;
+import com.jivesoftware.os.upena.shared.ChaosState;
+import com.jivesoftware.os.upena.shared.ChaosStateFilter;
+import com.jivesoftware.os.upena.shared.ChaosStateKey;
 import com.jivesoftware.os.upena.shared.ChaosStrategyKey;
 import com.jivesoftware.os.upena.shared.ClusterKey;
 import com.jivesoftware.os.upena.shared.HostKey;
+import com.jivesoftware.os.upena.shared.Instance;
+import com.jivesoftware.os.upena.shared.InstanceKey;
 import com.jivesoftware.os.upena.shared.Monkey;
 import com.jivesoftware.os.upena.shared.MonkeyFilter;
 import com.jivesoftware.os.upena.shared.MonkeyKey;
@@ -30,13 +37,18 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ChaosService {
+
+    private final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
     private final UpenaStore upenaStore;
 
@@ -54,11 +66,13 @@ public class ChaosService {
         String affect = "";
 
         ConcurrentNavigableMap<MonkeyKey, TimestampedValue<Monkey>> gotMonkeys =
-                findMonkeys(clusterKey, hostKey, serviceKey);
+                upenaStore.monkeys.find(new MonkeyFilter(
+                        clusterKey, hostKey, serviceKey,
+                        null, 0, Integer.MAX_VALUE));
 
         String prefix = "'";
         String postfix = "'";
-        for (Map.Entry<MonkeyKey, TimestampedValue<Monkey>> entry : gotMonkeys.entrySet()) {
+        for (Entry<MonkeyKey, TimestampedValue<Monkey>> entry : gotMonkeys.entrySet()) {
             Monkey value = entry.getValue().getValue();
 
             if (value.enabled) {
@@ -72,17 +86,18 @@ public class ChaosService {
         return affect;
     }
 
-    List<ConnectionDescriptor> unleashMonkey(ClusterKey clusterKey,
+    List<ConnectionDescriptor> unleashMonkey(InstanceKey instanceKey,
+                                             Instance instance,
                                              HostKey hostKey,
-                                             ServiceKey serviceKey,
-                                             int instanceId,
                                              List<ConnectionDescriptor> connections) throws Exception {
         List<ConnectionDescriptor> monkeyConnections = connections;
 
         ConcurrentNavigableMap<MonkeyKey, TimestampedValue<Monkey>> gotMonkeys =
-                findMonkeys(clusterKey, hostKey, serviceKey);
+                upenaStore.monkeys.find(new MonkeyFilter(
+                        instance.clusterKey, hostKey, instance.serviceKey,
+                        null, 0, Integer.MAX_VALUE));
 
-        for (Map.Entry<MonkeyKey, TimestampedValue<Monkey>> entry : gotMonkeys.entrySet()) {
+        for (Entry<MonkeyKey, TimestampedValue<Monkey>> entry : gotMonkeys.entrySet()) {
             Monkey value = entry.getValue().getValue();
 
             if (value.enabled) {
@@ -161,7 +176,7 @@ public class ChaosService {
                     int iterBegin = 0;
                     int iterEnd = monkeyConnectionsArray.length / 2;
                     for (int i = iterEnd; i < monkeyConnectionsArray.length; i++) {
-                        if (monkeyConnectionsArray[i].getInstanceDescriptor().instanceName == instanceId) {
+                        if (monkeyConnectionsArray[i].getInstanceDescriptor().instanceName == instance.instanceId) {
                             iterBegin = iterEnd;
                             iterEnd = monkeyConnectionsArray.length;
                             break;
@@ -180,6 +195,137 @@ public class ChaosService {
                     }
 
                     monkeyConnections = connectionsTemp;
+                } else if (value.strategyKey == ChaosStrategyKey.RANDOM_NETWORK_PARTITION) {
+                    LOG.debug("Retrieve array of instance ids");
+                    Set<InstanceKey> instances = new HashSet<>();
+                    monkeyConnections.forEach(connectionDescriptor ->
+                            instances.add(new InstanceKey(connectionDescriptor.getInstanceDescriptor().instanceKey)));
+
+                    LOG.debug("Retrieve chaos state for serviceKey:{}", instance.serviceKey);
+                    ConcurrentNavigableMap<ChaosStateKey, TimestampedValue<ChaosState>> gotChaosStates =
+                            upenaStore.chaosStates.find(new ChaosStateFilter(
+                                    instance.serviceKey,
+                                    0, Integer.MAX_VALUE));
+
+                    if (gotChaosStates.size() == 1) {
+                        ChaosStateKey chaosStateKey = gotChaosStates.firstEntry().getKey();
+                        ChaosState chaosStateValue = gotChaosStates.firstEntry().getValue().getValue();
+
+                        if (ChaosStateHelper.instancesMatch(chaosStateValue.instanceRoutes, instances) ||
+                                ChaosStateHelper.propertiesMatch(chaosStateValue.properties, value.properties)) {
+                            long interval = ChaosStateHelper.parseInterval(value.properties);
+
+                            if (chaosStateValue.disableAfterTime > 0) {
+                                if (chaosStateValue.disableAfterTime > System.currentTimeMillis()) {
+                                    LOG.debug("Chaos State is active for serviceKey:{} {}",
+                                            instance.serviceKey,
+                                            chaosStateValue.instanceRoutes);
+
+                                    Set<InstanceKey> knownInstanceRoutes = chaosStateValue.instanceRoutes.get(instanceKey);
+                                    List<ConnectionDescriptor> connectionsTemp = new ArrayList<>();
+
+                                    for (ConnectionDescriptor connectionDescriptor : monkeyConnections) {
+                                        if (knownInstanceRoutes.contains(new InstanceKey(connectionDescriptor.getInstanceDescriptor().instanceKey))) {
+                                            LOG.debug("Instance is in routing table {}", connectionDescriptor.getInstanceDescriptor().instanceKey);
+
+                                            connectionsTemp.add(connectionDescriptor);
+                                        } else {
+                                            LOG.debug("Instance is not in routing table {}", connectionDescriptor.getInstanceDescriptor().instanceKey);
+
+                                            ConnectionDescriptor newConnectionDescriptor = new ConnectionDescriptor(
+                                                    connectionDescriptor.getInstanceDescriptor(),
+                                                    new HostPort(
+                                                            ChaosStateHelper.IPV4_DEV_NULL,
+                                                            connectionDescriptor.getHostPort().getPort()),
+                                                    connectionDescriptor.getProperties(),
+                                                    connectionDescriptor.getMonkeys());
+
+                                            connectionsTemp.add(newConnectionDescriptor);
+                                        }
+                                    }
+
+                                    monkeyConnections = connectionsTemp;
+                                } else {
+                                    LOG.debug("Chaos State is being deactivated for serviceKey:{}", instance.serviceKey);
+
+                                    upenaStore.chaosStates.update(
+                                            chaosStateKey,
+                                            new ChaosState(instance.serviceKey, System.currentTimeMillis() + interval, 0, chaosStateValue.instanceRoutes, chaosStateValue.properties));
+                                }
+                            } else if (chaosStateValue.enableAfterTime > 0) {
+                                if (chaosStateValue.enableAfterTime > System.currentTimeMillis()) {
+                                    LOG.debug("Chaos State is inactive for serviceKey:{}", instance.serviceKey);
+                                } else {
+                                    LOG.debug("Chaos State will be activated for serviceKey:{}", instance.serviceKey);
+
+                                    upenaStore.chaosStates.update(
+                                            chaosStateKey,
+                                            new ChaosState(instance.serviceKey, 0, System.currentTimeMillis() + interval, chaosStateValue.instanceRoutes, chaosStateValue.properties));
+                                }
+                            } else {
+                                LOG.warn("Chaos state is invalid; regenerate chaos state.");
+                                regenChaosState(instance.serviceKey, instances, gotChaosStates, value.properties);
+                            }
+                        } else {
+                            LOG.warn("Instance set or chaos properties have changed; regenerate chaos state.");
+                            regenChaosState(instance.serviceKey, instances, gotChaosStates, value.properties);
+                        }
+                    } else {
+                        LOG.info("Chaos State not found ({}) for serviceKey:{}", gotChaosStates.size(), instance.serviceKey);
+                        regenChaosState(instance.serviceKey, instances, gotChaosStates, value.properties);
+                    }
+                } else if (value.strategyKey == ChaosStrategyKey.ADHOC_NETWORK_PARTITION) {
+                    LOG.debug("Retrieve array of instance ids");
+                    Set<InstanceKey> instances = new HashSet<>();
+                    monkeyConnections.forEach(connectionDescriptor ->
+                            instances.add(new InstanceKey(connectionDescriptor.getInstanceDescriptor().instanceKey)));
+
+                    LOG.debug("Retrieve chaos state for serviceKey:{}", instance.serviceKey);
+                    ConcurrentNavigableMap<ChaosStateKey, TimestampedValue<ChaosState>> gotChaosStates =
+                            upenaStore.chaosStates.find(new ChaosStateFilter(
+                                    instance.serviceKey,
+                                    0, Integer.MAX_VALUE));
+
+                    ChaosState chaosStateValue;
+                    if (gotChaosStates.size() == 1) {
+                        chaosStateValue = gotChaosStates.firstEntry().getValue().getValue();
+
+                        if (!ChaosStateHelper.instancesMatch(chaosStateValue.instanceRoutes, instances)) {
+                            LOG.warn("Instance set has changed; regenerate chaos state.");
+                            chaosStateValue = regenChaosState(instance.serviceKey, instances, gotChaosStates, value.properties);
+                        } else if (!ChaosStateHelper.propertiesMatch(chaosStateValue.properties, value.properties)) {
+                            LOG.warn("Chaos properties have changed; regenerate chaos state.");
+                            chaosStateValue = regenChaosState(instance.serviceKey, instances, gotChaosStates, value.properties);
+                        }
+                    } else {
+                        LOG.info("Chaos State not found ({}) for serviceKey:{}", gotChaosStates.size(), instance.serviceKey);
+                        chaosStateValue = regenChaosState(instance.serviceKey, instances, gotChaosStates, value.properties);
+                    }
+
+                    Set<InstanceKey> knownInstanceRoutes = chaosStateValue.instanceRoutes.get(instanceKey);
+                    List<ConnectionDescriptor> connectionsTemp = new ArrayList<>();
+
+                    for (ConnectionDescriptor connectionDescriptor : monkeyConnections) {
+                        if (knownInstanceRoutes.contains(new InstanceKey(connectionDescriptor.getInstanceDescriptor().instanceKey))) {
+                            LOG.debug("Instance is in routing table {}", connectionDescriptor.getInstanceDescriptor().instanceKey);
+
+                            connectionsTemp.add(connectionDescriptor);
+                        } else {
+                            LOG.debug("Instance is not in routing table {}", connectionDescriptor.getInstanceDescriptor().instanceKey);
+
+                            ConnectionDescriptor newConnectionDescriptor = new ConnectionDescriptor(
+                                    connectionDescriptor.getInstanceDescriptor(),
+                                    new HostPort(
+                                            ChaosStateHelper.IPV4_DEV_NULL,
+                                            connectionDescriptor.getHostPort().getPort()),
+                                    connectionDescriptor.getProperties(),
+                                    connectionDescriptor.getMonkeys());
+
+                            connectionsTemp.add(newConnectionDescriptor);
+                        }
+                    }
+
+                    monkeyConnections = connectionsTemp;
                 }
             }
         }
@@ -187,12 +333,22 @@ public class ChaosService {
         return monkeyConnections;
     }
 
-    ConcurrentNavigableMap<MonkeyKey, TimestampedValue<Monkey>> findMonkeys(ClusterKey clusterKey,
-                                                                            HostKey hostKey,
-                                                                            ServiceKey serviceKey) throws Exception {
-        return upenaStore.monkeys.find(new MonkeyFilter(
-                clusterKey, hostKey, serviceKey,
-                null, 0, 100_000));
+    private ChaosState regenChaosState(ServiceKey serviceKey,
+                                       Set<InstanceKey> instances,
+                                       ConcurrentNavigableMap<ChaosStateKey, TimestampedValue<ChaosState>> chaosStates,
+                                       Map<String, String> properties) throws Exception {
+        LOG.info("Generate chaos state for serviceKey:{} {} {}",
+                serviceKey, instances, properties);
+
+        // remove all (just in case)
+        for (ChaosStateKey chaosStateKey : chaosStates.keySet()) {
+            upenaStore.chaosStates.remove(chaosStateKey);
+        }
+
+        ChaosState res = ChaosStateGenerator.create(serviceKey, instances, properties);
+        upenaStore.chaosStates.update(null, res);
+
+        return res;
     }
 
     private String randomizeHost(String existingHost) {

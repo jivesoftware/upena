@@ -19,21 +19,14 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.io.Serializable;
+
 @JsonIgnoreProperties(ignoreUnknown = true)
-public enum ChaosStrategyKey {
-
-    RANDOMIZE_PORT("Randomize Port"),
-    RANDOMIZE_HOSTNAME("Randomize Host Name"),
-    SPLIT_BRAIN("Split Brain"),
-    RANDOM_CONNECTION_LATENCY("Random Connection Latency"),
-    RANDOM_NETWORK_PARTITION("Random Network Partition"),
-    ADHOC_NETWORK_PARTITION("Adhoc Network Partition");
-
-    public final String description;
+public class ChaosStateKey extends Key<ChaosStateKey> implements Stored<ChaosStateKey>, Serializable {
 
     @JsonCreator
-    ChaosStrategyKey(@JsonProperty("description") String description) {
-        this.description = description;
+    public ChaosStateKey(@JsonProperty("key") String key) {
+        super(key);
     }
 
 }
