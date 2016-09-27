@@ -246,6 +246,40 @@ upena.release = {
     }
 }
 
+upena.monkey = {
+    addProperty: function (id) {
+        var name = $('#propertyName-' + id).val();
+        var value = $('#propertyValue-' + id).val();
+
+        console.log("add: " + id + " " + name + " " + value);
+        $.ajax("/ui/chaos/property/add", {
+            data: JSON.stringify({'monkeyKey': id, 'name': name, 'value': value}),
+            method: "post",
+            contentType: "application/json",
+            success: function () {
+                window.location.reload(true);
+            },
+            error: function () {
+                alert('Save failed!');
+            }
+        });
+    },
+    removeProperty: function (id, name, value) {
+        console.log("remove: " + id + " " + name + " " + value);
+        $.ajax("/ui/chaos/property/remove", {
+            data: JSON.stringify({'monkeyKey': id, 'name': name, 'value': value}),
+            method: "post",
+            contentType: "application/json",
+            success: function () {
+                window.location.reload(true);
+            },
+            error: function () {
+                alert('Save failed!');
+            }
+        });
+    }
+}
+
 upena.instancePorts = {
     addPort: function (instanceId) {
         var portName = $('#portName-' + instanceId).val();

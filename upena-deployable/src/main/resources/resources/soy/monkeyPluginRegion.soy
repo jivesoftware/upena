@@ -21,6 +21,7 @@
                             <th>Host</th>
                             <th>Service</th>
                             <th>Strategy</th>
+                            <th>Config</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -106,6 +107,52 @@
                                                 placeholder="Strategy" value="{$m.strategy.name}" name="strategy" class="upena-hs-field form-control"
                                                 data-upena-lookup="/ui/lookup/strategies" />
                                             <input type="hidden" name="strategyKey" value="{$m.strategy.key}" />
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <a href="#" rel="popover" id="propertyPopoverAnchor-config-{$m.cluster.key}" data-popover-content="#propertyPopover-config-{$m.cluster.key}" data-placement="left" class="btn btn-primary" title="Config">
+                                            <span class="glyphicon glyphicon-menu-down"></span>Config
+                                        </a>
+                                        <div id="propertyPopover-config-{$m.cluster.key}" class="hide" style="overflow:scroll; height:400px;">
+                                            <table>
+                                                <thead>
+                                                    <tr>
+                                                        <th>Property</th>
+                                                        <th>Value</th>
+                                                        <th></th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {if $m.properties}
+                                                        {foreach $nv in $m.properties}
+                                                            <tr>
+                                                                <td>
+                                                                    {$nv.name}
+                                                                </td>
+                                                                <td>
+                                                                    {$nv.value}
+                                                                </td>
+                                                                <td>
+                                                                    <button title="Remove" onClick="upena.monkey.removeProperty('{$m.key}', '{$nv.name}', '{$nv.value}')" class="btn btn-default"><span class="glyphicon glyphicon-trash">&nbsp;Remove</span></button>
+                                                                </td>
+                                                            </tr>
+                                                        {/foreach}
+                                                    {/if}
+                                                    <tr>
+                                                        <td>
+                                                            <input type="text" id="propertyName-{$m.key}" style="padding-left:10px;"
+                                                                placeholder="property name" value="">
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" id="propertyValue-{$m.key}" style="padding-left:10px;"
+                                                                placeholder="property value" value="">
+                                                        </td>
+                                                        <td>
+                                                            <button title="Add" onClick="upena.monkey.addProperty('{$m.key}')" class="btn btn-default"><span class="glyphicon glyphicon-plus">&nbsp;Add</span></button>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
                                         </div>
                                     </td>
                                     <td>

@@ -92,10 +92,9 @@ public class UpenaService {
             }
         }
 
-        String connectToServiceNamed = connectionsRequest.getConnectToServiceNamed();
         ServiceKey[] serviceKey = new ServiceKey[1];
         upenaStore.services.scan((key, value) -> {
-            if (value != null && value.name.equals(connectToServiceNamed)) {
+            if (value != null && value.name.equals(connectionsRequest.getConnectToServiceNamed())) {
                 serviceKey[0] = key;
                 return false;
             }
@@ -104,7 +103,8 @@ public class UpenaService {
 
         Service service = serviceKey[0] == null ? null : upenaStore.services.get(serviceKey[0]);
         if (service == null) {
-            return failedConnectionResponse(connectionsRequest, "Undeclared service connectToServiceNamed:" + connectToServiceNamed);
+            return failedConnectionResponse(connectionsRequest,
+                    "Undeclared service connectToServiceNamed:" + connectionsRequest.getConnectToServiceNamed());
         }
 
         ServiceKey wantToConnectToServiceKey = serviceKey[0];
@@ -126,7 +126,7 @@ public class UpenaService {
             releaseGroupKey = cluster.defaultReleaseGroups.get(wantToConnectToServiceKey); // Use instance assigned to the instances cluster.
             if (releaseGroupKey == null) {
                 return failedConnectionResponse(connectionsRequest,
-                    "Cluster:" + cluster + " does not have a release group declared for " + "serviceKey:" + wantToConnectToServiceKey + " .");
+                    "Cluster:" + cluster + " does not have a release group declared for serviceKey:" + wantToConnectToServiceKey);
             }
             ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> got = findInstances(messages,
                 instance.clusterKey, releaseGroupKey, wantToConnectToServiceKey);
@@ -144,11 +144,10 @@ public class UpenaService {
             String monkeyAffectInstances = chaosService.monkeyAffect(instance.clusterKey, hk, instance.serviceKey);
             if (!monkeyAffectInstances.isEmpty()) {
                 primaryConnections = chaosService.unleashMonkey(
-                    instance.clusterKey,
-                    hk,
-                    instance.serviceKey,
-                    instance.instanceId,
-                    primaryConnections);
+                        instanceKey,
+                        instance,
+                        hk,
+                        primaryConnections);
                 messages.add("Monkey affect: [" + monkeyAffectInstances + "]");
             }
         }
@@ -161,7 +160,7 @@ public class UpenaService {
             connectionsRequest.getRequestUuid());
     }
 
-    ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> findInstances(List<String> messages,
+    private ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> findInstances(List<String> messages,
         ClusterKey clusterKey,
         ReleaseGroupKey releaseGroupKey,
         ServiceKey wantToConnectToServiceKey) throws Exception {
@@ -185,7 +184,7 @@ public class UpenaService {
         return null;
     }
 
-    List<ConnectionDescriptor> buildConnections(List<String> messages,
+    private List<ConnectionDescriptor> buildConnections(List<String> messages,
         ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> instances, String portName) throws Exception {
         List<ConnectionDescriptor> connections = new ArrayList<>();
 
@@ -222,7 +221,7 @@ public class UpenaService {
         return new ConnectionDescriptorsResponse(-1, Arrays.asList(message), null, null, request.getRequestUuid());
     }
 
-    public InstanceDescriptorsResponse instanceDescriptors(InstanceDescriptorsRequest instanceDescriptorsRequest) throws Exception {
+    InstanceDescriptorsResponse instanceDescriptors(InstanceDescriptorsRequest instanceDescriptorsRequest) throws Exception {
         HostKey hostKey = new HostKey(instanceDescriptorsRequest.hostKey);
         Host host = upenaStore.hosts.get(hostKey);
         if (host == null) {

@@ -37,7 +37,9 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
     @JsonSubTypes.Type(value = TenantKey.class, name = "tenantKey"),
     @JsonSubTypes.Type(value = Tenant.class, name = "tenant"),
     @JsonSubTypes.Type(value = MonkeyKey.class, name = "monkeyKey"),
-    @JsonSubTypes.Type(value = Monkey.class, name = "monkey") })
+    @JsonSubTypes.Type(value = Monkey.class, name = "monkey"),
+    @JsonSubTypes.Type(value = ChaosStateKey.class, name = "chaosStateKey"),
+    @JsonSubTypes.Type(value = ChaosState.class, name = "chaosState")})
 public interface Stored<S> extends Comparable<S> {
     // Marker
 }
