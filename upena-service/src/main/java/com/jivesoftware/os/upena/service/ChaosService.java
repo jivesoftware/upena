@@ -246,7 +246,7 @@ public class ChaosService {
 
                                     monkeyConnections = connectionsTemp;
                                 } else {
-                                    LOG.debug("Chaos State is being deactivated for serviceKey:{}", instance.serviceKey);
+                                    LOG.info("Chaos State is being deactivated for serviceKey:{}", instance.serviceKey);
 
                                     upenaStore.chaosStates.update(
                                             chaosStateKey,
@@ -256,7 +256,7 @@ public class ChaosService {
                                 if (chaosStateValue.enableAfterTime > System.currentTimeMillis()) {
                                     LOG.debug("Chaos State is inactive for serviceKey:{}", instance.serviceKey);
                                 } else {
-                                    LOG.debug("Chaos State will be activated for serviceKey:{}", instance.serviceKey);
+                                    LOG.info("Chaos State will be activated for serviceKey:{}", instance.serviceKey);
 
                                     upenaStore.chaosStates.update(
                                             chaosStateKey,
