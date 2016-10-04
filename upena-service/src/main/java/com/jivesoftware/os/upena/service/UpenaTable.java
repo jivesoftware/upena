@@ -17,8 +17,8 @@ package com.jivesoftware.os.upena.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
-import com.jivesoftware.os.amza.service.AmzaTable;
-import com.jivesoftware.os.amza.shared.RowIndexKey;
+import com.jivesoftware.os.upena.amza.service.AmzaTable;
+import com.jivesoftware.os.upena.amza.shared.RowIndexKey;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.shared.BasicTimestampedValue;

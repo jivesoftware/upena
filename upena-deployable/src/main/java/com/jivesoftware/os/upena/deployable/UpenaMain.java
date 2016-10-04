@@ -22,27 +22,27 @@ import com.google.common.base.Optional;
 import com.google.template.soy.SoyFileSet;
 import com.google.template.soy.base.SoySyntaxException;
 import com.google.template.soy.tofu.SoyTofu;
-import com.jivesoftware.os.amza.service.AmzaService;
-import com.jivesoftware.os.amza.service.AmzaServiceInitializer;
-import com.jivesoftware.os.amza.service.AmzaServiceInitializer.AmzaServiceConfig;
-import com.jivesoftware.os.amza.service.discovery.AmzaDiscovery;
-import com.jivesoftware.os.amza.service.storage.replication.SendFailureListener;
-import com.jivesoftware.os.amza.service.storage.replication.TakeFailureListener;
-import com.jivesoftware.os.amza.shared.AmzaInstance;
-import com.jivesoftware.os.amza.shared.MemoryRowsIndex;
-import com.jivesoftware.os.amza.shared.RingHost;
-import com.jivesoftware.os.amza.shared.RowIndexKey;
-import com.jivesoftware.os.amza.shared.RowIndexValue;
-import com.jivesoftware.os.amza.shared.RowsIndexProvider;
-import com.jivesoftware.os.amza.shared.RowsStorageProvider;
-import com.jivesoftware.os.amza.shared.UpdatesSender;
-import com.jivesoftware.os.amza.shared.UpdatesTaker;
-import com.jivesoftware.os.amza.storage.RowTable;
-import com.jivesoftware.os.amza.storage.binary.BinaryRowMarshaller;
-import com.jivesoftware.os.amza.storage.binary.BinaryRowsTx;
-import com.jivesoftware.os.amza.transport.http.replication.HttpUpdatesSender;
-import com.jivesoftware.os.amza.transport.http.replication.HttpUpdatesTaker;
-import com.jivesoftware.os.amza.transport.http.replication.endpoints.AmzaReplicationRestEndpoints;
+import com.jivesoftware.os.upena.amza.service.AmzaService;
+import com.jivesoftware.os.upena.amza.service.AmzaServiceInitializer;
+import com.jivesoftware.os.upena.amza.service.AmzaServiceInitializer.AmzaServiceConfig;
+import com.jivesoftware.os.upena.amza.service.discovery.AmzaDiscovery;
+import com.jivesoftware.os.upena.amza.service.storage.replication.SendFailureListener;
+import com.jivesoftware.os.upena.amza.service.storage.replication.TakeFailureListener;
+import com.jivesoftware.os.upena.amza.shared.AmzaInstance;
+import com.jivesoftware.os.upena.amza.shared.MemoryRowsIndex;
+import com.jivesoftware.os.upena.amza.shared.RingHost;
+import com.jivesoftware.os.upena.amza.shared.RowIndexKey;
+import com.jivesoftware.os.upena.amza.shared.RowIndexValue;
+import com.jivesoftware.os.upena.amza.shared.RowsIndexProvider;
+import com.jivesoftware.os.upena.amza.shared.RowsStorageProvider;
+import com.jivesoftware.os.upena.amza.shared.UpdatesSender;
+import com.jivesoftware.os.upena.amza.shared.UpdatesTaker;
+import com.jivesoftware.os.upena.amza.storage.RowTable;
+import com.jivesoftware.os.upena.amza.storage.binary.BinaryRowMarshaller;
+import com.jivesoftware.os.upena.amza.storage.binary.BinaryRowsTx;
+import com.jivesoftware.os.upena.amza.transport.http.replication.HttpUpdatesSender;
+import com.jivesoftware.os.upena.amza.transport.http.replication.HttpUpdatesTaker;
+import com.jivesoftware.os.upena.amza.transport.http.replication.endpoints.AmzaReplicationRestEndpoints;
 import com.jivesoftware.os.jive.utils.ordered.id.ConstantWriterIdProvider;
 import com.jivesoftware.os.jive.utils.ordered.id.OrderIdProvider;
 import com.jivesoftware.os.jive.utils.ordered.id.OrderIdProviderImpl;
@@ -246,7 +246,7 @@ public class UpenaMain {
 
         AmzaService amzaService = new AmzaServiceInitializer().initialize(amzaServiceConfig,
             orderIdProvider,
-            new com.jivesoftware.os.amza.storage.FstMarshaller(FSTConfiguration.getDefaultConfiguration()),
+            new com.jivesoftware.os.upena.amza.storage.FstMarshaller(FSTConfiguration.getDefaultConfiguration()),
             rowsStorageProvider,
             rowsStorageProvider,
             rowsStorageProvider,

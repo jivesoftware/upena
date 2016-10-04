@@ -16,10 +16,10 @@
 package com.jivesoftware.os.upena.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jivesoftware.os.amza.shared.RowChanges;
-import com.jivesoftware.os.amza.shared.RowIndexKey;
-import com.jivesoftware.os.amza.shared.RowIndexValue;
-import com.jivesoftware.os.amza.shared.RowsChanged;
+import com.jivesoftware.os.upena.amza.shared.RowChanges;
+import com.jivesoftware.os.upena.amza.shared.RowIndexKey;
+import com.jivesoftware.os.upena.amza.shared.RowIndexValue;
+import com.jivesoftware.os.upena.amza.shared.RowsChanged;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.shared.BasicTimestampedValue;

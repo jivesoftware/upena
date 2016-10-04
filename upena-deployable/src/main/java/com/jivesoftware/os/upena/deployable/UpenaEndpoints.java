@@ -18,8 +18,6 @@ package com.jivesoftware.os.upena.deployable;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
-import com.jivesoftware.os.amza.shared.AmzaInstance;
-import com.jivesoftware.os.amza.shared.RingHost;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.routing.bird.http.client.HttpClient;
@@ -30,6 +28,8 @@ import com.jivesoftware.os.routing.bird.http.client.HttpClientFactoryProvider;
 import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelper;
 import com.jivesoftware.os.routing.bird.shared.InstanceDescriptor;
 import com.jivesoftware.os.routing.bird.shared.ResponseHelper;
+import com.jivesoftware.os.upena.amza.shared.AmzaInstance;
+import com.jivesoftware.os.upena.amza.shared.RingHost;
 import com.jivesoftware.os.upena.config.UpenaConfigStore;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
 import com.jivesoftware.os.upena.service.DiscoveredRoutes;
@@ -243,7 +243,8 @@ public class UpenaEndpoints {
                 }
             }
             if (minHealth < health) {
-                upenaStore.record(upenaHealth.host, "checkHealth", System.currentTimeMillis(), "failed", "endpoint", sb.toString());
+                upenaStore.record(upenaHealth.host, "checkHealth health:" + minHealth + " < " + health, System.currentTimeMillis(), "failed", "endpoint", sb
+                    .toString());
                 return Response.status(Response.Status.NOT_ACCEPTABLE).entity(sb.toString()).type(MediaType.TEXT_PLAIN).build();
             } else {
                 return Response.ok(minHealth, MediaType.TEXT_PLAIN).build();
