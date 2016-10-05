@@ -233,6 +233,10 @@ public class UpenaEndpoints {
                     if (nannyHealth.serviceHealth.health < health) {
                         for (Health h : nannyHealth.serviceHealth.healthChecks) {
                             if (h.health < health) {
+                                sb.append(nannyHealth.instanceDescriptor.clusterName).append(":");
+                                sb.append(nannyHealth.instanceDescriptor.serviceName).append(":");
+                                sb.append(nannyHealth.instanceDescriptor.releaseGroupName).append(":");
+                                sb.append(nannyHealth.instanceDescriptor.instanceName).append("=");
                                 sb.append(h.toString()).append("\n");
                                 if (h.health < minHealth) {
                                     minHealth = h.health;
