@@ -4,8 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.jivesoftware.os.upena.amza.shared.AmzaInstance;
-import com.jivesoftware.os.upena.amza.shared.RingHost;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.routing.bird.endpoints.base.HasUI;
@@ -17,6 +15,8 @@ import com.jivesoftware.os.routing.bird.http.client.HttpClientFactory;
 import com.jivesoftware.os.routing.bird.http.client.HttpClientFactoryProvider;
 import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelper;
 import com.jivesoftware.os.routing.bird.shared.InstanceDescriptor;
+import com.jivesoftware.os.upena.amza.shared.AmzaInstance;
+import com.jivesoftware.os.upena.amza.shared.RingHost;
 import com.jivesoftware.os.upena.config.UpenaConfigStore;
 import com.jivesoftware.os.upena.deployable.UpenaEndpoints;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
@@ -1067,7 +1067,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
         if (serviceHealth != null) {
             List<Map<String, String>> instanceHealths = new ArrayList<>();
             for (UpenaEndpoints.Health health : serviceHealth.healthChecks) {
-                if (health.health >= 0.0d && health.health < 0.5d) {
+                if (health.health >= 0.0d && health.health < 1d) {
                     Map<String, String> healthData = new HashMap<>();
                     healthData.put("score", String.valueOf((int) (100 * health.health)));
                     healthData.put("color", trafficlightColorRGB(health.health, 1f));
