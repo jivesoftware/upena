@@ -5,6 +5,7 @@
  * 
  * @param? loadBalancers
  * @param? unattachedLoadBalancers
+ * @param? loadBalancerPools
  * @param? message
  * @param? filters
  */
@@ -27,13 +28,20 @@
     {if $unattachedLoadBalancers}
         <div id="upena-unattachedLoadBalancers" class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.9);">
             <div class="panel-heading"><span class="panel-title">Unattached Load Balancers</span></div>
-            {if $message}
-                <pre>{$message}</pre>
-            {/if}
-
             <div class="panel-body">
                 {call .unattachedLoadBalancersPluginRegionList}
                     {param unattachedLoadBalancers: $unattachedLoadBalancers /}
+                {/call}
+            </div>
+        </div>
+    {/if}
+    {if $loadBalancerPools}
+        <div id="upena-loadBalancerPools" class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.9);">
+            <div class="panel-heading"><span class="panel-title">Load Balancer Pools</span></div>
+
+            <div class="panel-body">
+                {call .loadBalancerPoolsPluginRegionList}
+                    {param loadBalancerPools: $loadBalancerPools /}
                 {/call}
             </div>
         </div>
@@ -248,6 +256,45 @@
                         </td>
                     </tr>
                 </form>
+            {/foreach}
+        </tbody>
+    </table>
+{/template}
+
+
+/**
+ * @param? loadBalancerPools
+ */
+{template .loadBalancerPoolsPluginRegionList}
+    <table class="table table-hover table-condensed table-responsive">
+        <thead>
+            <tr>
+                <th>Key</th>
+                <th>Value</th>
+                <th>Instance</th>
+                <th>Host</th>
+                <th>Port</th>
+            </tr>
+        </thead>
+        <tbody>
+            {foreach $i in $loadBalancerPools}
+                <tr>
+                    <td>
+                        {$i.key}
+                    </td>
+                    <td>
+                        {$i.value}
+                    </td>
+                    <td>
+                        {$i.instance}
+                    </td>
+                    <td>
+                        {$i.host}
+                    </td>
+                    <td>
+                        {$i.port}
+                    </td>
+                </tr>
             {/foreach}
         </tbody>
     </table>

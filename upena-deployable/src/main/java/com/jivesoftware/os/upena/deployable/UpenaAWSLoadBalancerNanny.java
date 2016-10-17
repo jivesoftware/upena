@@ -116,17 +116,20 @@ public class UpenaAWSLoadBalancerNanny {
             Cluster cluster = upenaStore.clusters.get(instance.clusterKey);
             Service service = upenaStore.services.get(instance.serviceKey);
             ReleaseGroup releaseGroup = upenaStore.releaseGroups.get(instance.releaseGroupKey);
+            if (releaseGroup.properties != null) {
+                String got = releaseGroup.properties.get(ReleaseGroupPropertyKey.loadBalanced.key());
+                if (got != null && Boolean.valueOf(got) == true) {
+                    String targetGroupId = instance.clusterKey.getKey() + "|" + instance.serviceKey.getKey() + "|" + instance.releaseGroupKey.getKey();
+                    String targetGroupKey = "tg-" + String.valueOf(Math.abs(jenkinsHash.hash(targetGroupId.getBytes(StandardCharsets.UTF_8), 0)));
 
-            String targetGroupId = instance.clusterKey.getKey() + "|" + instance.serviceKey.getKey() + "|" + instance.releaseGroupKey.getKey();
-            String targetGroupKey = "tg-" + String.valueOf(Math.abs(jenkinsHash.hash(targetGroupId.getBytes(StandardCharsets.UTF_8), 0)));
+                    String targetGroupName = cluster.name + "_" + service.name + "_" + releaseGroup.name;
+                    targetGroupIdToName.put(targetGroupKey, targetGroupName);
+                    desiredTargetGroups.add(targetGroupKey);
 
-            String targetGroupName = cluster.name + "_" + service.name + "_" + releaseGroup.name;
-            targetGroupIdToName.put(targetGroupKey, targetGroupName);
-            desiredTargetGroups.add(targetGroupKey);
-
-            targetGroupInstances.put(targetGroupKey, instance);
-            targetGroupRelease.put(targetGroupKey, instance.releaseGroupKey);
-
+                    targetGroupInstances.put(targetGroupKey, instance);
+                    targetGroupRelease.put(targetGroupKey, instance.releaseGroupKey);
+                }
+            }
         }
     }
 

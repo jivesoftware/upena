@@ -16,7 +16,8 @@ public enum ReleaseGroupPropertyKey {
     deregistrationDelayTimeoutSeconds("deregistration_delay.timeout_seconds", "300"),
     stickinessEnabled("stickiness.enabled", "false"),
     stickinessType("stickiness.type", "lb_cookie"),
-    stickinessLBCookieDurationSeconds("stickiness.lb_cookie.duration_seconds", "86400");
+    stickinessLBCookieDurationSeconds("stickiness.lb_cookie.duration_seconds", "86400"),
+    loadBalanced("load.balanced", "false");
 
     private final String key;
     private final String defaultValue;
