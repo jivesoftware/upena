@@ -96,7 +96,7 @@ public class UpenaAWSLoadBalancerNanny {
 
         figureOutTargetGroups(found, missingTargetGroups, targetGroupInstances, targetGroupRelease, targetGroupIdToName);
         ensureTargetGroups(elbc, targetGroups, missingTargetGroups, targetGroupRelease, targetGroupIdToName);
-        ensureTargetsRegistered(targetGroupInstances, targetGroups, elbc);
+        ensureTargetsRegistered(found, targetGroupInstances, targetGroups, elbc);
 
     }
 
@@ -369,11 +369,17 @@ public class UpenaAWSLoadBalancerNanny {
         }
     }
 
-    private void ensureTargetsRegistered(ListMultimap<String, Instance> targetGroupInstances, Map<String, TargetGroup> targetGroups,
+    private void ensureTargetsRegistered(ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> found,
+        ListMultimap<String, Instance> targetGroupInstances,
+        Map<String, TargetGroup> targetGroups,
         AmazonElasticLoadBalancingClient elbc) throws Exception {
         // ensure instance is registered
         Host self = upenaStore.hosts.get(selfHostKey);
+
+        JenkinsHash jenkinsHash = new JenkinsHash();
+        Set<Instance> processedInstance = new HashSet<>();
         for (Map.Entry<String, Collection<Instance>> entry : targetGroupInstances.asMap().entrySet()) {
+
             String targetGroupArn = targetGroups.get(entry.getKey()).getTargetGroupArn();
 
             Map<TargetDescription, TargetHealth> targetDescriptionsHealth = Maps.newHashMap();
@@ -402,6 +408,7 @@ public class UpenaAWSLoadBalancerNanny {
                 if (targetDescriptionsHealth.remove(targetDescription) == null) {
                     addTargetDescriptions.add(targetDescription);
                 }
+                processedInstance.add(instance);
             }
 
             if (!addTargetDescriptions.isEmpty()) {
@@ -426,6 +433,41 @@ public class UpenaAWSLoadBalancerNanny {
                     LOG.info("Deregistering {}", deregisterTargetsRequest);
                     elbc.deregisterTargets(deregisterTargetsRequest);
                 }
+            }
+        }
+
+        ListMultimap<String, Instance> cleanup = ArrayListMultimap.create();
+        for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entry : found.entrySet()) {
+            if (entry.getValue().getTombstoned() || processedInstance.contains(entry.getValue().getValue())) {
+                continue;
+            }
+
+            Instance instance = entry.getValue().getValue();
+            String targetGroupId = instance.clusterKey.getKey() + "|" + instance.serviceKey.getKey() + "|" + instance.releaseGroupKey.getKey();
+            String targetGroupKey = "tg-" + String.valueOf(Math.abs(jenkinsHash.hash(targetGroupId.getBytes(StandardCharsets.UTF_8), 0)));
+            cleanup.put(targetGroupKey, instance);
+        }
+
+        for (Map.Entry<String, Collection<Instance>> entry : cleanup.asMap().entrySet()) {
+
+            if (targetGroups.containsKey(entry.getKey())) {
+                String targetGroupArn = targetGroups.get(entry.getKey()).getTargetGroupArn();
+
+                 List<TargetDescription> targetDescriptions = Lists.newArrayList();
+                for (Instance instance : entry.getValue()) {
+                    TargetDescription targetDescription = new TargetDescription();
+                    targetDescription.setId(self.instanceId);
+                    Instance.Port port = instance.ports.get("main"); // Hmmm
+                    targetDescription.setPort(port.port);
+                    targetDescriptions.add(targetDescription);
+                }
+
+                DeregisterTargetsRequest deregisterTargetsRequest = new DeregisterTargetsRequest();
+                deregisterTargetsRequest.setTargetGroupArn(targetGroupArn);
+                deregisterTargetsRequest.setTargets(targetDescriptions);
+                LOG.info("Deregistering {}", deregisterTargetsRequest);
+                elbc.deregisterTargets(deregisterTargetsRequest);
+
             }
         }
     }
