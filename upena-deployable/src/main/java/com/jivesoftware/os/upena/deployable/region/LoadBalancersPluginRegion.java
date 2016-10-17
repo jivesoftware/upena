@@ -14,6 +14,7 @@ import com.amazonaws.services.elasticloadbalancingv2.model.LoadBalancer;
 import com.amazonaws.services.elasticloadbalancingv2.model.Tag;
 import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
@@ -21,9 +22,11 @@ import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.deployable.aws.AWSClientFactory;
 import com.jivesoftware.os.upena.deployable.region.LoadBalancersPluginRegion.LoadBalancersPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
+import com.jivesoftware.os.upena.service.JenkinsHash;
 import com.jivesoftware.os.upena.service.UpenaStore;
 import com.jivesoftware.os.upena.shared.Cluster;
 import com.jivesoftware.os.upena.shared.ClusterKey;
+import com.jivesoftware.os.upena.shared.Host;
 import com.jivesoftware.os.upena.shared.Instance;
 import com.jivesoftware.os.upena.shared.InstanceFilter;
 import com.jivesoftware.os.upena.shared.InstanceKey;
@@ -32,10 +35,12 @@ import com.jivesoftware.os.upena.shared.LBKey;
 import com.jivesoftware.os.upena.shared.LoadBalancerFilter;
 import com.jivesoftware.os.upena.shared.ReleaseGroup;
 import com.jivesoftware.os.upena.shared.ReleaseGroupKey;
+import com.jivesoftware.os.upena.shared.ReleaseGroupPropertyKey;
 import com.jivesoftware.os.upena.shared.Service;
 import com.jivesoftware.os.upena.shared.ServiceKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -154,7 +159,7 @@ public class LoadBalancersPluginRegion implements PageRegion<LoadBalancersPlugin
             if (input.action != null) {
                 if (input.action.equals("remove-unattached")) {
                     try {
-                       
+
                         AmazonElasticLoadBalancingClient elbc = awsClientFactory.getELBC("upena-lb");
                         DeleteLoadBalancerRequest deleteLoadBalancerRequest = new DeleteLoadBalancerRequest();
                         deleteLoadBalancerRequest.setLoadBalancerArn(input.name);
@@ -406,7 +411,6 @@ public class LoadBalancersPluginRegion implements PageRegion<LoadBalancersPlugin
 //                    status.message("ERROR " + x.getMessage());
 //                    LOG.error("while creating a LB", x);
 //                }
-
                 if (loadBalancer != null) {
                     try {
                         DescribeListenersRequest describeListenersRequest = new DescribeListenersRequest();
@@ -514,6 +518,51 @@ public class LoadBalancersPluginRegion implements PageRegion<LoadBalancersPlugin
                 }
             }
             data.put("unattachedLoadBalancers", rows);
+
+            rows = new ArrayList<>();
+             JenkinsHash jenkinsHash = new JenkinsHash();
+            ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> foundInstance = upenaStore.instances.find(
+                new InstanceFilter(null, null, null, null, null, 0, 100_000));
+
+            for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entry : foundInstance.entrySet()) {
+                if (entry.getValue().getTombstoned()) {
+                    continue;
+                }
+                Instance instance = entry.getValue().getValue();
+
+                Cluster cluster = upenaStore.clusters.get(instance.clusterKey);
+                Service service = upenaStore.services.get(instance.serviceKey);
+                Host host = upenaStore.hosts.get(instance.hostKey);
+                ReleaseGroup releaseGroup = upenaStore.releaseGroups.get(instance.releaseGroupKey);
+                if (releaseGroup.properties != null) {
+                    String got = releaseGroup.properties.get(ReleaseGroupPropertyKey.loadBalanced.key());
+                    if (got != null && Boolean.valueOf(got) == true) {
+                        String targetGroupId = instance.clusterKey.getKey() + "|" + instance.serviceKey.getKey() + "|" + instance.releaseGroupKey.getKey();
+                        String targetGroupKey = "tg-" + String.valueOf(Math.abs(jenkinsHash.hash(targetGroupId.getBytes(StandardCharsets.UTF_8), 0)));
+
+                        String targetGroupName = cluster.name + "_" + service.name + "_" + releaseGroup.name;
+                        rows.add(ImmutableMap.of("key", targetGroupKey,
+                            "value", targetGroupName,
+                            "instance", instance.instanceId,
+                            "host", host.hostName,
+                            "port", instance.ports.get("main").port // barf
+                        ));
+                    }
+                }
+            }
+
+            Collections.sort(rows, (Map<String, Object> o1, Map<String, Object> o2) -> {
+                String loadBalancerName1 = (String) o1.get("key");
+                String loadBalancerName2 = (String) o2.get("key");
+
+                int c = loadBalancerName1.compareTo(loadBalancerName2);
+                if (c != 0) {
+                    return c;
+                }
+                return c;
+            });
+
+             data.put("loadBalancerPools", rows);
 
         } catch (Exception e) {
             LOG.error("Unable to retrieve data", e);
@@ -633,6 +682,5 @@ public class LoadBalancersPluginRegion implements PageRegion<LoadBalancersPlugin
         string = string.replaceAll(",", ",\n");
         return string;
     }
-
 
 }
