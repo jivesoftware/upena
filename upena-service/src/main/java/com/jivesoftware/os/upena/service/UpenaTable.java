@@ -17,10 +17,10 @@ package com.jivesoftware.os.upena.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
-import com.jivesoftware.os.upena.amza.service.AmzaTable;
-import com.jivesoftware.os.upena.amza.shared.RowIndexKey;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
+import com.jivesoftware.os.upena.amza.service.AmzaTable;
+import com.jivesoftware.os.upena.amza.shared.RowIndexKey;
 import com.jivesoftware.os.upena.shared.BasicTimestampedValue;
 import com.jivesoftware.os.upena.shared.Key;
 import com.jivesoftware.os.upena.shared.KeyValueFilter;
@@ -34,10 +34,12 @@ public class UpenaTable<K extends Key, V extends Stored> {
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
     static public interface UpenaKeyProvider<KK extends Key, VV extends Stored> {
+
         KK getNodeKey(UpenaTable<KK, VV> table, VV value);
     }
 
     static public interface UpenaValueValidator<KK extends Key, VV extends Stored> {
+
         VV validate(UpenaTable<KK, VV> table, KK key, VV value) throws Exception;
     }
 
@@ -61,7 +63,6 @@ public class UpenaTable<K extends Key, V extends Stored> {
         this.valueValidator = valueValidator;
     }
 
-
     public V get(K key) throws Exception {
         byte[] rawKey = mapper.writeValueAsBytes(key);
         byte[] got = store.get(new RowIndexKey(rawKey));
@@ -73,13 +74,18 @@ public class UpenaTable<K extends Key, V extends Stored> {
 
     public void scan(final Stream<K, V> stream) throws Exception {
         store.scan((l, key, value) -> {
-            K k = mapper.readValue(key.getKey(), keyClass);
-            V v = mapper.readValue(value.getValue(), valueClass);
-            return stream.stream(k, v);
+            if (!value.getTombstoned()) {
+                K k = mapper.readValue(key.getKey(), keyClass);
+                V v = mapper.readValue(value.getValue(), valueClass);
+                return stream.stream(k, v);
+            } else {
+                return true;
+            }
         });
     }
 
     public interface Stream<K, V> {
+
         boolean stream(K key, V value) throws Exception;
     }
 

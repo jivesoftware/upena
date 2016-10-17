@@ -85,7 +85,7 @@ public class ChromeRegion<I extends PluginInput, R extends PageRegion<I>> implem
             int[] i = new int[1];
             upenaStore.hosts.scan((HostKey key, Host value) -> {
                 instances.add(ImmutableMap.of("host", value.name,
-                    "name", String.valueOf("upena-" + i[0]),
+                    "name", value.name + " " + String.valueOf(" - (" + i[0] + ")"),
                     "port", String.valueOf(value.port),
                     "path", path));
                 if (key.equals(hostKey)) {

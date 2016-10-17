@@ -33,12 +33,10 @@ import com.jivesoftware.os.upena.shared.InstanceKey;
 import com.jivesoftware.os.upena.shared.ReleaseGroup;
 import com.jivesoftware.os.upena.shared.ReleaseGroupKey;
 import com.jivesoftware.os.upena.shared.Service;
-import com.jivesoftware.os.upena.shared.ServiceFilter;
 import com.jivesoftware.os.upena.shared.ServiceKey;
 import com.jivesoftware.os.upena.shared.Tenant;
 import com.jivesoftware.os.upena.shared.TenantKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -94,20 +92,22 @@ public class UpenaService {
             }
         }
 
-        ServiceKey wantToConnectToServiceKey = null;
-        Map<ServiceKey, TimestampedValue<Service>> gotServices = upenaStore.services.find(
-                new ServiceFilter(connectionsRequest.getConnectToServiceNamed(), null,
-                        0, Integer.MAX_VALUE));
-        for (Entry<ServiceKey, TimestampedValue<Service>> entry : gotServices.entrySet()) {
-            if (entry.getValue().getValue().name.equals(connectionsRequest.getConnectToServiceNamed())) {
-                wantToConnectToServiceKey = entry.getKey();
-                break;
+        ServiceKey[] serviceKey = new ServiceKey[1];
+        upenaStore.services.scan((key, value) -> {
+            if (value != null && value.name.equals(connectionsRequest.getConnectToServiceNamed())) {
+                serviceKey[0] = key;
+                return false;
             }
-        }
-        if (wantToConnectToServiceKey == null) {
+            return true;
+        });
+
+        Service service = serviceKey[0] == null ? null : upenaStore.services.get(serviceKey[0]);
+        if (service == null) {
             return failedConnectionResponse(connectionsRequest,
                     "Undeclared service connectToServiceNamed:" + connectionsRequest.getConnectToServiceNamed());
         }
+
+        ServiceKey wantToConnectToServiceKey = serviceKey[0];
 
         ReleaseGroupKey releaseGroupKey = null;
         List<ConnectionDescriptor> primaryConnections = null;
