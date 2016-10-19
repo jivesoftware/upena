@@ -1,5 +1,7 @@
 package com.jivesoftware.os.upena.uba.service;
 
+import com.jivesoftware.os.mlogger.core.MetricLogger;
+import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -22,7 +24,12 @@ import sun.security.x509.X509CertInfo;
  */
 public class SelfSigningCertGenerator {
 
+    private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
+
     public boolean validate(String alias, String password, File keystoreFile) throws Exception {
+
+        LOG.info("Validating {} {}", alias, keystoreFile);
+
         //Reload the keystore
         char[] passwordChars = password.toCharArray();
         KeyStore keyStore = KeyStore.getInstance("jks");
@@ -40,6 +47,8 @@ public class SelfSigningCertGenerator {
     }
 
     public void create(String alias, String password, File keystoreFile) throws Exception {
+
+        LOG.info("Creating {} {}", alias, keystoreFile);
         //Generate ROOT certificate
         CertAndKeyGen keyGen = new CertAndKeyGen("RSA", "SHA1WithRSA", null);
         keyGen.generate(1024);
