@@ -91,13 +91,14 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
         final String instanceId;
         final String releaseKey;
         final String release;
+        final boolean sslEnabled;
         final boolean enabled;
         final String intervalUnits;
         final String interval;
         final String action;
 
         public InstancesPluginRegionInput(String key, String clusterKey, String cluster, String hostKey, String host, String serviceKey, String service,
-            String instanceId, String releaseKey, String release, boolean enabled, String intervalUnits, String interval, String action) {
+            String instanceId, String releaseKey, String release, boolean sslEnabled, boolean enabled, String intervalUnits, String interval, String action) {
             this.key = key;
             this.clusterKey = clusterKey;
             this.cluster = cluster;
@@ -108,6 +109,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
             this.instanceId = instanceId;
             this.releaseKey = releaseKey;
             this.release = release;
+            this.sslEnabled = sslEnabled;
             this.enabled = enabled;
             this.intervalUnits = intervalUnits;
             this.interval = interval;
@@ -149,6 +151,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
             filters.put("instanceId", input.instanceId);
             filters.put("releaseKey", input.releaseKey);
             filters.put("release", input.release);
+            filters.put("sslEnabled", input.sslEnabled);
             filters.put("enabled", input.enabled);
             data.put("filters", filters);
 
@@ -397,7 +400,11 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
                     new ServiceKey(input.serviceKey),
                     new ReleaseGroupKey(input.releaseKey),
                     Integer.parseInt(input.instanceId),
-                    input.enabled, false, System.currentTimeMillis()
+                    input.enabled,
+                    false,
+                    null,
+                    System.currentTimeMillis(),
+                    new HashMap<>()
                 );
                 upenaStore.instances.update(null, newInstance);
                 upenaStore.record(user, "added", System.currentTimeMillis(), "", "instance-ui",
@@ -464,7 +471,11 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
                     new ServiceKey(serviceKey),
                     new ReleaseGroupKey(releaseKey),
                     firstFreeId,
-                    false, false, System.currentTimeMillis()
+                    false,
+                    false,
+                    null,
+                    System.currentTimeMillis(),
+                    new HashMap<>()
                 );
                 upenaStore.instances.update(null, newInstance);
                 upenaStore.record(user, "added", System.currentTimeMillis(), "", "instance-ui",
@@ -543,7 +554,15 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
                         new ServiceKey(input.serviceKey),
                         new ReleaseGroupKey(input.releaseKey),
                         Integer.parseInt(input.instanceId),
-                        input.enabled, false, System.currentTimeMillis());
+                        input.enabled,
+                        false,
+                        instance.publicKey,
+                        System.currentTimeMillis(),
+                        instance.ports);
+
+                    // Good god really!?
+                    updatedInstance.ports.get("main").sslEnabled = input.sslEnabled;
+                    updatedInstance.ports.get("manage").sslEnabled = input.sslEnabled;
 
                     upenaStore.instances.update(new InstanceKey(input.key), updatedInstance);
 
@@ -669,6 +688,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
 
         public String instanceId;
         public String portName;
+        public boolean sslEnabled;
         public int port;
         public String propertyName;
         public String propertyValue;
@@ -676,9 +696,10 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
         public PortUpdate() {
         }
 
-        public PortUpdate(String instanceId, String portName, int port, String propertyName, String propertyValue) {
+        public PortUpdate(String instanceId, String portName, boolean sslEnabled, int port, String propertyName, String propertyValue) {
             this.instanceId = instanceId;
             this.portName = portName;
+            this.sslEnabled = sslEnabled;
             this.port = port;
             this.propertyName = propertyName;
             this.propertyValue = propertyValue;
@@ -686,13 +707,8 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
 
         @Override
         public String toString() {
-            return "PortUpdate{"
-                + "instanceId=" + instanceId
-                + ", portName=" + portName
-                + ", port=" + port
-                + ", propertyName=" + propertyName
-                + ", propertyValue=" + propertyValue
-                + '}';
+            return "PortUpdate{" + "instanceId=" + instanceId + ", portName=" + portName + ", sslEnabled=" + sslEnabled + ", port=" + port
+                + ", propertyName=" + propertyName + ", propertyValue=" + propertyValue + '}';
         }
 
     }
@@ -703,7 +719,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
 
         Port port = instance.ports.get(update.portName);
         if (port == null) {
-            port = new Port(update.port, new HashMap<>());
+            port = new Port(update.sslEnabled, update.port, new HashMap<>());
             if (update.propertyName != null && !update.propertyName.isEmpty()) {
                 port.properties.put(update.propertyName, update.propertyValue);
             }

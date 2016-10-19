@@ -16,12 +16,6 @@
 package com.jivesoftware.os.upena.amza.transport.http.replication;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jivesoftware.os.upena.amza.shared.RingHost;
-import com.jivesoftware.os.upena.amza.shared.RowScan;
-import com.jivesoftware.os.upena.amza.shared.TableName;
-import com.jivesoftware.os.upena.amza.shared.UpdatesTaker;
-import com.jivesoftware.os.upena.amza.storage.RowMarshaller;
-import com.jivesoftware.os.upena.amza.storage.binary.BinaryRowMarshaller;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.routing.bird.http.client.HttpClient;
@@ -30,6 +24,12 @@ import com.jivesoftware.os.routing.bird.http.client.HttpClientConfiguration;
 import com.jivesoftware.os.routing.bird.http.client.HttpClientFactory;
 import com.jivesoftware.os.routing.bird.http.client.HttpClientFactoryProvider;
 import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelper;
+import com.jivesoftware.os.upena.amza.shared.RingHost;
+import com.jivesoftware.os.upena.amza.shared.RowScan;
+import com.jivesoftware.os.upena.amza.shared.TableName;
+import com.jivesoftware.os.upena.amza.shared.UpdatesTaker;
+import com.jivesoftware.os.upena.amza.storage.RowMarshaller;
+import com.jivesoftware.os.upena.amza.storage.binary.BinaryRowMarshaller;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
@@ -76,8 +76,9 @@ public class HttpUpdatesTaker implements UpdatesTaker {
 
     HttpRequestHelper buildRequestHelper(String host, int port) {
         HttpClientConfig httpClientConfig = HttpClientConfig.newBuilder().build();
-        HttpClientFactory httpClientFactory = new HttpClientFactoryProvider().createHttpClientFactory(Arrays.<HttpClientConfiguration>asList(httpClientConfig));
-        HttpClient httpClient = httpClientFactory.createClient(host, port);
+        HttpClientFactory httpClientFactory = new HttpClientFactoryProvider().createHttpClientFactory(Arrays.<HttpClientConfiguration>asList(httpClientConfig),
+            false);
+        HttpClient httpClient = httpClientFactory.createClient(null, host, port);
         HttpRequestHelper requestHelper = new HttpRequestHelper(httpClient, new ObjectMapper());
         return requestHelper;
     }

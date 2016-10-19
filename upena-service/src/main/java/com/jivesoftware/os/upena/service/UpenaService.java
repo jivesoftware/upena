@@ -22,6 +22,7 @@ import com.jivesoftware.os.routing.bird.shared.HostPort;
 import com.jivesoftware.os.routing.bird.shared.InstanceDescriptor;
 import com.jivesoftware.os.routing.bird.shared.InstanceDescriptorsRequest;
 import com.jivesoftware.os.routing.bird.shared.InstanceDescriptorsResponse;
+import com.jivesoftware.os.uba.shared.PasswordStore;
 import com.jivesoftware.os.upena.shared.Cluster;
 import com.jivesoftware.os.upena.shared.ClusterKey;
 import com.jivesoftware.os.upena.shared.Host;
@@ -47,10 +48,12 @@ import java.util.concurrent.ConcurrentNavigableMap;
 
 public class UpenaService {
 
+    private final PasswordStore passwordStore;
     private final UpenaStore upenaStore;
     private final ChaosService chaosService;
 
-    public UpenaService(UpenaStore upenaStore, ChaosService chaosService) throws Exception {
+    public UpenaService(PasswordStore passwordStore, UpenaStore upenaStore, ChaosService chaosService) throws Exception {
+        this.passwordStore = passwordStore;
         this.upenaStore = upenaStore;
         this.chaosService = chaosService;
     }
@@ -104,7 +107,7 @@ public class UpenaService {
         Service service = serviceKey[0] == null ? null : upenaStore.services.get(serviceKey[0]);
         if (service == null) {
             return failedConnectionResponse(connectionsRequest,
-                    "Undeclared service connectToServiceNamed:" + connectionsRequest.getConnectToServiceNamed());
+                "Undeclared service connectToServiceNamed:" + connectionsRequest.getConnectToServiceNamed());
         }
 
         ServiceKey wantToConnectToServiceKey = serviceKey[0];
@@ -144,10 +147,10 @@ public class UpenaService {
             String monkeyAffectInstances = chaosService.monkeyAffect(instance.clusterKey, hk, instance.serviceKey);
             if (!monkeyAffectInstances.isEmpty()) {
                 primaryConnections = chaosService.unleashMonkey(
-                        instanceKey,
-                        instance,
-                        hk,
-                        primaryConnections);
+                    instanceKey,
+                    instance,
+                    hk,
+                    primaryConnections);
                 messages.add("Monkey affect: [" + monkeyAffectInstances + "]");
             }
         }
@@ -185,7 +188,9 @@ public class UpenaService {
     }
 
     private List<ConnectionDescriptor> buildConnections(List<String> messages,
-        ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> instances, String portName) throws Exception {
+        ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> instances,
+        String portName) throws Exception {
+
         List<ConnectionDescriptor> connections = new ArrayList<>();
 
         for (Entry<InstanceKey, TimestampedValue<Instance>> entry : instances.entrySet()) {
@@ -205,7 +210,12 @@ public class UpenaService {
                             Map<String, String> properties = new HashMap<>();
                             properties.putAll(port.properties);
                             connections.add(new ConnectionDescriptor(
-                                instanceDescriptor, new HostPort(host.hostName, port.port), properties, null));
+                                instanceDescriptor,
+                                port.sslEnabled,
+                                new HostPort(host.hostName, port.port),
+                                properties,
+                                null)
+                            );
                         }
                     }
                 }
@@ -221,7 +231,7 @@ public class UpenaService {
         return new ConnectionDescriptorsResponse(-1, Arrays.asList(message), null, null, request.getRequestUuid());
     }
 
-    InstanceDescriptorsResponse instanceDescriptors(InstanceDescriptorsRequest instanceDescriptorsRequest) throws Exception {
+    public InstanceDescriptorsResponse instanceDescriptors(InstanceDescriptorsRequest instanceDescriptorsRequest) throws Exception {
         HostKey hostKey = new HostKey(instanceDescriptorsRequest.hostKey);
         Host host = upenaStore.hosts.get(hostKey);
         if (host == null) {
@@ -281,14 +291,20 @@ public class UpenaService {
             instance.instanceId,
             releaseGroup.version,
             releaseGroup.repository,
+            instance.publicKey,
             instance.restartTimestampGMTMillis,
             instance.enabled);
 
         for (Entry<String, Instance.Port> p : instance.ports.entrySet()) {
-            instanceDescriptor.ports.put(p.getKey(), new InstanceDescriptor.InstanceDescriptorPort(p.getValue().port));
+            Port value = p.getValue();
+            instanceDescriptor.ports.put(p.getKey(), new InstanceDescriptor.InstanceDescriptorPort(value.sslEnabled, value.port));
         }
 
         return instanceDescriptor;
+    }
+
+    String keyStorePassword(String instanceKey) throws Exception {
+       return passwordStore.password(instanceKey);
     }
 
 }

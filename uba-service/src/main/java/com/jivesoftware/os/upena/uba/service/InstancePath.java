@@ -88,6 +88,7 @@ public class InstancePath {
             Integer.parseInt(properties.get(instancePrefix + "instanceName").toString()),
             properties.get(instancePrefix + "version").toString(),
             properties.get(instancePrefix + "repository").toString(),
+            properties.get(instancePrefix + "publicKey").toString(),
             -1,
             Boolean.parseBoolean(enabled.toString()));
 
@@ -96,7 +97,11 @@ public class InstancePath {
             if (portKey.endsWith("Port")) {
                 if (!portKey.endsWith("routesPort")) { // ignore injected upena
                     String portName = portKey.substring(instancePrefix.length(), portKey.length() - 4);
-                    id.ports.put(portName, new InstanceDescriptor.InstanceDescriptorPort(Integer.parseInt(properties.getProperty(key.toString()))));
+                    int port = Integer.parseInt(properties.getProperty(key.toString()));
+
+                    String portSslKey = portKey.substring(0, portKey.length() - 4) + "SslEnabled";
+                    boolean sslEnabled = Boolean.valueOf(properties.getProperty(portSslKey, "false"));
+                    id.ports.put(portName, new InstanceDescriptor.InstanceDescriptorPort(sslEnabled, port));
                 }
             }
         }
@@ -125,9 +130,11 @@ public class InstancePath {
         properties.add(instancePrefix + "version=" + id.versionName);
         properties.add(instancePrefix + "repository=" + id.repository);
         properties.add(instancePrefix + "enabled=" + String.valueOf(id.enabled));
+        properties.add(instancePrefix + "publicKey=" + id.publicKey);
 
         for (Entry<String, InstanceDescriptor.InstanceDescriptorPort> port : id.ports.entrySet()) {
             properties.add(instancePrefix + port.getKey() + "Port=" + port.getValue().port);
+            properties.add(instancePrefix + port.getKey() + "SslEnabled=" + port.getValue().sslEnabled);
         }
 
         FileUtils.writeLines(instanceProperties(), "UTF-8", properties, "\n", false);
@@ -139,6 +146,14 @@ public class InstancePath {
 
     File script(String scriptName) {
         return new File(path(path, -1), "bin/" + scriptName);
+    }
+
+    File certs(String certName) {
+        File f = new File(path(path, -1), "certs/" + certName);
+        if (!f.getParentFile().exists() && !f.getParentFile().mkdirs()) {
+            throw new RuntimeException("Failed trying to mkdirs for " + f.getParent());
+        }
+        return f;
     }
 
     File lib() {

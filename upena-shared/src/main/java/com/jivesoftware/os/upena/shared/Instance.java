@@ -22,7 +22,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -32,15 +31,16 @@ public class Instance implements Stored<Instance>, Serializable {
     public static final String PORT_MANAGE = "manage";
     public static final String PORT_DEBUG = "debug";
     public static final String PORT_JMX = "jmx";
-    public ClusterKey clusterKey;
-    public HostKey hostKey;
-    public ServiceKey serviceKey;
-    public ReleaseGroupKey releaseGroupKey;
-    public int instanceId;
+    public final ClusterKey clusterKey;
+    public final HostKey hostKey;
+    public final ServiceKey serviceKey;
+    public final ReleaseGroupKey releaseGroupKey;
+    public final int instanceId;
     public boolean enabled;
-    public boolean locked;
+    public final boolean locked;
+    public final String publicKey;
     public long restartTimestampGMTMillis = -1;
-    public Map<String, Port> ports = new ConcurrentHashMap<>();
+    public final Map<String, Port> ports;
 
     @JsonCreator
     public Instance(@JsonProperty("clusterKey") ClusterKey clusterKey,
@@ -50,7 +50,10 @@ public class Instance implements Stored<Instance>, Serializable {
         @JsonProperty("instanceId") int instanceId,
         @JsonProperty("enabled") boolean enabled,
         @JsonProperty("locked") boolean locked,
-        @JsonProperty("restartTimestampGMTMillis") long restartTimestampGMTMillis) {
+        @JsonProperty("publicKey") String publicKey,
+        @JsonProperty("restartTimestampGMTMillis") long restartTimestampGMTMillis,
+        @JsonProperty("ports") Map<String, Port> ports
+    ) {
         this.clusterKey = clusterKey;
         this.hostKey = hostKey;
         this.serviceKey = serviceKey;
@@ -58,7 +61,9 @@ public class Instance implements Stored<Instance>, Serializable {
         this.instanceId = instanceId;
         this.enabled = enabled;
         this.locked = locked;
+        this.publicKey = publicKey;
         this.restartTimestampGMTMillis = restartTimestampGMTMillis;
+        this.ports = ports;
     }
 
     @Override
@@ -71,6 +76,7 @@ public class Instance implements Stored<Instance>, Serializable {
             + ", instanceId=" + instanceId
             + ", enabled=" + enabled
             + ", locked=" + locked
+            + ", publicKey=" + publicKey
             + ", restartTimestampGMTMillis=" + restartTimestampGMTMillis
             + ", ports=" + ports
             + '}';
@@ -103,20 +109,23 @@ public class Instance implements Stored<Instance>, Serializable {
 
     public static class Port implements Serializable {
 
+        public boolean sslEnabled;
         public int port;
         public Map<String, String> properties = new HashMap<>();
 
         public Port() {
         }
 
-        public Port(int port, Map<String, String> properties) {
+        public Port(boolean sslEnabled, int port, Map<String, String> properties) {
+            this.sslEnabled = sslEnabled;
             this.port = port;
             this.properties = properties;
         }
 
         @Override
         public String toString() {
-            return "Port{" + "port=" + port + ", properties=" + properties + '}';
+            return "Port{" + "sslEnabled=" + sslEnabled + ", port=" + port + ", properties=" + properties + '}';
         }
+
     }
 }

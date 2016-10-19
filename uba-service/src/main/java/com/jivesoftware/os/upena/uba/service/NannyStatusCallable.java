@@ -33,7 +33,7 @@ class NannyStatusCallable implements Callable<Boolean> {
     private final HealthLog healthLog;
     private final DeployableScriptInvoker invokeScript;
     private final UbaLog ubaLog;
-    private final Cache<InstanceDescriptor, Boolean> haveRunConfigExtractionCache;
+    private final Cache<String, Boolean> haveRunConfigExtractionCache;
 
     public NannyStatusCallable(
         Nanny nanny,
@@ -45,7 +45,7 @@ class NannyStatusCallable implements Callable<Boolean> {
         HealthLog healthLog,
         DeployableScriptInvoker invokeScript,
         UbaLog ubaLog,
-        Cache<InstanceDescriptor, Boolean> haveRunConfigExtractionCache) {
+        Cache<String, Boolean> haveRunConfigExtractionCache) {
 
         this.nanny = nanny;
         this.status = status;
@@ -67,7 +67,7 @@ class NannyStatusCallable implements Callable<Boolean> {
     public Boolean call() throws Exception {
         try {
             if (!id.enabled
-                && Objects.firstNonNull(haveRunConfigExtractionCache.getIfPresent(id), Boolean.FALSE)) {
+                && Objects.firstNonNull(haveRunConfigExtractionCache.getIfPresent(id.instanceKey), Boolean.FALSE)) {
                 status.set("");
                 deployLog.log("Service:" + instancePath.toHumanReadableName(), "Skipping config extraction.", null);
                 healthLog.commit();
@@ -110,7 +110,7 @@ class NannyStatusCallable implements Callable<Boolean> {
                 status.set("");
                 healthLog.forcedHealthState("Service Startup",
                     "Service is not enabled. Phase: stop...", "Enable when ready");
-                haveRunConfigExtractionCache.put(id, Boolean.TRUE);
+                haveRunConfigExtractionCache.put(id.instanceKey, Boolean.TRUE);
                 return true;
             }
 

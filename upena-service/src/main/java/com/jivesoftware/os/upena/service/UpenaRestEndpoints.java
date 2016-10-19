@@ -42,7 +42,6 @@ import com.jivesoftware.os.upena.shared.Tenant;
 import com.jivesoftware.os.upena.shared.TenantFilter;
 import com.jivesoftware.os.upena.shared.TenantKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentNavigableMap;
@@ -51,6 +50,7 @@ import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -489,6 +489,18 @@ public class UpenaRestEndpoints {
         } catch (Exception x) {
             LOG.warn("Failed to connectionsRequest:" + connectionsRequest, x);
             return ResponseHelper.INSTANCE.errorResponse("Failed to requestConnections for:" + connectionsRequest, x);
+        }
+    }
+
+    @GET
+    @Consumes("application/json")
+    @Path("/request/keyStorePassword/{instanceKey}")
+    public Response requestKeyStorePassword(@PathParam("instanceKey") String instanceKey) {
+        try {
+            return Response.ok(upenaService.keyStorePassword(instanceKey)).build();
+        } catch (Exception x) {
+            LOG.warn("Failed to provide password for:" + instanceKey, x);
+            return Response.serverError().build();
         }
     }
 

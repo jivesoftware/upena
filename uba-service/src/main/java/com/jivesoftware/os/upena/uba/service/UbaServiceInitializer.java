@@ -15,50 +15,48 @@
  */
 package com.jivesoftware.os.upena.uba.service;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.jivesoftware.os.uba.shared.PasswordStore;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.jivesoftware.os.routing.bird.http.client.HttpClient;
 import com.jivesoftware.os.routing.bird.http.client.HttpClientConfig;
 import com.jivesoftware.os.routing.bird.http.client.HttpClientConfiguration;
 import com.jivesoftware.os.routing.bird.http.client.HttpClientFactory;
 import com.jivesoftware.os.routing.bird.http.client.HttpClientFactoryProvider;
 import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelper;
+import com.jivesoftware.os.routing.bird.http.client.OAuthSigner;
 import java.io.File;
 import java.util.Arrays;
 
 public class UbaServiceInitializer {
 
-    public UbaService initialize(RepositoryProvider repositoryProvider,
+    public UbaService initialize(PasswordStore passwordStore,
+        UpenaClient upenaClient,
+        RepositoryProvider repositoryProvider,
         String hostKey,
         String workingDir,
         String datacenter,
         String rack,
         String publicHostName,
+        OAuthSigner signer,
         String host,
         int port,
         UbaLog ubaLog) throws Exception {
 
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
-        UpenaClient client = new UpenaClient(buildRequestHelper(host, port, mapper));
         File root = new File(new File(workingDir), "services/");
         if (!root.exists() && !root.mkdirs()) {
             throw new RuntimeException("Failed trying to mkdirs for " + root);
         }
         UbaTree tree = new UbaTree(root, new String[]{"cluster", "service", "release", "instance"});
-        Uba uba = new Uba(repositoryProvider, datacenter, rack, publicHostName, host, host, port, tree, ubaLog);
-        UbaService conductorService = new UbaService(client, uba, hostKey);
+        Uba uba = new Uba(passwordStore, repositoryProvider, datacenter, rack, publicHostName, host, host, port, tree, ubaLog);
+        UbaService conductorService = new UbaService(passwordStore, upenaClient, uba, hostKey);
         return conductorService;
     }
 
-    HttpRequestHelper buildRequestHelper(String host, int port, ObjectMapper mapper) {
+    HttpRequestHelper buildRequestHelper(OAuthSigner signer, String host, int port, ObjectMapper mapper) {
         HttpClientConfig httpClientConfig = HttpClientConfig.newBuilder().build();
         HttpClientFactory httpClientFactory = new HttpClientFactoryProvider()
-            .createHttpClientFactory(Arrays.<HttpClientConfiguration>asList(httpClientConfig));
-        HttpClient httpClient = httpClientFactory.createClient(host, port);
+            .createHttpClientFactory(Arrays.<HttpClientConfiguration>asList(httpClientConfig), false);
+        HttpClient httpClient = httpClientFactory.createClient(signer, host, port);
         HttpRequestHelper requestHelper = new HttpRequestHelper(httpClient, mapper);
         return requestHelper;
     }

@@ -4,8 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import com.jivesoftware.os.upena.amza.shared.AmzaInstance;
-import com.jivesoftware.os.upena.amza.shared.RingHost;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.routing.bird.http.client.HttpClient;
@@ -16,6 +14,8 @@ import com.jivesoftware.os.routing.bird.http.client.HttpClientFactoryProvider;
 import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelper;
 import com.jivesoftware.os.routing.bird.shared.HostPort;
 import com.jivesoftware.os.routing.bird.shared.InstanceConnectionHealth;
+import com.jivesoftware.os.upena.amza.shared.AmzaInstance;
+import com.jivesoftware.os.upena.amza.shared.RingHost;
 import com.jivesoftware.os.upena.deployable.UpenaEndpoints.NannyHealth;
 import com.jivesoftware.os.upena.deployable.UpenaEndpoints.NodeHealth;
 import com.jivesoftware.os.upena.deployable.region.ReleasesPluginRegion.ReleasesPluginRegionInput;
@@ -294,7 +294,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
                         nodes.put(value.hostKey.toString(), n);
                         String title = title(cluster, host, null, null, null);
                         n.focusHtml = title + "<br>" + instancesPluginRegion.renderSimple(user, new InstancesPluginRegion.InstancesPluginRegionInput(
-                            "", "", "", value.hostKey.getKey(), host.name, "", "", "", "", "", false, "", "", "filter"));
+                            "", "", "", value.hostKey.getKey(), host.name, "", "", "", "", "", false, false, "", "", "filter"));
 
                         /*
                          n.focusHtml = hostsPluginRegion.render(user,
@@ -318,7 +318,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
                         nodes.put(value.serviceKey.toString(), n);
                         String title = title(cluster, host, service, null, null);
                         n.focusHtml = title + "<br>" + instancesPluginRegion.renderSimple(user, new InstancesPluginRegion.InstancesPluginRegionInput(
-                            "", "", "", "", "", value.serviceKey.toString(), service.name, "", "", "", false, "", "", "filter"));
+                            "", "", "", "", "", value.serviceKey.toString(), service.name, "", "", "",false,  false, "", "", "filter"));
                         fs -= 2;
 
                         n.maxHealth = Math.max(n.maxHealth, serviceHealth);
@@ -653,8 +653,8 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
     HttpRequestHelper buildRequestHelper(String host, int port) {
         HttpClientConfig httpClientConfig = HttpClientConfig.newBuilder().setSocketTimeoutInMillis(10_000).build();
         HttpClientFactory httpClientFactory = new HttpClientFactoryProvider()
-            .createHttpClientFactory(Arrays.<HttpClientConfiguration>asList(httpClientConfig));
-        HttpClient httpClient = httpClientFactory.createClient(host, port);
+            .createHttpClientFactory(Arrays.<HttpClientConfiguration>asList(httpClientConfig), false);
+        HttpClient httpClient = httpClientFactory.createClient(null, host, port);
         HttpRequestHelper requestHelper = new HttpRequestHelper(httpClient, new ObjectMapper());
         return requestHelper;
     }

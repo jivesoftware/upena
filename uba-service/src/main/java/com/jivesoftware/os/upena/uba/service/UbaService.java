@@ -22,8 +22,11 @@ import com.jivesoftware.os.routing.bird.shared.InstanceDescriptor;
 import com.jivesoftware.os.routing.bird.shared.InstanceDescriptorsRequest;
 import com.jivesoftware.os.routing.bird.shared.InstanceDescriptorsResponse;
 import com.jivesoftware.os.routing.bird.shared.TenantChanged;
+import com.jivesoftware.os.uba.shared.PasswordStore;
 import com.jivesoftware.os.uba.shared.UbaReport;
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -32,19 +35,24 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
+import org.apache.commons.io.FileUtils;
 
 public class UbaService {
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
+    private final PasswordStore passwordStore;
     private final UpenaClient upenaClient;
     private final Uba uba;
     private final String hostKey;
     private final Map<String, Nanny> nannies = new ConcurrentHashMap<>();
 
     public UbaService(
+        PasswordStore passwordStore,
         UpenaClient upenaClient,
         Uba uba,
         String hostKey) {
+
+        this.passwordStore = passwordStore;
         this.upenaClient = upenaClient;
         this.uba = uba;
         this.hostKey = hostKey;
@@ -81,14 +89,16 @@ public class UbaService {
             decommisionUbaService();
             return Collections.emptyMap();
         } else {
-            Map<InstanceDescriptor, InstancePath> onDiskInstances = uba.getOnDiskInstances();
-            for (Map.Entry<InstanceDescriptor, InstancePath> entry : onDiskInstances.entrySet()) {
-                InstanceDescriptor instanceDescriptor = entry.getKey();
-                InstancePath instancePath = entry.getValue();
+            Collection<Uba.InstancePathAndDescriptor> onDiskInstances = uba.getOnDiskInstances();
+            for (Uba.InstancePathAndDescriptor instance : onDiskInstances) {
+                InstanceDescriptor instanceDescriptor = instance.descriptor;
+                InstancePath instancePath = instance.path;
 
                 String nanneyKey = uba.instanceDescriptorKey(instanceDescriptor, instancePath);
                 if (!nannies.containsKey(nanneyKey)) {
-                    nannies.put(nanneyKey, uba.newNanny(instanceDescriptor, instancePath));
+                    if (ensureCerts(instancePath, instanceDescriptor)) {
+                        nannies.put(nanneyKey, uba.newNanny(instanceDescriptor, instancePath));
+                    }
                 }
             }
 
@@ -101,11 +111,15 @@ public class UbaService {
                 Nanny currentNanny = nannies.get(nannyKey);
                 if (currentNanny == null) {
                     LOG.debug("New nanny:" + nannyKey);
-                    Nanny nanny = uba.newNanny(instanceDescriptor, path);
-                    newPlayers.add(nanny);
+                    if (ensureCerts(path, instanceDescriptor)) {
+                        Nanny nanny = uba.newNanny(instanceDescriptor, path);
+                        newPlayers.add(nanny);
+                    }
                 } else {
                     LOG.debug("Existing nanny:" + nannyKey);
-                    currentNanny.setInstanceDescriptor(instanceDescriptor);
+                    if (ensureCerts(path, instanceDescriptor)) {
+                        currentNanny.setInstanceDescriptor(instanceDescriptor);
+                    }
                     expectedPlayer.add(uba.instanceDescriptorKey(currentNanny.getInstanceDescriptor(), path));
                 }
             }
@@ -133,6 +147,38 @@ public class UbaService {
             }
             return nannies;
         }
+    }
+
+    private boolean ensureCerts(InstancePath instancePath, InstanceDescriptor id) throws Exception {
+        boolean sslEnabled = false;
+        for (Map.Entry<String, InstanceDescriptor.InstanceDescriptorPort> entry : id.ports.entrySet()) {
+            if (entry.getValue().sslEnabled) {
+                sslEnabled = true;
+                break;
+            }
+        }
+        if (sslEnabled) {
+            SelfSigningCertGenerator generator = new SelfSigningCertGenerator();
+            String password = passwordStore.password(id.instanceKey + "-ssl");
+            File certFile = instancePath.certs("sslKeystore");
+            if (!certFile.exists() || !generator.validate(id.instanceKey, password, certFile)) {
+                FileUtils.deleteQuietly(certFile);
+                generator.create(id.instanceKey, password, certFile);
+            }
+        }
+
+        File oauthKeystoreFile = instancePath.certs("oauthKeystore");
+        File oauthPublicKeyFile = instancePath.certs("oauthPublicKey");
+        String password = passwordStore.password(id.instanceKey + "-oauth");
+        RSAKeyPairGenerator generator = new RSAKeyPairGenerator();
+        if (id.publicKey == null || !id.publicKey.equals(generator.getPublicKey(id.instanceKey, password, oauthKeystoreFile, oauthPublicKeyFile))) {
+            FileUtils.deleteQuietly(oauthKeystoreFile);
+            FileUtils.deleteQuietly(oauthPublicKeyFile);
+            generator.create(id.instanceKey, password, oauthKeystoreFile, oauthPublicKeyFile);
+            upenaClient.updateKeyPair(id.instanceKey, generator.getPublicKey(id.instanceKey, password, oauthKeystoreFile, oauthPublicKeyFile));
+            return false;
+        }
+        return true;
     }
 
     public void decommisionUbaService() throws Exception {
