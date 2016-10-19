@@ -6,11 +6,17 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
 import java.security.KeyStore;
+import java.security.Principal;
+import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import org.apache.commons.codec.binary.Base64;
+import sun.security.tools.keytool.CertAndKeyGen;
+import sun.security.x509.BasicConstraintsExtension;
+import sun.security.x509.CertificateExtensions;
+import sun.security.x509.X500Name;
+import sun.security.x509.X509CertImpl;
+import sun.security.x509.X509CertInfo;
 
 /**
  *
@@ -19,11 +25,40 @@ import org.apache.commons.codec.binary.Base64;
 public class RSAKeyPairGenerator {
 
     void create(String alias, String password, File keystore, File publicKeyFile) throws Exception {
-        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
-        KeyPair keyPair = keyPairGenerator.generateKeyPair();
-        storeKeyAndCertificateChain(alias, password.toCharArray(), keystore, keyPair.getPrivate(), new X509Certificate[0]);
+        CertAndKeyGen keyGen = new CertAndKeyGen("RSA", "SHA1WithRSA", null);
+        keyGen.generate(1024);
+        X509Certificate rootCertificate = keyGen.getSelfCertificate(new X500Name("CN=ROOT"), (long) 365 * 24 * 60 * 60);
+        rootCertificate = createSignedCertificate(rootCertificate, rootCertificate, keyGen.getPrivateKey());
+        X509Certificate[] chain = {rootCertificate};
+       
+        storeKeyAndCertificateChain(alias, password.toCharArray(), keystore, keyGen.getPrivateKey(), chain);
 
-        Files.write(Base64.encodeBase64String(keyPair.getPublic().getEncoded()).getBytes(StandardCharsets.UTF_8), publicKeyFile);
+        Files.write(Base64.encodeBase64String(keyGen.getPublicKey().getEncoded()).getBytes(StandardCharsets.UTF_8), publicKeyFile);
+    }
+
+    private X509Certificate createSignedCertificate(X509Certificate cetrificate,
+        X509Certificate issuerCertificate,
+        PrivateKey issuerPrivateKey) throws Exception {
+
+        Principal issuer = issuerCertificate.getSubjectDN();
+        String issuerSigAlg = issuerCertificate.getSigAlgName();
+
+        byte[] inCertBytes = cetrificate.getTBSCertificate();
+        X509CertInfo info = new X509CertInfo(inCertBytes);
+        info.set(X509CertInfo.ISSUER, issuer);
+
+        //No need to add the BasicContraint for leaf cert
+        if (!cetrificate.getSubjectDN().getName().equals("CN=TOP")) {
+            CertificateExtensions exts = new CertificateExtensions();
+            BasicConstraintsExtension bce = new BasicConstraintsExtension(true, -1);
+            exts.set(BasicConstraintsExtension.NAME, new BasicConstraintsExtension(false, bce.getExtensionValue()));
+            info.set(X509CertInfo.EXTENSIONS, exts);
+        }
+
+        X509CertImpl outCert = new X509CertImpl(info);
+        outCert.sign(issuerPrivateKey, issuerSigAlg);
+
+        return outCert;
     }
 
     private void storeKeyAndCertificateChain(String alias, char[] password, File keystore, Key key, X509Certificate[] chain) throws Exception {
