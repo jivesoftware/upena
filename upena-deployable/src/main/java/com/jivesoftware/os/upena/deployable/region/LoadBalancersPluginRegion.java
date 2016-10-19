@@ -2,8 +2,6 @@ package com.jivesoftware.os.upena.deployable.region;
 
 import com.amazonaws.services.elasticloadbalancingv2.AmazonElasticLoadBalancingClient;
 import com.amazonaws.services.elasticloadbalancingv2.model.AvailabilityZone;
-import com.amazonaws.services.elasticloadbalancingv2.model.CreateLoadBalancerRequest;
-import com.amazonaws.services.elasticloadbalancingv2.model.CreateLoadBalancerResult;
 import com.amazonaws.services.elasticloadbalancingv2.model.DeleteLoadBalancerRequest;
 import com.amazonaws.services.elasticloadbalancingv2.model.DescribeListenersRequest;
 import com.amazonaws.services.elasticloadbalancingv2.model.DescribeListenersResult;
@@ -293,72 +291,7 @@ public class LoadBalancersPluginRegion implements PageRegion<LoadBalancersPlugin
                 if (loadBalancer == null) {
                     status.message("MISSING");
                     if ("apply".equals(input.action)) {
-                        try {
-
-                            ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> instances = upenaStore.instances.find(
-                                new InstanceFilter(lb.clusterKey, null, lb.serviceKey, lb.releaseGroupKey, null, 0, 100_000));
-                            if (instances.isEmpty()) {
-                                status.message("No instance for LB to connect to.");
-                            } else {
-
-                                // fix up service ports
-                                for (Map.Entry<InstanceKey, TimestampedValue<Instance>> instanceEntry : instances.entrySet()) {
-                                    TimestampedValue<Instance> value = instanceEntry.getValue();
-                                    if (!value.getTombstoned()) {
-                                        continue;
-                                    }
-                                    InstanceKey instanceKey = instanceEntry.getKey();
-                                    Instance instance = value.getValue();
-
-                                    Instance.Port port = instance.ports.get("main"); // TODO fix change to loadBalancer
-                                    if (port != null && port.port != lb.instancePort) {
-                                        instance.ports.put("main", new Instance.Port(lb.instancePort, port.properties));
-                                        upenaStore.instances.update(instanceKey, instance);
-                                    }
-
-                                }
-
-                                CreateLoadBalancerRequest createLoadBalancerRequest = new CreateLoadBalancerRequest();
-                                createLoadBalancerRequest.setName(lb.name);
-
-                                if (!StringUtils.isBlank(lb.scheme)) {
-                                    createLoadBalancerRequest.setScheme(lb.scheme); // internal, internet-facing
-                                }
-
-                                if (lb.securityGroups != null && !sanitize(lb.securityGroups).isEmpty()) {
-                                    createLoadBalancerRequest.setSecurityGroups(sanitize(lb.securityGroups));
-                                }
-                                if (lb.subnets != null && !sanitize(lb.subnets).isEmpty()) {
-                                    createLoadBalancerRequest.setSubnets(sanitize(lb.subnets));
-                                }
-
-                                if (lb.tags != null && !lb.tags.isEmpty()) {
-                                    List<Tag> tags = new ArrayList<>();
-                                    for (Map.Entry<String, String> t : lb.tags.entrySet()) {
-                                        Tag tag = new Tag();
-                                        tag.setKey(t.getKey());
-                                        tag.setValue(t.getValue());
-                                        tags.add(tag);
-                                    }
-
-                                    createLoadBalancerRequest.setTags(tags);
-                                }
-
-                                System.out.println(lb.toString());
-                                System.out.println(createLoadBalancerRequest.toString());
-                                CreateLoadBalancerResult createLoadBalancerResult = elbc.createLoadBalancer(createLoadBalancerRequest);
-                                for (LoadBalancer createdloadBalancer : createLoadBalancerResult.getLoadBalancers()) {
-                                    status.message("Created ELB:" + createdloadBalancer.toString());
-
-                                    loadBalancer = createdloadBalancer;
-
-                                }
-
-                            }
-                        } catch (Exception x) {
-                            status.message("ERROR " + x.getMessage());
-                            LOG.error("while creating a LB", x);
-                        }
+                        
                     }
 
                 } else {

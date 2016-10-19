@@ -37,6 +37,7 @@
                 <th>Instances</th>
                 <th>Status</th>
                 <th>Enabled</th>
+                <th>SSL</th>
                 <th>Cluster</th>
                 <th>Host</th>
                 <th>Service</th>
@@ -57,6 +58,9 @@
                         </td>
                         <td bgcolor>
                             <input class="form-control" type="checkbox" name="enabled" value="true" {if $filters.enabled}checked="checked"{/if}>
+                        </td>
+                        <td bgcolor>
+                            <input class="form-control" type="checkbox" name="sslEnabled" value="true" {if $filters.sslEnabled}checked="checked"{/if}>
                         </td>
                         <td>
                             <div>

@@ -112,5 +112,4 @@
             <artifactId>guava</artifactId>
         </dependency>
     </dependencies>
-    <name>uba-service</name>
 </project>

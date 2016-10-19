@@ -15,20 +15,12 @@
  */
 package com.jivesoftware.os.upena.uba.service;
 
-import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelper;
 import com.jivesoftware.os.routing.bird.shared.InstanceDescriptorsRequest;
 import com.jivesoftware.os.routing.bird.shared.InstanceDescriptorsResponse;
 
+public interface UpenaClient {
 
-public class UpenaClient {
+    InstanceDescriptorsResponse instanceDescriptor(InstanceDescriptorsRequest instanceDescriptorsRequest) throws Exception;
 
-    private final HttpRequestHelper requestHelper;
-
-    UpenaClient(HttpRequestHelper requestHelper) {
-        this.requestHelper = requestHelper;
-    }
-
-    public InstanceDescriptorsResponse instanceDescriptor(InstanceDescriptorsRequest instanceDescriptorsRequest) throws Exception {
-        return requestHelper.executeRequest(instanceDescriptorsRequest, "/upena/request/instanceDescriptors", InstanceDescriptorsResponse.class, null);
-    }
+    void updateKeyPair(String instanceKey, String publicKey) throws Exception;
 }

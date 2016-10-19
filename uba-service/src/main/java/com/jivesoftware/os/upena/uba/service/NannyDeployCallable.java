@@ -55,7 +55,8 @@ class NannyDeployCallable implements Callable<Boolean> {
     private final DeployableScriptInvoker invokeScript;
     private final UbaLog ubaLog;
 
-    public NannyDeployCallable(RepositoryProvider repositoryProvider,
+    public NannyDeployCallable(
+        RepositoryProvider repositoryProvider,
         String datacenter,
         String rack,
         String publicHostName,
@@ -115,7 +116,7 @@ class NannyDeployCallable implements Callable<Boolean> {
         File libDir = null;
         try {
             instancePath.deployLog().delete();
-            
+
             libDir = instancePath.lib();
             System.out.println("Clearing:" + libDir);
             FileUtils.deleteDirectory(libDir);
@@ -144,7 +145,6 @@ class NannyDeployCallable implements Callable<Boolean> {
 
         RepositorySystem system = repositoryProvider.newRepositorySystem();
         RepositorySystemSession session = repositoryProvider.newRepositorySystemSession(system);
-       
 
         String[] repos = id.repository.split(",");
         List<RemoteRepository> remoteRepos = repositoryProvider.newRepositories(system, session, null, repos);

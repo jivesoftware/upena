@@ -22,6 +22,15 @@ import com.google.common.base.Optional;
 import com.google.template.soy.SoyFileSet;
 import com.google.template.soy.base.SoySyntaxException;
 import com.google.template.soy.tofu.SoyTofu;
+import com.jivesoftware.os.jive.utils.ordered.id.ConstantWriterIdProvider;
+import com.jivesoftware.os.jive.utils.ordered.id.OrderIdProvider;
+import com.jivesoftware.os.jive.utils.ordered.id.OrderIdProviderImpl;
+import com.jivesoftware.os.jive.utils.ordered.id.TimestampedOrderIdProvider;
+import com.jivesoftware.os.mlogger.core.MetricLogger;
+import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
+import com.jivesoftware.os.routing.bird.shared.InstanceDescriptorsRequest;
+import com.jivesoftware.os.routing.bird.shared.InstanceDescriptorsResponse;
+import com.jivesoftware.os.uba.shared.PasswordStore;
 import com.jivesoftware.os.upena.amza.service.AmzaService;
 import com.jivesoftware.os.upena.amza.service.AmzaServiceInitializer;
 import com.jivesoftware.os.upena.amza.service.AmzaServiceInitializer.AmzaServiceConfig;
@@ -43,12 +52,6 @@ import com.jivesoftware.os.upena.amza.storage.binary.BinaryRowsTx;
 import com.jivesoftware.os.upena.amza.transport.http.replication.HttpUpdatesSender;
 import com.jivesoftware.os.upena.amza.transport.http.replication.HttpUpdatesTaker;
 import com.jivesoftware.os.upena.amza.transport.http.replication.endpoints.AmzaReplicationRestEndpoints;
-import com.jivesoftware.os.jive.utils.ordered.id.ConstantWriterIdProvider;
-import com.jivesoftware.os.jive.utils.ordered.id.OrderIdProvider;
-import com.jivesoftware.os.jive.utils.ordered.id.OrderIdProviderImpl;
-import com.jivesoftware.os.jive.utils.ordered.id.TimestampedOrderIdProvider;
-import com.jivesoftware.os.mlogger.core.MetricLogger;
-import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.config.UpenaConfigRestEndpoints;
 import com.jivesoftware.os.upena.config.UpenaConfigStore;
 import com.jivesoftware.os.upena.deployable.UpenaEndpoints.AmzaClusterName;
@@ -122,11 +125,14 @@ import com.jivesoftware.os.upena.service.UpenaService;
 import com.jivesoftware.os.upena.service.UpenaStore;
 import com.jivesoftware.os.upena.shared.Host;
 import com.jivesoftware.os.upena.shared.HostKey;
+import com.jivesoftware.os.upena.shared.Instance;
+import com.jivesoftware.os.upena.shared.InstanceKey;
 import com.jivesoftware.os.upena.shared.PathToRepo;
 import com.jivesoftware.os.upena.uba.service.RepositoryProvider;
 import com.jivesoftware.os.upena.uba.service.UbaLog;
 import com.jivesoftware.os.upena.uba.service.UbaService;
 import com.jivesoftware.os.upena.uba.service.UbaServiceInitializer;
+import com.jivesoftware.os.upena.uba.service.UpenaClient;
 import com.jivesoftware.os.upena.uba.service.endpoints.UbaServiceRestEndpoints;
 import de.ruedigermoeller.serialization.FSTConfiguration;
 import java.io.File;
@@ -274,13 +280,13 @@ public class UpenaMain {
         LOG.info("|      Upena Config Store Online");
         LOG.info("-----------------------------------------------------------------------");
 
-        final AtomicReference<UbaService> conductor = new AtomicReference<>();
+        final AtomicReference<UbaService> ubaServiceReference = new AtomicReference<>();
         final UpenaStore upenaStore = new UpenaStore(
             orderIdProvider,
             mapper,
             amzaService, (instanceChanges) -> {
                 Executors.newSingleThreadExecutor().submit(() -> {
-                    UbaService got = conductor.get();
+                    UbaService got = ubaServiceReference.get();
                     if (got != null) {
                         try {
                             got.instanceChanged(instanceChanges);
@@ -301,8 +307,11 @@ public class UpenaMain {
         upenaStore.attachWatchers();
 
         ChaosService chaosService = new ChaosService(upenaStore);
+        PasswordStore passwordStore = (key) -> {
+            return System.getProperty("MASTER_PASSWORD", "PASSWORD"); // cough
+        };
 
-        UpenaService upenaService = new UpenaService(upenaStore, chaosService);
+        UpenaService upenaService = new UpenaService(passwordStore, upenaStore, chaosService);
 
         LOG.info("-----------------------------------------------------------------------");
         LOG.info("|      Upena Service Online");
@@ -331,12 +340,43 @@ public class UpenaMain {
             }
         };
 
-        final UbaService ubaService = new UbaServiceInitializer().initialize(repositoryProvider,
+        UpenaClient upenaClient = new UpenaClient() {
+            @Override
+            public InstanceDescriptorsResponse instanceDescriptor(InstanceDescriptorsRequest instanceDescriptorsRequest) throws Exception {
+                return upenaService.instanceDescriptors(instanceDescriptorsRequest);
+            }
+
+            @Override
+            public void updateKeyPair(String instanceKey, String publicKey) throws Exception {
+                Instance i = upenaStore.instances.get(new InstanceKey(instanceKey));
+                if (i != null) {
+
+                    upenaStore.instances.update(new InstanceKey(instanceKey), new Instance(i.clusterKey,
+                        i.hostKey,
+                        i.serviceKey,
+                        i.releaseGroupKey,
+                        i.instanceId,
+                        i.enabled,
+                        i.locked,
+                        publicKey,
+                        i.restartTimestampGMTMillis,
+                        i.ports));
+                } else {
+
+                }
+            }
+
+        };
+
+        final UbaService ubaService = new UbaServiceInitializer().initialize(passwordStore,
+            upenaClient,
+            repositoryProvider,
             hostKey.getKey(),
             workingDir,
             datacenter,
             rack,
             publicHost,
+            null,
             ringHost.getHost(),
             ringHost.getPort(),
             ubaLog);
@@ -362,7 +402,7 @@ public class UpenaMain {
 
         String region = System.getProperty("aws.region", null);
         String roleArn = System.getProperty("aws.roleArn", null);
-        
+
         AWSClientFactory awsClientFactory = new AWSClientFactory(region, roleArn);
 
         injectUI(awsClientFactory,
@@ -402,7 +442,7 @@ public class UpenaMain {
             System.out.println("|      Uba Service Online");
             System.out.println("-----------------------------------------------------------------------");
         }
-        conductor.set(ubaService);
+        ubaServiceReference.set(ubaService);
 
         if (clusterName != null) {
             AmzaDiscovery amzaDiscovery = new AmzaDiscovery(amzaService, ringHost, clusterName, multicastGroup, multicastPort);
@@ -439,7 +479,6 @@ public class UpenaMain {
             }
         }
 
-        
         String vpc = System.getProperty("aws.vpc", null);
         UpenaAWSLoadBalancerNanny upenaAWSLoadBalancerNanny = new UpenaAWSLoadBalancerNanny(vpc, upenaStore, hostKey, awsClientFactory);
 

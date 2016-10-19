@@ -550,7 +550,7 @@ public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
 
             Map<InstanceKey, TimestampedValue<Instance>> found;
             if (remoteConfigPort > -1) {
-                HttpRequestHelper helper = HttpRequestHelperUtils.buildRequestHelper(remoteConfigHost, remoteConfigPort);
+                HttpRequestHelper helper = HttpRequestHelperUtils.buildRequestHelper(null, remoteConfigHost, remoteConfigPort);
                 found = helper.executeRequest(filter, "/upena/instance/find", InstanceResults.class, new InstanceResults());
             } else {
                 found = upenaStore.instances.find(filter);
@@ -568,7 +568,7 @@ public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
                     ReleaseGroup releaseGroup = upenaStore.releaseGroups.get(i.releaseGroupKey);
                     String version = releaseGroup.version;
 
-                    HttpRequestHelper requestHelper = HttpRequestHelperUtils.buildRequestHelper(remoteConfigHost, remoteConfigPort);
+                    HttpRequestHelper requestHelper = HttpRequestHelperUtils.buildRequestHelper(null, remoteConfigHost, remoteConfigPort);
                     DeployableConfig get = new DeployableConfig("default" + suffix, key.getKey(), version, new HashMap<>());
                     DeployableConfig gotDefault = requestHelper.executeRequest(get, "/upenaConfig/get", DeployableConfig.class, null);
                     DeployableConfig getOverride = new DeployableConfig("override" + suffix, key.getKey(), version, new HashMap<>());

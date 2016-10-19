@@ -333,8 +333,8 @@ public class UpenaEndpoints {
     HttpRequestHelper buildRequestHelper(String host, int port) {
         HttpClientConfig httpClientConfig = HttpClientConfig.newBuilder().setSocketTimeoutInMillis(10_000).build();
         HttpClientFactory httpClientFactory = new HttpClientFactoryProvider()
-            .createHttpClientFactory(Arrays.<HttpClientConfiguration>asList(httpClientConfig));
-        HttpClient httpClient = httpClientFactory.createClient(host, port);
+            .createHttpClientFactory(Arrays.<HttpClientConfiguration>asList(httpClientConfig), false);
+        HttpClient httpClient = httpClientFactory.createClient(null, host, port);
         HttpRequestHelper requestHelper = new HttpRequestHelper(httpClient, new ObjectMapper());
         return requestHelper;
     }

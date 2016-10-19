@@ -199,6 +199,11 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>com.jivesoftware.os.upena</groupId>
+            <artifactId>uba-shared</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>de.ruedigermoeller</groupId>
             <artifactId>fst</artifactId>
             <version>1.34</version>
@@ -291,7 +296,7 @@
             <version>2.1</version>
         </dependency>
 
-         <dependency>
+        <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-ec2</artifactId>
         </dependency>

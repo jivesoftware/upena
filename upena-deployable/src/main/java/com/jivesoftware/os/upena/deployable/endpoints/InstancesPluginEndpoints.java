@@ -43,7 +43,7 @@ public class InstancesPluginEndpoints {
     public Response instances(@Context HttpServletRequest httpRequest) {
         try {
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-                new InstancesPluginRegionInput("", "", "", "", "", "", "", "", "", "", false, "", "", ""));
+                new InstancesPluginRegionInput("", "", "", "", "", "", "", "", "", "", false, false, "", "", ""));
             return Response.ok(rendered).build();
         } catch (Exception e) {
             LOG.error("hosts GET", e);
@@ -65,6 +65,7 @@ public class InstancesPluginEndpoints {
         @FormParam("instanceId") @DefaultValue("") String instanceId,
         @FormParam("releaseKey") @DefaultValue("") String releaseKey,
         @FormParam("release") @DefaultValue("") String release,
+        @FormParam("sslEnabled") @DefaultValue("false") boolean sslEnabled,
         @FormParam("enabled") @DefaultValue("false") boolean enabled,
         @FormParam("intervalUnits") @DefaultValue("SECONDS") String intervalUnits,
         @FormParam("interval") @DefaultValue("30") String interval,
@@ -82,6 +83,7 @@ public class InstancesPluginEndpoints {
                     instanceId,
                     releaseKey,
                     release,
+                    sslEnabled,
                     enabled,
                     intervalUnits,
                     interval,

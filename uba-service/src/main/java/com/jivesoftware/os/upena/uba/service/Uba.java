@@ -15,12 +15,16 @@
  */
 package com.jivesoftware.os.upena.uba.service;
 
+import com.jivesoftware.os.uba.shared.PasswordStore;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.jivesoftware.os.mlogger.core.MetricLogger;
+import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.routing.bird.shared.InstanceDescriptor;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
@@ -28,6 +32,9 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class Uba {
 
+    private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
+
+    private final PasswordStore passwordStore;
     final RepositoryProvider repositoryProvider;
     final String datacenter;
     final String rack;
@@ -38,9 +45,10 @@ public class Uba {
     private final UbaTree ubaTree;
     private final DeployableScriptInvoker invokeScript;
     private final UbaLog ubaLog;
-    private final Cache<InstanceDescriptor, Boolean> haveRunConfigExtractionCache;
+    private final Cache<String, Boolean> haveRunConfigExtractionCache;
 
-    public Uba(RepositoryProvider repositoryProvider,
+    public Uba(PasswordStore passwordStore,
+        RepositoryProvider repositoryProvider,
         String datacenter,
         String rack,
         String publicHostName,
@@ -50,6 +58,7 @@ public class Uba {
         UbaTree ubaTree,
         UbaLog ubaLog) {
 
+        this.passwordStore = passwordStore;
         this.repositoryProvider = repositoryProvider;
         this.datacenter = datacenter;
         this.rack = rack;
@@ -71,20 +80,41 @@ public class Uba {
         this.haveRunConfigExtractionCache = CacheBuilder.newBuilder().expireAfterAccess(1, TimeUnit.DAYS).build();
     }
 
-    public Map<InstanceDescriptor, InstancePath> getOnDiskInstances() {
-        final Map<InstanceDescriptor, InstancePath> instances = new ConcurrentHashMap<>();
+    public Collection<InstancePathAndDescriptor> getOnDiskInstances() {
+        Map<String, InstancePathAndDescriptor> instances = new HashMap<>();
         ubaTree.build((NameAndKey[] path) -> {
             InstancePath instancePath = new InstancePath(ubaTree.getRoot(), path);
             try {
                 if (instancePath.instanceProperties().exists()) {
                     InstanceDescriptor id = instancePath.readInstanceDescriptor();
-                    instances.put(id, instancePath);
+                    InstancePathAndDescriptor instancePathAndDescriptor = new InstancePathAndDescriptor(instancePath, id);
+                    InstancePathAndDescriptor had = instances.put(id.instanceKey, instancePathAndDescriptor);
+                    if (had != null) {
+                        LOG.warn("{} collides with {} news one wins. Need to figure out why this is happening.", had, instancePathAndDescriptor);
+                    }
                 }
             } catch (IOException ex) {
-                ex.printStackTrace(); //hmmm
+                LOG.error("Failed build instances from disk.", ex);
             }
         });
-        return instances;
+        return instances.values();
+    }
+
+    public static class InstancePathAndDescriptor {
+
+        public final InstancePath path;
+        public final InstanceDescriptor descriptor;
+
+        public InstancePathAndDescriptor(InstancePath instancePath, InstanceDescriptor instanceDescriptor) {
+            this.path = instancePath;
+            this.descriptor = instanceDescriptor;
+        }
+
+        @Override
+        public String toString() {
+            return "InstancePathAndDescriptor{" + "instancePath=" + path + ", instanceDescriptor=" + descriptor + '}';
+        }
+
     }
 
     public String instanceDescriptorKey(InstanceDescriptor instanceDescriptor, InstancePath instancePath) {
@@ -109,7 +139,8 @@ public class Uba {
     Nanny newNanny(InstanceDescriptor instanceDescriptor, InstancePath instancePath) {
         DeployLog deployLog = new DeployLog();
         HealthLog healthLog = new HealthLog(deployLog);
-        return new Nanny(repositoryProvider,
+        return new Nanny(passwordStore,
+            repositoryProvider,
             instanceDescriptor,
             instancePath,
             new DeployableValidator(),

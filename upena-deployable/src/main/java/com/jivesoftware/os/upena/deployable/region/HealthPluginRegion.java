@@ -14,6 +14,7 @@ import com.jivesoftware.os.routing.bird.http.client.HttpClientConfiguration;
 import com.jivesoftware.os.routing.bird.http.client.HttpClientFactory;
 import com.jivesoftware.os.routing.bird.http.client.HttpClientFactoryProvider;
 import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelper;
+import com.jivesoftware.os.routing.bird.http.client.OAuthSigner;
 import com.jivesoftware.os.routing.bird.shared.InstanceDescriptor;
 import com.jivesoftware.os.upena.amza.shared.AmzaInstance;
 import com.jivesoftware.os.upena.amza.shared.RingHost;
@@ -72,7 +73,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
     private final UpenaConfigStore configStore;
     private final ExecutorService executorService = Executors.newCachedThreadPool();
 
-    private final Map<InstanceDescriptor, SparseCircularHitsBucketBuffer> instanceHealthHistory = new ConcurrentHashMap<>();
+    private final Map<String, InstanceSparseCircularHitsBucketBuffer> instanceHealthHistory = new ConcurrentHashMap<>();
 
     public HealthPluginRegion(long startupTime,
         RingHost ringHost,
@@ -108,20 +109,20 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
         List<Map<String, Object>> valueDatasets = new ArrayList<>();
 
         int labelCount = 0;
-        for (Map.Entry<InstanceDescriptor, SparseCircularHitsBucketBuffer> waveforms : instanceHealthHistory.entrySet()) {
-            InstanceDescriptor id = waveforms.getKey();
+        for (Map.Entry<String, InstanceSparseCircularHitsBucketBuffer> waveforms : instanceHealthHistory.entrySet()) {
+            String id = waveforms.getKey();
             List<String> values = new ArrayList<>();
-            SparseCircularHitsBucketBuffer buffer = waveforms.getValue();
-            double[] rawSignal = buffer.rawSignal();
+            InstanceSparseCircularHitsBucketBuffer buffer = waveforms.getValue();
+            double[] rawSignal = buffer.buffer.rawSignal();
             labelCount = Math.max(labelCount, rawSignal.length);
             double lastValue = 0d;
             for (double d : rawSignal) {
                 values.add(String.valueOf(d));
                 lastValue = d;
             }
-            Map<String, Object> w = waveform(id.serviceName + "-" + id.instanceName,
+            Map<String, Object> w = waveform(id,
                 trafficlightColorRGB(lastValue, 1f),
-                serviceColor.getOrDefault(new ServiceKey(id.serviceKey), "127,127,127"),
+                serviceColor.getOrDefault(new ServiceKey(buffer.instanceDescriptor.serviceKey), "127,127,127"),
                 values);
             valueDatasets.add(w);
         }
@@ -136,6 +137,17 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
         map.put("waveforms", ImmutableMap.of("labels", labels, "datasets", valueDatasets));
         return map;
 
+    }
+
+    private static class InstanceSparseCircularHitsBucketBuffer {
+
+        public final InstanceDescriptor instanceDescriptor;
+        public final SparseCircularHitsBucketBuffer buffer;
+
+        public InstanceSparseCircularHitsBucketBuffer(InstanceDescriptor instanceDescriptor, SparseCircularHitsBucketBuffer circularHitsBucketBuffer) {
+            this.instanceDescriptor = instanceDescriptor;
+            this.buffer = circularHitsBucketBuffer;
+        }
     }
 
     public Map<String, Object> waveform(String label,
@@ -890,17 +902,18 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
             if (currentlyExecuting.putIfAbsent(ringHost, true) == null) {
                 executorService.submit(() -> {
                     try {
-                        HttpRequestHelper requestHelper = buildRequestHelper(ringHost.getHost(), ringHost.getPort());
+                        HttpRequestHelper requestHelper = buildRequestHelper(null, ringHost.getHost(), ringHost.getPort());
                         UpenaEndpoints.NodeHealth nodeHealth = requestHelper.executeGetRequest("/health/instance", UpenaEndpoints.NodeHealth.class, null);
                         nodeHealths.put(ringHost, nodeHealth);
 
                         for (UpenaEndpoints.NannyHealth nannyHealth : nodeHealth.nannyHealths) {
-                            instanceHealthHistory.compute(nannyHealth.instanceDescriptor, (instanceKey, buffer) -> {
-                                if (buffer == null) {
-                                    buffer = new SparseCircularHitsBucketBuffer(60, 0, 1000);
+                            instanceHealthHistory.compute(nannyHealth.instanceDescriptor.instanceKey, (instanceKey, instance) -> {
+                                if (instance == null) {
+                                    instance = new InstanceSparseCircularHitsBucketBuffer(nannyHealth.instanceDescriptor,
+                                        new SparseCircularHitsBucketBuffer(60, 0, 1000));
                                 }
-                                buffer.set(System.currentTimeMillis(), Math.max(0d, nannyHealth.serviceHealth.health));
-                                return buffer;
+                                instance.buffer.set(System.currentTimeMillis(), Math.max(0d, nannyHealth.serviceHealth.health));
+                                return instance;
                             });
                         }
                     } catch (Exception x) {
@@ -919,11 +932,11 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
         return nodeHealths;
     }
 
-    HttpRequestHelper buildRequestHelper(String host, int port) {
+    HttpRequestHelper buildRequestHelper(OAuthSigner signer, String host, int port) {
         HttpClientConfig httpClientConfig = HttpClientConfig.newBuilder().setSocketTimeoutInMillis(10_000).build();
         HttpClientFactory httpClientFactory = new HttpClientFactoryProvider()
-            .createHttpClientFactory(Arrays.<HttpClientConfiguration>asList(httpClientConfig));
-        HttpClient httpClient = httpClientFactory.createClient(host, port);
+            .createHttpClientFactory(Arrays.<HttpClientConfiguration>asList(httpClientConfig), false);
+        HttpClient httpClient = httpClientFactory.createClient(signer, host, port);
         HttpRequestHelper requestHelper = new HttpRequestHelper(httpClient, new ObjectMapper());
         return requestHelper;
     }
@@ -971,7 +984,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
         try {
             Instance.Port port = instance.ports.get("manage");
             if (port != null) {
-                HttpRequestHelper requestHelper = buildRequestHelper(host.hostName, port.port);
+                HttpRequestHelper requestHelper = buildRequestHelper(null, host.hostName, port.port);
                 HasUI hasUI = requestHelper.executeGetRequest("/manage/hasUI", HasUI.class, null);
                 if (hasUI != null) {
                     List<Map<String, String>> namedUIs = new ArrayList<>();

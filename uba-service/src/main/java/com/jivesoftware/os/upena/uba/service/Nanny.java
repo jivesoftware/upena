@@ -15,6 +15,7 @@
  */
 package com.jivesoftware.os.upena.uba.service;
 
+import com.jivesoftware.os.uba.shared.PasswordStore;
 import com.google.common.cache.Cache;
 import com.jivesoftware.os.jive.utils.shell.utils.Curl;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
@@ -36,6 +37,7 @@ public class Nanny {
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
+    private final PasswordStore passwordStore;
     private final RepositoryProvider repositoryProvider;
     private final InstancePath instancePath;
     private final DeployableValidator deployableValidator;
@@ -51,13 +53,14 @@ public class Nanny {
     private final AtomicLong restartAtTimestamp = new AtomicLong(-1);
     private final AtomicLong startupTimestamp = new AtomicLong(-1);
     private final UbaLog ubaLog;
-    private final Cache<InstanceDescriptor, Boolean> haveRunConfigExtractionCache;
+    private final Cache<String, Boolean> haveRunConfigExtractionCache;
     private final AtomicReference<String> status = new AtomicReference<>("");
     final AtomicLong lastStartupId = new AtomicLong(-1);
     final AtomicLong startupId = new AtomicLong(0);
     final AtomicLong unexpectedRestartTimestamp = new AtomicLong(-1);
 
-    public Nanny(RepositoryProvider repositoryProvider,
+    public Nanny(PasswordStore passwordStore,
+        RepositoryProvider repositoryProvider,
         InstanceDescriptor instanceDescriptor,
         InstancePath instancePath,
         DeployableValidator deployableValidator,
@@ -65,8 +68,9 @@ public class Nanny {
         HealthLog healthLog,
         DeployableScriptInvoker invokeScript,
         UbaLog ubaLog,
-        Cache<InstanceDescriptor, Boolean> haveRunConfigExtractionCache) {
+        Cache<String, Boolean> haveRunConfigExtractionCache) {
 
+        this.passwordStore = passwordStore;
         this.repositoryProvider = repositoryProvider;
         this.instanceDescriptor = new AtomicReference<>(instanceDescriptor);
         this.instancePath = instancePath;
@@ -174,7 +178,8 @@ public class Nanny {
                         status.set("Destroying");
                         if (destroyFuture.get()) {
 
-                            NannyDeployCallable deployTask = new NannyDeployCallable(repositoryProvider,
+                            NannyDeployCallable deployTask = new NannyDeployCallable(
+                                repositoryProvider,
                                 datacenter,
                                 rack,
                                 publicHostName,

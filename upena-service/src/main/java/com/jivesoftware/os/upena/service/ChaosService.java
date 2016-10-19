@@ -32,7 +32,6 @@ import com.jivesoftware.os.upena.shared.MonkeyFilter;
 import com.jivesoftware.os.upena.shared.MonkeyKey;
 import com.jivesoftware.os.upena.shared.ServiceKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -53,7 +52,7 @@ public class ChaosService {
     private final UpenaStore upenaStore;
 
     private static final String IPADDRESS_PATTERN =
-            "^(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)(\\.(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)){3}$";
+        "^(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)(\\.(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)){3}$";
     private static final Pattern ipPattern = Pattern.compile(IPADDRESS_PATTERN);
 
     public ChaosService(UpenaStore upenaStore) {
@@ -61,14 +60,14 @@ public class ChaosService {
     }
 
     String monkeyAffect(ClusterKey clusterKey,
-                        HostKey hostKey,
-                        ServiceKey serviceKey) throws Exception {
+        HostKey hostKey,
+        ServiceKey serviceKey) throws Exception {
         String affect = "";
 
         ConcurrentNavigableMap<MonkeyKey, TimestampedValue<Monkey>> gotMonkeys =
-                upenaStore.monkeys.find(new MonkeyFilter(
-                        clusterKey, hostKey, serviceKey,
-                        null, 0, Integer.MAX_VALUE));
+            upenaStore.monkeys.find(new MonkeyFilter(
+                clusterKey, hostKey, serviceKey,
+                null, 0, Integer.MAX_VALUE));
 
         String prefix = "'";
         String postfix = "'";
@@ -87,15 +86,15 @@ public class ChaosService {
     }
 
     List<ConnectionDescriptor> unleashMonkey(InstanceKey instanceKey,
-                                             Instance instance,
-                                             HostKey hostKey,
-                                             List<ConnectionDescriptor> connections) throws Exception {
+        Instance instance,
+        HostKey hostKey,
+        List<ConnectionDescriptor> connections) throws Exception {
         List<ConnectionDescriptor> monkeyConnections = connections;
 
         ConcurrentNavigableMap<MonkeyKey, TimestampedValue<Monkey>> gotMonkeys =
-                upenaStore.monkeys.find(new MonkeyFilter(
-                        instance.clusterKey, hostKey, instance.serviceKey,
-                        null, 0, Integer.MAX_VALUE));
+            upenaStore.monkeys.find(new MonkeyFilter(
+                instance.clusterKey, hostKey, instance.serviceKey,
+                null, 0, Integer.MAX_VALUE));
 
         for (Entry<MonkeyKey, TimestampedValue<Monkey>> entry : gotMonkeys.entrySet()) {
             Monkey value = entry.getValue().getValue();
@@ -106,15 +105,16 @@ public class ChaosService {
 
                     for (ConnectionDescriptor connectionDescriptor : monkeyConnections) {
                         Map<String, String> newMonkeys =
-                                (connectionDescriptor.getMonkeys() != null) ? connectionDescriptor.getMonkeys() : new HashMap<>();
+                            (connectionDescriptor.getMonkeys() != null) ? connectionDescriptor.getMonkeys() : new HashMap<>();
                         newMonkeys.put(value.strategyKey.toString(),
-                                value.strategyKey.description);
+                            value.strategyKey.description);
 
                         ConnectionDescriptor newConnectionDescriptor = new ConnectionDescriptor(
-                                connectionDescriptor.getInstanceDescriptor(),
-                                connectionDescriptor.getHostPort(),
-                                connectionDescriptor.getProperties(),
-                                newMonkeys);
+                            connectionDescriptor.getInstanceDescriptor(),
+                            connectionDescriptor.getSslEnabled(),
+                            connectionDescriptor.getHostPort(),
+                            connectionDescriptor.getProperties(),
+                            newMonkeys);
                         connectionsTemp.add(newConnectionDescriptor);
                     }
 
@@ -126,14 +126,15 @@ public class ChaosService {
 
                     for (ConnectionDescriptor connectionDescriptor : monkeyConnections) {
                         HostPort newHostPort = new HostPort(
-                                randomizeHost(connectionDescriptor.getHostPort().getHost()),
-                                connectionDescriptor.getHostPort().getPort());
+                            randomizeHost(connectionDescriptor.getHostPort().getHost()),
+                            connectionDescriptor.getHostPort().getPort());
 
                         ConnectionDescriptor newConnectionDescriptor = new ConnectionDescriptor(
-                                connectionDescriptor.getInstanceDescriptor(),
-                                newHostPort,
-                                connectionDescriptor.getProperties(),
-                                connectionDescriptor.getMonkeys());
+                            connectionDescriptor.getInstanceDescriptor(),
+                            connectionDescriptor.getSslEnabled(),
+                            newHostPort,
+                            connectionDescriptor.getProperties(),
+                            connectionDescriptor.getMonkeys());
                         connectionsTemp.add(newConnectionDescriptor);
                     }
 
@@ -143,14 +144,15 @@ public class ChaosService {
 
                     for (ConnectionDescriptor connectionDescriptor : monkeyConnections) {
                         HostPort newHostPort = new HostPort(
-                                connectionDescriptor.getHostPort().getHost(),
-                                randomizePort(connectionDescriptor.getHostPort().getPort()));
+                            connectionDescriptor.getHostPort().getHost(),
+                            randomizePort(connectionDescriptor.getHostPort().getPort()));
 
                         ConnectionDescriptor newConnectionDescriptor = new ConnectionDescriptor(
-                                connectionDescriptor.getInstanceDescriptor(),
-                                newHostPort,
-                                connectionDescriptor.getProperties(),
-                                connectionDescriptor.getMonkeys());
+                            connectionDescriptor.getInstanceDescriptor(),
+                            connectionDescriptor.getSslEnabled(),
+                            newHostPort,
+                            connectionDescriptor.getProperties(),
+                            connectionDescriptor.getMonkeys());
                         connectionsTemp.add(newConnectionDescriptor);
                     }
 
@@ -171,7 +173,7 @@ public class ChaosService {
                     });
 
                     ConnectionDescriptor[] monkeyConnectionsArray =
-                            monkeyConnections.toArray(new ConnectionDescriptor[monkeyConnections.size()]);
+                        monkeyConnections.toArray(new ConnectionDescriptor[monkeyConnections.size()]);
 
                     int iterBegin = 0;
                     int iterEnd = monkeyConnectionsArray.length / 2;
@@ -187,10 +189,11 @@ public class ChaosService {
 
                     for (int i = iterBegin; i < iterEnd; i++) {
                         ConnectionDescriptor newConnectionDescriptor = new ConnectionDescriptor(
-                                monkeyConnectionsArray[i].getInstanceDescriptor(),
-                                monkeyConnectionsArray[i].getHostPort(),
-                                monkeyConnectionsArray[i].getProperties(),
-                                monkeyConnectionsArray[i].getMonkeys());
+                            monkeyConnectionsArray[i].getInstanceDescriptor(),
+                            monkeyConnectionsArray[i].getSslEnabled(),
+                            monkeyConnectionsArray[i].getHostPort(),
+                            monkeyConnectionsArray[i].getProperties(),
+                            monkeyConnectionsArray[i].getMonkeys());
                         connectionsTemp.add(newConnectionDescriptor);
                     }
 
@@ -198,28 +201,28 @@ public class ChaosService {
                 } else if (value.strategyKey == ChaosStrategyKey.RANDOM_NETWORK_PARTITION) {
                     LOG.debug("Retrieve array of instance ids");
                     Set<InstanceKey> instances = new HashSet<>();
-                    monkeyConnections.forEach(connectionDescriptor ->
-                            instances.add(new InstanceKey(connectionDescriptor.getInstanceDescriptor().instanceKey)));
+                    monkeyConnections.forEach(connectionDescriptor
+                        -> instances.add(new InstanceKey(connectionDescriptor.getInstanceDescriptor().instanceKey)));
 
                     LOG.debug("Retrieve chaos state for serviceKey:{}", instance.serviceKey);
                     ConcurrentNavigableMap<ChaosStateKey, TimestampedValue<ChaosState>> gotChaosStates =
-                            upenaStore.chaosStates.find(new ChaosStateFilter(
-                                    instance.serviceKey,
-                                    0, Integer.MAX_VALUE));
+                        upenaStore.chaosStates.find(new ChaosStateFilter(
+                            instance.serviceKey,
+                            0, Integer.MAX_VALUE));
 
                     if (gotChaosStates.size() == 1) {
                         ChaosStateKey chaosStateKey = gotChaosStates.firstEntry().getKey();
                         ChaosState chaosStateValue = gotChaosStates.firstEntry().getValue().getValue();
 
-                        if (ChaosStateHelper.instancesMatch(chaosStateValue.instanceRoutes, instances) ||
-                                ChaosStateHelper.propertiesMatch(chaosStateValue.properties, value.properties)) {
+                        if (ChaosStateHelper.instancesMatch(chaosStateValue.instanceRoutes, instances)
+                            || ChaosStateHelper.propertiesMatch(chaosStateValue.properties, value.properties)) {
                             long interval = ChaosStateHelper.parseInterval(value.properties);
 
                             if (chaosStateValue.disableAfterTime > 0) {
                                 if (chaosStateValue.disableAfterTime > System.currentTimeMillis()) {
                                     LOG.debug("Chaos State is active for serviceKey:{} {}",
-                                            instance.serviceKey,
-                                            chaosStateValue.instanceRoutes);
+                                        instance.serviceKey,
+                                        chaosStateValue.instanceRoutes);
 
                                     Set<InstanceKey> knownInstanceRoutes = chaosStateValue.instanceRoutes.get(instanceKey);
                                     List<ConnectionDescriptor> connectionsTemp = new ArrayList<>();
@@ -233,12 +236,13 @@ public class ChaosService {
                                             LOG.debug("Instance is not in routing table {}", connectionDescriptor.getInstanceDescriptor().instanceKey);
 
                                             ConnectionDescriptor newConnectionDescriptor = new ConnectionDescriptor(
-                                                    connectionDescriptor.getInstanceDescriptor(),
-                                                    new HostPort(
-                                                            ChaosStateHelper.IPV4_DEV_NULL,
-                                                            connectionDescriptor.getHostPort().getPort()),
-                                                    connectionDescriptor.getProperties(),
-                                                    connectionDescriptor.getMonkeys());
+                                                connectionDescriptor.getInstanceDescriptor(),
+                                                connectionDescriptor.getSslEnabled(),
+                                                new HostPort(
+                                                    ChaosStateHelper.IPV4_DEV_NULL,
+                                                    connectionDescriptor.getHostPort().getPort()),
+                                                connectionDescriptor.getProperties(),
+                                                connectionDescriptor.getMonkeys());
 
                                             connectionsTemp.add(newConnectionDescriptor);
                                         }
@@ -249,8 +253,9 @@ public class ChaosService {
                                     LOG.info("Chaos State is being deactivated for serviceKey:{}", instance.serviceKey);
 
                                     upenaStore.chaosStates.update(
-                                            chaosStateKey,
-                                            new ChaosState(instance.serviceKey, System.currentTimeMillis() + interval, 0, chaosStateValue.instanceRoutes, chaosStateValue.properties));
+                                        chaosStateKey,
+                                        new ChaosState(instance.serviceKey, System.currentTimeMillis() + interval, 0, chaosStateValue.instanceRoutes,
+                                            chaosStateValue.properties));
                                 }
                             } else if (chaosStateValue.enableAfterTime > 0) {
                                 if (chaosStateValue.enableAfterTime > System.currentTimeMillis()) {
@@ -259,8 +264,9 @@ public class ChaosService {
                                     LOG.info("Chaos State will be activated for serviceKey:{}", instance.serviceKey);
 
                                     upenaStore.chaosStates.update(
-                                            chaosStateKey,
-                                            new ChaosState(instance.serviceKey, 0, System.currentTimeMillis() + interval, chaosStateValue.instanceRoutes, chaosStateValue.properties));
+                                        chaosStateKey,
+                                        new ChaosState(instance.serviceKey, 0, System.currentTimeMillis() + interval, chaosStateValue.instanceRoutes,
+                                            chaosStateValue.properties));
                                 }
                             } else {
                                 LOG.warn("Chaos state is invalid; regenerate chaos state.");
@@ -277,14 +283,14 @@ public class ChaosService {
                 } else if (value.strategyKey == ChaosStrategyKey.ADHOC_NETWORK_PARTITION) {
                     LOG.debug("Retrieve array of instance ids");
                     Set<InstanceKey> instances = new HashSet<>();
-                    monkeyConnections.forEach(connectionDescriptor ->
-                            instances.add(new InstanceKey(connectionDescriptor.getInstanceDescriptor().instanceKey)));
+                    monkeyConnections.forEach(connectionDescriptor
+                        -> instances.add(new InstanceKey(connectionDescriptor.getInstanceDescriptor().instanceKey)));
 
                     LOG.debug("Retrieve chaos state for serviceKey:{}", instance.serviceKey);
                     ConcurrentNavigableMap<ChaosStateKey, TimestampedValue<ChaosState>> gotChaosStates =
-                            upenaStore.chaosStates.find(new ChaosStateFilter(
-                                    instance.serviceKey,
-                                    0, Integer.MAX_VALUE));
+                        upenaStore.chaosStates.find(new ChaosStateFilter(
+                            instance.serviceKey,
+                            0, Integer.MAX_VALUE));
 
                     ChaosState chaosStateValue;
                     if (gotChaosStates.size() == 1) {
@@ -314,12 +320,13 @@ public class ChaosService {
                             LOG.debug("Instance is not in routing table {}", connectionDescriptor.getInstanceDescriptor().instanceKey);
 
                             ConnectionDescriptor newConnectionDescriptor = new ConnectionDescriptor(
-                                    connectionDescriptor.getInstanceDescriptor(),
-                                    new HostPort(
-                                            ChaosStateHelper.IPV4_DEV_NULL,
-                                            connectionDescriptor.getHostPort().getPort()),
-                                    connectionDescriptor.getProperties(),
-                                    connectionDescriptor.getMonkeys());
+                                connectionDescriptor.getInstanceDescriptor(),
+                                connectionDescriptor.getSslEnabled(),
+                                new HostPort(
+                                    ChaosStateHelper.IPV4_DEV_NULL,
+                                    connectionDescriptor.getHostPort().getPort()),
+                                connectionDescriptor.getProperties(),
+                                connectionDescriptor.getMonkeys());
 
                             connectionsTemp.add(newConnectionDescriptor);
                         }
@@ -334,11 +341,11 @@ public class ChaosService {
     }
 
     private ChaosState regenChaosState(ServiceKey serviceKey,
-                                       Set<InstanceKey> instances,
-                                       ConcurrentNavigableMap<ChaosStateKey, TimestampedValue<ChaosState>> chaosStates,
-                                       Map<String, String> properties) throws Exception {
+        Set<InstanceKey> instances,
+        ConcurrentNavigableMap<ChaosStateKey, TimestampedValue<ChaosState>> chaosStates,
+        Map<String, String> properties) throws Exception {
         LOG.info("Generate chaos state for serviceKey:{} {} {}",
-                serviceKey, instances, properties);
+            serviceKey, instances, properties);
 
         // remove all (just in case)
         for (ChaosStateKey chaosStateKey : chaosStates.keySet()) {

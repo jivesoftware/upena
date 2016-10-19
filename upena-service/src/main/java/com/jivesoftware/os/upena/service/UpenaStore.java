@@ -16,15 +16,15 @@
 package com.jivesoftware.os.upena.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jivesoftware.os.upena.amza.service.AmzaService;
-import com.jivesoftware.os.upena.amza.service.AmzaTable;
-import com.jivesoftware.os.upena.amza.shared.RowIndexKey;
-import com.jivesoftware.os.upena.amza.shared.TableName;
 import com.jivesoftware.os.jive.utils.ordered.id.OrderIdProvider;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.routing.bird.shared.InstanceChanged;
 import com.jivesoftware.os.routing.bird.shared.TenantChanged;
+import com.jivesoftware.os.upena.amza.service.AmzaService;
+import com.jivesoftware.os.upena.amza.service.AmzaTable;
+import com.jivesoftware.os.upena.amza.shared.RowIndexKey;
+import com.jivesoftware.os.upena.amza.shared.TableName;
 import com.jivesoftware.os.upena.shared.ChaosState;
 import com.jivesoftware.os.upena.shared.ChaosStateKey;
 import com.jivesoftware.os.upena.shared.Cluster;
@@ -76,8 +76,8 @@ public class UpenaStore {
     public final TableName tenantStoreKey = new TableName("master", "tenants", null, null);
     public final TableName monkeyStoreKey = new TableName("master", "monkeys", null, null);
     public final TableName chaosStateStoreKey = new TableName("master", "chaosState", null, null);
-
     public final TableName changeLogStoreKey = new TableName("master", "changeLog", null, null);
+
 
     public final UpenaTable<ProjectKey, Project> projects;
     public final UpenaTable<ClusterKey, Cluster> clusters;

@@ -5,8 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.jivesoftware.os.upena.amza.shared.AmzaInstance;
-import com.jivesoftware.os.upena.amza.shared.RingHost;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.routing.bird.http.client.HttpClient;
@@ -15,8 +13,11 @@ import com.jivesoftware.os.routing.bird.http.client.HttpClientConfiguration;
 import com.jivesoftware.os.routing.bird.http.client.HttpClientFactory;
 import com.jivesoftware.os.routing.bird.http.client.HttpClientFactoryProvider;
 import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelper;
+import com.jivesoftware.os.routing.bird.http.client.OAuthSigner;
 import com.jivesoftware.os.routing.bird.shared.ConnectionHealth;
 import com.jivesoftware.os.routing.bird.shared.InstanceConnectionHealth;
+import com.jivesoftware.os.upena.amza.shared.AmzaInstance;
+import com.jivesoftware.os.upena.amza.shared.RingHost;
 import com.jivesoftware.os.upena.deployable.UpenaEndpoints.NannyHealth;
 import com.jivesoftware.os.upena.deployable.UpenaEndpoints.NodeHealth;
 import com.jivesoftware.os.upena.deployable.region.ConnectivityPluginRegion.ConnectivityPluginRegionInput;
@@ -228,7 +229,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
 
         Map<String, Node> nodes = new HashMap<>();
         int id = 0;
-        buildClusterRoutes();
+        buildClusterRoutes(null);
         Map<String, Map<String, Map<String, ConnectionHealth>>> routes = discoveredRoutes.from_to_Family_ConnectionHealths;
 
         for (Map.Entry<String, Map<String, Map<String, ConnectionHealth>>> entrySet : routes.entrySet()) {
@@ -418,7 +419,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
 
             Map<String, Node> nodes = new HashMap<>();
             int id = 0;
-            buildClusterRoutes();
+            buildClusterRoutes(null);
             Map<String, Map<String, Map<String, ConnectionHealth>>> routes = discoveredRoutes.from_to_Family_ConnectionHealths;
 
             for (Map.Entry<String, Map<String, Map<String, ConnectionHealth>>> entrySet : routes.entrySet()) {
@@ -804,7 +805,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
     private final ConcurrentMap<String, Long> nodeRecency = Maps.newConcurrentMap();
     private final ConcurrentMap<RingHost, Boolean> currentlyExecuting = Maps.newConcurrentMap();
 
-    private List<Route> buildClusterRoutes() throws Exception {
+    private List<Route> buildClusterRoutes(OAuthSigner signer) throws Exception {
         List<Route> allRoutes = new ArrayList<>();
 
         allRoutes.addAll(discoveredRoutes.routes());
@@ -821,7 +822,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
                     try {
                         Long last = nodeRecency.get(nodeKey);
                         long sinceTimestampMillis = last == null ? 0 : last;
-                        HttpRequestHelper requestHelper = buildRequestHelper(ringHost.getHost(), ringHost.getPort());
+                        HttpRequestHelper requestHelper = buildRequestHelper(signer, ringHost.getHost(), ringHost.getPort());
                         RouteHealths routeHealths = requestHelper.executeGetRequest("/routes/health/" + sinceTimestampMillis, RouteHealths.class, null);
                         for (InstanceConnectionHealth routeHealth : routeHealths.getRouteHealths()) {
                             discoveredRoutes.connectionHealth(routeHealth);
@@ -831,7 +832,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
                     }
 
                     try {
-                        HttpRequestHelper requestHelper = buildRequestHelper(ringHost.getHost(), ringHost.getPort());
+                        HttpRequestHelper requestHelper = buildRequestHelper(signer, ringHost.getHost(), ringHost.getPort());
                         Routes routes = requestHelper.executeGetRequest("/routes/instances", Routes.class, null);
                         nodeRoutes.put(ringHost, routes);
                     } catch (Exception x) {
@@ -849,11 +850,11 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
         return allRoutes;
     }
 
-    HttpRequestHelper buildRequestHelper(String host, int port) {
+    HttpRequestHelper buildRequestHelper(OAuthSigner signer, String host, int port) {
         HttpClientConfig httpClientConfig = HttpClientConfig.newBuilder().setSocketTimeoutInMillis(10_000).build();
         HttpClientFactory httpClientFactory = new HttpClientFactoryProvider()
-            .createHttpClientFactory(Arrays.<HttpClientConfiguration>asList(httpClientConfig));
-        HttpClient httpClient = httpClientFactory.createClient(host, port);
+            .createHttpClientFactory(Arrays.<HttpClientConfiguration>asList(httpClientConfig), false);
+        HttpClient httpClient = httpClientFactory.createClient(signer, host, port);
         HttpRequestHelper requestHelper = new HttpRequestHelper(httpClient, new ObjectMapper());
         return requestHelper;
     }
