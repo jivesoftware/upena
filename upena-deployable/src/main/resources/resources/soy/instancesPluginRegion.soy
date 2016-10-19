@@ -136,6 +136,9 @@
                             <input class="form-control" type="checkbox" name="enabled" value="true" {if $i.enabled}checked="checked"{/if}>
                         </td>
                         <td>
+                            <input class="form-control" type="checkbox" name="sslEnabled" value="true" {if $i.sslEnabled}checked="checked"{/if}>
+                        </td>
+                        <td>
                             <div>
                                 <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
                                     placeholder="Cluster" value="{$i.cluster.name}" name="cluster" class="upena-hs-field form-control"

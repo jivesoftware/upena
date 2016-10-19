@@ -640,6 +640,9 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
         }
         map.put("ports", ports);
         map.put("enabled", value.enabled);
+        
+        boolean sslEnabled = value.ports.get("main").sslEnabled;
+        map.put("sslEnabled", sslEnabled);
 
         Cluster cluster = upenaStore.clusters.get(value.clusterKey);
         Host host = upenaStore.hosts.get(value.hostKey);
