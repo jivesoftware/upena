@@ -1,6 +1,8 @@
 package com.jivesoftware.os.upena.uba.service;
 
 import com.google.common.io.Files;
+import com.jivesoftware.os.mlogger.core.MetricLogger;
+import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -24,13 +26,18 @@ import sun.security.x509.X509CertInfo;
  */
 public class RSAKeyPairGenerator {
 
+    private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
+
     void create(String alias, String password, File keystore, File publicKeyFile) throws Exception {
+
+        LOG.info("Creating {} {} {}", alias, keystore, publicKeyFile);
+
         CertAndKeyGen keyGen = new CertAndKeyGen("RSA", "SHA1WithRSA", null);
         keyGen.generate(1024);
         X509Certificate rootCertificate = keyGen.getSelfCertificate(new X500Name("CN=ROOT"), (long) 365 * 24 * 60 * 60);
         rootCertificate = createSignedCertificate(rootCertificate, rootCertificate, keyGen.getPrivateKey());
         X509Certificate[] chain = {rootCertificate};
-       
+
         storeKeyAndCertificateChain(alias, password.toCharArray(), keystore, keyGen.getPrivateKey(), chain);
 
         Files.write(Base64.encodeBase64String(keyGen.getPublicKey().getEncoded()).getBytes(StandardCharsets.UTF_8), publicKeyFile);
@@ -70,6 +77,9 @@ public class RSAKeyPairGenerator {
     }
 
     String getPublicKey(String alias, String password, File keystoreFile, File publicKeyFile) throws Exception {
+
+        LOG.info("getPublicKey {} {} {}", alias, keystoreFile, publicKeyFile);
+
         String privateKey = getPrivateKey(alias, password, keystoreFile);
         if (privateKey != null) {
             return Files.toString(publicKeyFile, StandardCharsets.UTF_8);
@@ -78,12 +88,15 @@ public class RSAKeyPairGenerator {
     }
 
     String getPrivateKey(String alias, String password, File keystoreFile) throws Exception {
+
+        LOG.info("getPrivateKey {} {}", alias, keystoreFile);
+
         //Reload the keystore
         char[] passwordChars = password.toCharArray();
         KeyStore keyStore = KeyStore.getInstance("jks");
         keyStore.load(new FileInputStream(keystoreFile), passwordChars);
 
-        Key key = keyStore.getKey(alias + "-public", passwordChars);
+        Key key = keyStore.getKey(alias, passwordChars);
         if (key != null) {
             return Base64.encodeBase64String(key.getEncoded());
         }
