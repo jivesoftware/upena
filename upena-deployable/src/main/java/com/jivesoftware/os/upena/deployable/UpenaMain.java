@@ -350,7 +350,7 @@ public class UpenaMain {
             public void updateKeyPair(String instanceKey, String publicKey) throws Exception {
                 Instance i = upenaStore.instances.get(new InstanceKey(instanceKey));
                 if (i != null) {
-
+                    LOG.info("Updating publicKey for {}", instanceKey);
                     upenaStore.instances.update(new InstanceKey(instanceKey), new Instance(i.clusterKey,
                         i.hostKey,
                         i.serviceKey,
@@ -361,8 +361,6 @@ public class UpenaMain {
                         publicKey,
                         i.restartTimestampGMTMillis,
                         i.ports));
-                } else {
-
                 }
             }
 
