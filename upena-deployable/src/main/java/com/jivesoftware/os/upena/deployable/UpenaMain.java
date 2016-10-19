@@ -144,6 +144,7 @@ import java.util.List;
 import java.util.NavigableMap;
 import java.util.Random;
 import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -280,12 +281,14 @@ public class UpenaMain {
         LOG.info("|      Upena Config Store Online");
         LOG.info("-----------------------------------------------------------------------");
 
+        ExecutorService instanceChangedThreads = Executors.newFixedThreadPool(32);
+
         final AtomicReference<UbaService> ubaServiceReference = new AtomicReference<>();
         final UpenaStore upenaStore = new UpenaStore(
             orderIdProvider,
             mapper,
             amzaService, (instanceChanges) -> {
-                Executors.newSingleThreadExecutor().submit(() -> {
+                instanceChangedThreads.submit(() -> {
                     UbaService got = ubaServiceReference.get();
                     if (got != null) {
                         try {
