@@ -75,6 +75,7 @@ public class InstancePath {
         Object datacenter = properties.get(instancePrefix + "datacenter");
         Object rack = properties.get(instancePrefix + "rack");
         Object publicHost = properties.get(instancePrefix + "publicHost");
+        Object publicKey = properties.get(instancePrefix + "publicKey");
         InstanceDescriptor id = new InstanceDescriptor((datacenter == null) ? "unknownDatacenter" : datacenter.toString(),
             (rack == null) ? "unknownRack" : rack.toString(),
             (publicHost == null) ? "unknown" : publicHost.toString(),
@@ -88,7 +89,7 @@ public class InstancePath {
             Integer.parseInt(properties.get(instancePrefix + "instanceName").toString()),
             properties.get(instancePrefix + "version").toString(),
             properties.get(instancePrefix + "repository").toString(),
-            properties.get(instancePrefix + "publicKey").toString(),
+            (publicKey == null) ? null : publicKey.toString(),
             -1,
             Boolean.parseBoolean(enabled.toString()));
 
