@@ -20,12 +20,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
-import com.jivesoftware.os.routing.bird.http.client.HttpClient;
-import com.jivesoftware.os.routing.bird.http.client.HttpClientConfig;
-import com.jivesoftware.os.routing.bird.http.client.HttpClientConfiguration;
-import com.jivesoftware.os.routing.bird.http.client.HttpClientFactory;
-import com.jivesoftware.os.routing.bird.http.client.HttpClientFactoryProvider;
 import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelper;
+import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelperUtils;
 import com.jivesoftware.os.routing.bird.shared.InstanceDescriptor;
 import com.jivesoftware.os.routing.bird.shared.ResponseHelper;
 import com.jivesoftware.os.upena.amza.shared.AmzaInstance;
@@ -47,7 +43,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -313,7 +308,7 @@ public class UpenaEndpoints {
         ClusterHealth clusterHealth = new ClusterHealth();
         for (RingHost ringHost : amzaInstance.getRing("MASTER")) {
             try {
-                HttpRequestHelper requestHelper = buildRequestHelper(ringHost.getHost(), ringHost.getPort());
+                HttpRequestHelper requestHelper = HttpRequestHelperUtils.buildRequestHelper(false, false, null, ringHost.getHost(), ringHost.getPort());
                 String path = Joiner.on("/").join(uriInfo.getPathSegments().subList(0, uriInfo.getPathSegments().size()));
                 NodeHealth nodeHealth = requestHelper.executeGetRequest("/" + path + "/instance", NodeHealth.class, null);
                 clusterHealth.health = Math.min(nodeHealth.health, clusterHealth.health);
@@ -330,14 +325,6 @@ public class UpenaEndpoints {
         return clusterHealth;
     }
 
-    HttpRequestHelper buildRequestHelper(String host, int port) {
-        HttpClientConfig httpClientConfig = HttpClientConfig.newBuilder().setSocketTimeoutInMillis(10_000).build();
-        HttpClientFactory httpClientFactory = new HttpClientFactoryProvider()
-            .createHttpClientFactory(Arrays.<HttpClientConfiguration>asList(httpClientConfig), false);
-        HttpClient httpClient = httpClientFactory.createClient(null, host, port);
-        HttpRequestHelper requestHelper = new HttpRequestHelper(httpClient, new ObjectMapper());
-        return requestHelper;
-    }
 
     private NodeHealth buildNodeHealth() throws Exception {
         NodeHealth nodeHealth = new NodeHealth(ringHostKey.getKey(), ringHost.getHost(), ringHost.getPort());
