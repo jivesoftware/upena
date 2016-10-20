@@ -10,7 +10,7 @@
     {if $uis}
         <div class="btn-group" role="group">
             {foreach $u in $uis}
-                <a class="btn btn-default" href="http://{$u.host}:{$u.port}{$u.url}">{$u.name}</a>
+                <a class="btn btn-default" href="{$u.scheme}://{$u.host}:{$u.port}{$u.url}">{$u.name}</a>
                 <a class="btn btn-default" href="/ui/proxy/redirect?host={$u.host}&amp;port={$u.port}&amp;path={$u.url}"><span class="glyphicon glyphicon-random"></span></a>{sp}
             {/foreach}
         </div>
