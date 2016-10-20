@@ -978,6 +978,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                         if (uiPort != null) {
                             Map<String, String> uiMap = new HashMap<>();
                             uiMap.put("cluster", cluster.name);
+                            uiMap.put("scheme", uiPort.sslEnabled ? "https" : "http");
                             uiMap.put("host", host.name);
                             uiMap.put("port", String.valueOf(uiPort.port));
                             uiMap.put("service", service.name);
