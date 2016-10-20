@@ -24,7 +24,6 @@ import com.jivesoftware.os.routing.bird.shared.InstanceDescriptorsResponse;
 import com.jivesoftware.os.routing.bird.shared.TenantChanged;
 import com.jivesoftware.os.uba.shared.PasswordStore;
 import com.jivesoftware.os.uba.shared.UbaReport;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -35,7 +34,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
-import org.apache.commons.io.FileUtils;
 
 public class UbaService {
 
@@ -96,9 +94,9 @@ public class UbaService {
 
                 String nanneyKey = uba.instanceDescriptorKey(instanceDescriptor, instancePath);
                 if (!nannies.containsKey(nanneyKey)) {
-                    if (ensureCerts(instancePath, instanceDescriptor)) {
-                        nannies.put(nanneyKey, uba.newNanny(instanceDescriptor, instancePath));
-                    }
+                    Nanny newNanny = uba.newNanny(instanceDescriptor, instancePath);
+                    newNanny.ensureCerts(instanceDescriptor);
+                    nannies.put(nanneyKey, newNanny);
                 }
             }
 
@@ -111,15 +109,12 @@ public class UbaService {
                 Nanny currentNanny = nannies.get(nannyKey);
                 if (currentNanny == null) {
                     LOG.debug("New nanny:" + nannyKey);
-                    if (ensureCerts(path, instanceDescriptor)) {
-                        Nanny nanny = uba.newNanny(instanceDescriptor, path);
-                        newPlayers.add(nanny);
-                    }
+                    Nanny newNanny = uba.newNanny(instanceDescriptor, path);
+                    newNanny.ensureCerts(instanceDescriptor);
+                    newPlayers.add(newNanny);
                 } else {
                     LOG.debug("Existing nanny:" + nannyKey);
-                    if (ensureCerts(path, instanceDescriptor)) {
-                        currentNanny.setInstanceDescriptor(instanceDescriptor);
-                    }
+                    currentNanny.setInstanceDescriptor(uba.coordinate, instanceDescriptor);
                     expectedPlayer.add(uba.instanceDescriptorKey(currentNanny.getInstanceDescriptor(), path));
                 }
             }
@@ -149,38 +144,6 @@ public class UbaService {
         }
     }
 
-    private boolean ensureCerts(InstancePath instancePath, InstanceDescriptor id) throws Exception {
-        boolean sslEnabled = false;
-        for (Map.Entry<String, InstanceDescriptor.InstanceDescriptorPort> entry : id.ports.entrySet()) {
-            if (entry.getValue().sslEnabled) {
-                sslEnabled = true;
-                break;
-            }
-        }
-        if (sslEnabled) {
-            SelfSigningCertGenerator generator = new SelfSigningCertGenerator();
-            String password = passwordStore.password(id.instanceKey + "-ssl");
-            File certFile = instancePath.certs("sslKeystore");
-            if (!certFile.exists() || !generator.validate(id.instanceKey, password, certFile)) {
-                FileUtils.deleteQuietly(certFile);
-                generator.create(id.instanceKey, password, certFile);
-            }
-        }
-
-        File oauthKeystoreFile = instancePath.certs("oauthKeystore");
-        File oauthPublicKeyFile = instancePath.certs("oauthPublicKey");
-        String password = passwordStore.password(id.instanceKey + "-oauth");
-        RSAKeyPairGenerator generator = new RSAKeyPairGenerator();
-        if (id.publicKey == null || !id.publicKey.equals(generator.getPublicKey(id.instanceKey, password, oauthKeystoreFile, oauthPublicKeyFile))) {
-            FileUtils.deleteQuietly(oauthKeystoreFile);
-            FileUtils.deleteQuietly(oauthPublicKeyFile);
-            generator.create(id.instanceKey, password, oauthKeystoreFile, oauthPublicKeyFile);
-            upenaClient.updateKeyPair(id.instanceKey, generator.getPublicKey(id.instanceKey, password, oauthKeystoreFile, oauthPublicKeyFile));
-            return false;
-        }
-        return true;
-    }
-
     public void decommisionUbaService() throws Exception {
         for (Nanny nanny : rollCall().values()) {
             try {
@@ -193,7 +156,7 @@ public class UbaService {
 
     public List<String> nanny() throws Exception {
         for (Nanny nanny : rollCall().values()) {
-            nanny.nanny(uba.datacenter, uba.rack, uba.publicHost, uba.host, uba.upenaHost, uba.upenaPort);
+            nanny.nanny(uba.coordinate);
         }
         return new ArrayList<>();
     }
@@ -202,7 +165,7 @@ public class UbaService {
         UbaReport report = new UbaReport();
         for (Nanny nanny : rollCall().values()) {
             report.nannyReports.add(nanny.report());
-            nanny.nanny(uba.datacenter, uba.rack, uba.publicHost, uba.host, uba.upenaHost, uba.upenaPort);
+            nanny.nanny(uba.coordinate);
         }
         return report;
     }
