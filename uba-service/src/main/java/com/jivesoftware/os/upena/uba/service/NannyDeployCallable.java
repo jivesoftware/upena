@@ -41,12 +41,7 @@ import org.eclipse.aether.resolution.ArtifactResult;
 class NannyDeployCallable implements Callable<Boolean> {
 
     private final RepositoryProvider repositoryProvider;
-    private final String datacenter;
-    private final String rack;
-    private final String publicHostName;
-    private final String host;
-    private final String upenaHost;
-    private final int upenaPort;
+    private final UbaCoordinate ubaCoordinate;
     private final InstanceDescriptor id;
     private final InstancePath instancePath;
     private final DeployLog deployLog;
@@ -57,12 +52,7 @@ class NannyDeployCallable implements Callable<Boolean> {
 
     public NannyDeployCallable(
         RepositoryProvider repositoryProvider,
-        String datacenter,
-        String rack,
-        String publicHostName,
-        String host,
-        String upenaHost,
-        int upenaPort,
+        UbaCoordinate ubaCoordinate,
         InstanceDescriptor id,
         InstancePath instancePath,
         DeployLog deployLog,
@@ -72,12 +62,7 @@ class NannyDeployCallable implements Callable<Boolean> {
         UbaLog ubaLog) {
 
         this.repositoryProvider = repositoryProvider;
-        this.datacenter = datacenter;
-        this.rack = rack;
-        this.publicHostName = publicHostName;
-        this.host = host;
-        this.upenaHost = upenaHost;
-        this.upenaPort = upenaPort;
+        this.ubaCoordinate = ubaCoordinate;
         this.id = id;
         this.instancePath = instancePath;
         this.deployLog = deployLog;
@@ -90,7 +75,7 @@ class NannyDeployCallable implements Callable<Boolean> {
     @Override
     public Boolean call() throws Exception {
         try {
-            instancePath.writeInstanceDescriptor(datacenter, rack, publicHostName, host, upenaHost, upenaPort, id);
+            instancePath.writeInstanceDescriptor(ubaCoordinate, id);
             if (deploy()) {
                 if (!invokeScript.invoke(deployLog, instancePath, "init")) {
                     deployLog.log("Nanny", "failed to init service.", null);

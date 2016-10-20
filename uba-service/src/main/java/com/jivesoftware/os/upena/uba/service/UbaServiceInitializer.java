@@ -15,7 +15,6 @@
  */
 package com.jivesoftware.os.upena.uba.service;
 
-import com.jivesoftware.os.uba.shared.PasswordStore;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jivesoftware.os.routing.bird.http.client.HttpClient;
 import com.jivesoftware.os.routing.bird.http.client.HttpClientConfig;
@@ -24,6 +23,7 @@ import com.jivesoftware.os.routing.bird.http.client.HttpClientFactory;
 import com.jivesoftware.os.routing.bird.http.client.HttpClientFactoryProvider;
 import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelper;
 import com.jivesoftware.os.routing.bird.http.client.OAuthSigner;
+import com.jivesoftware.os.uba.shared.PasswordStore;
 import java.io.File;
 import java.util.Arrays;
 
@@ -34,12 +34,8 @@ public class UbaServiceInitializer {
         RepositoryProvider repositoryProvider,
         String hostKey,
         String workingDir,
-        String datacenter,
-        String rack,
-        String publicHostName,
+        UbaCoordinate ubaCoordinate,
         OAuthSigner signer,
-        String host,
-        int port,
         UbaLog ubaLog) throws Exception {
 
         File root = new File(new File(workingDir), "services/");
@@ -47,7 +43,7 @@ public class UbaServiceInitializer {
             throw new RuntimeException("Failed trying to mkdirs for " + root);
         }
         UbaTree tree = new UbaTree(root, new String[]{"cluster", "service", "release", "instance"});
-        Uba uba = new Uba(passwordStore, repositoryProvider, datacenter, rack, publicHostName, host, host, port, tree, ubaLog);
+        Uba uba = new Uba(passwordStore, upenaClient, repositoryProvider, ubaCoordinate, tree, ubaLog);
         UbaService conductorService = new UbaService(passwordStore, upenaClient, uba, hostKey);
         return conductorService;
     }

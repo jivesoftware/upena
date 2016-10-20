@@ -129,6 +129,7 @@ import com.jivesoftware.os.upena.shared.Instance;
 import com.jivesoftware.os.upena.shared.InstanceKey;
 import com.jivesoftware.os.upena.shared.PathToRepo;
 import com.jivesoftware.os.upena.uba.service.RepositoryProvider;
+import com.jivesoftware.os.upena.uba.service.UbaCoordinate;
 import com.jivesoftware.os.upena.uba.service.UbaLog;
 import com.jivesoftware.os.upena.uba.service.UbaService;
 import com.jivesoftware.os.upena.uba.service.UbaServiceInitializer;
@@ -374,12 +375,15 @@ public class UpenaMain {
             repositoryProvider,
             hostKey.getKey(),
             workingDir,
-            datacenter,
-            rack,
-            publicHost,
+            new UbaCoordinate(
+                datacenter,
+                rack,
+                publicHost,
+                host.hostName,
+                ringHost.getHost(),
+                ringHost.getPort()
+            ),
             null,
-            ringHost.getHost(),
-            ringHost.getPort(),
             ubaLog);
 
         DiscoveredRoutes discoveredRoutes = new DiscoveredRoutes();

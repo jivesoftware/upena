@@ -110,15 +110,18 @@ public class InstancePath {
         return id;
     }
 
-    void writeInstanceDescriptor(String datacenter, String rack, String publicHostName, String host, String upenaHost, int upenaPort, InstanceDescriptor id)
+    void writeInstanceDescriptor(UbaCoordinate ubaCoordinate, InstanceDescriptor id)
         throws IOException {
+
+        LOG.info("Writing instance descriptor for {}", id.instanceKey);
+
         List<String> properties = new ArrayList<>();
-        properties.add(instancePrefix + "datacenter=" + datacenter);
-        properties.add(instancePrefix + "rack=" + rack);
-        properties.add(instancePrefix + "publicHost=" + publicHostName);
-        properties.add(instancePrefix + "host=" + host);
-        properties.add(instancePrefix + "routesHost=" + upenaHost); // inject upena
-        properties.add(instancePrefix + "routesPort=" + upenaPort);
+        properties.add(instancePrefix + "datacenter=" + ubaCoordinate.datacenter);
+        properties.add(instancePrefix + "rack=" + ubaCoordinate.rack);
+        properties.add(instancePrefix + "publicHost=" + ubaCoordinate.publicHostName);
+        properties.add(instancePrefix + "host=" + ubaCoordinate.host);
+        properties.add(instancePrefix + "routesHost=" + ubaCoordinate.upenaHost); // inject upena
+        properties.add(instancePrefix + "routesPort=" + ubaCoordinate.upenaPort);
 
         properties.add(instancePrefix + "clusterKey=" + id.clusterKey);
         properties.add(instancePrefix + "clusterName=" + id.clusterName);

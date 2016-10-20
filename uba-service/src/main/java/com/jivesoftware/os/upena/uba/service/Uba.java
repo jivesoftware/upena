@@ -15,12 +15,12 @@
  */
 package com.jivesoftware.os.upena.uba.service;
 
-import com.jivesoftware.os.uba.shared.PasswordStore;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.routing.bird.shared.InstanceDescriptor;
+import com.jivesoftware.os.uba.shared.PasswordStore;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
@@ -35,37 +35,25 @@ public class Uba {
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
     private final PasswordStore passwordStore;
+    private final UpenaClient upenaClient;
     final RepositoryProvider repositoryProvider;
-    final String datacenter;
-    final String rack;
-    final String publicHost;
-    final String host;
-    final String upenaHost;
-    final int upenaPort;
+    final UbaCoordinate coordinate;
     private final UbaTree ubaTree;
     private final DeployableScriptInvoker invokeScript;
     private final UbaLog ubaLog;
     private final Cache<String, Boolean> haveRunConfigExtractionCache;
 
     public Uba(PasswordStore passwordStore,
+        UpenaClient upenaClient,
         RepositoryProvider repositoryProvider,
-        String datacenter,
-        String rack,
-        String publicHostName,
-        String host,
-        String upenaHost,
-        int upenaPort,
+        UbaCoordinate ubaCoordinate,
         UbaTree ubaTree,
         UbaLog ubaLog) {
 
         this.passwordStore = passwordStore;
+        this.upenaClient = upenaClient;
         this.repositoryProvider = repositoryProvider;
-        this.datacenter = datacenter;
-        this.rack = rack;
-        this.publicHost = publicHostName;
-        this.host = host;
-        this.upenaHost = upenaHost;
-        this.upenaPort = upenaPort;
+        this.coordinate = ubaCoordinate;
         this.ubaTree = ubaTree;
         this.invokeScript = new DeployableScriptInvoker(Executors.newCachedThreadPool(new ThreadFactory() {
             private final AtomicLong count = new AtomicLong();
@@ -140,6 +128,7 @@ public class Uba {
         DeployLog deployLog = new DeployLog();
         HealthLog healthLog = new HealthLog(deployLog);
         return new Nanny(passwordStore,
+            upenaClient,
             repositoryProvider,
             instanceDescriptor,
             instancePath,

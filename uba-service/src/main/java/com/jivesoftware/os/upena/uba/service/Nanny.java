@@ -15,15 +15,17 @@
  */
 package com.jivesoftware.os.upena.uba.service;
 
-import com.jivesoftware.os.uba.shared.PasswordStore;
 import com.google.common.cache.Cache;
 import com.jivesoftware.os.jive.utils.shell.utils.Curl;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.routing.bird.shared.InstanceDescriptor;
 import com.jivesoftware.os.uba.shared.NannyReport;
+import com.jivesoftware.os.uba.shared.PasswordStore;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -32,12 +34,14 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import org.apache.commons.io.FileUtils;
 
 public class Nanny {
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
     private final PasswordStore passwordStore;
+    private final UpenaClient upenaClient;
     private final RepositoryProvider repositoryProvider;
     private final InstancePath instancePath;
     private final DeployableValidator deployableValidator;
@@ -60,6 +64,7 @@ public class Nanny {
     final AtomicLong unexpectedRestartTimestamp = new AtomicLong(-1);
 
     public Nanny(PasswordStore passwordStore,
+        UpenaClient upenaClient,
         RepositoryProvider repositoryProvider,
         InstanceDescriptor instanceDescriptor,
         InstancePath instancePath,
@@ -71,6 +76,7 @@ public class Nanny {
         Cache<String, Boolean> haveRunConfigExtractionCache) {
 
         this.passwordStore = passwordStore;
+        this.upenaClient = upenaClient;
         this.repositoryProvider = repositoryProvider;
         this.instanceDescriptor = new AtomicReference<>(instanceDescriptor);
         this.instancePath = instancePath;
@@ -86,6 +92,38 @@ public class Nanny {
         redeploy = new AtomicBoolean(!exists);
         destroyed = new AtomicBoolean(false);
         this.haveRunConfigExtractionCache = haveRunConfigExtractionCache;
+    }
+
+    synchronized public boolean ensureCerts(InstanceDescriptor id) throws Exception {
+        boolean sslEnabled = false;
+        for (Map.Entry<String, InstanceDescriptor.InstanceDescriptorPort> entry : id.ports.entrySet()) {
+            if (entry.getValue().sslEnabled) {
+                sslEnabled = true;
+                break;
+            }
+        }
+        if (sslEnabled) {
+            SelfSigningCertGenerator generator = new SelfSigningCertGenerator();
+            String password = passwordStore.password(id.instanceKey + "-ssl");
+            File certFile = instancePath.certs("sslKeystore");
+            if (!certFile.exists() || !generator.validate(id.instanceKey, password, certFile)) {
+                FileUtils.deleteQuietly(certFile);
+                generator.create(id.instanceKey, password, certFile);
+            }
+        }
+
+        File oauthKeystoreFile = instancePath.certs("oauthKeystore");
+        File oauthPublicKeyFile = instancePath.certs("oauthPublicKey");
+        String password = passwordStore.password(id.instanceKey + "-oauth");
+        RSAKeyPairGenerator generator = new RSAKeyPairGenerator();
+        if (id.publicKey == null || !id.publicKey.equals(generator.getPublicKey(id.instanceKey, password, oauthKeystoreFile, oauthPublicKeyFile))) {
+            FileUtils.deleteQuietly(oauthKeystoreFile);
+            FileUtils.deleteQuietly(oauthPublicKeyFile);
+            generator.create(id.instanceKey, password, oauthKeystoreFile, oauthPublicKeyFile);
+            upenaClient.updateKeyPair(id.instanceKey, generator.getPublicKey(id.instanceKey, password, oauthKeystoreFile, oauthPublicKeyFile));
+            return false;
+        }
+        return true;
     }
 
     public String getStatus() {
@@ -104,9 +142,10 @@ public class Nanny {
         return startupTimestamp.longValue();
     }
 
-    synchronized public void setInstanceDescriptor(InstanceDescriptor id) {
+    synchronized public void setInstanceDescriptor(UbaCoordinate ubaCoordinate, InstanceDescriptor id) throws Exception {
         InstanceDescriptor got = instanceDescriptor.get();
         if (got != null && !got.equals(id)) {
+            instancePath.writeInstanceDescriptor(ubaCoordinate, id);
             startupId.incrementAndGet();
             unexpectedRestartTimestamp.set(-1);
             redeploy.set(true);
@@ -139,12 +178,7 @@ public class Nanny {
         return new NannyReport(deployLog.getState(), instanceDescriptor.get(), deployLog.commitedLog());
     }
 
-    synchronized public String nanny(String datacenter,
-        String rack,
-        String publicHostName,
-        String host,
-        String upenaHost,
-        int upenaPort) throws InterruptedException, ExecutionException {
+    synchronized public String nanny(UbaCoordinate ubaCoordinate) throws InterruptedException, ExecutionException {
 
         long now = System.currentTimeMillis();
         if (restartAtTimestamp.get() > 0 && restartAtTimestamp.get() < now) {
@@ -180,12 +214,7 @@ public class Nanny {
 
                             NannyDeployCallable deployTask = new NannyDeployCallable(
                                 repositoryProvider,
-                                datacenter,
-                                rack,
-                                publicHostName,
-                                host,
-                                upenaHost,
-                                upenaPort,
+                                ubaCoordinate,
                                 instanceDescriptor.get(),
                                 instancePath,
                                 deployLog,
