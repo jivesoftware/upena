@@ -15,17 +15,9 @@
  */
 package com.jivesoftware.os.upena.uba.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jivesoftware.os.routing.bird.http.client.HttpClient;
-import com.jivesoftware.os.routing.bird.http.client.HttpClientConfig;
-import com.jivesoftware.os.routing.bird.http.client.HttpClientConfiguration;
-import com.jivesoftware.os.routing.bird.http.client.HttpClientFactory;
-import com.jivesoftware.os.routing.bird.http.client.HttpClientFactoryProvider;
-import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelper;
 import com.jivesoftware.os.routing.bird.http.client.OAuthSigner;
 import com.jivesoftware.os.uba.shared.PasswordStore;
 import java.io.File;
-import java.util.Arrays;
 
 public class UbaServiceInitializer {
 
@@ -48,12 +40,4 @@ public class UbaServiceInitializer {
         return conductorService;
     }
 
-    HttpRequestHelper buildRequestHelper(OAuthSigner signer, String host, int port, ObjectMapper mapper) {
-        HttpClientConfig httpClientConfig = HttpClientConfig.newBuilder().build();
-        HttpClientFactory httpClientFactory = new HttpClientFactoryProvider()
-            .createHttpClientFactory(Arrays.<HttpClientConfiguration>asList(httpClientConfig), false);
-        HttpClient httpClient = httpClientFactory.createClient(signer, host, port);
-        HttpRequestHelper requestHelper = new HttpRequestHelper(httpClient, mapper);
-        return requestHelper;
-    }
 }

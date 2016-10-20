@@ -44,7 +44,7 @@ public class AsyncLookupService {
 
         ClusterFilter clusterFilter = new ClusterFilter(contains, null, 0, 100_000);
         if (remotePort != -1) {
-            HttpRequestHelper helper = HttpRequestHelperUtils.buildRequestHelper(null, remoteHost, remotePort);
+            HttpRequestHelper helper = HttpRequestHelperUtils.buildRequestHelper(false, false, null, remoteHost, remotePort);
             return helper.executeRequest(clusterFilter, "/upena/cluster/find", ClusterResults.class, new ClusterResults());
         } else {
             return upenaStore.clusters.find(clusterFilter);
@@ -63,7 +63,7 @@ public class AsyncLookupService {
         int remotePort, String contains) throws Exception {
         HostFilter hostsFilter = new HostFilter(contains, null, null, null, null, 0, 100_000);
         if (remotePort != -1) {
-            HttpRequestHelper helper = HttpRequestHelperUtils.buildRequestHelper(null, remoteHost, remotePort);
+            HttpRequestHelper helper = HttpRequestHelperUtils.buildRequestHelper(false, false, null, remoteHost, remotePort);
             return helper.executeRequest(hostsFilter, "/upena/host/find", HostResults.class, new HostResults());
         } else {
             return upenaStore.hosts.find(hostsFilter);
@@ -82,7 +82,7 @@ public class AsyncLookupService {
         int remotePort, String contains) throws Exception {
         ServiceFilter serviceFilter = new ServiceFilter(contains, null, 0, 100_000);
         if (remotePort != -1) {
-            HttpRequestHelper helper = HttpRequestHelperUtils.buildRequestHelper(null, remoteHost, remotePort);
+            HttpRequestHelper helper = HttpRequestHelperUtils.buildRequestHelper(false, false, null, remoteHost, remotePort);
             return helper.executeRequest(serviceFilter, "/upena/service/find", ServiceResults.class, new ServiceResults());
         } else {
             return upenaStore.services.find(serviceFilter);
@@ -101,7 +101,7 @@ public class AsyncLookupService {
         int remotePort, String contains) throws Exception {
         ReleaseGroupFilter releasesFilter = new ReleaseGroupFilter(contains, null, null, null, null, 0, 100_000);
         if (remotePort != -1) {
-            HttpRequestHelper helper = HttpRequestHelperUtils.buildRequestHelper(null, remoteHost, remotePort);
+            HttpRequestHelper helper = HttpRequestHelperUtils.buildRequestHelper(false, false, null, remoteHost, remotePort);
             return helper.executeRequest(releasesFilter, "/upena/releaseGroup/find", ReleaseGroupResults.class, new ReleaseGroupResults());
         } else {
             return upenaStore.releaseGroups.find(releasesFilter);

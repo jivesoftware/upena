@@ -7,12 +7,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
-import com.jivesoftware.os.routing.bird.http.client.HttpClient;
-import com.jivesoftware.os.routing.bird.http.client.HttpClientConfig;
-import com.jivesoftware.os.routing.bird.http.client.HttpClientConfiguration;
-import com.jivesoftware.os.routing.bird.http.client.HttpClientFactory;
-import com.jivesoftware.os.routing.bird.http.client.HttpClientFactoryProvider;
 import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelper;
+import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelperUtils;
 import com.jivesoftware.os.routing.bird.http.client.OAuthSigner;
 import com.jivesoftware.os.routing.bird.shared.ConnectionHealth;
 import com.jivesoftware.os.routing.bird.shared.InstanceConnectionHealth;
@@ -42,7 +38,6 @@ import com.jivesoftware.os.upena.shared.ServiceKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
 import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -822,7 +817,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
                     try {
                         Long last = nodeRecency.get(nodeKey);
                         long sinceTimestampMillis = last == null ? 0 : last;
-                        HttpRequestHelper requestHelper = buildRequestHelper(signer, ringHost.getHost(), ringHost.getPort());
+                        HttpRequestHelper requestHelper = HttpRequestHelperUtils.buildRequestHelper(false, false, signer, ringHost.getHost(), ringHost.getPort());
                         RouteHealths routeHealths = requestHelper.executeGetRequest("/routes/health/" + sinceTimestampMillis, RouteHealths.class, null);
                         for (InstanceConnectionHealth routeHealth : routeHealths.getRouteHealths()) {
                             discoveredRoutes.connectionHealth(routeHealth);
@@ -832,7 +827,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
                     }
 
                     try {
-                        HttpRequestHelper requestHelper = buildRequestHelper(signer, ringHost.getHost(), ringHost.getPort());
+                        HttpRequestHelper requestHelper = HttpRequestHelperUtils.buildRequestHelper(false, false, signer, ringHost.getHost(), ringHost.getPort());
                         Routes routes = requestHelper.executeGetRequest("/routes/instances", Routes.class, null);
                         nodeRoutes.put(ringHost, routes);
                     } catch (Exception x) {
@@ -848,15 +843,6 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
             }
         }
         return allRoutes;
-    }
-
-    HttpRequestHelper buildRequestHelper(OAuthSigner signer, String host, int port) {
-        HttpClientConfig httpClientConfig = HttpClientConfig.newBuilder().setSocketTimeoutInMillis(10_000).build();
-        HttpClientFactory httpClientFactory = new HttpClientFactoryProvider()
-            .createHttpClientFactory(Arrays.<HttpClientConfiguration>asList(httpClientConfig), false);
-        HttpClient httpClient = httpClientFactory.createClient(signer, host, port);
-        HttpRequestHelper requestHelper = new HttpRequestHelper(httpClient, new ObjectMapper());
-        return requestHelper;
     }
 
 }

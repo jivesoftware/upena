@@ -8,13 +8,8 @@ import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.routing.bird.endpoints.base.HasUI;
 import com.jivesoftware.os.routing.bird.endpoints.base.HasUI.UI;
-import com.jivesoftware.os.routing.bird.http.client.HttpClient;
-import com.jivesoftware.os.routing.bird.http.client.HttpClientConfig;
-import com.jivesoftware.os.routing.bird.http.client.HttpClientConfiguration;
-import com.jivesoftware.os.routing.bird.http.client.HttpClientFactory;
-import com.jivesoftware.os.routing.bird.http.client.HttpClientFactoryProvider;
 import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelper;
-import com.jivesoftware.os.routing.bird.http.client.OAuthSigner;
+import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelperUtils;
 import com.jivesoftware.os.routing.bird.shared.InstanceDescriptor;
 import com.jivesoftware.os.upena.amza.shared.AmzaInstance;
 import com.jivesoftware.os.upena.amza.shared.RingHost;
@@ -40,7 +35,6 @@ import com.jivesoftware.os.upena.shared.TimestampedValue;
 import java.awt.Color;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -902,7 +896,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
             if (currentlyExecuting.putIfAbsent(ringHost, true) == null) {
                 executorService.submit(() -> {
                     try {
-                        HttpRequestHelper requestHelper = buildRequestHelper(null, ringHost.getHost(), ringHost.getPort());
+                        HttpRequestHelper requestHelper = HttpRequestHelperUtils.buildRequestHelper(false, false, null, ringHost.getHost(), ringHost.getPort());
                         UpenaEndpoints.NodeHealth nodeHealth = requestHelper.executeGetRequest("/health/instance", UpenaEndpoints.NodeHealth.class, null);
                         nodeHealths.put(ringHost, nodeHealth);
 
@@ -930,15 +924,6 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
             }
         }
         return nodeHealths;
-    }
-
-    HttpRequestHelper buildRequestHelper(OAuthSigner signer, String host, int port) {
-        HttpClientConfig httpClientConfig = HttpClientConfig.newBuilder().setSocketTimeoutInMillis(10_000).build();
-        HttpClientFactory httpClientFactory = new HttpClientFactoryProvider()
-            .createHttpClientFactory(Arrays.<HttpClientConfiguration>asList(httpClientConfig), false);
-        HttpClient httpClient = httpClientFactory.createClient(signer, host, port);
-        HttpRequestHelper requestHelper = new HttpRequestHelper(httpClient, new ObjectMapper());
-        return requestHelper;
     }
 
     String getHEXTrafficlightColor(double value, float sat) {
@@ -984,7 +969,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
         try {
             Instance.Port port = instance.ports.get("manage");
             if (port != null) {
-                HttpRequestHelper requestHelper = buildRequestHelper(null, host.hostName, port.port);
+                HttpRequestHelper requestHelper = HttpRequestHelperUtils.buildRequestHelper(port.sslEnabled, true, null, host.hostName, port.port);
                 HasUI hasUI = requestHelper.executeGetRequest("/manage/hasUI", HasUI.class, null);
                 if (hasUI != null) {
                     List<Map<String, String>> namedUIs = new ArrayList<>();
