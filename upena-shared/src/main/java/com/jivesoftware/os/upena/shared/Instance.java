@@ -22,6 +22,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -63,7 +64,7 @@ public class Instance implements Stored<Instance>, Serializable {
         this.locked = locked;
         this.publicKey = publicKey;
         this.restartTimestampGMTMillis = restartTimestampGMTMillis;
-        this.ports = ports;
+        this.ports = ports == null ? new ConcurrentHashMap<>() : ports;
     }
 
     @Override

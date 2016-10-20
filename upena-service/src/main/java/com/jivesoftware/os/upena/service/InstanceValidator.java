@@ -53,18 +53,20 @@ public class InstanceValidator implements UpenaValueValidator<InstanceKey, Insta
     }
 
     Instance populatePorts(Set<Integer> usedPorts, Instance value) {
-        int lastPort = minPort;
-        for (String portName : new String[]{Instance.PORT_MAIN, Instance.PORT_MANAGE, Instance.PORT_JMX, Instance.PORT_DEBUG}) {
-            Instance.Port port = value.ports.get(portName);
-            if (port == null) {
-                port = new Instance.Port();
-                port.properties.put("connectionTimeoutMillis", "30000");
-                port.port = nextFreePort(usedPorts, lastPort);
-                lastPort = port.port;
-                value.ports.put(portName, port);
-            } else if (usedPorts.contains(port.port)) {
-                port.port = nextFreePort(usedPorts, lastPort);
-                lastPort = port.port;
+        if (value.ports != null) {
+            int lastPort = minPort;
+            for (String portName : new String[]{Instance.PORT_MAIN, Instance.PORT_MANAGE, Instance.PORT_JMX, Instance.PORT_DEBUG}) {
+                Instance.Port port = value.ports.get(portName);
+                if (port == null) {
+                    port = new Instance.Port();
+                    port.properties.put("connectionTimeoutMillis", "30000");
+                    port.port = nextFreePort(usedPorts, lastPort);
+                    lastPort = port.port;
+                    value.ports.put(portName, port);
+                } else if (usedPorts.contains(port.port)) {
+                    port.port = nextFreePort(usedPorts, lastPort);
+                    lastPort = port.port;
+                }
             }
         }
         return value;
