@@ -146,6 +146,7 @@ public class Nanny {
         InstanceDescriptor got = instanceDescriptor.get();
         if (got != null && !got.equals(id)) {
             instancePath.writeInstanceDescriptor(ubaCoordinate, id);
+            ensureCerts(id);
             startupId.incrementAndGet();
             unexpectedRestartTimestamp.set(-1);
             redeploy.set(true);
