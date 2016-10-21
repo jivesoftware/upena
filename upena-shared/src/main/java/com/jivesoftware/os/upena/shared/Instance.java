@@ -111,21 +111,27 @@ public class Instance implements Stored<Instance>, Serializable {
     public static class Port implements Serializable {
 
         public boolean sslEnabled;
+        public boolean serviceAuthEnabled;
         public int port;
         public Map<String, String> properties = new HashMap<>();
 
         public Port() {
         }
 
-        public Port(boolean sslEnabled, int port, Map<String, String> properties) {
+        public Port(boolean sslEnabled,
+            boolean serviceAuthEnabled,
+            int port,
+            Map<String, String> properties) {
+
             this.sslEnabled = sslEnabled;
+            this.serviceAuthEnabled = serviceAuthEnabled;
             this.port = port;
             this.properties = properties;
         }
 
         @Override
         public String toString() {
-            return "Port{" + "sslEnabled=" + sslEnabled + ", port=" + port + ", properties=" + properties + '}';
+            return "Port{" + "sslEnabled=" + sslEnabled + ", serviceAuthEnabled=" + serviceAuthEnabled + ", port=" + port + ", properties=" + properties + '}';
         }
 
     }

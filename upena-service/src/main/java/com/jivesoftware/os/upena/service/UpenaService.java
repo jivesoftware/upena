@@ -212,6 +212,7 @@ public class UpenaService {
                             connections.add(new ConnectionDescriptor(
                                 instanceDescriptor,
                                 port.sslEnabled,
+                                port.serviceAuthEnabled,
                                 new HostPort(host.hostName, port.port),
                                 properties,
                                 null)
@@ -297,7 +298,7 @@ public class UpenaService {
 
         for (Entry<String, Instance.Port> p : instance.ports.entrySet()) {
             Port value = p.getValue();
-            instanceDescriptor.ports.put(p.getKey(), new InstanceDescriptor.InstanceDescriptorPort(value.sslEnabled, value.port));
+            instanceDescriptor.ports.put(p.getKey(), new InstanceDescriptor.InstanceDescriptorPort(value.sslEnabled, value.serviceAuthEnabled, value.port));
         }
 
         return instanceDescriptor;
