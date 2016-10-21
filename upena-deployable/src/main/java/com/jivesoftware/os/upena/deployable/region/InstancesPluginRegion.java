@@ -46,7 +46,7 @@ import org.apache.commons.lang.time.DurationFormatUtils;
 // soy.page.instancesPluginRegion
 public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionInput> {
 
-    private static final MetricLogger log = MetricLoggerFactory.getLogger();
+    private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
     private final String template;
     private final String simpleTemplate;
@@ -92,13 +92,15 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
         final String releaseKey;
         final String release;
         final boolean sslEnabled;
+        final boolean serviceAuthEnabled;
         final boolean enabled;
         final String intervalUnits;
         final String interval;
         final String action;
 
         public InstancesPluginRegionInput(String key, String clusterKey, String cluster, String hostKey, String host, String serviceKey, String service,
-            String instanceId, String releaseKey, String release, boolean sslEnabled, boolean enabled, String intervalUnits, String interval, String action) {
+            String instanceId, String releaseKey, String release, boolean sslEnabled, boolean serviceAuthEnabled, boolean enabled, String intervalUnits,
+            String interval, String action) {
             this.key = key;
             this.clusterKey = clusterKey;
             this.cluster = cluster;
@@ -110,6 +112,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
             this.releaseKey = releaseKey;
             this.release = release;
             this.sslEnabled = sslEnabled;
+            this.serviceAuthEnabled = serviceAuthEnabled;
             this.enabled = enabled;
             this.intervalUnits = intervalUnits;
             this.interval = interval;
@@ -152,6 +155,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
             filters.put("releaseKey", input.releaseKey);
             filters.put("release", input.release);
             filters.put("sslEnabled", input.sslEnabled);
+            filters.put("serviceAuthEnabled", input.serviceAuthEnabled);
             filters.put("enabled", input.enabled);
             data.put("filters", filters);
 
@@ -236,7 +240,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
             data.put("instances", rows);
 
         } catch (Exception e) {
-            log.error("Unable to retrieve data", e);
+            LOG.error("Unable to retrieve data", e);
         }
         return data;
     }
@@ -564,6 +568,9 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
                     updatedInstance.ports.get("main").sslEnabled = input.sslEnabled;
                     updatedInstance.ports.get("manage").sslEnabled = input.sslEnabled;
 
+                    updatedInstance.ports.get("main").serviceAuthEnabled = input.serviceAuthEnabled;
+                    updatedInstance.ports.get("manage").serviceAuthEnabled = input.serviceAuthEnabled;
+
                     upenaStore.instances.update(new InstanceKey(input.key), updatedInstance);
 
                     upenaStore.record(user, "updated", System.currentTimeMillis(), "", "instance-ui", instanceToHumanReadableString(instance) + "\n"
@@ -640,9 +647,9 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
         }
         map.put("ports", ports);
         map.put("enabled", value.enabled);
-        
-        boolean sslEnabled = value.ports.get("main").sslEnabled;
-        map.put("sslEnabled", sslEnabled);
+
+        map.put("sslEnabled", value.ports.get("main").sslEnabled);
+        map.put("serviceAuthEnabled", value.ports.get("main").serviceAuthEnabled);
 
         Cluster cluster = upenaStore.clusters.get(value.clusterKey);
         Host host = upenaStore.hosts.get(value.hostKey);
@@ -692,6 +699,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
         public String instanceId;
         public String portName;
         public boolean sslEnabled;
+        public boolean serviceAuthEnabled;
         public int port;
         public String propertyName;
         public String propertyValue;
@@ -699,10 +707,12 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
         public PortUpdate() {
         }
 
-        public PortUpdate(String instanceId, String portName, boolean sslEnabled, int port, String propertyName, String propertyValue) {
+        public PortUpdate(String instanceId, String portName, boolean sslEnabled, boolean serviceAuthEnabled, int port, String propertyName,
+            String propertyValue) {
             this.instanceId = instanceId;
             this.portName = portName;
             this.sslEnabled = sslEnabled;
+            this.serviceAuthEnabled = serviceAuthEnabled;
             this.port = port;
             this.propertyName = propertyName;
             this.propertyValue = propertyValue;
@@ -710,8 +720,8 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
 
         @Override
         public String toString() {
-            return "PortUpdate{" + "instanceId=" + instanceId + ", portName=" + portName + ", sslEnabled=" + sslEnabled + ", port=" + port
-                + ", propertyName=" + propertyName + ", propertyValue=" + propertyValue + '}';
+            return "PortUpdate{" + "instanceId=" + instanceId + ", portName=" + portName + ", sslEnabled=" + sslEnabled
+                + ", serviceAuthEnabled=" + serviceAuthEnabled + ", port=" + port + ", propertyName=" + propertyName + ", propertyValue=" + propertyValue + '}';
         }
 
     }
@@ -722,7 +732,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
 
         Port port = instance.ports.get(update.portName);
         if (port == null) {
-            port = new Port(update.sslEnabled, update.port, new HashMap<>());
+            port = new Port(update.sslEnabled, update.serviceAuthEnabled, update.port, new HashMap<>());
             if (update.propertyName != null && !update.propertyName.isEmpty()) {
                 port.properties.put(update.propertyName, update.propertyValue);
             }

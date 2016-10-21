@@ -289,7 +289,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
                         nodes.put(value.hostKey.toString(), n);
                         String title = title(cluster, host, null, null, null);
                         n.focusHtml = title + "<br>" + instancesPluginRegion.renderSimple(user, new InstancesPluginRegion.InstancesPluginRegionInput(
-                            "", "", "", value.hostKey.getKey(), host.name, "", "", "", "", "", false, false, "", "", "filter"));
+                            "", "", "", value.hostKey.getKey(), host.name, "", "", "", "", "", false, false, false, "", "", "filter"));
 
                         /*
                          n.focusHtml = hostsPluginRegion.render(user,
@@ -313,7 +313,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
                         nodes.put(value.serviceKey.toString(), n);
                         String title = title(cluster, host, service, null, null);
                         n.focusHtml = title + "<br>" + instancesPluginRegion.renderSimple(user, new InstancesPluginRegion.InstancesPluginRegionInput(
-                            "", "", "", "", "", value.serviceKey.toString(), service.name, "", "", "", false, false, "", "", "filter"));
+                            "", "", "", "", "", value.serviceKey.toString(), service.name, "", "", "", false, false, false, "", "", "filter"));
                         fs -= 2;
 
                         n.maxHealth = Math.max(n.maxHealth, serviceHealth);

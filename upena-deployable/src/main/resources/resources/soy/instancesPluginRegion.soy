@@ -38,6 +38,7 @@
                 <th>Status</th>
                 <th>Enabled</th>
                 <th>SSL</th>
+                <th>SAuth</th>
                 <th>Cluster</th>
                 <th>Host</th>
                 <th>Service</th>
@@ -61,6 +62,9 @@
                         </td>
                         <td bgcolor>
                             <input class="form-control" type="checkbox" name="sslEnabled" value="true" {if $filters.sslEnabled}checked="checked"{/if}>
+                        </td>
+                        <td bgcolor>
+                            <input class="form-control" type="checkbox" name="serviceAuthEnabled" value="true" {if $filters.serviceAuthEnabled}checked="checked"{/if}>
                         </td>
                         <td>
                             <div>
@@ -137,6 +141,9 @@
                         </td>
                         <td>
                             <input class="form-control" type="checkbox" name="sslEnabled" value="true" {if $i.sslEnabled}checked="checked"{/if}>
+                        </td>
+                        <td>
+                            <input class="form-control" type="checkbox" name="serviceAuthEnabled" value="true" {if $i.serviceAuthEnabled}checked="checked"{/if}>
                         </td>
                         <td>
                             <div>

@@ -112,6 +112,7 @@ public class ChaosService {
                         ConnectionDescriptor newConnectionDescriptor = new ConnectionDescriptor(
                             connectionDescriptor.getInstanceDescriptor(),
                             connectionDescriptor.getSslEnabled(),
+                            connectionDescriptor.getServiceAuthEnabled(),
                             connectionDescriptor.getHostPort(),
                             connectionDescriptor.getProperties(),
                             newMonkeys);
@@ -132,6 +133,7 @@ public class ChaosService {
                         ConnectionDescriptor newConnectionDescriptor = new ConnectionDescriptor(
                             connectionDescriptor.getInstanceDescriptor(),
                             connectionDescriptor.getSslEnabled(),
+                            connectionDescriptor.getServiceAuthEnabled(),
                             newHostPort,
                             connectionDescriptor.getProperties(),
                             connectionDescriptor.getMonkeys());
@@ -150,6 +152,7 @@ public class ChaosService {
                         ConnectionDescriptor newConnectionDescriptor = new ConnectionDescriptor(
                             connectionDescriptor.getInstanceDescriptor(),
                             connectionDescriptor.getSslEnabled(),
+                            connectionDescriptor.getServiceAuthEnabled(),
                             newHostPort,
                             connectionDescriptor.getProperties(),
                             connectionDescriptor.getMonkeys());
@@ -191,6 +194,7 @@ public class ChaosService {
                         ConnectionDescriptor newConnectionDescriptor = new ConnectionDescriptor(
                             monkeyConnectionsArray[i].getInstanceDescriptor(),
                             monkeyConnectionsArray[i].getSslEnabled(),
+                            monkeyConnectionsArray[i].getServiceAuthEnabled(),
                             monkeyConnectionsArray[i].getHostPort(),
                             monkeyConnectionsArray[i].getProperties(),
                             monkeyConnectionsArray[i].getMonkeys());
@@ -238,6 +242,7 @@ public class ChaosService {
                                             ConnectionDescriptor newConnectionDescriptor = new ConnectionDescriptor(
                                                 connectionDescriptor.getInstanceDescriptor(),
                                                 connectionDescriptor.getSslEnabled(),
+                                                connectionDescriptor.getServiceAuthEnabled(),
                                                 new HostPort(
                                                     ChaosStateHelper.IPV4_DEV_NULL,
                                                     connectionDescriptor.getHostPort().getPort()),
@@ -322,6 +327,7 @@ public class ChaosService {
                             ConnectionDescriptor newConnectionDescriptor = new ConnectionDescriptor(
                                 connectionDescriptor.getInstanceDescriptor(),
                                 connectionDescriptor.getSslEnabled(),
+                                connectionDescriptor.getServiceAuthEnabled(),
                                 new HostPort(
                                     ChaosStateHelper.IPV4_DEV_NULL,
                                     connectionDescriptor.getHostPort().getPort()),

@@ -102,7 +102,10 @@ public class InstancePath {
 
                     String portSslKey = portKey.substring(0, portKey.length() - 4) + "SslEnabled";
                     boolean sslEnabled = Boolean.valueOf(properties.getProperty(portSslKey, "false"));
-                    id.ports.put(portName, new InstanceDescriptor.InstanceDescriptorPort(sslEnabled, port));
+
+                    String serviceAuthEnabledKey = portKey.substring(0, portKey.length() - 4) + "ServiceAuthEnabled";
+                    boolean serviceAuthEnabled = Boolean.valueOf(properties.getProperty(serviceAuthEnabledKey, "false"));
+                    id.ports.put(portName, new InstanceDescriptor.InstanceDescriptorPort(sslEnabled, serviceAuthEnabled, port));
                 }
             }
         }
@@ -139,6 +142,7 @@ public class InstancePath {
         for (Entry<String, InstanceDescriptor.InstanceDescriptorPort> port : id.ports.entrySet()) {
             properties.add(instancePrefix + port.getKey() + "Port=" + port.getValue().port);
             properties.add(instancePrefix + port.getKey() + "SslEnabled=" + port.getValue().sslEnabled);
+            properties.add(instancePrefix + port.getKey() + "ServiceAuthEnabled=" + port.getValue().serviceAuthEnabled);
         }
 
         FileUtils.writeLines(instanceProperties(), "UTF-8", properties, "\n", false);
