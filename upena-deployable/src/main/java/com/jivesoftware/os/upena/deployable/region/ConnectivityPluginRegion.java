@@ -633,8 +633,8 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
                 health.put("from", from);
                 health.put("fromColor", healthPluginRegion.idColorRGB(((float) fromNode.id / (float) nodes.size()), 1f));
 
-                health.put("to",
-                    value.connectionDescriptor.getInstanceDescriptor().serviceName + "(" + value.connectionDescriptor.getInstanceDescriptor().instanceName + ")");
+                String serviceName = value.connectionDescriptor.getInstanceDescriptor().serviceName;
+                health.put("to", serviceName + "(" + value.connectionDescriptor.getInstanceDescriptor().instanceName + ")");
 
                 Node toNode = nodes.get(value.connectionDescriptor.getInstanceDescriptor().serviceName);
                 health.put("toColor", healthPluginRegion.idColorRGB(((float) toNode.id / (float) nodes.size()), 1f));
@@ -670,6 +670,8 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
 
                 health.put("host", value.connectionDescriptor.getHostPort().getHost());
                 health.put("port", value.connectionDescriptor.getHostPort().getPort());
+                health.put("sslEnabled", value.connectionDescriptor.getSslEnabled());
+                health.put("serviceAuthEnabled", value.connectionDescriptor.getServiceAuthEnabled());
                 health.put("instanceKey", value.connectionDescriptor.getInstanceDescriptor().instanceKey);
 
                 healths.add(health);
