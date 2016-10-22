@@ -1019,7 +1019,8 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
 
         List<String> ports = new ArrayList<>();
         for (Map.Entry<String, InstanceDescriptor.InstanceDescriptorPort> port : id.ports.entrySet()) {
-            ports.add(port.getKey() + "=" + port.getValue().port);
+            ports.add(port.getKey() + "=" + port.getValue().port
+                +" "+ ((port.getValue().sslEnabled) ? "SSL" : "")+" "+((port.getValue().serviceAuthEnabled) ? "SAUTH" : ""));
         }
         data.put("ports", ports);
         data.put("log", nannyHealth.log);

@@ -182,6 +182,10 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
                     handleRestartAllNow(user, filter);
                 } else if (input.action.equals("enable")) {
                     handleEnable(user, filter);
+                } else if (input.action.equals("enableSSL")) {
+                    handleEnableSSL(user, filter);
+                } else if (input.action.equals("enableSAUTH")) {
+                    handleEnableSAUTH(user, filter);
                 } else if (input.action.equals("disable")) {
                     handleDisable(user, filter);
                 } else if (input.action.equals("restartAll")) {
@@ -289,6 +293,45 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
         }
         if (!enable.isEmpty()) {
             upenaStore.record(user, "enabled", System.currentTimeMillis(), "", "instance-ui", enable.toString());
+        }
+    }
+
+    private void handleEnableSSL(String user, InstanceFilter filter) throws Exception {
+        List<String> enable = new ArrayList<>();
+        Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(filter);
+        for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {
+            InstanceKey key = entrySet.getKey();
+            TimestampedValue<Instance> timestampedValue = entrySet.getValue();
+            Instance instance = timestampedValue.getValue();
+            if (!instance.ports.get("main").sslEnabled) {
+                instance.ports.get("main").sslEnabled = true;
+                instance.ports.get("manage").sslEnabled = true;
+                upenaStore.instances.update(key, instance);
+                enable.add(instanceToHumanReadableString(instance));
+            }
+        }
+        if (!enable.isEmpty()) {
+            upenaStore.record(user, "enabledSSL", System.currentTimeMillis(), "", "instance-ui", enable.toString());
+        }
+    }
+
+
+    private void handleEnableSAUTH(String user, InstanceFilter filter) throws Exception {
+        List<String> enable = new ArrayList<>();
+        Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(filter);
+        for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {
+            InstanceKey key = entrySet.getKey();
+            TimestampedValue<Instance> timestampedValue = entrySet.getValue();
+            Instance instance = timestampedValue.getValue();
+            if (!instance.ports.get("main").serviceAuthEnabled) {
+                instance.ports.get("main").serviceAuthEnabled = true;
+                instance.ports.get("manage").serviceAuthEnabled = true;
+                upenaStore.instances.update(key, instance);
+                enable.add(instanceToHumanReadableString(instance));
+            }
+        }
+        if (!enable.isEmpty()) {
+            upenaStore.record(user, "enabledSAUTH", System.currentTimeMillis(), "", "instance-ui", enable.toString());
         }
     }
 
