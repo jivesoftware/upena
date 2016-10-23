@@ -9,50 +9,47 @@
  * @param? threadDumps
  */
 {template .jvmPluginRegion}
-    <div class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.9);">
-        <div class="panel-heading panel-heading"><span class="panel-title">JVM</span></div>
-        <div class="panel-body">
-
-            <table class="table table-hover table-condensed table-responsive">
-                <thead>
-                    <tr>
-                        <th>Host</th>
-                        <th>Port</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr style="background-color:#ddd;">
-                        <form id="add-ring-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
-                        data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="addRingHost">
-                            <td>
-                                <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                class="form-control" placeholder="Host" value="{$host}"
-                                name="host" id="hostPicker" data-original-title="" title="">
-                            </td>
-                            <td>
-                                <input type="number" name="port" min="1" max="65536" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                class="form-control" placeholder="Port" value="{$port}" id="portPicker"
-                                data-original-title="" title="">
-                            </td>
-                            <td>
-                                <button title="memoryHisto" type="submit" name="action" value="memoryHisto" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
-                                    <span class="glyphicon glyphicon-play">&nbspLive Histo</span>
-                                    </button>
-                                <button title="threadDump" type="submit" name="action" value="threadDump" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
-                                        <span class="glyphicon glyphicon-play">&nbspThead Dump</span>
-                                    </button>
-                            <td>
-                        </form>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+    <div class="upena-panel">
+        <div class="upena-title"><span class="panel-title">JVM</span></div>
+        
+        <table class="table table-hover table-condensed table-responsive">
+            <thead>
+                <tr>
+                    <th>Host</th>
+                    <th>Port</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr style="background-color:#ddd;">
+                    <form id="add-ring-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                    data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="addRingHost">
+                        <td>
+                            <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                            class="form-control" placeholder="Host" value="{$host}"
+                            name="host" id="hostPicker" data-original-title="" title="">
+                        </td>
+                        <td>
+                            <input type="number" name="port" min="1" max="65536" autocomplete="off" role="combobox" style="padding-left:10px;"
+                            class="form-control" placeholder="Port" value="{$port}" id="portPicker"
+                            data-original-title="" title="">
+                        </td>
+                        <td>
+                            <button title="memoryHisto" type="submit" name="action" value="memoryHisto" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                                <span class="glyphicon glyphicon-play">&nbspLive Histo</span>
+                                </button>
+                            <button title="threadDump" type="submit" name="action" value="threadDump" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                                    <span class="glyphicon glyphicon-play">&nbspThead Dump</span>
+                                </button>
+                        <td>
+                    </form>
+                </tr>
+            </tbody>
+        </table>
     </div>
     {if $instanceCounts}
-    <div class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.9);">
-        <div class="panel-heading panel-heading"><span class="panel-title">Live Histo</span></div>
-            <div class="panel-body">
+        <div class="upena-panel">
+            <div class="upena-title"><span class="panel-title">Live Histo</span></div>
             <ol>
                 {foreach $ic in $instanceCounts}
                     <li>
@@ -61,48 +58,44 @@
                 {/foreach}
             </ol>
         </div>
-    </div>
     {/if}
     {if $threadDumps}
-        <div class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.9);">
-            <div class="panel-heading panel-heading"><span class="panel-title">Thread Dump</span></div>
-                <div class="panel-body">
-                    {foreach $threadDump in $threadDumps}
-                        <ul class="list-group" style="list-style-type:none">
-                            {foreach $t in $threadDump}
-                                {let $icon}
-                                    {if strContains($t.type,'thread')}
-                                        road
-                                    {elseif strContains($t.type,'monitor')}
-                                        lock
-                                    {else}
-                                        menu-hamburger
-                                    {/if}
-                                {/let}
-                                {let $alert}
-                                    {if strContains($t.type,'thread')}
-                                        success
-                                    {elseif strContains($t.type,'monitor')}
-                                        warning
-                                    {else}
-                                    {/if}
-                                {/let}
-                                {let $pad}
-                                    {if strContains($t.type,'thread')}
-                                    {elseif strContains($t.type,'monitor')}
-                                        &nbsp;&nbsp;&nbsp;&nbsp;
-                                    {else}
-                                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                    {/if}
-                                {/let}
-                                <li class="list-group-item {if $alert}list-group-item-{$alert}{/if}">
-                                    {$pad|noAutoescape}<span class="glyphicon glyphicon-{$icon}" aria-hidden="true">{$t.value}</span>
-                                </li>
-                            {/foreach}
-                        </ul>
+        <div class="upena-panel">
+            <div class="upena-title"><span class="panel-title">Thread Dump</span></div>
+            {foreach $threadDump in $threadDumps}
+                <ul class="list-group" style="list-style-type:none">
+                    {foreach $t in $threadDump}
+                        {let $icon}
+                            {if strContains($t.type,'thread')}
+                                road
+                            {elseif strContains($t.type,'monitor')}
+                                lock
+                            {else}
+                                menu-hamburger
+                            {/if}
+                        {/let}
+                        {let $alert}
+                            {if strContains($t.type,'thread')}
+                                success
+                            {elseif strContains($t.type,'monitor')}
+                                warning
+                            {else}
+                            {/if}
+                        {/let}
+                        {let $pad}
+                            {if strContains($t.type,'thread')}
+                            {elseif strContains($t.type,'monitor')}
+                                &nbsp;&nbsp;&nbsp;&nbsp;
+                            {else}
+                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            {/if}
+                        {/let}
+                        <li class="list-group-item {if $alert}list-group-item-{$alert}{/if}">
+                            {$pad|noAutoescape}<span class="glyphicon glyphicon-{$icon}" aria-hidden="true">{$t.value}</span>
+                        </li>
                     {/foreach}
-                </div>
-            </div>
+                </ul>
+            {/foreach}
         </div>
     {/if}
 

@@ -12,6 +12,10 @@ body {
     padding: 0 0 0 0;
 }
 
+body {
+    padding: 0 0 0 0;
+}
+
 .table-borderless tbody tr td, .table-borderless tbody tr th, .table-borderless thead tr th {
     border: none;
 }
@@ -108,7 +112,7 @@ body {
     background-repeat: no-repeat;
     background-position: center center;
     background-size: cover;
-    background-color: #013CBC;
+    background-color: #d0d0d0;
 }
 
 /* Used by event stream */
@@ -116,7 +120,16 @@ div.pad {
     padding: 3px;
 }
 
+div.upena-title {
+    background-color: #337ab7;
+    padding: 10px 10px;
+}
 
+div.upena-panel {
+    border-left: 10px solid #337ab7;
+    border-top: 15px solid #337ab7;
+    height: 100%;
+}
 
 div.health-age {
 }

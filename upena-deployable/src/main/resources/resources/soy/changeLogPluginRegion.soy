@@ -7,89 +7,87 @@
  */
 {template .changeLogPluginRegion}
     {if $log}
-        <div class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.9);">
-            <div class="panel-heading"><span class="panel-title">Change Log</span></div>
-                <div class="panel-body">
-                    {if $message}
-                        <pre>{$message}</pre>
-                    {/if}
-                    <table class="table table-condensed table-hover table-responsive">
-                        <thead>
-                            <tr>
-                                <th>When</th>
-                                <th>Who</th>
-                                <th>What</th>
-                                <th>Where</th>
-                                <th>Why</th>
-                                <th>How</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <form id="add-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
-                                method="post">
-                                <tr class="well">
-                                    <td>
-                                        <input type="text" style="padding-left:10px;"
-                                        placeholder="When" value="{$filters.when?:''}" name="when" id="whenPicker" class="form-control">
-                                    </td>
-                                    <td>
-                                        <input type="text" style="padding-left:10px;"
-                                        placeholder="Who" value="{$filters.who?:''}" name="who" id="whoPicker" class="form-control">
-                                    </td>
-                                    <td>
-                                        <input type="text" style="padding-left:10px;"
-                                        placeholder="What" value="{$filters.what?:''}" name="what" id="whatPicker" class="form-control">
-                                    </td>
-                                    <td>
-                                        <input type="text" style="padding-left:10px;"
-                                        placeholder="Where" value="{$filters.where?:''}" name="where" id="whyPicker" class="form-control">
-                                    </td>
-                                    <td>
-                                        <input type="text" style="padding-left:10px;"
-                                        placeholder="Why" value="{$filters.why?:''}" name="why" id="whyPicker" class="form-control">
-                                    </td>
-                                    <td>
-                                        <input type="text" style="padding-left:10px;"
-                                        placeholder="How" value="{$filters.how?:''}" name="how" id="howPicker" class="form-control">
-                                    </td>
-                                    <td>
-                                        <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-search">&nbspFilter</span></button>
-                                    <td>
-                                </tr>
-                            </form>
+        <div class="upena-panel">
+            <div class="upena-title"><span class="panel-title">Change Log</span></div>
+                
+            {if $message}
+                <pre>{$message}</pre>
+            {/if}
+            <table class="table table-condensed table-hover table-responsive">
+                <thead>
+                    <tr>
+                        <th>When</th>
+                        <th>Who</th>
+                        <th>What</th>
+                        <th>Where</th>
+                        <th>Why</th>
+                        <th>How</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <form id="add-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                        method="post">
+                        <tr class="well">
+                            <td>
+                                <input type="text" style="padding-left:10px;"
+                                placeholder="When" value="{$filters.when?:''}" name="when" id="whenPicker" class="form-control">
+                            </td>
+                            <td>
+                                <input type="text" style="padding-left:10px;"
+                                placeholder="Who" value="{$filters.who?:''}" name="who" id="whoPicker" class="form-control">
+                            </td>
+                            <td>
+                                <input type="text" style="padding-left:10px;"
+                                placeholder="What" value="{$filters.what?:''}" name="what" id="whatPicker" class="form-control">
+                            </td>
+                            <td>
+                                <input type="text" style="padding-left:10px;"
+                                placeholder="Where" value="{$filters.where?:''}" name="where" id="whyPicker" class="form-control">
+                            </td>
+                            <td>
+                                <input type="text" style="padding-left:10px;"
+                                placeholder="Why" value="{$filters.why?:''}" name="why" id="whyPicker" class="form-control">
+                            </td>
+                            <td>
+                                <input type="text" style="padding-left:10px;"
+                                placeholder="How" value="{$filters.how?:''}" name="how" id="howPicker" class="form-control">
+                            </td>
+                            <td>
+                                <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-search">&nbspFilter</span></button>
+                            <td>
+                        </tr>
+                    </form>
 
-                            {foreach $l in $log}
-                                <form id="edit-host" class="j-form" data-active-class="btn-default"
-                                    method="post">
-                                    <tr>    
-                                        <td>
-                                            {$l.when}
-                                        </td>
-                                        <td>
-                                            {$l.who}
-                                        </td>
-                                        <td>
-                                            {$l.what}
-                                        </td>
-                                        <td style="word-wrap:break-word">
-                                            {$l.where}
-                                        </td>
-                                        <td style="word-wrap:break-word">
-                                            {$l.why}
-                                        </td>
-                                        <td style="word-wrap:break-word">
-                                            {$l.how}
-                                        </td>
-                                        <td>
-                                        </td>
-                                    </tr>
-                                </form>
-                            {/foreach}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+                    {foreach $l in $log}
+                        <form id="edit-host" class="j-form" data-active-class="btn-default"
+                            method="post">
+                            <tr>    
+                                <td>
+                                    {$l.when}
+                                </td>
+                                <td>
+                                    {$l.who}
+                                </td>
+                                <td>
+                                    {$l.what}
+                                </td>
+                                <td style="word-wrap:break-word">
+                                    {$l.where}
+                                </td>
+                                <td style="word-wrap:break-word">
+                                    {$l.why}
+                                </td>
+                                <td style="word-wrap:break-word">
+                                    {$l.how}
+                                </td>
+                                <td>
+                                </td>
+                            </tr>
+                        </form>
+                    {/foreach}
+                </tbody>
+            </table>
         </div>
     {/if}
 {/template}

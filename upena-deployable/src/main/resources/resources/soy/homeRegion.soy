@@ -8,21 +8,16 @@
     <div style="text-align:center;padding: 100px 100px 100px 100px;">
         <img src="/static/img/icon.png"></img>
     </div>
-    <div class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.9);">
-        <div class="panel-heading">About</div>
-            
-            <div class="panel-body">
-                Expand this cluster by running the following on a new node:<br><br>
-                wget -O upena.jar {$wgetURL}<br>
+    <div class="upena-panel">
+        Expand this cluster by running the following on a new node:<br><br>
+        wget -O upena.jar {$wgetURL}<br>
 
-                Basic:<br>
-                nohup java -jar upena.jar `hostname` {$upenaClusterName} &amp;
+        Basic:<br>
+        nohup java -jar upena.jar `hostname` {$upenaClusterName} &amp;
 
-                Advanced:<br>
-                nohup java -Dhost.datacenter=<datacenterName> -Dhost.rack=<rackName/availability zone> -classpath "/usr/java/latest/lib/tools.jar:./upena.jar" com.jivesoftware.os.upena.deployable.UpenaMain <hostname> <clusterName>
-                <br><br>
-                Then go to the 'Upena' tab on the cluster you want to merge with and add the new member.
-            </div>
-        </div>
+        Advanced:<br>
+        nohup java -Dhost.datacenter=<datacenterName> -Dhost.rack=<rackName/availability zone> -classpath "/usr/java/latest/lib/tools.jar:./upena.jar" com.jivesoftware.os.upena.deployable.UpenaMain <hostname> <clusterName>
+        <br><br>
+        Then go to the 'Upena' tab on the cluster you want to merge with and add the new member.
     </div>
 {/template}

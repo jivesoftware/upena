@@ -7,122 +7,119 @@
  */
 {template .hostsPluginRegion}
     {if $hosts}
-        <div class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.9);">
-            <div class="panel-heading"><span class="panel-title">Hosts</span></div>
-                <div class="panel-body">
-                    {if $message}
-                        <pre>{$message}</pre>
-                    {/if}
-                    <table class="table table-hover table-condensed table-responsive">
-                        <thead>
-                            <tr>
-                                <th>Instances</th>
-                                <th>Id</th>
-                                <th>Host</th>
-                                <th>Port</th>
-                                <th>Dir</th>
-                                <th>Public Address</th>
-                                <th>Datacenter</th>
-                                <th>Rack</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <form id="add-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
-                                data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="addHost">
-                                <tr style="background-color:#ddd;">
-                                    <td>
-                                    </td>
-                                    <td>
-                                        <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                        placeholder="Instance Id" value="{$filters.instanceId?:''}" name="instanceId" id="namePicker" class="form-control">
-                                    </td>
-                                    <td style="width:400px;">
-                                        <div>
-                                            <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                                    placeholder="Host" value="{$filters.host?:''}" name="host" id="hostPicker" class="form-control">
-                                        <div>
-                                    </td>
-                                    <td>
-                                        <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                        placeholder="Port" value="{$filters.port?:''}" name="port" id="portPicker" class="form-control">
-                                    </td>
-                                    <td>
-                                        <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                        placeholder="WorkingDirectory" value="{$filters.workingDirectory?:''}" name="workingDirectory" id="workingDirectoryPicker" class="form-control">
-                                    </td>
-                                    <td>
-                                        <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                        placeholder="Public Address" value="{$filters.name?:''}" name="name" id="namePicker" class="form-control">
-                                    </td>
-                                    <td>
-                                        <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                        placeholder="Datacenter" value="{$filters.datacenter?:''}" name="datacenter" id="namePicker" class="form-control">
-                                    </td>
-                                    <td>
-                                        <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                        placeholder="Rack" value="{$filters.rack?:''}" name="rack" id="namePicker" class="form-control">
-                                    </td>
-                                    <td>
-                                        <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary"><span class="glyphicon glyphicon-search ladda-button"  data-spinner-color="#222" data-style="expand-right">&nbspFilter</span></button>
-                                        <button title="Add" type="submit" name="action" value="add" class="btn btn-default"><span class="glyphicon glyphicon-plus ladda-button"  data-spinner-color="#222" data-style="expand-right">&nbspAdd</span></button>
-                                    <td>
-                                </tr>
-                            </form>
+        <div class="upena-panel">
+            <div class="upena--title"><span class="panel-title">Hosts</span></div>
+            {if $message}
+                <pre>{$message}</pre>
+            {/if}
+            <table class="table table-hover table-condensed table-responsive">
+                <thead>
+                    <tr>
+                        <th>Instances</th>
+                        <th>Id</th>
+                        <th>Host</th>
+                        <th>Port</th>
+                        <th>Dir</th>
+                        <th>Public Address</th>
+                        <th>Datacenter</th>
+                        <th>Rack</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <form id="add-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                        data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="addHost">
+                        <tr style="background-color:#ddd;">
+                            <td>
+                            </td>
+                            <td>
+                                <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                placeholder="Instance Id" value="{$filters.instanceId?:''}" name="instanceId" id="namePicker" class="form-control">
+                            </td>
+                            <td style="width:400px;">
+                                <div>
+                                    <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                            placeholder="Host" value="{$filters.host?:''}" name="host" id="hostPicker" class="form-control">
+                                <div>
+                            </td>
+                            <td>
+                                <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                placeholder="Port" value="{$filters.port?:''}" name="port" id="portPicker" class="form-control">
+                            </td>
+                            <td>
+                                <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                placeholder="WorkingDirectory" value="{$filters.workingDirectory?:''}" name="workingDirectory" id="workingDirectoryPicker" class="form-control">
+                            </td>
+                            <td>
+                                <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                placeholder="Public Address" value="{$filters.name?:''}" name="name" id="namePicker" class="form-control">
+                            </td>
+                            <td>
+                                <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                placeholder="Datacenter" value="{$filters.datacenter?:''}" name="datacenter" id="namePicker" class="form-control">
+                            </td>
+                            <td>
+                                <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                placeholder="Rack" value="{$filters.rack?:''}" name="rack" id="namePicker" class="form-control">
+                            </td>
+                            <td>
+                                <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary"><span class="glyphicon glyphicon-search ladda-button"  data-spinner-color="#222" data-style="expand-right">&nbspFilter</span></button>
+                                <button title="Add" type="submit" name="action" value="add" class="btn btn-default"><span class="glyphicon glyphicon-plus ladda-button"  data-spinner-color="#222" data-style="expand-right">&nbspAdd</span></button>
+                            <td>
+                        </tr>
+                    </form>
 
-                            {foreach $h in $hosts}
-                                <form id="edit-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
-                                    data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="editHost">
-                                    <tr>
-                                         <td>
-                                             <ul style="list-style-type:none">
-                                                {foreach $ic in $h.instanceCounts}
-                                                    <li style="background-color:rgba({$ic.color},0.4);"><span class="badge">{$ic.count}</span>&nbsp;&nbsp;{$ic.name}</li>
-                                                {/foreach}
-                                            </ul>
-                                        </td>
-                                        <td>
-                                            <input disabled type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                            placeholder="Id" value="{$h.instanceId}" name="instanceId" id="namePicker" class="form-control">
-                                        </td>
-                                        <td style="width:400px;">
-                                            <div>
-                                                <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                                    placeholder="Host" value="{$h.host}" name="host" id="hostPicker" class="form-control">
-                                            </div>
-                                        </td>
-                                        <td style="width:100px;">
-                                            <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                            placeholder="Port" value="{$h.port}" name="port" id="portPicker" class="form-control">
-                                        </td>
-                                        <td>
-                                            <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                            placeholder="WorkingDirectory" value="{$h.workingDirectory}" name="workingDirectory" id="workingDirectoryPicker" class="form-control">
-                                        </td>
-                                        <td>
-                                            <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                            placeholder="Name" value="{$h.name}" name="name" id="namePicker" class="form-control">
-                                        </td>
-                                        <td>
-                                            <input disabled  type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                            placeholder="Name" value="{$h.datacenter}" name="datacenter" id="namePicker" class="form-control">
-                                        </td>
-                                        <td>
-                                            <input disabled type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                            placeholder="Name" value="{$h.rack}" name="rack" id="namePicker" class="form-control">
-                                        </td>
-                                        <td>
-                                            <input type="hidden" name="key" value="{$h.key}">
-                                            <button title="Update" type="submit" name="action" value="update" class="btn btn-default"><span class="glyphicon glyphicon-save">&nbspUpdate</span></button>
-                                            <button onclick="return confirm('Are you sure you want to delete?')" title="Remove" type="submit" name="action" value="remove" class="btn btn-default"><span class="glyphicon glyphicon-trash">&nbspRemove</span></button>
-                                        <td>
-                                    </tr>
-                                </form>
-                            {/foreach}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+                    {foreach $h in $hosts}
+                        <form id="edit-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                            data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="editHost">
+                            <tr>
+                                 <td>
+                                     <ul style="list-style-type:none">
+                                        {foreach $ic in $h.instanceCounts}
+                                            <li style="background-color:rgba({$ic.color},0.4);"><span class="badge">{$ic.count}</span>&nbsp;&nbsp;{$ic.name}</li>
+                                        {/foreach}
+                                    </ul>
+                                </td>
+                                <td>
+                                    <input disabled type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                    placeholder="Id" value="{$h.instanceId}" name="instanceId" id="namePicker" class="form-control">
+                                </td>
+                                <td style="width:400px;">
+                                    <div>
+                                        <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                            placeholder="Host" value="{$h.host}" name="host" id="hostPicker" class="form-control">
+                                    </div>
+                                </td>
+                                <td style="width:100px;">
+                                    <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                    placeholder="Port" value="{$h.port}" name="port" id="portPicker" class="form-control">
+                                </td>
+                                <td>
+                                    <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                    placeholder="WorkingDirectory" value="{$h.workingDirectory}" name="workingDirectory" id="workingDirectoryPicker" class="form-control">
+                                </td>
+                                <td>
+                                    <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                    placeholder="Name" value="{$h.name}" name="name" id="namePicker" class="form-control">
+                                </td>
+                                <td>
+                                    <input disabled  type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                    placeholder="Name" value="{$h.datacenter}" name="datacenter" id="namePicker" class="form-control">
+                                </td>
+                                <td>
+                                    <input disabled type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                    placeholder="Name" value="{$h.rack}" name="rack" id="namePicker" class="form-control">
+                                </td>
+                                <td>
+                                    <input type="hidden" name="key" value="{$h.key}">
+                                    <button title="Update" type="submit" name="action" value="update" class="btn btn-default"><span class="glyphicon glyphicon-save">&nbspUpdate</span></button>
+                                    <button onclick="return confirm('Are you sure you want to delete?')" title="Remove" type="submit" name="action" value="remove" class="btn btn-default"><span class="glyphicon glyphicon-trash">&nbspRemove</span></button>
+                                <td>
+                            </tr>
+                        </form>
+                    {/foreach}
+                </tbody>
+            </table>
         </div>
     {/if}
 {/template}
