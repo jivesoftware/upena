@@ -9,285 +9,282 @@
  */
 {template .projectsPluginRegion}
     {if $projects}
-        <div class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.9);">
-                <div class="panel-heading"><span class="panel-title">Projects</span></div>
-                <div class="panel-body">
-                    {if $message}
-                        <pre>{$message}</pre>
-                    {/if}
-                    <table class="table table-hover table-condensed table-responsive">
-                        <tr>
-                            <th>Status</th>
-                            <th>Name</th>
-                            <th>Versions</th>
-                            <th>Services</th>
-                            <th>Actions</th>
-                        </tr>
-                        <tr style="background-color:#ddd;">
-                            <form id="add-project" method="post" name="addHost">
-                                <td>
-                                </td>
-                                <td>
-                                    <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                        placeholder="Name" value="{$filters.name?:''}" name="name" id="namePicker" class="form-control">
-                                </td>
-                                <td>
-                                </td>
-                                <td>
-                                </td>
-                                <td>
-                                    <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-search">&nbsp;Filter</span></button>
-                                    <button title="Add" type="submit" name="action" value="add" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-plus">&nbsp;Add</span></button>
-                                </td>
-                            </form>
-                        </tr>
+        <div class="upena-panel">
+        <div class="upena-heading"><span class="upena-title">Projects</span></div>
+            {if $message}
+                <pre>{$message}</pre>
+            {/if}
+            <table class="table table-hover float-table-head table-condensed table-responsive">
+                <tr>
+                    <th>Status</th>
+                    <th>Name</th>
+                    <th>Versions</th>
+                    <th>Services</th>
+                    <th>Actions</th>
+                </tr>
+                <tr style="background-color:#ddd;">
+                    <form id="add-project" method="post" name="addHost">
+                        <td>
+                        </td>
+                        <td>
+                            <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                placeholder="Name" value="{$filters.name?:''}" name="name" id="namePicker" class="form-control">
+                        </td>
+                        <td>
+                        </td>
+                        <td>
+                        </td>
+                        <td>
+                            <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-search">&nbsp;Filter</span></button>
+                            <button title="Add" type="submit" name="action" value="add" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-plus">&nbsp;Add</span></button>
+                        </td>
+                    </form>
+                </tr>
 
-                        {foreach $c in $projects}
-                            <tr>
-                                <td>
-                                    <form style="display: inline;" id="control-build" method="post" name="editHost">
+                {foreach $c in $projects}
+                    <tr>
+                        <td>
+                            <form style="display: inline;" id="control-build" method="post" name="editHost">
+                                <input type="hidden" name="key" value="{$c.key}">
+                                {if $c.running}
+                                    <button style="display: inline;" title="Stop" type="submit" name="action" value="cancel" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                                        <span class="glyphicon glyphicon-stop"></span>
+                                    </button>
+                                {else}
+                                    <button  style="display: inline;" title="Build" type="submit" name="action" value="build" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                                        <span class="glyphicon glyphicon-play"></span>
+                                    </button>
+                                {/if}
+                            </form>
+                            <a href="projects/output/{$c.key}"  style="display: inline;"  class="btn btn-default">
+                                <span class="glyphicon glyphicon-list" aria-hidden="true">&nbsp;Output&nbsp;</span>
+                                <span class="label label-{$c.status}">{if $c.elapse}{$c.elapse}{/if}</span>
+                            </a>
+                            <div style="display: inline;">
+                                <a href="#" rel="popover" id="popoverAnchor-git-{$c.key}" data-popover-content="#popover-git-{$c.key}" data-placement="bottom" class="btn btn-default" title="Git">
+                                    <span class="{if $c.gitStatus.hasUncommittedChanges}label label-warning{else}label label-success{/if}">Git</span>
+                                </a>
+                            </div>
+                            <div id="popover-git-{$c.key}" class="hide">
+                                <form id="edit-git-{$c.key}"  method="post" name="git">
+                                    <div>
                                         <input type="hidden" name="key" value="{$c.key}">
-                                        {if $c.running}
-                                            <button style="display: inline;" title="Stop" type="submit" name="action" value="cancel" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
-                                                <span class="glyphicon glyphicon-stop"></span>
-                                            </button>
-                                        {else}
-                                            <button  style="display: inline;" title="Build" type="submit" name="action" value="build" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
-                                                <span class="glyphicon glyphicon-play"></span>
+                                        {if $c.gitStatus.hasUncommittedChanges}
+                                            <button  style="display: inline;" title="gitResetHardHead" type="submit" name="action" value="gitResetHardHead" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                                                <span class="glyphicon glyphicon-play">Reset Hard Head</span>
                                             </button>
                                         {/if}
-                                    </form>
-                                    <a href="projects/output/{$c.key}"  style="display: inline;"  class="btn btn-default">
-                                        <span class="glyphicon glyphicon-list" aria-hidden="true">&nbsp;Output&nbsp;</span>
-                                        <span class="label label-{$c.status}">{if $c.elapse}{$c.elapse}{/if}</span>
-                                    </a>
-                                    <div style="display: inline;">
-                                        <a href="#" rel="popover" id="popoverAnchor-git-{$c.key}" data-popover-content="#popover-git-{$c.key}" data-placement="bottom" class="btn btn-default" title="Git">
-                                            <span class="{if $c.gitStatus.hasUncommittedChanges}label label-warning{else}label label-success{/if}">Git</span>
-                                        </a>
-                                    </div>
-                                    <div id="popover-git-{$c.key}" class="hide">
-                                        <form id="edit-git-{$c.key}"  method="post" name="git">
-                                            <div>
-                                                <input type="hidden" name="key" value="{$c.key}">
-                                                {if $c.gitStatus.hasUncommittedChanges}
-                                                    <button  style="display: inline;" title="gitResetHardHead" type="submit" name="action" value="gitResetHardHead" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
-                                                        <span class="glyphicon glyphicon-play">Reset Hard Head</span>
-                                                    </button>
-                                                {/if}
-                                                {if $c.gitStatus}
-                                                    {if $c.gitStatus.added}
-                                                        <ul style="list-style-type:none;">
-                                                            <li>Added</li>
-                                                            <li><ul>
-                                                                {foreach $g in $c.gitStatus.added}
-                                                                    <li>{$g}</li>
-                                                                {/foreach}
-                                                            </li><ul>
-                                                        </ul>
-                                                    {/if}
-                                                    {if $c.gitStatus.changed}
-                                                        <ul style="list-style-type:none;">
-                                                            <li>Changed</li>
-                                                            <li><ul>
-                                                                {foreach $g in $c.gitStatus.changed}
-                                                                    <li>{$g}</li>
-                                                                {/foreach}
-                                                            </li><ul>
-                                                        </ul>
-                                                    {/if}
-                                                    {if $c.gitStatus.conflicting}
-                                                        <ul style="list-style-type:none;">
-                                                            <li>Conflicting</li>
-                                                            <li><ul>
-                                                                {foreach $g in $c.gitStatus.conflicting}
-                                                                    <li>{$g}</li>
-                                                                {/foreach}
-                                                            </li><ul>
-                                                        </ul>
-                                                    {/if}
-                                                    {if $c.gitStatus.missing}
-                                                        <ul style="list-style-type:none;">
-                                                            <li>Missing</li>
-                                                            <li><ul>
-                                                                {foreach $g in $c.gitStatus.missing}
-                                                                    <li>{$g}</li>
-                                                                {/foreach}
-                                                            </li><ul>
-                                                        </ul>
-                                                    {/if}
-                                                    {if $c.gitStatus.modified}
-                                                        <ul style="list-style-type:none;">
-                                                            <li>Modified</li>
-                                                            <li><ul>
-                                                                {foreach $g in $c.gitStatus.modified}
-                                                                    <li>{$g}</li>
-                                                                {/foreach}
-                                                            </li><ul>
-                                                        </ul>
-                                                    {/if}
-                                                    {if $c.gitStatus.removed}
-                                                        <ul style="list-style-type:none;">
-                                                            <li>Removed</li>
-                                                            <li><ul>
-                                                                {foreach $g in $c.gitStatus.removed}
-                                                                    <li>{$g}</li>
-                                                                {/foreach}
-                                                            </li><ul>
-                                                        </ul>
-                                                    {/if}
-                                                    {if $c.gitStatus.uncommited}
-                                                        <ul style="list-style-type:none;">
-                                                            <li>Uncommited</li>
-                                                            <li><ul>
-                                                                {foreach $g in $c.gitStatus.uncommited}
-                                                                    <li>{$g}</li>
-                                                                {/foreach}
-                                                            </li><ul>
-                                                        </ul>
-                                                    {/if}
-                                                    {if $c.gitStatus.untracked}
-                                                        <ul style="list-style-type:none;">
-                                                            <li>Untracked</li>
-                                                            <li><ul>
-                                                                {foreach $g in $c.gitStatus.untracked}
-                                                                    <li>{$g}</li>
-                                                                {/foreach}
-                                                            </li><ul>
-                                                        </ul>
-                                                    {/if}
-                                                    {if $c.gitStatus.untrackedFolders}
-                                                        <ul style="list-style-type:none;">
-                                                            <li>Untracked Folders</li>
-                                                            <li><ul>
-                                                                {foreach $g in $c.gitStatus.untrackedFolders}
-                                                                    <li>{$g}</li>
-                                                                {/foreach}
-                                                            </li><ul>
-                                                        </ul>
-                                                    {/if}
+                                        {if $c.gitStatus}
+                                            {if $c.gitStatus.added}
+                                                <ul style="list-style-type:none;">
+                                                    <li>Added</li>
+                                                    <li><ul>
+                                                        {foreach $g in $c.gitStatus.added}
+                                                            <li>{$g}</li>
+                                                        {/foreach}
+                                                    </li><ul>
+                                                </ul>
+                                            {/if}
+                                            {if $c.gitStatus.changed}
+                                                <ul style="list-style-type:none;">
+                                                    <li>Changed</li>
+                                                    <li><ul>
+                                                        {foreach $g in $c.gitStatus.changed}
+                                                            <li>{$g}</li>
+                                                        {/foreach}
+                                                    </li><ul>
+                                                </ul>
+                                            {/if}
+                                            {if $c.gitStatus.conflicting}
+                                                <ul style="list-style-type:none;">
+                                                    <li>Conflicting</li>
+                                                    <li><ul>
+                                                        {foreach $g in $c.gitStatus.conflicting}
+                                                            <li>{$g}</li>
+                                                        {/foreach}
+                                                    </li><ul>
+                                                </ul>
+                                            {/if}
+                                            {if $c.gitStatus.missing}
+                                                <ul style="list-style-type:none;">
+                                                    <li>Missing</li>
+                                                    <li><ul>
+                                                        {foreach $g in $c.gitStatus.missing}
+                                                            <li>{$g}</li>
+                                                        {/foreach}
+                                                    </li><ul>
+                                                </ul>
+                                            {/if}
+                                            {if $c.gitStatus.modified}
+                                                <ul style="list-style-type:none;">
+                                                    <li>Modified</li>
+                                                    <li><ul>
+                                                        {foreach $g in $c.gitStatus.modified}
+                                                            <li>{$g}</li>
+                                                        {/foreach}
+                                                    </li><ul>
+                                                </ul>
+                                            {/if}
+                                            {if $c.gitStatus.removed}
+                                                <ul style="list-style-type:none;">
+                                                    <li>Removed</li>
+                                                    <li><ul>
+                                                        {foreach $g in $c.gitStatus.removed}
+                                                            <li>{$g}</li>
+                                                        {/foreach}
+                                                    </li><ul>
+                                                </ul>
+                                            {/if}
+                                            {if $c.gitStatus.uncommited}
+                                                <ul style="list-style-type:none;">
+                                                    <li>Uncommited</li>
+                                                    <li><ul>
+                                                        {foreach $g in $c.gitStatus.uncommited}
+                                                            <li>{$g}</li>
+                                                        {/foreach}
+                                                    </li><ul>
+                                                </ul>
+                                            {/if}
+                                            {if $c.gitStatus.untracked}
+                                                <ul style="list-style-type:none;">
+                                                    <li>Untracked</li>
+                                                    <li><ul>
+                                                        {foreach $g in $c.gitStatus.untracked}
+                                                            <li>{$g}</li>
+                                                        {/foreach}
+                                                    </li><ul>
+                                                </ul>
+                                            {/if}
+                                            {if $c.gitStatus.untrackedFolders}
+                                                <ul style="list-style-type:none;">
+                                                    <li>Untracked Folders</li>
+                                                    <li><ul>
+                                                        {foreach $g in $c.gitStatus.untrackedFolders}
+                                                            <li>{$g}</li>
+                                                        {/foreach}
+                                                    </li><ul>
+                                                </ul>
+                                            {/if}
 
-                                                {/if}
-                                            </div>
-                                        </form>
+                                        {/if}
                                     </div>
-                                </td>
-                                <td>
-                                    <div>
-                                        <a href="#" rel="popover" id="popoverAnchor-{$c.key}" data-popover-content="#popover-{$c.key}" data-placement="bottom" class="btn btn-default" title="{$c.name}">
-                                            <span class="glyphicon glyphicon-menu-down">{$c.name}</span>
-                                        </a>
-                                    </div>
-                                    <div  id="popover-{$c.key}" class="hide">
-                                        <form id="edit-project-{$c.key}" method="post" name="editProject">
-                                            <input type="hidden" name="key" value="{$c.key}">
-                                            <ul>
-                                                <li>
-                                                     name&nbsp;<input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                                        placeholder="Name" value="{$c.name}" name="name" id="namePicker" class="form-control">
-                                                 </li>
-                                                 <li>
-                                                     description&nbsp;<input type="text" size="100" style="padding-left:10px;"  name="description" value="{$c.description}">
-                                                 </li>
-                                                 <li>
-                                                     localPath&nbsp;<input type="text" size="100" style="padding-left:10px;"  name="localPath" value="{$c.localPath}">
-                                                 </li>
-                                                 <li>
-                                                     gitUrl&nbsp;<input type="text" size="100" style="padding-left:10px;"  name="scmUrl" value="{$c.scmUrl}">
-                                                 </li>
-                                                 <li>
-                                                     branch&nbsp;<input type="text" size="100" style="padding-left:10px;"  name="branch" value="{$c.branch}">
-                                                 </li>
-                                                 <li>
-                                                     pom&nbsp;<input type="text" size="100" style="padding-left:10px;"  name="pom" value="{$c.pom}">
-                                                 </li>
-                                                 <li>
-                                                     goals&nbsp;<input type="text" size="100" style="padding-left:10px;"  name="goals" value="{$c.goals}">
-                                                 </li>
-                                                 <li>
-                                                     mvnHome&nbsp;<input type="text" size="100" style="padding-left:10px;"  name="mvnHome" value="{$c.mvnHome}">
-                                                 </li>
-                                            </ul>
-                                            <button title="Update" type="submit" name="action" value="update" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
-                                                <span class="glyphicon glyphicon-save">&nbsp;Update</span>
-                                            </button>
-                                            <button title="Update" type="submit" name="action" value="clone" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
-                                                <span class="glyphicon glyphicon-backboard">&nbsp;Clone</span>
-                                            </button>
-                                        </form>
-                                    </div>
-                                </td>
-                                <td>
-                                    {if $c.hasVersionConflicts}
-                                        <div>
-                                            <a href="#" rel="popover" id="popoverAnchor-version-{$c.key}" data-popover-content="#popover-version-{$c.key}" data-placement="bottom" class="btn btn-default" title="Conflicts">
-                                                <span class="glyphicon glyphicon-warning-sign">({$c.hasVersionConflicts})&nbsp;Conflicts</span>
-                                            </a>
-                                        </div>
-                                        <div  id="popover-version-{$c.key}" class="hide">
-                                            <ul>
-                                                {foreach $vc in $c.versionConflicts}
-                                                    <li>
-                                                        {$vc.version}
-                                                        <ul>
-                                                            {foreach $v in $vc.versionUsages}
-                                                                 <li>
-                                                                    <form id="set-version-{$c.key}" method="post" name="SetVersion">
-                                                                        <input type="hidden" name="key" value="{$c.key}">
-                                                                        <input type="hidden" name="oldCoordinate" value="{$vc.version}">
-                                                                        <input type="hidden" name="newCoordinate" value="{$v.version}">
-                                                                        {$v.name}->
-                                                                        <button title="Update" type="submit" name="action" value="setVersion" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
-                                                                            <span class="glyphicon glyphicon-send">&nbsp;{$v.version}</span>
-                                                                        </button>
-                                                                    </form>
-                                                                 </li>
-                                                            {/foreach}
-                                                        </ul>
-                                                    </li>
-                                                {/foreach}
-                                            </ul>
-                                        </div>
-                                    {/if}
-                                </td>
-                                <td>
-                                    {if $c.hasReleases}
-                                        <div>
-                                            <a href="#" rel="popover" id="popoverAnchor-release-{$c.key}" data-popover-content="#popover-release-{$c.key}" data-placement="bottom" class="btn btn-default" title="Services">
-                                                <span class="glyphicon glyphicon-menu-down">({$c.hasReleases})&nbsp;Services</span>
-                                            </a>
-                                        </div>
-                                        <div  id="popover-release-{$c.key}" class="hide">
-                                            <ul>
-                                                {foreach $r in $c.releases}
-                                                    <li>
-                                                        <form id="upgrade-release-{$c.key}" method="post" name="UpgradeRelease">
-                                                            <input type="hidden" name="key" value="{$c.key}">
-                                                            {$r.name}->{$r.version}
-                                                            {if $r.alternateVersion}
-                                                                <button onclick="return confirm('Are you sure you want to upgrade?')" title="Upgrade" type="submit" name="action" value="upgradeRelease" class="btn btn-default">
-                                                                    <span class="glyphicon glyphicon-send">&nbsp;{$r.alternateVersion}</span>
+                                </form>
+                            </div>
+                        </td>
+                        <td>
+                            <div>
+                                <a href="#" rel="popover" id="popoverAnchor-{$c.key}" data-popover-content="#popover-{$c.key}" data-placement="bottom" class="btn btn-default" title="{$c.name}">
+                                    <span class="glyphicon glyphicon-menu-down">{$c.name}</span>
+                                </a>
+                            </div>
+                            <div  id="popover-{$c.key}" class="hide">
+                                <form id="edit-project-{$c.key}" method="post" name="editProject">
+                                    <input type="hidden" name="key" value="{$c.key}">
+                                    <ul>
+                                        <li>
+                                             name&nbsp;<input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                                placeholder="Name" value="{$c.name}" name="name" id="namePicker" class="form-control">
+                                         </li>
+                                         <li>
+                                             description&nbsp;<input type="text" size="100" style="padding-left:10px;"  name="description" value="{$c.description}">
+                                         </li>
+                                         <li>
+                                             localPath&nbsp;<input type="text" size="100" style="padding-left:10px;"  name="localPath" value="{$c.localPath}">
+                                         </li>
+                                         <li>
+                                             gitUrl&nbsp;<input type="text" size="100" style="padding-left:10px;"  name="scmUrl" value="{$c.scmUrl}">
+                                         </li>
+                                         <li>
+                                             branch&nbsp;<input type="text" size="100" style="padding-left:10px;"  name="branch" value="{$c.branch}">
+                                         </li>
+                                         <li>
+                                             pom&nbsp;<input type="text" size="100" style="padding-left:10px;"  name="pom" value="{$c.pom}">
+                                         </li>
+                                         <li>
+                                             goals&nbsp;<input type="text" size="100" style="padding-left:10px;"  name="goals" value="{$c.goals}">
+                                         </li>
+                                         <li>
+                                             mvnHome&nbsp;<input type="text" size="100" style="padding-left:10px;"  name="mvnHome" value="{$c.mvnHome}">
+                                         </li>
+                                    </ul>
+                                    <button title="Update" type="submit" name="action" value="update" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                                        <span class="glyphicon glyphicon-save">&nbsp;Update</span>
+                                    </button>
+                                    <button title="Update" type="submit" name="action" value="clone" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                                        <span class="glyphicon glyphicon-backboard">&nbsp;Clone</span>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                        <td>
+                            {if $c.hasVersionConflicts}
+                                <div>
+                                    <a href="#" rel="popover" id="popoverAnchor-version-{$c.key}" data-popover-content="#popover-version-{$c.key}" data-placement="bottom" class="btn btn-default" title="Conflicts">
+                                        <span class="glyphicon glyphicon-warning-sign">({$c.hasVersionConflicts})&nbsp;Conflicts</span>
+                                    </a>
+                                </div>
+                                <div  id="popover-version-{$c.key}" class="hide">
+                                    <ul>
+                                        {foreach $vc in $c.versionConflicts}
+                                            <li>
+                                                {$vc.version}
+                                                <ul>
+                                                    {foreach $v in $vc.versionUsages}
+                                                         <li>
+                                                            <form id="set-version-{$c.key}" method="post" name="SetVersion">
+                                                                <input type="hidden" name="key" value="{$c.key}">
+                                                                <input type="hidden" name="oldCoordinate" value="{$vc.version}">
+                                                                <input type="hidden" name="newCoordinate" value="{$v.version}">
+                                                                {$v.name}->
+                                                                <button title="Update" type="submit" name="action" value="setVersion" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                                                                    <span class="glyphicon glyphicon-send">&nbsp;{$v.version}</span>
                                                                 </button>
-                                                            {/if}
-                                                        </form>
-                                                    </li>
-                                                {/foreach}
-                                            </ul>
-                                        </div>
-                                    {/if}
-                                </td>
-                                <td>
-                                    <form id="project-actions" method="post" name="projectActions">
-                                        <input type="hidden" name="key" value="{$c.key}">
-                                        <button onclick="return confirm('Are you sure you want to wipe all files related to this project?')" title="Wipe" type="submit" name="action" value="wipe" class="btn btn-default"><span class="glyphicon glyphicon-erase">&nbsp;Wipe</span></button>
-                                        <button onclick="return confirm('Are you sure you want to delete?')" title="Remove" type="submit" name="action" value="remove" class="btn btn-default"><span class="glyphicon glyphicon-trash">&nbsp;Remove</span></button>
-                                    </form>
-                                </td>
-                            </tr>
-                        {/foreach}
-                    </table>
-                </div>
-            </div>
+                                                            </form>
+                                                         </li>
+                                                    {/foreach}
+                                                </ul>
+                                            </li>
+                                        {/foreach}
+                                    </ul>
+                                </div>
+                            {/if}
+                        </td>
+                        <td>
+                            {if $c.hasReleases}
+                                <div>
+                                    <a href="#" rel="popover" id="popoverAnchor-release-{$c.key}" data-popover-content="#popover-release-{$c.key}" data-placement="bottom" class="btn btn-default" title="Services">
+                                        <span class="glyphicon glyphicon-menu-down">({$c.hasReleases})&nbsp;Services</span>
+                                    </a>
+                                </div>
+                                <div  id="popover-release-{$c.key}" class="hide">
+                                    <ul>
+                                        {foreach $r in $c.releases}
+                                            <li>
+                                                <form id="upgrade-release-{$c.key}" method="post" name="UpgradeRelease">
+                                                    <input type="hidden" name="key" value="{$c.key}">
+                                                    {$r.name}->{$r.version}
+                                                    {if $r.alternateVersion}
+                                                        <button onclick="return confirm('Are you sure you want to upgrade?')" title="Upgrade" type="submit" name="action" value="upgradeRelease" class="btn btn-default">
+                                                            <span class="glyphicon glyphicon-send">&nbsp;{$r.alternateVersion}</span>
+                                                        </button>
+                                                    {/if}
+                                                </form>
+                                            </li>
+                                        {/foreach}
+                                    </ul>
+                                </div>
+                            {/if}
+                        </td>
+                        <td>
+                            <form id="project-actions" method="post" name="projectActions">
+                                <input type="hidden" name="key" value="{$c.key}">
+                                <button onclick="return confirm('Are you sure you want to wipe all files related to this project?')" title="Wipe" type="submit" name="action" value="wipe" class="btn btn-default"><span class="glyphicon glyphicon-erase">&nbsp;Wipe</span></button>
+                                <button onclick="return confirm('Are you sure you want to delete?')" title="Remove" type="submit" name="action" value="remove" class="btn btn-default"><span class="glyphicon glyphicon-trash">&nbsp;Remove</span></button>
+                            </form>
+                        </td>
+                    </tr>
+                {/foreach}
+            </table>
         </div>
     {/if}
 {/template}

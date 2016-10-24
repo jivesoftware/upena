@@ -9,63 +9,55 @@
  * @param? volumes
  */
 {template .awsPluginRegion}
-    <div class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.9);">
-        <div class="panel-heading panel-heading"><span class="panel-title">AWS {$action}</span></div>
-        <div class="panel-body">
-
-            <form id="aws-describe" method="post" name="describe">
-                <button title="Load Balancers" type="submit" name="action" value="loadBalancers" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
-                    <span class="glyphicon glyphicon-indent-left">Load Balancers</span>
-                </button>
-                <button title="Instances" type="submit" name="action" value="instances" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
-                    <span class="glyphicon glyphicon-off">Instances</span>
-                </button>
-                <button title="Volumes" type="submit" name="action" value="volumes" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
-                    <span class="glyphicon glyphicon-hdd">Volumes</span>
-                </button>
-            </form>
-        </div>
+    <div class="upena-panel">
+        <div class="upena-heading"><span class="upena-title">AWS {$action}</span></div>
+        
+        <form id="aws-describe" method="post" name="describe">
+            <button title="Load Balancers" type="submit" name="action" value="loadBalancers" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                <span class="glyphicon glyphicon-indent-left">Load Balancers</span>
+            </button>
+            <button title="Instances" type="submit" name="action" value="instances" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                <span class="glyphicon glyphicon-off">Instances</span>
+            </button>
+            <button title="Volumes" type="submit" name="action" value="volumes" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                <span class="glyphicon glyphicon-hdd">Volumes</span>
+            </button>
+        </form>
     </div>
     {if $loadBalancers}
-        <div class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.9);">
-            <div class="panel-heading panel-heading"><span class="panel-title">Load Balancers</span></div>
-            <div class="panel-body">
-                <ul class="list-group" style="list-style-type:none">
-                    {foreach $loadBalancer in $loadBalancers}
-                        <li>
-                            <pre>{$loadBalancer.toString}</pre>
-                        </li>
-                    {/foreach}
-                </ul>
-            </div>
+        <div class="upena-panel">
+            <div class="upena-heading"><span class="upena-title">Load Balancers</span></div>
+            <ul class="list-group" style="list-style-type:none">
+                {foreach $loadBalancer in $loadBalancers}
+                    <li>
+                        <pre>{$loadBalancer.toString}</pre>
+                    </li>
+                {/foreach}
+            </ul>
         </div>
     {/if}
     {if $instances}
-        <div class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.9);">
-            <div class="panel-heading panel-heading"><span class="panel-title">Instances</span></div>
-            <div class="panel-body">
-                <ul class="list-group" style="list-style-type:none">
-                    {foreach $instance in $instances}
-                        <li>
-                            <pre>{$instance.toString}</pre>
-                        </li>
-                    {/foreach}
-                </ul>
-            </div>
+        <div class="upena-panel">
+            <div class="upena-heading"><span class="upena-title">Instances</span></div>
+            <ul class="list-group" style="list-style-type:none">
+                {foreach $instance in $instances}
+                    <li>
+                        <pre>{$instance.toString}</pre>
+                    </li>
+                {/foreach}
+            </ul>
         </div>
     {/if}
     {if $volumes}
-        <div class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.9);">
-            <div class="panel-heading panel-heading"><span class="panel-title">Volumes</span></div>
-            <div class="panel-body">
-                <ul class="list-group" style="list-style-type:none">
-                    {foreach $volume in $volumes}
-                        <li>
-                            <pre>{$volume.toString}</pre>
-                        </li>
-                    {/foreach}
-                </ul>
-            </div>
+        <div class="upena-panel">
+            <div class="upena-heading"><span class="upena-title">Volumes</span></div>
+            <ul class="list-group" style="list-style-type:none">
+                {foreach $volume in $volumes}
+                    <li>
+                        <pre>{$volume.toString}</pre>
+                    </li>
+                {/foreach}
+            </ul>
         </div>
     {/if}
 

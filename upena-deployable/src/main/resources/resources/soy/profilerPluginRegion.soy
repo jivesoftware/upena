@@ -25,153 +25,152 @@
  *
  */
 {template .profilerPluginRegion}
-    <div class="panel panel-default">
-        <div class="panel-heading"><span class="panel-title">Profiler</span></div>
-            <div class="panel-body">
-                <form id="profiler" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm" method="post">
-                     
-                    <div class="well">
-                        <table>
-                            <tr>
-                                <td><img height="48" src="/static/img/latent.png"> Latent Profile for:</td>
-                                <td>
-                                    <select onChange='this.form.submit();' style="width:280px; padding-left:10px;"
-                                        class="j-tenant-autocomplete j-autocomplete-input j-ui-elem" placeholder="Service Name"
-                                        name="serviceName" id="serviceNamePicker" data-original-title="" title="">
-                                        {foreach $sn in $serviceNames}
-                                            <option value="{$sn.name}" {if $sn.name == $serviceName}selected="selected"{/if}>{$sn.name} {$sn.enabled}</option>
-                                        {/foreach}
-                                    </select>
-                                    &nbsp age:{$age}
-                                    <input onChange='this.form.submit();' type="checkbox" name="enabled" value="true" {if $enabled == 'true'}checked="checked"{/if}>
-                                </td>
-                            </tr>
-                        </table>
-                    </div>
-                    <div style="overflow-y: hidden; to overflow-x: auto;">
-                        {if $profile}
-                            <input onChange='this.form.submit();' type="image" src="{$profile}" alt="Submit">
-                        {/if}
-                    </div>
-                    {if $over}
-                        <table>
-                            <tr>
-                                <td>
-                                    {if $over.methods}
-                                        <table>
-                                             {foreach $m in $over.methods}
-                                                <tr>
-                                                    <td>
-                                                        Method:{$m.name}<br>
-                                                        Success:{$m.success}<br>
-                                                        Success Latency:{$m.successLatency}<br>
-                                                        Failed:{$m.failed}<br>
-                                                        Failed Latency:{$m.failedLatency}<br>
-                                                    </td>
-                                                </tr>
-                                             {/foreach}
-                                        </table>
-                                    {/if}
-                                </td>
-                                <td>
-                                    Interface:{$over.name}<br>
-                                    Success:{$over.success}<br>
-                                    Success Latency:{$over.successLatency}<br>
-                                    Failed:{$over.failed}<br>
-                                    Failed Latency:{$over.failedLatency}<br>
-                                </td>
-                                <td>
-                                    {if $over.calls}
-                                        <table>
-                                            {foreach $c in $over.calls}
-                                                <tr>
-                                                    <td>
-                                                        Class:{$c.className}<br>
-                                                        Method:{$c.methodName}<br>
-                                                    </td>
-                                                </tr>
-                                             {/foreach}
-                                        </table>
-                                    {/if}
-                                </td>
-                            </tr>
-                        </table>
-                    {/if}
-                    <div class="well">
-                        <table>
-                            <tr>
-                                <td>Value Strategy</td>
-                                <td>
-                                    {foreach $vs in $valueStrategies}
-                                        <input onChange='this.form.submit();' type="radio" class="j-ui-elem" value="{$vs}" name="valueStrategy" {if $vs == $valueStrategy}checked{/if}>
-                                        &nbsp; {$vs}
-                                        &nbsp; &nbsp;
-                                    {/foreach}
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Stack Strategy</td>
-                                <td>
-                                    {foreach $ss in $stackStrategies}
-                                        <input onChange='this.form.submit();' type="radio" class="j-ui-elem" value="{$ss}" name="stackStrategy" {if $ss == $stackStrategy}checked{/if}>
-                                        &nbsp; {$ss}
-                                        &nbsp; &nbsp;
-                                    {/foreach}
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Bar Strategy</td>
-                                <td>
-                                    {foreach $bs in $barStrategies}
-                                        <input onChange='this.form.submit();' type="radio" class="j-ui-elem" value="{$bs}" name="barStrategy" {if $bs == $barStrategy}checked{/if}>
-                                        &nbsp; {$bs}
-                                        &nbsp; &nbsp;
-                                    {/foreach}
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Class Name Strategy</td>
-                                <td>
-                                    {foreach $cns in $classNameStrategies}
-                                        <input onChange='this.form.submit();' type="radio" class="j-ui-elem" value="{$cns}" name="classNameStrategy" {if $cns == $classNameStrategy}checked{/if}>
-                                        &nbsp; {$cns}
-                                        &nbsp; &nbsp;
-                                    {/foreach}
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Bar Coloring</td>
-                                <td>
-                                    {foreach $c in $colorings}
-                                        <input onChange='this.form.submit();' type="radio" class="j-ui-elem" value="{$c}" name="coloring"  {if $c == $coloring}checked{/if}>
-                                        &nbsp; {$c}
-                                        &nbsp; &nbsp;
-                                    {/foreach}
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Background</td>
-                                <td>
-                                    {foreach $b in $backgrounds}
-                                        <input onChange='this.form.submit();' type="radio" class="j-ui-elem" value="{$b}" name="background"  {if $b == $background}checked{/if}>
-                                        &nbsp; {$b}
-                                        &nbsp; &nbsp;
-                                    {/foreach}
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Order</td>
-                                <td>
-                                    {foreach $so in $stackOrders}
-                                        <input onChange='this.form.submit();' type="radio" class="j-ui-elem" value="{$so}" name="stackOrder"  {if $so == $stackOrder}checked{/if}>
-                                        &nbsp; {$so}
-                                        &nbsp; &nbsp;
-                                    {/foreach}
-                                </td>
-                            </tr>
-                        </table>
-                    </div>
-                    <div class="well">                     
+    <div class="upena-panel panel-default">
+        <div class="upena-heading"><span class="upena-title">Profiler</span></div>
+        <form id="profiler" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm" method="post">
+
+            <div class="well">
+                <table>
+                    <tr>
+                        <td><img height="48" src="/static/img/latent.png"> Latent Profile for:</td>
+                        <td>
+                            <select onChange='this.form.submit();' style="width:280px; padding-left:10px;"
+                                class="j-tenant-autocomplete j-autocomplete-input j-ui-elem" placeholder="Service Name"
+                                name="serviceName" id="serviceNamePicker" data-original-title="" title="">
+                                {foreach $sn in $serviceNames}
+                                    <option value="{$sn.name}" {if $sn.name == $serviceName}selected="selected"{/if}>{$sn.name} {$sn.enabled}</option>
+                                {/foreach}
+                            </select>
+                            &nbsp age:{$age}
+                            <input onChange='this.form.submit();' type="checkbox" name="enabled" value="true" {if $enabled == 'true'}checked="checked"{/if}>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div style="overflow-y: hidden; to overflow-x: auto;">
+                {if $profile}
+                    <input onChange='this.form.submit();' type="image" src="{$profile}" alt="Submit">
+                {/if}
+            </div>
+            {if $over}
+                <table>
+                    <tr>
+                        <td>
+                            {if $over.methods}
+                                <table>
+                                     {foreach $m in $over.methods}
+                                        <tr>
+                                            <td>
+                                                Method:{$m.name}<br>
+                                                Success:{$m.success}<br>
+                                                Success Latency:{$m.successLatency}<br>
+                                                Failed:{$m.failed}<br>
+                                                Failed Latency:{$m.failedLatency}<br>
+                                            </td>
+                                        </tr>
+                                     {/foreach}
+                                </table>
+                            {/if}
+                        </td>
+                        <td>
+                            Interface:{$over.name}<br>
+                            Success:{$over.success}<br>
+                            Success Latency:{$over.successLatency}<br>
+                            Failed:{$over.failed}<br>
+                            Failed Latency:{$over.failedLatency}<br>
+                        </td>
+                        <td>
+                            {if $over.calls}
+                                <table>
+                                    {foreach $c in $over.calls}
+                                        <tr>
+                                            <td>
+                                                Class:{$c.className}<br>
+                                                Method:{$c.methodName}<br>
+                                            </td>
+                                        </tr>
+                                     {/foreach}
+                                </table>
+                            {/if}
+                        </td>
+                    </tr>
+                </table>
+            {/if}
+            <div class="well">
+                <table>
+                    <tr>
+                        <td>Value Strategy</td>
+                        <td>
+                            {foreach $vs in $valueStrategies}
+                                <input onChange='this.form.submit();' type="radio" class="j-ui-elem" value="{$vs}" name="valueStrategy" {if $vs == $valueStrategy}checked{/if}>
+                                &nbsp; {$vs}
+                                &nbsp; &nbsp;
+                            {/foreach}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Stack Strategy</td>
+                        <td>
+                            {foreach $ss in $stackStrategies}
+                                <input onChange='this.form.submit();' type="radio" class="j-ui-elem" value="{$ss}" name="stackStrategy" {if $ss == $stackStrategy}checked{/if}>
+                                &nbsp; {$ss}
+                                &nbsp; &nbsp;
+                            {/foreach}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Bar Strategy</td>
+                        <td>
+                            {foreach $bs in $barStrategies}
+                                <input onChange='this.form.submit();' type="radio" class="j-ui-elem" value="{$bs}" name="barStrategy" {if $bs == $barStrategy}checked{/if}>
+                                &nbsp; {$bs}
+                                &nbsp; &nbsp;
+                            {/foreach}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Class Name Strategy</td>
+                        <td>
+                            {foreach $cns in $classNameStrategies}
+                                <input onChange='this.form.submit();' type="radio" class="j-ui-elem" value="{$cns}" name="classNameStrategy" {if $cns == $classNameStrategy}checked{/if}>
+                                &nbsp; {$cns}
+                                &nbsp; &nbsp;
+                            {/foreach}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Bar Coloring</td>
+                        <td>
+                            {foreach $c in $colorings}
+                                <input onChange='this.form.submit();' type="radio" class="j-ui-elem" value="{$c}" name="coloring"  {if $c == $coloring}checked{/if}>
+                                &nbsp; {$c}
+                                &nbsp; &nbsp;
+                            {/foreach}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Background</td>
+                        <td>
+                            {foreach $b in $backgrounds}
+                                <input onChange='this.form.submit();' type="radio" class="j-ui-elem" value="{$b}" name="background"  {if $b == $background}checked{/if}>
+                                &nbsp; {$b}
+                                &nbsp; &nbsp;
+                            {/foreach}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Order</td>
+                        <td>
+                            {foreach $so in $stackOrders}
+                                <input onChange='this.form.submit();' type="radio" class="j-ui-elem" value="{$so}" name="stackOrder"  {if $so == $stackOrder}checked{/if}>
+                                &nbsp; {$so}
+                                &nbsp; &nbsp;
+                            {/foreach}
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="well">                     
 Example Usage:<br>
 In the Releases tab add the agent as a plugin by including it on the end of the artifacts coordinates.<br>
 <br>
@@ -180,10 +179,8 @@ GroupId:ArtifactId:Packaging:Version,com.jonathancolt.nicity:latent-profiler-age
 In Config for the service you want to profile add this line to its "flags" property.<br>
 <br>
 -javaagent:./plugin-lib/latent-profiler-agent-&lt;version&gt;.jar=localhost:&lt;cluster&gt;:&lt;service&gt;:&lt;version&gt;:&lt;packageContains,packageContains&gt;<br>
-                        
-                    </div>
-                </form>
+
             </div>
-        </div>
+        </form>
     </div>
 {/template}

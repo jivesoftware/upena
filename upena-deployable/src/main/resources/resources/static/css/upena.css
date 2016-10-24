@@ -120,9 +120,14 @@ div.pad {
     padding: 3px;
 }
 
-div.upena-title {
+
+
+div.upena-heading {
     background-color: #337ab7;
     padding: 10px 10px;
+}
+div.upena-title {
+    color: white;
 }
 
 div.upena-panel {
