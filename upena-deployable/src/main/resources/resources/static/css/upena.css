@@ -126,8 +126,9 @@ div.upena-heading {
     background-color: #337ab7;
     padding: 10px 10px;
 }
-div.upena-title {
+span.upena-title {
     color: white;
+    font-weight: bold;
 }
 
 div.upena-panel {
