@@ -9,107 +9,104 @@
  */
 {template .clustersPluginRegion}
     {if $clusters}
-        <div class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.9);">
-            <div class="panel-heading"><span class="panel-title">Clusters</span></div>
-                <div class="panel-body">
-                    {if $message}
-                        <pre>{$message}</pre>
-                    {/if}
-                    <table class="table table-hover table-condensed table-responsive">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Routing</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <form id="add-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
-                                data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="addHost">
-                                <tr style="background-color:#ddd;">
-                                    <td style="width:400px;">
-                                        <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                            placeholder="Name" value="{$filters.name?:''}" name="name" id="namePicker" class="form-control">
-                                    </td>
-                                    <td>
-                                    </td>
-                                    <td>
-                                        <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-search">&nbspFilter</span></button>
-                                        <button title="Add" type="submit" name="action" value="add" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-plus">&nbspAdd</span></button>
-                                    </td>
-                                </tr>
-                            </form>
+        <div class="upena-panel">
+            <div class="upena-title"><span class="panel-title">Clusters</span></div>
+            {if $message}
+                <pre>{$message}</pre>
+            {/if}
+            <table class="table table-hover table-condensed table-responsive">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Routing</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <form id="add-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                        data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="addHost">
+                        <tr style="background-color:#ddd;">
+                            <td style="width:400px;">
+                                <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                    placeholder="Name" value="{$filters.name?:''}" name="name" id="namePicker" class="form-control">
+                            </td>
+                            <td>
+                            </td>
+                            <td>
+                                <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-search">&nbspFilter</span></button>
+                                <button title="Add" type="submit" name="action" value="add" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-plus">&nbspAdd</span></button>
+                            </td>
+                        </tr>
+                    </form>
 
-                            {foreach $c in $clusters}
-                                <form id="edit-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
-                                    data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="editHost">
-                                    <tr>
-                                        <td style="width:400px;">
-                                            <div>
-                                                <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                                placeholder="Name" value="{$c.name}" name="name" id="namePicker" class="form-control">
-                                            </div>
-                                        </td>
-                                        <td>
-                                           
-                                            <table class="table table-condensed table-responsive">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Service</th>
-                                                        <th>Release</th>
-                                                        <th>Actions</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {foreach $r in $c.defaultReleaseGroups}
-                                                        <tr>
-                                                            <td style="background-color:rgba({$r.serviceColor},0.4);">
-                                                                <div><span class="badge">{$r.serviceCount}</span>&nbsp;&nbsp;{$r.serviceName}</div>
-                                                            </td>
-                                                            <td>
-                                                                <ul>
-                                                                    <li>{$r.releaseGroupName}</li>
-                                                                    <li>{$r.releaseGroupVersion}</li>
-                                                                </ul>
-                                                            </td>
-                                                            <td>
-                                                                <button title="Remove" onClick="upena.clusterReleaseGroups.remove('{$c.key}', '{$r.serviceKey}', '{$r.releaseGroupKey}')" class="btn btn-default"><span class="glyphicon glyphicon-trash">Remove</span></button>
-                                                            </td>
-                                                        </tr>
-                                                    {/foreach}
-                                                    <tr>
-                                                        <td>
-                                                            <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                                                placeholder="Service" value="" name="service"
-                                                                class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/services">
-                                                            <input type="hidden" name="serviceKey" id="serviceId-{$c.key}" value="{$filters.serviceKey?:''}" />
-                                                        </td>
-                                                        <td>
-                                                            <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                                                placeholder="Release" value="" name="release"
-                                                                class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/releases">
-                                                            <input type="hidden" name="releaseKey" id="releaseId-{$c.key}" value="{$filters.releaseKey?:''}" />
-                                                        </td>
-                                                        <td>
-                                                            <button title="Add" onClick="upena.clusterReleaseGroups.add('{$c.key}')" class="btn btn-default"><span class="glyphicon glyphicon-plus">&nbspAdd</span></button>
-                                                        </td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
-                                            
-                                        </td>
-                                        <td>
-                                            <input type="hidden" name="key" value="{$c.key}">
-                                            <button title="Update" type="submit" name="action" value="update" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-save">&nbspUpdate</span></button>
-                                            <button onclick="return confirm('Are you sure you want to delete?')" title="Remove" type="submit" name="action" value="remove" class="btn btn-default"><span class="glyphicon glyphicon-trash">&nbspRemove</span></button>
-                                        </td>
-                                    </tr>
-                                </form>
-                            {/foreach}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+                    {foreach $c in $clusters}
+                        <form id="edit-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                            data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="editHost">
+                            <tr>
+                                <td style="width:400px;">
+                                    <div>
+                                        <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                        placeholder="Name" value="{$c.name}" name="name" id="namePicker" class="form-control">
+                                    </div>
+                                </td>
+                                <td>
+
+                                    <table class="table table-condensed table-responsive">
+                                        <thead>
+                                            <tr>
+                                                <th>Service</th>
+                                                <th>Release</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {foreach $r in $c.defaultReleaseGroups}
+                                                <tr>
+                                                    <td style="background-color:rgba({$r.serviceColor},0.4);">
+                                                        <div><span class="badge">{$r.serviceCount}</span>&nbsp;&nbsp;{$r.serviceName}</div>
+                                                    </td>
+                                                    <td>
+                                                        <ul>
+                                                            <li>{$r.releaseGroupName}</li>
+                                                            <li>{$r.releaseGroupVersion}</li>
+                                                        </ul>
+                                                    </td>
+                                                    <td>
+                                                        <button title="Remove" onClick="upena.clusterReleaseGroups.remove('{$c.key}', '{$r.serviceKey}', '{$r.releaseGroupKey}')" class="btn btn-default"><span class="glyphicon glyphicon-trash">Remove</span></button>
+                                                    </td>
+                                                </tr>
+                                            {/foreach}
+                                            <tr>
+                                                <td>
+                                                    <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                                        placeholder="Service" value="" name="service"
+                                                        class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/services">
+                                                    <input type="hidden" name="serviceKey" id="serviceId-{$c.key}" value="{$filters.serviceKey?:''}" />
+                                                </td>
+                                                <td>
+                                                    <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                                        placeholder="Release" value="" name="release"
+                                                        class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/releases">
+                                                    <input type="hidden" name="releaseKey" id="releaseId-{$c.key}" value="{$filters.releaseKey?:''}" />
+                                                </td>
+                                                <td>
+                                                    <button title="Add" onClick="upena.clusterReleaseGroups.add('{$c.key}')" class="btn btn-default"><span class="glyphicon glyphicon-plus">&nbspAdd</span></button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+
+                                </td>
+                                <td>
+                                    <input type="hidden" name="key" value="{$c.key}">
+                                    <button title="Update" type="submit" name="action" value="update" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-save">&nbspUpdate</span></button>
+                                    <button onclick="return confirm('Are you sure you want to delete?')" title="Remove" type="submit" name="action" value="remove" class="btn btn-default"><span class="glyphicon glyphicon-trash">&nbspRemove</span></button>
+                                </td>
+                            </tr>
+                        </form>
+                    {/foreach}
+                </tbody>
+            </table>
         </div>
     {/if}
 {/template}
