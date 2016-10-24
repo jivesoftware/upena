@@ -11,39 +11,32 @@
  */
 {template .loadBalancersPluginRegion}
     {if $loadBalancers}
-        <div id="upena-loadbalancers" class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.9);">
-            <div class="panel-heading"><span class="panel-title">Load Balancers</span></div>
+        <div id="upena-loadbalancers" class="upena-panel">
+            <div class="upena-heading"><span class="upena-title">Load Balancers</span></div>
             {if $message}
                 <pre>{$message}</pre>
             {/if}
                
-            <div class="panel-body">
-                {call .loadBalancersPluginRegionList}
-                    {param loadBalancers: $loadBalancers /}
-                    {param filters: $filters /}
-                {/call}
-            </div>
+            {call .loadBalancersPluginRegionList}
+                {param loadBalancers: $loadBalancers /}
+                {param filters: $filters /}
+            {/call}
         </div>
     {/if}
     {if $unattachedLoadBalancers}
-        <div id="upena-unattachedLoadBalancers" class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.9);">
-            <div class="panel-heading"><span class="panel-title">Unattached Load Balancers</span></div>
-            <div class="panel-body">
-                {call .unattachedLoadBalancersPluginRegionList}
-                    {param unattachedLoadBalancers: $unattachedLoadBalancers /}
-                {/call}
-            </div>
+        <div id="upena-unattachedLoadBalancers" class="upena-panel">
+            <div class="upena-heading"><span class="upena-title">Unattached Load Balancers</span></div>
+            {call .unattachedLoadBalancersPluginRegionList}
+                {param unattachedLoadBalancers: $unattachedLoadBalancers /}
+            {/call}
         </div>
     {/if}
     {if $loadBalancerPools}
-        <div id="upena-loadBalancerPools" class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.9);">
-            <div class="panel-heading"><span class="panel-title">Load Balancer Pools</span></div>
-
-            <div class="panel-body">
-                {call .loadBalancerPoolsPluginRegionList}
-                    {param loadBalancerPools: $loadBalancerPools /}
-                {/call}
-            </div>
+        <div id="upena-loadBalancerPools" class="upena-panel">
+            <div class="upena-heading"><span class="upena-title">Load Balancer Pools</span></div>
+            {call .loadBalancerPoolsPluginRegionList}
+                {param loadBalancerPools: $loadBalancerPools /}
+            {/call}
         </div>
     {/if}
 

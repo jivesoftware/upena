@@ -8,78 +8,75 @@
  * @param? repo
  */
 {template .repoPluginRegion}
-    <div class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.9);">
-            <div class="panel-heading"><span class="panel-title">Repository</span></div>
-            <div class="panel-body">
-                {if $message}
-                    <pre>{$message}</pre>
-                {/if}
-                <form id="filter-repo" method="post" name="addHost">
+    <div class="upena-panel">
+        <div class="upena-heading"><span class="upena-title">Repository</span></div>
+        {if $message}
+            <pre>{$message}</pre>
+        {/if}
+        <form id="filter-repo" method="post" name="addHost">
 
-                    <table class="table table-hover table-condensed table-responsive">
-                        <thead>
-                            <tr>
-                                <th>GroupId</th>
-                                <th>ArtifactId</th>
-                                <th>Version</th>
-                                <th>File Name</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr style="background-color:#ddd;">
-                                <td>
-                                    <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                        placeholder="GroupId" value="{$filters.groupIdFilter?:''}" name="groupIdFilter" class="form-control">
-                                </td>
-                                <td>
-                                    <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                        placeholder="ArtifactId" value="{$filters.artifactIdFilter?:''}" name="artifactIdFilter" class="form-control">
-                                </td>
-                                <td>
-                                    <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                        placeholder="Version" value="{$filters.versionFilter?:''}" name="versionFilter" class="form-control">
-                                </td>
-                                <td>
-                                    <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                        placeholder="FileName" value="{$filters.fileNameFilter?:''}" name="fileNameFilter" class="form-control">
-                                </td>
-                            </tr>
-                            <tr style="background-color:#ddd;">
-                                <td colspan="4">
-                                    <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary ladda-button"  data-spinner-color="#222" data-style="expand-right">
-                                        <span class="glyphicon glyphicon-search">&nbspSearch</span>
-                                    </button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                 </form>
+            <table class="table table-hover table-condensed table-responsive">
+                <thead>
+                    <tr>
+                        <th>GroupId</th>
+                        <th>ArtifactId</th>
+                        <th>Version</th>
+                        <th>File Name</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="background-color:#ddd;">
+                        <td>
+                            <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                placeholder="GroupId" value="{$filters.groupIdFilter?:''}" name="groupIdFilter" class="form-control">
+                        </td>
+                        <td>
+                            <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                placeholder="ArtifactId" value="{$filters.artifactIdFilter?:''}" name="artifactIdFilter" class="form-control">
+                        </td>
+                        <td>
+                            <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                placeholder="Version" value="{$filters.versionFilter?:''}" name="versionFilter" class="form-control">
+                        </td>
+                        <td>
+                            <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                placeholder="FileName" value="{$filters.fileNameFilter?:''}" name="fileNameFilter" class="form-control">
+                        </td>
+                    </tr>
+                    <tr style="background-color:#ddd;">
+                        <td colspan="4">
+                            <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                                <span class="glyphicon glyphicon-search">&nbspSearch</span>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+         </form>
 
-                {if $repo}
-                    <table class="table table-hover table-borderless table-responsive">
-                        {foreach $r in $repo}
-                            <tr>
-                                <td><tt>{$r.name}</tt></td>
-                                <td>{$r.lastModified?:''}</td>
-                                <td>
-                                    <form id="edit-repo" method="post" name="remove">
-                                        <input type="hidden" name="groupIdFilter" value="{$filters.groupIdFilter?:''}" />
-                                        <input type="hidden" name="groupIdFilter" value="{$filters.groupIdFilter?:''}" />
-                                        <input type="hidden" name="artifactIdFilter" value="{$filters.artifactIdFilter?:''}" />
-                                        <input type="hidden" name="versionFilter" value="{$filters.versionFilter?:''}" />
-                                        <input type="hidden" name="fileNameFilter" value="{$r.path?:''}" />
-                                        <button onclick="return confirm('Are you sure you want to delete?')" title="Filter" type="submit" name="action" value="remove" class="btn ladda-button"  data-spinner-color="#222" data-style="expand-right">
-                                            <span class="glyphicon glyphicon-trash"></span>
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                        {/foreach}
-                     </table>
-                {else}
-                    <div><strong>Fill in the filter fields and Click Search</strong></div>
-                {/if}
-            </div>
-        </div>
+        {if $repo}
+            <table class="table table-hover table-borderless table-responsive">
+                {foreach $r in $repo}
+                    <tr>
+                        <td><tt>{$r.name}</tt></td>
+                        <td>{$r.lastModified?:''}</td>
+                        <td>
+                            <form id="edit-repo" method="post" name="remove">
+                                <input type="hidden" name="groupIdFilter" value="{$filters.groupIdFilter?:''}" />
+                                <input type="hidden" name="groupIdFilter" value="{$filters.groupIdFilter?:''}" />
+                                <input type="hidden" name="artifactIdFilter" value="{$filters.artifactIdFilter?:''}" />
+                                <input type="hidden" name="versionFilter" value="{$filters.versionFilter?:''}" />
+                                <input type="hidden" name="fileNameFilter" value="{$r.path?:''}" />
+                                <button onclick="return confirm('Are you sure you want to delete?')" title="Filter" type="submit" name="action" value="remove" class="btn ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                                    <span class="glyphicon glyphicon-trash"></span>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                {/foreach}
+             </table>
+        {else}
+            <div><strong>Fill in the filter fields and Click Search</strong></div>
+        {/if}
     </div>
 {/template}

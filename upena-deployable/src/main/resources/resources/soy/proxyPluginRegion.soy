@@ -6,68 +6,65 @@
  * @param? proxies
  */
 {template .proxyPluginRegion}
-    <div class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.9);">
-        <div class="panel-heading"><span class="panel-title">Proxies</span></div>
-            <div class="panel-body">
+    <div class="upena-panel">
+        <div class="upena-heading"><span class="upena-title">Proxies</span></div>
+            
+        <table class="table float-table-head table-hover table-condensed table-responsive">
+            <thead>
+                <tr>
+                    <th>Running</th>
+                    <th>Proxied</th>
+                    <th>Local Port</th>
+                    <th>Remote Host</th>
+                    <th>Remote Port</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <form id="add-proxy" data-active-class="btn-default" method="post" name="addProxy">
+                    <tr style="background-color:#ddd;">
+                        <td></td>
+                        <td></td>
+                        <td>
+                            <input type="number" name="localPort" min="1" max="65536" autocomplete="off" role="combobox" style="padding-left:10px;"
+                            class="form-control" placeholder="Local Port" value="" id="localPortPicker"
+                            data-original-title="" title="">
+                        </td>
+                        <td>
+                            <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                            class="form-control" placeholder="Remote Host" value=""
+                            name="remoteHost" id="remoteHostPicker" data-original-title="" title="">
+                        </td>
+                        <td>
+                            <input type="number" name="remotePort" min="1" max="65536" autocomplete="off" role="combobox" style="padding-left:10px;"
+                            class="form-control" placeholder="Remote Port" value="" id="remotePortPicker"
+                            data-original-title="" title="">
+                        </td>
+                        <input type="hidden" name="action" value="add">
+                        <td><button title="Add" type="submit" name="action" value="add" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-plus">&nbspAdd</span></button><td>
+                    </tr>
+                </form>
+                {if $proxies}
 
-                <table class="table table-hover table-condensed table-responsive">
-                    <thead>
-                        <tr>
-                            <th>Running</th>
-                            <th>Proxied</th>
-                            <th>Local Port</th>
-                            <th>Remote Host</th>
-                            <th>Remote Port</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <form id="add-proxy" data-active-class="btn-default" method="post" name="addProxy">
-                            <tr style="background-color:#ddd;">
-                                <td></td>
-                                <td></td>
-                                <td>
-                                    <input type="number" name="localPort" min="1" max="65536" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                    class="form-control" placeholder="Local Port" value="" id="localPortPicker"
-                                    data-original-title="" title="">
-                                </td>
-                                <td>
-                                    <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                    class="form-control" placeholder="Remote Host" value=""
-                                    name="remoteHost" id="remoteHostPicker" data-original-title="" title="">
-                                </td>
-                                <td>
-                                    <input type="number" name="remotePort" min="1" max="65536" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                    class="form-control" placeholder="Remote Port" value="" id="remotePortPicker"
-                                    data-original-title="" title="">
-                                </td>
-                                <input type="hidden" name="action" value="add">
-                                <td><button title="Add" type="submit" name="action" value="add" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-plus">&nbspAdd</span></button><td>
+                    {foreach $r in $proxies}
+                        <form id="remove-proxy" data-active-class="btn-default" method="post" name="removeProxy">
+                                <input type="hidden" name="localPort" value="{$r.localPort}">
+                                <input type="hidden" name="remoteHost" value="{$r.remoteHost}">
+                                <input type="hidden" name="remotePort" value="{$r.remotePort}">
+                                <input type="hidden" name="action" value="remove">
+                            <tr>
+                                <td>{$r.running}</td>
+                                <td>{$r.proxied}</td>
+                                <td>{$r.localPort}</td>
+                                <td>{$r.remoteHost}</td>
+                                <td>{$r.remotePort}</td>
+                                <td><button onclick="return confirm('Are you sure you want to delete?')" title="Remove" type="submit" name="action" value="remove" class="btn btn-default ladda-button" data-style="expand-right"><span class="glyphicon glyphicon-trash">&nbspRemove</span></button><td>
                             </tr>
                         </form>
-                        {if $proxies}
-
-                            {foreach $r in $proxies}
-                                <form id="remove-proxy" data-active-class="btn-default" method="post" name="removeProxy">
-                                        <input type="hidden" name="localPort" value="{$r.localPort}">
-                                        <input type="hidden" name="remoteHost" value="{$r.remoteHost}">
-                                        <input type="hidden" name="remotePort" value="{$r.remotePort}">
-                                        <input type="hidden" name="action" value="remove">
-                                    <tr>
-                                        <td>{$r.running}</td>
-                                        <td>{$r.proxied}</td>
-                                        <td>{$r.localPort}</td>
-                                        <td>{$r.remoteHost}</td>
-                                        <td>{$r.remotePort}</td>
-                                        <td><button onclick="return confirm('Are you sure you want to delete?')" title="Remove" type="submit" name="action" value="remove" class="btn btn-default ladda-button" data-style="expand-right"><span class="glyphicon glyphicon-trash">&nbspRemove</span></button><td>
-                                    </tr>
-                                </form>
-                            {/foreach}
-                        {/if}
-                    </tbody>
-                </table>
-            </div>
-        </div>
+                    {/foreach}
+                {/if}
+            </tbody>
+        </table>
     </div>
 {/template}
 

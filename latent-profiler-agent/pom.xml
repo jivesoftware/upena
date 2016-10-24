@@ -5,13 +5,13 @@
     <parent>
         <groupId>com.jivesoftware.os.upena.inheritance.poms</groupId>
         <artifactId>global-version-management</artifactId>
-        <version>0.673</version>
+        <version>0.674</version>
         <relativePath>../inheritance-poms/global-version-management/pom.xml</relativePath>
     </parent>
     <groupId>com.jonathancolt.nicity</groupId>
     <artifactId>latent-profiler-agent</artifactId>
     <packaging>jar</packaging>
-    <version>0.673</version>
+    <version>0.674</version>
 
 
     <build>

@@ -7,17 +7,15 @@
  */
 {template .releasesPluginRegion}
     {if $releases}
-        <div class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.9);">
-            <div class="panel-heading"><span class="panel-title">Release</span></div>
-            <div class="panel-body">
-                {if $message}
-                    <pre>{$message}</pre>
-                {/if}
-                {call .releasesPluginRegionList}
-                    {param releases: $releases /}
-                    {param filters: $filters /}
-                {/call}
-            </div>
+        <div class="upena-panel">
+            <div class="upena-heading"><span class="upena-title">Release</span></div>
+            {if $message}
+                <pre>{$message}</pre>
+            {/if}
+            {call .releasesPluginRegionList}
+                {param releases: $releases /}
+                {param filters: $filters /}
+            {/call}
         </div>
     {/if}
 {/template}
@@ -27,7 +25,7 @@
  * @param? filters
  */
 {template .releasesPluginRegionList}
-    <table class="table table-hover table-condensed table-responsive">
+    <table class="table table-hover float-table-head table-condensed table-responsive">
         <thead>
             <tr>
                 <th>Instances</th>

@@ -10,9 +10,9 @@
  */
 {template .jvmPluginRegion}
     <div class="upena-panel">
-        <div class="upena-title"><span class="panel-title">JVM</span></div>
+        <div class="upena-heading"><span class="upena-title">JVM</span></div>
         
-        <table class="table table-hover table-condensed table-responsive">
+        <table class="table table-hover float-table-head table-condensed table-responsive">
             <thead>
                 <tr>
                     <th>Host</th>
@@ -49,7 +49,7 @@
     </div>
     {if $instanceCounts}
         <div class="upena-panel">
-            <div class="upena-title"><span class="panel-title">Live Histo</span></div>
+            <div class="upena-heading"><span class="upena-title">Live Histo</span></div>
             <ol>
                 {foreach $ic in $instanceCounts}
                     <li>
@@ -61,7 +61,7 @@
     {/if}
     {if $threadDumps}
         <div class="upena-panel">
-            <div class="upena-title"><span class="panel-title">Thread Dump</span></div>
+            <div class="upena-heading"><span class="upena-title">Thread Dump</span></div>
             {foreach $threadDump in $threadDumps}
                 <ul class="list-group" style="list-style-type:none">
                     {foreach $t in $threadDump}
