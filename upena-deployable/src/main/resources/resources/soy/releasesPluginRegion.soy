@@ -26,15 +26,13 @@
  */
 {template .releasesPluginRegionList}
     <table class="table table-hover float-table-head table-condensed table-responsive">
-        <thead>
+        <thead class="upena-thead">
             <tr>
                 <th>Instances</th>
                 <th>Name</th>
                 <th>Config</th>
                 <th>Actions</th>
             </tr>
-        </thead>
-        <tbody>
             {if $filters}
                 <form id="add-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
                     data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="addHost">
@@ -60,6 +58,8 @@
                     </tr>
                 </form>
             {/if}
+        </thead>
+        <tbody>
             {foreach $r in $releases}
                 <tr>
                     <td>

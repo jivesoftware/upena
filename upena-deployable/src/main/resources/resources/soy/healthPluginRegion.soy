@@ -258,8 +258,8 @@
                                             {/if}
                                             {if $health.instances}
                                                 {foreach $i in $health.instances}
-                                                    <div class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.7);">
-                                                        <div class="panel-heading">
+                                                    <div class="upena-panel">
+                                                        <div class="upena-heading">
                                                             <span class="glyphicon glyphicon-apple"></span>{sp}
                                                             {$i.clusterName}&nbsp;-&nbsp;{$i.serviceName|noAutoescape}
                                                                             &nbsp;&nbsp;&nbsp;&nbsp;port={$i.port}
@@ -417,40 +417,38 @@
                                                                 </a>
                                                             {/if}
                                                         </div>
-                                                        <div class="panel-body" style="background-color: rgba(255, 255, 255, 0.7);">
-                                                            <ul>
-                                                                {if $health.unexpectedRestart}
-                                                                    <li><span class="label label-warning">Was unexpectedly restarted:{$health.unexpectedRestart}</span></li>
-                                                                {/if}
-                                                                {if $health.configIsStale}
-                                                                    <li>
-                                                                        <span class="label label-warning">Config is stale</span>
-                                                                        <table class="table table-condensed  float-table-head table-responsive">
-                                                                            {foreach $propertyName in keys($health.configIsStale)}
-                                                                                <tr>
-                                                                                    <td>{$propertyName}</td>
-                                                                                    <td>{$health.configIsStale[$propertyName]}</td>
-                                                                                </tr>
-                                                                            {/foreach}
-                                                                        </table>
-                                                                    </li>
-                                                                {/if}
-                                                                {if $health.healthConfigIsStale}
-                                                                    <li>
-                                                                        <span class="label label-warning">Health config is stale</span>
-                                                                        <table class="table table-condensed  float-table-head table-responsive">
-                                                                            {foreach $propertyName in keys($health.healthConfigIsStale)}
-                                                                                <tr>
-                                                                                    <td>{$propertyName}</td>
-                                                                                    <td>{$health.healthConfigIsStale[$propertyName]}</td>
-                                                                                </tr>
-                                                                            {/foreach}
-                                                                        </table>
-                                                                    </li>
-                                                                {/if}
-                                                            </ul>
-                                                            <div style="width:1200px" class="uis" ></div>
-                                                        </div>
+                                                        <ul>
+                                                            {if $health.unexpectedRestart}
+                                                                <li><span class="label label-warning">Was unexpectedly restarted:{$health.unexpectedRestart}</span></li>
+                                                            {/if}
+                                                            {if $health.configIsStale}
+                                                                <li>
+                                                                    <span class="label label-warning">Config is stale</span>
+                                                                    <table class="table table-condensed  float-table-head table-responsive">
+                                                                        {foreach $propertyName in keys($health.configIsStale)}
+                                                                            <tr>
+                                                                                <td>{$propertyName}</td>
+                                                                                <td>{$health.configIsStale[$propertyName]}</td>
+                                                                            </tr>
+                                                                        {/foreach}
+                                                                    </table>
+                                                                </li>
+                                                            {/if}
+                                                            {if $health.healthConfigIsStale}
+                                                                <li>
+                                                                    <span class="label label-warning">Health config is stale</span>
+                                                                    <table class="table table-condensed  float-table-head table-responsive">
+                                                                        {foreach $propertyName in keys($health.healthConfigIsStale)}
+                                                                            <tr>
+                                                                                <td>{$propertyName}</td>
+                                                                                <td>{$health.healthConfigIsStale[$propertyName]}</td>
+                                                                            </tr>
+                                                                        {/foreach}
+                                                                    </table>
+                                                                </li>
+                                                            {/if}
+                                                        </ul>
+                                                        <div style="width:1200px" class="uis" ></div>
                                                     </div>
                                                 {/foreach}
                                             {else}

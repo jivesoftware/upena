@@ -29,7 +29,7 @@
  */
 {template .instancesPluginRegionList}
    <table class="table table-hover float-table-head table-condensed table-responsive">
-        <thead>
+        <thead class="upena-thead">
             <tr>
                 <th>Instances</th>
                 <th>Status</th>
@@ -44,8 +44,6 @@
                 <th>Release</th>
                 <th>Actions</th>
             </tr>
-        </thead>
-        <tbody>
             <form id="filter-form" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
                 data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="instance">
                 {if $filters}
@@ -117,6 +115,9 @@
                     </tr>
                 {/if}
             </form>
+        </thead>
+        <tbody>
+            
 
             {foreach $i in $instances}
                 <form id="edit-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"

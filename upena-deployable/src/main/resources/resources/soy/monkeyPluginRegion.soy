@@ -13,7 +13,7 @@
                 <pre>{$message}</pre>
             {/if}
             <table class="table table-hover table-condensed table-responsive">
-                <thead>
+                <thead class="upena-thead">
                     <tr>
                         <th>Enabled</th>
                         <th>Cluster</th>
@@ -22,8 +22,6 @@
                         <th>Strategy</th>
                         <th>Config</th>
                     </tr>
-                </thead>
-                <tbody>
                     <form id="add-monkey" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
                         data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="addMonkey">
                         <tr style="background-color:#ddd;">
@@ -68,6 +66,9 @@
                             </td>
                         </tr>
                     </form>
+                </thead>
+                <tbody>
+                   
 
                     {foreach $m in $monkeys}
                         <form id="edit-monkey" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"

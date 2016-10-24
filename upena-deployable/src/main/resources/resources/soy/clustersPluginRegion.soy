@@ -15,14 +15,12 @@
                 <pre>{$message}</pre>
             {/if}
             <table class="table float-table-head table-hover table-condensed table-responsive">
-                <thead style="background-color: gray;">
+                <thead class="upena-thead">
                     <tr>
                         <th>Name</th>
                         <th>Routing</th>
                         <th>Actions</th>
                     </tr>
-                </thead>
-                <tbody>
                     <form id="add-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
                         data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="addHost">
                         <tr style="background-color:#ddd;">
@@ -38,6 +36,9 @@
                             </td>
                         </tr>
                     </form>
+                </thead>
+                <tbody>
+                    
 
                     {foreach $c in $clusters}
                         <form id="edit-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
