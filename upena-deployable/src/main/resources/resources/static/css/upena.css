@@ -113,6 +113,7 @@ body {
     background-position: center center;
     background-size: cover;
     background-color: #d0d0d0;
+    background-attachment: fixed;
 }
 
 /* Used by event stream */
