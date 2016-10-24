@@ -124,7 +124,7 @@ div.pad {
 
 
 div.upena-heading {
-    background-image: linear-gradient(to bottom,rgb(51, 122, 183) 0,rgba(0, 0, 0, 0) 100%);
+   background-image: linear-gradient(to top,rgb(51, 122, 183) 0,rgb(211, 225, 239) 100%);
     padding: 10px 10px;
 }
 span.upena-title {
@@ -133,8 +133,8 @@ span.upena-title {
 }
 
 div.upena-panel {
-    border-left: 10px solid #337ab7;
-    border-top: 15px solid #337ab7;
+   border-left: 10px solid rgba(51, 122, 183, 0.19);
+    border-top: 15px solid rgba(51, 122, 183, 0.2);
     height: 100%;
 }
 
