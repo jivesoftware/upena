@@ -314,8 +314,8 @@
 }
 .navmenu-inverse,
 .navbar-inverse .navbar-offcanvas {
-  background-color: #222;
-  border-color: #080808;
+  background-color: rgba(34, 34, 34, 0);
+  border-color: rgba(8, 8, 8, 0);
 }
 .navmenu-inverse .navmenu-brand,
 .navbar-inverse .navbar-offcanvas .navmenu-brand {
@@ -396,7 +396,7 @@
 .navmenu-inverse .navmenu-nav > .active > a:focus,
 .navbar-inverse .navbar-offcanvas .navmenu-nav > .active > a:focus {
   color: #fff;
-  background-color: #080808;
+  background-color: #337ab7;
 }
 .navmenu-inverse .navmenu-nav > .disabled > a,
 .navbar-inverse .navbar-offcanvas .navmenu-nav > .disabled > a,
