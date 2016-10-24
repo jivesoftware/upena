@@ -124,7 +124,7 @@ div.pad {
 
 
 div.upena-heading {
-    background-color: #337ab7;
+    background-image: linear-gradient(to bottom,rgb(51, 122, 183) 0,rgba(0, 0, 0, 0) 100%);
     padding: 10px 10px;
 }
 span.upena-title {
