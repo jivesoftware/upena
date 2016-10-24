@@ -162,7 +162,7 @@
         </li>
          {foreach $plugin in $plugins}
             {if $plugin.separator}
-                <li style="border-bottom: 2px groove #333; font-style: italic; color: gray;"></li>
+                <li style="border-bottom: 2px groove rgba(51, 51, 51, 0.25); font-style: italic; color: gray;"></li>
             {elseif $plugin.active}
                 <li class="active">
                     <a class="ladda-button" data-spinner-color="#222" data-style="expand-right" href="{$plugin.path}" title="{$plugin.name}">
