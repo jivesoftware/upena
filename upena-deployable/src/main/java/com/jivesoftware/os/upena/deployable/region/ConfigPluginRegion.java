@@ -153,8 +153,21 @@ public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
                 LOG.warn("Failed to load instance for key:" + instanceKey + " when trying to modify properties.");
             }
         }
+        StringBuilder sb = new StringBuilder();
+        sb.append("<ul>");
+        for (String property : property_InstanceKey_Values.keySet()) {
+            sb.append("<li>").append(property).append("</li>");
+            sb.append("<li><ul>");
+            for (Entry<String, String> keyValue : property_InstanceKey_Values.get(property).entrySet()) {
+                sb.append("<li>");
+                sb.append(keyValue.getKey()).append("=").append(keyValue.getValue());
+                sb.append("</li>");
+            }
+            sb.append("<ul></li>");
+        }
+        sb.append("</ul>");
 
-        upenaStore.record(user, "modified", System.currentTimeMillis(), "", "config", property_InstanceKey_Values.toString());
+        upenaStore.record(user, "modified", System.currentTimeMillis(), "", "config", sb.toString());
 
     }
 

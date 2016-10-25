@@ -506,6 +506,18 @@ public class UpenaRestEndpoints {
 
     @POST
     @Consumes("application/json")
+    @Path("/session/validate")
+    public Response sessionValidate(SessionValidation sessionValidation) {
+        try {
+            return Response.ok(upenaService.isValid(sessionValidation)).build();
+        } catch (Exception x) {
+            LOG.warn("Failed validate session", x);
+            return Response.serverError().build();
+        }
+    }
+
+    @POST
+    @Consumes("application/json")
     @Path("/connections/health")
     public Response connectionsHealth(InstanceConnectionHealth instanceConnectionHealth) {
         try {

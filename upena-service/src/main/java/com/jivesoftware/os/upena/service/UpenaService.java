@@ -49,11 +49,14 @@ import java.util.concurrent.ConcurrentNavigableMap;
 public class UpenaService {
 
     private final PasswordStore passwordStore;
+    private final SessionStore sessionStore;
+
     private final UpenaStore upenaStore;
     private final ChaosService chaosService;
 
-    public UpenaService(PasswordStore passwordStore, UpenaStore upenaStore, ChaosService chaosService) throws Exception {
+    public UpenaService(PasswordStore passwordStore, SessionStore sessionStore, UpenaStore upenaStore, ChaosService chaosService) throws Exception {
         this.passwordStore = passwordStore;
+        this.sessionStore = sessionStore;
         this.upenaStore = upenaStore;
         this.chaosService = chaosService;
     }
@@ -306,6 +309,10 @@ public class UpenaService {
 
     String keyStorePassword(String instanceKey) throws Exception {
        return passwordStore.password(instanceKey);
+    }
+
+    boolean isValid(SessionValidation sessionValidation) {
+        return sessionStore.isValid(sessionValidation);
     }
 
 }
