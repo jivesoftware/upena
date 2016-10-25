@@ -15,32 +15,33 @@
                 <pre>{$message}</pre>
             {/if}
             <table class="table table-hover float-table-head table-condensed table-responsive">
-                <tr>
-                    <th>Status</th>
-                    <th>Name</th>
-                    <th>Versions</th>
-                    <th>Services</th>
-                    <th>Actions</th>
-                </tr>
-                <tr style="background-color:#ddd;">
-                    <form id="add-project" method="post" name="addHost">
-                        <td>
-                        </td>
-                        <td>
-                            <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                placeholder="Name" value="{$filters.name?:''}" name="name" id="namePicker" class="form-control">
-                        </td>
-                        <td>
-                        </td>
-                        <td>
-                        </td>
-                        <td>
-                            <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-search">&nbsp;Filter</span></button>
-                            <button title="Add" type="submit" name="action" value="add" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-plus">&nbsp;Add</span></button>
-                        </td>
-                    </form>
-                </tr>
-
+                <thead class="upena-thead">
+                    <tr>
+                        <th>Status</th>
+                        <th>Name</th>
+                        <th>Versions</th>
+                        <th>Services</th>
+                        <th>Actions</th>
+                    </tr>
+                    <tr style="background-color:#ddd;">
+                        <form id="add-project" method="post" name="addHost">
+                            <td>
+                            </td>
+                            <td>
+                                <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                    placeholder="Name" value="{$filters.name?:''}" name="name" id="namePicker" class="form-control">
+                            </td>
+                            <td>
+                            </td>
+                            <td>
+                            </td>
+                            <td>
+                                <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-search">&nbsp;Filter</span></button>
+                                <button title="Add" type="submit" name="action" value="add" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-plus">&nbsp;Add</span></button>
+                            </td>
+                        </form>
+                    </tr>
+                </thead>
                 {foreach $c in $projects}
                     <tr>
                         <td>

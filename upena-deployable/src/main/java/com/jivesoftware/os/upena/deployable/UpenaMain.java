@@ -120,6 +120,7 @@ import com.jivesoftware.os.upena.deployable.soy.SoyService;
 import com.jivesoftware.os.upena.service.ChaosService;
 import com.jivesoftware.os.upena.service.DiscoveredRoutes;
 import com.jivesoftware.os.upena.service.HostKeyProvider;
+import com.jivesoftware.os.upena.service.SessionStore;
 import com.jivesoftware.os.upena.service.UpenaRestEndpoints;
 import com.jivesoftware.os.upena.service.UpenaService;
 import com.jivesoftware.os.upena.service.UpenaStore;
@@ -315,7 +316,9 @@ public class UpenaMain {
             return System.getProperty("MASTER_PASSWORD", "PASSWORD"); // cough
         };
 
-        UpenaService upenaService = new UpenaService(passwordStore, upenaStore, chaosService);
+        SessionStore sessionStore = new SessionStore(TimeUnit.MINUTES.toMillis(60), TimeUnit.MINUTES.toMillis(1));
+
+        UpenaService upenaService = new UpenaService(passwordStore, sessionStore, upenaStore, chaosService);
 
         LOG.info("-----------------------------------------------------------------------");
         LOG.info("|      Upena Service Online");
