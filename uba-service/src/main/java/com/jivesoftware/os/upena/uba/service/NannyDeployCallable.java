@@ -88,7 +88,7 @@ class NannyDeployCallable implements Callable<Boolean> {
                 return false;
             }
             healthLog.forcedHealthState("Service deployed", "Service will be consider unhealthy until first health check is successful.", "");
-            ubaLog.record("deployed", id.toString(), instancePath.lib().getParent());
+            ubaLog.record("deployed", Nanny.idToHtml(id), instancePath.lib().getParent());
             return true;
         } catch (Exception x) {
             deployLog.log("Nanny", "failed.", x);
