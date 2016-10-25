@@ -234,11 +234,15 @@ public class UpenaEndpoints {
                                 sb.append(nannyHealth.instanceDescriptor.serviceName).append(":");
                                 sb.append(nannyHealth.instanceDescriptor.releaseGroupName).append(":");
                                 sb.append(nannyHealth.instanceDescriptor.instanceName).append("=");
-                                sb.append(h.toString()).append("\n");
+                                sb.append(h.health);
+                                sb.append("</li>");
+                                sb.append("<li><ul>");
+                                sb.append("</li>").append(h.status).append("</li>");
+                                sb.append("</ul></li>");
+
                                 if (h.health < minHealth) {
                                     minHealth = h.health;
                                 }
-                                sb.append("</li>");
                             }
                         }
                     }
