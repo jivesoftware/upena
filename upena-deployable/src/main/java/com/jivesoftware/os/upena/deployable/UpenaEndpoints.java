@@ -223,11 +223,13 @@ public class UpenaEndpoints {
             NodeHealth upenaHealth = buildNodeHealth();
             double minHealth = 1.0d;
             StringBuilder sb = new StringBuilder();
+            sb.append("<ul>");
             for (NannyHealth nannyHealth : upenaHealth.nannyHealths) {
                 if (clusterName.equals("all") || nannyHealth.instanceDescriptor.clusterName.equals(clusterName)) {
                     if (nannyHealth.serviceHealth.health < health) {
                         for (Health h : nannyHealth.serviceHealth.healthChecks) {
                             if (h.health < health) {
+                                sb.append("<li>");
                                 sb.append(nannyHealth.instanceDescriptor.clusterName).append(":");
                                 sb.append(nannyHealth.instanceDescriptor.serviceName).append(":");
                                 sb.append(nannyHealth.instanceDescriptor.releaseGroupName).append(":");
@@ -236,11 +238,13 @@ public class UpenaEndpoints {
                                 if (h.health < minHealth) {
                                     minHealth = h.health;
                                 }
+                                sb.append("</li>");
                             }
                         }
                     }
                 }
             }
+            sb.append("</ul>");
             if (minHealth < health) {
                 upenaStore.record(upenaHealth.host, "checkHealth health:" + minHealth + " < " + health, System.currentTimeMillis(), "failed", "endpoint", sb
                     .toString());
