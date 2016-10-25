@@ -349,4 +349,13 @@ public class Nanny {
             + ", instanceDescriptor=" + instanceDescriptor
             + '}';
     }
+
+    public static String idToHtml(InstanceDescriptor id) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("<ul>");
+        sb.append("<li>").append(id.datacenter).append(":").append(id.clusterName).append(":").append(id.publicHost).append("</li>");
+        sb.append("<li>").append(id.serviceName).append(":").append(id.releaseGroupName).append(":").append(id.instanceName).append("</li>");
+        sb.append("</ul>");
+        return sb.toString();
+    }
 }
