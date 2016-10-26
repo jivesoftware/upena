@@ -4,7 +4,6 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.jivesoftware.jive</groupId>
     <artifactId>upena</artifactId>
-    <version>0.672-SNAPSHOT</version>
     <packaging>pom</packaging>
     <parent>
         <groupId>com.jivesoftware.os.upena.inheritance.poms</groupId>

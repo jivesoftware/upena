@@ -527,6 +527,7 @@ public class UpenaMain {
         AWSClientFactory awsClientFactory = new AWSClientFactory(region, roleArn);
 
         injectUI(awsClientFactory,
+            storeMapper,
             mapper,
             jvmapi,
             amzaService,
@@ -613,9 +614,10 @@ public class UpenaMain {
     }
 
     private void injectUI(AWSClientFactory awsClientFactory,
+        ObjectMapper storeMapper,
         ObjectMapper mapper,
         JDIAPI jvmapi,
-        AmzaService amzaService,
+        AmzaService amzaInstance,
         PathToRepo localPathToRepo,
         RepositoryProvider repositoryProvider,
         HostKey hostKey,
@@ -684,7 +686,7 @@ public class UpenaMain {
             "soy.page.instanceHealthPluginRegion",
             "soy.page.healthPopup",
             renderer,
-            amzaService,
+            amzaInstance,
             upenaStore,
             upenaConfigStore);
         ReleasesPluginRegion releasesPluginRegion = new ReleasesPluginRegion(mapper, repositoryProvider,
@@ -700,12 +702,12 @@ public class UpenaMain {
         ManagePlugin topology = new ManagePlugin("th", null, "Topology", "/ui/topology",
             TopologyPluginEndpoints.class,
             new TopologyPluginRegion(mapper, "soy.page.topologyPluginRegion", "soy.page.connectionsHealth",
-                renderer, amzaService, upenaStore, healthPluginRegion, hostsPluginRegion, releasesPluginRegion, instancesPluginRegion, discoveredRoutes), null);
+                renderer, amzaInstance, upenaStore, healthPluginRegion, hostsPluginRegion, releasesPluginRegion, instancesPluginRegion, discoveredRoutes), null);
 
         ManagePlugin connectivity = new ManagePlugin("transfer", null, "Connectivity", "/ui/connectivity",
             ConnectivityPluginEndpoints.class,
             new ConnectivityPluginRegion(mapper, "soy.page.connectivityPluginRegion", "soy.page.connectionsHealth", "soy.page.connectionOverview",
-                renderer, amzaService, upenaStore, healthPluginRegion, hostsPluginRegion, releasesPluginRegion, instancesPluginRegion, discoveredRoutes), null);
+                renderer, amzaInstance, upenaStore, healthPluginRegion, hostsPluginRegion, releasesPluginRegion, instancesPluginRegion, discoveredRoutes), null);
 
         ManagePlugin changes = new ManagePlugin("road", null, "Changes", "/ui/changeLog",
             ChangeLogPluginEndpoints.class,
@@ -751,11 +753,11 @@ public class UpenaMain {
 
         ManagePlugin ring = new ManagePlugin("leaf", null, "Upena", "/ui/ring",
             UpenaRingPluginEndpoints.class,
-            new UpenaRingPluginRegion("soy.page.upenaRingPluginRegion", renderer, amzaService, upenaStore), null);
+            new UpenaRingPluginRegion(storeMapper, "soy.page.upenaRingPluginRegion", renderer, amzaInstance, upenaStore, upenaConfigStore), null);
 
         ManagePlugin sar = new ManagePlugin("dashboard", null, "SAR", "/ui/sar",
             SARPluginEndpoints.class,
-            new SARPluginRegion("soy.page.sarPluginRegion", renderer, amzaService, ringHost), null);
+            new SARPluginRegion("soy.page.sarPluginRegion", renderer, amzaInstance, ringHost), null);
 
         ManagePlugin loadBalancer = new ManagePlugin("scale", null, "Load Balancer", "/ui/loadbalancers",
             LoadBalancersPluginEndpoints.class,

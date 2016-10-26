@@ -33,6 +33,7 @@ public class UpenaTable<K extends Key, V extends Stored> {
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
+
     static public interface UpenaKeyProvider<KK extends Key, VV extends Stored> {
 
         KK getNodeKey(UpenaTable<KK, VV> table, VV value);
@@ -63,6 +64,13 @@ public class UpenaTable<K extends Key, V extends Stored> {
         this.valueClass = valueClass;
         this.keyProvider = keyProvider;
         this.valueValidator = valueValidator;
+    }
+
+
+    public void putIfAbsent(K key, V value) throws Exception {
+        if (get(key) == null) {
+            update(key, value);
+        }
     }
 
     public V get(K key) throws Exception {

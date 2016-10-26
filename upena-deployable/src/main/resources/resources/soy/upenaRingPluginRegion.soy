@@ -55,6 +55,7 @@
                 </tbody>
             </table>
             <div class="upena-heading"><span class="upena-title">Admin</span></div>
+            
             <form id="add-ring-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
                         data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="addRingHost">
                 <table class="table float-table-head table-hover table-condensed table-responsive">
@@ -69,9 +70,23 @@
                                 <span class="glyphicon glyphicon-trash">&nbspRemove Bad Keys</span>
                             </button>
                         </td>
+                        <td>
+                            <button onclick="return confirm('Are you sure you want export?')" title="Remove" type="submit" name="action" value="export" class="btn btn-default ladda-button" data-style="expand-right">
+                                <span class="glyphicon glyphicon-download">&nbspExport</span>
+                            </button>
+                        </td>
                     </tr>
                 </table>
             </form>
+            <div class="btn-group" role="group" aria-label="...">
+                <form method="post" action="/ui/ring/import" enctype="multipart/form-data">
+                    <div class="fileinput fileinput-new" data-provides="fileinput">
+                        <span class="btn btn-default btn-file"><span>Browse...</span><input type="file" name="file"/></span>
+                        <span class="fileinput-filename"></span><span class="fileinput-new">&nbsp;&nbsp;&nbsp;No file chosen&nbsp;&nbsp;&nbsp;</span>
+                    </div>
+                    <button title="Import" type="submit"  value="import" class="btn btn-default"><span class="glyphicon glyphicon-import">&nbsp;Import</span></button>
+                </form>
+            </div>
         </div>
     {/if}
 {/template}

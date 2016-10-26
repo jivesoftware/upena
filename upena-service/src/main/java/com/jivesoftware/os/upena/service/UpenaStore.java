@@ -134,12 +134,7 @@ public class UpenaStore {
     }
 
     public void clearChangeLog() {
-        changeLog.scan((key, value) -> {
-            if (key != null) {
-                changeLog.remove(key);
-            }
-            return true;
-        });
+        changeLog.clear();
     }
 
     public static byte[] longBytes(long v, byte[] _bytes, int _offset) {
