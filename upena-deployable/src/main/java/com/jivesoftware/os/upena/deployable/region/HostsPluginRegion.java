@@ -187,7 +187,7 @@ public class HostsPluginRegion implements PageRegion<HostsPluginRegionInput> {
 
             List<Map<String, Object>> rows = new ArrayList<>();
 
-            Map<HostKey, TimestampedValue<Host>> found = upenaStore.hosts.find(filter);
+            Map<HostKey, TimestampedValue<Host>> found = upenaStore.hosts.find(false, filter);
             for (Map.Entry<HostKey, TimestampedValue<Host>> entrySet : found.entrySet()) {
 
                 HostKey key = entrySet.getKey();
@@ -202,7 +202,7 @@ public class HostsPluginRegion implements PageRegion<HostsPluginRegionInput> {
                     null,
                     0, 100_000);
 
-                Map<InstanceKey, TimestampedValue<Instance>> instances = upenaStore.instances.find(instanceFilter);
+                Map<InstanceKey, TimestampedValue<Instance>> instances = upenaStore.instances.find(false, instanceFilter);
                 HashMultiset<ServiceKey> serviceKeyCount = HashMultiset.create();
                 for (TimestampedValue<Instance> i : instances.values()) {
                     if (!i.getTombstoned()) {

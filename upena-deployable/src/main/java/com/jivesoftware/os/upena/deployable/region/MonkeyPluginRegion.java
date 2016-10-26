@@ -21,11 +21,11 @@ import com.google.common.collect.Maps;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
+import com.jivesoftware.os.upena.service.ChaosStateGenerator.PartitionStrategy;
+import com.jivesoftware.os.upena.service.ChaosStateHelper;
 import com.jivesoftware.os.upena.service.UpenaStore;
 import com.jivesoftware.os.upena.shared.ChaosState;
 import com.jivesoftware.os.upena.shared.ChaosStateFilter;
-import com.jivesoftware.os.upena.service.ChaosStateGenerator.PartitionStrategy;
-import com.jivesoftware.os.upena.service.ChaosStateHelper;
 import com.jivesoftware.os.upena.shared.ChaosStateKey;
 import com.jivesoftware.os.upena.shared.ChaosStrategyKey;
 import com.jivesoftware.os.upena.shared.Cluster;
@@ -38,7 +38,6 @@ import com.jivesoftware.os.upena.shared.MonkeyKey;
 import com.jivesoftware.os.upena.shared.Service;
 import com.jivesoftware.os.upena.shared.ServiceKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -142,7 +141,7 @@ public class MonkeyPluginRegion implements PageRegion<MonkeyPluginRegion.MonkeyP
             }
 
             List<Map<String, Object>> rows = new ArrayList<>();
-            Map<MonkeyKey, TimestampedValue<Monkey>> foundMonkeys = upenaStore.monkeys.find(filter);
+            Map<MonkeyKey, TimestampedValue<Monkey>> foundMonkeys = upenaStore.monkeys.find(false, filter);
             for (Map.Entry<MonkeyKey, TimestampedValue<Monkey>> entrySet : foundMonkeys.entrySet()) {
                 MonkeyKey key = entrySet.getKey();
                 TimestampedValue<Monkey> timestampedValue = entrySet.getValue();
@@ -328,7 +327,7 @@ public class MonkeyPluginRegion implements PageRegion<MonkeyPluginRegion.MonkeyP
 
                     if (!input.enabled) {
                         ConcurrentNavigableMap<ChaosStateKey, TimestampedValue<ChaosState>> gotChaosStates =
-                                upenaStore.chaosStates.find(new ChaosStateFilter(
+                                upenaStore.chaosStates.find(false, new ChaosStateFilter(
                                         updatedMonkey.serviceKey,
                                         0, Integer.MAX_VALUE));
                         for (Entry<ChaosStateKey, TimestampedValue<ChaosState>> entry : gotChaosStates.entrySet()) {
@@ -360,7 +359,7 @@ public class MonkeyPluginRegion implements PageRegion<MonkeyPluginRegion.MonkeyP
                     upenaStore.monkeys.remove(monkeyKey);
 
                     ConcurrentNavigableMap<ChaosStateKey, TimestampedValue<ChaosState>> gotChaosStates =
-                            upenaStore.chaosStates.find(new ChaosStateFilter(
+                            upenaStore.chaosStates.find(false, new ChaosStateFilter(
                                     removing.serviceKey,
                                     0, Integer.MAX_VALUE));
                     for (Entry<ChaosStateKey, TimestampedValue<ChaosState>> entry : gotChaosStates.entrySet()) {
@@ -441,7 +440,7 @@ public class MonkeyPluginRegion implements PageRegion<MonkeyPluginRegion.MonkeyP
             upenaStore.monkeys.update(monkeyKey, monkey);
 
             ConcurrentNavigableMap<ChaosStateKey, TimestampedValue<ChaosState>> gotChaosStates =
-                    upenaStore.chaosStates.find(new ChaosStateFilter(
+                    upenaStore.chaosStates.find(false, new ChaosStateFilter(
                             monkey.serviceKey,
                             0, Integer.MAX_VALUE));
             for (Entry<ChaosStateKey, TimestampedValue<ChaosState>> entry : gotChaosStates.entrySet()) {
@@ -458,7 +457,7 @@ public class MonkeyPluginRegion implements PageRegion<MonkeyPluginRegion.MonkeyP
             upenaStore.monkeys.update(monkeyKey, monkey);
 
             ConcurrentNavigableMap<ChaosStateKey, TimestampedValue<ChaosState>> gotChaosStates =
-                    upenaStore.chaosStates.find(new ChaosStateFilter(
+                    upenaStore.chaosStates.find(false, new ChaosStateFilter(
                             monkey.serviceKey,
                             0, Integer.MAX_VALUE));
             for (Entry<ChaosStateKey, TimestampedValue<ChaosState>> entry : gotChaosStates.entrySet()) {

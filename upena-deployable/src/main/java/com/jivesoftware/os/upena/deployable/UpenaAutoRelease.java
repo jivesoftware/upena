@@ -70,7 +70,7 @@ public class UpenaAutoRelease {
                 String find = model.getGroupId() + ":" + model.getArtifactId() + ":";
                 ReleaseGroupFilter filter = new ReleaseGroupFilter(null, null, find, null, null, 0, 1000);
 
-                ConcurrentNavigableMap<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> found = upenaStore.releaseGroups.find(filter);
+                ConcurrentNavigableMap<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> found = upenaStore.releaseGroups.find(false, filter);
                 for (Map.Entry<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> entry : found.entrySet()) {
                     ReleaseGroup releaseGroup = entry.getValue().getValue();
                     if (releaseGroup.autoRelease) {

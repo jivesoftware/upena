@@ -75,7 +75,7 @@ public class InstanceValidator implements UpenaValueValidator<InstanceKey, Insta
     Set<Integer> usedPorts(UpenaTable<InstanceKey, Instance> table, HostKey hostKey, InstanceKey excludeThisInstanceKey) throws Exception {
         Set<Integer> usedPorts = new HashSet<>();
         InstanceFilter impactedFilter = new InstanceFilter(null, hostKey, null, null, null, 0, Integer.MAX_VALUE);
-        ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> got = table.find(impactedFilter);
+        ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> got = table.find(false, impactedFilter);
         for (Map.Entry<InstanceKey, TimestampedValue<Instance>> e : got.entrySet()) {
             if (!excludeThisInstanceKey.equals(e.getKey())) {
                 for (Instance.Port port : e.getValue().getValue().ports.values()) {

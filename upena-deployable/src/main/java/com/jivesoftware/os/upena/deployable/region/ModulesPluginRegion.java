@@ -51,7 +51,7 @@ import org.eclipse.aether.resolution.ArtifactResult;
 public class ModulesPluginRegion implements PageRegion<ModulesPluginRegionInput> {
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
-    private static final ObjectMapper MAPPER = new ObjectMapper();
+    private final ObjectMapper mapper;
 
     private final RepositoryProvider repositoryProvider;
     private final String template;
@@ -60,12 +60,14 @@ public class ModulesPluginRegion implements PageRegion<ModulesPluginRegionInput>
 
     private final ConcurrentHashMap<Artifact, List<Artifact>> deps = new ConcurrentHashMap<>();
 
-    public ModulesPluginRegion(RepositoryProvider repositoryProvider,
+    public ModulesPluginRegion(ObjectMapper mapper,
+        RepositoryProvider repositoryProvider,
         String template,
         SoyRenderer renderer,
         UpenaStore upenaStore
     ) {
-        this.repositoryProvider  = repositoryProvider;
+        this.mapper = mapper;
+        this.repositoryProvider = repositoryProvider;
         this.template = template;
         this.renderer = renderer;
         this.upenaStore = upenaStore;
@@ -177,7 +179,7 @@ public class ModulesPluginRegion implements PageRegion<ModulesPluginRegionInput>
 
             Set<ReleaseGroup> releaseGroups = new HashSet<>();
 
-            Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(filter);
+            Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(false, filter);
             for (Map.Entry<InstanceKey, TimestampedValue<Instance>> f : found.entrySet()) {
                 if (!f.getValue().getTombstoned()) {
                     Instance instance = f.getValue().getValue();
@@ -191,7 +193,7 @@ public class ModulesPluginRegion implements PageRegion<ModulesPluginRegionInput>
             if (releaseGroups.isEmpty()) {
 
                 ReleaseGroupFilter releaseGroupFilter = new ReleaseGroupFilter(null, null, null, null, null, 0, 100_000);
-                ConcurrentNavigableMap<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> foundGroups = upenaStore.releaseGroups.find(releaseGroupFilter);
+                ConcurrentNavigableMap<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> foundGroups = upenaStore.releaseGroups.find(false, releaseGroupFilter);
                 for (Map.Entry<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> fg : foundGroups.entrySet()) {
                     if (!fg.getValue().getTombstoned()) {
                         releaseGroups.add(fg.getValue().getValue());
@@ -256,7 +258,7 @@ public class ModulesPluginRegion implements PageRegion<ModulesPluginRegionInput>
                 renderNodes.add(node);
             }
 
-            data.put("moduleNodes", MAPPER.writeValueAsString(renderNodes));
+            data.put("moduleNodes", mapper.writeValueAsString(renderNodes));
 
             List<Map<String, String>> renderEdges = new ArrayList<>();
             for (Edge e : graph.edges.values()) {
@@ -269,7 +271,7 @@ public class ModulesPluginRegion implements PageRegion<ModulesPluginRegionInput>
                 //System.out.println("edge:" + edge);
             }
 
-            data.put("moduleEdges", MAPPER.writeValueAsString(renderEdges));
+            data.put("moduleEdges", mapper.writeValueAsString(renderEdges));
 
         } catch (Exception e) {
             LOG.error("Unable to retrieve data", e);

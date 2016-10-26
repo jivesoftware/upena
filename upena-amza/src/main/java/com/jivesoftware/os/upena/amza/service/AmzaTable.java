@@ -15,13 +15,15 @@
  */
 package com.jivesoftware.os.upena.amza.service;
 
+import com.jivesoftware.os.jive.utils.ordered.id.OrderIdProvider;
+import com.jivesoftware.os.mlogger.core.MetricLogger;
+import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.amza.service.storage.RowStoreUpdates;
 import com.jivesoftware.os.upena.amza.service.storage.TableStore;
 import com.jivesoftware.os.upena.amza.shared.RowIndexKey;
 import com.jivesoftware.os.upena.amza.shared.RowIndexValue;
 import com.jivesoftware.os.upena.amza.shared.RowScan;
 import com.jivesoftware.os.upena.amza.shared.TableName;
-import com.jivesoftware.os.jive.utils.ordered.id.OrderIdProvider;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -30,6 +32,8 @@ import org.apache.commons.lang.mutable.MutableBoolean;
 import org.apache.commons.lang.mutable.MutableInt;
 
 public class AmzaTable {
+
+    private static final MetricLogger LOG  = MetricLoggerFactory.getLogger();
 
     private final OrderIdProvider orderIdProvider;
     private final TableName tableName;
@@ -187,4 +191,19 @@ public class AmzaTable {
         System.out.println("table:" + amzaTable.tableName.getTableName() + " compared:" + compared + " keys");
         return passed.booleanValue();
     }
+
+    public void clear() {
+        tableStore.rowScan((long transactionId, RowIndexKey key, RowIndexValue value) -> {
+            if (key != null) {
+                try {
+                    remove(key);
+                } catch (Exception x) {
+                    LOG.error("Failed to remove key:{}", new Object[]{key}, x);
+
+                }
+            }
+            return true;
+        });
+    }
+
 }

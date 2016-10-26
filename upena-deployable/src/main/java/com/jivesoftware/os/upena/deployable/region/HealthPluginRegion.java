@@ -54,8 +54,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthPluginRegionInput> {
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
-    private static final ObjectMapper MAPPER = new ObjectMapper();
-
+    private final ObjectMapper mapper;
     private final long startupTime;
     private final RingHost ringHost;
     private final String template;
@@ -69,7 +68,8 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
 
     private final Map<String, InstanceSparseCircularHitsBucketBuffer> instanceHealthHistory = new ConcurrentHashMap<>();
 
-    public HealthPluginRegion(long startupTime,
+    public HealthPluginRegion(ObjectMapper mapper,
+        long startupTime,
         RingHost ringHost,
         String template,
         String instanceTemplate,
@@ -79,6 +79,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
         UpenaStore upenaStore,
         UpenaConfigStore configStore) {
 
+        this.mapper = mapper;
         this.startupTime = startupTime;
         this.ringHost = ringHost;
         this.template = template;
@@ -297,7 +298,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                     .build());
             }
 
-            live = MAPPER.writeValueAsString(healths);
+            live = mapper.writeValueAsString(healths);
         } catch (Exception x) {
             LOG.warn("failed to generate live results", x);
         }
@@ -424,7 +425,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
             });
 
             // Services
-            Map<ServiceKey, TimestampedValue<Service>> foundServices = upenaStore.services.find(new ServiceFilter(null, null, 0, 100_000));
+            Map<ServiceKey, TimestampedValue<Service>> foundServices = upenaStore.services.find(false, new ServiceFilter(null, null, 0, 100_000));
             List<Map<String, String>> serviceResults = Lists.newArrayList();
             for (Map.Entry<ServiceKey, TimestampedValue<Service>> entry : foundServices.entrySet()) {
                 serviceResults.add(ImmutableMap.of("key", entry.getKey().getKey(), "name", entry.getValue().getValue().name));
@@ -502,7 +503,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
             }
 
             // Hosts
-            Map<HostKey, TimestampedValue<Host>> foundHosts = upenaStore.hosts.find(new HostFilter(null, null, null, null, null, 0, 100_000));
+            Map<HostKey, TimestampedValue<Host>> foundHosts = upenaStore.hosts.find(false, new HostFilter(null, null, null, null, null, 0, 100_000));
             List<Map<String, String>> hostResults = Lists.newArrayList();
             for (Map.Entry<HostKey, TimestampedValue<Host>> entry : foundHosts.entrySet()) {
                 String name = entry.getValue().getValue().hostName + "/" + entry.getValue().getValue().name;
@@ -733,7 +734,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
             data.put("gridHost", hostRows);
 
             // Clusters
-            Map<ClusterKey, TimestampedValue<Cluster>> foundClusters = upenaStore.clusters.find(new ClusterFilter(null, null, 0, 100_000));
+            Map<ClusterKey, TimestampedValue<Cluster>> foundClusters = upenaStore.clusters.find(false, new ClusterFilter(null, null, 0, 100_000));
             List<Map<String, String>> clusterResults = Lists.newArrayList();
             for (Map.Entry<ClusterKey, TimestampedValue<Cluster>> entry : foundClusters.entrySet()) {
                 clusterResults.add(ImmutableMap.of("key", entry.getKey().getKey(), "name", entry.getValue().getValue().name));
@@ -742,7 +743,8 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
             data.put("clusters", clusterResults);
 
             // Releases
-            Map<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> foundReleases = upenaStore.releaseGroups.find(new ReleaseGroupFilter(null, null, null, null,
+            Map<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> foundReleases = upenaStore.releaseGroups.find(false, new ReleaseGroupFilter(null, null, null,
+                null,
                 null, 0, 100_000));
             List<Map<String, String>> releaseResults = Lists.newArrayList();
             for (Map.Entry<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> entry : foundReleases.entrySet()) {
@@ -1020,7 +1022,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
         List<String> ports = new ArrayList<>();
         for (Map.Entry<String, InstanceDescriptor.InstanceDescriptorPort> port : id.ports.entrySet()) {
             ports.add(port.getKey() + "=" + port.getValue().port
-                +" "+ ((port.getValue().sslEnabled) ? "SSL" : "")+" "+((port.getValue().serviceAuthEnabled) ? "SAUTH" : ""));
+                + " " + ((port.getValue().sslEnabled) ? "SSL" : "") + " " + ((port.getValue().serviceAuthEnabled) ? "SAUTH" : ""));
         }
         data.put("ports", ports);
         data.put("log", nannyHealth.log);

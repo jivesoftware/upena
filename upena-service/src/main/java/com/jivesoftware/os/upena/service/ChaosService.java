@@ -65,7 +65,7 @@ public class ChaosService {
         String affect = "";
 
         ConcurrentNavigableMap<MonkeyKey, TimestampedValue<Monkey>> gotMonkeys =
-            upenaStore.monkeys.find(new MonkeyFilter(
+            upenaStore.monkeys.find(false, new MonkeyFilter(
                 clusterKey, hostKey, serviceKey,
                 null, 0, Integer.MAX_VALUE));
 
@@ -92,7 +92,7 @@ public class ChaosService {
         List<ConnectionDescriptor> monkeyConnections = connections;
 
         ConcurrentNavigableMap<MonkeyKey, TimestampedValue<Monkey>> gotMonkeys =
-            upenaStore.monkeys.find(new MonkeyFilter(
+            upenaStore.monkeys.find(false, new MonkeyFilter(
                 instance.clusterKey, hostKey, instance.serviceKey,
                 null, 0, Integer.MAX_VALUE));
 
@@ -210,7 +210,7 @@ public class ChaosService {
 
                     LOG.debug("Retrieve chaos state for serviceKey:{}", instance.serviceKey);
                     ConcurrentNavigableMap<ChaosStateKey, TimestampedValue<ChaosState>> gotChaosStates =
-                        upenaStore.chaosStates.find(new ChaosStateFilter(
+                        upenaStore.chaosStates.find(false, new ChaosStateFilter(
                             instance.serviceKey,
                             0, Integer.MAX_VALUE));
 
@@ -293,7 +293,7 @@ public class ChaosService {
 
                     LOG.debug("Retrieve chaos state for serviceKey:{}", instance.serviceKey);
                     ConcurrentNavigableMap<ChaosStateKey, TimestampedValue<ChaosState>> gotChaosStates =
-                        upenaStore.chaosStates.find(new ChaosStateFilter(
+                        upenaStore.chaosStates.find(false, new ChaosStateFilter(
                             instance.serviceKey,
                             0, Integer.MAX_VALUE));
 

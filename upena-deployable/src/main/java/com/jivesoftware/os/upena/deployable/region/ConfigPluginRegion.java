@@ -41,17 +41,19 @@ import java.util.concurrent.ConcurrentSkipListMap;
 public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
-    private static final ObjectMapper MAPPER = new ObjectMapper();
-
+    private final ObjectMapper mapper;
     private final String template;
     private final SoyRenderer renderer;
     private final UpenaStore upenaStore;
     private final UpenaConfigStore configStore;
 
-    public ConfigPluginRegion(String template,
+    public ConfigPluginRegion(ObjectMapper mapper,
+        String template,
         SoyRenderer renderer,
         UpenaStore upenaStore,
         UpenaConfigStore configStore) {
+
+        this.mapper = mapper;
         this.template = template;
         this.renderer = renderer;
         this.upenaStore = upenaStore;
@@ -203,7 +205,7 @@ public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
             || filter.releaseGroupKey != null
             || filter.logicalInstanceId != null) {
 
-            Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(filter);
+            Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(false, filter);
             if (found != null) {
                 for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {
                     if (!entrySet.getValue().getTombstoned()) {
@@ -215,7 +217,7 @@ public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
                         if (!exportImportCluster.clusters.containsKey(instance.clusterKey)) {
                             Cluster got = upenaStore.clusters.get(instance.clusterKey);
                             if (got == null) {
-                                return "Export failed no cluster for clusterKey:" + instance.clusterKey + "\n" + MAPPER.writerWithDefaultPrettyPrinter()
+                                return "Export failed no cluster for clusterKey:" + instance.clusterKey + "\n" + mapper.writerWithDefaultPrettyPrinter()
                                     .writeValueAsString(instance);
                             }
                             exportImportCluster.clusters.put(instance.clusterKey, got);
@@ -224,7 +226,7 @@ public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
                         if (!exportImportCluster.hosts.containsKey(instance.hostKey)) {
                             Host got = upenaStore.hosts.get(instance.hostKey);
                             if (got == null) {
-                                return "Export failed no host for hostKey:" + instance.hostKey + "\n" + MAPPER.writerWithDefaultPrettyPrinter()
+                                return "Export failed no host for hostKey:" + instance.hostKey + "\n" + mapper.writerWithDefaultPrettyPrinter()
                                     .writeValueAsString(instance);
                             }
                             exportImportCluster.hosts.put(instance.hostKey, got);
@@ -233,7 +235,7 @@ public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
                         if (!exportImportCluster.services.containsKey(instance.serviceKey)) {
                             Service got = upenaStore.services.get(instance.serviceKey);
                             if (got == null) {
-                                return "Export failed no serivce for serviceKey:" + instance.serviceKey + "\n" + MAPPER.writerWithDefaultPrettyPrinter()
+                                return "Export failed no serivce for serviceKey:" + instance.serviceKey + "\n" + mapper.writerWithDefaultPrettyPrinter()
                                     .writeValueAsString(instance);
                             }
                             exportImportCluster.services.put(instance.serviceKey, got);
@@ -242,7 +244,7 @@ public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
                         if (!exportImportCluster.release.containsKey(instance.releaseGroupKey)) {
                             ReleaseGroup got = upenaStore.releaseGroups.get(instance.releaseGroupKey);
                             if (got == null) {
-                                return "Export failed no release group for releaseGroupKey:" + instance.releaseGroupKey + "\n" + MAPPER
+                                return "Export failed no release group for releaseGroupKey:" + instance.releaseGroupKey + "\n" + mapper
                                     .writerWithDefaultPrettyPrinter()
                                     .writeValueAsString(instance);
                             }
@@ -269,7 +271,7 @@ public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
             }
         }
 
-        return MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(exportImportCluster);
+        return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(exportImportCluster);
 
     }
 
@@ -566,7 +568,7 @@ public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
                 HttpRequestHelper helper = HttpRequestHelperUtils.buildRequestHelper(false, false, null, remoteConfigHost, remoteConfigPort);
                 found = helper.executeRequest(filter, "/upena/instance/find", InstanceResults.class, new InstanceResults());
             } else {
-                found = upenaStore.instances.find(filter);
+                found = upenaStore.instances.find(false, filter);
             }
 
             for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {

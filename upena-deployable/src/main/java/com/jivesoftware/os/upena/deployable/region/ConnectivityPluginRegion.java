@@ -58,7 +58,7 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRegionInput> {
 
     private static final MetricLogger log = MetricLoggerFactory.getLogger();
-    private static final ObjectMapper MAPPER = new ObjectMapper();
+    private  final ObjectMapper mapper;
     private final NumberFormat numberFormat = NumberFormat.getNumberInstance();
 
     private final String template;
@@ -74,7 +74,8 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
     private final DiscoveredRoutes discoveredRoutes;
     private final ExecutorService executorService = Executors.newCachedThreadPool();
 
-    public ConnectivityPluginRegion(String template,
+    public ConnectivityPluginRegion(ObjectMapper mapper,
+        String template,
         String connectionHealthTemplate,
         String connectionOverviewTemplate,
         SoyRenderer renderer,
@@ -86,6 +87,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
         InstancesPluginRegion instancesPluginRegion,
         DiscoveredRoutes discoveredRoutes) {
 
+        this.mapper = mapper;
         this.template = template;
         this.connectionHealthTemplate = connectionHealthTemplate;
         this.connectionOverviewTemplate = connectionOverviewTemplate;
@@ -167,7 +169,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
 
             data.put("filters", filter);
 
-            ConcurrentNavigableMap<ServiceKey, TimestampedValue<Service>> services = upenaStore.services.find(new ServiceFilter(null, null, 0, 100_000));
+            ConcurrentNavigableMap<ServiceKey, TimestampedValue<Service>> services = upenaStore.services.find(false, new ServiceFilter(null, null, 0, 100_000));
 
             Map<ServiceKey, TimestampedValue<com.jivesoftware.os.upena.shared.Service>> sort = new ConcurrentSkipListMap<>((ServiceKey o1, ServiceKey o2) -> {
                 com.jivesoftware.os.upena.shared.Service so1 = services.get(o1).getValue();
@@ -199,7 +201,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
                 }
             }
 
-            data.put("serviceLegend", MAPPER.writeValueAsString(serviceNameLegend));
+            data.put("serviceLegend", mapper.writeValueAsString(serviceNameLegend));
 
             connectivityGraph(user, instanceFilter, serviceColor, data);
 
@@ -364,7 +366,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
             renderNodes.add(node);
         }
 
-        data.put("connectivityNodes", MAPPER.writeValueAsString(renderNodes));
+        data.put("connectivityNodes", mapper.writeValueAsString(renderNodes));
 
         List<Map<String, String>> renderEdges = new ArrayList<>();
         for (Edge e : edges.values()) {
@@ -378,7 +380,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
             renderEdges.add(edge);
         }
 
-        data.put("connectivityEdges", MAPPER.writeValueAsString(renderEdges));
+        data.put("connectivityEdges", mapper.writeValueAsString(renderEdges));
 
     }
 
@@ -387,7 +389,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
             Instance renderInstance = upenaStore.instances.get(new InstanceKey(instanceKey));
             String renderService = "unknown";
 
-            ConcurrentNavigableMap<ServiceKey, TimestampedValue<Service>> services = upenaStore.services.find(new ServiceFilter(null, null, 0, 100_000));
+            ConcurrentNavigableMap<ServiceKey, TimestampedValue<Service>> services = upenaStore.services.find(false, new ServiceFilter(null, null, 0, 100_000));
 
             Map<ServiceKey, TimestampedValue<com.jivesoftware.os.upena.shared.Service>> sort = new ConcurrentSkipListMap<>((ServiceKey o1, ServiceKey o2) -> {
                 com.jivesoftware.os.upena.shared.Service so1 = services.get(o1).getValue();

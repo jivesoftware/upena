@@ -87,6 +87,7 @@ public class UpenaEndpoints {
 
     }
 
+    private final ObjectMapper mapper = new ObjectMapper();
     private final AmzaInstance amzaInstance;
     private final UpenaConfigStore upenaConfigStore;
     private final UbaService ubaService;
@@ -121,6 +122,7 @@ public class UpenaEndpoints {
         this.localPathToRepo = localPathToRepo;
         this.autoRelease = autoRelease;
         this.upenaStore = upenaStore;
+        this.mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
     @GET
@@ -333,7 +335,6 @@ public class UpenaEndpoints {
         return clusterHealth;
     }
 
-
     private NodeHealth buildNodeHealth() throws Exception {
         NodeHealth nodeHealth = new NodeHealth(ringHostKey.getKey(), ringHost.getHost(), ringHost.getPort());
         for (Entry<String, Nanny> nanny : ubaService.iterateNannies()) {
@@ -343,8 +344,6 @@ public class UpenaEndpoints {
             List<String> copyLog = n.getHealthLog().commitedLog();
             ServiceHealth serviceHealth = null;
             try {
-                ObjectMapper mapper = new ObjectMapper();
-                mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
                 if (!copyLog.isEmpty()) {
                     serviceHealth = mapper.readValue(Joiner.on("").join(copyLog), ServiceHealth.class

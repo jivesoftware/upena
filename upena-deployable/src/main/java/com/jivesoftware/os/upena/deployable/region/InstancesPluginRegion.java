@@ -197,7 +197,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
 
             List<Map<String, Object>> rows = new ArrayList<>();
 
-            Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(filter);
+            Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(false, filter);
             for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {
                 InstanceKey key = entrySet.getKey();
                 TimestampedValue<Instance> timestampedValue = entrySet.getValue();
@@ -260,7 +260,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
     }
 
     private void handleCancelRestartAll(String user, InstanceFilter filter) throws Exception {
-        Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(filter);
+        Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(false, filter);
         List<String> canceled = new ArrayList<>();
         for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {
             InstanceKey key = entrySet.getKey();
@@ -280,7 +280,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
 
     private void handleEnable(String user, InstanceFilter filter) throws Exception {
         List<String> enable = new ArrayList<>();
-        Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(filter);
+        Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(false, filter);
         for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {
             InstanceKey key = entrySet.getKey();
             TimestampedValue<Instance> timestampedValue = entrySet.getValue();
@@ -298,7 +298,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
 
     private void handleEnableSSL(String user, InstanceFilter filter) throws Exception {
         List<String> enable = new ArrayList<>();
-        Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(filter);
+        Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(false, filter);
         for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {
             InstanceKey key = entrySet.getKey();
             TimestampedValue<Instance> timestampedValue = entrySet.getValue();
@@ -318,7 +318,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
 
     private void handleEnableSAUTH(String user, InstanceFilter filter) throws Exception {
         List<String> enable = new ArrayList<>();
-        Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(filter);
+        Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(false, filter);
         for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {
             InstanceKey key = entrySet.getKey();
             TimestampedValue<Instance> timestampedValue = entrySet.getValue();
@@ -337,7 +337,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
 
     private void handleDisable(String user, InstanceFilter filter) throws Exception {
         List<String> enable = new ArrayList<>();
-        Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(filter);
+        Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(false, filter);
         for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {
             InstanceKey key = entrySet.getKey();
             TimestampedValue<Instance> timestampedValue = entrySet.getValue();
@@ -358,7 +358,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
         long stagger = TimeUnit.SECONDS.toMillis(30);
         now += stagger;
         List<String> restart = new ArrayList<>();
-        Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(filter);
+        Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(false, filter);
         for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {
             InstanceKey key = entrySet.getKey();
             TimestampedValue<Instance> timestampedValue = entrySet.getValue();
@@ -377,7 +377,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
 
     private void handleRestartAllNow(String user, InstanceFilter filter) throws Exception {
         long now = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(5);
-        Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(filter);
+        Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(false, filter);
         List<String> restart = new ArrayList<>();
         for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {
             InstanceKey key = entrySet.getKey();
@@ -494,7 +494,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
                     null,
                     0, 100_000);
 
-                Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(filter);
+                Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(false, filter);
                 Set<Integer> instanceIds = new HashSet<>();
                 for (TimestampedValue<Instance> ti : found.values()) {
                     if (!ti.getTombstoned()) {

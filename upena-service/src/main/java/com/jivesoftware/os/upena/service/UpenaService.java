@@ -185,7 +185,7 @@ public class UpenaService {
             && releaseGroupKey.getKey().length() > 0) {
             InstanceFilter explicitReleaseGroupFilter = new InstanceFilter(clusterKey,
                 null, wantToConnectToServiceKey, releaseGroupKey, null, 0, Integer.MAX_VALUE);
-            return upenaStore.instances.find(explicitReleaseGroupFilter);
+            return upenaStore.instances.find(false, explicitReleaseGroupFilter);
         }
         return null;
     }
@@ -244,7 +244,7 @@ public class UpenaService {
 
         InstanceDescriptorsResponse instanceDescriptorsResponse = new InstanceDescriptorsResponse(instanceDescriptorsRequest.hostKey, false);
         InstanceFilter impactedFilter = new InstanceFilter(null, hostKey, null, null, null, 0, Integer.MAX_VALUE);
-        ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> got = upenaStore.instances.find(impactedFilter);
+        ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> got = upenaStore.instances.find(false, impactedFilter);
         for (Entry<InstanceKey, TimestampedValue<Instance>> e : got.entrySet()) {
             InstanceDescriptor instanceDescriptor = toInstanceDescriptor(e.getKey(), e.getValue().getValue());
             if (instanceDescriptor != null) {
