@@ -77,6 +77,9 @@ public class RSAKeyPairGenerator {
     }
 
     String getPublicKey(String alias, String password, File keystoreFile, File publicKeyFile) throws Exception {
+        if (keystoreFile == null || !keystoreFile.exists() || publicKeyFile == null || !publicKeyFile.exists()) {
+            return null;
+        }
 
         LOG.info("getPublicKey {} {} {}", alias, keystoreFile, publicKeyFile);
 
@@ -88,6 +91,10 @@ public class RSAKeyPairGenerator {
     }
 
     String getPrivateKey(String alias, String password, File keystoreFile) throws Exception {
+
+        if (keystoreFile == null || !keystoreFile.exists()) {
+            return null;
+        }
 
         LOG.info("getPrivateKey {} {}", alias, keystoreFile);
 
