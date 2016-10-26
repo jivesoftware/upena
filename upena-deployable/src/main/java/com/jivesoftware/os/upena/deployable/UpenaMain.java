@@ -398,10 +398,10 @@ public class UpenaMain {
 
         ExecutorService instanceChangedThreads = Executors.newFixedThreadPool(32);
 
-        final AtomicReference<UbaService> ubaServiceReference = new AtomicReference<>();
-        final UpenaStore upenaStore = new UpenaStore(
+        AtomicReference<UbaService> ubaServiceReference = new AtomicReference<>();
+        UpenaStore upenaStore = new UpenaStore(
             orderIdProvider,
-            mapper,
+            storeMapper,
             amzaService, (instanceChanges) -> {
                 instanceChangedThreads.submit(() -> {
                     UbaService got = ubaServiceReference.get();
