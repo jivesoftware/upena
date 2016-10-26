@@ -57,7 +57,7 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInput> {
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
-    private static final ObjectMapper MAPPER = new ObjectMapper();
+    private final ObjectMapper mapper;
     private final NumberFormat numberFormat = NumberFormat.getNumberInstance();
 
     private final String template;
@@ -72,7 +72,8 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
     private final DiscoveredRoutes discoveredRoutes;
     private final ExecutorService executorService = Executors.newCachedThreadPool();
 
-    public TopologyPluginRegion(String template,
+    public TopologyPluginRegion(ObjectMapper mapper,
+        String template,
         String connectionHealthTemplate,
         SoyRenderer renderer,
         AmzaInstance amzaInstance,
@@ -83,6 +84,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
         InstancesPluginRegion instancesPluginRegion,
         DiscoveredRoutes discoveredRoutes) {
 
+        this.mapper = mapper;
         this.template = template;
         this.connectionHealthTemplate = connectionHealthTemplate;
         this.renderer = renderer;
@@ -163,7 +165,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
 
             data.put("filters", filter);
 
-            ConcurrentNavigableMap<ServiceKey, TimestampedValue<Service>> services = upenaStore.services.find(new ServiceFilter(null, null, 0, 100_000));
+            ConcurrentNavigableMap<ServiceKey, TimestampedValue<Service>> services = upenaStore.services.find(false, new ServiceFilter(null, null, 0, 100_000));
 
             Map<ServiceKey, TimestampedValue<com.jivesoftware.os.upena.shared.Service>> sort = new ConcurrentSkipListMap<>((ServiceKey o1, ServiceKey o2) -> {
                 com.jivesoftware.os.upena.shared.Service so1 = services.get(o1).getValue();
@@ -195,7 +197,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
                 }
             }
 
-            data.put("serviceLegend", MAPPER.writeValueAsString(serviceNameLegend));
+            data.put("serviceLegend", mapper.writeValueAsString(serviceNameLegend));
 
             topologyGraph(user, instanceFilter, input.linkType, serviceColor, data);
 
@@ -224,7 +226,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
         Map<String, Edge> edges = new HashMap<>();
         Map<String, Node> nodes = new HashMap<>();
 
-        Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(filter);
+        Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(false, filter);
         for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {
             TimestampedValue<Instance> timestampedValue = entrySet.getValue();
             if (!timestampedValue.getTombstoned()) {
@@ -418,7 +420,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
             renderNodes.add(node);
         }
 
-        data.put("topologyNodes", MAPPER.writeValueAsString(renderNodes));
+        data.put("topologyNodes", mapper.writeValueAsString(renderNodes));
 
         List<Map<String, String>> renderEdges = new ArrayList<>();
         for (Edge e : edges.values()) {
@@ -432,7 +434,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
             renderEdges.add(edge);
         }
 
-        data.put("topologyEdges", MAPPER.writeValueAsString(renderEdges));
+        data.put("topologyEdges", mapper.writeValueAsString(renderEdges));
 
     }
 

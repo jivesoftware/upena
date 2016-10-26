@@ -275,7 +275,7 @@ public class LoadBalancersPluginRegion implements PageRegion<LoadBalancersPlugin
             Set<String> attachedLB = new HashSet<>();
 
             List<Map<String, Object>> rows = new ArrayList<>();
-            Map<LBKey, TimestampedValue<LB>> found = upenaStore.loadBalancers.find(filter);
+            Map<LBKey, TimestampedValue<LB>> found = upenaStore.loadBalancers.find(false, filter);
             for (Map.Entry<LBKey, TimestampedValue<LB>> entrySet : found.entrySet()) {
                 LBKey key = entrySet.getKey();
                 TimestampedValue<LB> timestampedValue = entrySet.getValue();
@@ -454,7 +454,7 @@ public class LoadBalancersPluginRegion implements PageRegion<LoadBalancersPlugin
 
             rows = new ArrayList<>();
              JenkinsHash jenkinsHash = new JenkinsHash();
-            ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> foundInstance = upenaStore.instances.find(
+            ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> foundInstance = upenaStore.instances.find(false, 
                 new InstanceFilter(null, null, null, null, null, 0, 100_000));
 
             for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entry : foundInstance.entrySet()) {

@@ -175,7 +175,7 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
                         input.instanceId.isEmpty() ? null : Integer.parseInt(input.instanceId),
                         0, 100_000);
 
-                    Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(filter);
+                    Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(false, filter);
                     for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {
                         TimestampedValue<Instance> timestampedValue = entrySet.getValue();
                         Instance instance = timestampedValue.getValue();

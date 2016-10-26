@@ -346,12 +346,12 @@ public class UpenaMain {
         String rack = System.getProperty("host.rack", "unknownRack");
         String publicHost = System.getProperty("public.host.name", hostname);
 
-        final RingHost ringHost = new RingHost(hostname, port); // TODO include rackId
+        RingHost ringHost = new RingHost(hostname, port); // TODO include rackId
 
         // todo need a better way to create writer id.
-        final TimestampedOrderIdProvider orderIdProvider = new OrderIdProviderImpl(new ConstantWriterIdProvider(new Random().nextInt(512)));
+        TimestampedOrderIdProvider orderIdProvider = new OrderIdProviderImpl(new ConstantWriterIdProvider(new Random().nextInt(512)));
 
-        final ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = new ObjectMapper();
         mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
         mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -387,7 +387,10 @@ public class UpenaMain {
         LOG.info("|      Amza Service Online");
         LOG.info("-----------------------------------------------------------------------");
 
-        final UpenaConfigStore upenaConfigStore = new UpenaConfigStore(amzaService);
+        ObjectMapper storeMapper = new ObjectMapper();
+        mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        UpenaConfigStore upenaConfigStore = new UpenaConfigStore(storeMapper, amzaService);
 
         LOG.info("-----------------------------------------------------------------------");
         LOG.info("|      Upena Config Store Online");
@@ -674,7 +677,8 @@ public class UpenaMain {
             upenaStore
         );
 
-        HealthPluginRegion healthPluginRegion = new HealthPluginRegion(System.currentTimeMillis(),
+        HealthPluginRegion healthPluginRegion = new HealthPluginRegion(mapper,
+            System.currentTimeMillis(),
             ringHost,
             "soy.page.healthPluginRegion",
             "soy.page.instanceHealthPluginRegion",
@@ -695,12 +699,12 @@ public class UpenaMain {
 
         ManagePlugin topology = new ManagePlugin("th", null, "Topology", "/ui/topology",
             TopologyPluginEndpoints.class,
-            new TopologyPluginRegion("soy.page.topologyPluginRegion", "soy.page.connectionsHealth",
+            new TopologyPluginRegion(mapper, "soy.page.topologyPluginRegion", "soy.page.connectionsHealth",
                 renderer, amzaService, upenaStore, healthPluginRegion, hostsPluginRegion, releasesPluginRegion, instancesPluginRegion, discoveredRoutes), null);
 
         ManagePlugin connectivity = new ManagePlugin("transfer", null, "Connectivity", "/ui/connectivity",
             ConnectivityPluginEndpoints.class,
-            new ConnectivityPluginRegion("soy.page.connectivityPluginRegion", "soy.page.connectionsHealth", "soy.page.connectionOverview",
+            new ConnectivityPluginRegion(mapper, "soy.page.connectivityPluginRegion", "soy.page.connectionsHealth", "soy.page.connectionOverview",
                 renderer, amzaService, upenaStore, healthPluginRegion, hostsPluginRegion, releasesPluginRegion, instancesPluginRegion, discoveredRoutes), null);
 
         ManagePlugin changes = new ManagePlugin("road", null, "Changes", "/ui/changeLog",
@@ -712,7 +716,7 @@ public class UpenaMain {
 
         ManagePlugin config = new ManagePlugin("cog", null, "Config", "/ui/config",
             ConfigPluginEndpoints.class,
-            new ConfigPluginRegion("soy.page.configPluginRegion", renderer, upenaStore, upenaConfigStore), null);
+            new ConfigPluginRegion(mapper, "soy.page.configPluginRegion", renderer, upenaStore, upenaConfigStore), null);
 
         ManagePlugin repo = new ManagePlugin("hdd", null, "Repository", "/ui/repo",
             RepoPluginEndpoints.class,
@@ -739,7 +743,7 @@ public class UpenaMain {
 
         ManagePlugin modules = new ManagePlugin("wrench", null, "Modules", "/ui/modules",
             ModulesPluginEndpoints.class,
-            new ModulesPluginRegion(repositoryProvider, "soy.page.modulesPluginRegion", renderer, upenaStore), null);
+            new ModulesPluginRegion(mapper, repositoryProvider, "soy.page.modulesPluginRegion", renderer, upenaStore), null);
 
         ManagePlugin proxy = new ManagePlugin("random", null, "Proxies", "/ui/proxy",
             ProxyPluginEndpoints.class,
@@ -747,7 +751,7 @@ public class UpenaMain {
 
         ManagePlugin ring = new ManagePlugin("leaf", null, "Upena", "/ui/ring",
             UpenaRingPluginEndpoints.class,
-            new UpenaRingPluginRegion("soy.page.upenaRingPluginRegion", renderer, amzaService), null);
+            new UpenaRingPluginRegion("soy.page.upenaRingPluginRegion", renderer, amzaService, upenaStore), null);
 
         ManagePlugin sar = new ManagePlugin("dashboard", null, "SAR", "/ui/sar",
             SARPluginEndpoints.class,

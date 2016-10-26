@@ -47,7 +47,7 @@ public class AsyncLookupService {
             HttpRequestHelper helper = HttpRequestHelperUtils.buildRequestHelper(false, false, null, remoteHost, remotePort);
             return helper.executeRequest(clusterFilter, "/upena/cluster/find", ClusterResults.class, new ClusterResults());
         } else {
-            return upenaStore.clusters.find(clusterFilter);
+            return upenaStore.clusters.find(false, clusterFilter);
         }
     }
 
@@ -66,7 +66,7 @@ public class AsyncLookupService {
             HttpRequestHelper helper = HttpRequestHelperUtils.buildRequestHelper(false, false, null, remoteHost, remotePort);
             return helper.executeRequest(hostsFilter, "/upena/host/find", HostResults.class, new HostResults());
         } else {
-            return upenaStore.hosts.find(hostsFilter);
+            return upenaStore.hosts.find(false, hostsFilter);
         }
     }
 
@@ -85,7 +85,7 @@ public class AsyncLookupService {
             HttpRequestHelper helper = HttpRequestHelperUtils.buildRequestHelper(false, false, null, remoteHost, remotePort);
             return helper.executeRequest(serviceFilter, "/upena/service/find", ServiceResults.class, new ServiceResults());
         } else {
-            return upenaStore.services.find(serviceFilter);
+            return upenaStore.services.find(false, serviceFilter);
         }
     }
 
@@ -104,7 +104,7 @@ public class AsyncLookupService {
             HttpRequestHelper helper = HttpRequestHelperUtils.buildRequestHelper(false, false, null, remoteHost, remotePort);
             return helper.executeRequest(releasesFilter, "/upena/releaseGroup/find", ReleaseGroupResults.class, new ReleaseGroupResults());
         } else {
-            return upenaStore.releaseGroups.find(releasesFilter);
+            return upenaStore.releaseGroups.find(false, releasesFilter);
         }
     }
 }

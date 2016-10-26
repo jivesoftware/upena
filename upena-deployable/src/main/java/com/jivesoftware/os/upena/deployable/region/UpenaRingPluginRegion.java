@@ -1,13 +1,13 @@
 package com.jivesoftware.os.upena.deployable.region;
 
 import com.google.common.collect.Maps;
-import com.jivesoftware.os.upena.amza.shared.AmzaInstance;
-import com.jivesoftware.os.upena.amza.shared.RingHost;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
+import com.jivesoftware.os.upena.amza.shared.AmzaInstance;
+import com.jivesoftware.os.upena.amza.shared.RingHost;
 import com.jivesoftware.os.upena.deployable.region.UpenaRingPluginRegion.UpenaRingPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
-
+import com.jivesoftware.os.upena.service.UpenaStore;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -24,13 +24,16 @@ public class UpenaRingPluginRegion implements PageRegion<UpenaRingPluginRegionIn
     private final String template;
     private final SoyRenderer renderer;
     private final AmzaInstance amzaInstance;
+    private final UpenaStore upenaStore;
 
     public UpenaRingPluginRegion(String template,
         SoyRenderer renderer,
-        AmzaInstance amzaInstance) {
+        AmzaInstance amzaInstance,
+        UpenaStore upenaStore) {
         this.template = template;
         this.renderer = renderer;
         this.amzaInstance = amzaInstance;
+        this.upenaStore = upenaStore;
     }
 
     @Override
@@ -66,6 +69,14 @@ public class UpenaRingPluginRegion implements PageRegion<UpenaRingPluginRegionIn
                 amzaInstance.addRingHost("master", new RingHost(input.host, Integer.parseInt(input.port)));
             } else if (input.action.equals("remove")) {
                 amzaInstance.removeRingHost("master", new RingHost(input.host, Integer.parseInt(input.port)));
+            } else if (input.action.equals("clearChangeLog")) {
+                upenaStore.clearChangeLog();
+            } else if (input.action.equals("removeBadKeys")) {
+                upenaStore.clusters.find(true, null);
+                upenaStore.hosts.find(true, null);
+                upenaStore.services.find(true, null);
+                upenaStore.releaseGroups.find(true, null);
+                upenaStore.instances.find(true, null);
             }
 
             List<Map<String, String>> rows = new ArrayList<>();

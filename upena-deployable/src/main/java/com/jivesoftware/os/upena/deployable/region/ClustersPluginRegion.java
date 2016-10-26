@@ -142,7 +142,7 @@ public class ClustersPluginRegion implements PageRegion<ClustersPluginRegionInpu
             }
 
             List<Map<String, Object>> rows = new ArrayList<>();
-            Map<ClusterKey, TimestampedValue<Cluster>> found = upenaStore.clusters.find(filter);
+            Map<ClusterKey, TimestampedValue<Cluster>> found = upenaStore.clusters.find(false, filter);
             for (Map.Entry<ClusterKey, TimestampedValue<Cluster>> entrySet : found.entrySet()) {
                 ClusterKey key = entrySet.getKey();
                 TimestampedValue<Cluster> timestampedValue = entrySet.getValue();
@@ -157,7 +157,7 @@ public class ClustersPluginRegion implements PageRegion<ClustersPluginRegionInpu
                     0, 100_000);
 
                 HashMultiset<ServiceKey> serviceKeyCount = HashMultiset.create();
-                Map<InstanceKey, TimestampedValue<Instance>> instances = upenaStore.instances.find(instanceFilter);
+                Map<InstanceKey, TimestampedValue<Instance>> instances = upenaStore.instances.find(false, instanceFilter);
                 for (TimestampedValue<Instance> i : instances.values()) {
                     if (!i.getTombstoned()) {
                         serviceKeyCount.add(i.getValue().serviceKey);

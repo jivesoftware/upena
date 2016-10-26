@@ -43,19 +43,21 @@ public class UpenaTable<K extends Key, V extends Stored> {
         VV validate(UpenaTable<KK, VV> table, KK key, VV value) throws Exception;
     }
 
-    private static final ObjectMapper mapper = new ObjectMapper();
-
+    private final ObjectMapper mapper;
     private final AmzaTable store;
     private final Class<K> keyClass;
     private final Class<V> valueClass;
     private final UpenaKeyProvider<K, V> keyProvider;
     private final UpenaValueValidator<K, V> valueValidator;
 
-    public UpenaTable(AmzaTable store,
+    public UpenaTable(ObjectMapper mapper,
+        AmzaTable store,
         Class<K> keyClass,
         Class<V> valueClass,
         UpenaKeyProvider<K, V> keyProvider,
         UpenaValueValidator<K, V> valueValidator) {
+
+        this.mapper = mapper;
         this.store = store;
         this.keyClass = keyClass;
         this.valueClass = valueClass;
@@ -90,30 +92,37 @@ public class UpenaTable<K extends Key, V extends Stored> {
     }
 
     @SuppressWarnings("unchecked")
-    public ConcurrentNavigableMap<K, TimestampedValue<V>> find(final KeyValueFilter<K, V> filter) throws Exception {
-        final ConcurrentNavigableMap<K, TimestampedValue<V>> results = filter.createCollector();
+    public ConcurrentNavigableMap<K, TimestampedValue<V>> find(boolean removeBadKeysEnabled, final KeyValueFilter<K, V> filter) throws Exception {
+        final ConcurrentNavigableMap<K, TimestampedValue<V>> results = filter == null ? null : filter.createCollector();
         List<RowIndexKey> badKeys = Lists.newArrayList();
         store.scan((transactionId, key, value) -> {
+            K k = null;
             try {
                 if (!value.getTombstoned()) {
-                    K k = mapper.readValue(key.getKey(), keyClass);
-                    V v = mapper.readValue(value.getValue(), valueClass);
-
-                    if (filter.filter(k, v)) {
-                        results.put(k, new BasicTimestampedValue(v, value.getTimestampId(), value.getTombstoned()));
-                    }
+                    k = mapper.readValue(key.getKey(), keyClass);
                 }
             } catch (Exception x) {
                 LOG.warn("Failed to scan. {}", new Object[]{filter}, x);
                 badKeys.add(key);
             }
+
+            if (k != null) {
+                V v = mapper.readValue(value.getValue(), valueClass);
+                if (results != null && filter != null && filter.filter(k, v)) {
+                    results.put(k, new BasicTimestampedValue(v, value.getTimestampId(), value.getTombstoned()));
+                }
+            }
             return true;
         });
         if (!badKeys.isEmpty()) {
-            for (RowIndexKey key : badKeys) {
-                store.remove(key);
+            if (removeBadKeysEnabled) {
+                for (RowIndexKey key : badKeys) {
+                    store.remove(key);
+                }
+                LOG.info("Removed {} bad keys", badKeys.size());
+            } else {
+                LOG.warn("Find for filter:{} has {} bad keys.", filter, badKeys.size());
             }
-            LOG.info("Removed {} bad keys", badKeys.size());
         }
         return results;
     }

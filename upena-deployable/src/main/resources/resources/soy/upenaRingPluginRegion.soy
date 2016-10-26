@@ -30,7 +30,11 @@
                                 data-original-title="" title="">
                             </td>
                             <input type="hidden" name="action" value="add">
-                            <td><button title="Add" type="submit" name="action" value="add" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-plus">&nbspAdd</span></button><td>
+                            <td>
+                                <button title="Add" type="submit" name="action" value="add" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                                    <span class="glyphicon glyphicon-plus">&nbspAdd</span>
+                                </button>
+                            </td>
                         </tr>
                     </form>
                 </thead>
@@ -50,6 +54,24 @@
                     {/foreach}
                 </tbody>
             </table>
+            <div class="upena-heading"><span class="upena-title">Admin</span></div>
+            <form id="add-ring-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                        data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="addRingHost">
+                <table class="table float-table-head table-hover table-condensed table-responsive">
+                    <tr>
+                        <td>
+                            <button onclick="return confirm('Are you sure you want to clear the change log?')" title="Remove" type="submit" name="action" value="clearChangeLog" class="btn btn-default ladda-button" data-style="expand-right">
+                                <span class="glyphicon glyphicon-trash">&nbspClear ChangeLog</span>
+                            </button>
+                        </td>
+                        <td>
+                            <button onclick="return confirm('Are you sure you want to remove bad keys?')" title="Remove" type="submit" name="action" value="removeBadKeys" class="btn btn-default ladda-button" data-style="expand-right">
+                                <span class="glyphicon glyphicon-trash">&nbspRemove Bad Keys</span>
+                            </button>
+                        </td>
+                    </tr>
+                </table>
+            </form>
         </div>
     {/if}
 {/template}

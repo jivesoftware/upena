@@ -78,7 +78,6 @@ public class UpenaStore {
     public final TableName chaosStateStoreKey = new TableName("master", "chaosState", null, null);
     public final TableName changeLogStoreKey = new TableName("master", "changeLog", null, null);
 
-
     public final UpenaTable<ProjectKey, Project> projects;
     public final UpenaTable<ClusterKey, Cluster> clusters;
     public final UpenaTable<LBKey, LB> loadBalancers;
@@ -108,18 +107,19 @@ public class UpenaStore {
         this.instanceRemoved = instanceRemoved;
         this.tenantChanges = tenantChanges;
 
-        projects = new UpenaTable<>(amzaService.getTable(projectStoreKey), ProjectKey.class, Project.class, new ProjectKeyProvider(idProvider), null);
-        clusters = new UpenaTable<>(amzaService.getTable(clusterStoreKey), ClusterKey.class, Cluster.class, new ClusterKeyProvider(idProvider), null);
-        loadBalancers = new UpenaTable<>(amzaService.getTable(loadbalancers), LBKey.class, LB.class, new LBKeyProvider(idProvider), null);
-        hosts = new UpenaTable<>(amzaService.getTable(hostStoreKey), HostKey.class, Host.class, new HostKeyProvider(), null);
-        services = new UpenaTable<>(amzaService.getTable(serviceStoreKey), ServiceKey.class, Service.class, new ServiceKeyProvider(idProvider), null);
-        releaseGroups = new UpenaTable<>(amzaService.getTable(releaseGroupStoreKey),
+        projects = new UpenaTable<>(mapper, amzaService.getTable(projectStoreKey), ProjectKey.class, Project.class, new ProjectKeyProvider(idProvider), null);
+        clusters = new UpenaTable<>(mapper, amzaService.getTable(clusterStoreKey), ClusterKey.class, Cluster.class, new ClusterKeyProvider(idProvider), null);
+        loadBalancers = new UpenaTable<>(mapper, amzaService.getTable(loadbalancers), LBKey.class, LB.class, new LBKeyProvider(idProvider), null);
+        hosts = new UpenaTable<>(mapper, amzaService.getTable(hostStoreKey), HostKey.class, Host.class, new HostKeyProvider(), null);
+        services = new UpenaTable<>(mapper, amzaService.getTable(serviceStoreKey), ServiceKey.class, Service.class, new ServiceKeyProvider(idProvider), null);
+        releaseGroups = new UpenaTable<>(mapper, amzaService.getTable(releaseGroupStoreKey),
             ReleaseGroupKey.class, ReleaseGroup.class, new ReleaseGroupKeyProvider(idProvider), null);
-        instances = new UpenaTable<>(amzaService.getTable(instanceStoreKey),
+        instances = new UpenaTable<>(mapper, amzaService.getTable(instanceStoreKey),
             InstanceKey.class, Instance.class, new InstanceKeyProvider(idProvider), new InstanceValidator(minServicePort, maxServicePort));
-        tenants = new UpenaTable<>(amzaService.getTable(tenantStoreKey), TenantKey.class, Tenant.class, new TenantKeyProvider(), null);
-        monkeys = new UpenaTable<>(amzaService.getTable(monkeyStoreKey), MonkeyKey.class, Monkey.class, new MonkeyKeyProvider(idProvider), null);
-        chaosStates = new UpenaTable<>(amzaService.getTable(chaosStateStoreKey), ChaosStateKey.class, ChaosState.class, new ChaosStateKeyProvider(idProvider), null);
+        tenants = new UpenaTable<>(mapper, amzaService.getTable(tenantStoreKey), TenantKey.class, Tenant.class, new TenantKeyProvider(), null);
+        monkeys = new UpenaTable<>(mapper, amzaService.getTable(monkeyStoreKey), MonkeyKey.class, Monkey.class, new MonkeyKeyProvider(idProvider), null);
+        chaosStates = new UpenaTable<>(mapper, amzaService.getTable(chaosStateStoreKey), ChaosStateKey.class, ChaosState.class, new ChaosStateKeyProvider(
+            idProvider), null);
 
         changeLog = amzaService.getTable(changeLogStoreKey);
     }
@@ -131,6 +131,15 @@ public class UpenaStore {
         long descendingTimestamp = Long.MAX_VALUE - whenTimestampMillis;
         changeLog.set(new RowIndexKey(longBytes(descendingTimestamp, new byte[8], 0)),
             mapper.writeValueAsBytes(new RecordedChange(who, what, whenTimestampMillis, where, why, how)));
+    }
+
+    public void clearChangeLog() {
+        changeLog.scan((key, value) -> {
+            if (key != null) {
+                changeLog.remove(key);
+            }
+            return true;
+        });
     }
 
     public static byte[] longBytes(long v, byte[] _bytes, int _offset) {
@@ -186,6 +195,7 @@ public class UpenaStore {
     }
 
     public interface LogStream {
+
         boolean stream(RecordedChange change) throws Exception;
     }
 
@@ -193,7 +203,7 @@ public class UpenaStore {
         amzaService.watch(clusterStoreKey, new UpenaStoreChanges<>(mapper, ClusterKey.class, Cluster.class,
             (key, value) -> {
                 InstanceFilter impactedFilter = new InstanceFilter(key, null, null, null, null, 0, Integer.MAX_VALUE);
-                ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> got = instances.find(impactedFilter);
+                ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> got = instances.find(false, impactedFilter);
                 List<InstanceChanged> changes = new ArrayList<>();
                 for (Entry<InstanceKey, TimestampedValue<Instance>> instance : got.entrySet()) {
                     changes.add(new InstanceChanged(instance.getValue().getValue().hostKey.getKey(), instance.getKey().getKey()));
@@ -202,7 +212,7 @@ public class UpenaStore {
             },
             (key, value) -> {
                 InstanceFilter impactedFilter = new InstanceFilter(key, null, null, null, null, 0, Integer.MAX_VALUE);
-                ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> got = instances.find(impactedFilter);
+                ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> got = instances.find(false, impactedFilter);
                 for (Entry<InstanceKey, TimestampedValue<Instance>> e : got.entrySet()) {
                     LOG.info("Removing instance:" + e + " because cluster:" + value + " was removed.");
                     instances.remove(e.getKey());
@@ -211,7 +221,7 @@ public class UpenaStore {
         amzaService.watch(hostStoreKey, new UpenaStoreChanges<>(mapper, HostKey.class, Host.class,
             (key, value) -> {
                 InstanceFilter impactedFilter = new InstanceFilter(null, key, null, null, null, 0, Integer.MAX_VALUE);
-                ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> got = instances.find(impactedFilter);
+                ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> got = instances.find(false, impactedFilter);
                 List<InstanceChanged> changes = new ArrayList<>();
                 for (Entry<InstanceKey, TimestampedValue<Instance>> instance : got.entrySet()) {
                     changes.add(new InstanceChanged(instance.getValue().getValue().hostKey.getKey(), instance.getKey().getKey()));
@@ -220,7 +230,7 @@ public class UpenaStore {
             },
             (key, value) -> {
                 InstanceFilter impactedFilter = new InstanceFilter(null, key, null, null, null, 0, Integer.MAX_VALUE);
-                ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> got = instances.find(impactedFilter);
+                ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> got = instances.find(false, impactedFilter);
                 for (Entry<InstanceKey, TimestampedValue<Instance>> e : got.entrySet()) {
                     LOG.info("Removing instance:" + e + " because host:" + value + " was removed.");
                     instances.remove(e.getKey());
@@ -229,7 +239,7 @@ public class UpenaStore {
         amzaService.watch(serviceStoreKey, new UpenaStoreChanges<>(mapper, ServiceKey.class, Service.class,
             (key, value) -> {
                 InstanceFilter impactedFilter = new InstanceFilter(null, null, key, null, null, 0, Integer.MAX_VALUE);
-                ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> got = instances.find(impactedFilter);
+                ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> got = instances.find(false, impactedFilter);
                 List<InstanceChanged> changes = new ArrayList<>();
                 for (Entry<InstanceKey, TimestampedValue<Instance>> instance : got.entrySet()) {
                     changes.add(new InstanceChanged(instance.getValue().getValue().hostKey.getKey(), instance.getKey().getKey()));
@@ -238,7 +248,7 @@ public class UpenaStore {
             },
             (key, value) -> {
                 InstanceFilter impactedFilter = new InstanceFilter(null, null, key, null, null, 0, Integer.MAX_VALUE);
-                ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> got = instances.find(impactedFilter);
+                ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> got = instances.find(false, impactedFilter);
                 for (Entry<InstanceKey, TimestampedValue<Instance>> e : got.entrySet()) {
                     LOG.info("Removing instance:" + e + " because service:" + value + " was removed.");
                     instances.remove(e.getKey());
@@ -247,7 +257,7 @@ public class UpenaStore {
         amzaService.watch(releaseGroupStoreKey, new UpenaStoreChanges<>(mapper, ReleaseGroupKey.class, ReleaseGroup.class,
             (key, value) -> {
                 InstanceFilter impactedFilter = new InstanceFilter(null, null, null, key, null, 0, Integer.MAX_VALUE);
-                ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> got = instances.find(impactedFilter);
+                ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> got = instances.find(false, impactedFilter);
                 List<InstanceChanged> changes = new ArrayList<>();
                 for (Entry<InstanceKey, TimestampedValue<Instance>> instance : got.entrySet()) {
                     changes.add(new InstanceChanged(instance.getValue().getValue().hostKey.getKey(), instance.getKey().getKey()));
@@ -256,7 +266,7 @@ public class UpenaStore {
             },
             (key, value) -> {
                 InstanceFilter impactedFilter = new InstanceFilter(null, null, null, key, null, 0, Integer.MAX_VALUE);
-                ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> got = instances.find(impactedFilter);
+                ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> got = instances.find(false, impactedFilter);
                 for (Entry<InstanceKey, TimestampedValue<Instance>> e : got.entrySet()) {
                     LOG.info("Removing instance:" + e + " because release group:" + value + " was removed.");
                     instances.remove(e.getKey());

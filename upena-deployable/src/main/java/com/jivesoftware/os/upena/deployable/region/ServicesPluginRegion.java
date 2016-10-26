@@ -27,7 +27,7 @@ import java.util.Map;
 // soy.page.servicesPluginRegion
 public class ServicesPluginRegion implements PageRegion<ServicesPluginRegionInput> {
 
-    private static final MetricLogger log = MetricLoggerFactory.getLogger();
+    private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
     private final ObjectMapper mapper;
     private final String template;
@@ -96,7 +96,7 @@ public class ServicesPluginRegion implements PageRegion<ServicesPluginRegionInpu
             }
 
             List<Map<String, String>> rows = new ArrayList<>();
-            Map<ServiceKey, TimestampedValue<Service>> found = upenaStore.services.find(filter);
+            Map<ServiceKey, TimestampedValue<Service>> found = upenaStore.services.find(false, filter);
             for (Map.Entry<ServiceKey, TimestampedValue<Service>> entrySet : found.entrySet()) {
                 ServiceKey key = entrySet.getKey();
                 TimestampedValue<Service> timestampedValue = entrySet.getValue();
@@ -110,7 +110,7 @@ public class ServicesPluginRegion implements PageRegion<ServicesPluginRegionInpu
                     null,
                     0, 100_000);
 
-                Map<InstanceKey, TimestampedValue<Instance>> instances = upenaStore.instances.find(instanceFilter);
+                Map<InstanceKey, TimestampedValue<Instance>> instances = upenaStore.instances.find(false, instanceFilter);
 
                 Map<String, String> row = new HashMap<>();
                 row.put("instanceCount", String.valueOf(instances.size()));
@@ -134,7 +134,7 @@ public class ServicesPluginRegion implements PageRegion<ServicesPluginRegionInpu
 
             data.put("services", rows);
         } catch (Exception e) {
-            log.error("Unable to retrieve data", e);
+            LOG.error("Unable to retrieve data", e);
         }
 
         return renderer.render(template, data);
@@ -215,7 +215,7 @@ public class ServicesPluginRegion implements PageRegion<ServicesPluginRegionInpu
                 0, 100_000);
 
             ListOfService values = new ListOfService();
-            Map<ServiceKey, TimestampedValue<Service>> found = upenaStore.services.find(filter);
+            Map<ServiceKey, TimestampedValue<Service>> found = upenaStore.services.find(false, filter);
             for (Map.Entry<ServiceKey, TimestampedValue<Service>> entrySet : found.entrySet()) {
                 TimestampedValue<Service> timestampedValue = entrySet.getValue();
                 Service value = timestampedValue.getValue();
@@ -224,7 +224,7 @@ public class ServicesPluginRegion implements PageRegion<ServicesPluginRegionInpu
 
             return mapper.writeValueAsString(values);
         } catch (Exception e) {
-            log.error("Unable to retrieve data", e);
+            LOG.error("Unable to retrieve data", e);
             return e.toString();
         }
     }
@@ -243,7 +243,7 @@ public class ServicesPluginRegion implements PageRegion<ServicesPluginRegionInpu
 
             return "Imported " + values.size();
         } catch (Exception x) {
-            log.error("Unable to retrieve data", x);
+            LOG.error("Unable to retrieve data", x);
             String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
             return "Error while trying to import releaseGroups \n" + trace;
         }

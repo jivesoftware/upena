@@ -634,7 +634,7 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
             }
 
             List<Map<String, Object>> rows = new ArrayList<>();
-            Map<ProjectKey, TimestampedValue<Project>> found = upenaStore.projects.find(filter);
+            Map<ProjectKey, TimestampedValue<Project>> found = upenaStore.projects.find(false, filter);
             for (Map.Entry<ProjectKey, TimestampedValue<Project>> entrySet : found.entrySet()) {
                 ProjectKey key = entrySet.getKey();
                 TimestampedValue<Project> timestampedValue = entrySet.getValue();
@@ -1072,7 +1072,7 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
             String[] coordinate = moduleCoordinate.trim().split(":");
             String find = coordinate[0] + ":" + coordinate[1] + ":";
             ReleaseGroupFilter filter = new ReleaseGroupFilter(null, null, find, null, null, 0, 1000);
-            ConcurrentNavigableMap<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> found = upenaStore.releaseGroups.find(filter);
+            ConcurrentNavigableMap<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> found = upenaStore.releaseGroups.find(false, filter);
             for (Map.Entry<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> entry : found.entrySet()) {
                 project.dependantReleaseGroups.put(entry.getKey(), new Artifact(coordinate));
                 ps.println("INFO: found a release:" + entry.getValue().getValue().name + " tied to " + find);

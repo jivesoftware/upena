@@ -31,10 +31,11 @@ import java.util.Set;
 public class UpenaConfigStore {
 
     private final AmzaService amzaService;
-    private final ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper;
     private final Map<String, FetchedVersion> lastFetchedVersion = Maps.newConcurrentMap();
 
-    public UpenaConfigStore(AmzaService amzaService) {
+    public UpenaConfigStore(ObjectMapper mapper, AmzaService amzaService) {
+        this.mapper = mapper;
         this.amzaService = amzaService;
     }
 

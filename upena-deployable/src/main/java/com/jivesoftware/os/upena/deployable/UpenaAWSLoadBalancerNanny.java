@@ -84,7 +84,7 @@ public class UpenaAWSLoadBalancerNanny {
             return;
         }
 
-        ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(
+        ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(false, 
             new InstanceFilter(null, selfHostKey, null, null, null, 0, 100_000));
 
         Set<String> missingTargetGroups = new HashSet<>();

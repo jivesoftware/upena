@@ -38,18 +38,17 @@ public class ActiveStatusReports {
     private final Alerts alerts;
 
     public ActiveStatusReports(
-            final long serviceConsiderOfflineIfHasntAnnoucenedItselfInNMillis,
-            int keepLastNAlerts) throws IOException {
+        ObjectMapper mapper,
+        long serviceConsiderOfflineIfHasntAnnoucenedItselfInNMillis,
+        int keepLastNAlerts) throws IOException {
+
         this.keepLastNAlerts = keepLastNAlerts;
-        Executors.newSingleThreadScheduledExecutor().scheduleWithFixedDelay(new Runnable() {
-            @Override
-            public void run() {
-                removeServiceAnnouncement(serviceConsiderOfflineIfHasntAnnoucenedItselfInNMillis);
-            }
+        Executors.newSingleThreadScheduledExecutor().scheduleWithFixedDelay(() -> {
+            removeServiceAnnouncement(serviceConsiderOfflineIfHasntAnnoucenedItselfInNMillis);
         }, 0, 10, TimeUnit.SECONDS);
 
         if (f.exists()) {
-            alerts = new ObjectMapper().readValue(f, Alerts.class);
+            alerts = mapper.readValue(f, Alerts.class);
         } else {
             alerts = new Alerts();
         }
@@ -60,7 +59,7 @@ public class ActiveStatusReports {
         for (Map.Entry<StatusReport, TimestampAnnouncementPair> entry : statusReports.entrySet()) {
             if (entry.getValue().timestamp < timestamp - olderThanNMillis) {
                 addAlert(new Alert(UUID.randomUUID().toString(), AlertType.OFFLINE, "", (int) TimeUnit.MILLISECONDS.toSeconds(timestamp),
-                        entry.getValue().serviceAnnouncement));
+                    entry.getValue().serviceAnnouncement));
                 statusReports.remove(entry.getKey());
             }
         }
@@ -71,17 +70,17 @@ public class ActiveStatusReports {
         TimestampAnnouncementPair current = statusReports.get(serviceAnnouncement);
         if (current == null) {
             addAlert(new Alert(UUID.randomUUID().toString(), AlertType.ONLINE, new Date().toString(), (int) TimeUnit.MILLISECONDS.toSeconds(timestamp),
-                    serviceAnnouncement));
+                serviceAnnouncement));
             statusReports.put(serviceAnnouncement, new TimestampAnnouncementPair(serviceAnnouncement, timestamp));
 
         } else {
             if (changed(current.serviceAnnouncement, serviceAnnouncement, true, false)) {
                 addAlert(new Alert(UUID.randomUUID().toString(), AlertType.RESTARTED, new Date().toString(), (int) TimeUnit.MILLISECONDS.toSeconds(timestamp),
-                        serviceAnnouncement));
+                    serviceAnnouncement));
             }
             if (changed(current.serviceAnnouncement, serviceAnnouncement, false, true)) {
                 addAlert(new Alert(UUID.randomUUID().toString(), AlertType.INSTANCE_CHANGED, new Date().toString(),
-                        (int) TimeUnit.MILLISECONDS.toSeconds(timestamp), serviceAnnouncement));
+                    (int) TimeUnit.MILLISECONDS.toSeconds(timestamp), serviceAnnouncement));
             }
 
             statusReports.put(serviceAnnouncement, new TimestampAnnouncementPair(serviceAnnouncement, timestamp));
@@ -133,8 +132,8 @@ public class ActiveStatusReports {
     }
 
     public boolean changed(StatusReport current, StatusReport next,
-            boolean jvmIdCheck,
-            boolean versionCheck) {
+        boolean jvmIdCheck,
+        boolean versionCheck) {
 
         if (current.jvmIpAddrs != next.jvmIpAddrs && (current.jvmIpAddrs == null || !current.jvmIpAddrs.equals(next.jvmIpAddrs))) {
             return true;

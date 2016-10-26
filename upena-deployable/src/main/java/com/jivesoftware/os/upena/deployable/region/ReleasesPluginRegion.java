@@ -40,7 +40,7 @@ import java.util.concurrent.TimeUnit;
 // soy.page.releasesPluginRegion
 public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInput> {
 
-    private static final MetricLogger log = MetricLoggerFactory.getLogger();
+    private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
     private final ObjectMapper mapper;
     private final RepositoryProvider repositoryProvider;
@@ -305,7 +305,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
                                 long stagger = TimeUnit.SECONDS.toMillis(30);
                                 now += stagger;
                                 List<String> restart = new ArrayList<>();
-                                Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(instanceFilter);
+                                Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(false, instanceFilter);
                                 for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {
                                     InstanceKey key = entrySet.getKey();
                                     TimestampedValue<Instance> timestampedValue = entrySet.getValue();
@@ -395,7 +395,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
                             0, 100_000);
 
                         List<String> messages = new ArrayList<>();
-                        Map<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> found = upenaStore.releaseGroups.find(filter);
+                        Map<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> found = upenaStore.releaseGroups.find(false, filter);
                         for (Map.Entry<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> entrySet : found.entrySet()) {
                             ReleaseGroupKey key = entrySet.getKey();
                             ReleaseGroup value = entrySet.getValue().getValue();
@@ -442,7 +442,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
             }
 
             List<Map<String, Object>> rows = new ArrayList<>();
-            Map<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> found = upenaStore.releaseGroups.find(filter);
+            Map<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> found = upenaStore.releaseGroups.find(false, filter);
             for (Map.Entry<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> entrySet : found.entrySet()) {
                 ReleaseGroupKey key = entrySet.getKey();
                 TimestampedValue<ReleaseGroup> timestampedValue = entrySet.getValue();
@@ -456,7 +456,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
                     null,
                     0, 100_000);
 
-                Map<InstanceKey, TimestampedValue<Instance>> instances = upenaStore.instances.find(instanceFilter);
+                Map<InstanceKey, TimestampedValue<Instance>> instances = upenaStore.instances.find(false, instanceFilter);
                 HashMultiset<ServiceKey> serviceKeyCount = HashMultiset.create();
                 for (TimestampedValue<Instance> i : instances.values()) {
                     if (!i.getTombstoned()) {
@@ -537,7 +537,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
 
             data.put("releases", rows);
         } catch (Exception e) {
-            log.error("Unable to retrieve data", e);
+            LOG.error("Unable to retrieve data", e);
         }
         return data;
     }
@@ -558,7 +558,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
                 0, 100_000);
 
             ListOfReleaseGroup values = new ListOfReleaseGroup();
-            Map<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> found = upenaStore.releaseGroups.find(filter);
+            Map<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> found = upenaStore.releaseGroups.find(false, filter);
             for (Map.Entry<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> entrySet : found.entrySet()) {
                 TimestampedValue<ReleaseGroup> timestampedValue = entrySet.getValue();
                 ReleaseGroup value = timestampedValue.getValue();
@@ -568,7 +568,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
             return mapper.writeValueAsString(values);
 
         } catch (Exception e) {
-            log.error("Unable to retrieve data", e);
+            LOG.error("Unable to retrieve data", e);
             return e.toString();
         }
     }
@@ -587,7 +587,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
 
             return "Imported " + values.size();
         } catch (Exception x) {
-            log.error("Unable to retrieve data", x);
+            LOG.error("Unable to retrieve data", x);
             String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
             return "Error while trying to import releaseGroups \n" + trace;
         }

@@ -131,7 +131,7 @@ public class UpenaRestEndpoints {
     @Path("/cluster/find")
     public Response findCluster(ClusterFilter filter) {
         try {
-            Map<ClusterKey, TimestampedValue<Cluster>> found = upenaStore.clusters.find(filter);
+            Map<ClusterKey, TimestampedValue<Cluster>> found = upenaStore.clusters.find(false, filter);
             LOG.debug("filter:" + filter + " found:" + found.size() + " items.");
             return ResponseHelper.INSTANCE.jsonResponse(found);
         } catch (Exception x) {
@@ -198,7 +198,7 @@ public class UpenaRestEndpoints {
     @Path("/host/find")
     public Response findHost(HostFilter filter) {
         try {
-            Map<HostKey, TimestampedValue<Host>> found = upenaStore.hosts.find(filter);
+            Map<HostKey, TimestampedValue<Host>> found = upenaStore.hosts.find(false, filter);
             LOG.debug("filter:" + filter + " found:" + found.size() + " items.");
             return ResponseHelper.INSTANCE.jsonResponse(found);
         } catch (Exception x) {
@@ -264,7 +264,7 @@ public class UpenaRestEndpoints {
     @Path("/service/find")
     public Response findService(ServiceFilter filter) {
         try {
-            Map<ServiceKey, TimestampedValue<Service>> found = upenaStore.services.find(filter);
+            Map<ServiceKey, TimestampedValue<Service>> found = upenaStore.services.find(false, filter);
             LOG.debug("filter:" + filter + " found:" + found.size() + " items.");
             return ResponseHelper.INSTANCE.jsonResponse(found);
         } catch (Exception x) {
@@ -332,7 +332,7 @@ public class UpenaRestEndpoints {
     @Path("/releaseGroup/find")
     public Response findReleaseGroup(ReleaseGroupFilter filter) {
         try {
-            Map<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> found = upenaStore.releaseGroups.find(filter);
+            Map<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> found = upenaStore.releaseGroups.find(false, filter);
             LOG.debug("filter:" + filter + " found:" + found.size() + " items.");
             return ResponseHelper.INSTANCE.jsonResponse(found);
         } catch (Exception x) {
@@ -402,7 +402,7 @@ public class UpenaRestEndpoints {
     @Path("/instance/find")
     public Response findInstance(InstanceFilter filter) {
         try {
-            Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(filter);
+            Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(false, filter);
             LOG.info("filter:" + filter + " found:" + found.size() + " items.");
             return ResponseHelper.INSTANCE.jsonResponse(found);
         } catch (Exception x) {
@@ -468,7 +468,7 @@ public class UpenaRestEndpoints {
     @Path("/tenant/find")
     public Response findTenant(TenantFilter filter) {
         try {
-            Map<TenantKey, TimestampedValue<Tenant>> found = upenaStore.tenants.find(filter);
+            Map<TenantKey, TimestampedValue<Tenant>> found = upenaStore.tenants.find(false, filter);
             LOG.debug("filter:" + filter + " found:" + found.size() + " items.");
             return ResponseHelper.INSTANCE.jsonResponse(found);
         } catch (Exception x) {
@@ -551,11 +551,11 @@ public class UpenaRestEndpoints {
         try {
             LOG.info("Attempting to map tenant to release: tenantId:" + tenantId + " releaseId:" + releaseId);
             ConcurrentNavigableMap<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> foundReleaseGroups = upenaStore.releaseGroups
-                .find(new ReleaseGroupFilter(releaseId, null, null, null, null, 0, 1000));
+                .find(false, new ReleaseGroupFilter(releaseId, null, null, null, null, 0, 1000));
             Map.Entry<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> firstReleaseGroup = foundReleaseGroups.firstEntry();
 
             TenantFilter tenantFilter = new TenantFilter(tenantId, null, 0, 1000);
-            ConcurrentNavigableMap<TenantKey, TimestampedValue<Tenant>> foundTenants = upenaStore.tenants.find(tenantFilter);
+            ConcurrentNavigableMap<TenantKey, TimestampedValue<Tenant>> foundTenants = upenaStore.tenants.find(false, tenantFilter);
             Map.Entry<TenantKey, TimestampedValue<Tenant>> firstTenant = foundTenants.firstEntry();
             Tenant t = firstTenant.getValue().getValue();
             if (releaseId == null || releaseId.length() == 0) {

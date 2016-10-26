@@ -27,7 +27,6 @@ import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelper;
 import com.jivesoftware.os.upena.amza.shared.RingHost;
 import com.jivesoftware.os.upena.amza.shared.RowIndexKey;
 import com.jivesoftware.os.upena.amza.shared.RowIndexValue;
-import com.jivesoftware.os.upena.amza.shared.RowScan;
 import com.jivesoftware.os.upena.amza.shared.RowScanable;
 import com.jivesoftware.os.upena.amza.shared.TableName;
 import com.jivesoftware.os.upena.amza.shared.UpdatesSender;
@@ -47,15 +46,12 @@ public class HttpUpdatesSender implements UpdatesSender {
 
         final BinaryRowMarshaller rowMarshaller = new BinaryRowMarshaller();
         final List<byte[]> rows = new ArrayList<>();
-        changes.rowScan(new RowScan<Exception>() {
-            @Override
-            public boolean row(long orderId, RowIndexKey key, RowIndexValue value) throws Exception {
-                // We make this copy because we don't know how the value is being stored. By calling value.getValue()
-                // we ensure that the value from the tableIndex is real vs a pointer.
-                RowIndexValue copy = new RowIndexValue(value.getValue(), value.getTimestampId(), value.getTombstoned());
-                rows.add(rowMarshaller.toRow(orderId, key, copy));
-                return true;
-            }
+        changes.rowScan((long orderId, RowIndexKey key, RowIndexValue value) -> {
+            // We make this copy because we don't know how the value is being stored. By calling value.getValue()
+            // we ensure that the value from the tableIndex is real vs a pointer.
+            RowIndexValue copy = new RowIndexValue(value.getValue(), value.getTimestampId(), value.getTombstoned());
+            rows.add(rowMarshaller.toRow(orderId, key, copy));
+            return true;
         });
         if (!rows.isEmpty()) {
             LOG.debug("Pushing " + rows.size() + " changes to " + ringHost);
