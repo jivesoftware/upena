@@ -315,8 +315,8 @@
 }
 .navmenu-inverse,
 .navbar-inverse .navbar-offcanvas {
-    background-color: rgba(34, 34, 34, 0);
-    border-color: rgba(8, 8, 8, 0);
+    background-color: rgb(255, 255, 255);
+    border-color: rgb(195, 195, 195);
 }
 .navmenu-inverse .navmenu-brand,
 .navbar-inverse .navbar-offcanvas .navmenu-brand {

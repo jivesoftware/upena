@@ -138,7 +138,6 @@ import com.jivesoftware.os.upena.uba.service.UpenaClient;
 import com.jivesoftware.os.upena.uba.service.endpoints.UbaServiceRestEndpoints;
 import de.ruedigermoeller.serialization.FSTConfiguration;
 import java.io.File;
-import java.net.InetAddress;
 import java.nio.channels.FileChannel;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
@@ -150,48 +149,74 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.config.IniSecurityManagerFactory;
+import org.apache.shiro.mgt.SecurityManager;
+import org.apache.shiro.session.Session;
+import org.apache.shiro.subject.Subject;
+import org.apache.shiro.util.Factory;
+import org.apache.shiro.web.servlet.ShiroFilter;
 
 public class UpenaMain {
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
+    public static final String[] USAGE = new String[]{
+        "Usage:",
+        "",
+        "    java -jar upena.jar <hostName>                   (manual cluster discovery)",
+        "",
+        " or ",
+        "",
+        "    java -jar upena.jar <hostName> <clusterName>     (automatic cluster discovery)",
+        "",
+        "Overridable properties:",
+        "",
+        "    -DMASTER_PASSWORD=<password>",
+        "         (used to read keystores) ",
+        "",
+        "    -Dhost.instance.id=<instanceId>",
+        "    -Dhost.rack=<rackId>",
+        "    -Dhost.datacenter=<datacenterId>",
+        "    -Dpublic.host.name=<publiclyReachableHostname>",
+        "    -Dmanual.peers=<upenaPeer1Host:port,upenaPeer2Host:port,...>",
+        "",
+        "    -Damza.port=1175",
+        "         (change the port upena uses to interact with other upena nodes.) ",
+        "",
+        "    -Dmin.service.port=10000",
+        "    -Dmax.service.port=32767",
+        "         (adjust range to avoid port collision.) ",
+        "",
+        "    -DpathToRepo=<path>",
+        "         (when using upena as a artifact repository. Default is new File(System.getProperty(\"user.home\"), \".m2\")) ",
+        "",
+        "     Only applicable if you are in aws.",
+        "          -Daws.region=<region>",
+        "          -Daws.roleArn=<arn>",
+        "          -Daws.vpc=<vpcInstanceId>",
+        "",
+        "     Only applicable if you have specified a <clusterName>.",
+        "          -Damza.discovery.group=225.4.5.6",
+        "          -Damza.discovery.port=1123",
+        "",
+        "Example:",
+        "nohup java -Xdebug -Xrunjdwp:transport=dt_socket,address=1176,server=y,suspend=n -classpath \"/usr/java/latest/lib/tools.jar:./upena.jar\" com.jivesoftware.os.upena.deployable.UpenaMain `hostname` dev",
+        "",};
+
     public static void main(String[] args) throws Exception {
 
         try {
             if (args.length == 0) {
-                System.out.println("Usage:");
-                System.out.println("");
-                System.out.println("    java -jar upena.jar <hostName>                   (manual cluster discovery)");
-                System.out.println("");
-                System.out.println(" or ");
-                System.out.println("");
-                System.out.println("    java -jar upena.jar <hostName> <clusterName>     (automatic cluster discovery)");
-                System.out.println("");
-                System.out.println("Overridable properties:");
-                System.out.println("");
-                System.out.println("    -Dhost.rack=<rackId>");
-                System.out.println("    -Dhost.datacenter=<datacenterId>");
-                System.out.println("");
-                System.out.println("    -Damza.port=1175");
-                System.out.println("         (change the port upena uses to interact with other upena nodes.) ");
-                System.out.println("");
-                System.out.println("    -Dmin.service.port=10000");
-                System.out.println("    -Dmax.service.port=32767");
-                System.out.println("         (adjust range to avoid port collision.) ");
-                System.out.println("");
-                System.out.println("     Only applicable if you have specified a <clusterName>.");
-                System.out.println("          -Damza.discovery.group=225.4.5.6");
-                System.out.println("          -Damza.discovery.port=1123");
-                System.out.println("");
-                System.out.println("Example:");
-                System.out.println("java -jar upena.jar " + InetAddress.getLocalHost().getHostName() + " dev");
-                System.out.println("");
+                for (String u : USAGE) {
+                    System.out.println(u);
+                }
                 System.exit(1);
             } else {
                 new UpenaMain().run(args);
             }
         } catch (Exception x) {
-            x.printStackTrace();
+            LOG.error("Catastrophic startup failure.", x);
             System.exit(1);
         }
     }
@@ -210,12 +235,97 @@ public class UpenaMain {
                 break;
             } catch (Exception x) {
                 failed = x;
-                System.out.println("Failed to acquire lock on onlyLetOneRunningAtATime");
+                LOG.warn("Failed to acquire lock on onlyLetOneRunningAtATime", x);
                 Thread.sleep(1000);
             }
         }
         if (failed != null) {
             throw failed;
+        }
+
+        try {
+            // The easiest way to create a Shiro SecurityManager with configured
+            // realms, users, roles and permissions is to use the simple INI config.
+            // We'll do that by using a factory that can ingest a .ini file and
+            // return a SecurityManager instance:
+
+            // Use the shiro.ini file at the root of the classpath
+            // (file: and url: prefixes load from files and urls respectively):
+            Factory<SecurityManager> factory = new IniSecurityManagerFactory("classpath:shiro.ini");
+            SecurityManager securityManager = factory.getInstance();
+
+            // for this simple example quickstart, make the SecurityManager
+            // accessible as a JVM singleton.  Most applications wouldn't do this
+            // and instead rely on their container configuration or web.xml for
+            // webapps.  That is outside the scope of this simple quickstart, so
+            // we'll just do the bare minimum so you can continue to get a feel
+            // for things.
+            SecurityUtils.setSecurityManager(securityManager);
+
+            // Now that a simple Shiro environment is set up, let's see what you can do:
+            // get the currently executing user:
+            Subject currentUser = SecurityUtils.getSubject();
+
+            // Do some stuff with a Session (no need for a web or EJB container!!!)
+            Session session = currentUser.getSession();
+            session.setAttribute("someKey", "aValue");
+            String value = (String) session.getAttribute("someKey");
+            if (value.equals("aValue")) {
+                LOG.info("Retrieved the correct value! [" + value + "]");
+            }
+
+            ShiroFilter filter = new ShiroFilter();
+
+//        // let's login the current user so we can check against roles and permissions:
+//        if (!currentUser.isAuthenticated()) {
+//            UsernamePasswordToken token = new UsernamePasswordToken("lonestarr", "vespa");
+//            token.setRememberMe(true);
+//            try {
+//                currentUser.login(token);
+//            } catch (UnknownAccountException uae) {
+//                log.info("There is no user with username of " + token.getPrincipal());
+//            } catch (IncorrectCredentialsException ice) {
+//                log.info("Password for account " + token.getPrincipal() + " was incorrect!");
+//            } catch (LockedAccountException lae) {
+//                log.info("The account for username " + token.getPrincipal() + " is locked.  " +
+//                        "Please contact your administrator to unlock it.");
+//            }
+//            // ... catch more exceptions here (maybe custom ones specific to your application?
+//            catch (AuthenticationException ae) {
+//                //unexpected condition?  error?
+//            }
+//        }
+//
+//        //say who they are:
+//        //print their identifying principal (in this case, a username):
+//        log.info("User [" + currentUser.getPrincipal() + "] logged in successfully.");
+//
+//        //test a role:
+//        if (currentUser.hasRole("schwartz")) {
+//            log.info("May the Schwartz be with you!");
+//        } else {
+//            log.info("Hello, mere mortal.");
+//        }
+//
+//        //test a typed permission (not instance-level)
+//        if (currentUser.isPermitted("lightsaber:wield")) {
+//            log.info("You may use a lightsaber ring.  Use it wisely.");
+//        } else {
+//            log.info("Sorry, lightsaber rings are for schwartz masters only.");
+//        }
+//
+//        //a (very powerful) Instance Level permission:
+//        if (currentUser.isPermitted("winnebago:drive:eagle5")) {
+//            log.info("You are permitted to 'drive' the winnebago with license plate (id) 'eagle5'.  " +
+//                    "Here are the keys - have fun!");
+//        } else {
+//            log.info("Sorry, you aren't allowed to drive the 'eagle5' winnebago!");
+//        }
+//
+//        //all done - log out!
+//        currentUser.logout();
+        } catch (Exception x) {
+            LOG.error("Shiro", x);
         }
 
         JDIAPI jvmapi = null;
@@ -434,34 +544,34 @@ public class UpenaMain {
         RestfulServer restfulServer = initializeRestfulServer.build();
         restfulServer.start();
 
-        System.out.println("-----------------------------------------------------------------------");
-        System.out.println("|      Jetty Service Online");
-        System.out.println("-----------------------------------------------------------------------");
+        LOG.info("-----------------------------------------------------------------------");
+        LOG.info("|      Jetty Service Online");
+        LOG.info("-----------------------------------------------------------------------");
 
         if (ubaService != null) {
             Executors.newScheduledThreadPool(1).scheduleWithFixedDelay(() -> {
                 try {
                     ubaService.nanny();
                 } catch (Exception ex) {
-                    ex.printStackTrace(); // HACK
+                    LOG.error("Nanny failure", ex);
                 }
             }, 15, 15, TimeUnit.SECONDS);
-            System.out.println("-----------------------------------------------------------------------");
-            System.out.println("|      Uba Service Online");
-            System.out.println("-----------------------------------------------------------------------");
+            LOG.info("-----------------------------------------------------------------------");
+            LOG.info("|      Uba Service Online");
+            LOG.info("-----------------------------------------------------------------------");
         }
         ubaServiceReference.set(ubaService);
 
         if (clusterName != null) {
             AmzaDiscovery amzaDiscovery = new AmzaDiscovery(amzaService, ringHost, clusterName, multicastGroup, multicastPort);
             amzaDiscovery.start();
-            System.out.println("-----------------------------------------------------------------------");
-            System.out.println("|      Amza Service Discovery Online");
-            System.out.println("-----------------------------------------------------------------------");
+            LOG.info("-----------------------------------------------------------------------");
+            LOG.info("|      Amza Service Discovery Online");
+            LOG.info("-----------------------------------------------------------------------");
         } else {
-            System.out.println("-----------------------------------------------------------------------");
-            System.out.println("|     Amza Service is in manual Discovery mode.  No cluster name was specified");
-            System.out.println("-----------------------------------------------------------------------");
+            LOG.info("-----------------------------------------------------------------------");
+            LOG.info("|     Amza Service is in manual Discovery mode.  No cluster name was specified");
+            LOG.info("-----------------------------------------------------------------------");
         }
 
         String peers = System.getProperty("manual.peers");

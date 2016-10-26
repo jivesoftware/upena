@@ -59,16 +59,16 @@ class NannyDestroyCallable implements Callable<Boolean> {
                         }
                     }
                     if (checks > 10) {
-                        ubaLog.record("failed to killed status never OFFLINE", id.toString(), invokeScript.scriptPath(instancePath, "status"));
+                        ubaLog.record("failed to killed status never OFFLINE", Nanny.idToHtml(id), invokeScript.scriptPath(instancePath, "status"));
                         return false;
                     }
                 } else {
-                    ubaLog.record("failed to killed missing script", id.toString(), invokeScript.scriptPath(instancePath, "kill"));
+                    ubaLog.record("failed to killed missing script", Nanny.idToHtml(id), invokeScript.scriptPath(instancePath, "kill"));
                     return false;
                 }
             }
         }
-        ubaLog.record("killed", id.toString(), invokeScript.scriptPath(instancePath, "kill"));
+        ubaLog.record("killed", Nanny.idToHtml(id), invokeScript.scriptPath(instancePath, "kill"));
         return true;
     }
 
@@ -80,7 +80,7 @@ class NannyDestroyCallable implements Callable<Boolean> {
         }
         healthLog.commit();
         healthLog.commit(); // Clear out all health
-        ubaLog.record("wiped", id.toString(), serviceRoot.toString());
+        ubaLog.record("wiped", Nanny.idToHtml(id), serviceRoot.toString());
 
     }
 
