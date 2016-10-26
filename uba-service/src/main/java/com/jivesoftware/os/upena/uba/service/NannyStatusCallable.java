@@ -126,7 +126,7 @@ class NannyStatusCallable implements Callable<Boolean> {
                 return false;
             } else {
                 status.set("Auto-restarted");
-                ubaLog.record("auto-restart", id.toString(), invokeScript.scriptPath(instancePath, "start"));
+                ubaLog.record("auto-restart", Nanny.idToHtml(id), invokeScript.scriptPath(instancePath, "start"));
             }
             int checks = 1;
             while (checks < 10) { // todo expose to config or to instance
