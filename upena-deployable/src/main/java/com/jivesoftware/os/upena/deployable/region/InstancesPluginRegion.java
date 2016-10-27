@@ -136,7 +136,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
 
     public String renderSimple(String user, InstancesPluginRegionInput input) {
         Map<String, Object> data = renderData(input, user);
-        if (SecurityUtils.getSubject().hasRole("readwrite")) {
+        if (SecurityUtils.getSubject().isPermitted("write")) {
             data.put("readWrite", true);
         }
         data.put("filters", null);
@@ -145,7 +145,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
 
     private Map<String, Object> renderData(InstancesPluginRegionInput input, String user) {
         Map<String, Object> data = Maps.newHashMap();
-        if (SecurityUtils.getSubject().hasRole("readwrite")) {
+        if (SecurityUtils.getSubject().isPermitted("write")) {
             data.put("readWrite", true);
         }
         try {
@@ -176,39 +176,40 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
 
             if (input.action != null) {
                 if (input.action.equals("filter")) {
+                    SecurityUtils.getSubject().checkPermission("read");
                     handleFilter(data, input);
                 } else if (input.action.equals("add")) {
-                    SecurityUtils.getSubject().checkRole("readwrite");
+                    SecurityUtils.getSubject().checkPermission("write");
                     handleAdd(user, input, data);
                 } else if (input.action.equals("update")) {
-                    SecurityUtils.getSubject().checkRole("readwrite");
+                    SecurityUtils.getSubject().checkPermission("write");
                     handleUpdate(user, input, data);
                 } else if (input.action.equals("restart")) {
-                    SecurityUtils.getSubject().checkRole("readwrite");
+                    SecurityUtils.getSubject().checkPermission("write");
                     handleRestart(user, input, data);
                 } else if (input.action.equals("remove")) {
-                    SecurityUtils.getSubject().checkRole("readwrite");
+                    SecurityUtils.getSubject().checkPermission("write");
                     handleRemove(user, input, data);
                 } else if (input.action.equals("restartAllNow")) {
-                    SecurityUtils.getSubject().checkRole("readwrite");
+                    SecurityUtils.getSubject().checkPermission("write");
                     handleRestartAllNow(user, filter);
                 } else if (input.action.equals("enable")) {
-                    SecurityUtils.getSubject().checkRole("readwrite");
+                    SecurityUtils.getSubject().checkPermission("write");
                     handleEnable(user, filter);
                 } else if (input.action.equals("enableSSL")) {
-                    SecurityUtils.getSubject().checkRole("readwrite");
+                    SecurityUtils.getSubject().checkPermission("write");
                     handleEnableSSL(user, filter);
                 } else if (input.action.equals("enableSAUTH")) {
-                    SecurityUtils.getSubject().checkRole("readwrite");
+                    SecurityUtils.getSubject().checkPermission("write");
                     handleEnableSAUTH(user, filter);
                 } else if (input.action.equals("disable")) {
-                    SecurityUtils.getSubject().checkRole("readwrite");
+                    SecurityUtils.getSubject().checkPermission("write");
                     handleDisable(user, filter);
                 } else if (input.action.equals("restartAll")) {
-                    SecurityUtils.getSubject().checkRole("readwrite");
+                    SecurityUtils.getSubject().checkPermission("write");
                     handleRestartAll(user, filter);
                 } else if (input.action.equals("cancelRestartAll")) {
-                    SecurityUtils.getSubject().checkRole("readwrite");
+                    SecurityUtils.getSubject().checkPermission("write");
                     handleCancelRestartAll(user, filter);
                 }
             }
@@ -261,7 +262,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
 
             data.put("instances", rows);
 
-        } catch(AuthorizationException x) {
+        } catch (AuthorizationException x) {
             throw x;
         } catch (Exception e) {
             LOG.error("Unable to retrieve data", e);

@@ -161,7 +161,7 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
 
     @Override
     public String render(String user, ProjectsPluginRegionInput input) {
-        SecurityUtils.getSubject().checkRole("readwrite");
+        SecurityUtils.getSubject().checkPermission("write");
         Map<String, Object> data = Maps.newHashMap();
         try {
 

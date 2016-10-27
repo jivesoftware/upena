@@ -75,7 +75,7 @@ public class ServicesPluginRegion implements PageRegion<ServicesPluginRegionInpu
     @Override
     public String render(String user, ServicesPluginRegionInput input) {
         Map<String, Object> data = Maps.newHashMap();
-        if (SecurityUtils.getSubject().hasRole("readwrite")) {
+        if (SecurityUtils.getSubject().isPermitted("write")) {
             data.put("readWrite", true);
         }
         try {

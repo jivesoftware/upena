@@ -68,7 +68,7 @@ public class JVMPluginRegion implements PageRegion<JVMPluginRegionInput> {
 
     @Override
     public String render(String user, JVMPluginRegionInput input) throws Exception {
-        SecurityUtils.getSubject().checkRole("readwrite");
+        SecurityUtils.getSubject().checkPermission("debug");
         if (input.instanceKey != null && !input.instanceKey.isEmpty()) {
             Instance instance = upenaStore.instances.get(new InstanceKey(input.instanceKey));
             Host host = upenaStore.hosts.get(instance.hostKey);

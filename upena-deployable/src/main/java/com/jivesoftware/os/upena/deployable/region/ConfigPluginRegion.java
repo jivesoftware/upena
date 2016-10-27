@@ -9,6 +9,7 @@ import com.jivesoftware.os.routing.bird.deployable.config.shared.DeployableConfi
 import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelper;
 import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelperUtils;
 import com.jivesoftware.os.upena.config.UpenaConfigStore;
+import com.jivesoftware.os.upena.deployable.UpenaSSLConfig;
 import com.jivesoftware.os.upena.deployable.region.ConfigPluginRegion.ConfigPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.service.UpenaStore;
@@ -45,18 +46,21 @@ public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
     private final ObjectMapper mapper;
     private final String template;
     private final SoyRenderer renderer;
+    private final UpenaSSLConfig upenaSSLConfig;
     private final UpenaStore upenaStore;
     private final UpenaConfigStore configStore;
 
     public ConfigPluginRegion(ObjectMapper mapper,
         String template,
         SoyRenderer renderer,
+        UpenaSSLConfig upenaSSLConfig,
         UpenaStore upenaStore,
         UpenaConfigStore configStore) {
 
         this.mapper = mapper;
         this.template = template;
         this.renderer = renderer;
+        this.upenaSSLConfig = upenaSSLConfig;
         this.upenaStore = upenaStore;
         this.configStore = configStore;
     }
@@ -68,8 +72,8 @@ public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
 
     // TODO handle host and port
     public void modified(String user, Map<String, Map<String, String>> property_InstanceKey_Values) throws Exception {
-        SecurityUtils.getSubject().checkRole("readwrite");
-        
+        SecurityUtils.getSubject().checkPermission("write");
+
         Set<String> instanceKeys = new HashSet<>();
         for (Map.Entry<String, Map<String, String>> property_InstanceKey_Value : property_InstanceKey_Values.entrySet()) {
             for (Map.Entry<String, String> instanceKey_value : property_InstanceKey_Value.getValue().entrySet()) {
@@ -382,7 +386,7 @@ public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
     @Override
     public String render(String user, ConfigPluginRegionInput input) {
         Map<String, Object> data = Maps.newHashMap();
-        if (SecurityUtils.getSubject().hasRole("readwrite")) {
+        if (SecurityUtils.getSubject().isPermitted("write")) {
             data.put("readWrite", true);
         }
         try {
@@ -569,7 +573,9 @@ public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
 
             Map<InstanceKey, TimestampedValue<Instance>> found;
             if (remoteConfigPort > -1) {
-                HttpRequestHelper helper = HttpRequestHelperUtils.buildRequestHelper(false, false, null, remoteConfigHost, remoteConfigPort);
+                HttpRequestHelper helper = HttpRequestHelperUtils.buildRequestHelper(upenaSSLConfig.sslEnable, upenaSSLConfig.allowSelfSignedCerts,
+                    upenaSSLConfig.signer,
+                    remoteConfigHost, remoteConfigPort);
                 found = helper.executeRequest(filter, "/upena/instance/find", InstanceResults.class, new InstanceResults());
             } else {
                 found = upenaStore.instances.find(false, filter);
@@ -587,7 +593,8 @@ public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
                     ReleaseGroup releaseGroup = upenaStore.releaseGroups.get(i.releaseGroupKey);
                     String version = releaseGroup.version;
 
-                    HttpRequestHelper requestHelper = HttpRequestHelperUtils.buildRequestHelper(false, false, null, remoteConfigHost, remoteConfigPort);
+                    HttpRequestHelper requestHelper = HttpRequestHelperUtils.buildRequestHelper(upenaSSLConfig.sslEnable, upenaSSLConfig.allowSelfSignedCerts,
+                        upenaSSLConfig.signer, remoteConfigHost, remoteConfigPort);
                     DeployableConfig get = new DeployableConfig("default" + suffix, key.getKey(), version, new HashMap<>());
                     DeployableConfig gotDefault = requestHelper.executeRequest(get, "/upenaConfig/get", DeployableConfig.class, null);
                     DeployableConfig getOverride = new DeployableConfig("override" + suffix, key.getKey(), version, new HashMap<>());

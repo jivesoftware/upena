@@ -142,7 +142,7 @@ public class LoadBalancersPluginRegion implements PageRegion<LoadBalancersPlugin
     @Override
     public String render(String user, LoadBalancersPluginRegionInput input) {
         Map<String, Object> data = Maps.newHashMap();
-        if (SecurityUtils.getSubject().hasRole("readwrite")) {
+        if (SecurityUtils.getSubject().isPermitted("write")) {
             data.put("readWrite", true);
         }
         try {
@@ -160,7 +160,7 @@ public class LoadBalancersPluginRegion implements PageRegion<LoadBalancersPlugin
             LoadBalancerFilter filter = new LoadBalancerFilter(input.name, input.clusterKey, input.serviceKey, input.releaseGroupKey, 0, 100_000);
             if (input.action != null) {
                 if (input.action.equals("remove-unattached")) {
-                    SecurityUtils.getSubject().checkRole("readwrite");
+                   SecurityUtils.getSubject().checkPermission("write");
                     try {
 
                         AmazonElasticLoadBalancingClient elbc = awsClientFactory.getELBC("upena-lb");
@@ -174,7 +174,7 @@ public class LoadBalancersPluginRegion implements PageRegion<LoadBalancersPlugin
                 }
 
                 if (input.action.equals("add")) {
-                    SecurityUtils.getSubject().checkRole("readwrite");
+                    SecurityUtils.getSubject().checkPermission("write");
 //filters.clear();
                     try {
                         LB newLoadBalancer = new LB(input.name,
@@ -201,7 +201,7 @@ public class LoadBalancersPluginRegion implements PageRegion<LoadBalancersPlugin
                         data.put("message", "Error while trying to add LoadBalancer:" + input.name + "\n" + trace);
                     }
                 } else if (input.action.equals("update")) {
-                    SecurityUtils.getSubject().checkRole("readwrite");
+                    SecurityUtils.getSubject().checkPermission("write");
 //filters.clear();
                     try {
                         LB loadBalancer = upenaStore.loadBalancers.get(new LBKey(input.key));
@@ -234,7 +234,7 @@ public class LoadBalancersPluginRegion implements PageRegion<LoadBalancersPlugin
                         data.put("message", "Error while trying to add LoadBalancer:" + input.name + "\n" + trace);
                     }
                 } else if (input.action.equals("remove")) {
-                    SecurityUtils.getSubject().checkRole("readwrite");
+                    SecurityUtils.getSubject().checkPermission("write");
                     if (input.key.isEmpty()) {
                         data.put("message", "Failed to remove LoadBalancer:" + input.name);
                     } else {

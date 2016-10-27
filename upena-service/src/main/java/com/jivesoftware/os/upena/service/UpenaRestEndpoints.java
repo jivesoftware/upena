@@ -17,11 +17,6 @@ package com.jivesoftware.os.upena.service;
 
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
-import com.jivesoftware.os.routing.bird.shared.ConnectionDescriptorsRequest;
-import com.jivesoftware.os.routing.bird.shared.ConnectionDescriptorsResponse;
-import com.jivesoftware.os.routing.bird.shared.InstanceConnectionHealth;
-import com.jivesoftware.os.routing.bird.shared.InstanceDescriptorsRequest;
-import com.jivesoftware.os.routing.bird.shared.InstanceDescriptorsResponse;
 import com.jivesoftware.os.routing.bird.shared.ResponseHelper;
 import com.jivesoftware.os.upena.shared.Cluster;
 import com.jivesoftware.os.upena.shared.ClusterFilter;
@@ -50,7 +45,6 @@ import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -477,72 +471,7 @@ public class UpenaRestEndpoints {
         }
     }
 
-    @POST
-    @Consumes("application/json")
-    @Path("/request/connections")
-    public Response requestConnections(ConnectionDescriptorsRequest connectionsRequest) {
-        try {
-            LOG.info("connectionsRequest:" + connectionsRequest);
-            ConnectionDescriptorsResponse connectionDescriptorsResponse = upenaService.connectionRequest(connectionsRequest);
-            LOG.info("connectionDescriptorsResponse:" + connectionDescriptorsResponse);
-            return ResponseHelper.INSTANCE.jsonResponse(connectionDescriptorsResponse);
-        } catch (Exception x) {
-            LOG.warn("Failed to connectionsRequest:" + connectionsRequest, x);
-            return ResponseHelper.INSTANCE.errorResponse("Failed to requestConnections for:" + connectionsRequest, x);
-        }
-    }
-
-    @GET
-    @Consumes("application/json")
-    @Path("/request/keyStorePassword/{instanceKey}")
-    public Response requestKeyStorePassword(@PathParam("instanceKey") String instanceKey) {
-        try {
-            return Response.ok(upenaService.keyStorePassword(instanceKey)).build();
-        } catch (Exception x) {
-            LOG.warn("Failed to provide password for:" + instanceKey, x);
-            return Response.serverError().build();
-        }
-    }
-
-    @POST
-    @Consumes("application/json")
-    @Path("/session/validate")
-    public Response sessionValidate(SessionValidation sessionValidation) {
-        try {
-            return Response.ok(upenaService.isValid(sessionValidation)).build();
-        } catch (Exception x) {
-            LOG.warn("Failed validate session", x);
-            return Response.serverError().build();
-        }
-    }
-
-    @POST
-    @Consumes("application/json")
-    @Path("/connections/health")
-    public Response connectionsHealth(InstanceConnectionHealth instanceConnectionHealth) {
-        try {
-            discoveredRoutes.connectionHealth(instanceConnectionHealth);
-            return ResponseHelper.INSTANCE.jsonResponse("thanks");
-        } catch (Exception x) {
-            LOG.warn("Failed to connectionsHealth:" + instanceConnectionHealth, x);
-            return ResponseHelper.INSTANCE.errorResponse("Failed to requestConnections for:" + instanceConnectionHealth, x);
-        }
-    }
-
-    @POST
-    @Consumes("application/json")
-    @Path("/request/instanceDescriptors")
-    public Response instanceDescriptors(InstanceDescriptorsRequest instanceDescriptorsRequest) {
-        try {
-            LOG.debug("instanceDescriptorsRequest:" + instanceDescriptorsRequest);
-            InstanceDescriptorsResponse response = upenaService.instanceDescriptors(instanceDescriptorsRequest);
-            LOG.debug("returning:" + response + " for instanceDescriptorsRequest:" + instanceDescriptorsRequest);
-            return ResponseHelper.INSTANCE.jsonResponse(response);
-        } catch (Exception x) {
-            LOG.warn("Failed to instanceDescriptorsRequest:" + instanceDescriptorsRequest, x);
-            return ResponseHelper.INSTANCE.errorResponse("Failed to instanceDescriptorsRequest for:" + instanceDescriptorsRequest, x);
-        }
-    }
+    
 
     @GET
     @Consumes("application/json")

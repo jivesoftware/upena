@@ -9,13 +9,13 @@ import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelper;
 import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelperUtils;
-import com.jivesoftware.os.routing.bird.http.client.OAuthSigner;
 import com.jivesoftware.os.routing.bird.shared.ConnectionHealth;
 import com.jivesoftware.os.routing.bird.shared.InstanceConnectionHealth;
 import com.jivesoftware.os.upena.amza.shared.AmzaInstance;
 import com.jivesoftware.os.upena.amza.shared.RingHost;
 import com.jivesoftware.os.upena.deployable.UpenaEndpoints.NannyHealth;
 import com.jivesoftware.os.upena.deployable.UpenaEndpoints.NodeHealth;
+import com.jivesoftware.os.upena.deployable.UpenaSSLConfig;
 import com.jivesoftware.os.upena.deployable.region.ConnectivityPluginRegion.ConnectivityPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.service.DiscoveredRoutes;
@@ -58,7 +58,7 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRegionInput> {
 
     private static final MetricLogger log = MetricLoggerFactory.getLogger();
-    private  final ObjectMapper mapper;
+    private final ObjectMapper mapper;
     private final NumberFormat numberFormat = NumberFormat.getNumberInstance();
 
     private final String template;
@@ -66,6 +66,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
     private final String connectionOverviewTemplate;
     private final SoyRenderer renderer;
     private final AmzaInstance amzaInstance;
+    private final UpenaSSLConfig upenaSSLConfig;
     private final UpenaStore upenaStore;
     private final HealthPluginRegion healthPluginRegion;
     private final HostsPluginRegion hostsPluginRegion;
@@ -80,6 +81,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
         String connectionOverviewTemplate,
         SoyRenderer renderer,
         AmzaInstance amzaInstance,
+        UpenaSSLConfig upenaSSLConfig,
         UpenaStore upenaStore,
         HealthPluginRegion healthPluginRegion,
         HostsPluginRegion hostsPluginRegion,
@@ -93,6 +95,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
         this.connectionOverviewTemplate = connectionOverviewTemplate;
         this.renderer = renderer;
         this.amzaInstance = amzaInstance;
+        this.upenaSSLConfig = upenaSSLConfig;
         this.upenaStore = upenaStore;
         this.healthPluginRegion = healthPluginRegion;
         this.hostsPluginRegion = hostsPluginRegion;
@@ -226,7 +229,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
 
         Map<String, Node> nodes = new HashMap<>();
         int id = 0;
-        buildClusterRoutes(null);
+        buildClusterRoutes();
         Map<String, Map<String, Map<String, ConnectionHealth>>> routes = discoveredRoutes.from_to_Family_ConnectionHealths;
 
         for (Map.Entry<String, Map<String, Map<String, ConnectionHealth>>> entrySet : routes.entrySet()) {
@@ -416,7 +419,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
 
             Map<String, Node> nodes = new HashMap<>();
             int id = 0;
-            buildClusterRoutes(null);
+            buildClusterRoutes();
             Map<String, Map<String, Map<String, ConnectionHealth>>> routes = discoveredRoutes.from_to_Family_ConnectionHealths;
 
             for (Map.Entry<String, Map<String, Map<String, ConnectionHealth>>> entrySet : routes.entrySet()) {
@@ -804,7 +807,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
     private final ConcurrentMap<String, Long> nodeRecency = Maps.newConcurrentMap();
     private final ConcurrentMap<RingHost, Boolean> currentlyExecuting = Maps.newConcurrentMap();
 
-    private List<Route> buildClusterRoutes(OAuthSigner signer) throws Exception {
+    private List<Route> buildClusterRoutes() throws Exception {
         List<Route> allRoutes = new ArrayList<>();
 
         allRoutes.addAll(discoveredRoutes.routes());
@@ -821,7 +824,8 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
                     try {
                         Long last = nodeRecency.get(nodeKey);
                         long sinceTimestampMillis = last == null ? 0 : last;
-                        HttpRequestHelper requestHelper = HttpRequestHelperUtils.buildRequestHelper(false, false, signer, ringHost.getHost(), ringHost.getPort());
+                        HttpRequestHelper requestHelper = HttpRequestHelperUtils.buildRequestHelper(upenaSSLConfig.sslEnable,
+                            upenaSSLConfig.allowSelfSignedCerts, upenaSSLConfig.signer, ringHost.getHost(), ringHost.getPort());
                         RouteHealths routeHealths = requestHelper.executeGetRequest("/routes/health/" + sinceTimestampMillis, RouteHealths.class, null);
                         for (InstanceConnectionHealth routeHealth : routeHealths.getRouteHealths()) {
                             discoveredRoutes.connectionHealth(routeHealth);
@@ -831,7 +835,8 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
                     }
 
                     try {
-                        HttpRequestHelper requestHelper = HttpRequestHelperUtils.buildRequestHelper(false, false, signer, ringHost.getHost(), ringHost.getPort());
+                        HttpRequestHelper requestHelper = HttpRequestHelperUtils.buildRequestHelper(upenaSSLConfig.sslEnable,
+                            upenaSSLConfig.allowSelfSignedCerts, upenaSSLConfig.signer, ringHost.getHost(), ringHost.getPort());
                         Routes routes = requestHelper.executeGetRequest("/routes/instances", Routes.class, null);
                         nodeRoutes.put(ringHost, routes);
                     } catch (Exception x) {

@@ -12,9 +12,9 @@ public class ManagePlugin {
     public final Class<?> endpointsClass;
     public final Region<?> region;
     public final String separator;
-    public final String[] roles;
+    public final String[] permissions;
 
-    public ManagePlugin(String glyphicon, String icon, String name, String path, Class<?> endpointsClass, Region<?> region, String separator, String... roles) {
+    public ManagePlugin(String glyphicon, String icon, String name, String path, Class<?> endpointsClass, Region<?> region, String separator, String... permissions) {
         this.glyphicon = glyphicon;
         this.icon = icon;
         this.name = name;
@@ -22,7 +22,7 @@ public class ManagePlugin {
         this.endpointsClass = endpointsClass;
         this.region = region;
         this.separator = separator;
-        this.roles = roles;
+        this.permissions = permissions;
     }
 
 }

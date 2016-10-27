@@ -161,21 +161,21 @@ public class UpenaRingPluginRegion implements PageRegion<UpenaRingPluginRegionIn
     @Override
     public String render(String user, UpenaRingPluginRegionInput input) {
         Map<String, Object> data = Maps.newHashMap();
-        if (SecurityUtils.getSubject().hasRole("readwrite")) {
+        if (SecurityUtils.getSubject().isPermitted("write")) {
             data.put("readWrite", true);
         }
         try {
             if (input.action.equals("add")) {
-                SecurityUtils.getSubject().checkRole("readwrite");
+                SecurityUtils.getSubject().checkPermission("write");
                 amzaInstance.addRingHost("master", new RingHost(input.host, Integer.parseInt(input.port)));
             } else if (input.action.equals("remove")) {
-                SecurityUtils.getSubject().checkRole("readwrite");
+                SecurityUtils.getSubject().checkPermission("write");
                 amzaInstance.removeRingHost("master", new RingHost(input.host, Integer.parseInt(input.port)));
             } else if (input.action.equals("clearChangeLog")) {
-                SecurityUtils.getSubject().checkRole("readwrite");
+                SecurityUtils.getSubject().checkPermission("write");
                 upenaStore.clearChangeLog();
             } else if (input.action.equals("removeBadKeys")) {
-                SecurityUtils.getSubject().checkRole("readwrite");
+                SecurityUtils.getSubject().checkPermission("write");
                 upenaStore.clusters.find(true, null);
                 upenaStore.hosts.find(true, null);
                 upenaStore.services.find(true, null);

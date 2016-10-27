@@ -307,11 +307,11 @@ public class UpenaService {
         return instanceDescriptor;
     }
 
-    String keyStorePassword(String instanceKey) throws Exception {
+    public String keyStorePassword(String instanceKey) throws Exception {
        return passwordStore.password(instanceKey);
     }
 
-    boolean isValid(SessionValidation sessionValidation) {
+    public boolean isValid(SessionValidation sessionValidation) {
         return sessionStore.isValid(sessionValidation);
     }
 

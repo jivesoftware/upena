@@ -138,7 +138,7 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
 
     @Override
     public String render(String user, BreakpointDumperPluginRegionInput input) throws Exception {
-        SecurityUtils.getSubject().checkRole("readwrite");
+        SecurityUtils.getSubject().checkPermission("debug");
 
         Map<String, Object> data = Maps.newHashMap();
         data.put("hostName", input.hostName);

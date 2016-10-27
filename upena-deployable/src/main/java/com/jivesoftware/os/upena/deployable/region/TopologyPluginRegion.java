@@ -14,6 +14,7 @@ import com.jivesoftware.os.upena.amza.shared.AmzaInstance;
 import com.jivesoftware.os.upena.amza.shared.RingHost;
 import com.jivesoftware.os.upena.deployable.UpenaEndpoints.NannyHealth;
 import com.jivesoftware.os.upena.deployable.UpenaEndpoints.NodeHealth;
+import com.jivesoftware.os.upena.deployable.UpenaSSLConfig;
 import com.jivesoftware.os.upena.deployable.region.ReleasesPluginRegion.ReleasesPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.region.TopologyPluginRegion.TopologyPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
@@ -64,6 +65,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
     private final String connectionHealthTemplate;
     private final SoyRenderer renderer;
     private final AmzaInstance amzaInstance;
+    private final UpenaSSLConfig upenaSSLConfig;
     private final UpenaStore upenaStore;
     private final HealthPluginRegion healthPluginRegion;
     private final HostsPluginRegion hostsPluginRegion;
@@ -77,6 +79,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
         String connectionHealthTemplate,
         SoyRenderer renderer,
         AmzaInstance amzaInstance,
+        UpenaSSLConfig upenaSSLConfig,
         UpenaStore upenaStore,
         HealthPluginRegion healthPluginRegion,
         HostsPluginRegion hostsPluginRegion,
@@ -89,6 +92,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
         this.connectionHealthTemplate = connectionHealthTemplate;
         this.renderer = renderer;
         this.amzaInstance = amzaInstance;
+        this.upenaSSLConfig = upenaSSLConfig;
         this.upenaStore = upenaStore;
         this.healthPluginRegion = healthPluginRegion;
         this.hostsPluginRegion = hostsPluginRegion;
@@ -619,7 +623,8 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
                     try {
                         Long last = nodeRecency.get(nodeKey);
                         long sinceTimestampMillis = last == null ? 0 : last;
-                        HttpRequestHelper requestHelper = HttpRequestHelperUtils.buildRequestHelper(false, false, null, ringHost.getHost(), ringHost.getPort());
+                        HttpRequestHelper requestHelper = HttpRequestHelperUtils.buildRequestHelper(upenaSSLConfig.sslEnable,
+                            upenaSSLConfig.allowSelfSignedCerts, upenaSSLConfig.signer, ringHost.getHost(), ringHost.getPort());
                         RouteHealths routeHealths = requestHelper.executeGetRequest("/routes/health/" + sinceTimestampMillis, RouteHealths.class, null);
                         for (InstanceConnectionHealth routeHealth : routeHealths.getRouteHealths()) {
                             discoveredRoutes.connectionHealth(routeHealth);
@@ -629,7 +634,8 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
                     }
 
                     try {
-                        HttpRequestHelper requestHelper = HttpRequestHelperUtils.buildRequestHelper(false, false, null, ringHost.getHost(), ringHost.getPort());
+                        HttpRequestHelper requestHelper = HttpRequestHelperUtils.buildRequestHelper(upenaSSLConfig.sslEnable,
+                            upenaSSLConfig.allowSelfSignedCerts, upenaSSLConfig.signer, ringHost.getHost(), ringHost.getPort());
                         Routes routes = requestHelper.executeGetRequest("/routes/instances", Routes.class, null);
                         nodeRoutes.put(ringHost, routes);
                     } catch (Exception x) {
