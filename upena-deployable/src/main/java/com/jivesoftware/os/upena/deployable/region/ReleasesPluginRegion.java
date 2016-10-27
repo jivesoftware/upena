@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import org.apache.shiro.SecurityUtils;
 
 /**
  *
@@ -167,6 +168,9 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
     @Override
     public String render(String user, ReleasesPluginRegionInput input) {
         Map<String, Object> data = renderData(input, user);
+        if (SecurityUtils.getSubject().hasRole("readWrite")) {
+            data.put("readWrite", true);
+        }
         return renderer.render(template, data);
     }
 
@@ -178,6 +182,9 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
 
     private Map<String, Object> renderData(ReleasesPluginRegionInput input, String user) {
         Map<String, Object> data = Maps.newHashMap();
+        if (SecurityUtils.getSubject().hasRole("readWrite")) {
+            data.put("readWrite", true);
+        }
         try {
             Map<ServiceKey, String> serviceColor = ServiceColorUtil.serviceKeysColor(upenaStore);
 

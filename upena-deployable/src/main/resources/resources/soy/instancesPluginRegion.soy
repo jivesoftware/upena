@@ -6,6 +6,7 @@
  * @param? instances
  * @param? message
  * @param? filters
+ * @param? readWrite
  */
 {template .instancesPluginRegion}
     {if $instances}
@@ -18,6 +19,7 @@
             {call .instancesPluginRegionList}
                 {param instances: $instances /}
                 {param filters: $filters /}
+                {param readWrite: $readWrite /}
             {/call}
         </div>
     {/if}
@@ -26,6 +28,7 @@
 /**
  * @param? instances
  * @param? filters
+ * @param? readWrite
  */
 {template .instancesPluginRegionList}
    <table class="table table-hover float-table-head table-condensed table-responsive">
@@ -53,19 +56,25 @@
                         <td>
                         </td>
                         <td bgcolor>
-                            <input class="form-control" type="checkbox" name="enabled" value="true" {if $filters.enabled}checked="checked"{/if}>
-                            <button form="filter-form" type="submit" name="action" value="disable" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">Disable</button>
-                            <button form="filter-form" type="submit" name="action" value="enable" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">Enable</button>
+                            {if $readWrite}
+                                <input class="form-control" type="checkbox" name="enabled" value="true" {if $filters.enabled}checked="checked"{/if}>
+                                <button form="filter-form" type="submit" name="action" value="disable" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">Disable</button>
+                                <button form="filter-form" type="submit" name="action" value="enable" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">Enable</button>
+                            {/if}
                         </td>
                         <td bgcolor>
-                            <input class="form-control" type="checkbox" name="sslEnabled" value="true" {if $filters.sslEnabled}checked="checked"{/if}>
-                            <button form="filter-form" type="submit" name="action" value="disableSSL" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">Disable</button>
-                            <button form="filter-form" type="submit" name="action" value="enableSSL" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">Enable</button>
+                            {if $readWrite}
+                                <input class="form-control" type="checkbox" name="sslEnabled" value="true" {if $filters.sslEnabled}checked="checked"{/if}>
+                                <button form="filter-form" type="submit" name="action" value="disableSSL" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">Disable</button>
+                                <button form="filter-form" type="submit" name="action" value="enableSSL" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">Enable</button>
+                            {/if}
                         </td>
                         <td bgcolor>
-                            <input class="form-control" type="checkbox" name="serviceAuthEnabled" value="true" {if $filters.serviceAuthEnabled}checked="checked"{/if}>
-                            <button form="filter-form" type="submit" name="action" value="disableSAUTH" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">Disable</button>
-                            <button form="filter-form" type="submit" name="action" value="enableSAUTH" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">Enable</button>
+                            {if $readWrite}
+                                <input class="form-control" type="checkbox" name="serviceAuthEnabled" value="true" {if $filters.serviceAuthEnabled}checked="checked"{/if}>
+                                <button form="filter-form" type="submit" name="action" value="disableSAUTH" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">Disable</button>
+                                <button form="filter-form" type="submit" name="action" value="enableSAUTH" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">Enable</button>
+                            {/if}
                         </td>
                         <td>
                             <div>
@@ -107,10 +116,12 @@
                         </td>
                         <td>
                             <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-search">&nbspFilter</span></button>
-                            <button title="Add" type="submit" name="action" value="add" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-plus">&nbspAdd</span></button>
-                            <button form="filter-form" type="submit" name="action" value="restartAllNow" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">Restart Now</button>
-                            <button form="filter-form" type="submit" name="action" value="restartAll" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">Rolling Restart</button>
-                            <button form="filter-form" type="submit" name="action" value="cancelRestartAll" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">Cancel Restart</button>
+                            {if $readWrite}
+                                <button title="Add" type="submit" name="action" value="add" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-plus">&nbspAdd</span></button>
+                                <button form="filter-form" type="submit" name="action" value="restartAllNow" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">Restart Now</button>
+                                <button form="filter-form" type="submit" name="action" value="restartAll" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">Rolling Restart</button>
+                                <button form="filter-form" type="submit" name="action" value="cancelRestartAll" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">Cancel Restart</button>
+                            {/if}
                         </td>
                     </tr>
                 {/if}
@@ -194,7 +205,9 @@
                                             <td>
                                             </td>
                                             <td>
-                                                <button title="Add" onClick="upena.instancePorts.addPort('{$i.key}')" class="btn btn-default"><span class="glyphicon glyphicon-plus">&nbspAdd</span></button>
+                                                {if $readWrite}
+                                                    <button title="Add" onClick="upena.instancePorts.addPort('{$i.key}')" class="btn btn-default"><span class="glyphicon glyphicon-plus">&nbspAdd</span></button>
+                                                {/if}
                                             </td>
                                         </tr>
                                         {foreach $p in $i.ports}
@@ -228,7 +241,11 @@
                                                                             {$nv.value}
                                                                         </td>
                                                                         <td>
-                                                                            <button title="Remove" onClick="upena.instancePorts.removePortProperty('{$i.key}', '{$p.portName}', '{$nv.name}')" class="btn btn-default"><span class="glyphicon glyphicon-trash">&nbspRemove</span></button>
+                                                                            {if $readWrite}
+                                                                                <button title="Remove" onClick="upena.instancePorts.removePortProperty('{$i.key}', '{$p.portName}', '{$nv.name}')" class="btn btn-default">
+                                                                                    <span class="glyphicon glyphicon-trash">&nbspRemove</span>
+                                                                                </button>
+                                                                            {/if}
                                                                         </td>
                                                                     </tr>
                                                                 {/foreach}
@@ -242,7 +259,11 @@
                                                                             placeholder="property value" value="">
                                                                     </td>
                                                                     <td>
-                                                                        <button title="Add" onClick="upena.instancePorts.addPortProperty('{$i.key}', '{$p.portName}')" class="btn btn-default"><span class="glyphicon glyphicon-plus">&nbspAdd</span></button>
+                                                                        {if $readWrite}
+                                                                            <button title="Add" onClick="upena.instancePorts.addPortProperty('{$i.key}', '{$p.portName}')" class="btn btn-default">
+                                                                                <span class="glyphicon glyphicon-plus">&nbspAdd</span>
+                                                                            </button>
+                                                                        {/if}
                                                                     </td>
                                                                 </tr>
                                                             </tbody>
@@ -250,7 +271,11 @@
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    <button title="Remove" onClick="upena.instancePorts.removePort('{$i.key}', '{$p.portName}')" class="btn btn-default"><span class="glyphicon glyphicon-trash">&nbspRemove</span></button>
+                                                    {if $readWrite}
+                                                        <button title="Remove" onClick="upena.instancePorts.removePort('{$i.key}', '{$p.portName}')" class="btn btn-default">
+                                                            <span class="glyphicon glyphicon-trash">&nbspRemove</span>
+                                                        </button>
+                                                    {/if}
                                                 </td>
                                             </tr>
                                         {/foreach}

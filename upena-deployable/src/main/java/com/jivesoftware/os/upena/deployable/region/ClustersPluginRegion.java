@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import org.apache.shiro.SecurityUtils;
 
 /**
  *
@@ -75,6 +76,9 @@ public class ClustersPluginRegion implements PageRegion<ClustersPluginRegionInpu
     @Override
     public String render(String user, ClustersPluginRegionInput input) {
         Map<String, Object> data = Maps.newHashMap();
+        if (SecurityUtils.getSubject().hasRole("readWrite")) {
+            data.put("readWrite", true);
+        }
 
         try {
             Map<ServiceKey, String> serviceColor = ServiceColorUtil.serviceKeysColor(upenaStore);

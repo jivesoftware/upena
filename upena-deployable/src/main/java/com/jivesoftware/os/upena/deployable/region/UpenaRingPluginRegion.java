@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.shiro.SecurityUtils;
 
 /**
  *
@@ -159,7 +160,9 @@ public class UpenaRingPluginRegion implements PageRegion<UpenaRingPluginRegionIn
     @Override
     public String render(String user, UpenaRingPluginRegionInput input) {
         Map<String, Object> data = Maps.newHashMap();
-
+        if (SecurityUtils.getSubject().hasRole("readWrite")) {
+            data.put("readWrite", true);
+        }
         try {
             if (input.action.equals("add")) {
                 amzaInstance.addRingHost("master", new RingHost(input.host, Integer.parseInt(input.port)));

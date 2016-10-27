@@ -698,7 +698,7 @@ public class UpenaMain {
         if (jvmapi != null) {
             jvm = new ManagePlugin("camera", null, "JVM", "/ui/jvm",
                 JVMPluginEndpoints.class,
-                new JVMPluginRegion("soy.page.jvmPluginRegion", renderer, upenaStore, jvmapi), null);
+                new JVMPluginRegion("soy.page.jvmPluginRegion", renderer, upenaStore, jvmapi), null, "admin");
 
             breakpointDumper = new ManagePlugin("record", null, "Breakpoint Dumper", "/ui/breakpoint",
                 BreakpointDumperPluginEndpoints.class,
