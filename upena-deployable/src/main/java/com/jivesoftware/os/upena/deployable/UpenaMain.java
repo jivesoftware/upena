@@ -274,7 +274,7 @@ public class UpenaMain {
 
         RowsStorageProvider rowsStorageProvider = rowsStorageProvider(orderIdProvider);
 
-        boolean sslEnable = Boolean.parseBoolean(System.getProperty("sslEnabled", "true"));
+        boolean sslEnable = Boolean.parseBoolean(System.getProperty("ssl.enabled", "true"));
         String sslKeystorePassword = System.getProperty("ssl.keystore.password", "password");
         String sslKeystorePath = System.getProperty("ssl.keystore.path", "./cert/sslKeystore");
         String sslKeyStoreAlias = System.getProperty("ssl.keystore.alias", "upenaNode");
