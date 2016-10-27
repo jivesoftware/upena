@@ -3,8 +3,7 @@ package com.jivesoftware.os.upena.deployable.endpoints;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.jivesoftware.os.mlogger.core.MetricLogger;
-import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
+import com.jivesoftware.os.upena.deployable.ShiroRequestHelper;
 import com.jivesoftware.os.upena.deployable.lookup.AsyncLookupService;
 import com.jivesoftware.os.upena.shared.ChaosStrategyKey;
 import com.jivesoftware.os.upena.shared.Cluster;
@@ -37,12 +36,13 @@ import javax.ws.rs.core.Response;
 @Path("/ui/lookup")
 public class AsyncLookupEndpoints {
 
-    private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
-
+    private final ShiroRequestHelper shiroRequestHelper;
     private final AsyncLookupService asyncLookupService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public AsyncLookupEndpoints(@Context AsyncLookupService asyncLookupService) {
+    public AsyncLookupEndpoints(@Context ShiroRequestHelper shiroRequestHelper,
+        @Context AsyncLookupService asyncLookupService) {
+        this.shiroRequestHelper = shiroRequestHelper;
         this.asyncLookupService = asyncLookupService;
     }
 
@@ -53,7 +53,7 @@ public class AsyncLookupEndpoints {
         @QueryParam("remoteHost") @DefaultValue("") String remoteHost,
         @QueryParam("remotePort") @DefaultValue("-1") int remotePort,
         @QueryParam("contains") String contains) {
-        try {
+        return shiroRequestHelper.call("lookup/clusters", () -> {
             Map<ClusterKey, TimestampedValue<Cluster>> clusters = asyncLookupService.findClusters(remoteHost, remotePort, contains);
             List<Map<String, String>> results = Lists.newArrayList();
             for (Map.Entry<ClusterKey, TimestampedValue<Cluster>> entry : clusters.entrySet()) {
@@ -67,10 +67,7 @@ public class AsyncLookupEndpoints {
                 return o1.get("key").compareTo(o2.get("key"));
             });
             return Response.ok(objectMapper.writeValueAsString(results)).build();
-        } catch (Exception e) {
-            LOG.error("find cluster.", e);
-            return Response.serverError().entity(e.getMessage()).build();
-        }
+        });
     }
 
     @GET
@@ -79,7 +76,7 @@ public class AsyncLookupEndpoints {
     public Response findHosts(@QueryParam("remoteHost") @DefaultValue("") String remoteHost,
         @QueryParam("remotePort") @DefaultValue("-1") int remotePort,
         @QueryParam("contains") String contains) {
-        try {
+        return shiroRequestHelper.call("lookup/hosts", () -> {
             Map<HostKey, TimestampedValue<Host>> hosts = asyncLookupService.findHosts(remoteHost, remotePort, contains);
             List<Map<String, String>> results = Lists.newArrayList();
             for (Map.Entry<HostKey, TimestampedValue<Host>> entry : hosts.entrySet()) {
@@ -97,10 +94,7 @@ public class AsyncLookupEndpoints {
                 return o1.get("key").compareTo(o2.get("key"));
             });
             return Response.ok(objectMapper.writeValueAsString(results)).build();
-        } catch (Exception e) {
-            LOG.error("find hosts.", e);
-            return Response.serverError().entity(e.getMessage()).build();
-        }
+        });
     }
 
     @GET
@@ -109,7 +103,7 @@ public class AsyncLookupEndpoints {
     public Response findServices(@QueryParam("remoteHost") @DefaultValue("") String remoteHost,
         @QueryParam("remotePort") @DefaultValue("-1") int remotePort,
         @QueryParam("contains") String contains) {
-        try {
+        return shiroRequestHelper.call("lookup/services", () -> {
             Map<ServiceKey, TimestampedValue<Service>> services = asyncLookupService.findServices(remoteHost, remotePort, contains);
             List<Map<String, String>> results = Lists.newArrayList();
             for (Map.Entry<ServiceKey, TimestampedValue<Service>> entry : services.entrySet()) {
@@ -123,10 +117,7 @@ public class AsyncLookupEndpoints {
                 return o1.get("key").compareTo(o2.get("key"));
             });
             return Response.ok(objectMapper.writeValueAsString(results)).build();
-        } catch (Exception e) {
-            LOG.error("find services.", e);
-            return Response.serverError().entity(e.getMessage()).build();
-        }
+        });
     }
 
     @GET
@@ -135,7 +126,7 @@ public class AsyncLookupEndpoints {
     public Response findReleases(@QueryParam("remoteHost") @DefaultValue("") String remoteHost,
         @QueryParam("remotePort") @DefaultValue("-1") int remotePort,
         @QueryParam("contains") String contains) {
-        try {
+        return shiroRequestHelper.call("lookup/releases", () -> {
             Map<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> services = asyncLookupService.findReleases(remoteHost, remotePort, contains);
             List<Map<String, String>> results = Lists.newArrayList();
             for (Map.Entry<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> entry : services.entrySet()) {
@@ -149,10 +140,7 @@ public class AsyncLookupEndpoints {
                 return o1.get("key").compareTo(o2.get("key"));
             });
             return Response.ok(objectMapper.writeValueAsString(results)).build();
-        } catch (Exception e) {
-            LOG.error("find releases.", e);
-            return Response.serverError().entity(e.getMessage()).build();
-        }
+        });
     }
 
     @GET
@@ -161,9 +149,9 @@ public class AsyncLookupEndpoints {
     public Response findStrategies(@QueryParam("remoteHost") @DefaultValue("") String remoteHost,
         @QueryParam("remotePort") @DefaultValue("-1") int remotePort,
         @QueryParam("contains") String contains) {
-        try {
+        return shiroRequestHelper.call("lookup/strategies", () -> {
             List<Map<String, String>> results = Lists.newArrayList();
-            for (ChaosStrategyKey s: ChaosStrategyKey.values()){
+            for (ChaosStrategyKey s : ChaosStrategyKey.values()) {
                 results.add(ImmutableMap.of("key", s.name(), "name", s.description));
             }
 
@@ -176,10 +164,7 @@ public class AsyncLookupEndpoints {
             });
 
             return Response.ok(objectMapper.writeValueAsString(results)).build();
-        } catch (Exception e) {
-            LOG.error("find strategies.", e);
-            return Response.serverError().entity(e.getMessage()).build();
-        }
+        });
     }
 
 }

@@ -1,8 +1,7 @@
 package com.jivesoftware.os.upena.deployable.endpoints;
 
-import com.jivesoftware.os.mlogger.core.MetricLogger;
-import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.routing.bird.shared.ResponseHelper;
+import com.jivesoftware.os.upena.deployable.ShiroRequestHelper;
 import com.jivesoftware.os.upena.deployable.region.HealthPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.HealthPluginRegion.HealthPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
@@ -28,13 +27,17 @@ import javax.ws.rs.core.Response;
 @Path("/ui/health")
 public class HealthPluginEndpoints {
 
-    private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
+    private final ShiroRequestHelper shiroRequestHelper;
 
     private final SoyService soyService;
     private final HealthPluginRegion pluginRegion;
     private final ResponseHelper responseHelper = ResponseHelper.INSTANCE;
 
-    public HealthPluginEndpoints(@Context SoyService soyService, @Context HealthPluginRegion pluginRegion) {
+    public HealthPluginEndpoints(@Context ShiroRequestHelper shiroRequestHelper,
+        @Context SoyService soyService,
+        @Context HealthPluginRegion pluginRegion) {
+
+        this.shiroRequestHelper = shiroRequestHelper;
         this.soyService = soyService;
         this.pluginRegion = pluginRegion;
     }
@@ -47,26 +50,21 @@ public class HealthPluginEndpoints {
         @QueryParam("cluster") @DefaultValue("") String cluster,
         @QueryParam("host") @DefaultValue("") String host,
         @QueryParam("service") @DefaultValue("") String service) {
-        try {
+
+        return shiroRequestHelper.call("health", () -> {
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
                 new HealthPluginRegionInput(datacenter, rack, cluster, host, service));
             return Response.ok(rendered).build();
-        } catch (Exception e) {
-            LOG.error("filter GET.", e);
-            return Response.serverError().entity(e.getMessage()).build();
-        }
+        });
     }
 
     @GET
     @Produces(MediaType.TEXT_HTML)
     @Path("/uis")
     public Response uis(@QueryParam("instanceKey") @DefaultValue("") String instanceKey) throws Exception {
-        try {
+        return shiroRequestHelper.call("health/uis", () -> {
             return Response.ok(pluginRegion.renderInstanceHealth(instanceKey)).build();
-        } catch (Exception e) {
-            LOG.error("uis GET.", e);
-            return Response.serverError().entity(e.getMessage()).build();
-        }
+        });
     }
 
     @GET
@@ -78,13 +76,11 @@ public class HealthPluginEndpoints {
         @QueryParam("cluster") @DefaultValue("") String cluster,
         @QueryParam("host") @DefaultValue("") String host,
         @QueryParam("service") @DefaultValue("") String service) {
-        try {
+
+        return shiroRequestHelper.call("health/live", () -> {
             return Response.ok(pluginRegion.renderLive(httpRequest.getRemoteUser(), new HealthPluginRegionInput(datacenter, rack, cluster, host, service)))
                 .build();
-        } catch (Exception e) {
-            LOG.error("list GET.", e);
-            return Response.serverError().entity(e.getMessage()).build();
-        }
+        });
     }
 
     @POST
@@ -97,13 +93,11 @@ public class HealthPluginEndpoints {
         @FormParam("cluster") @DefaultValue("dev") String cluster,
         @FormParam("host") @DefaultValue("") String host,
         @FormParam("service") @DefaultValue("") String service) {
-        try {
+
+        return shiroRequestHelper.call("health/poll", () -> {
             Map<String, Object> result = pluginRegion.poll(new HealthPluginRegionInput(datacenter, rack, cluster, host, service));
             return responseHelper.jsonResponse(result != null ? result : "");
-        } catch (Exception e) {
-            LOG.error("poll POST", e);
-            return Response.serverError().entity(e.getMessage()).build();
-        }
+        });
     }
 
 }

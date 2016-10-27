@@ -1,8 +1,7 @@
 package com.jivesoftware.os.upena.deployable.endpoints;
 
 import com.google.common.collect.Lists;
-import com.jivesoftware.os.mlogger.core.MetricLogger;
-import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
+import com.jivesoftware.os.upena.deployable.ShiroRequestHelper;
 import com.jivesoftware.os.upena.deployable.region.LoadBalancersPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.LoadBalancersPluginRegion.LoadBalancersPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
@@ -29,12 +28,15 @@ import org.apache.commons.lang.StringUtils;
 @Path("/ui/loadbalancers")
 public class LoadBalancersPluginEndpoints {
 
-    private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
+    private final ShiroRequestHelper shiroRequestHelper;
 
     private final SoyService soyService;
     private final LoadBalancersPluginRegion pluginRegion;
 
-    public LoadBalancersPluginEndpoints(@Context SoyService soyService, @Context LoadBalancersPluginRegion pluginRegion) {
+    public LoadBalancersPluginEndpoints(@Context ShiroRequestHelper shiroRequestHelper,
+        @Context SoyService soyService,
+        @Context LoadBalancersPluginRegion pluginRegion) {
+        this.shiroRequestHelper = shiroRequestHelper;
         this.soyService = soyService;
         this.pluginRegion = pluginRegion;
     }
@@ -42,16 +44,13 @@ public class LoadBalancersPluginEndpoints {
     @GET
     @Produces(MediaType.TEXT_HTML)
     public Response loadBalancers(@Context HttpServletRequest httpRequest) {
-        try {
+        return shiroRequestHelper.call("lb", () -> {
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(),
                 pluginRegion,
                 new LoadBalancersPluginRegionInput("", "", "", "", 0, 0, Collections.emptyList(), "", "", "", Collections.emptyList(),
                     Collections.emptyList(), Collections.emptyMap(), "", "", "", "", "", "", ""));
             return Response.ok(rendered).build();
-        } catch (Exception e) {
-            LOG.error("loadBalancers GET.", e);
-            return Response.serverError().entity(e.getMessage()).build();
-        }
+        });
     }
 
     @POST
@@ -69,16 +68,13 @@ public class LoadBalancersPluginEndpoints {
         @FormParam("release") @DefaultValue("") String releaseGroup,
         @FormParam("action") @DefaultValue("") String action) {
 
-        try {
+        return shiroRequestHelper.call("lb/actions", () -> {
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
                 new LoadBalancersPluginRegionInput(key, name, description, null, -1, -1, null, null, null,
                     null, null, null, Collections.emptyMap(), clusterKey, cluster, serviceKey, service, releaseGroupKey, releaseGroup,
                     action));
             return Response.ok(rendered).build();
-        } catch (Exception e) {
-            LOG.error("loadBalancers action  POST.", e);
-            return Response.serverError().entity(e.getMessage()).build();
-        }
+        });
     }
 
     @POST
@@ -94,10 +90,10 @@ public class LoadBalancersPluginEndpoints {
         @FormParam("protocol") @DefaultValue("") String protocol,
         @FormParam("certificate") @DefaultValue("") String certificate,
         @FormParam("serviceProtocol") @DefaultValue("") String serviceProtocol,
-        @FormParam("securityGroups") @DefaultValue("")String securityGroups,
+        @FormParam("securityGroups") @DefaultValue("") String securityGroups,
         @FormParam("subnets") @DefaultValue("") String subnets) {
 
-        try {
+        return shiroRequestHelper.call("lb/config", () -> {
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
                 new LoadBalancersPluginRegionInput(key, null, null,
                     scheme,
@@ -113,13 +109,10 @@ public class LoadBalancersPluginEndpoints {
                     null, null, null, null, null, null,
                     "update"));
             return Response.ok(rendered).build();
-        } catch (Exception e) {
-            LOG.error("loadBalancers action  POST.", e);
-            return Response.serverError().entity(e.getMessage()).build();
-        }
+        });
     }
-    
-     private List<String> sanitizedList(String string) {
+
+    private List<String> sanitizedList(String string) {
         if (string == null) {
             return Collections.emptyList();
         }
@@ -135,26 +128,5 @@ public class LoadBalancersPluginEndpoints {
         }
         return sanitized;
     }
-
-
-
-//    @POST
-//    @Path("/tag")
-//    @Produces(MediaType.APPLICATION_JSON)
-//    @Consumes(MediaType.APPLICATION_JSON)
-//    public Response tag(@Context HttpServletRequest httpRequest,
-//        @FormParam("key") @DefaultValue("") String key,
-//        @FormParam("tagName") @DefaultValue("") String tagName,
-//        @FormParam("tagValue") @DefaultValue("") String tagValue,
-//        @FormParam("action") @DefaultValue("") String action
-//    ) {
-//        try {
-//            pluginRegion.tag(httpRequest.getRemoteUser(), key, tagName, tagValue, action);
-//            return Response.ok().build();
-//        } catch (Exception x) {
-//            LOG.error("clusters add POST.", x);
-//            return Response.serverError().build();
-//        }
-//    }
 
 }

@@ -1,7 +1,6 @@
 package com.jivesoftware.os.upena.deployable.endpoints;
 
-import com.jivesoftware.os.mlogger.core.MetricLogger;
-import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
+import com.jivesoftware.os.upena.deployable.ShiroRequestHelper;
 import com.jivesoftware.os.upena.deployable.region.ClustersPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ClustersPluginRegion.ClustersPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
@@ -25,12 +24,15 @@ import javax.ws.rs.core.Response;
 @Path("/ui/clusters")
 public class ClustersPluginEndpoints {
 
-    private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
-
+    private final ShiroRequestHelper shiroRequestHelper;
     private final SoyService soyService;
     private final ClustersPluginRegion pluginRegion;
 
-    public ClustersPluginEndpoints(@Context SoyService soyService, @Context ClustersPluginRegion pluginRegion) {
+    public ClustersPluginEndpoints(@Context ShiroRequestHelper shiroRequestHelper,
+        @Context SoyService soyService,
+        @Context ClustersPluginRegion pluginRegion) {
+
+        this.shiroRequestHelper = shiroRequestHelper;
         this.soyService = soyService;
         this.pluginRegion = pluginRegion;
     }
@@ -38,15 +40,12 @@ public class ClustersPluginEndpoints {
     @GET
     @Produces(MediaType.TEXT_HTML)
     public Response clusters(@Context HttpServletRequest httpRequest) {
-        try {
+        return shiroRequestHelper.call("clusters", () -> {
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(),
                 pluginRegion,
                 new ClustersPluginRegionInput("", "", "", ""));
             return Response.ok(rendered).build();
-        } catch (Exception e) {
-            LOG.error("clusters GET.", e);
-            return Response.serverError().entity(e.getMessage()).build();
-        }
+        });
     }
 
     @POST
@@ -57,14 +56,12 @@ public class ClustersPluginEndpoints {
         @FormParam("name") @DefaultValue("") String name,
         @FormParam("description") @DefaultValue("") String description,
         @FormParam("action") @DefaultValue("") String action) {
-        try {
+
+        return shiroRequestHelper.call("clusters/action", () -> {
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
                 new ClustersPluginRegionInput(key, name, description, action));
             return Response.ok(rendered).build();
-        } catch (Exception e) {
-            LOG.error("clusters action  POST.", e);
-            return Response.serverError().entity(e.getMessage()).build();
-        }
+        });
     }
 
     @POST
@@ -72,13 +69,10 @@ public class ClustersPluginEndpoints {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response add(ClustersPluginRegion.ReleaseGroupUpdate update, @Context HttpServletRequest httpRequest) {
-        try {
+        return shiroRequestHelper.call("clusters/add", () -> {
             pluginRegion.add(httpRequest.getRemoteUser(), update);
             return Response.ok().build();
-        } catch (Exception x) {
-            LOG.error("clusters add POST.", x);
-            return Response.serverError().build();
-        }
+        });
     }
 
     @POST
@@ -86,13 +80,10 @@ public class ClustersPluginEndpoints {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response remove(ClustersPluginRegion.ReleaseGroupUpdate update, @Context HttpServletRequest httpRequest) {
-        try {
+        return shiroRequestHelper.call("clusters/remove", () -> {
             pluginRegion.remove(httpRequest.getRemoteUser(), update);
             return Response.ok().build();
-        } catch (Exception x) {
-            LOG.error("clusters remove  POST.", x);
-            return Response.serverError().build();
-        }
+        });
     }
 
 }

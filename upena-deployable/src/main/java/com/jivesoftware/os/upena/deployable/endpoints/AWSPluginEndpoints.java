@@ -2,6 +2,7 @@ package com.jivesoftware.os.upena.deployable.endpoints;
 
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
+import com.jivesoftware.os.upena.deployable.ShiroRequestHelper;
 import com.jivesoftware.os.upena.deployable.region.AWSPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.AWSPluginRegion.AWSPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
@@ -26,12 +27,15 @@ import javax.ws.rs.core.Response;
 public class AWSPluginEndpoints {
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
-
+    private final ShiroRequestHelper shiroRequestHelper;
     private final SoyService soyService;
     private final AWSPluginRegion pluginRegion;
 
-    public AWSPluginEndpoints(@Context SoyService soyService,
+    public AWSPluginEndpoints(@Context ShiroRequestHelper shiroRequestHelper,
+        @Context SoyService soyService,
         @Context AWSPluginRegion pluginRegion) {
+
+        this.shiroRequestHelper = shiroRequestHelper;
         this.soyService = soyService;
         this.pluginRegion = pluginRegion;
     }
@@ -39,14 +43,11 @@ public class AWSPluginEndpoints {
     @GET
     @Produces(MediaType.TEXT_HTML)
     public Response aws(@Context HttpServletRequest httpRequest) {
-        try {
+        return shiroRequestHelper.call("aws", () -> {
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
                 new AWSPluginRegionInput(""));
             return Response.ok(rendered).build();
-        } catch (Exception e) {
-            LOG.error("aws GET", e);
-            return Response.serverError().entity(e.getMessage()).build();
-        }
+        });
     }
 
     @POST
@@ -54,13 +55,10 @@ public class AWSPluginEndpoints {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response action(@Context HttpServletRequest httpRequest,
         @FormParam("action") @DefaultValue("") String action) {
-        try {
+        return shiroRequestHelper.call("aws/action", () -> {
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
                 new AWSPluginRegionInput(action));
             return Response.ok(rendered).build();
-        } catch (Exception e) {
-            LOG.error("aws action POST", e);
-            return Response.serverError().entity(e.getMessage()).build();
-        }
+        });
     }
 }

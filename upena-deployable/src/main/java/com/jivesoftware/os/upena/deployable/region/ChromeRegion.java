@@ -1,7 +1,6 @@
 package com.jivesoftware.os.upena.deployable.region;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
@@ -14,6 +13,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.subject.Subject;
 
 /**
  *
@@ -61,7 +63,33 @@ public class ChromeRegion<I extends PluginInput, R extends PageRegion<I>> implem
     }
 
     public String render(String path, String user, String name, String title, String htmlRegion) {
-        List<Map<String, String>> p = Lists.transform(plugins, (input1) -> {
+        HeaderInput headerData = new HeaderInput();
+        List<Map<String, String>> instances = new ArrayList<>();
+        int[] instance = new int[1];
+        Subject s;
+        try {
+            s = SecurityUtils.getSubject();
+        } catch (Exception x) {
+            s = null;
+            LOG.error("Failure.", x);
+        }
+        Subject subject = s;
+        List<Map<String, String>> p = plugins.stream().filter((ManagePlugin t) -> {
+            if (t.roles == null || t.roles.length == 0) {
+                return true;
+            }
+            if (t.name.equals("login")) {
+                if (subject != null && subject.isAuthenticated()) {
+                    return false;
+                }
+            }
+            for (String role : t.roles) {
+                if (subject != null && subject.hasRole(role)) {
+                    return true;
+                }
+            }
+            return false;
+        }).map((input1) -> {
             Map<String, String> map = new HashMap<>();
             if (name.equals(input1.name)) {
                 map.put("active", String.valueOf(name.equals(input1.name)));
@@ -74,15 +102,13 @@ public class ChromeRegion<I extends PluginInput, R extends PageRegion<I>> implem
             map.put("glyphicon", input1.glyphicon);
             map.put("icon", input1.icon);
             return map;
-        });
-        HeaderInput headerData = new HeaderInput();
+        }).collect(Collectors.toList());
+
         headerData.put("plugins", p);
         headerData.put("user", user);
 
-        List<Map<String, String>> instances = new ArrayList<>();
-        int[] instance = new int[1];
+        int[] i = new int[1];
         try {
-            int[] i = new int[1];
             upenaStore.hosts.scan((HostKey key, Host value) -> {
                 instances.add(ImmutableMap.of("host", value.name,
                     "name", value.name + " " + String.valueOf(" - (" + i[0] + ")"),
@@ -98,9 +124,11 @@ public class ChromeRegion<I extends PluginInput, R extends PageRegion<I>> implem
             LOG.error("Failure.", x);
         }
         headerData.put("cluster", cluster);
-        headerData.put("instance", String.valueOf(instance[0]));
-        headerData.put("total", String.valueOf(instances.size()));
-        headerData.put("instances", instances);
+        if (!instances.isEmpty() && subject != null && subject.isAuthenticated()) {
+            headerData.put("instance", String.valueOf(instance[0]));
+            headerData.put("total", String.valueOf(instances.size()));
+            headerData.put("instances", instances);
+        }
 
         Map<String, Object> data = Maps.newHashMap();
         data.put("header", headerRegion.render(user, headerData));

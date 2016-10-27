@@ -15,8 +15,7 @@
  */
 package com.jivesoftware.os.upena.deployable.endpoints;
 
-import com.jivesoftware.os.mlogger.core.MetricLogger;
-import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
+import com.jivesoftware.os.upena.deployable.ShiroRequestHelper;
 import com.jivesoftware.os.upena.deployable.region.MonkeyPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.MonkeyPluginRegion.MonkeyPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.region.MonkeyPluginRegion.MonkeyPropertyUpdate;
@@ -39,13 +38,16 @@ import javax.ws.rs.core.Response;
 @Path("/ui/chaos")
 public class MonkeyPluginEndpoints {
 
-    private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
+    private final ShiroRequestHelper shiroRequestHelper;
 
     private final SoyService soyService;
     private final MonkeyPluginRegion pluginRegion;
 
-    public MonkeyPluginEndpoints(@Context SoyService soyService,
-                                 @Context MonkeyPluginRegion pluginRegion) {
+    public MonkeyPluginEndpoints(@Context ShiroRequestHelper shiroRequestHelper,
+        @Context SoyService soyService,
+        @Context MonkeyPluginRegion pluginRegion) {
+
+        this.shiroRequestHelper = shiroRequestHelper;
         this.soyService = soyService;
         this.pluginRegion = pluginRegion;
     }
@@ -53,40 +55,34 @@ public class MonkeyPluginEndpoints {
     @GET
     @Produces(MediaType.TEXT_HTML)
     public Response monkeys(@Context HttpServletRequest httpRequest) {
-        try {
+        return shiroRequestHelper.call("monkeys", () -> {
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-                    new MonkeyPluginRegionInput("", false, "", "", "", "", "", "", "", "", ""));
+                new MonkeyPluginRegionInput("", false, "", "", "", "", "", "", "", "", ""));
             return Response.ok(rendered).build();
-        } catch (Exception e) {
-            LOG.error("chaos GET", e);
-            return Response.serverError().entity(e.getMessage()).build();
-        }
+        });
     }
 
     @POST
     @Produces(MediaType.TEXT_HTML)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response action(@Context HttpServletRequest httpRequest,
-                           @FormParam("key") @DefaultValue("") String key,
-                           @FormParam("enabled") @DefaultValue("false") boolean enabled,
-                           @FormParam("clusterKey") @DefaultValue("") String clusterKey,
-                           @FormParam("cluster") @DefaultValue("") String cluster,
-                           @FormParam("hostKey") @DefaultValue("") String hostKey,
-                           @FormParam("host") @DefaultValue("") String host,
-                           @FormParam("serviceKey") @DefaultValue("") String serviceKey,
-                           @FormParam("service") @DefaultValue("") String service,
-                           @FormParam("strategyKey") @DefaultValue("") String strategyKey,
-                           @FormParam("strategy") @DefaultValue("") String strategy,
-                           @FormParam("action") @DefaultValue("") String action) {
-        try {
+        @FormParam("key") @DefaultValue("") String key,
+        @FormParam("enabled") @DefaultValue("false") boolean enabled,
+        @FormParam("clusterKey") @DefaultValue("") String clusterKey,
+        @FormParam("cluster") @DefaultValue("") String cluster,
+        @FormParam("hostKey") @DefaultValue("") String hostKey,
+        @FormParam("host") @DefaultValue("") String host,
+        @FormParam("serviceKey") @DefaultValue("") String serviceKey,
+        @FormParam("service") @DefaultValue("") String service,
+        @FormParam("strategyKey") @DefaultValue("") String strategyKey,
+        @FormParam("strategy") @DefaultValue("") String strategy,
+        @FormParam("action") @DefaultValue("") String action) {
+        return shiroRequestHelper.call("monkey/actions", () -> {
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-                    new MonkeyPluginRegionInput(key, enabled, clusterKey, cluster, hostKey,
-                            host, serviceKey, service, strategyKey, strategy, action));
+                new MonkeyPluginRegionInput(key, enabled, clusterKey, cluster, hostKey,
+                    host, serviceKey, service, strategyKey, strategy, action));
             return Response.ok(rendered).build();
-        } catch (Exception e) {
-            LOG.error("chaos action POST", e);
-            return Response.serverError().entity(e.getMessage()).build();
-        }
+        });
     }
 
     @POST
@@ -94,13 +90,10 @@ public class MonkeyPluginEndpoints {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response add(@Context HttpServletRequest httpRequest, MonkeyPropertyUpdate update) {
-        try {
+        return shiroRequestHelper.call("monkeys/add", () -> {
             pluginRegion.add(update);
             return Response.ok().build();
-        } catch (Exception x) {
-            LOG.error("Failed to add ports for:" + update, x);
-            return Response.serverError().build();
-        }
+        });
     }
 
     @POST
@@ -108,13 +101,10 @@ public class MonkeyPluginEndpoints {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response remove(@Context HttpServletRequest httpRequest, MonkeyPropertyUpdate update) {
-        try {
+        return shiroRequestHelper.call("monkeys/remove", () -> {
             pluginRegion.remove(update);
             return Response.ok().build();
-        } catch (Exception x) {
-            LOG.error("Failed to remove to ports for:" + update, x);
-            return Response.serverError().build();
-        }
+        });
     }
 
 }

@@ -15,8 +15,6 @@
  */
 package com.jivesoftware.os.upena.deployable;
 
-import com.jivesoftware.os.mlogger.core.MetricLogger;
-import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;

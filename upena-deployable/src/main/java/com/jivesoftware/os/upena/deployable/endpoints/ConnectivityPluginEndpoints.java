@@ -1,7 +1,6 @@
 package com.jivesoftware.os.upena.deployable.endpoints;
 
-import com.jivesoftware.os.mlogger.core.MetricLogger;
-import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
+import com.jivesoftware.os.upena.deployable.ShiroRequestHelper;
 import com.jivesoftware.os.upena.deployable.region.ConnectivityPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ConnectivityPluginRegion.ConnectivityPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
@@ -29,12 +28,16 @@ import javax.ws.rs.core.Response;
 @Path("/ui/connectivity")
 public class ConnectivityPluginEndpoints {
 
-    private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
+    private final ShiroRequestHelper shiroRequestHelper;
 
     private final SoyService soyService;
     private final ConnectivityPluginRegion pluginRegion;
 
-    public ConnectivityPluginEndpoints(@Context SoyService soyService, @Context ConnectivityPluginRegion pluginRegion) {
+    public ConnectivityPluginEndpoints(@Context ShiroRequestHelper shiroRequestHelper,
+        @Context SoyService soyService,
+        @Context ConnectivityPluginRegion pluginRegion) {
+
+        this.shiroRequestHelper = shiroRequestHelper;
         this.soyService = soyService;
         this.pluginRegion = pluginRegion;
     }
@@ -42,15 +45,12 @@ public class ConnectivityPluginEndpoints {
     @GET
     @Produces(MediaType.TEXT_HTML)
     public Response render(@Context HttpServletRequest httpRequest) {
-        try {
+       return shiroRequestHelper.call("connectivity", () -> {
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion, new ConnectivityPluginRegionInput("", "", "", "", "", "", "",
                 "",
                 new HashSet<>(Arrays.asList("linkCluster", "linkService", "linkInstance"))));
             return Response.ok(rendered).build();
-        } catch (Exception e) {
-            LOG.error("render connectivity GET.", e);
-            return Response.serverError().entity(e.getMessage()).build();
-        }
+        });
     }
 
     @POST
@@ -67,14 +67,11 @@ public class ConnectivityPluginEndpoints {
         @FormParam("release") @DefaultValue("") String release,
         @FormParam("linkType") @DefaultValue("linkCluster,linkService,linkInstance") List<String> linkType) {
 
-        try {
+        return shiroRequestHelper.call("connectivity", () -> {
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
                 new ConnectivityPluginRegionInput(clusterKey, cluster, hostKey, host, serviceKey, service, releaseKey, release, new HashSet<>(linkType)));
             return Response.ok(rendered).build();
-        } catch (Exception e) {
-            LOG.error("render connectivity POST.", e);
-            return Response.serverError().entity(e.getMessage()).build();
-        }
+        });
     }
 
     @GET
@@ -84,14 +81,11 @@ public class ConnectivityPluginEndpoints {
     public Response renderInstance(@Context HttpServletRequest httpRequest,
         @PathParam("instanceKey") @DefaultValue("") String instanceKey) {
 
-        try {
+        return shiroRequestHelper.call("connectivity/instance", () -> {
             String rendered = soyService.wrapWithChrome("/ui/connectivity/" + instanceKey, httpRequest.getRemoteUser(),
                 "foo", "Instance", pluginRegion.renderInstance(httpRequest.getRemoteUser(), instanceKey));
             return Response.ok(rendered).build();
-        } catch (Exception e) {
-            LOG.error("render connectivity POST.", e);
-            return Response.serverError().entity(e.getMessage()).build();
-        }
+        });
     }
 
 }

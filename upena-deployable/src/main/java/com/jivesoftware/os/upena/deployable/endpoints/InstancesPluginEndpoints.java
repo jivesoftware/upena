@@ -1,7 +1,6 @@
 package com.jivesoftware.os.upena.deployable.endpoints;
 
-import com.jivesoftware.os.mlogger.core.MetricLogger;
-import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
+import com.jivesoftware.os.upena.deployable.ShiroRequestHelper;
 import com.jivesoftware.os.upena.deployable.region.InstancesPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.InstancesPluginRegion.InstancesPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.region.InstancesPluginRegion.PortUpdate;
@@ -28,12 +27,15 @@ import javax.ws.rs.core.Response;
 @Path("/ui/instances")
 public class InstancesPluginEndpoints {
 
-    private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
-
+    private final ShiroRequestHelper shiroRequestHelper;
     private final SoyService soyService;
     private final InstancesPluginRegion pluginRegion;
 
-    public InstancesPluginEndpoints(@Context SoyService soyService, @Context InstancesPluginRegion pluginRegion) {
+    public InstancesPluginEndpoints(@Context ShiroRequestHelper shiroRequestHelper,
+        @Context SoyService soyService,
+        @Context InstancesPluginRegion pluginRegion) {
+
+        this.shiroRequestHelper = shiroRequestHelper;
         this.soyService = soyService;
         this.pluginRegion = pluginRegion;
     }
@@ -41,14 +43,11 @@ public class InstancesPluginEndpoints {
     @GET
     @Produces(MediaType.TEXT_HTML)
     public Response instances(@Context HttpServletRequest httpRequest) {
-        try {
+        return shiroRequestHelper.call("instances", () -> {
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
                 new InstancesPluginRegionInput("", "", "", "", "", "", "", "", "", "", false, false, false, "", "", ""));
             return Response.ok(rendered).build();
-        } catch (Exception e) {
-            LOG.error("hosts GET", e);
-            return Response.serverError().entity(e.getMessage()).build();
-        }
+        });
     }
 
     @POST
@@ -72,7 +71,7 @@ public class InstancesPluginEndpoints {
         @FormParam("interval") @DefaultValue("30") String interval,
         @FormParam("action") @DefaultValue("") String action) {
 
-        try {
+        return shiroRequestHelper.call("instance/actions", () -> {
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
                 new InstancesPluginRegionInput(key,
                     clusterKey,
@@ -91,10 +90,7 @@ public class InstancesPluginEndpoints {
                     interval,
                     action));
             return Response.ok(rendered).build();
-        } catch (Exception e) {
-            LOG.error("instances action POST", e);
-            return Response.serverError().entity(e.getMessage()).build();
-        }
+        });
     }
 
     @POST
@@ -107,15 +103,11 @@ public class InstancesPluginEndpoints {
         @FormParam("serviceKey") @DefaultValue("") String serviceKey,
         @FormParam("releaseKey") @DefaultValue("") String releaseKey) {
 
-        try {
+        return shiroRequestHelper.call("instance/add", () -> {
             String result = pluginRegion.add(httpRequest.getRemoteUser(), clusterKey, hostKeys, serviceKey, releaseKey);
-            LOG.info(result);
             URI location = new URI("/ui/health");
             return Response.seeOther(location).build();
-        } catch (Exception e) {
-            LOG.error("instances action POST", e);
-            return Response.serverError().entity(e.getMessage()).build();
-        }
+        });
     }
 
     @POST
@@ -124,13 +116,10 @@ public class InstancesPluginEndpoints {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response add(@Context HttpServletRequest httpRequest, PortUpdate update) {
 
-        try {
+        return shiroRequestHelper.call("instance/ports/add", () -> {
             pluginRegion.add(httpRequest.getRemoteUser(), update);
             return Response.ok().build();
-        } catch (Exception x) {
-            LOG.error("Failed to add ports for:" + update, x);
-            return Response.serverError().build();
-        }
+        });
     }
 
     @POST
@@ -138,13 +127,10 @@ public class InstancesPluginEndpoints {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response remove(@Context HttpServletRequest httpRequest, PortUpdate update) {
-        try {
+        return shiroRequestHelper.call("instance/ports/remove", () -> {
             pluginRegion.remove(httpRequest.getRemoteUser(), update);
             return Response.ok().build();
-        } catch (Exception x) {
-            LOG.error("Failed to remove to ports for:" + update, x);
-            return Response.serverError().build();
-        }
+        });
     }
 
 }

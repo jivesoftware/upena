@@ -49,7 +49,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 import javax.inject.Singleton;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -197,21 +196,12 @@ public class UpenaEndpoints {
         }
     }
 
+    @Path("/ui")
     @GET
     @Produces(MediaType.TEXT_HTML)
     public Response get(@Context HttpServletRequest httpRequest,
         @Context UriInfo uriInfo) throws Exception {
 
-        String rendered = soyService.render(httpRequest.getRemoteUser(), uriInfo.getAbsolutePath() + "propagator/download", amzaClusterName.name);
-        return Response.ok(rendered).build();
-    }
-
-    @GET
-    @Path("/logout")
-    @Produces(MediaType.TEXT_HTML)
-    public Response logout(@Context HttpServletRequest httpRequest,
-        @Context UriInfo uriInfo) throws ServletException, Exception {
-        httpRequest.logout();
         String rendered = soyService.render(httpRequest.getRemoteUser(), uriInfo.getAbsolutePath() + "propagator/download", amzaClusterName.name);
         return Response.ok(rendered).build();
     }

@@ -20,6 +20,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authz.AuthorizationException;
 
 /**
  *
@@ -87,10 +89,13 @@ public class ServicesPluginRegion implements PageRegion<ServicesPluginRegionInpu
                 if (input.action.equals("filter")) {
                     filter = handleFilter(input, data);
                 } else if (input.action.equals("add")) {
+                    SecurityUtils.getSubject().checkRoles("write");
                     handleAdd(user, filters, input, data);
                 } else if (input.action.equals("update")) {
+                    SecurityUtils.getSubject().checkRoles("write");
                     handleUpdate(user, filters, input, data);
                 } else if (input.action.equals("remove")) {
+                    SecurityUtils.getSubject().checkRoles("write");
                     handleRemove(user, input, data);
                 }
             }
@@ -133,6 +138,8 @@ public class ServicesPluginRegion implements PageRegion<ServicesPluginRegionInpu
             });
 
             data.put("services", rows);
+        } catch (AuthorizationException a) {
+            throw a;
         } catch (Exception e) {
             LOG.error("Unable to retrieve data", e);
         }

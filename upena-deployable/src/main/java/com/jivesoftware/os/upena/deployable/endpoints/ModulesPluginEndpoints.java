@@ -1,7 +1,6 @@
 package com.jivesoftware.os.upena.deployable.endpoints;
 
-import com.jivesoftware.os.mlogger.core.MetricLogger;
-import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
+import com.jivesoftware.os.upena.deployable.ShiroRequestHelper;
 import com.jivesoftware.os.upena.deployable.region.ModulesPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ModulesPluginRegion.ModulesPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
@@ -25,12 +24,16 @@ import javax.ws.rs.core.Response;
 @Path("/ui/modules")
 public class ModulesPluginEndpoints {
 
-    private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
+    private final ShiroRequestHelper shiroRequestHelper;
 
     private final SoyService soyService;
     private final ModulesPluginRegion pluginRegion;
 
-    public ModulesPluginEndpoints(@Context SoyService soyService, @Context ModulesPluginRegion pluginRegion) {
+    public ModulesPluginEndpoints(@Context ShiroRequestHelper shiroRequestHelper,
+        @Context SoyService soyService,
+        @Context ModulesPluginRegion pluginRegion) {
+
+        this.shiroRequestHelper = shiroRequestHelper;
         this.soyService = soyService;
         this.pluginRegion = pluginRegion;
     }
@@ -38,13 +41,10 @@ public class ModulesPluginEndpoints {
     @GET
     @Produces(MediaType.TEXT_HTML)
     public Response modules(@Context HttpServletRequest httpRequest) {
-        try {
+        return shiroRequestHelper.call("modules", () -> {
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion, new ModulesPluginRegionInput("", "", "", "", "", "", "", ""));
             return Response.ok(rendered).build();
-        } catch (Exception e) {
-            LOG.error("modules GET", e);
-            return Response.serverError().entity(e.getMessage()).build();
-        }
+        });
     }
 
     @POST
@@ -59,14 +59,10 @@ public class ModulesPluginEndpoints {
         @FormParam("service") @DefaultValue("") String service,
         @FormParam("releaseKey") @DefaultValue("") String releaseKey,
         @FormParam("release") @DefaultValue("") String release) {
-        try {
+        return shiroRequestHelper.call("modules/options", () -> {
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
                 new ModulesPluginRegionInput(clusterKey, cluster, hostKey, host, serviceKey, service, releaseKey, release));
             return Response.ok(rendered).build();
-        } catch (Exception e) {
-            LOG.error("modules POST", e);
-            return Response.serverError().entity(e.getMessage()).build();
-        }
+        });
     }
-
 }

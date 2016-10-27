@@ -58,6 +58,7 @@ import com.jivesoftware.os.upena.deployable.UpenaEndpoints.AmzaClusterName;
 import com.jivesoftware.os.upena.deployable.aws.AWSClientFactory;
 import com.jivesoftware.os.upena.deployable.endpoints.AWSPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.AsyncLookupEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.AuthPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.BreakpointDumperPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ChangeLogPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ClustersPluginEndpoints;
@@ -86,6 +87,7 @@ import com.jivesoftware.os.upena.deployable.profiler.server.endpoints.PerfServic
 import com.jivesoftware.os.upena.deployable.profiler.visualize.NameUtils;
 import com.jivesoftware.os.upena.deployable.profiler.visualize.VisualizeProfile;
 import com.jivesoftware.os.upena.deployable.region.AWSPluginRegion;
+import com.jivesoftware.os.upena.deployable.region.AuthPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.BreakpointDumperPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ChangeLogPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ClustersPluginRegion;
@@ -110,6 +112,7 @@ import com.jivesoftware.os.upena.deployable.region.RepoPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.SARPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ServicesPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.TopologyPluginRegion;
+import com.jivesoftware.os.upena.deployable.region.UnauthorizedPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.UpenaRingPluginRegion;
 import com.jivesoftware.os.upena.deployable.server.InitializeRestfulServer;
 import com.jivesoftware.os.upena.deployable.server.JerseyEndpoints;
@@ -149,13 +152,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.config.IniSecurityManagerFactory;
-import org.apache.shiro.mgt.SecurityManager;
-import org.apache.shiro.session.Session;
-import org.apache.shiro.subject.Subject;
-import org.apache.shiro.util.Factory;
-import org.apache.shiro.web.servlet.ShiroFilter;
 
 public class UpenaMain {
 
@@ -241,91 +237,6 @@ public class UpenaMain {
         }
         if (failed != null) {
             throw failed;
-        }
-
-        try {
-            // The easiest way to create a Shiro SecurityManager with configured
-            // realms, users, roles and permissions is to use the simple INI config.
-            // We'll do that by using a factory that can ingest a .ini file and
-            // return a SecurityManager instance:
-
-            // Use the shiro.ini file at the root of the classpath
-            // (file: and url: prefixes load from files and urls respectively):
-            Factory<SecurityManager> factory = new IniSecurityManagerFactory("classpath:shiro.ini");
-            SecurityManager securityManager = factory.getInstance();
-
-            // for this simple example quickstart, make the SecurityManager
-            // accessible as a JVM singleton.  Most applications wouldn't do this
-            // and instead rely on their container configuration or web.xml for
-            // webapps.  That is outside the scope of this simple quickstart, so
-            // we'll just do the bare minimum so you can continue to get a feel
-            // for things.
-            SecurityUtils.setSecurityManager(securityManager);
-
-            // Now that a simple Shiro environment is set up, let's see what you can do:
-            // get the currently executing user:
-            Subject currentUser = SecurityUtils.getSubject();
-
-            // Do some stuff with a Session (no need for a web or EJB container!!!)
-            Session session = currentUser.getSession();
-            session.setAttribute("someKey", "aValue");
-            String value = (String) session.getAttribute("someKey");
-            if (value.equals("aValue")) {
-                LOG.info("Retrieved the correct value! [" + value + "]");
-            }
-
-            ShiroFilter filter = new ShiroFilter();
-
-//        // let's login the current user so we can check against roles and permissions:
-//        if (!currentUser.isAuthenticated()) {
-//            UsernamePasswordToken token = new UsernamePasswordToken("lonestarr", "vespa");
-//            token.setRememberMe(true);
-//            try {
-//                currentUser.login(token);
-//            } catch (UnknownAccountException uae) {
-//                log.info("There is no user with username of " + token.getPrincipal());
-//            } catch (IncorrectCredentialsException ice) {
-//                log.info("Password for account " + token.getPrincipal() + " was incorrect!");
-//            } catch (LockedAccountException lae) {
-//                log.info("The account for username " + token.getPrincipal() + " is locked.  " +
-//                        "Please contact your administrator to unlock it.");
-//            }
-//            // ... catch more exceptions here (maybe custom ones specific to your application?
-//            catch (AuthenticationException ae) {
-//                //unexpected condition?  error?
-//            }
-//        }
-//
-//        //say who they are:
-//        //print their identifying principal (in this case, a username):
-//        log.info("User [" + currentUser.getPrincipal() + "] logged in successfully.");
-//
-//        //test a role:
-//        if (currentUser.hasRole("schwartz")) {
-//            log.info("May the Schwartz be with you!");
-//        } else {
-//            log.info("Hello, mere mortal.");
-//        }
-//
-//        //test a typed permission (not instance-level)
-//        if (currentUser.isPermitted("lightsaber:wield")) {
-//            log.info("You may use a lightsaber ring.  Use it wisely.");
-//        } else {
-//            log.info("Sorry, lightsaber rings are for schwartz masters only.");
-//        }
-//
-//        //a (very powerful) Instance Level permission:
-//        if (currentUser.isPermitted("winnebago:drive:eagle5")) {
-//            log.info("You are permitted to 'drive' the winnebago with license plate (id) 'eagle5'.  " +
-//                    "Here are the keys - have fun!");
-//        } else {
-//            log.info("Sorry, you aren't allowed to drive the 'eagle5' winnebago!");
-//        }
-//
-//        //all done - log out!
-//        currentUser.logout();
-        } catch (Exception x) {
-            LOG.error("Shiro", x);
         }
 
         JDIAPI jvmapi = null;
@@ -503,8 +414,10 @@ public class UpenaMain {
             ubaLog);
 
         DiscoveredRoutes discoveredRoutes = new DiscoveredRoutes();
+        ShiroRequestHelper shiroRequestHelper = new ShiroRequestHelper();
 
         JerseyEndpoints jerseyEndpoints = new JerseyEndpoints()
+            .addInjectable(ShiroRequestHelper.class, shiroRequestHelper)
             .addEndpoint(UpenaRestEndpoints.class)
             .addInjectable(upenaService)
             .addInjectable(upenaStore)
@@ -659,6 +572,8 @@ public class UpenaMain {
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/proxyPluginRegion.soy"), "proxyPluginRegion.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/monkeyPluginRegion.soy"), "monkeyPluginRegion.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/loadBalancersPluginRegion.soy"), "loadBalancersPluginRegion.soy");
+        soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/authPluginRegion.soy"), "authPluginRegion.soy");
+        soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/unauthorizedPluginRegion.soy"), "unauthorizedPluginRegion.soy");
 
         if (jvmapi != null) {
             soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/jvmPluginRegion.soy"), "jvmPluginRegion.soy");
@@ -679,6 +594,12 @@ public class UpenaMain {
             upenaStore
         );
 
+        AuthPluginRegion authRegion = new AuthPluginRegion("soy.page.authPluginRegion", renderer);
+        UnauthorizedPluginRegion unauthorizedRegion = new UnauthorizedPluginRegion("soy.page.unauthorizedPluginRegion", renderer);
+
+        ManagePlugin auth = new ManagePlugin("login", null, "Login", "/ui/auth/login",
+            AuthPluginEndpoints.class, authRegion, null);
+
         HealthPluginRegion healthPluginRegion = new HealthPluginRegion(mapper,
             System.currentTimeMillis(),
             ringHost,
@@ -697,78 +618,80 @@ public class UpenaMain {
             "soy.page.instancesPluginRegionList", renderer, upenaStore, hostKey, healthPluginRegion, awsClientFactory);
 
         ManagePlugin health = new ManagePlugin("fire", null, "Health", "/ui/health",
-            HealthPluginEndpoints.class, healthPluginRegion, null);
+            HealthPluginEndpoints.class, healthPluginRegion, null, "admin", "readonly", "readwrite");
 
         ManagePlugin topology = new ManagePlugin("th", null, "Topology", "/ui/topology",
             TopologyPluginEndpoints.class,
             new TopologyPluginRegion(mapper, "soy.page.topologyPluginRegion", "soy.page.connectionsHealth",
-                renderer, amzaInstance, upenaStore, healthPluginRegion, hostsPluginRegion, releasesPluginRegion, instancesPluginRegion, discoveredRoutes), null);
+                renderer, amzaInstance, upenaStore, healthPluginRegion, hostsPluginRegion, releasesPluginRegion, instancesPluginRegion, discoveredRoutes), null,
+            "admin", "readonly", "readwrite");
 
         ManagePlugin connectivity = new ManagePlugin("transfer", null, "Connectivity", "/ui/connectivity",
             ConnectivityPluginEndpoints.class,
             new ConnectivityPluginRegion(mapper, "soy.page.connectivityPluginRegion", "soy.page.connectionsHealth", "soy.page.connectionOverview",
-                renderer, amzaInstance, upenaStore, healthPluginRegion, hostsPluginRegion, releasesPluginRegion, instancesPluginRegion, discoveredRoutes), null);
+                renderer, amzaInstance, upenaStore, healthPluginRegion, hostsPluginRegion, releasesPluginRegion, instancesPluginRegion, discoveredRoutes), null,
+            "admin", "readonly", "readwrite");
 
         ManagePlugin changes = new ManagePlugin("road", null, "Changes", "/ui/changeLog",
             ChangeLogPluginEndpoints.class,
-            new ChangeLogPluginRegion("soy.page.changeLogPluginRegion", renderer, upenaStore), null);
+            new ChangeLogPluginRegion("soy.page.changeLogPluginRegion", renderer, upenaStore), null, "admin", "readonly", "readwrite");
 
         ManagePlugin instances = new ManagePlugin("star", null, "Instances", "/ui/instances",
-            InstancesPluginEndpoints.class, instancesPluginRegion, null);
+            InstancesPluginEndpoints.class, instancesPluginRegion, null, "admin", "readonly", "readwrite");
 
         ManagePlugin config = new ManagePlugin("cog", null, "Config", "/ui/config",
             ConfigPluginEndpoints.class,
-            new ConfigPluginRegion(mapper, "soy.page.configPluginRegion", renderer, upenaStore, upenaConfigStore), null);
+            new ConfigPluginRegion(mapper, "soy.page.configPluginRegion", renderer, upenaStore, upenaConfigStore), null, "admin", "readonly", "readwrite");
 
         ManagePlugin repo = new ManagePlugin("hdd", null, "Repository", "/ui/repo",
             RepoPluginEndpoints.class,
-            new RepoPluginRegion("soy.page.repoPluginRegion", renderer, upenaStore, localPathToRepo), null);
+            new RepoPluginRegion("soy.page.repoPluginRegion", renderer, upenaStore, localPathToRepo), null, "admin", "readonly", "readwrite");
 
         ManagePlugin projects = new ManagePlugin("folder-open", null, "Projects", "/ui/projects",
             ProjectsPluginEndpoints.class,
             new ProjectsPluginRegion("soy.page.projectsPluginRegion", "soy.page.projectBuildOutput", "soy.page.projectBuildOutputTail", renderer, upenaStore,
-                localPathToRepo), null);
+                localPathToRepo), null, "admin", "readonly", "readwrite");
 
         ManagePlugin clusters = new ManagePlugin("cloud", null, "Clusters", "/ui/clusters",
             ClustersPluginEndpoints.class,
-            new ClustersPluginRegion("soy.page.clustersPluginRegion", renderer, upenaStore), null);
+            new ClustersPluginRegion("soy.page.clustersPluginRegion", renderer, upenaStore), null, "admin", "readonly", "readwrite");
 
         ManagePlugin hosts = new ManagePlugin("tasks", null, "Hosts", "/ui/hosts",
-            HostsPluginEndpoints.class, hostsPluginRegion, null);
+            HostsPluginEndpoints.class, hostsPluginRegion, null, "admin", "readonly", "readwrite");
 
         ManagePlugin services = new ManagePlugin("tint", null, "Services", "/ui/services",
             ServicesPluginEndpoints.class,
-            new ServicesPluginRegion(mapper, "soy.page.servicesPluginRegion", renderer, upenaStore), null);
+            new ServicesPluginRegion(mapper, "soy.page.servicesPluginRegion", renderer, upenaStore), null, "admin", "readonly", "readwrite");
 
         ManagePlugin releases = new ManagePlugin("send", null, "Releases", "/ui/releases",
-            ReleasesPluginEndpoints.class, releasesPluginRegion, null);
+            ReleasesPluginEndpoints.class, releasesPluginRegion, null, "admin", "readonly", "readwrite");
 
         ManagePlugin modules = new ManagePlugin("wrench", null, "Modules", "/ui/modules",
             ModulesPluginEndpoints.class,
-            new ModulesPluginRegion(mapper, repositoryProvider, "soy.page.modulesPluginRegion", renderer, upenaStore), null);
+            new ModulesPluginRegion(mapper, repositoryProvider, "soy.page.modulesPluginRegion", renderer, upenaStore), null, "admin", "readonly", "readwrite");
 
         ManagePlugin proxy = new ManagePlugin("random", null, "Proxies", "/ui/proxy",
             ProxyPluginEndpoints.class,
-            new ProxyPluginRegion("soy.page.proxyPluginRegion", renderer), null);
+            new ProxyPluginRegion("soy.page.proxyPluginRegion", renderer), null, "admin");
 
         ManagePlugin ring = new ManagePlugin("leaf", null, "Upena", "/ui/ring",
             UpenaRingPluginEndpoints.class,
-            new UpenaRingPluginRegion(storeMapper, "soy.page.upenaRingPluginRegion", renderer, amzaInstance, upenaStore, upenaConfigStore), null);
+            new UpenaRingPluginRegion(storeMapper, "soy.page.upenaRingPluginRegion", renderer, amzaInstance, upenaStore, upenaConfigStore), null, "admin");
 
         ManagePlugin sar = new ManagePlugin("dashboard", null, "SAR", "/ui/sar",
             SARPluginEndpoints.class,
-            new SARPluginRegion("soy.page.sarPluginRegion", renderer, amzaInstance, ringHost), null);
+            new SARPluginRegion("soy.page.sarPluginRegion", renderer, amzaInstance, ringHost), null, "admin");
 
         ManagePlugin loadBalancer = new ManagePlugin("scale", null, "Load Balancer", "/ui/loadbalancers",
             LoadBalancersPluginEndpoints.class,
-            new LoadBalancersPluginRegion("soy.page.loadBalancersPluginRegion", renderer, upenaStore, awsClientFactory), null);
+            new LoadBalancersPluginRegion("soy.page.loadBalancersPluginRegion", renderer, upenaStore, awsClientFactory), null, "admin");
 
         ServicesCallDepthStack servicesCallDepthStack = new ServicesCallDepthStack();
         PerfService perfService = new PerfService(servicesCallDepthStack);
 
         ManagePlugin profiler = new ManagePlugin("hourglass", null, "Profiler", "/ui/profiler",
             ProfilerPluginEndpoints.class,
-            new ProfilerPluginRegion("soy.page.profilerPluginRegion", renderer, new VisualizeProfile(new NameUtils(), servicesCallDepthStack)), null);
+            new ProfilerPluginRegion("soy.page.profilerPluginRegion", renderer, new VisualizeProfile(new NameUtils(), servicesCallDepthStack)), null, "admin");
 
         ManagePlugin jvm = null;
         ManagePlugin breakpointDumper = null;
@@ -779,26 +702,26 @@ public class UpenaMain {
 
             breakpointDumper = new ManagePlugin("record", null, "Breakpoint Dumper", "/ui/breakpoint",
                 BreakpointDumperPluginEndpoints.class,
-                new BreakpointDumperPluginRegion("soy.page.breakpointDumperPluginRegion", renderer, upenaStore, jvmapi), null);
+                new BreakpointDumperPluginRegion("soy.page.breakpointDumperPluginRegion", renderer, upenaStore, jvmapi), null, "admin");
         }
 
         ManagePlugin aws = null;
         aws = new ManagePlugin("globe", null, "AWS", "/ui/aws",
             AWSPluginEndpoints.class,
-            new AWSPluginRegion("soy.page.awsPluginRegion", renderer, awsClientFactory), null);
+            new AWSPluginRegion("soy.page.awsPluginRegion", renderer, awsClientFactory), null, "admin");
 
         ManagePlugin monkey = new ManagePlugin("flash", null, "Chaos", "/ui/chaos",
             MonkeyPluginEndpoints.class,
-            new MonkeyPluginRegion("soy.page.monkeyPluginRegion", renderer, upenaStore), null);
+            new MonkeyPluginRegion("soy.page.monkeyPluginRegion", renderer, upenaStore), null, "admin");
 
         List<ManagePlugin> plugins = new ArrayList<>();
-        plugins.add(aws);
-
-        plugins.add(new ManagePlugin(null, null, "Build", null, null, null, "separator"));
+        plugins.add(auth);
+        plugins.add(new ManagePlugin(null, null, "Build", null, null, null, "separator", "admin", "readonly", "readwrite"));
         plugins.add(repo);
         plugins.add(projects);
         plugins.add(modules);
-        plugins.add(new ManagePlugin(null, null, "Config", null, null, null, "separator"));
+        plugins.add(new ManagePlugin(null, null, "Config", null, null, null, "separator", "admin", "readonly", "readwrite"));
+        plugins.add(aws);
         plugins.add(changes);
         plugins.add(config);
         plugins.add(loadBalancer);
@@ -808,11 +731,11 @@ public class UpenaMain {
         plugins.add(instances);
         plugins.add(releases);
         plugins.add(topology);
-        plugins.add(new ManagePlugin(null, null, "Health", null, null, null, "separator"));
+        plugins.add(new ManagePlugin(null, null, "Health", null, null, null, "separator", "admin", "readonly", "readwrite"));
         plugins.add(health);
         plugins.add(connectivity);
+        plugins.add(new ManagePlugin(null, null, "Tools", null, null, null, "separator", "admin"));
         plugins.add(monkey);
-        plugins.add(new ManagePlugin(null, null, "Tools", null, null, null, "separator"));
         plugins.add(proxy);
         if (jvm != null) {
             plugins.add(jvm);
@@ -836,6 +759,8 @@ public class UpenaMain {
                 jerseyEndpoints.addInjectable(plugin.region.getClass(), plugin.region);
             }
         }
+
+        jerseyEndpoints.addInjectable(UnauthorizedPluginRegion.class, unauthorizedRegion);
         jerseyEndpoints.addEndpoint(UpenaPropagatorEndpoints.class);
         jerseyEndpoints.addInjectable(AmzaClusterName.class, new AmzaClusterName((clusterName == null) ? "manual" : clusterName));
     }
