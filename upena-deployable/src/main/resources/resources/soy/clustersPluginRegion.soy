@@ -88,27 +88,27 @@
                                                     </td>
                                                 </tr>
                                             {/foreach}
-                                            <tr>
-                                                <td>
-                                                    <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                                        placeholder="Service" value="" name="service"
-                                                        class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/services">
-                                                    <input type="hidden" name="serviceKey" id="serviceId-{$c.key}" value="{$filters.serviceKey?:''}" />
-                                                </td>
-                                                <td>
-                                                    <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
-                                                        placeholder="Release" value="" name="release"
-                                                        class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/releases">
-                                                    <input type="hidden" name="releaseKey" id="releaseId-{$c.key}" value="{$filters.releaseKey?:''}" />
-                                                </td>
-                                                <td>
-                                                    {if $readWrite}
-                                                        <button title="Add" onClick="upena.clusterReleaseGroups.add('{$c.key}')" class="btn btn-default">
-                                                            <span class="glyphicon glyphicon-plus">&nbspAdd</span>
-                                                        </button>
-                                                    {/if}
-                                                </td>
-                                            </tr>
+                                            {if $readWrite}
+                                                <tr>
+                                                    <td>
+                                                        <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                                            placeholder="Service" value="" name="service"
+                                                            class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/services">
+                                                        <input type="hidden" name="serviceKey" id="serviceId-{$c.key}" value="{$filters.serviceKey?:''}" />
+                                                    </td>
+                                                    <td>
+                                                        <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                                            placeholder="Release" value="" name="release"
+                                                            class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/releases">
+                                                        <input type="hidden" name="releaseKey" id="releaseId-{$c.key}" value="{$filters.releaseKey?:''}" />
+                                                    </td>
+                                                    <td>
+                                                            <button title="Add" onClick="upena.clusterReleaseGroups.add('{$c.key}')" class="btn btn-default">
+                                                                <span class="glyphicon glyphicon-plus">&nbspAdd</span>
+                                                            </button>
+                                                    </td>
+                                                </tr>
+                                            {/if}
                                         </tbody>
                                     </table>
 

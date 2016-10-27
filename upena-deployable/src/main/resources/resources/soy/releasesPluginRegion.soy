@@ -162,21 +162,21 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <td>
-                                            <input type="text" id="propertyName-{$r.key}" style="padding-left:10px;"
-                                                placeholder="property name" value="">
-                                        </td>
-                                        <td>
-                                            <input type="text" id="propertyValue-{$r.key}" style="padding-left:10px;"
-                                                placeholder="property value" value="">
-                                        </td>
-                                        <td>
-                                            {if $readWrite}
+                                    {if $readWrite}
+                                        <tr>
+                                            <td>
+                                                <input type="text" id="propertyName-{$r.key}" style="padding-left:10px;"
+                                                    placeholder="property name" value="">
+                                            </td>
+                                            <td>
+                                                <input type="text" id="propertyValue-{$r.key}" style="padding-left:10px;"
+                                                    placeholder="property value" value="">
+                                            </td>
+                                            <td>
                                                 <button title="Add" onClick="upena.release.addProperty('{$r.key}')" class="btn btn-default"><span class="glyphicon glyphicon-plus">&nbspAdd</span></button>
-                                            {/if}
-                                        </td>
-                                    </tr>
+                                            </td>
+                                        </tr>
+                                    {/if}
                                     {foreach $nv in $r.properties}
                                         <tr>
                                             <td>
