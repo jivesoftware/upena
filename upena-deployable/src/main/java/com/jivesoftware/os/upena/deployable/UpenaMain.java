@@ -435,8 +435,8 @@ public class UpenaMain {
                 rack,
                 publicHost,
                 host.hostName,
-                ringHost.getHost(),
-                ringHost.getPort()
+                "localhost",
+                loopbackPort
             ),
             null,
             ubaLog);
