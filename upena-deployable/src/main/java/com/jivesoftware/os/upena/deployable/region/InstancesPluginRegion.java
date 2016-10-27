@@ -39,6 +39,7 @@ import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DurationFormatUtils;
+import org.apache.shiro.SecurityUtils;
 
 /**
  *
@@ -134,13 +135,18 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
 
     public String renderSimple(String user, InstancesPluginRegionInput input) {
         Map<String, Object> data = renderData(input, user);
+        if (SecurityUtils.getSubject().hasRole("readWrite")) {
+            data.put("readWrite", true);
+        }
         data.put("filters", null);
         return renderer.render(simpleTemplate, data);
     }
 
     private Map<String, Object> renderData(InstancesPluginRegionInput input, String user) {
         Map<String, Object> data = Maps.newHashMap();
-
+        if (SecurityUtils.getSubject().hasRole("readWrite")) {
+            data.put("readWrite", true);
+        }
         try {
             Map<ServiceKey, String> serviceColor = ServiceColorUtil.serviceKeysColor(upenaStore);
 

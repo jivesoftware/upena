@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListMap;
+import org.apache.shiro.SecurityUtils;
 
 /**
  *
@@ -380,7 +381,9 @@ public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
     @Override
     public String render(String user, ConfigPluginRegionInput input) {
         Map<String, Object> data = Maps.newHashMap();
-
+        if (SecurityUtils.getSubject().hasRole("readWrite")) {
+            data.put("readWrite", true);
+        }
         try {
             Map<String, String> aFilters = new HashMap<>();
             aFilters.put("clusterKey", input.aClusterKey);

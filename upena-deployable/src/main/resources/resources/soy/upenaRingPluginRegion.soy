@@ -4,6 +4,7 @@
  * Upena Ring plugin page
  * 
  * @param? ring
+ * @param? readWrite
  */
 {template .upenaRingPluginRegion}
     {if $ring}
@@ -31,9 +32,11 @@
                             </td>
                             <input type="hidden" name="action" value="add">
                             <td>
-                                <button title="Add" type="submit" name="action" value="add" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
-                                    <span class="glyphicon glyphicon-plus">&nbspAdd</span>
-                                </button>
+                                {if $readWrite}
+                                    <button title="Add" type="submit" name="action" value="add" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                                        <span class="glyphicon glyphicon-plus">&nbspAdd</span>
+                                    </button>
+                                {/if}
                             </td>
                         </tr>
                     </form>
@@ -48,7 +51,13 @@
                                 <input type="hidden" name="action" value="remove">
                                 <td>{$r.host}</td>
                                 <td>{$r.port}</td>
-                                <td><button onclick="return confirm('Are you sure you want to delete?')" title="Remove" type="submit" name="action" value="remove" class="btn btn-default ladda-button" data-style="expand-right"><span class="glyphicon glyphicon-trash">&nbspRemove</span></button><td>
+                                <td>
+                                    {if $readWrite}
+                                        <button onclick="return confirm('Are you sure you want to delete?')" title="Remove" type="submit" name="action" value="remove" class="btn btn-default ladda-button" data-style="expand-right">
+                                            <span class="glyphicon glyphicon-trash">&nbspRemove</span>
+                                        </button>
+                                    {/if}
+                                <td>
                             </tr>
                         </form>
                     {/foreach}
@@ -61,32 +70,40 @@
                 <table class="table float-table-head table-hover table-condensed table-responsive">
                     <tr>
                         <td>
-                            <button onclick="return confirm('Are you sure you want to clear the change log?')" title="Remove" type="submit" name="action" value="clearChangeLog" class="btn btn-default ladda-button" data-style="expand-right">
-                                <span class="glyphicon glyphicon-trash">&nbspClear ChangeLog</span>
-                            </button>
+                            {if $readWrite}
+                                <button onclick="return confirm('Are you sure you want to clear the change log?')" title="Remove" type="submit" name="action" value="clearChangeLog" class="btn btn-default ladda-button" data-style="expand-right">
+                                    <span class="glyphicon glyphicon-trash">&nbspClear ChangeLog</span>
+                                </button>
+                            {/if}
                         </td>
                         <td>
-                            <button onclick="return confirm('Are you sure you want to remove bad keys?')" title="Remove" type="submit" name="action" value="removeBadKeys" class="btn btn-default ladda-button" data-style="expand-right">
-                                <span class="glyphicon glyphicon-trash">&nbspRemove Bad Keys</span>
-                            </button>
+                            {if $readWrite}
+                                <button onclick="return confirm('Are you sure you want to remove bad keys?')" title="Remove" type="submit" name="action" value="removeBadKeys" class="btn btn-default ladda-button" data-style="expand-right">
+                                    <span class="glyphicon glyphicon-trash">&nbspRemove Bad Keys</span>
+                                </button>
+                            {/if}
                         </td>
                         <td>
-                            <button onclick="return confirm('Are you sure you want export?')" title="Remove" type="submit" name="action" value="export" class="btn btn-default ladda-button" data-style="expand-right">
-                                <span class="glyphicon glyphicon-download">&nbspExport</span>
-                            </button>
+                            {if $readWrite}
+                                <button onclick="return confirm('Are you sure you want export?')" title="Remove" type="submit" name="action" value="export" class="btn btn-default ladda-button" data-style="expand-right">
+                                    <span class="glyphicon glyphicon-download">&nbspExport</span>
+                                </button>
+                            {/if}
                         </td>
                     </tr>
                 </table>
             </form>
-            <div class="btn-group" role="group" aria-label="...">
-                <form method="post" action="/ui/ring/import" enctype="multipart/form-data">
-                    <div class="fileinput fileinput-new" data-provides="fileinput">
-                        <span class="btn btn-default btn-file"><span>Browse...</span><input type="file" name="file"/></span>
-                        <span class="fileinput-filename"></span><span class="fileinput-new">&nbsp;&nbsp;&nbsp;No file chosen&nbsp;&nbsp;&nbsp;</span>
-                    </div>
-                    <button title="Import" type="submit"  value="import" class="btn btn-default"><span class="glyphicon glyphicon-import">&nbsp;Import</span></button>
-                </form>
-            </div>
+            {if $readWrite}
+                <div class="btn-group" role="group" aria-label="...">
+                    <form method="post" action="/ui/ring/import" enctype="multipart/form-data">
+                        <div class="fileinput fileinput-new" data-provides="fileinput">
+                            <span class="btn btn-default btn-file"><span>Browse...</span><input type="file" name="file"/></span>
+                            <span class="fileinput-filename"></span><span class="fileinput-new">&nbsp;&nbsp;&nbsp;No file chosen&nbsp;&nbsp;&nbsp;</span>
+                        </div>
+                        <button title="Import" type="submit"  value="import" class="btn btn-default"><span class="glyphicon glyphicon-import">&nbsp;Import</span></button>
+                    </form>
+                </div>
+            {/if}
         </div>
     {/if}
 {/template}

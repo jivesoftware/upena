@@ -16,12 +16,15 @@
  * @param? value
  * @param? properties
  * @param? healthProperties
+ * @param? readWrite
  */
 {template .configPluginRegion}
     <div id="upena-cfg-pending">
         <div class="upena-cfg-pending-container">
             Uncommitted changes for <span id="pending-count">0</span> properties
-            <button class="btn btn-default" id="pending-save" style="margin-left:20px;">Save changes</button>
+            {if $readWrite}
+                <button class="btn btn-default" id="pending-save" style="margin-left:20px;">Save changes</button>
+            {/if}
         </div>
     </div>
     <div class="upena-panel">
@@ -276,7 +279,11 @@
                             <input type="submit" name="action" value="Refresh" class="form-control btn btn-primary ladda-button"  data-spinner-color="#222" data-style="expand-right"/>
                         </td>
                         <td colspan="1">
-                            <button onclick="return confirm('Are you sure you want to revert all overrides?')"  title="Revert" type="submit" name="action" value="revert" class="btn btn-default"><span class="glyphicon glyphicon-trash"></span></button>
+                            {if $readWrite}
+                                <button onclick="return confirm('Are you sure you want to revert all overrides?')"  title="Revert" type="submit" name="action" value="revert" class="btn btn-default">
+                                    <span class="glyphicon glyphicon-trash"></span>
+                                </button>
+                            {/if}
                         </td>
                     </tr>
 
@@ -306,15 +313,17 @@
                                         {/if}
                                     </td>
                                     <td>
-                                        <button class="btn btn-default upena-cfg-link" data-upena-cfg-prop="{$p.property}" data-upena-cfg-link="{$p.property}:{index($h)}">
-                                            <span class="glyphicon glyphicon-link"></span>
-                                            &nbsp;
-                                        </button>
-                                        {if $h.boverride != null}
-                                            <button class="btn btn-default upena-cfg-copy" data-upena-cfg-prop="{$p.property}" data-upena-cfg-copy="{$p.property}:{index($h)}">
-                                                <span class="glyphicon glyphicon-backward"></span>
+                                        {if $readWrite}
+                                            <button class="btn btn-default upena-cfg-link" data-upena-cfg-prop="{$p.property}" data-upena-cfg-link="{$p.property}:{index($h)}">
+                                                <span class="glyphicon glyphicon-link"></span>
                                                 &nbsp;
                                             </button>
+                                            {if $h.boverride != null}
+                                                <button class="btn btn-default upena-cfg-copy" data-upena-cfg-prop="{$p.property}" data-upena-cfg-copy="{$p.property}:{index($h)}">
+                                                    <span class="glyphicon glyphicon-backward"></span>
+                                                    &nbsp;
+                                                </button>
+                                            {/if}
                                         {/if}
                                     </td>
                                     <td bgcolor="#F0F0F5">
@@ -362,15 +371,17 @@
                                         {/if}
                                     </td>
                                     <td>
-                                        <button class="btn btn-default upena-cfg-link" data-upena-cfg-prop="{$p.property}" data-upena-cfg-link="{$p.property}:{index($h)}">
-                                            <span class="glyphicon glyphicon-link"></span>
-                                            &nbsp;
-                                        </button>
-                                        {if $h.boverride != null}
-                                            <button class="btn btn-default upena-cfg-copy" data-upena-cfg-prop="{$p.property}" data-upena-cfg-copy="{$p.property}:{index($h)}">
-                                                <span class="glyphicon glyphicon-backward"></span>
+                                        {if $readWrite}
+                                            <button class="btn btn-default upena-cfg-link" data-upena-cfg-prop="{$p.property}" data-upena-cfg-link="{$p.property}:{index($h)}">
+                                                <span class="glyphicon glyphicon-link"></span>
                                                 &nbsp;
                                             </button>
+                                            {if $h.boverride != null}
+                                                <button class="btn btn-default upena-cfg-copy" data-upena-cfg-prop="{$p.property}" data-upena-cfg-copy="{$p.property}:{index($h)}">
+                                                    <span class="glyphicon glyphicon-backward"></span>
+                                                    &nbsp;
+                                                </button>
+                                            {/if}
                                         {/if}
                                     </td>
                                     <td bgcolor="#F0F0F5">
@@ -424,12 +435,14 @@
                 </tbody>
             </table>
         </form>
-        <div class="btn-group" role="group" aria-label="...">
-            <button style="float:left" title="Export" type="submit" name="action" value="export" type="button" class="btn btn-default btn-xs">Export All Overriden Config</button>
-            <form action="/ui/config/upload" method="post" enctype="multipart/form-data">
-                <input style="float:left" type="file" name="file" size="50" />
-                <input class="btn btn-default btn-xs" type="submit" value="Import Config" />
-            </form>
-        </div>
+        {if $readWrite}
+            <div class="btn-group" role="group" aria-label="...">
+                <button style="float:left" title="Export" type="submit" name="action" value="export" type="button" class="btn btn-default btn-xs">Export All Overriden Config</button>
+                <form action="/ui/config/upload" method="post" enctype="multipart/form-data">
+                    <input style="float:left" type="file" name="file" size="50" />
+                    <input class="btn btn-default btn-xs" type="submit" value="Import Config" />
+                </form>
+            </div>
+        {/if}
     </div>
 {/template}
