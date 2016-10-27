@@ -2,7 +2,7 @@ package com.jivesoftware.os.upena.service;
 
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
-import com.jivesoftware.os.routing.bird.session.RoutesSessionValidator;
+import com.jivesoftware.os.routing.bird.server.session.RouteSessionValidator;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.Map;
@@ -37,11 +37,11 @@ public class SessionStore {
             LOG.info("FIXME: key={} value={}", entry.getKey(), entry.getValue());
         }
 
-        String sessionId = session.get(RoutesSessionValidator.SESSION_ID);
+        String sessionId = session.get(RouteSessionValidator.SESSION_ID);
         Session had = sessions.get(sessionId);
         if (had != null) {
             if (had.isValid(expireSessionAfterMillis, expireIdleSessionAfterMillis)) {
-                if (had.sessionToken.equals(session.get(RoutesSessionValidator.SESSION_TOKEN))) {
+                if (had.sessionToken.equals(session.get(RouteSessionValidator.SESSION_TOKEN))) {
                     had.touch();
                     return true;
                 } else {

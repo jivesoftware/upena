@@ -22,13 +22,13 @@ import javax.ws.rs.core.Response;
  *
  */
 @Path("/profile")
-public class PerfServiceEndpoint {
+public class PerfServiceEndpoints {
 
     static ObjectMapper mapper = new ObjectMapper();
 
     private final PerfService perfService;
 
-    public PerfServiceEndpoint(@Context PerfService perfService) {
+    public PerfServiceEndpoints(@Context PerfService perfService) {
         this.perfService = perfService;
     }
 
