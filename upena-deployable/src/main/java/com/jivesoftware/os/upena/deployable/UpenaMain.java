@@ -83,7 +83,7 @@ import com.jivesoftware.os.upena.deployable.endpoints.UpenaRingPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.lookup.AsyncLookupService;
 import com.jivesoftware.os.upena.deployable.profiler.model.ServicesCallDepthStack;
 import com.jivesoftware.os.upena.deployable.profiler.server.endpoints.PerfService;
-import com.jivesoftware.os.upena.deployable.profiler.server.endpoints.PerfServiceEndpoint;
+import com.jivesoftware.os.upena.deployable.profiler.server.endpoints.PerfServiceEndpoints;
 import com.jivesoftware.os.upena.deployable.profiler.visualize.NameUtils;
 import com.jivesoftware.os.upena.deployable.profiler.visualize.VisualizeProfile;
 import com.jivesoftware.os.upena.deployable.region.AWSPluginRegion;
@@ -749,7 +749,7 @@ public class UpenaMain {
         jerseyEndpoints.addEndpoint(AsyncLookupEndpoints.class);
         jerseyEndpoints.addInjectable(AsyncLookupService.class, new AsyncLookupService(upenaStore));
 
-        jerseyEndpoints.addEndpoint(PerfServiceEndpoint.class);
+        jerseyEndpoints.addEndpoint(PerfServiceEndpoints.class);
         jerseyEndpoints.addInjectable(PerfService.class, perfService);
 
         for (ManagePlugin plugin : plugins) {
@@ -761,7 +761,7 @@ public class UpenaMain {
         }
 
         jerseyEndpoints.addInjectable(UnauthorizedPluginRegion.class, unauthorizedRegion);
-        jerseyEndpoints.addEndpoint(UpenaPropagatorEndpoints.class);
+        //jerseyEndpoints.addEndpoint(UpenaPropagatorEndpoints.class);
         jerseyEndpoints.addInjectable(AmzaClusterName.class, new AmzaClusterName((clusterName == null) ? "manual" : clusterName));
     }
 
