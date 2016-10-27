@@ -16,6 +16,7 @@
             {call .releasesPluginRegionList}
                 {param releases: $releases /}
                 {param filters: $filters /}
+                {param readWrite: $readWrite /}
             {/call}
         </div>
     {/if}
@@ -24,6 +25,7 @@
 /**
  * @param? releases
  * @param? filters
+ * @param? readWrite
  */
 {template .releasesPluginRegionList}
     <table class="table table-hover float-table-head table-condensed table-responsive">
