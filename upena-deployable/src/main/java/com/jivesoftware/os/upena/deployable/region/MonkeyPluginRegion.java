@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentNavigableMap;
+import org.apache.shiro.SecurityUtils;
 
 // soy.page.monkeyPluginRegion
 public class MonkeyPluginRegion implements PageRegion<MonkeyPluginRegion.MonkeyPluginRegionInput> {
@@ -120,6 +121,8 @@ public class MonkeyPluginRegion implements PageRegion<MonkeyPluginRegion.MonkeyP
 
     @Override
     public String render(String user, MonkeyPluginRegionInput input) {
+
+        SecurityUtils.getSubject().checkRole("readwrite");
         Map<String, Object> data = Maps.newHashMap();
 
         try {

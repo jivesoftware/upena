@@ -45,6 +45,7 @@ import org.apache.maven.shared.invoker.DefaultInvoker;
 import org.apache.maven.shared.invoker.InvocationRequest;
 import org.apache.maven.shared.invoker.InvocationResult;
 import org.apache.maven.shared.invoker.Invoker;
+import org.apache.shiro.SecurityUtils;
 import org.eclipse.jgit.api.CreateBranchCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.PullResult;
@@ -160,8 +161,8 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
 
     @Override
     public String render(String user, ProjectsPluginRegionInput input) {
+        SecurityUtils.getSubject().checkRole("readwrite");
         Map<String, Object> data = Maps.newHashMap();
-
         try {
 
             Map<String, String> filters = new HashMap<>();

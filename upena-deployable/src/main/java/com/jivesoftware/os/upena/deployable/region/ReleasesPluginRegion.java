@@ -34,6 +34,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authz.AuthorizationException;
 
 /**
  *
@@ -168,7 +169,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
     @Override
     public String render(String user, ReleasesPluginRegionInput input) {
         Map<String, Object> data = renderData(input, user);
-        if (SecurityUtils.getSubject().hasRole("readWrite")) {
+        if (SecurityUtils.getSubject().hasRole("readwrite")) {
             data.put("readWrite", true);
         }
         return renderer.render(template, data);
@@ -182,7 +183,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
 
     private Map<String, Object> renderData(ReleasesPluginRegionInput input, String user) {
         Map<String, Object> data = Maps.newHashMap();
-        if (SecurityUtils.getSubject().hasRole("readWrite")) {
+        if (SecurityUtils.getSubject().hasRole("readwrite")) {
             data.put("readWrite", true);
         }
         try {
@@ -215,236 +216,26 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
                         + "email.contains '" + input.email + "'"
                     );
                 } else if (input.action.equals("add")) {
-                    filters.clear();
-
-                    try {
-                        ReleaseGroup newRelease = new ReleaseGroup(input.name,
-                            input.email,
-                            null,
-                            input.version,
-                            input.repository,
-                            input.description,
-                            input.autoRelease
-                        );
-                        upenaStore.releaseGroups.update(null, newRelease);
-
-                        data.put("message", "Created Release:" + input.name);
-                        upenaStore.record(user, "added", System.currentTimeMillis(), "", "release-ui", newRelease.toString());
-                    } catch (Exception x) {
-                        String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
-                        data.put("message", "Error adding release:" + input.name + "\n" + trace);
-                    }
+                    SecurityUtils.getSubject().checkRole("readwrite");
+                    handleAdd(filters, input, data, user);
                 } else if (input.action.equals("update")) {
-                    filters.clear();
-
-                    try {
-                        ReleaseGroup release = upenaStore.releaseGroups.get(new ReleaseGroupKey(input.key));
-                        if (release == null) {
-                            data.put("message", "Could not update. No existing cluster. Someone may have removed it since your last refresh.");
-                        } else {
-                            List<String> errors = new CheckReleasable(repositoryProvider).isReleasable(input.repository, input.version);
-                            if (errors.isEmpty()) {
-                                ReleaseGroup updated = new ReleaseGroup(input.name,
-                                    input.email,
-                                    release.version,
-                                    input.version,
-                                    input.repository,
-                                    input.description,
-                                    input.autoRelease);
-                                upenaStore.releaseGroups.update(new ReleaseGroupKey(input.key), updated);
-                                data.put("message", "Updated Release:" + input.name);
-                                upenaStore.record(user, "updated", System.currentTimeMillis(), "", "release-ui", updated.toString());
-                            } else {
-                                data.put("message", Joiner.on("\n").join(errors));
-                            }
-                        }
-                    } catch (Exception x) {
-                        String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
-                        data.put("message", "Error updating release:" + input.name + "\n" + trace);
-                    }
+                    SecurityUtils.getSubject().checkRole("readwrite");
+                    handleUpdate(filters, input, data, user);
                 } else if (input.action.equals("upgrade")) {
-                    filters.clear();
-
-                    try {
-                        ReleaseGroup release = upenaStore.releaseGroups.get(new ReleaseGroupKey(input.key));
-                        if (release == null) {
-                            data.put("message", "Could not upgrade. No existing cluster. Someone may have removed it since your last refresh.");
-                        } else {
-                            List<String> errors = new CheckReleasable(repositoryProvider).isReleasable(input.repository, input.version);
-                            if (errors.isEmpty()) {
-                                ReleaseGroup updated = new ReleaseGroup(input.name,
-                                    input.email,
-                                    input.version,
-                                    input.upgrade,
-                                    input.repository,
-                                    input.description,
-                                    input.autoRelease);
-                                upenaStore.releaseGroups.update(new ReleaseGroupKey(input.key), updated);
-                                data.put("message", "Upgrade Release:" + input.name);
-                                upenaStore.record(user, "upgrade", System.currentTimeMillis(), "", "release-ui", updated.toString());
-                            } else {
-                                data.put("message", Joiner.on("\n").join(errors));
-                            }
-                        }
-                    } catch (Exception x) {
-                        String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
-                        data.put("message", "Error upgrading release:" + input.name + "\n" + trace);
-                    }
+                    SecurityUtils.getSubject().checkRole("readwrite");
+                    handleUpgrade(filters, input, data, user);
                 } else if (input.action.equals("rolling-upgrade")) {
-                    filters.clear();
-
-                    try {
-                        ReleaseGroup release = upenaStore.releaseGroups.get(new ReleaseGroupKey(input.key));
-                        if (release == null) {
-                            data.put("message", "Could not update. No existing cluster. Someone may have removed it since your last refresh.");
-                        } else {
-                            List<String> errors = new CheckReleasable(repositoryProvider).isReleasable(input.repository, input.version);
-                            if (errors.isEmpty()) {
-                                InstanceFilter instanceFilter = new InstanceFilter(
-                                    null,
-                                    null,
-                                    null,
-                                    new ReleaseGroupKey(input.key),
-                                    null,
-                                    0, 100_000);
-
-                                long now = System.currentTimeMillis();
-                                long stagger = TimeUnit.SECONDS.toMillis(30);
-                                now += stagger;
-                                List<String> restart = new ArrayList<>();
-                                Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(false, instanceFilter);
-                                for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {
-                                    InstanceKey key = entrySet.getKey();
-                                    TimestampedValue<Instance> timestampedValue = entrySet.getValue();
-                                    Instance instance = timestampedValue.getValue();
-                                    if (instance.enabled) {
-                                        instance.restartTimestampGMTMillis = now;
-                                        upenaStore.instances.update(key, instance);
-                                        now += stagger;
-                                        restart.add(instanceToHumanReadableString(instance));
-                                    }
-                                }
-
-                                if (!restart.isEmpty()) {
-                                    upenaStore.record(user, "restart", System.currentTimeMillis(), "", "instance-ui", restart.toString());
-                                }
-
-                                ReleaseGroup updated = new ReleaseGroup(input.name,
-                                    input.email,
-                                    input.version,
-                                    input.upgrade,
-                                    input.repository,
-                                    input.description,
-                                    input.autoRelease);
-                                upenaStore.releaseGroups.update(new ReleaseGroupKey(input.key), updated);
-                                data.put("message", "Upgrade Release:" + input.name);
-                                upenaStore.record(user, "upgrade", System.currentTimeMillis(), "", "release-ui", updated.toString());
-                            } else {
-                                data.put("message", Joiner.on("\n").join(errors));
-                            }
-                        }
-                    } catch (Exception x) {
-                        String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
-                        data.put("message", "Error roll-upgrading release:" + input.name + "\n" + trace);
-                    }
+                    SecurityUtils.getSubject().checkRole("readwrite");
+                    handleRollingUpgrade(filters, input, data, user);
                 } else if (input.action.equals("rollback")) {
-                    filters.clear();
-
-                    try {
-                        ReleaseGroup release = upenaStore.releaseGroups.get(new ReleaseGroupKey(input.key));
-                        if (release == null) {
-                            data.put("message", "Could not update. No existing cluster. Someone may have removed it since your last refresh.");
-                        } else {
-                            List<String> errors = new CheckReleasable(repositoryProvider).isReleasable(input.repository, input.version);
-                            if (errors.isEmpty()) {
-                                ReleaseGroup updated = new ReleaseGroup(input.name,
-                                    input.email,
-                                    null,
-                                    input.rollback,
-                                    input.repository,
-                                    input.description,
-                                    input.autoRelease);
-                                upenaStore.releaseGroups.update(new ReleaseGroupKey(input.key), updated);
-                                data.put("message", "Rollback Release:" + input.name);
-                                upenaStore.record(user, "rollback", System.currentTimeMillis(), "", "release-ui", updated.toString());
-                            } else {
-                                data.put("message", Joiner.on("\n").join(errors));
-                            }
-                        }
-                    } catch (Exception x) {
-                        String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
-                        data.put("message", "Error while trying to add Release:" + input.name + "\n" + trace);
-                    }
+                    SecurityUtils.getSubject().checkRole("readwrite");
+                    handleRollback(filters, input, data, user);
                 } else if (input.action.equals("remove")) {
-                    if (input.key.isEmpty()) {
-                        data.put("message", "Failed to remove Release:" + input.name);
-                    } else {
-                        try {
-                            ReleaseGroupKey releaseGroupKey = new ReleaseGroupKey(input.key);
-                            ReleaseGroup removing = upenaStore.releaseGroups.get(releaseGroupKey);
-                            if (removing != null) {
-                                upenaStore.releaseGroups.remove(releaseGroupKey);
-                                upenaStore.record(user, "removed", System.currentTimeMillis(), "", "release-ui", removing.toString());
-                            }
-                        } catch (Exception x) {
-                            String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
-                            data.put("message", "Error removing release:" + input.name + "\n" + trace);
-                        }
-                    }
+                    SecurityUtils.getSubject().checkRole("readwrite");
+                    handleRemove(input, data, user);
                 } else if (input.action.equals("upgrade-all")) {
-                    try {
-                        filter = new ReleaseGroupFilter(
-                            input.name.isEmpty() ? null : input.name,
-                            input.email.isEmpty() ? null : input.email,
-                            input.version.isEmpty() ? null : input.version,
-                            input.repository.isEmpty() ? null : input.repository,
-                            input.description.isEmpty() ? null : input.description,
-                            0, 100_000);
-
-                        List<String> messages = new ArrayList<>();
-                        Map<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> found = upenaStore.releaseGroups.find(false, filter);
-                        for (Map.Entry<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> entrySet : found.entrySet()) {
-                            ReleaseGroupKey key = entrySet.getKey();
-                            ReleaseGroup value = entrySet.getValue().getValue();
-
-                            boolean newerVersionAvailable = false;
-                            StringBuilder newerVersion = new StringBuilder();
-                            LinkedHashMap<String, String> latestRelease =
-                                new CheckForLatestRelease(repositoryProvider).isLatestRelease(value.repository, value.version);
-                            for (Entry<String, String> latestEntry : latestRelease.entrySet()) {
-                                if (newerVersion.length() > 0) {
-                                    newerVersion.append(",");
-                                }
-                                newerVersion.append(latestEntry.getValue());
-                                if (!latestEntry.getKey().equals(latestEntry.getValue())) {
-                                    newerVersionAvailable = true;
-                                }
-                            }
-
-                            if (newerVersionAvailable) {
-                                List<String> errors = new CheckReleasable(repositoryProvider).isReleasable(value.repository, newerVersion.toString());
-                                if (errors.isEmpty()) {
-                                    ReleaseGroup updated = new ReleaseGroup(value.name,
-                                        value.email,
-                                        value.version,
-                                        newerVersion.toString(),
-                                        value.repository,
-                                        value.description,
-                                        value.autoRelease);
-                                    upenaStore.releaseGroups.update(key, updated);
-                                    messages.add("Updated Release:" + value.name);
-                                    upenaStore.record(user, "updated", System.currentTimeMillis(), "", "release-ui", updated.toString());
-                                } else {
-                                    messages.add(Joiner.on("\n").join(errors));
-                                }
-                            }
-                        }
-
-                        data.put("message", Joiner.on("\n").join(messages));
-                    } catch (Exception x) {
-                        String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
-                        data.put("message", "Error upgrading release:" + input.name + "\n" + trace);
-                    }
+                    SecurityUtils.getSubject().checkRole("readwrite");
+                    filter = handleUpgradeAll(filter, input, user, data);
                 }
             }
 
@@ -543,10 +334,258 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
             });
 
             data.put("releases", rows);
+        } catch(AuthorizationException x) {
+            throw x;
         } catch (Exception e) {
             LOG.error("Unable to retrieve data", e);
         }
         return data;
+    }
+
+    private ReleaseGroupFilter handleUpgradeAll(ReleaseGroupFilter filter, ReleasesPluginRegionInput input, String user, Map<String, Object> data) {
+        try {
+            filter = new ReleaseGroupFilter(
+                input.name.isEmpty() ? null : input.name,
+                input.email.isEmpty() ? null : input.email,
+                input.version.isEmpty() ? null : input.version,
+                input.repository.isEmpty() ? null : input.repository,
+                input.description.isEmpty() ? null : input.description,
+                0, 100_000);
+
+            List<String> messages = new ArrayList<>();
+            Map<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> found = upenaStore.releaseGroups.find(false, filter);
+            for (Map.Entry<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> entrySet : found.entrySet()) {
+                ReleaseGroupKey key = entrySet.getKey();
+                ReleaseGroup value = entrySet.getValue().getValue();
+
+                boolean newerVersionAvailable = false;
+                StringBuilder newerVersion = new StringBuilder();
+                LinkedHashMap<String, String> latestRelease =
+                    new CheckForLatestRelease(repositoryProvider).isLatestRelease(value.repository, value.version);
+                for (Entry<String, String> latestEntry : latestRelease.entrySet()) {
+                    if (newerVersion.length() > 0) {
+                        newerVersion.append(",");
+                    }
+                    newerVersion.append(latestEntry.getValue());
+                    if (!latestEntry.getKey().equals(latestEntry.getValue())) {
+                        newerVersionAvailable = true;
+                    }
+                }
+
+                if (newerVersionAvailable) {
+                    List<String> errors = new CheckReleasable(repositoryProvider).isReleasable(value.repository, newerVersion.toString());
+                    if (errors.isEmpty()) {
+                        ReleaseGroup updated = new ReleaseGroup(value.name,
+                            value.email,
+                            value.version,
+                            newerVersion.toString(),
+                            value.repository,
+                            value.description,
+                            value.autoRelease);
+                        upenaStore.releaseGroups.update(key, updated);
+                        messages.add("Updated Release:" + value.name);
+                        upenaStore.record(user, "updated", System.currentTimeMillis(), "", "release-ui", updated.toString());
+                    } else {
+                        messages.add(Joiner.on("\n").join(errors));
+                    }
+                }
+            }
+
+            data.put("message", Joiner.on("\n").join(messages));
+        } catch (Exception x) {
+            String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
+            data.put("message", "Error upgrading release:" + input.name + "\n" + trace);
+        }
+        return filter;
+    }
+
+    private void handleRemove(ReleasesPluginRegionInput input, Map<String, Object> data, String user) {
+        if (input.key.isEmpty()) {
+            data.put("message", "Failed to remove Release:" + input.name);
+        } else {
+            try {
+                ReleaseGroupKey releaseGroupKey = new ReleaseGroupKey(input.key);
+                ReleaseGroup removing = upenaStore.releaseGroups.get(releaseGroupKey);
+                if (removing != null) {
+                    upenaStore.releaseGroups.remove(releaseGroupKey);
+                    upenaStore.record(user, "removed", System.currentTimeMillis(), "", "release-ui", removing.toString());
+                }
+            } catch (Exception x) {
+                String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
+                data.put("message", "Error removing release:" + input.name + "\n" + trace);
+            }
+        }
+    }
+
+    private void handleRollback(Map<String, String> filters, ReleasesPluginRegionInput input, Map<String, Object> data, String user) {
+        filters.clear();
+
+        try {
+            ReleaseGroup release = upenaStore.releaseGroups.get(new ReleaseGroupKey(input.key));
+            if (release == null) {
+                data.put("message", "Could not update. No existing cluster. Someone may have removed it since your last refresh.");
+            } else {
+                List<String> errors = new CheckReleasable(repositoryProvider).isReleasable(input.repository, input.version);
+                if (errors.isEmpty()) {
+                    ReleaseGroup updated = new ReleaseGroup(input.name,
+                        input.email,
+                        null,
+                        input.rollback,
+                        input.repository,
+                        input.description,
+                        input.autoRelease);
+                    upenaStore.releaseGroups.update(new ReleaseGroupKey(input.key), updated);
+                    data.put("message", "Rollback Release:" + input.name);
+                    upenaStore.record(user, "rollback", System.currentTimeMillis(), "", "release-ui", updated.toString());
+                } else {
+                    data.put("message", Joiner.on("\n").join(errors));
+                }
+            }
+        } catch (Exception x) {
+            String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
+            data.put("message", "Error while trying to add Release:" + input.name + "\n" + trace);
+        }
+    }
+
+    private void handleRollingUpgrade(Map<String, String> filters, ReleasesPluginRegionInput input, Map<String, Object> data, String user) {
+        filters.clear();
+
+        try {
+            ReleaseGroup release = upenaStore.releaseGroups.get(new ReleaseGroupKey(input.key));
+            if (release == null) {
+                data.put("message", "Could not update. No existing cluster. Someone may have removed it since your last refresh.");
+            } else {
+                List<String> errors = new CheckReleasable(repositoryProvider).isReleasable(input.repository, input.version);
+                if (errors.isEmpty()) {
+                    InstanceFilter instanceFilter = new InstanceFilter(
+                        null,
+                        null,
+                        null,
+                        new ReleaseGroupKey(input.key),
+                        null,
+                        0, 100_000);
+
+                    long now = System.currentTimeMillis();
+                    long stagger = TimeUnit.SECONDS.toMillis(30);
+                    now += stagger;
+                    List<String> restart = new ArrayList<>();
+                    Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(false, instanceFilter);
+                    for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {
+                        InstanceKey key = entrySet.getKey();
+                        TimestampedValue<Instance> timestampedValue = entrySet.getValue();
+                        Instance instance = timestampedValue.getValue();
+                        if (instance.enabled) {
+                            instance.restartTimestampGMTMillis = now;
+                            upenaStore.instances.update(key, instance);
+                            now += stagger;
+                            restart.add(instanceToHumanReadableString(instance));
+                        }
+                    }
+
+                    if (!restart.isEmpty()) {
+                        upenaStore.record(user, "restart", System.currentTimeMillis(), "", "instance-ui", restart.toString());
+                    }
+
+                    ReleaseGroup updated = new ReleaseGroup(input.name,
+                        input.email,
+                        input.version,
+                        input.upgrade,
+                        input.repository,
+                        input.description,
+                        input.autoRelease);
+                    upenaStore.releaseGroups.update(new ReleaseGroupKey(input.key), updated);
+                    data.put("message", "Upgrade Release:" + input.name);
+                    upenaStore.record(user, "upgrade", System.currentTimeMillis(), "", "release-ui", updated.toString());
+                } else {
+                    data.put("message", Joiner.on("\n").join(errors));
+                }
+            }
+        } catch (Exception x) {
+            String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
+            data.put("message", "Error roll-upgrading release:" + input.name + "\n" + trace);
+        }
+    }
+
+    private void handleUpgrade(Map<String, String> filters, ReleasesPluginRegionInput input, Map<String, Object> data, String user) {
+        filters.clear();
+
+        try {
+            ReleaseGroup release = upenaStore.releaseGroups.get(new ReleaseGroupKey(input.key));
+            if (release == null) {
+                data.put("message", "Could not upgrade. No existing cluster. Someone may have removed it since your last refresh.");
+            } else {
+                List<String> errors = new CheckReleasable(repositoryProvider).isReleasable(input.repository, input.version);
+                if (errors.isEmpty()) {
+                    ReleaseGroup updated = new ReleaseGroup(input.name,
+                        input.email,
+                        input.version,
+                        input.upgrade,
+                        input.repository,
+                        input.description,
+                        input.autoRelease);
+                    upenaStore.releaseGroups.update(new ReleaseGroupKey(input.key), updated);
+                    data.put("message", "Upgrade Release:" + input.name);
+                    upenaStore.record(user, "upgrade", System.currentTimeMillis(), "", "release-ui", updated.toString());
+                } else {
+                    data.put("message", Joiner.on("\n").join(errors));
+                }
+            }
+        } catch (Exception x) {
+            String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
+            data.put("message", "Error upgrading release:" + input.name + "\n" + trace);
+        }
+    }
+
+    private void handleUpdate(Map<String, String> filters, ReleasesPluginRegionInput input, Map<String, Object> data, String user) {
+        filters.clear();
+
+        try {
+            ReleaseGroup release = upenaStore.releaseGroups.get(new ReleaseGroupKey(input.key));
+            if (release == null) {
+                data.put("message", "Could not update. No existing cluster. Someone may have removed it since your last refresh.");
+            } else {
+                List<String> errors = new CheckReleasable(repositoryProvider).isReleasable(input.repository, input.version);
+                if (errors.isEmpty()) {
+                    ReleaseGroup updated = new ReleaseGroup(input.name,
+                        input.email,
+                        release.version,
+                        input.version,
+                        input.repository,
+                        input.description,
+                        input.autoRelease);
+                    upenaStore.releaseGroups.update(new ReleaseGroupKey(input.key), updated);
+                    data.put("message", "Updated Release:" + input.name);
+                    upenaStore.record(user, "updated", System.currentTimeMillis(), "", "release-ui", updated.toString());
+                } else {
+                    data.put("message", Joiner.on("\n").join(errors));
+                }
+            }
+        } catch (Exception x) {
+            String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
+            data.put("message", "Error updating release:" + input.name + "\n" + trace);
+        }
+    }
+
+    private void handleAdd(Map<String, String> filters, ReleasesPluginRegionInput input, Map<String, Object> data, String user) {
+        filters.clear();
+
+        try {
+            ReleaseGroup newRelease = new ReleaseGroup(input.name,
+                input.email,
+                null,
+                input.version,
+                input.repository,
+                input.description,
+                input.autoRelease
+            );
+            upenaStore.releaseGroups.update(null, newRelease);
+
+            data.put("message", "Created Release:" + input.name);
+            upenaStore.record(user, "added", System.currentTimeMillis(), "", "release-ui", newRelease.toString());
+        } catch (Exception x) {
+            String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
+            data.put("message", "Error adding release:" + input.name + "\n" + trace);
+        }
     }
 
     @Override

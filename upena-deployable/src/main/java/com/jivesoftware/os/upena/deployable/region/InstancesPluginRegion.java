@@ -40,6 +40,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DurationFormatUtils;
 import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authz.AuthorizationException;
 
 /**
  *
@@ -135,7 +136,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
 
     public String renderSimple(String user, InstancesPluginRegionInput input) {
         Map<String, Object> data = renderData(input, user);
-        if (SecurityUtils.getSubject().hasRole("readWrite")) {
+        if (SecurityUtils.getSubject().hasRole("readwrite")) {
             data.put("readWrite", true);
         }
         data.put("filters", null);
@@ -144,7 +145,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
 
     private Map<String, Object> renderData(InstancesPluginRegionInput input, String user) {
         Map<String, Object> data = Maps.newHashMap();
-        if (SecurityUtils.getSubject().hasRole("readWrite")) {
+        if (SecurityUtils.getSubject().hasRole("readwrite")) {
             data.put("readWrite", true);
         }
         try {
@@ -177,26 +178,37 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
                 if (input.action.equals("filter")) {
                     handleFilter(data, input);
                 } else if (input.action.equals("add")) {
+                    SecurityUtils.getSubject().checkRole("readwrite");
                     handleAdd(user, input, data);
                 } else if (input.action.equals("update")) {
+                    SecurityUtils.getSubject().checkRole("readwrite");
                     handleUpdate(user, input, data);
                 } else if (input.action.equals("restart")) {
+                    SecurityUtils.getSubject().checkRole("readwrite");
                     handleRestart(user, input, data);
                 } else if (input.action.equals("remove")) {
+                    SecurityUtils.getSubject().checkRole("readwrite");
                     handleRemove(user, input, data);
                 } else if (input.action.equals("restartAllNow")) {
+                    SecurityUtils.getSubject().checkRole("readwrite");
                     handleRestartAllNow(user, filter);
                 } else if (input.action.equals("enable")) {
+                    SecurityUtils.getSubject().checkRole("readwrite");
                     handleEnable(user, filter);
                 } else if (input.action.equals("enableSSL")) {
+                    SecurityUtils.getSubject().checkRole("readwrite");
                     handleEnableSSL(user, filter);
                 } else if (input.action.equals("enableSAUTH")) {
+                    SecurityUtils.getSubject().checkRole("readwrite");
                     handleEnableSAUTH(user, filter);
                 } else if (input.action.equals("disable")) {
+                    SecurityUtils.getSubject().checkRole("readwrite");
                     handleDisable(user, filter);
                 } else if (input.action.equals("restartAll")) {
+                    SecurityUtils.getSubject().checkRole("readwrite");
                     handleRestartAll(user, filter);
                 } else if (input.action.equals("cancelRestartAll")) {
+                    SecurityUtils.getSubject().checkRole("readwrite");
                     handleCancelRestartAll(user, filter);
                 }
             }
@@ -249,6 +261,8 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
 
             data.put("instances", rows);
 
+        } catch(AuthorizationException x) {
+            throw x;
         } catch (Exception e) {
             LOG.error("Unable to retrieve data", e);
         }
@@ -320,7 +334,6 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
             upenaStore.record(user, "enabledSSL", System.currentTimeMillis(), "", "instance-ui", enable.toString());
         }
     }
-
 
     private void handleEnableSAUTH(String user, InstanceFilter filter) throws Exception {
         List<String> enable = new ArrayList<>();

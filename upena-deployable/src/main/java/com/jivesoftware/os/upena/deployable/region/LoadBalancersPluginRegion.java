@@ -49,6 +49,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentNavigableMap;
 import org.apache.commons.lang.StringUtils;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authz.AuthorizationException;
 
 /**
  *
@@ -140,7 +142,9 @@ public class LoadBalancersPluginRegion implements PageRegion<LoadBalancersPlugin
     @Override
     public String render(String user, LoadBalancersPluginRegionInput input) {
         Map<String, Object> data = Maps.newHashMap();
-
+        if (SecurityUtils.getSubject().hasRole("readwrite")) {
+            data.put("readWrite", true);
+        }
         try {
 
             Map<String, Object> filters = new HashMap<>();
@@ -156,6 +160,7 @@ public class LoadBalancersPluginRegion implements PageRegion<LoadBalancersPlugin
             LoadBalancerFilter filter = new LoadBalancerFilter(input.name, input.clusterKey, input.serviceKey, input.releaseGroupKey, 0, 100_000);
             if (input.action != null) {
                 if (input.action.equals("remove-unattached")) {
+                    SecurityUtils.getSubject().checkRole("readwrite");
                     try {
 
                         AmazonElasticLoadBalancingClient elbc = awsClientFactory.getELBC("upena-lb");
@@ -169,7 +174,8 @@ public class LoadBalancersPluginRegion implements PageRegion<LoadBalancersPlugin
                 }
 
                 if (input.action.equals("add")) {
-                    //filters.clear();
+                    SecurityUtils.getSubject().checkRole("readwrite");
+//filters.clear();
                     try {
                         LB newLoadBalancer = new LB(input.name,
                             Objects.firstNonNull(input.description, ""),
@@ -195,7 +201,8 @@ public class LoadBalancersPluginRegion implements PageRegion<LoadBalancersPlugin
                         data.put("message", "Error while trying to add LoadBalancer:" + input.name + "\n" + trace);
                     }
                 } else if (input.action.equals("update")) {
-                    //filters.clear();
+                    SecurityUtils.getSubject().checkRole("readwrite");
+//filters.clear();
                     try {
                         LB loadBalancer = upenaStore.loadBalancers.get(new LBKey(input.key));
                         if (loadBalancer == null) {
@@ -227,6 +234,7 @@ public class LoadBalancersPluginRegion implements PageRegion<LoadBalancersPlugin
                         data.put("message", "Error while trying to add LoadBalancer:" + input.name + "\n" + trace);
                     }
                 } else if (input.action.equals("remove")) {
+                    SecurityUtils.getSubject().checkRole("readwrite");
                     if (input.key.isEmpty()) {
                         data.put("message", "Failed to remove LoadBalancer:" + input.name);
                     } else {
@@ -291,7 +299,7 @@ public class LoadBalancersPluginRegion implements PageRegion<LoadBalancersPlugin
                 if (loadBalancer == null) {
                     status.message("MISSING");
                     if ("apply".equals(input.action)) {
-                        
+
                     }
 
                 } else {
@@ -453,8 +461,8 @@ public class LoadBalancersPluginRegion implements PageRegion<LoadBalancersPlugin
             data.put("unattachedLoadBalancers", rows);
 
             rows = new ArrayList<>();
-             JenkinsHash jenkinsHash = new JenkinsHash();
-            ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> foundInstance = upenaStore.instances.find(false, 
+            JenkinsHash jenkinsHash = new JenkinsHash();
+            ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> foundInstance = upenaStore.instances.find(false,
                 new InstanceFilter(null, null, null, null, null, 0, 100_000));
 
             for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entry : foundInstance.entrySet()) {
@@ -495,8 +503,10 @@ public class LoadBalancersPluginRegion implements PageRegion<LoadBalancersPlugin
                 return c;
             });
 
-             data.put("loadBalancerPools", rows);
+            data.put("loadBalancerPools", rows);
 
+        } catch(AuthorizationException x) {
+            throw x;
         } catch (Exception e) {
             LOG.error("Unable to retrieve data", e);
         }

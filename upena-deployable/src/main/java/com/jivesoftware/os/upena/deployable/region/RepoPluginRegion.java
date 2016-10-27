@@ -16,6 +16,7 @@ import java.util.Map;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.mutable.MutableLong;
 import org.apache.logging.log4j.util.Strings;
+import org.apache.shiro.SecurityUtils;
 
 /**
  *
@@ -69,6 +70,7 @@ public class RepoPluginRegion implements PageRegion<RepoPluginRegionInput> {
 
     @Override
     public String render(String user, RepoPluginRegionInput input) {
+        SecurityUtils.getSubject().checkRole("readwrite");
         Map<String, Object> data = Maps.newHashMap();
 
         try {

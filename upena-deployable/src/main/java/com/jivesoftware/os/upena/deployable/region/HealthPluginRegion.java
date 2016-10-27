@@ -390,7 +390,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
     @Override
     public String render(String user, HealthPluginRegionInput input) {
         Map<String, Object> data = Maps.newHashMap();
-        if (SecurityUtils.getSubject().hasRole("readWrite")) {
+        if (SecurityUtils.getSubject().hasRole("readwrite")) {
             data.put("readWrite", true);
         }
         try {

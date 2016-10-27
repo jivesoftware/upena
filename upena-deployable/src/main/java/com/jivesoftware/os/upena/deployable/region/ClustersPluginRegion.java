@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authz.AuthorizationException;
 
 /**
  *
@@ -76,7 +77,7 @@ public class ClustersPluginRegion implements PageRegion<ClustersPluginRegionInpu
     @Override
     public String render(String user, ClustersPluginRegionInput input) {
         Map<String, Object> data = Maps.newHashMap();
-        if (SecurityUtils.getSubject().hasRole("readWrite")) {
+        if (SecurityUtils.getSubject().hasRole("readwrite")) {
             data.put("readWrite", true);
         }
 
@@ -97,6 +98,7 @@ public class ClustersPluginRegion implements PageRegion<ClustersPluginRegionInpu
                         0, 100_000);
                     data.put("message", "Filtering: name.contains '" + input.name + "' description.contains '" + input.description + "'");
                 } else if (input.action.equals("add")) {
+                    SecurityUtils.getSubject().checkRole("readwrite");
                     filters.clear();
                     try {
                         Cluster newCluster = new Cluster(input.name, input.description,
@@ -110,6 +112,7 @@ public class ClustersPluginRegion implements PageRegion<ClustersPluginRegionInpu
                         data.put("message", "Error while trying to add Cluster:" + input.name + "\n" + trace);
                     }
                 } else if (input.action.equals("update")) {
+                    SecurityUtils.getSubject().checkRole("readwrite");
                     filters.clear();
                     try {
                         Cluster cluster = upenaStore.clusters.get(new ClusterKey(input.key));
@@ -127,6 +130,7 @@ public class ClustersPluginRegion implements PageRegion<ClustersPluginRegionInpu
                         data.put("message", "Error while trying to add Cluster:" + input.name + "\n" + trace);
                     }
                 } else if (input.action.equals("remove")) {
+                    SecurityUtils.getSubject().checkRole("readwrite");
                     if (input.key.isEmpty()) {
                         data.put("message", "Failed to remove Cluster:" + input.name);
                     } else {
@@ -215,6 +219,8 @@ public class ClustersPluginRegion implements PageRegion<ClustersPluginRegionInpu
 
             data.put("clusters", rows);
 
+        } catch(AuthorizationException x) {
+            throw x;
         } catch (Exception e) {
             log.error("Unable to retrieve data", e);
         }

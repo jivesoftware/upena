@@ -15,6 +15,7 @@ import com.jivesoftware.os.upena.shared.InstanceKey;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import org.apache.shiro.SecurityUtils;
 
 /**
  *
@@ -67,6 +68,7 @@ public class JVMPluginRegion implements PageRegion<JVMPluginRegionInput> {
 
     @Override
     public String render(String user, JVMPluginRegionInput input) throws Exception {
+        SecurityUtils.getSubject().checkRole("readwrite");
         if (input.instanceKey != null && !input.instanceKey.isEmpty()) {
             Instance instance = upenaStore.instances.get(new InstanceKey(input.instanceKey));
             Host host = upenaStore.hosts.get(instance.hostKey);
