@@ -95,7 +95,7 @@ public class HostsPluginRegion implements PageRegion<HostsPluginRegionInput> {
     @Override
     public String render(String user, HostsPluginRegionInput input) {
         Map<String, Object> data = Maps.newHashMap();
-        if (SecurityUtils.getSubject().hasRole("readwrite")) {
+        if (SecurityUtils.getSubject().isPermitted("write")) {
             data.put("readWrite", true);
         }
         try {
@@ -112,6 +112,7 @@ public class HostsPluginRegion implements PageRegion<HostsPluginRegionInput> {
             HostFilter filter = new HostFilter(null, null, null, null, null, 0, 100_000);
             if (input.action != null) {
                 if (input.action.equals("filter")) {
+                    SecurityUtils.getSubject().checkPermission("read");
                     filter = new HostFilter(
                         input.name.isEmpty() ? null : input.name,
                         input.host.isEmpty() ? null : input.host,
@@ -126,7 +127,7 @@ public class HostsPluginRegion implements PageRegion<HostsPluginRegionInput> {
                         + "workingDirectory.contains '" + input.workingDirectory + "'"
                     );
                 } else if (input.action.equals("add")) {
-                    SecurityUtils.getSubject().checkRole("readwrite");
+                    SecurityUtils.getSubject().checkPermission("write");
                     filters.clear();
                     try {
                         Host newHost = new Host(input.name,
@@ -148,7 +149,7 @@ public class HostsPluginRegion implements PageRegion<HostsPluginRegionInput> {
                         data.put("message", "Error while trying to add Host:" + input.name + "\n" + trace);
                     }
                 } else if (input.action.equals("update")) {
-                    SecurityUtils.getSubject().checkRole("readwrite");
+                    SecurityUtils.getSubject().checkPermission("write");
                     filters.clear();
                     try {
                         Host host = upenaStore.hosts.get(new HostKey(input.key));
@@ -173,7 +174,7 @@ public class HostsPluginRegion implements PageRegion<HostsPluginRegionInput> {
                         data.put("message", "Error while trying to add Host:" + input.name + "\n" + trace);
                     }
                 } else if (input.action.equals("remove")) {
-                   SecurityUtils.getSubject().checkRole("readwrite");
+                   SecurityUtils.getSubject().checkPermission("write");
                    if (input.key.isEmpty()) {
                         data.put("message", "Failed to remove Host:" + input.name);
                     } else {

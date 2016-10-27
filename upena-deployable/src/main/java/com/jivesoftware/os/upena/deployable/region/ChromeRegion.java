@@ -75,7 +75,7 @@ public class ChromeRegion<I extends PluginInput, R extends PageRegion<I>> implem
         }
         Subject subject = s;
         List<Map<String, String>> p = plugins.stream().filter((ManagePlugin t) -> {
-            if (t.roles == null || t.roles.length == 0) {
+            if (t.permissions == null || t.permissions.length == 0) {
                 return true;
             }
             if (t.name.equals("login")) {
@@ -83,10 +83,8 @@ public class ChromeRegion<I extends PluginInput, R extends PageRegion<I>> implem
                     return false;
                 }
             }
-            for (String role : t.roles) {
-                if (subject != null && subject.hasRole(role)) {
-                    return true;
-                }
+            if (subject != null && subject.isPermittedAll(t.permissions)) {
+                return true;
             }
             return false;
         }).map((input1) -> {

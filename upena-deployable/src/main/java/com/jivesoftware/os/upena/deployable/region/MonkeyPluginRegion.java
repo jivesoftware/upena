@@ -122,7 +122,7 @@ public class MonkeyPluginRegion implements PageRegion<MonkeyPluginRegion.MonkeyP
     @Override
     public String render(String user, MonkeyPluginRegionInput input) {
 
-        SecurityUtils.getSubject().checkRole("readwrite");
+        SecurityUtils.getSubject().checkPermission("debug");
         Map<String, Object> data = Maps.newHashMap();
 
         try {

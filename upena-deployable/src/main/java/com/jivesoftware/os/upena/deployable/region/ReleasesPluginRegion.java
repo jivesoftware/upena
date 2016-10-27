@@ -169,7 +169,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
     @Override
     public String render(String user, ReleasesPluginRegionInput input) {
         Map<String, Object> data = renderData(input, user);
-        if (SecurityUtils.getSubject().hasRole("readwrite")) {
+        if (SecurityUtils.getSubject().isPermitted("write")) {
             data.put("readWrite", true);
         }
         return renderer.render(template, data);
@@ -183,7 +183,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
 
     private Map<String, Object> renderData(ReleasesPluginRegionInput input, String user) {
         Map<String, Object> data = Maps.newHashMap();
-        if (SecurityUtils.getSubject().hasRole("readwrite")) {
+        if (SecurityUtils.getSubject().isPermitted("write")) {
             data.put("readWrite", true);
         }
         try {
@@ -201,6 +201,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
             ReleaseGroupFilter filter = new ReleaseGroupFilter(null, null, null, null, null, 0, 100_000);
             if (input.action != null) {
                 if (input.action.equals("filter")) {
+                    SecurityUtils.getSubject().checkPermission("read");
                     filter = new ReleaseGroupFilter(
                         input.name.isEmpty() ? null : input.name,
                         input.description.isEmpty() ? null : input.description,
@@ -216,25 +217,25 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
                         + "email.contains '" + input.email + "'"
                     );
                 } else if (input.action.equals("add")) {
-                    SecurityUtils.getSubject().checkRole("readwrite");
+                    SecurityUtils.getSubject().checkPermission("write");
                     handleAdd(filters, input, data, user);
                 } else if (input.action.equals("update")) {
-                    SecurityUtils.getSubject().checkRole("readwrite");
+                    SecurityUtils.getSubject().checkPermission("write");
                     handleUpdate(filters, input, data, user);
                 } else if (input.action.equals("upgrade")) {
-                    SecurityUtils.getSubject().checkRole("readwrite");
+                    SecurityUtils.getSubject().checkPermission("write");
                     handleUpgrade(filters, input, data, user);
                 } else if (input.action.equals("rolling-upgrade")) {
-                    SecurityUtils.getSubject().checkRole("readwrite");
+                    SecurityUtils.getSubject().checkPermission("write");
                     handleRollingUpgrade(filters, input, data, user);
                 } else if (input.action.equals("rollback")) {
-                    SecurityUtils.getSubject().checkRole("readwrite");
+                    SecurityUtils.getSubject().checkPermission("write");
                     handleRollback(filters, input, data, user);
                 } else if (input.action.equals("remove")) {
-                    SecurityUtils.getSubject().checkRole("readwrite");
+                    SecurityUtils.getSubject().checkPermission("write");
                     handleRemove(input, data, user);
                 } else if (input.action.equals("upgrade-all")) {
-                    SecurityUtils.getSubject().checkRole("readwrite");
+                    SecurityUtils.getSubject().checkPermission("write");
                     filter = handleUpgradeAll(filter, input, user, data);
                 }
             }

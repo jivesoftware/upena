@@ -15,6 +15,7 @@ import com.jivesoftware.os.upena.amza.shared.AmzaInstance;
 import com.jivesoftware.os.upena.amza.shared.RingHost;
 import com.jivesoftware.os.upena.config.UpenaConfigStore;
 import com.jivesoftware.os.upena.deployable.UpenaEndpoints;
+import com.jivesoftware.os.upena.deployable.UpenaSSLConfig;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.service.UpenaStore;
 import com.jivesoftware.os.upena.shared.Cluster;
@@ -63,6 +64,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
     private final String popupTemplate;
     private final SoyRenderer renderer;
     private final AmzaInstance amzaInstance;
+    private final UpenaSSLConfig upenaSSLConfig;
     private final UpenaStore upenaStore;
     private final UpenaConfigStore configStore;
     private final ExecutorService executorService = Executors.newCachedThreadPool();
@@ -77,6 +79,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
         String popupTemplate,
         SoyRenderer renderer,
         AmzaInstance amzaInstance,
+        UpenaSSLConfig upenaSSLConfig,
         UpenaStore upenaStore,
         UpenaConfigStore configStore) {
 
@@ -88,6 +91,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
         this.popupTemplate = popupTemplate;
         this.renderer = renderer;
         this.amzaInstance = amzaInstance;
+        this.upenaSSLConfig = upenaSSLConfig;
         this.upenaStore = upenaStore;
         this.configStore = configStore;
     }
@@ -390,7 +394,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
     @Override
     public String render(String user, HealthPluginRegionInput input) {
         Map<String, Object> data = Maps.newHashMap();
-        if (SecurityUtils.getSubject().hasRole("readwrite")) {
+        if (SecurityUtils.getSubject().isPermitted("write")) {
             data.put("readWrite", true);
         }
         try {
@@ -901,7 +905,8 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
             if (currentlyExecuting.putIfAbsent(ringHost, true) == null) {
                 executorService.submit(() -> {
                     try {
-                        HttpRequestHelper requestHelper = HttpRequestHelperUtils.buildRequestHelper(false, false, null, ringHost.getHost(), ringHost.getPort());
+                        HttpRequestHelper requestHelper = HttpRequestHelperUtils.buildRequestHelper(upenaSSLConfig.sslEnable,
+                            upenaSSLConfig.allowSelfSignedCerts, upenaSSLConfig.signer, ringHost.getHost(), ringHost.getPort());
                         UpenaEndpoints.NodeHealth nodeHealth = requestHelper.executeGetRequest("/health/instance", UpenaEndpoints.NodeHealth.class, null);
                         nodeHealths.put(ringHost, nodeHealth);
 

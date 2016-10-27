@@ -89,6 +89,7 @@ public class UpenaEndpoints {
 
     private final ObjectMapper mapper = new ObjectMapper();
     private final AmzaInstance amzaInstance;
+    private final UpenaSSLConfig upenaSSLConfig;
     private final UpenaConfigStore upenaConfigStore;
     private final UbaService ubaService;
     private final RingHost ringHost;
@@ -109,8 +110,10 @@ public class UpenaEndpoints {
         @Context SoyService soyService,
         @Context DiscoveredRoutes discoveredRoutes,
         @Context PathToRepo localPathToRepo,
+        @Context UpenaSSLConfig upenaSSLConfig,
         @Context UpenaAutoRelease autoRelease,
         @Context UpenaStore upenaStore) {
+
         this.amzaClusterName = amzaClusterName;
         this.amzaInstance = amzaInstance;
         this.upenaConfigStore = upenaConfigStore;
@@ -120,6 +123,7 @@ public class UpenaEndpoints {
         this.soyService = soyService;
         this.discoveredRoutes = discoveredRoutes;
         this.localPathToRepo = localPathToRepo;
+        this.upenaSSLConfig = upenaSSLConfig;
         this.autoRelease = autoRelease;
         this.upenaStore = upenaStore;
         this.mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -316,7 +320,9 @@ public class UpenaEndpoints {
         ClusterHealth clusterHealth = new ClusterHealth();
         for (RingHost ringHost : amzaInstance.getRing("MASTER")) {
             try {
-                HttpRequestHelper requestHelper = HttpRequestHelperUtils.buildRequestHelper(false, false, null, ringHost.getHost(), ringHost.getPort());
+                HttpRequestHelper requestHelper = HttpRequestHelperUtils.buildRequestHelper(upenaSSLConfig.sslEnable, 
+                    upenaSSLConfig.allowSelfSignedCerts, upenaSSLConfig.signer,
+                    ringHost.getHost(), ringHost.getPort());
                 String path = Joiner.on("/").join(uriInfo.getPathSegments().subList(0, uriInfo.getPathSegments().size()));
                 NodeHealth nodeHealth = requestHelper.executeGetRequest("/" + path + "/instance", NodeHealth.class, null);
                 clusterHealth.health = Math.min(nodeHealth.health, clusterHealth.health);

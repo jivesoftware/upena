@@ -2,6 +2,7 @@ package com.jivesoftware.os.upena.deployable.lookup;
 
 import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelper;
 import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelperUtils;
+import com.jivesoftware.os.upena.deployable.UpenaSSLConfig;
 import com.jivesoftware.os.upena.service.UpenaStore;
 import com.jivesoftware.os.upena.shared.Cluster;
 import com.jivesoftware.os.upena.shared.ClusterFilter;
@@ -24,9 +25,11 @@ import java.util.concurrent.ConcurrentSkipListMap;
  */
 public class AsyncLookupService {
 
+    private final UpenaSSLConfig upenaSSLConfig;
     private final UpenaStore upenaStore;
 
-    public AsyncLookupService(UpenaStore upenaStore) {
+    public AsyncLookupService(UpenaSSLConfig upenaSSLConfig, UpenaStore upenaStore) {
+        this.upenaSSLConfig = upenaSSLConfig;
         this.upenaStore = upenaStore;
     }
 
@@ -44,7 +47,10 @@ public class AsyncLookupService {
 
         ClusterFilter clusterFilter = new ClusterFilter(contains, null, 0, 100_000);
         if (remotePort != -1) {
-            HttpRequestHelper helper = HttpRequestHelperUtils.buildRequestHelper(false, false, null, remoteHost, remotePort);
+            HttpRequestHelper helper = HttpRequestHelperUtils.buildRequestHelper(upenaSSLConfig.sslEnable,
+                upenaSSLConfig.allowSelfSignedCerts,
+                upenaSSLConfig.signer,
+                remoteHost, remotePort);
             return helper.executeRequest(clusterFilter, "/upena/cluster/find", ClusterResults.class, new ClusterResults());
         } else {
             return upenaStore.clusters.find(false, clusterFilter);
@@ -63,7 +69,9 @@ public class AsyncLookupService {
         int remotePort, String contains) throws Exception {
         HostFilter hostsFilter = new HostFilter(contains, null, null, null, null, 0, 100_000);
         if (remotePort != -1) {
-            HttpRequestHelper helper = HttpRequestHelperUtils.buildRequestHelper(false, false, null, remoteHost, remotePort);
+            HttpRequestHelper helper = HttpRequestHelperUtils.buildRequestHelper(upenaSSLConfig.sslEnable, upenaSSLConfig.allowSelfSignedCerts,
+                upenaSSLConfig.signer,
+                remoteHost, remotePort);
             return helper.executeRequest(hostsFilter, "/upena/host/find", HostResults.class, new HostResults());
         } else {
             return upenaStore.hosts.find(false, hostsFilter);
@@ -82,7 +90,9 @@ public class AsyncLookupService {
         int remotePort, String contains) throws Exception {
         ServiceFilter serviceFilter = new ServiceFilter(contains, null, 0, 100_000);
         if (remotePort != -1) {
-            HttpRequestHelper helper = HttpRequestHelperUtils.buildRequestHelper(false, false, null, remoteHost, remotePort);
+            HttpRequestHelper helper = HttpRequestHelperUtils.buildRequestHelper(upenaSSLConfig.sslEnable, upenaSSLConfig.allowSelfSignedCerts,
+                upenaSSLConfig.signer,
+                remoteHost, remotePort);
             return helper.executeRequest(serviceFilter, "/upena/service/find", ServiceResults.class, new ServiceResults());
         } else {
             return upenaStore.services.find(false, serviceFilter);
@@ -101,7 +111,9 @@ public class AsyncLookupService {
         int remotePort, String contains) throws Exception {
         ReleaseGroupFilter releasesFilter = new ReleaseGroupFilter(contains, null, null, null, null, 0, 100_000);
         if (remotePort != -1) {
-            HttpRequestHelper helper = HttpRequestHelperUtils.buildRequestHelper(false, false, null, remoteHost, remotePort);
+            HttpRequestHelper helper = HttpRequestHelperUtils.buildRequestHelper(upenaSSLConfig.sslEnable, upenaSSLConfig.allowSelfSignedCerts,
+                upenaSSLConfig.signer,
+                remoteHost, remotePort);
             return helper.executeRequest(releasesFilter, "/upena/releaseGroup/find", ReleaseGroupResults.class, new ReleaseGroupResults());
         } else {
             return upenaStore.releaseGroups.find(false, releasesFilter);

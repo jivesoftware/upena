@@ -70,7 +70,7 @@ public class RepoPluginRegion implements PageRegion<RepoPluginRegionInput> {
 
     @Override
     public String render(String user, RepoPluginRegionInput input) {
-        SecurityUtils.getSubject().checkRole("readwrite");
+        SecurityUtils.getSubject().checkPermission("write");
         Map<String, Object> data = Maps.newHashMap();
 
         try {

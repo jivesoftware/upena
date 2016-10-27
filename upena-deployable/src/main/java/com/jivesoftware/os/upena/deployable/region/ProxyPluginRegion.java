@@ -84,7 +84,7 @@ public class ProxyPluginRegion implements PageRegion<ProxyInput> {
 
     @Override
     public String render(String user, ProxyInput input) {
-        SecurityUtils.getSubject().checkRole("readwrite");
+        SecurityUtils.getSubject().checkPermission("debug");
         Map<String, Object> data = Maps.newHashMap();
 
         try {

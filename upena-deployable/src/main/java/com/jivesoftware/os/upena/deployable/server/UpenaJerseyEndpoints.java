@@ -8,6 +8,7 @@ import com.google.common.collect.Lists;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.routing.bird.server.CorsContainerResponseFilter;
+import com.jivesoftware.os.routing.bird.server.HasServletContextHandler;
 import com.jivesoftware.os.routing.bird.server.JacksonFeature;
 import com.jivesoftware.os.routing.bird.server.binding.Injectable;
 import com.jivesoftware.os.routing.bird.server.binding.InjectableBinder;
@@ -35,7 +36,7 @@ import org.glassfish.jersey.servlet.ServletContainer;
  *
  * @author jonathan.colt
  */
-public class JerseyEndpoints implements HasServletContextHandler {
+public class UpenaJerseyEndpoints implements HasServletContextHandler {
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
@@ -48,36 +49,36 @@ public class JerseyEndpoints implements HasServletContextHandler {
 
     private final ObjectMapper mapper;
 
-    public JerseyEndpoints() {
+    public UpenaJerseyEndpoints() {
         this.mapper = new ObjectMapper()
             .configure(JsonGenerator.Feature.WRITE_NUMBERS_AS_STRINGS, true)
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
-    public JerseyEndpoints addProvider(Class<?> provider) {
+    public UpenaJerseyEndpoints addProvider(Class<?> provider) {
         allClasses.add(provider);
         return this;
     }
 
-    public JerseyEndpoints addEndpoint(Class<?> jerseyEndpoint) {
+    public UpenaJerseyEndpoints addEndpoint(Class<?> jerseyEndpoint) {
         allClasses.add(jerseyEndpoint);
         return this;
     }
 
-    public JerseyEndpoints addBinder(Binder requestInfoInjectable) {
+    public UpenaJerseyEndpoints addBinder(Binder requestInfoInjectable) {
         allBinders.add(requestInfoInjectable);
         return this;
     }
 
-    public JerseyEndpoints addInjectable(Object injectableInstance) {
+    public UpenaJerseyEndpoints addInjectable(Object injectableInstance) {
         return addInjectable(Injectable.of(injectableInstance));
     }
 
-    public JerseyEndpoints addInjectable(Class<?> injectableClass, Object injectableInstance) {
+    public UpenaJerseyEndpoints addInjectable(Class<?> injectableClass, Object injectableInstance) {
         return addInjectable(Injectable.ofUnsafe(injectableClass, injectableInstance));
     }
 
-    public JerseyEndpoints addInjectable(Injectable<?> injectable) {
+    public UpenaJerseyEndpoints addInjectable(Injectable<?> injectable) {
         Class<?> injectableClass = injectable.getClazz();
         if (allInjectedClasses.contains(injectableClass)) {
             LOG.warn("You should only inject a single instance for any given class. You have already injected class {}", injectableClass);
@@ -89,12 +90,12 @@ public class JerseyEndpoints implements HasServletContextHandler {
         return this;
     }
 
-    public JerseyEndpoints addContainerRequestFilter(ContainerRequestFilter containerRequestFilter) {
+    public UpenaJerseyEndpoints addContainerRequestFilter(ContainerRequestFilter containerRequestFilter) {
         containerRequestFilters.add(containerRequestFilter);
         return this;
     }
 
-    public JerseyEndpoints enableCORS() {
+    public UpenaJerseyEndpoints enableCORS() {
         supportCORS = true;
         return this;
     }
@@ -103,7 +104,7 @@ public class JerseyEndpoints implements HasServletContextHandler {
         return Collections.unmodifiableList(allInjectables);
     }
 
-    public JerseyEndpoints humanReadableJson() {
+    public UpenaJerseyEndpoints humanReadableJson() {
         mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
         return this;
     }
@@ -146,6 +147,7 @@ public class JerseyEndpoints implements HasServletContextHandler {
             servletContextHandler.setDisplayName(applicationName);
         }
         servletContextHandler.addServlet(servletHolder, "/*");
+
         servletContextHandler.setInitParameter("shiroConfigLocations", "classpath:shiro.ini");
         servletContextHandler.addEventListener(new EnvironmentLoaderListener());
         servletContextHandler.addFilter(ShiroFilter.class, "/ui/*", EnumSet.of(DispatcherType.REQUEST, DispatcherType.FORWARD, DispatcherType.INCLUDE,
