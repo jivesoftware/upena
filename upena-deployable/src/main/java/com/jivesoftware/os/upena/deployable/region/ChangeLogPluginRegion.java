@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  *
@@ -79,6 +80,7 @@ public class ChangeLogPluginRegion implements PageRegion<ChangeLogPluginRegionIn
             filters.put("how", input.how);
 
             final List<Map<String, String>> rows = new ArrayList<>();
+            AtomicLong i = new AtomicLong();
             upenaStore.log(TimeUnit.DAYS.toMillis(2), // TODO expose?
                 0,
                 100, // TODO expose?
@@ -88,7 +90,9 @@ public class ChangeLogPluginRegion implements PageRegion<ChangeLogPluginRegionIn
                 input.where,
                 input.how,
                 (RecordedChange change) -> {
+                    long c = i.incrementAndGet();
                     Map<String, String> row = new HashMap<>();
+                    row.put("class", c % 2 == 0 ? "" : "timeline-inverted");
                     row.put("who", change.who);
                     row.put("what", change.what);
                     row.put("when", String.valueOf(humanReadableUptime(System.currentTimeMillis() - change.when)));

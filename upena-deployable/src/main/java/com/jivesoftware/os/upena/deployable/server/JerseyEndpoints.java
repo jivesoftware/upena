@@ -114,6 +114,7 @@ public class JerseyEndpoints implements HasServletContextHandler {
 
     @Override
     public Handler getHandler(final Server server, String context, String applicationName) {
+
         ResourceConfig rc = new ResourceConfig()
             .registerClasses(allClasses)
             .register(HttpMethodOverrideFilter.class)
@@ -137,8 +138,8 @@ public class JerseyEndpoints implements HasServletContextHandler {
         for (ContainerRequestFilter containerRequestFilter : containerRequestFilters) {
             rc.register(containerRequestFilter);
         }
-
-        ServletHolder servletHolder = new ServletHolder(new ServletContainer(rc));
+        ServletContainer servletContainer = new ServletContainer(rc);
+        ServletHolder servletHolder = new ServletHolder(servletContainer);
         ServletContextHandler servletContextHandler = new ServletContextHandler(ServletContextHandler.SESSIONS);
         servletContextHandler.setContextPath(context);
         if (!applicationName.isEmpty()) {

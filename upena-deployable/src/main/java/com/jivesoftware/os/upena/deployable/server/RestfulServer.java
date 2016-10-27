@@ -43,43 +43,9 @@ public class RestfulServer {
         BlockingArrayQueue<Runnable> queue = new BlockingArrayQueue<>(MIN_THREADS, MIN_THREADS, maxQueuedRequests);
         this.queuedThreadPool = new QueuedThreadPool(maxThreads, MIN_THREADS, IDLE_TIMEOUT, queue);
         this.server = new Server(queuedThreadPool);
-
-
-
-//        HashLoginService loginService = new HashLoginService();
-//        loginService.putUser("admin", new Password("admin"), new String[]{"user", "admin"});
-//        loginService.putUser("guest", new Password("guest"), new String[]{"user"});
-//        server.addBean(loginService);
-//
-//        ConstraintSecurityHandler security = new ConstraintSecurityHandler();
-//        server.setHandler(security);
-//
-//        Constraint constraint = new Constraint();
-//        constraint.setName("auth");
-//        constraint.setAuthenticate(true);
-//        constraint.setRoles(new String[]{"user", "admin"});
-//
-//        ConstraintMapping mapping = new ConstraintMapping();
-//        mapping.setPathSpec("/ui/*");
-//        mapping.setConstraint(constraint);
-//
-//        security.setConstraintMappings(Collections.singletonList(mapping));
-//        security.setAuthenticator(new BasicAuthenticator());
-//        security.setLoginService(loginService);
-
         this.handlers = new ContextHandlerCollection();
 
-//        ServletContextHandler context = new ServletContextHandler();
-//        context.setContextPath("/ui/*");
-//        context.setInitParameter("shiroConfigLocations", "classpath:shiro.ini");
-//        context.addEventListener(new EnvironmentLoaderListener());
-//        context.addFilter(ShiroFilter.class, "/ui/*", EnumSet.of(DispatcherType.REQUEST, DispatcherType.FORWARD, DispatcherType.INCLUDE, DispatcherType.ERROR));
-
-        //context.setHandler(handlers);
-        //handlers.addHandler(context);
-
         server.setHandler(handlers);
-
         server.addEventListener(new MBeanContainer(ManagementFactory.getPlatformMBeanServer()));
         server.addConnector(makeConnector(port));
 

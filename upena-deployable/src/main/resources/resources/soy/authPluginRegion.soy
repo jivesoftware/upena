@@ -6,44 +6,50 @@
  * @param? message
  */
 {template .authPluginRegion}
-    
-    <div style="margin:10% auto 0 auto; width:500px;" class="well">
-        {if $message}
-            <div class="alert alert-warning" role="alert">{$message}</div>
-        {/if}
-        <form id="add-proxy" data-active-class="btn-default" method="post" name="addProxy">
-            <table class="table">
-                <tr>
-                    <td style="text-align:center;">
+    <div class="container sign-in-up">
+        <div class="row">
+            <div class="col-md-4 col-md-offset-4">
+            <br>
+                {if $message}
+                    <div class="alert alert-warning" role="alert">{$message}</div>
+                {/if}
+            <br>
+            <form id="add-proxy" data-active-class="btn-default" method="post" name="addProxy">
+                <div class="text-center">
+                    <div>
                         <img src="/static/img/icon.png" alt="Upena"  height="64">
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <input size="128" type="text" name="username" class="form-control" placeholder="User name" value="{$username?:''}" id="usernamePicker"
-                        data-original-title="" title="">
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <input size="128" type="password" name="password" class="form-control" placeholder="Password" value="" id="passwordPicker"
-                        data-original-title="" title="">
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <input type="checkbox" name="rememberMe" value="true"/> Remember me
-                    </td>
-                 </tr>
-                 <tr>
-                    <td colspan="2">
-                        <button title="Add" type="submit" name="action" value="add" class="btn btn-primary ladda-button"  data-spinner-color="#222" data-style="expand-right">
-                            <span class="glyphicon glyphicon-login">&nbspLogin</span>
-                        </button>
-                    </td>
-                </tr>
-            </table>
-        </form>
+                    </div>
+                </div>
+                <div class="tab-content">
+                    <div class="tab-pane fade in active" id="user">
+                        <br>
+                        <fieldset>
+                            <div class="form-group">
+                                <div class="right-inner-addon">
+                                    <i class="fa fa-envelope-open" aria-hidden="true"></i>
+                                    <input name="username" class="form-control input-lg" placeholder="Email Address" type="text" value="{$username?:''}">
+                                </div>
+                                <div class="form-group">
+                                    <div class="right-inner-addon">
+                                        <i class="fa fa-key" aria-hidden="true"></i>
+                                        <input name="password" class="form-control input-lg" placeholder="Password" type="password">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="right-inner-addon">
+                                        <input type="checkbox" name="rememberMe" value="true"/> Remember me
+                                    </div>
+                                </div>
+                            </div>
+                        </fieldset>
+                        <br>
+                        <div class=" text-center">
+                            <button class="btn btn-primary">LOGIN</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
     </div>
 {/template}
 
