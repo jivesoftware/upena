@@ -1,7 +1,5 @@
 package com.jivesoftware.os.upena.deployable.endpoints;
 
-import com.jivesoftware.os.mlogger.core.MetricLogger;
-import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.deployable.ShiroRequestHelper;
 import com.jivesoftware.os.upena.deployable.region.AWSPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.AWSPluginRegion.AWSPluginRegionInput;
@@ -26,7 +24,6 @@ import javax.ws.rs.core.Response;
 @Path("/ui/aws")
 public class AWSPluginEndpoints {
 
-    private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
     private final ShiroRequestHelper shiroRequestHelper;
     private final SoyService soyService;
     private final AWSPluginRegion pluginRegion;

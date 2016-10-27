@@ -27,7 +27,7 @@ import javax.ws.rs.core.Response;
 @Path("/ui/topology")
 public class TopologyPluginEndpoints {
 
-   private final ShiroRequestHelper shiroRequestHelper;
+    private final ShiroRequestHelper shiroRequestHelper;
 
     private final SoyService soyService;
     private final TopologyPluginRegion pluginRegion;
@@ -44,7 +44,7 @@ public class TopologyPluginEndpoints {
     @GET
     @Produces(MediaType.TEXT_HTML)
     public Response topology(@Context HttpServletRequest httpRequest) {
-         return shiroRequestHelper.call("topology", () -> {
+        return shiroRequestHelper.call("topology", () -> {
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion, new TopologyPluginRegionInput("", "", "", "", "", "", "", "",
                 new HashSet<>(Arrays.asList("linkCluster", "linkService", "linkInstance", "linkHost", "linkRelease"))));
             return Response.ok(rendered).build();
@@ -64,7 +64,7 @@ public class TopologyPluginEndpoints {
         @FormParam("releaseKey") @DefaultValue("") String releaseKey,
         @FormParam("release") @DefaultValue("") String release,
         @FormParam("linkType") @DefaultValue("linkCluster,linkService,linkInstance,linkHost,linkRelease") List<String> linkType) {
-         return shiroRequestHelper.call("topology/options", () -> {
+        return shiroRequestHelper.call("topology/options", () -> {
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
                 new TopologyPluginRegionInput(clusterKey, cluster, hostKey, host, serviceKey, service, releaseKey, release, new HashSet<>(linkType)));
             return Response.ok(rendered).build();

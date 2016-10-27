@@ -42,6 +42,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -194,6 +195,13 @@ public class UpenaEndpoints {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    @GET
+    @Produces(MediaType.TEXT_HTML)
+    public Response getUIRedirect(@Context HttpServletRequest httpRequest,
+        @Context UriInfo uriInfo) throws Exception {
+        return Response.temporaryRedirect(URI.create("/ui")).build();
     }
 
     @Path("/ui")
