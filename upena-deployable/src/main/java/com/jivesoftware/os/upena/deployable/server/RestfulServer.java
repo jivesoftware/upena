@@ -1,14 +1,11 @@
 package com.jivesoftware.os.upena.deployable.server;
 
+import com.jivesoftware.os.mlogger.core.MetricLogger;
+import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.net.URISyntaxException;
-import java.util.Collections;
 import org.eclipse.jetty.jmx.MBeanContainer;
-import org.eclipse.jetty.security.ConstraintMapping;
-import org.eclipse.jetty.security.ConstraintSecurityHandler;
-import org.eclipse.jetty.security.HashLoginService;
-import org.eclipse.jetty.security.authentication.BasicAuthenticator;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
@@ -18,8 +15,6 @@ import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.util.BlockingArrayQueue;
 import org.eclipse.jetty.util.resource.Resource;
-import org.eclipse.jetty.util.security.Constraint;
-import org.eclipse.jetty.util.security.Password;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 
 /**
@@ -27,6 +22,8 @@ import org.eclipse.jetty.util.thread.QueuedThreadPool;
  * @author jonathan.colt
  */
 public class RestfulServer {
+
+    private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
     // Copying the default behavior inside jetty
     private static final int ACCEPTORS = Math.max(1, (Runtime.getRuntime().availableProcessors()) / 2);
@@ -36,7 +33,7 @@ public class RestfulServer {
     private static final int IDLE_TIMEOUT = 60000;
 
     private final Server server;
-     private final QueuedThreadPool queuedThreadPool;
+    private final QueuedThreadPool queuedThreadPool;
     private final String applicationName;
     private final ContextHandlerCollection handlers;
 
@@ -47,35 +44,46 @@ public class RestfulServer {
         this.queuedThreadPool = new QueuedThreadPool(maxThreads, MIN_THREADS, IDLE_TIMEOUT, queue);
         this.server = new Server(queuedThreadPool);
 
-        HashLoginService loginService = new HashLoginService();
-        loginService.putUser("admin", new Password("admin"), new String[]{"user", "admin"});
-        loginService.putUser("guest", new Password("guest"), new String[]{"user"});
-        server.addBean(loginService);
 
-        ConstraintSecurityHandler security = new ConstraintSecurityHandler();
-        server.setHandler(security);
 
-        Constraint constraint = new Constraint();
-        constraint.setName("auth");
-        constraint.setAuthenticate(true);
-        constraint.setRoles(new String[]{"user", "admin"});
-
-        ConstraintMapping mapping = new ConstraintMapping();
-        mapping.setPathSpec("/ui/*");
-        mapping.setConstraint(constraint);
-
-        security.setConstraintMappings(Collections.singletonList(mapping));
-        security.setAuthenticator(new BasicAuthenticator());
-        security.setLoginService(loginService);
+//        HashLoginService loginService = new HashLoginService();
+//        loginService.putUser("admin", new Password("admin"), new String[]{"user", "admin"});
+//        loginService.putUser("guest", new Password("guest"), new String[]{"user"});
+//        server.addBean(loginService);
+//
+//        ConstraintSecurityHandler security = new ConstraintSecurityHandler();
+//        server.setHandler(security);
+//
+//        Constraint constraint = new Constraint();
+//        constraint.setName("auth");
+//        constraint.setAuthenticate(true);
+//        constraint.setRoles(new String[]{"user", "admin"});
+//
+//        ConstraintMapping mapping = new ConstraintMapping();
+//        mapping.setPathSpec("/ui/*");
+//        mapping.setConstraint(constraint);
+//
+//        security.setConstraintMappings(Collections.singletonList(mapping));
+//        security.setAuthenticator(new BasicAuthenticator());
+//        security.setLoginService(loginService);
 
         this.handlers = new ContextHandlerCollection();
-        security.setHandler(handlers);
+
+//        ServletContextHandler context = new ServletContextHandler();
+//        context.setContextPath("/ui/*");
+//        context.setInitParameter("shiroConfigLocations", "classpath:shiro.ini");
+//        context.addEventListener(new EnvironmentLoaderListener());
+//        context.addFilter(ShiroFilter.class, "/ui/*", EnumSet.of(DispatcherType.REQUEST, DispatcherType.FORWARD, DispatcherType.INCLUDE, DispatcherType.ERROR));
+
+        //context.setHandler(handlers);
+        //handlers.addHandler(context);
+
+        server.setHandler(handlers);
 
         server.addEventListener(new MBeanContainer(ManagementFactory.getPlatformMBeanServer()));
         server.addConnector(makeConnector(port));
 
     }
-
 
     public int getIdleThreads() {
         return queuedThreadPool.getIdleThreads();

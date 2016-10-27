@@ -1,7 +1,6 @@
 package com.jivesoftware.os.upena.deployable.endpoints;
 
-import com.jivesoftware.os.mlogger.core.MetricLogger;
-import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
+import com.jivesoftware.os.upena.deployable.ShiroRequestHelper;
 import com.jivesoftware.os.upena.deployable.UpenaProxy;
 import com.jivesoftware.os.upena.deployable.region.ProxyPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ProxyPluginRegion.ProxyInput;
@@ -28,13 +27,16 @@ import javax.ws.rs.core.Response;
 @Path("/ui/proxy")
 public class ProxyPluginEndpoints {
 
-    private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
+    private final ShiroRequestHelper shiroRequestHelper;
 
     private final SoyService soyService;
     private final ProxyPluginRegion pluginRegion;
 
-    public ProxyPluginEndpoints(@Context SoyService soyService,
+    public ProxyPluginEndpoints(@Context ShiroRequestHelper shiroRequestHelper,
+        @Context SoyService soyService,
         @Context ProxyPluginRegion pluginRegion) {
+
+        this.shiroRequestHelper = shiroRequestHelper;
         this.soyService = soyService;
         this.pluginRegion = pluginRegion;
     }
@@ -42,13 +44,10 @@ public class ProxyPluginEndpoints {
     @GET
     @Produces(MediaType.TEXT_HTML)
     public Response proxy(@Context HttpServletRequest httpRequest) {
-        try {
+        return shiroRequestHelper.call("proxy", () -> {
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion, new ProxyInput(-1, "", -1, ""));
             return Response.ok(rendered).build();
-        } catch (Exception e) {
-            LOG.error("proxy GET", e);
-            return Response.serverError().entity(e.getMessage()).build();
-        }
+        });
     }
 
     @POST
@@ -62,14 +61,11 @@ public class ProxyPluginEndpoints {
         @FormParam("urlPort") @DefaultValue("-1") int urlPort,
         @FormParam("url") @DefaultValue("") String url,
         @FormParam("action") @DefaultValue("") String action) {
-        try {
+        return shiroRequestHelper.call("proxy/actions", () -> {
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
                 new ProxyInput(localPort, remoteHost, remotePort, action));
             return Response.ok(rendered).build();
-        } catch (Exception e) {
-            LOG.error("proxy action POST", e);
-            return Response.serverError().entity(e.getMessage()).build();
-        }
+        });
     }
 
     @GET
@@ -79,16 +75,12 @@ public class ProxyPluginEndpoints {
         @QueryParam("host") @DefaultValue("") String host,
         @QueryParam("port") @DefaultValue("-1") int port,
         @QueryParam("path") @DefaultValue("") String path) {
-        try {
-
+        return shiroRequestHelper.call("proxy/redirect", () -> {
             UpenaProxy redirect = pluginRegion.redirect(host, port);
             return Response.temporaryRedirect(URI.create("http://" + httpRequest.getLocalAddr()
                 + ":" + redirect.getLocalPort()
                 + (path.startsWith("/") ? path : "/" + path))).build();
-        } catch (Exception e) {
-            LOG.error("proxy redirect GET", e);
-            return Response.serverError().entity(e.getMessage()).build();
-        }
+        });
     }
 
 }

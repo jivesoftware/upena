@@ -1,7 +1,6 @@
 package com.jivesoftware.os.upena.deployable.endpoints;
 
-import com.jivesoftware.os.mlogger.core.MetricLogger;
-import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
+import com.jivesoftware.os.upena.deployable.ShiroRequestHelper;
 import com.jivesoftware.os.upena.deployable.profiler.visualize.VStrategies;
 import com.jivesoftware.os.upena.deployable.region.ProfilerPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ProfilerPluginRegion.ProfilerPluginRegionInput;
@@ -26,13 +25,16 @@ import javax.ws.rs.core.Response;
 @Path("/ui/profiler")
 public class ProfilerPluginEndpoints {
 
-    private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
+    private final ShiroRequestHelper shiroRequestHelper;
 
     private final SoyService soyService;
     private final ProfilerPluginRegion pluginRegion;
 
-    public ProfilerPluginEndpoints(@Context SoyService soyService,
+    public ProfilerPluginEndpoints(@Context ShiroRequestHelper shiroRequestHelper,
+        @Context SoyService soyService,
         @Context ProfilerPluginRegion pluginRegion) {
+
+        this.shiroRequestHelper = shiroRequestHelper;
         this.soyService = soyService;
         this.pluginRegion = pluginRegion;
     }
@@ -40,7 +42,7 @@ public class ProfilerPluginEndpoints {
     @GET
     @Produces(MediaType.TEXT_HTML)
     public Response profiler(@Context HttpServletRequest httpRequest) {
-        try {
+        return shiroRequestHelper.call("profiler", () -> {
 
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
                 new ProfilerPluginRegionInput(true,
@@ -56,10 +58,7 @@ public class ProfilerPluginEndpoints {
                     0,
                     0));
             return Response.ok(rendered).build();
-        } catch (Exception e) {
-            LOG.error("profiler GET", e);
-            return Response.serverError().entity(e.getMessage()).build();
-        }
+        });
     }
 
     @POST
@@ -78,7 +77,7 @@ public class ProfilerPluginEndpoints {
         @FormParam("stackOrder") @DefaultValue("ascending") String stackOrder,
         @FormParam("x") @DefaultValue("0") int mouseX,
         @FormParam("y") @DefaultValue("0") int mouseY) {
-        try {
+        return shiroRequestHelper.call("profiler/action", () -> {
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
                 new ProfilerPluginRegionInput(enabled,
                     serviceName,
@@ -93,9 +92,6 @@ public class ProfilerPluginEndpoints {
                     mouseX,
                     mouseY));
             return Response.ok(rendered).build();
-        } catch (Exception e) {
-            LOG.error("profiler POST", e);
-            return Response.serverError().entity(e.getMessage()).build();
-        }
+        });
     }
 }

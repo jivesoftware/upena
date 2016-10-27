@@ -1,7 +1,6 @@
 package com.jivesoftware.os.upena.deployable.endpoints;
 
-import com.jivesoftware.os.mlogger.core.MetricLogger;
-import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
+import com.jivesoftware.os.upena.deployable.ShiroRequestHelper;
 import com.jivesoftware.os.upena.deployable.region.ReleasesPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ReleasesPluginRegion.PropertyUpdate;
 import com.jivesoftware.os.upena.deployable.region.ReleasesPluginRegion.ReleasesPluginRegionInput;
@@ -33,12 +32,16 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 @Path("/ui/releases")
 public class ReleasesPluginEndpoints {
 
-    private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
+    private final ShiroRequestHelper shiroRequestHelper;
 
     private final SoyService soyService;
     private final ReleasesPluginRegion pluginRegion;
 
-    public ReleasesPluginEndpoints(@Context SoyService soyService, @Context ReleasesPluginRegion pluginRegion) {
+    public ReleasesPluginEndpoints(@Context ShiroRequestHelper shiroRequestHelper,
+        @Context SoyService soyService,
+        @Context ReleasesPluginRegion pluginRegion) {
+
+        this.shiroRequestHelper = shiroRequestHelper;
         this.soyService = soyService;
         this.pluginRegion = pluginRegion;
     }
@@ -46,14 +49,11 @@ public class ReleasesPluginEndpoints {
     @GET
     @Produces(MediaType.TEXT_HTML)
     public Response releases(@Context HttpServletRequest httpRequest) {
-        try {
+        return shiroRequestHelper.call("releases", () -> {
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
                 new ReleasesPluginRegionInput("", "", "", "", "", "", "", "", false, ""));
             return Response.ok(rendered).build();
-        } catch (Exception e) {
-            LOG.error("releases GET", e);
-            return Response.serverError().entity(e.getMessage()).build();
-        }
+        });
     }
 
     @POST
@@ -70,7 +70,7 @@ public class ReleasesPluginEndpoints {
         @FormParam("autoRelease") @DefaultValue("false") boolean autoRelease,
         @FormParam("action") @DefaultValue("") String action) {
 
-        try {
+        return shiroRequestHelper.call("releases/action", () -> {
             if (action.startsWith("export")) {
                 String export = pluginRegion.doExport(new ReleasesPluginRegionInput(key, name, description, rollback, version, upgrade, repository, email,
                     autoRelease, "export"), httpRequest.getRemoteUser());
@@ -80,34 +80,25 @@ public class ReleasesPluginEndpoints {
                     new ReleasesPluginRegionInput(key, name, description, rollback, version, upgrade, repository, email, autoRelease, action));
                 return Response.ok(rendered, MediaType.TEXT_HTML).build();
             }
-        } catch (Exception e) {
-            LOG.error("action", e);
-            return Response.serverError().entity(e.getMessage()).build();
-        }
+        });
     }
 
     @GET
     @Produces(MediaType.TEXT_HTML)
     @Path("/changelog")
     public Response changelog(@QueryParam("releaseKey") @DefaultValue("") String releaseKey) throws Exception {
-        try {
+        return shiroRequestHelper.call("releases/changeLog", () -> {
             return Response.ok(pluginRegion.renderChangelog(releaseKey)).build();
-        } catch (Exception e) {
-            LOG.error("changelog", e);
-            return Response.serverError().entity(e.getMessage()).build();
-        }
+        });
     }
 
     @GET
     @Produces(MediaType.TEXT_HTML)
     @Path("/scm")
     public Response scm(@QueryParam("releaseKey") @DefaultValue("") String releaseKey) throws Exception {
-        try {
+        return shiroRequestHelper.call("releases/scm", () -> {
             return Response.ok(pluginRegion.renderScm(releaseKey)).build();
-        } catch (Exception e) {
-            LOG.error("scm", e);
-            return Response.serverError().entity(e.getMessage()).build();
-        }
+        });
     }
 
     @POST
@@ -116,18 +107,13 @@ public class ReleasesPluginEndpoints {
     public Response importTopology(@Context HttpServletRequest httpRequest,
         @FormDataParam("file") InputStream fileInputStream,
         @FormDataParam("file") FormDataContentDisposition contentDispositionHeader) {
-        try {
+        return shiroRequestHelper.call("releases/import", () -> {
             String json = IOUtils.toString(fileInputStream, StandardCharsets.UTF_8);
-            LOG.info("importing:{}", json);
             pluginRegion.doImport(json, httpRequest.getRemoteUser());
             URI location = new URI("/ui/releases");
             return Response.seeOther(location).build();
-        } catch (Throwable t) {
-            LOG.error("Failed to import", t);
-            return Response.serverError().entity(t.getMessage()).build();
-        }
+        });
     }
-
 
     @POST
     @Path("/property/add")
@@ -135,13 +121,10 @@ public class ReleasesPluginEndpoints {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response add(@Context HttpServletRequest httpRequest, PropertyUpdate update) {
 
-        try {
+       return shiroRequestHelper.call("releases/property/add", () -> {
             pluginRegion.add(httpRequest.getRemoteUser(), update);
             return Response.ok().build();
-        } catch (Exception x) {
-            LOG.error("Failed to add ports for:" + update, x);
-            return Response.serverError().build();
-        }
+        });
     }
 
     @POST
@@ -149,13 +132,10 @@ public class ReleasesPluginEndpoints {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response remove(@Context HttpServletRequest httpRequest, PropertyUpdate update) {
-        try {
+        return shiroRequestHelper.call("releases/property/remove", () -> {
             pluginRegion.remove(httpRequest.getRemoteUser(), update);
             return Response.ok().build();
-        } catch (Exception x) {
-            LOG.error("Failed to remove to ports for:" + update, x);
-            return Response.serverError().build();
-        }
+        });
     }
 
 }

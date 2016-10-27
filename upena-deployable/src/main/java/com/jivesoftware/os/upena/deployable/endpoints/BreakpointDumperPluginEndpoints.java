@@ -1,7 +1,6 @@
 package com.jivesoftware.os.upena.deployable.endpoints;
 
-import com.jivesoftware.os.mlogger.core.MetricLogger;
-import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
+import com.jivesoftware.os.upena.deployable.ShiroRequestHelper;
 import com.jivesoftware.os.upena.deployable.region.BreakpointDumperPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.BreakpointDumperPluginRegion.BreakpointDumperPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
@@ -27,13 +26,15 @@ import javax.ws.rs.core.Response;
 @Path("/ui/breakpoint")
 public class BreakpointDumperPluginEndpoints {
 
-    private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
-
+    private final ShiroRequestHelper shiroRequestHelper;
     private final SoyService soyService;
     private final BreakpointDumperPluginRegion pluginRegion;
 
-    public BreakpointDumperPluginEndpoints(@Context SoyService soyService,
+    public BreakpointDumperPluginEndpoints(@Context ShiroRequestHelper shiroRequestHelper,
+        @Context SoyService soyService,
         @Context BreakpointDumperPluginRegion pluginRegion) {
+
+        this.shiroRequestHelper = shiroRequestHelper;
         this.soyService = soyService;
         this.pluginRegion = pluginRegion;
     }
@@ -42,15 +43,12 @@ public class BreakpointDumperPluginEndpoints {
     @Produces(MediaType.TEXT_HTML)
     public Response breakpoint(@Context HttpServletRequest httpRequest) {
 
-        try {
+        return shiroRequestHelper.call("breakpoint", () -> {
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
                 new BreakpointDumperPluginRegionInput("", "", "", "", "", "", "", "", "", Collections.emptyList(),
-                    "", 0, 1, 0, "", "","", 0, 0, "", ""));
+                    "", 0, 1, 0, "", "", "", 0, 0, "", ""));
             return Response.ok(rendered).build();
-        } catch (Exception e) {
-            LOG.error("breakpoint GET.", e);
-            return Response.serverError().entity(e.getMessage()).build();
-        }
+        });
     }
 
     @POST
@@ -78,7 +76,8 @@ public class BreakpointDumperPluginEndpoints {
         @FormParam("maxVersions") @DefaultValue("1") int maxVersions,
         @FormParam("breakpoint") @DefaultValue("") String breakpoint,
         @FormParam("action") @DefaultValue("") String action) {
-        try {
+
+        return shiroRequestHelper.call("breakpoint", () -> {
 
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(),
                 pluginRegion,
@@ -104,9 +103,6 @@ public class BreakpointDumperPluginEndpoints {
                     breakpoint,
                     action));
             return Response.ok(rendered).build();
-        } catch (Exception e) {
-            LOG.error("breakpoint POST.", e);
-            return Response.serverError().entity(e.getMessage()).build();
-        }
+        });
     }
 }

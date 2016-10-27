@@ -7,7 +7,6 @@ import com.jivesoftware.os.upena.deployable.region.ChangeLogPluginRegion.ChangeL
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.service.UpenaStore;
 import com.jivesoftware.os.upena.shared.RecordedChange;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -20,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 // soy.page.hostsPluginRegion
 public class ChangeLogPluginRegion implements PageRegion<ChangeLogPluginRegionInput> {
 
-    private static final MetricLogger log = MetricLoggerFactory.getLogger();
+    private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
     private final String template;
     private final SoyRenderer renderer;
@@ -103,7 +102,7 @@ public class ChangeLogPluginRegion implements PageRegion<ChangeLogPluginRegionIn
             data.put("log", rows);
 
         } catch (Exception e) {
-            log.error("Unable to retrieve data", e);
+            LOG.error("Unable to retrieve data", e);
         }
 
         return renderer.render(template, data);

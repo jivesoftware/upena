@@ -1,7 +1,6 @@
 package com.jivesoftware.os.upena.deployable.endpoints;
 
-import com.jivesoftware.os.mlogger.core.MetricLogger;
-import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
+import com.jivesoftware.os.upena.deployable.ShiroRequestHelper;
 import com.jivesoftware.os.upena.deployable.region.ChangeLogPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ChangeLogPluginRegion.ChangeLogPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
@@ -26,12 +25,15 @@ import javax.ws.rs.core.SecurityContext;
 @Path("/ui/changeLog")
 public class ChangeLogPluginEndpoints {
 
-    private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
-
+    private final ShiroRequestHelper shiroRequestHelper;
     private final SoyService soyService;
     private final ChangeLogPluginRegion pluginRegion;
 
-    public ChangeLogPluginEndpoints(@Context SoyService soyService, @Context ChangeLogPluginRegion pluginRegion) {
+    public ChangeLogPluginEndpoints(@Context ShiroRequestHelper shiroRequestHelper,
+        @Context SoyService soyService,
+        @Context ChangeLogPluginRegion pluginRegion) {
+
+        this.shiroRequestHelper = shiroRequestHelper;
         this.soyService = soyService;
         this.pluginRegion = pluginRegion;
     }
@@ -39,14 +41,11 @@ public class ChangeLogPluginEndpoints {
     @GET
     @Produces(MediaType.TEXT_HTML)
     public Response changelog(@Context SecurityContext sc, @Context HttpServletRequest httpRequest) {
-        try {
+        return shiroRequestHelper.call("changeLog", () -> {
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
                 new ChangeLogPluginRegionInput("", "", "", "", "", "", ""));
             return Response.ok(rendered).build();
-        } catch (Exception e) {
-            LOG.error("changelog GET.", e);
-            return Response.serverError().entity(e.getMessage()).build();
-        }
+        });
     }
 
     @POST
@@ -60,14 +59,12 @@ public class ChangeLogPluginEndpoints {
         @FormParam("why") @DefaultValue("") String why,
         @FormParam("how") @DefaultValue("") String how,
         @FormParam("action") @DefaultValue("") String action) {
-        try {
+
+        return shiroRequestHelper.call("changeLog", () -> {
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
                 new ChangeLogPluginRegionInput(who, what, when, where, why, how, action));
             return Response.ok(rendered).build();
-        } catch (Exception e) {
-            LOG.error("changelog POST.", e);
-            return Response.serverError().entity(e.getMessage()).build();
-        }
+        });
 
     }
 }

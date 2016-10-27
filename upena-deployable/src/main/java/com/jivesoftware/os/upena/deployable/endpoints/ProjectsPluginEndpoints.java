@@ -1,7 +1,6 @@
 package com.jivesoftware.os.upena.deployable.endpoints;
 
-import com.jivesoftware.os.mlogger.core.MetricLogger;
-import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
+import com.jivesoftware.os.upena.deployable.ShiroRequestHelper;
 import com.jivesoftware.os.upena.deployable.region.ProjectsPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ProjectsPluginRegion.ProjectsPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
@@ -27,12 +26,16 @@ import javax.ws.rs.core.Response;
 @Path("/ui/projects")
 public class ProjectsPluginEndpoints {
 
-    private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
+    private final ShiroRequestHelper shiroRequestHelper;
 
     private final SoyService soyService;
     private final ProjectsPluginRegion pluginRegion;
 
-    public ProjectsPluginEndpoints(@Context SoyService soyService, @Context ProjectsPluginRegion pluginRegion) {
+    public ProjectsPluginEndpoints(@Context ShiroRequestHelper shiroRequestHelper,
+        @Context SoyService soyService,
+        @Context ProjectsPluginRegion pluginRegion) {
+
+        this.shiroRequestHelper = shiroRequestHelper;
         this.soyService = soyService;
         this.pluginRegion = pluginRegion;
     }
@@ -40,15 +43,12 @@ public class ProjectsPluginEndpoints {
     @GET
     @Produces(MediaType.TEXT_HTML)
     public Response projects(@Context HttpServletRequest httpRequest) {
-        try {
+        return shiroRequestHelper.call("projects", () -> {
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(),
                 pluginRegion,
                 new ProjectsPluginRegionInput("", "", "", "", "", "", "", "", "", "", "", "", "", "", "", false));
             return Response.ok(rendered).build();
-        } catch (Exception e) {
-            LOG.error("projects GET", e);
-            return Response.serverError().entity(e.getMessage()).build();
-        }
+        });
     }
 
     @POST
@@ -71,7 +71,7 @@ public class ProjectsPluginEndpoints {
         @FormParam("newCoordinate") @DefaultValue("") String newCoordinate,
         @FormParam("action") @DefaultValue("") String action,
         @FormParam("refresh") @DefaultValue("true") boolean refresh) {
-        try {
+        return shiroRequestHelper.call("projects/actions", () -> {
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
                 new ProjectsPluginRegionInput(key, name, description, localPath, scmUrl, branch, pom, goals, profiles, properties, mavenOpts, mvnHome,
                     oldCoordinate,
@@ -79,10 +79,7 @@ public class ProjectsPluginEndpoints {
                     action,
                     refresh));
             return Response.ok(rendered).build();
-        } catch (Exception e) {
-            LOG.error("projects action POT", e);
-            return Response.serverError().entity(e.getMessage()).build();
-        }
+        });
     }
 
     @GET
@@ -91,16 +88,13 @@ public class ProjectsPluginEndpoints {
     public Response output(@PathParam("key") @DefaultValue("") String key,
         @QueryParam("refresh") @DefaultValue("true") boolean refresh,
         @Context HttpServletRequest httpRequest) {
-        try {
+        return shiroRequestHelper.call("project/output", () -> {
 
             String rendered = soyService.wrapWithChrome(pluginRegion.getRootPath(), httpRequest.getRemoteUser(), pluginRegion.getTitle(), "Project Output",
                 pluginRegion.output(key, refresh));
 
             return Response.ok(rendered).build();
-        } catch (Exception x) {
-            LOG.error("Failed to generate output for:" + key, x);
-            return Response.serverError().entity(x.getMessage()).build();
-        }
+        });
     }
 
     @GET
@@ -109,14 +103,11 @@ public class ProjectsPluginEndpoints {
     public Response tail(@PathParam("key") @DefaultValue("") String key,
         @PathParam("offset") @DefaultValue("0") int offset,
         @Context HttpServletRequest httpRequest) {
-        try {
+        return shiroRequestHelper.call("projects/tail", () -> {
 
             String rendered = pluginRegion.tail(key, offset);
             return Response.ok(rendered).build();
-        } catch (Exception x) {
-            LOG.error("Failed to generate output for:" + key, x);
-            return Response.serverError().entity(x.getMessage()).build();
-        }
+        });
     }
 
     @POST
@@ -124,13 +115,10 @@ public class ProjectsPluginEndpoints {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response add(ProjectsPluginRegion.ProjectUpdate update, @Context HttpServletRequest httpRequest) {
-        try {
+        return shiroRequestHelper.call("projects/add", () -> {
             pluginRegion.add(httpRequest.getRemoteUser(), update);
             return Response.ok().build();
-        } catch (Exception x) {
-            LOG.error("Failed to add to default release groups for:" + update, x);
-            return Response.serverError().entity(x.getMessage()).build();
-        }
+        });
     }
 
     @POST
@@ -138,13 +126,10 @@ public class ProjectsPluginEndpoints {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response remove(ProjectsPluginRegion.ProjectUpdate update, @Context HttpServletRequest httpRequest) {
-        try {
+        return shiroRequestHelper.call("projects/remove", () -> {
             pluginRegion.remove(httpRequest.getRemoteUser(), update);
             return Response.ok().build();
-        } catch (Exception x) {
-            LOG.error("Failed to remove to default release groups for:" + update, x);
-            return Response.serverError().entity(x.getMessage()).build();
-        }
+        });
     }
 
 }

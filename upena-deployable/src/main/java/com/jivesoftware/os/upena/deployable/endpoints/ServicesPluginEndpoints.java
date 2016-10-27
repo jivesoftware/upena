@@ -1,7 +1,6 @@
 package com.jivesoftware.os.upena.deployable.endpoints;
 
-import com.jivesoftware.os.mlogger.core.MetricLogger;
-import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
+import com.jivesoftware.os.upena.deployable.ShiroRequestHelper;
 import com.jivesoftware.os.upena.deployable.region.ServicesPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ServicesPluginRegion.ServicesPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
@@ -31,11 +30,15 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 @Path("/ui/services")
 public class ServicesPluginEndpoints {
 
-    private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
+    private final ShiroRequestHelper shiroRequestHelper;
     private final SoyService soyService;
     private final ServicesPluginRegion pluginRegion;
 
-    public ServicesPluginEndpoints(@Context SoyService soyService, @Context ServicesPluginRegion pluginRegion) {
+    public ServicesPluginEndpoints(@Context ShiroRequestHelper shiroRequestHelper,
+        @Context SoyService soyService,
+        @Context ServicesPluginRegion pluginRegion) {
+
+        this.shiroRequestHelper = shiroRequestHelper;
         this.soyService = soyService;
         this.pluginRegion = pluginRegion;
     }
@@ -43,14 +46,11 @@ public class ServicesPluginEndpoints {
     @GET
     @Produces(MediaType.TEXT_HTML)
     public Response services(@Context HttpServletRequest httpRequest) {
-        try {
+        return shiroRequestHelper.call("services", () -> {
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
                 new ServicesPluginRegionInput("", "", "", ""));
             return Response.ok(rendered).build();
-        } catch (Exception e) {
-            LOG.error("action GET", e);
-            return Response.serverError().entity(e.getMessage()).build();
-        }
+        });
     }
 
     @POST
@@ -61,7 +61,7 @@ public class ServicesPluginEndpoints {
         @FormParam("name") @DefaultValue("") String name,
         @FormParam("description") @DefaultValue("") String description,
         @FormParam("action") @DefaultValue("") String action) {
-        try {
+        return shiroRequestHelper.call("service/action", () -> {
             if (action.startsWith("export")) {
                 String export = pluginRegion.doExport(new ServicesPluginRegionInput(key, name, description, "export"), httpRequest.getRemoteUser());
                 return Response.ok(export, MediaType.APPLICATION_OCTET_STREAM_TYPE).build();
@@ -70,10 +70,7 @@ public class ServicesPluginEndpoints {
                     new ServicesPluginRegionInput(key, name, description, action));
                 return Response.ok(rendered).build();
             }
-        } catch (Exception e) {
-            LOG.error("service action GET", e);
-            return Response.serverError().entity(e.getMessage()).build();
-        }
+        });
     }
 
     @POST
@@ -82,16 +79,12 @@ public class ServicesPluginEndpoints {
     public Response importTopology(@Context HttpServletRequest httpRequest,
         @FormDataParam("file") InputStream fileInputStream,
         @FormDataParam("file") FormDataContentDisposition contentDispositionHeader) {
-        try {
+        return shiroRequestHelper.call("service/import", () -> {
             String json = IOUtils.toString(fileInputStream, StandardCharsets.UTF_8);
-            LOG.info("importing:{}", json);
             pluginRegion.doImport(json, httpRequest.getRemoteUser());
             URI location = new URI("/ui/services");
             return Response.seeOther(location).build();
-        } catch (Throwable t) {
-            LOG.error("Failed to import", t);
-            return Response.serverError().entity(t.getMessage()).build();
-        }
+        });
     }
 
 }
