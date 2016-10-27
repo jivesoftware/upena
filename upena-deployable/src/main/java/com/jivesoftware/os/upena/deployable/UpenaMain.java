@@ -289,6 +289,7 @@ public class UpenaMain {
                     System.exit(1);
                 }
             } else {
+                sslKeystore.getParentFile().mkdirs();
                 if (sslAutoGenerateSelfSignedCert) {
                     selfSigningCertGenerator.create(sslKeyStoreAlias, sslKeystorePassword, sslKeystore);
                 } else {
