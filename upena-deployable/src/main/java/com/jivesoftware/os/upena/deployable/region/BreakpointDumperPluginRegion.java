@@ -32,6 +32,7 @@ import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
+import org.apache.shiro.SecurityUtils;
 import org.eclipse.jetty.util.ConcurrentHashSet;
 
 /**
@@ -137,6 +138,8 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
 
     @Override
     public String render(String user, BreakpointDumperPluginRegionInput input) throws Exception {
+        SecurityUtils.getSubject().checkRole("readwrite");
+
         Map<String, Object> data = Maps.newHashMap();
         data.put("hostName", input.hostName);
         data.put("port", input.port);

@@ -1,16 +1,11 @@
 package com.jivesoftware.os.upena.deployable.region;
 
 import com.google.common.collect.Maps;
-import com.jivesoftware.os.upena.amza.shared.AmzaInstance;
-import com.jivesoftware.os.upena.amza.shared.RingHost;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.deployable.UpenaProxy;
 import com.jivesoftware.os.upena.deployable.region.ProxyPluginRegion.ProxyInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
-import com.jivesoftware.os.upena.service.UpenaService;
-import com.jivesoftware.os.upena.service.UpenaStore;
-import com.jivesoftware.os.upena.uba.service.UbaService;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.ArrayList;
@@ -18,6 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import org.apache.shiro.SecurityUtils;
 
 /**
  *
@@ -88,6 +84,7 @@ public class ProxyPluginRegion implements PageRegion<ProxyInput> {
 
     @Override
     public String render(String user, ProxyInput input) {
+        SecurityUtils.getSubject().checkRole("readwrite");
         Map<String, Object> data = Maps.newHashMap();
 
         try {

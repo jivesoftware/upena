@@ -24,6 +24,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authz.AuthorizationException;
 
 /**
  *
@@ -93,7 +95,9 @@ public class HostsPluginRegion implements PageRegion<HostsPluginRegionInput> {
     @Override
     public String render(String user, HostsPluginRegionInput input) {
         Map<String, Object> data = Maps.newHashMap();
-
+        if (SecurityUtils.getSubject().hasRole("readwrite")) {
+            data.put("readWrite", true);
+        }
         try {
             Map<ServiceKey, String> serviceColor = ServiceColorUtil.serviceKeysColor(upenaStore);
 
@@ -122,6 +126,7 @@ public class HostsPluginRegion implements PageRegion<HostsPluginRegionInput> {
                         + "workingDirectory.contains '" + input.workingDirectory + "'"
                     );
                 } else if (input.action.equals("add")) {
+                    SecurityUtils.getSubject().checkRole("readwrite");
                     filters.clear();
                     try {
                         Host newHost = new Host(input.name,
@@ -143,6 +148,7 @@ public class HostsPluginRegion implements PageRegion<HostsPluginRegionInput> {
                         data.put("message", "Error while trying to add Host:" + input.name + "\n" + trace);
                     }
                 } else if (input.action.equals("update")) {
+                    SecurityUtils.getSubject().checkRole("readwrite");
                     filters.clear();
                     try {
                         Host host = upenaStore.hosts.get(new HostKey(input.key));
@@ -167,7 +173,8 @@ public class HostsPluginRegion implements PageRegion<HostsPluginRegionInput> {
                         data.put("message", "Error while trying to add Host:" + input.name + "\n" + trace);
                     }
                 } else if (input.action.equals("remove")) {
-                    if (input.key.isEmpty()) {
+                   SecurityUtils.getSubject().checkRole("readwrite");
+                   if (input.key.isEmpty()) {
                         data.put("message", "Failed to remove Host:" + input.name);
                     } else {
                         try {
@@ -247,6 +254,8 @@ public class HostsPluginRegion implements PageRegion<HostsPluginRegionInput> {
 
             data.put("hosts", rows);
 
+        } catch(AuthorizationException x) {
+            throw x;
         } catch (Exception e) {
             log.error("Unable to retrieve data", e);
         }

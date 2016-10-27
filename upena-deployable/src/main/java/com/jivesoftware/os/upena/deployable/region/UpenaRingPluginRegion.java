@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authz.AuthorizationException;
 
 /**
  *
@@ -160,17 +161,21 @@ public class UpenaRingPluginRegion implements PageRegion<UpenaRingPluginRegionIn
     @Override
     public String render(String user, UpenaRingPluginRegionInput input) {
         Map<String, Object> data = Maps.newHashMap();
-        if (SecurityUtils.getSubject().hasRole("readWrite")) {
+        if (SecurityUtils.getSubject().hasRole("readwrite")) {
             data.put("readWrite", true);
         }
         try {
             if (input.action.equals("add")) {
+                SecurityUtils.getSubject().checkRole("readwrite");
                 amzaInstance.addRingHost("master", new RingHost(input.host, Integer.parseInt(input.port)));
             } else if (input.action.equals("remove")) {
+                SecurityUtils.getSubject().checkRole("readwrite");
                 amzaInstance.removeRingHost("master", new RingHost(input.host, Integer.parseInt(input.port)));
             } else if (input.action.equals("clearChangeLog")) {
+                SecurityUtils.getSubject().checkRole("readwrite");
                 upenaStore.clearChangeLog();
             } else if (input.action.equals("removeBadKeys")) {
+                SecurityUtils.getSubject().checkRole("readwrite");
                 upenaStore.clusters.find(true, null);
                 upenaStore.hosts.find(true, null);
                 upenaStore.services.find(true, null);
@@ -185,12 +190,12 @@ public class UpenaRingPluginRegion implements PageRegion<UpenaRingPluginRegionIn
                 row.put("port", String.valueOf(host.getPort()));
                 rows.add(row);
             }
-
             data.put("ring", rows);
+        } catch(AuthorizationException x) {
+            throw x;
         } catch (Exception e) {
             LOG.error("Unable to retrieve data", e);
         }
-
         return renderer.render(template, data);
     }
 

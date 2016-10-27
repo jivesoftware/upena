@@ -68,7 +68,8 @@ public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
 
     // TODO handle host and port
     public void modified(String user, Map<String, Map<String, String>> property_InstanceKey_Values) throws Exception {
-
+        SecurityUtils.getSubject().checkRole("readwrite");
+        
         Set<String> instanceKeys = new HashSet<>();
         for (Map.Entry<String, Map<String, String>> property_InstanceKey_Value : property_InstanceKey_Values.entrySet()) {
             for (Map.Entry<String, String> instanceKey_value : property_InstanceKey_Value.getValue().entrySet()) {
@@ -381,7 +382,7 @@ public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
     @Override
     public String render(String user, ConfigPluginRegionInput input) {
         Map<String, Object> data = Maps.newHashMap();
-        if (SecurityUtils.getSubject().hasRole("readWrite")) {
+        if (SecurityUtils.getSubject().hasRole("readwrite")) {
             data.put("readWrite", true);
         }
         try {
@@ -483,7 +484,7 @@ public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
             input.bHostKey, input.bServiceKey, input.bInstance, input.bReleaseKey, propertyContains, input.value,
             input.overridden, suffix);
 
-        Set<String> allProperties = Collections.newSetFromMap(new ConcurrentSkipListMap<String, Boolean>());
+        Set<String> allProperties = Collections.newSetFromMap(new ConcurrentSkipListMap<>());
         allProperties.addAll(as.keySet());
         allProperties.addAll(bs.keySet());
 
