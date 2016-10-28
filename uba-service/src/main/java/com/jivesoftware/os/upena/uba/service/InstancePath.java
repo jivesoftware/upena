@@ -164,6 +164,10 @@ public class InstancePath {
         return f;
     }
 
+    File resources() {
+        return new File(path(path, -1), "resources/");
+    }
+
     File lib() {
         return new File(path(path, -1), "lib/");
     }
