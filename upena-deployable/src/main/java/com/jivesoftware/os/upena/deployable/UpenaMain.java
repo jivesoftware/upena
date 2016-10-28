@@ -57,32 +57,37 @@ import com.jivesoftware.os.upena.amza.transport.http.replication.HttpUpdatesTake
 import com.jivesoftware.os.upena.amza.transport.http.replication.endpoints.AmzaReplicationRestEndpoints;
 import com.jivesoftware.os.upena.config.UpenaConfigRestEndpoints;
 import com.jivesoftware.os.upena.config.UpenaConfigStore;
-import com.jivesoftware.os.upena.deployable.UpenaEndpoints.AmzaClusterName;
 import com.jivesoftware.os.upena.deployable.aws.AWSClientFactory;
-import com.jivesoftware.os.upena.deployable.endpoints.AWSPluginEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.AsyncLookupEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.AuthPluginEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.BreakpointDumperPluginEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.ChangeLogPluginEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.ClustersPluginEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.ConfigPluginEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.ConnectivityPluginEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.HealthPluginEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.HostsPluginEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.InstancesPluginEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.JVMPluginEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.LoadBalancersPluginEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.ModulesPluginEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.MonkeyPluginEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.ProfilerPluginEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.ProjectsPluginEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.ProxyPluginEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.ReleasesPluginEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.RepoPluginEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.SARPluginEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.ServicesPluginEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.TopologyPluginEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.UpenaRingPluginEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.api.UbaServiceRestEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaEndpoints.AmzaClusterName;
+import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaRestEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.loopback.UpenaLoopbackEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.ui.AWSPluginEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.ui.ApiPluginEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.ui.AsyncLookupEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.ui.AuthPluginEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.ui.BreakpointDumperPluginEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.ui.ChangeLogPluginEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.ui.ClustersPluginEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.ui.ConfigPluginEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.ui.ConnectivityPluginEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.ui.HealthPluginEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.ui.HostsPluginEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.ui.InstancesPluginEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.ui.JVMPluginEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.ui.LoadBalancersPluginEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.ui.ModulesPluginEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.ui.MonkeyPluginEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.ui.ProfilerPluginEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.ui.ProjectsPluginEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.ui.ProxyPluginEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.ui.ReleasesPluginEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.ui.RepoPluginEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.ui.SARPluginEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.ui.ServicesPluginEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.ui.TopologyPluginEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.ui.UpenaRingPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.lookup.AsyncLookupService;
 import com.jivesoftware.os.upena.deployable.profiler.model.ServicesCallDepthStack;
 import com.jivesoftware.os.upena.deployable.profiler.server.endpoints.PerfService;
@@ -125,7 +130,6 @@ import com.jivesoftware.os.upena.service.ChaosService;
 import com.jivesoftware.os.upena.service.DiscoveredRoutes;
 import com.jivesoftware.os.upena.service.HostKeyProvider;
 import com.jivesoftware.os.upena.service.SessionStore;
-import com.jivesoftware.os.upena.service.UpenaRestEndpoints;
 import com.jivesoftware.os.upena.service.UpenaService;
 import com.jivesoftware.os.upena.service.UpenaStore;
 import com.jivesoftware.os.upena.shared.Host;
@@ -140,8 +144,8 @@ import com.jivesoftware.os.upena.uba.service.UbaLog;
 import com.jivesoftware.os.upena.uba.service.UbaService;
 import com.jivesoftware.os.upena.uba.service.UbaServiceInitializer;
 import com.jivesoftware.os.upena.uba.service.UpenaClient;
-import com.jivesoftware.os.upena.uba.service.endpoints.UbaServiceRestEndpoints;
 import de.ruedigermoeller.serialization.FSTConfiguration;
+import io.swagger.jaxrs.config.BeanConfig;
 import java.io.File;
 import java.nio.channels.FileChannel;
 import java.nio.file.StandardOpenOption;
@@ -483,7 +487,8 @@ public class UpenaMain {
             clusterName,
             discoveredRoutes);
 
-        InitializeRestfulServer initializeRestfulServer = new InitializeRestfulServer(port,
+        InitializeRestfulServer initializeRestfulServer = new InitializeRestfulServer(false,
+            port,
             "UpenaNode",
             sslEnable,
             sslKeyStoreAlias,
@@ -491,7 +496,12 @@ public class UpenaMain {
             sslKeystorePath,
             128,
             10_000);
+
+        buildSwagger();
         initializeRestfulServer.addClasspathResource("/resources");
+//        initializeRestfulServer.addContextHandler("/docs/", (Server server, String context, String applicationName) -> {
+//            return buildSwaggerUI(context);
+//        });
         initializeRestfulServer.addContextHandler("/", jerseyEndpoints);
 
         RestfulServer restfulServer = initializeRestfulServer.build();
@@ -509,7 +519,9 @@ public class UpenaMain {
             .addInjectable(UpenaService.class, upenaService);
 
         // TODO force server to bind to loopback
-        InitializeRestfulServer initializeLoopbackRestfulServer = new InitializeRestfulServer(loopbackPort,
+        InitializeRestfulServer initializeLoopbackRestfulServer = new InitializeRestfulServer(
+            true,
+            loopbackPort,
             "UpenaNode",
             false,
             sslKeyStoreAlias,
@@ -782,8 +794,14 @@ public class UpenaMain {
             MonkeyPluginEndpoints.class,
             new MonkeyPluginRegion("soy.page.monkeyPluginRegion", renderer, upenaStore), null, "read", "debug");
 
+        ManagePlugin api = new ManagePlugin("play-circle", null, "API", "/ui/api",
+            ApiPluginEndpoints.class,
+            null, null, "read", "debug");
+
         List<ManagePlugin> plugins = new ArrayList<>();
         plugins.add(auth);
+        plugins.add(new ManagePlugin(null, null, "API", null, null, null, "separator", "read"));
+        plugins.add(api);
         plugins.add(new ManagePlugin(null, null, "Build", null, null, null, "separator", "read"));
         plugins.add(repo);
         plugins.add(projects);
@@ -825,7 +843,9 @@ public class UpenaMain {
             soyService.registerPlugin(plugin);
             if (plugin.separator == null) {
                 jerseyEndpoints.addEndpoint(plugin.endpointsClass);
-                jerseyEndpoints.addInjectable(plugin.region.getClass(), plugin.region);
+                if (plugin.region != null) {
+                    jerseyEndpoints.addInjectable(plugin.region.getClass(), plugin.region);
+                }
             }
         }
 
@@ -853,4 +873,30 @@ public class UpenaMain {
         };
         return rowsStorageProvider;
     }
+
+    public static void buildSwagger() {
+        // This configures Swagger
+        BeanConfig beanConfig = new BeanConfig();
+        beanConfig.setVersion("1.0.0");
+        beanConfig.setResourcePackage("com.jivesoftware.os.upena.deployable");
+        beanConfig.setScan(true);
+        beanConfig.setBasePath("/");
+        beanConfig.setDescription("Upena");
+        beanConfig.setTitle("Upena");
+    }
+
+//    public static ContextHandler buildSwaggerUI(String context) {
+//        try {
+//            final ResourceHandler swaggerUIResourceHandler = new ResourceHandler();
+//            swaggerUIResourceHandler.setResourceBase("/static/vendor/swaggerui");
+//            final ContextHandler swaggerUIContext = new ContextHandler();
+//            swaggerUIContext.setContextPath(context);
+//            swaggerUIContext.setHandler(swaggerUIResourceHandler);
+//            return swaggerUIContext;
+//        } catch (Exception x) {
+//            x.printStackTrace();
+//            return null;
+//        }
+//    }
+
 }

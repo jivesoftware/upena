@@ -16,6 +16,8 @@
 package com.jivesoftware.os.upena.amza.service.storage.replication;
 
 import com.google.common.base.Optional;
+import com.jivesoftware.os.mlogger.core.MetricLogger;
+import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.amza.service.storage.TableStore;
 import com.jivesoftware.os.upena.amza.service.storage.TableStoreProvider;
 import com.jivesoftware.os.upena.amza.shared.HighwaterMarks;
@@ -28,8 +30,6 @@ import com.jivesoftware.os.upena.amza.shared.RowScanable;
 import com.jivesoftware.os.upena.amza.shared.TableName;
 import com.jivesoftware.os.upena.amza.shared.UpdatesSender;
 import com.jivesoftware.os.upena.amza.shared.UpdatesTaker;
-import com.jivesoftware.os.mlogger.core.MetricLogger;
-import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
@@ -258,6 +258,8 @@ public class TableReplicator {
         }
     }
 
+    boolean logResendLocalChanges = true;
+
     public void resendLocalChanges(HostRingProvider hostRingProvider) throws Exception {
 
         // TODO eval why this is Hacky. This loads resend tables for stored tables.
@@ -270,6 +272,7 @@ public class TableReplicator {
             HostRing hostRing = hostRingProvider.getHostRing(tableName.getRingName());
             RingHost[] ring = hostRing.getBelowRing();
             if (ring.length > 0) {
+                logResendLocalChanges = true;
                 TableName mapName = updates.getKey();
                 TableStore store = updates.getValue();
                 synchronized (store) {
@@ -278,7 +281,10 @@ public class TableReplicator {
                     }
                 }
             } else {
-                LOG.warn("Trying to resend to an empty ring. tableName:" + tableName);
+                if (logResendLocalChanges) {
+                    logResendLocalChanges = false;
+                    LOG.warn("Trying to resend to an empty ring. tableName:" + tableName);
+                }
             }
         }
     }
