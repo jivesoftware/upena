@@ -450,7 +450,6 @@ public class UpenaMain {
             .addEndpoint(UpenaRestEndpoints.class)
             .addInjectable(upenaService)
             .addInjectable(upenaStore)
-            .addEndpoint(UpenaConfigRestEndpoints.class)
             .addInjectable(upenaConfigStore)
             .addEndpoint(UbaServiceRestEndpoints.class)
             .addInjectable(ubaService)
@@ -504,7 +503,9 @@ public class UpenaMain {
 
         UpenaJerseyEndpoints loopbackJerseyEndpoints = new UpenaJerseyEndpoints()
             .addEndpoint(UpenaLoopbackEndpoints.class)
+            .addEndpoint(UpenaConfigRestEndpoints.class)
             .addInjectable(DiscoveredRoutes.class, discoveredRoutes)
+            .addInjectable(upenaConfigStore)
             .addInjectable(UpenaService.class, upenaService);
 
         // TODO force server to bind to loopback
