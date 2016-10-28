@@ -12,6 +12,7 @@ import com.jivesoftware.os.routing.bird.server.HasServletContextHandler;
 import com.jivesoftware.os.routing.bird.server.JacksonFeature;
 import com.jivesoftware.os.routing.bird.server.binding.Injectable;
 import com.jivesoftware.os.routing.bird.server.binding.InjectableBinder;
+import io.swagger.jaxrs.listing.ApiListingResource;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -116,21 +117,46 @@ public class UpenaJerseyEndpoints implements HasServletContextHandler {
     @Override
     public Handler getHandler(final Server server, String context, String applicationName) {
 
-        ResourceConfig rc = new ResourceConfig()
-            .registerClasses(allClasses)
-            .register(HttpMethodOverrideFilter.class)
-            .register(new JacksonFeature().withMapper(mapper))
-            .register(MultiPartFeature.class) // adds support for multi-part API requests
-            .registerInstances(allBinders)
-            .registerInstances(
-                new InjectableBinder(allInjectables),
-                new AbstractBinder() {
-                @Override
-                protected void configure() {
-                    bind(server).to(Server.class);
-                }
+        /*
+        private static ContextHandler buildContext()
+    {
+        ResourceConfig resourceConfig = new ResourceConfig();
+        // Replace EntityBrowser with your resource class
+        // io.swagger.jaxrs.listing loads up Swagger resources
+        resourceConfig.packages( EntityBrowser.class.getPackage().getName(), ApiListingResource.class.getPackage().getName() );
+        ServletContainer servletContainer = new ServletContainer( resourceConfig );
+        ServletHolder entityBrowser = new ServletHolder( servletContainer );
+        ServletContextHandler entityBrowserContext = new ServletContextHandler( ServletContextHandler.SESSIONS );
+        entityBrowserContext.setContextPath( "/" );
+        entityBrowserContext.addServlet( entityBrowser, "/*" );
+
+        return entityBrowserContext;
+    }
+        */
+
+        Set<String> packages = new HashSet<>();
+        packages.add(ApiListingResource.class.getPackage().getName());
+        for (Class<?> clazz : allClasses) {
+            packages.add(clazz.getPackage().getName());
+        }
+
+        ResourceConfig rc = new ResourceConfig();
+        rc.packages(packages.toArray(new String[0]));
+
+        rc.registerClasses(allClasses);
+        rc.register(HttpMethodOverrideFilter.class);
+        rc.register(new JacksonFeature().withMapper(mapper));
+        rc.register(MultiPartFeature.class); // adds support for multi-part API requests
+        rc.registerInstances(allBinders);
+        rc.registerInstances(
+            new InjectableBinder(allInjectables),
+            new AbstractBinder() {
+            @Override
+            protected void configure() {
+                bind(server).to(Server.class);
             }
-            );
+        }
+        );
 
         if (supportCORS) {
             rc.register(CorsContainerResponseFilter.class);
@@ -139,6 +165,7 @@ public class UpenaJerseyEndpoints implements HasServletContextHandler {
         for (ContainerRequestFilter containerRequestFilter : containerRequestFilters) {
             rc.register(containerRequestFilter);
         }
+
         ServletContainer servletContainer = new ServletContainer(rc);
         ServletHolder servletHolder = new ServletHolder(servletContainer);
         ServletContextHandler servletContextHandler = new ServletContextHandler(ServletContextHandler.SESSIONS);
@@ -155,4 +182,5 @@ public class UpenaJerseyEndpoints implements HasServletContextHandler {
 
         return servletContextHandler;
     }
+
 }
