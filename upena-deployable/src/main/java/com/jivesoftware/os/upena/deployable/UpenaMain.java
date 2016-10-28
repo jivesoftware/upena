@@ -276,8 +276,8 @@ public class UpenaMain {
 
         boolean sslEnable = Boolean.parseBoolean(System.getProperty("ssl.enabled", "true"));
         String sslKeystorePassword = System.getProperty("ssl.keystore.password", "password");
-        String sslKeystorePath = System.getProperty("ssl.keystore.path", "./cert/sslKeystore");
-        String sslKeyStoreAlias = System.getProperty("ssl.keystore.alias", "upenaNode");
+        String sslKeystorePath = System.getProperty("ssl.keystore.path", "./certs/sslKeystore");
+        String sslKeyStoreAlias = System.getProperty("ssl.keystore.alias", "upenanode").toLowerCase();
         boolean sslAutoGenerateSelfSignedCert = Boolean.parseBoolean(System.getProperty("ssl.keystore.autoGenerate", "true"));
 
         File sslKeystore = new File(sslKeystorePath);
