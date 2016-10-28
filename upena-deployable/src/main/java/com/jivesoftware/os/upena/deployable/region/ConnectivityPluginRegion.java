@@ -11,6 +11,7 @@ import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelper;
 import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelperUtils;
 import com.jivesoftware.os.routing.bird.shared.ConnectionHealth;
 import com.jivesoftware.os.routing.bird.shared.InstanceConnectionHealth;
+import com.jivesoftware.os.routing.bird.shared.InstanceDescriptor;
 import com.jivesoftware.os.upena.amza.shared.AmzaInstance;
 import com.jivesoftware.os.upena.amza.shared.RingHost;
 import com.jivesoftware.os.upena.deployable.UpenaEndpoints.NannyHealth;
@@ -247,13 +248,18 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
             Node from = nodes.get(serviceName);
             if (from == null) {
 
-                from = new Node(serviceName, id, serviceIdColor(serviceColor, serviceName), "12", 0);
+                from = new Node(serviceName, id, serviceIdColor(serviceColor, serviceName), "12", 1);
                 id++;
                 nodes.put(serviceName, from);
 
                 double serviceHealth = serviceHealth(nannyHealth(instanceId));
                 from.maxHealth = Math.max(from.maxHealth, serviceHealth);
                 from.minHealth = Math.min(from.minHealth, serviceHealth);
+                Instance.Port mainPort = instance.ports.get("main");
+                if (mainPort != null) {
+                    from.sslCount += mainPort.sslEnabled ? 1 : 0;
+                    from.sauthCount += mainPort.serviceAuthEnabled ? 1 : 0;
+                }
             } else {
                 from.count++;
             }
@@ -263,16 +269,22 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
                 Map<String, ConnectionHealth> familyConnectionHealths = hostPortFamilyConnectionHealth.getValue();
                 for (Map.Entry<String, ConnectionHealth> familyConnectionHealth : familyConnectionHealths.entrySet()) {
                     ConnectionHealth connectionHealth = familyConnectionHealth.getValue();
-                    String toServiceName = connectionHealth.connectionDescriptor.getInstanceDescriptor().serviceName;
+                    InstanceDescriptor instanceDescriptor = connectionHealth.connectionDescriptor.getInstanceDescriptor();
+                    String toServiceName = instanceDescriptor.serviceName;
                     Node to = nodes.get(toServiceName);
                     if (to == null) {
-                        to = new Node(toServiceName, id, serviceIdColor(serviceColor, toServiceName), "12", 0);
+                        to = new Node(toServiceName, id, serviceIdColor(serviceColor, toServiceName), "12", 1);
                         id++;
                         nodes.put(toServiceName, to);
 
-                        double serviceHealth = serviceHealth(nannyHealth(connectionHealth.connectionDescriptor.getInstanceDescriptor().instanceKey));
+                        double serviceHealth = serviceHealth(nannyHealth(instanceDescriptor.instanceKey));
                         to.maxHealth = Math.max(to.maxHealth, serviceHealth);
                         to.minHealth = Math.min(to.minHealth, serviceHealth);
+                        InstanceDescriptor.InstanceDescriptorPort mainPort = instanceDescriptor.ports.get("main");
+                        if (mainPort != null) {
+                            from.sslCount += mainPort.sslEnabled ? 1 : 0;
+                            from.sauthCount += mainPort.serviceAuthEnabled ? 1 : 0;
+                        }
                     }
                 }
             }
@@ -309,11 +321,21 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
                 Node to = null;
                 MinMaxDouble edgeWeight = new MinMaxDouble();
                 double successPerSecond = 0;
+                int count = 0;
+                int sslCount = 0;
+                int sauthCount = 0;
+
                 for (Map.Entry<String, ConnectionHealth> familyConnectionHealth : familyConnectionHealths.entrySet()) {
                     ConnectionHealth connectionHealth = familyConnectionHealth.getValue();
-
                     if (to == null) {
-                        String toServiceName = connectionHealth.connectionDescriptor.getInstanceDescriptor().serviceName;
+                        count++;
+                        InstanceDescriptor instanceDescriptor = connectionHealth.connectionDescriptor.getInstanceDescriptor();
+                        InstanceDescriptor.InstanceDescriptorPort mainPort = instanceDescriptor.ports.get("main"); // barf
+                        if (mainPort != null) {
+                            sslCount += mainPort.sslEnabled ? 1 : 0;
+                            sauthCount += mainPort.serviceAuthEnabled ? 1 : 0;
+                        }
+                        String toServiceName = instanceDescriptor.serviceName;
                         to = nodes.get(toServiceName);
                         if (to == null) {
                             to = new Node(toServiceName, id, serviceIdColor(serviceColor, toServiceName), "12", 0);
@@ -332,7 +354,20 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
                 Edge edge = addEdge(edges, from, to);
                 edge.min = 1d - mmd.zeroToOne(edgeWeight.min);
                 edge.max = 1d - mmd.zeroToOne(edgeWeight.max);
-                edge.label = numberFormat.format(successPerSecond) + "/sec";
+
+                String suffix = "";
+                if (count == sslCount) {
+                    suffix += "SSL";
+                } else if (sslCount > 0) {
+                    suffix += "nonSSL & SSL";
+                }
+                if (count == sauthCount) {
+                    suffix += ", SAUTH";
+                } else if (sslCount > 0) {
+                    suffix += ", nonSAUTH & SAUTH";
+                }
+
+                edge.label = numberFormat.format(successPerSecond) + "/sec " + suffix;
             }
         }
 
@@ -351,7 +386,20 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
                 node.put("healthRadius", String.valueOf((int) (1d - n.minHealth) * 4));
             }
             node.put("fontSize", n.fontSize);
-            node.put("label", n.label + " (" + n.count + ")");
+
+            String suffix = "";
+                if (n.count == n.sslCount) {
+                    suffix += "SSL";
+                } else if (n.sslCount > 0) {
+                    suffix += "nonSSL & SSL";
+                }
+                if (n.count == n.sauthCount) {
+                    suffix += ", SAUTH";
+                } else if (n.sslCount > 0) {
+                    suffix += ", nonSAUTH & SAUTH";
+                }
+
+            node.put("label", n.label + " (" + n.count + ") " + suffix);
             node.put("count", String.valueOf(n.count));
 
             if (n.focusHtml != null && n.focusHtml instanceof List) {
@@ -728,6 +776,8 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
         Object focusHtml;
         String tooltip;
         int count = 1;
+        int sslCount = 0;
+        int sauthCount = 0;
         double maxHealth = -Double.MAX_VALUE;
         double minHealth = Double.MAX_VALUE;
 
