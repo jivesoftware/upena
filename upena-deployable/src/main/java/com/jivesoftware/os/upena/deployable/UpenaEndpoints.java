@@ -254,7 +254,7 @@ public class UpenaEndpoints {
             }
             sb.append("</ul>");
             if (minHealth < health) {
-                upenaStore.record(upenaHealth.host, "checkHealth health:" + minHealth + " < " + health, System.currentTimeMillis(), "failed", "endpoint", sb
+                upenaStore.record(upenaHealth.host, "checkHealth", System.currentTimeMillis(), "health:" + minHealth + " < " + health, "endpoint", sb
                     .toString());
                 return Response.status(Response.Status.NOT_ACCEPTABLE).entity(sb.toString()).type(MediaType.TEXT_PLAIN).build();
             } else {
