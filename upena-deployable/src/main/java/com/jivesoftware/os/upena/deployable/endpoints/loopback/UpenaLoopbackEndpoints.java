@@ -119,7 +119,7 @@ public class UpenaLoopbackEndpoints {
     @Path("/request/instance/publicKey/{instanceKey}")
     public Response requestInstancePublicKey(@PathParam("instanceKey") String instanceKey) {
         try {
-            return Response.ok(upenaService.instancePublicKey(instanceKey)).build();
+            return Response.ok(mapper.writeValueAsString(upenaService.instancePublicKey(instanceKey))).build();
         } catch (Exception x) {
             LOG.warn("Failed to provide password for:" + instanceKey, x);
             return Response.serverError().build();

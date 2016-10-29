@@ -14,8 +14,8 @@ import com.jivesoftware.os.routing.bird.shared.InstanceDescriptor;
 import com.jivesoftware.os.upena.amza.shared.AmzaInstance;
 import com.jivesoftware.os.upena.amza.shared.RingHost;
 import com.jivesoftware.os.upena.config.UpenaConfigStore;
-import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaEndpoints;
 import com.jivesoftware.os.upena.deployable.UpenaSSLConfig;
+import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaHealthEndpoints;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.service.UpenaStore;
 import com.jivesoftware.os.upena.shared.Cluster;
@@ -197,9 +197,9 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
 
             Map<String, Double> minHostHealth = new HashMap<>();
             Map<String, Double> minServiceHealth = new HashMap<>();
-            for (UpenaEndpoints.NodeHealth nodeHealth : buildClusterHealth().values()) {
+            for (UpenaHealthEndpoints.NodeHealth nodeHealth : buildClusterHealth().values()) {
 
-                for (UpenaEndpoints.NannyHealth nannyHealth : nodeHealth.nannyHealths) {
+                for (UpenaHealthEndpoints.NannyHealth nannyHealth : nodeHealth.nannyHealths) {
                     if (nannyHealth.serviceHealth != null) {
                         if (nannyHealth.serviceHealth != null) {
 
@@ -215,7 +215,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                                 if (instance != null
                                     && instance.restartTimestampGMTMillis > 0
                                     && System.currentTimeMillis() < instance.restartTimestampGMTMillis) {
-                                    age = UpenaEndpoints.shortHumanReadableUptime(instance.restartTimestampGMTMillis - now);
+                                    age = UpenaHealthEndpoints.shortHumanReadableUptime(instance.restartTimestampGMTMillis - now);
                                     color = "255,105,180";
                                     label = "Restarting";
                                 }
@@ -239,7 +239,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                                 LOG.info("simpleServiceHealth:" + simpleServiceHealth);
                                 Map<String, Object> simpleHealthMap = Maps.newHashMap();
                                 if (nannyHealth.unexpectedRestart > -1) {
-                                    simpleHealthMap.put("unexpectedRestart", UpenaEndpoints.humanReadableUptime(now - nannyHealth.unexpectedRestart));
+                                    simpleHealthMap.put("unexpectedRestart", UpenaHealthEndpoints.humanReadableUptime(now - nannyHealth.unexpectedRestart));
                                 }
 
                                 if (!nannyHealth.configIsStale.isEmpty()) {
@@ -262,7 +262,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                                     .put("simple", simpleHealthHtml);
 
                                 if (nannyHealth.unexpectedRestart > -1) {
-                                    map.put("unexpectedRestart", UpenaEndpoints.humanReadableUptime(now - nannyHealth.unexpectedRestart));
+                                    map.put("unexpectedRestart", UpenaHealthEndpoints.humanReadableUptime(now - nannyHealth.unexpectedRestart));
                                 }
 
                                 if (!nannyHealth.configIsStale.isEmpty()) {
@@ -292,8 +292,8 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                 String[] parts = m.getKey().split(":");
                 Long recency = nodeRecency.get(parts[1] + ":" + parts[2]);
                 String age = recency != null
-                    ? UpenaEndpoints.shortHumanReadableUptime(System.currentTimeMillis() - recency)
-                    : ">" + UpenaEndpoints.shortHumanReadableUptime(System.currentTimeMillis() - startupTime);
+                    ? UpenaHealthEndpoints.shortHumanReadableUptime(System.currentTimeMillis() - recency)
+                    : ">" + UpenaHealthEndpoints.shortHumanReadableUptime(System.currentTimeMillis() - startupTime);
 
                 healths.add(ImmutableMap.<String, Object>builder()
                     .put("id", m.getKey())
@@ -408,11 +408,11 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
             filter.put("service", input.service);
             data.put("filter", filter);
 
-            ConcurrentMap<RingHost, UpenaEndpoints.NodeHealth> nodeHealths = buildClusterHealth();
+            ConcurrentMap<RingHost, UpenaHealthEndpoints.NodeHealth> nodeHealths = buildClusterHealth();
 
             Map<String, Double> minClusterHealth = new HashMap<>();
-            for (UpenaEndpoints.NodeHealth nodeHealth : nodeHealths.values()) {
-                for (UpenaEndpoints.NannyHealth nannyHealth : nodeHealth.nannyHealths) {
+            for (UpenaHealthEndpoints.NodeHealth nodeHealth : nodeHealths.values()) {
+                for (UpenaHealthEndpoints.NannyHealth nannyHealth : nodeHealth.nannyHealths) {
                     if (nannyHealth.serviceHealth != null) {
                         Double got = minClusterHealth.get(nannyHealth.instanceDescriptor.clusterKey);
                         if (got == null || got > nannyHealth.serviceHealth.health) {
@@ -443,11 +443,11 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
 
             Map<String, Map<String, String>> instanceHealth = new HashMap<>();
 
-            for (UpenaEndpoints.NodeHealth nodeHealth : nodeHealths.values()) {
+            for (UpenaHealthEndpoints.NodeHealth nodeHealth : nodeHealths.values()) {
                 if (nodeHealth.nannyHealths.isEmpty()) {
                     gridHosts.add(new GridHost("UNREACHABLE", "UNREACHABLE", "UNREACHABLE", nodeHealth.hostKey, nodeHealth.host, nodeHealth.port));
                 }
-                for (UpenaEndpoints.NannyHealth nannyHealth : nodeHealth.nannyHealths) {
+                for (UpenaHealthEndpoints.NannyHealth nannyHealth : nodeHealth.nannyHealths) {
                     boolean dshow = input.datacenter.isEmpty() ? false : nannyHealth.instanceDescriptor.datacenter.contains(input.datacenter);
                     boolean rshow = input.rack.isEmpty() ? false : nannyHealth.instanceDescriptor.rack.contains(input.rack);
                     boolean cshow = input.cluster.isEmpty() ? false : nannyHealth.instanceDescriptor.clusterName.contains(input.cluster);
@@ -583,7 +583,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                 hostRows.add(hostRow);
             }
 
-            for (UpenaEndpoints.NodeHealth nodeHealth : nodeHealths.values()) {
+            for (UpenaHealthEndpoints.NodeHealth nodeHealth : nodeHealths.values()) {
 
                 Host upenaHost = upenaStore.hosts.get(new HostKey(nodeHealth.hostKey));
                 Map<String, String> hostInfo = null;
@@ -603,8 +603,8 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
 
                         Long recency = nodeRecency.get(nodeHealth.host + ":" + nodeHealth.port);
                         String age = recency != null
-                            ? UpenaEndpoints.shortHumanReadableUptime(System.currentTimeMillis() - recency)
-                            : ">" + UpenaEndpoints.shortHumanReadableUptime(System.currentTimeMillis() - startupTime);
+                            ? UpenaHealthEndpoints.shortHumanReadableUptime(System.currentTimeMillis() - recency)
+                            : ">" + UpenaHealthEndpoints.shortHumanReadableUptime(System.currentTimeMillis() - startupTime);
 
                         //float hh = (float) Math.max(0, nodeHealth.health);
                         hostRows.get(hi).get(0).put("color", "transparent"); // + getHEXTrafficlightColor(hh, 1f));
@@ -618,7 +618,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                         uid++;
                     }
                 }
-                for (UpenaEndpoints.NannyHealth nannyHealth : nodeHealth.nannyHealths) {
+                for (UpenaHealthEndpoints.NannyHealth nannyHealth : nodeHealth.nannyHealths) {
                     InstanceDescriptor id = nannyHealth.instanceDescriptor;
                     boolean dshow = input.datacenter.isEmpty() ? false : id.datacenter.contains(input.datacenter);
                     boolean rshow = input.rack.isEmpty() ? false : id.rack.contains(input.rack);
@@ -656,8 +656,8 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                             int si = service.index;
                             Long recency = nodeRecency.get(nodeHealth.host + ":" + nodeHealth.port);
                             String age = recency != null
-                                ? UpenaEndpoints.shortHumanReadableUptime(System.currentTimeMillis() - recency)
-                                : ">" + UpenaEndpoints.shortHumanReadableUptime(System.currentTimeMillis() - startupTime);
+                                ? UpenaHealthEndpoints.shortHumanReadableUptime(System.currentTimeMillis() - recency)
+                                : ">" + UpenaHealthEndpoints.shortHumanReadableUptime(System.currentTimeMillis() - startupTime);
 
                             //float hh = (float) Math.max(0, nodeHealth.health);
                             hostRows.get(hi).get(0).put("color", "transparent");// + getHEXTrafficlightColor(hh, 1f));
@@ -694,7 +694,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
 
                                 if (nannyHealth.unexpectedRestart > -1) {
                                     cell.put("unexpectedRestart",
-                                        UpenaEndpoints.humanReadableUptime(System.currentTimeMillis() - nannyHealth.unexpectedRestart));
+                                        UpenaHealthEndpoints.humanReadableUptime(System.currentTimeMillis() - nannyHealth.unexpectedRestart));
                                 }
                                 if (!nannyHealth.configIsStale.isEmpty()) {
                                     cell.put("configIsStale", nannyHealth.configIsStale);
@@ -895,11 +895,11 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
         return String.valueOf((int) (val * 100));
     }
 
-    private final ConcurrentMap<RingHost, UpenaEndpoints.NodeHealth> nodeHealths = Maps.newConcurrentMap();
+    private final ConcurrentMap<RingHost, UpenaHealthEndpoints.NodeHealth> nodeHealths = Maps.newConcurrentMap();
     private final ConcurrentMap<String, Long> nodeRecency = Maps.newConcurrentMap();
     private final ConcurrentMap<RingHost, Boolean> currentlyExecuting = Maps.newConcurrentMap();
 
-    ConcurrentMap<RingHost, UpenaEndpoints.NodeHealth> buildClusterHealth() throws Exception {
+    ConcurrentMap<RingHost, UpenaHealthEndpoints.NodeHealth> buildClusterHealth() throws Exception {
 
         for (RingHost ringHost : amzaInstance.getRing("MASTER")) {
             if (currentlyExecuting.putIfAbsent(ringHost, true) == null) {
@@ -907,10 +907,10 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                     try {
                         HttpRequestHelper requestHelper = HttpRequestHelperUtils.buildRequestHelper(upenaSSLConfig.sslEnable,
                             upenaSSLConfig.allowSelfSignedCerts, upenaSSLConfig.signer, ringHost.getHost(), ringHost.getPort());
-                        UpenaEndpoints.NodeHealth nodeHealth = requestHelper.executeGetRequest("/health/instance", UpenaEndpoints.NodeHealth.class, null);
+                        UpenaHealthEndpoints.NodeHealth nodeHealth = requestHelper.executeGetRequest("/health/instance", UpenaHealthEndpoints.NodeHealth.class, null);
                         nodeHealths.put(ringHost, nodeHealth);
 
-                        for (UpenaEndpoints.NannyHealth nannyHealth : nodeHealth.nannyHealths) {
+                        for (UpenaHealthEndpoints.NannyHealth nannyHealth : nodeHealth.nannyHealths) {
                             instanceHealthHistory.compute(nannyHealth.instanceDescriptor.instanceKey, (instanceKey, instance) -> {
                                 if (instance == null) {
                                     instance = new InstanceSparseCircularHitsBucketBuffer(nannyHealth.instanceDescriptor,
@@ -921,7 +921,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                             });
                         }
                     } catch (Exception x) {
-                        UpenaEndpoints.NodeHealth nodeHealth = new UpenaEndpoints.NodeHealth("", ringHost.getHost(), ringHost.getPort());
+                        UpenaHealthEndpoints.NodeHealth nodeHealth = new UpenaHealthEndpoints.NodeHealth("", ringHost.getHost(), ringHost.getPort());
                         nodeHealth.health = 0.0d;
                         nodeHealth.nannyHealths = new ArrayList<>();
                         nodeHealths.put(ringHost, nodeHealth);
@@ -1003,9 +1003,9 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
             }
 
             // TODO fix this brute force crap
-            ConcurrentMap<RingHost, UpenaEndpoints.NodeHealth> nodeHealths = buildClusterHealth();
-            for (UpenaEndpoints.NodeHealth nodeHealth : nodeHealths.values()) {
-                for (UpenaEndpoints.NannyHealth nannyHealth : nodeHealth.nannyHealths) {
+            ConcurrentMap<RingHost, UpenaHealthEndpoints.NodeHealth> nodeHealths = buildClusterHealth();
+            for (UpenaHealthEndpoints.NodeHealth nodeHealth : nodeHealths.values()) {
+                for (UpenaHealthEndpoints.NannyHealth nannyHealth : nodeHealth.nannyHealths) {
                     if (nannyHealth.instanceDescriptor.instanceKey.equals(instanceKey)) {
                         serviceHealth(nannyHealth, data);
                         break;
@@ -1020,12 +1020,12 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
 
     }
 
-    public void serviceHealth(UpenaEndpoints.NannyHealth nannyHealth, Map<String, Object> data) throws IOException {
+    public void serviceHealth(UpenaHealthEndpoints.NannyHealth nannyHealth, Map<String, Object> data) throws IOException {
         if (nannyHealth == null) {
             return;
         }
         InstanceDescriptor id = nannyHealth.instanceDescriptor;
-        UpenaEndpoints.ServiceHealth serviceHealth = nannyHealth.serviceHealth;
+        UpenaHealthEndpoints.ServiceHealth serviceHealth = nannyHealth.serviceHealth;
 
         List<String> ports = new ArrayList<>();
         for (Map.Entry<String, InstanceDescriptor.InstanceDescriptorPort> port : id.ports.entrySet()) {
@@ -1038,7 +1038,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
         if (serviceHealth != null) {
 
             List<Map<String, String>> instanceHealths = new ArrayList<>();
-            for (UpenaEndpoints.Health health : serviceHealth.healthChecks) {
+            for (UpenaHealthEndpoints.Health health : serviceHealth.healthChecks) {
                 if (-Double.MAX_VALUE != health.health) {
                     Map<String, String> healthData = new HashMap<>();
                     healthData.put("color", trafficlightColorRGB(health.health, 1f));
@@ -1048,7 +1048,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                     healthData.put("resolution", String.valueOf(health.resolution));
 
                     long ageInMillis = System.currentTimeMillis() - health.timestamp;
-                    healthData.put("age", UpenaEndpoints.shortHumanReadableUptime(ageInMillis));
+                    healthData.put("age", UpenaHealthEndpoints.shortHumanReadableUptime(ageInMillis));
                     instanceHealths.add(healthData);
                 }
             }
@@ -1059,8 +1059,8 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
     }
 
     public List<Map<String, String>> simpleServiceHealth(String instanceKey) throws IOException {
-        for (UpenaEndpoints.NodeHealth nodeHealth : nodeHealths.values()) {
-            for (UpenaEndpoints.NannyHealth nannyHealth : nodeHealth.nannyHealths) {
+        for (UpenaHealthEndpoints.NodeHealth nodeHealth : nodeHealths.values()) {
+            for (UpenaHealthEndpoints.NannyHealth nannyHealth : nodeHealth.nannyHealths) {
                 if (nannyHealth.instanceDescriptor.instanceKey.equals(instanceKey)) {
                     return simpleServiceHealth(nannyHealth);
                 }
@@ -1069,14 +1069,14 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
         return null;
     }
 
-    public List<Map<String, String>> simpleServiceHealth(UpenaEndpoints.NannyHealth nannyHealth) throws IOException {
+    public List<Map<String, String>> simpleServiceHealth(UpenaHealthEndpoints.NannyHealth nannyHealth) throws IOException {
         if (nannyHealth == null) {
             return null;
         }
-        UpenaEndpoints.ServiceHealth serviceHealth = nannyHealth.serviceHealth;
+        UpenaHealthEndpoints.ServiceHealth serviceHealth = nannyHealth.serviceHealth;
         if (serviceHealth != null) {
             List<Map<String, String>> instanceHealths = new ArrayList<>();
-            for (UpenaEndpoints.Health health : serviceHealth.healthChecks) {
+            for (UpenaHealthEndpoints.Health health : serviceHealth.healthChecks) {
                 if (health.health >= 0.0d && health.health < 1d) {
                     Map<String, String> healthData = new HashMap<>();
                     healthData.put("score", String.valueOf((int) (100 * health.health)));
@@ -1085,7 +1085,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                     healthData.put("status", String.valueOf(health.status));
 
                     long ageInMillis = System.currentTimeMillis() - health.timestamp;
-                    healthData.put("age", UpenaEndpoints.shortHumanReadableUptime(ageInMillis));
+                    healthData.put("age", UpenaHealthEndpoints.shortHumanReadableUptime(ageInMillis));
                     instanceHealths.add(healthData);
                 }
             }
