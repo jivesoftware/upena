@@ -387,7 +387,7 @@
 .navbar-inverse .navbar-offcanvas .navmenu-nav > li > a:hover,
 .navmenu-inverse .navmenu-nav > li > a:focus,
 .navbar-inverse .navbar-offcanvas .navmenu-nav > li > a:focus {
-    color: #fff;
+    color: #9cf;
     background-color: transparent;
 }
 .navmenu-inverse .navmenu-nav > .active > a,

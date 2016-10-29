@@ -58,7 +58,6 @@ import com.jivesoftware.os.upena.amza.transport.http.replication.endpoints.AmzaR
 import com.jivesoftware.os.upena.config.UpenaConfigRestEndpoints;
 import com.jivesoftware.os.upena.config.UpenaConfigStore;
 import com.jivesoftware.os.upena.deployable.aws.AWSClientFactory;
-import com.jivesoftware.os.upena.deployable.endpoints.api.UbaServiceRestEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaClusterRestEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaEndpoints.AmzaClusterName;
@@ -467,7 +466,6 @@ public class UpenaMain {
             .addInjectable(upenaService)
             .addInjectable(upenaStore)
             .addInjectable(upenaConfigStore)
-            .addEndpoint(UbaServiceRestEndpoints.class)
             .addInjectable(ubaService)
             .addEndpoint(AmzaReplicationRestEndpoints.class)
             .addInjectable(AmzaInstance.class, amzaService)
@@ -895,7 +893,7 @@ public class UpenaMain {
         beanConfig.setResourcePackage("com.jivesoftware.os.upena.deployable");
         beanConfig.setScan(true);
         beanConfig.setBasePath("/");
-        beanConfig.setDescription("Upena");
+        //beanConfig.setDescription("Upena");
         beanConfig.setTitle("Upena");
     }
 

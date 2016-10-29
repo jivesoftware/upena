@@ -117,23 +117,6 @@ public class UpenaJerseyEndpoints implements HasServletContextHandler {
     @Override
     public Handler getHandler(final Server server, String context, String applicationName) {
 
-        /*
-        private static ContextHandler buildContext()
-    {
-        ResourceConfig resourceConfig = new ResourceConfig();
-        // Replace EntityBrowser with your resource class
-        // io.swagger.jaxrs.listing loads up Swagger resources
-        resourceConfig.packages( EntityBrowser.class.getPackage().getName(), ApiListingResource.class.getPackage().getName() );
-        ServletContainer servletContainer = new ServletContainer( resourceConfig );
-        ServletHolder entityBrowser = new ServletHolder( servletContainer );
-        ServletContextHandler entityBrowserContext = new ServletContextHandler( ServletContextHandler.SESSIONS );
-        entityBrowserContext.setContextPath( "/" );
-        entityBrowserContext.addServlet( entityBrowser, "/*" );
-
-        return entityBrowserContext;
-    }
-        */
-
         Set<String> packages = new HashSet<>();
         packages.add(ApiListingResource.class.getPackage().getName());
         for (Class<?> clazz : allClasses) {
