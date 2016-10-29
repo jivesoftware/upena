@@ -1,23 +1,131 @@
 {namespace soy.page}
 
 /**
-* @param wgetURL
-* @param upenaClusterName
+* @param instances
+* @param os
+* @param procs
+* @param memory
+* @param cpu
+* @param process
+* @param sensor
+* @param power
+* @param disk
+* @param fs
+* @param nic
 */
 {template .homeRegion}
     <div style="text-align:center;padding: 100px 100px 100px 100px;">
         <img src="/static/img/icon.png"></img>
     </div>
-    <div style="margin:10% auto 0 auto; width:500px; padding 20px 20px 20px 20px">
-        Expand this cluster by running the following on a new node:<br><br>
-        wget -O upena.jar {$wgetURL}<br>
+    <div style="margin:10% auto 0 auto; width:100%; padding 20px 20px 20px 20px">
+        <ul class="inline list-inline">
+            {if $instances}
+                <li>
+                    <ul class="list-group">
+                        {foreach $i in $instances}
+                            <li  class="list-group-item"><a href="https://{$i.host}:{$i.port}{$i.path}">{$i.name}</a></li>
+                        {/foreach}
+                    </ul>
+                </li>
+            {/if}
 
-        Basic:<br>
-        nohup java -jar upena.jar `hostname` {$upenaClusterName} &amp;
+            {if $memory}
+                <li>
+                {call .booya}
+                    {param title: 'Memory' /}
+                    {param list: $memory /}
+                {/call}
+                </li>
+            {/if}
+            {if $cpu}
+                <li>
+                {call .booya}
+                    {param title: 'Cpu' /}
+                    {param list: $cpu /}
+                {/call}
+                </li>
+            {/if}
+            {if $procs}
+                <li>
+                {call .booya}
+                    {param title: 'Procs' /}
+                    {param list: $procs /}
+                {/call}
+                </li>
+            {/if}
+            {if $process}
+                <li>
+                {call .booya}
+                    {param title: 'Process' /}
+                    {param list: $process /}
+                {/call}
+                </li>
+            {/if}
+            {if $disk}
+                <li>
+                {call .booya}
+                    {param title: 'Disk' /}
+                    {param list: $disk /}
+                {/call}
+                </li>
+            {/if}
+            {if $fs}
+                <li>
+                {call .booya}
+                    {param title: 'File System' /}
+                    {param list: $fs /}
+                {/call}
+                </li>
+            {/if}
+            {if $nic}
+                <li>
+                {call .booya}
+                    {param title: 'Nic' /}
+                    {param list: $nic /}
+                {/call}
+                </li>
+            {/if}
+            {if $os}
+                <li>
+                {call .booya}
+                    {param title: 'OS' /}
+                    {param list: $os /}
+                {/call}
+                </li>
+            {/if}
+            {if $sensor}
+                <li>
+                {call .booya}
+                    {param title: 'Sensor' /}
+                    {param list: $sensor /}
+                {/call}
+                </li>
+            {/if}
+            {if $power}
+                <li>
+                {call .booya}
+                    {param title: 'Power' /}
+                    {param list: $power /}
+                {/call}
+                </li>
+            {/if}
 
-        Advanced:<br>
-        nohup java -Dhost.datacenter=<datacenterName> -Dhost.rack=<rackName/availability zone> -classpath "/usr/java/latest/lib/tools.jar:./upena.jar" com.jivesoftware.os.upena.deployable.UpenaMain <hostname> <clusterName>
-        <br><br>
-        Then go to the 'Upena' tab on the cluster you want to merge with and add the new member.
+        </ul>
+        
     </div>
 {/template}
+
+
+/**
+ * @param? title
+ * @param? list
+ */
+{template .booya}
+    <ul class="list-group">
+        <li class="list-group-item active">{$title}</li>
+        {foreach $i in $list}
+            <li  class="list-group-item">{$i}</li>
+        {/foreach}
+    </ul>
+{/template}
+

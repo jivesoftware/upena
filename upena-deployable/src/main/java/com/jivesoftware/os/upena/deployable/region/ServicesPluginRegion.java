@@ -89,15 +89,16 @@ public class ServicesPluginRegion implements PageRegion<ServicesPluginRegionInpu
             ServiceFilter filter = new ServiceFilter(null, null, 0, 100_000);
             if (input.action != null) {
                 if (input.action.equals("filter")) {
+                    SecurityUtils.getSubject().checkPermissions("read");
                     filter = handleFilter(input, data);
                 } else if (input.action.equals("add")) {
-                    SecurityUtils.getSubject().checkRoles("write");
+                    SecurityUtils.getSubject().checkPermissions("write");
                     handleAdd(user, filters, input, data);
                 } else if (input.action.equals("update")) {
-                    SecurityUtils.getSubject().checkRoles("write");
+                    SecurityUtils.getSubject().checkPermissions("write");
                     handleUpdate(user, filters, input, data);
                 } else if (input.action.equals("remove")) {
-                    SecurityUtils.getSubject().checkRoles("write");
+                    SecurityUtils.getSubject().checkPermissions("write");
                     handleRemove(user, input, data);
                 }
             }

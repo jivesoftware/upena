@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.jivesoftware.os.upena.inheritance.poms</groupId>
         <artifactId>global-version-management</artifactId>
-        <version>0.697</version>
+        <version>0.698</version>
         <relativePath>../inheritance-poms/global-version-management/pom.xml</relativePath>
     </parent>
     <groupId>com.jivesoftware.os.upena</groupId>
@@ -336,6 +336,11 @@
             <groupId>io.swagger</groupId>
             <artifactId>swagger-annotations</artifactId>
             <version>1.5.3</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.dblock</groupId>
+            <artifactId>oshi-core</artifactId>
+            <version>3.2</version>
         </dependency>
     </dependencies>
 </project>
