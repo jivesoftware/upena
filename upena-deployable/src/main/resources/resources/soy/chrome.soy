@@ -102,7 +102,7 @@
                                 <span class="caret"></span></a>
                             <ul class="dropdown-menu">
                                 {foreach $i in $instances}
-                                    <li><a href="http://{$i.host}:{$i.port}{$i.path}">{$i.name}</a></li>
+                                    <li><a href="https://{$i.host}:{$i.port}{$i.path}">{$i.name}</a></li>
                                 {/foreach}
                             </ul>
                         </li>
@@ -164,7 +164,7 @@
                    <b class="caret"></b></a>
                <ul class="dropdown-menu">
                    {foreach $i in $instances}
-                       <li><a href="http://{$i.host}:{$i.port}{$i.path}">{$i.name}</a></li>
+                       <li><a href="https://{$i.host}:{$i.port}{$i.path}">{$i.name}</a></li>
                    {/foreach}
                </ul>
             </li>
