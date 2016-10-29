@@ -59,9 +59,14 @@ import com.jivesoftware.os.upena.config.UpenaConfigRestEndpoints;
 import com.jivesoftware.os.upena.config.UpenaConfigStore;
 import com.jivesoftware.os.upena.deployable.aws.AWSClientFactory;
 import com.jivesoftware.os.upena.deployable.endpoints.api.UbaServiceRestEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaClusterRestEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaEndpoints.AmzaClusterName;
-import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaRestEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaHostRestEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaInstanceRestEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaReleaseRestEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaServiceRestEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaTenantRestEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.loopback.UpenaLoopbackEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ui.AWSPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ui.ApiPluginEndpoints;
@@ -451,7 +456,12 @@ public class UpenaMain {
 
         UpenaJerseyEndpoints jerseyEndpoints = new UpenaJerseyEndpoints()
             .addInjectable(ShiroRequestHelper.class, shiroRequestHelper)
-            .addEndpoint(UpenaRestEndpoints.class)
+            .addEndpoint(UpenaClusterRestEndpoints.class)
+            .addEndpoint(UpenaHostRestEndpoints.class)
+            .addEndpoint(UpenaServiceRestEndpoints.class)
+            .addEndpoint(UpenaReleaseRestEndpoints.class)
+            .addEndpoint(UpenaInstanceRestEndpoints.class)
+            .addEndpoint(UpenaTenantRestEndpoints.class)
             .addInjectable(upenaService)
             .addInjectable(upenaStore)
             .addInjectable(upenaConfigStore)
@@ -460,6 +470,8 @@ public class UpenaMain {
             .addEndpoint(AmzaReplicationRestEndpoints.class)
             .addInjectable(AmzaInstance.class, amzaService)
             .addEndpoint(UpenaEndpoints.class)
+            .addEndpoint(UpenaHealthEndpoints.class)
+            .addEndpoint(UpenaRepoEndpoints.class)
             .addInjectable(DiscoveredRoutes.class, discoveredRoutes)
             .addInjectable(RingHost.class, ringHost)
             .addInjectable(HostKey.class, hostKey)

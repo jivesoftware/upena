@@ -7,8 +7,8 @@ import com.jivesoftware.os.jive.utils.ordered.id.JiveEpochTimestampProvider;
 import com.jivesoftware.os.jive.utils.ordered.id.SnowflakeIdPacker;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
-import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaEndpoints;
 import com.jivesoftware.os.upena.deployable.aws.AWSClientFactory;
+import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaHealthEndpoints;
 import com.jivesoftware.os.upena.deployable.region.InstancesPluginRegion.InstancesPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.service.UpenaStore;
@@ -649,11 +649,11 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
         }
     }
 
-    private UpenaEndpoints.NannyHealth nannyHealth(String instanceId) throws Exception {
-        UpenaEndpoints.NannyHealth health = null;
-        Collection<UpenaEndpoints.NodeHealth> nodeHealths = healthPluginRegion.buildClusterHealth().values();
-        for (UpenaEndpoints.NodeHealth nodeHealth : nodeHealths) {
-            for (UpenaEndpoints.NannyHealth nannyHealth : nodeHealth.nannyHealths) {
+    private UpenaHealthEndpoints.NannyHealth nannyHealth(String instanceId) throws Exception {
+        UpenaHealthEndpoints.NannyHealth health = null;
+        Collection<UpenaHealthEndpoints.NodeHealth> nodeHealths = healthPluginRegion.buildClusterHealth().values();
+        for (UpenaHealthEndpoints.NodeHealth nodeHealth : nodeHealths) {
+            for (UpenaHealthEndpoints.NannyHealth nannyHealth : nodeHealth.nannyHealths) {
                 if (nannyHealth.instanceDescriptor.instanceKey.equals(instanceId)) {
                     health = nannyHealth;
                     break;
@@ -672,7 +672,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
         map.put("key", key.getKey());
         long now = System.currentTimeMillis();
 
-        UpenaEndpoints.NannyHealth nannyHealth = nannyHealth(key.getKey());
+        UpenaHealthEndpoints.NannyHealth nannyHealth = nannyHealth(key.getKey());
         String color = "#404040";
         double h = 0d;
         if (timestampedValue.getValue().enabled) {
