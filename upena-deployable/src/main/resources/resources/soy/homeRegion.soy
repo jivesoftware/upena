@@ -14,115 +14,142 @@
 * @param nic
 */
 {template .homeRegion}
-    <div style="text-align:center;padding: 100px 100px 100px 100px;">
+    <div style="text-align:center;padding: 100px 100px 0px 100px;">
         <img src="/static/img/icon.png"></img>
     </div>
-    <div style="margin:10% auto 0 auto; width:100%; padding 20px 20px 20px 20px">
-        <ul class="inline list-inline">
-            {if $instances}
-                <li>
-                    <ul class="list-group">
-                        {foreach $i in $instances}
-                            <li  class="list-group-item"><a href="https://{$i.host}:{$i.port}{$i.path}">{$i.name}</a></li>
-                        {/foreach}
+    <div style="margin:10% auto 0 auto; width:90%; padding 20px 20px 20px 20px">
+        <div class="panel with-nav-tabs panel-default" >
+            <div class="panel-heading" style="background-image: linear-gradient(to top,rgb(51, 122, 183) 0,rgb(211, 225, 239) 100%); padding: 0px 0px;">
+                    <ul class="nav nav-tabs">
+                        <li class="active"><a href="#tab1" data-toggle="tab">Instance</a></li>
+                        <li><a href="#tab2" data-toggle="tab">Memory</a></li>
+                        <li><a href="#tab3" data-toggle="tab">Cpu</a></li>
+                        <li><a href="#tab4" data-toggle="tab">Procs</a></li>
+                        <li><a href="#tab5" data-toggle="tab">Process</a></li>
+                        <li><a href="#tab6" data-toggle="tab">Disk</a></li>
+                        <li><a href="#tab7" data-toggle="tab">File System</a></li>
+                        <li><a href="#tab8" data-toggle="tab">Nic</a></li>
+                        <li><a href="#tab9" data-toggle="tab">OS</a></li>
+                        <li><a href="#tab10" data-toggle="tab">Sensor</a></li>
+                        <li><a href="#tab11" data-toggle="tab">Power</a></li>
                     </ul>
-                </li>
-            {/if}
+            </div>
+            <div class="panel-body">
+                <div class="tab-content">
+                    <div class="tab-pane fade in active" id="tab1">
+                        {if $instances}
+                            <li>
+                                <ul class="list-group">
+                                    {foreach $i in $instances}
+                                        <li  class="list-group-item"><a href="https://{$i.host}:{$i.port}{$i.path}">{$i.name}</a></li>
+                                    {/foreach}
+                                </ul>
+                            </li>
+                        {/if}
+                    </div>
+                    <div class="tab-pane fade" id="tab2">
+                        {if $memory}
+                            <li>
+                            {call .booya}
+                                {param list: $memory /}
+                            {/call}
+                            </li>
+                        {/if}
+                    </div>
+                    <div class="tab-pane fade" id="tab3">
+                         {if $cpu}
+                            <li>
+                            {call .booya}
+                                {param list: $cpu /}
+                            {/call}
+                            </li>
+                        {/if}
+                    </div>
+                    <div class="tab-pane fade" id="tab4">
+                        {if $procs}
+                            <li>
+                            {call .booya}
+                                {param list: $procs /}
+                            {/call}
+                            </li>
+                        {/if}
+                    </div>
+                    <div class="tab-pane fade" id="tab5">
+                        {if $process}
+                            <li>
+                            {call .booya}
+                                {param list: $process /}
+                            {/call}
+                            </li>
+                        {/if}
+                    </div>
+                    <div class="tab-pane fade" id="tab6">
+                        {if $disk}
+                            <li>
+                            {call .booya}
+                                {param list: $disk /}
+                            {/call}
+                            </li>
+                        {/if}
+                    </div>
+                    <div class="tab-pane fade" id="tab7">
+                         {if $fs}
+                            <li>
+                            {call .booya}
+                                {param list: $fs /}
+                            {/call}
+                            </li>
+                        {/if}
+                    </div>
+                    <div class="tab-pane fade" id="tab8">
+                        {if $nic}
+                            <li>
+                            {call .booya}
+                                {param list: $nic /}
+                            {/call}
+                            </li>
+                        {/if}
+                    </div>
+                    <div class="tab-pane fade" id="tab9">
+                        {if $os}
+                            <li>
+                            {call .booya}
+                                {param list: $os /}
+                            {/call}
+                            </li>
+                        {/if}
+                    </div>
+                    <div class="tab-pane fade" id="tab10">
+                        {if $sensor}
+                            <li>
+                            {call .booya}
+                                {param list: $sensor /}
+                            {/call}
+                            </li>
+                        {/if}
+                    </div>
+                    <div class="tab-pane fade" id="tab11">
+                        {if $power}
+                            <li>
+                            {call .booya}
+                                {param list: $power /}
+                            {/call}
+                            </li>
+                        {/if}
+                    </div>
+                </div>
+            </div>
+        </div>
 
-            {if $memory}
-                <li>
-                {call .booya}
-                    {param title: 'Memory' /}
-                    {param list: $memory /}
-                {/call}
-                </li>
-            {/if}
-            {if $cpu}
-                <li>
-                {call .booya}
-                    {param title: 'Cpu' /}
-                    {param list: $cpu /}
-                {/call}
-                </li>
-            {/if}
-            {if $procs}
-                <li>
-                {call .booya}
-                    {param title: 'Procs' /}
-                    {param list: $procs /}
-                {/call}
-                </li>
-            {/if}
-            {if $process}
-                <li>
-                {call .booya}
-                    {param title: 'Process' /}
-                    {param list: $process /}
-                {/call}
-                </li>
-            {/if}
-            {if $disk}
-                <li>
-                {call .booya}
-                    {param title: 'Disk' /}
-                    {param list: $disk /}
-                {/call}
-                </li>
-            {/if}
-            {if $fs}
-                <li>
-                {call .booya}
-                    {param title: 'File System' /}
-                    {param list: $fs /}
-                {/call}
-                </li>
-            {/if}
-            {if $nic}
-                <li>
-                {call .booya}
-                    {param title: 'Nic' /}
-                    {param list: $nic /}
-                {/call}
-                </li>
-            {/if}
-            {if $os}
-                <li>
-                {call .booya}
-                    {param title: 'OS' /}
-                    {param list: $os /}
-                {/call}
-                </li>
-            {/if}
-            {if $sensor}
-                <li>
-                {call .booya}
-                    {param title: 'Sensor' /}
-                    {param list: $sensor /}
-                {/call}
-                </li>
-            {/if}
-            {if $power}
-                <li>
-                {call .booya}
-                    {param title: 'Power' /}
-                    {param list: $power /}
-                {/call}
-                </li>
-            {/if}
-
-        </ul>
-        
     </div>
 {/template}
 
 
 /**
- * @param? title
  * @param? list
  */
 {template .booya}
     <ul class="list-group">
-        <li class="list-group-item active">{$title}</li>
         {foreach $i in $list}
             <li  class="list-group-item">{$i}</li>
         {/foreach}
