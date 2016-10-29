@@ -893,7 +893,7 @@ public class UpenaMain {
         beanConfig.setResourcePackage("com.jivesoftware.os.upena.deployable");
         beanConfig.setScan(true);
         beanConfig.setBasePath("/");
-        beanConfig.setDescription("Upena");
+        //beanConfig.setDescription("Upena");
         beanConfig.setTitle("Upena");
     }
 
