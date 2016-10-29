@@ -27,17 +27,13 @@ import com.jivesoftware.os.routing.bird.shared.ResponseHelper;
 import com.jivesoftware.os.upena.amza.shared.AmzaInstance;
 import com.jivesoftware.os.upena.amza.shared.RingHost;
 import com.jivesoftware.os.upena.config.UpenaConfigStore;
-import com.jivesoftware.os.upena.deployable.UpenaAutoRelease;
 import com.jivesoftware.os.upena.deployable.UpenaSSLConfig;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
-import com.jivesoftware.os.upena.service.DiscoveredRoutes;
 import com.jivesoftware.os.upena.service.UpenaStore;
 import com.jivesoftware.os.upena.shared.HostKey;
-import com.jivesoftware.os.upena.shared.PathToRepo;
 import com.jivesoftware.os.upena.uba.service.Nanny;
 import com.jivesoftware.os.upena.uba.service.UbaService;
 import io.swagger.annotations.Api;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -45,12 +41,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 import javax.inject.Singleton;
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -87,9 +81,6 @@ public class UpenaHealthEndpoints {
     private final RingHost ringHost;
     private final HostKey ringHostKey;
     private final SoyService soyService;
-    private final DiscoveredRoutes discoveredRoutes;
-    private final PathToRepo localPathToRepo;
-    private final UpenaAutoRelease autoRelease;
     private final UpenaStore upenaStore;
     private final long startupTime = System.currentTimeMillis();
 
@@ -100,10 +91,7 @@ public class UpenaHealthEndpoints {
         @Context RingHost ringHost,
         @Context HostKey ringHostKey,
         @Context SoyService soyService,
-        @Context DiscoveredRoutes discoveredRoutes,
-        @Context PathToRepo localPathToRepo,
         @Context UpenaSSLConfig upenaSSLConfig,
-        @Context UpenaAutoRelease autoRelease,
         @Context UpenaStore upenaStore) {
 
         this.amzaClusterName = amzaClusterName;
@@ -113,29 +101,9 @@ public class UpenaHealthEndpoints {
         this.ringHost = ringHost;
         this.ringHostKey = ringHostKey;
         this.soyService = soyService;
-        this.discoveredRoutes = discoveredRoutes;
-        this.localPathToRepo = localPathToRepo;
         this.upenaSSLConfig = upenaSSLConfig;
-        this.autoRelease = autoRelease;
         this.upenaStore = upenaStore;
         this.mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    }
-
-    @GET
-    @Produces(MediaType.TEXT_HTML)
-    public Response getUIRedirect(@Context HttpServletRequest httpRequest,
-        @Context UriInfo uriInfo) throws Exception {
-        return Response.temporaryRedirect(URI.create("/ui")).build();
-    }
-
-    @Path("/ui")
-    @GET
-    @Produces(MediaType.TEXT_HTML)
-    public Response get(@Context HttpServletRequest httpRequest,
-        @Context UriInfo uriInfo) throws Exception {
-
-        String rendered = soyService.render(httpRequest.getRemoteUser(), uriInfo.getAbsolutePath() + "propagator/download", amzaClusterName.name);
-        return Response.ok(rendered).build();
     }
 
     @GET

@@ -19,17 +19,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
-import com.jivesoftware.os.upena.amza.shared.AmzaInstance;
-import com.jivesoftware.os.upena.amza.shared.RingHost;
-import com.jivesoftware.os.upena.config.UpenaConfigStore;
 import com.jivesoftware.os.upena.deployable.UpenaAutoRelease;
-import com.jivesoftware.os.upena.deployable.UpenaSSLConfig;
-import com.jivesoftware.os.upena.deployable.soy.SoyService;
-import com.jivesoftware.os.upena.service.DiscoveredRoutes;
-import com.jivesoftware.os.upena.service.UpenaStore;
-import com.jivesoftware.os.upena.shared.HostKey;
 import com.jivesoftware.os.upena.shared.PathToRepo;
-import com.jivesoftware.os.upena.uba.service.UbaService;
 import io.swagger.annotations.Api;
 import java.io.File;
 import java.io.FileInputStream;
@@ -72,44 +63,16 @@ public class UpenaRepoEndpoints {
     }
 
     private final ObjectMapper mapper = new ObjectMapper();
-    private final AmzaInstance amzaInstance;
-    private final UpenaSSLConfig upenaSSLConfig;
-    private final UpenaConfigStore upenaConfigStore;
-    private final UbaService ubaService;
-    private final RingHost ringHost;
-    private final HostKey ringHostKey;
-    private final SoyService soyService;
-    private final DiscoveredRoutes discoveredRoutes;
     private final PathToRepo localPathToRepo;
     private final UpenaAutoRelease autoRelease;
-    private final UpenaStore upenaStore;
-    private final long startupTime = System.currentTimeMillis();
-
+    
     public UpenaRepoEndpoints(@Context AmzaClusterName amzaClusterName,
-        @Context AmzaInstance amzaInstance,
-        @Context UpenaConfigStore upenaConfigStore,
-        @Context UbaService ubaService,
-        @Context RingHost ringHost,
-        @Context HostKey ringHostKey,
-        @Context SoyService soyService,
-        @Context DiscoveredRoutes discoveredRoutes,
         @Context PathToRepo localPathToRepo,
-        @Context UpenaSSLConfig upenaSSLConfig,
-        @Context UpenaAutoRelease autoRelease,
-        @Context UpenaStore upenaStore) {
+        @Context UpenaAutoRelease autoRelease) {
 
         this.amzaClusterName = amzaClusterName;
-        this.amzaInstance = amzaInstance;
-        this.upenaConfigStore = upenaConfigStore;
-        this.ubaService = ubaService;
-        this.ringHost = ringHost;
-        this.ringHostKey = ringHostKey;
-        this.soyService = soyService;
-        this.discoveredRoutes = discoveredRoutes;
         this.localPathToRepo = localPathToRepo;
-        this.upenaSSLConfig = upenaSSLConfig;
         this.autoRelease = autoRelease;
-        this.upenaStore = upenaStore;
         this.mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 

@@ -18,8 +18,6 @@ package com.jivesoftware.os.upena.deployable.endpoints.api;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.routing.bird.shared.ResponseHelper;
-import com.jivesoftware.os.upena.service.DiscoveredRoutes;
-import com.jivesoftware.os.upena.service.UpenaService;
 import com.jivesoftware.os.upena.service.UpenaStore;
 import com.jivesoftware.os.upena.shared.ReleaseGroup;
 import com.jivesoftware.os.upena.shared.ReleaseGroupFilter;
@@ -49,15 +47,9 @@ public class UpenaTenantRestEndpoints {
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
     private final UpenaStore upenaStore;
-    private final UpenaService upenaService;
-    private final DiscoveredRoutes discoveredRoutes;
-
-    public UpenaTenantRestEndpoints(@Context UpenaStore upenaStore,
-        @Context UpenaService upenaService,
-        @Context DiscoveredRoutes discoveredRoutes) {
+    
+    public UpenaTenantRestEndpoints(@Context UpenaStore upenaStore) {
         this.upenaStore = upenaStore;
-        this.upenaService = upenaService;
-        this.discoveredRoutes = discoveredRoutes;
     }
 
     @POST
