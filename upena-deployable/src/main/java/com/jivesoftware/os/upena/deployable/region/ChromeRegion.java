@@ -1,15 +1,12 @@
 package com.jivesoftware.os.upena.deployable.region;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.deployable.region.HeaderRegion.HeaderInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.service.UpenaStore;
-import com.jivesoftware.os.upena.shared.Host;
 import com.jivesoftware.os.upena.shared.HostKey;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,8 +29,7 @@ public class ChromeRegion<I extends PluginInput, R extends PageRegion<I>> implem
     private final List<ManagePlugin> plugins;
     private final R region;
     private final String cluster;
-    private final HostKey hostKey;
-    private final UpenaStore upenaStore;
+    
 
     public ChromeRegion(String template,
         SoyRenderer renderer,
@@ -52,8 +48,7 @@ public class ChromeRegion<I extends PluginInput, R extends PageRegion<I>> implem
         this.plugins = plugins;
         this.region = region;
         this.cluster = cluster;
-        this.hostKey = hostKey;
-        this.upenaStore = upenaStore;
+        
     }
 
     @Override
@@ -64,8 +59,7 @@ public class ChromeRegion<I extends PluginInput, R extends PageRegion<I>> implem
 
     public String render(String path, String user, String name, String title, String htmlRegion) {
         HeaderInput headerData = new HeaderInput();
-        List<Map<String, String>> instances = new ArrayList<>();
-        int[] instance = new int[1];
+       
         Subject s;
         try {
             s = SecurityUtils.getSubject();
@@ -104,29 +98,8 @@ public class ChromeRegion<I extends PluginInput, R extends PageRegion<I>> implem
 
         headerData.put("plugins", p);
         headerData.put("user", user);
-
-        int[] i = new int[1];
-        try {
-            upenaStore.hosts.scan((HostKey key, Host value) -> {
-                instances.add(ImmutableMap.of("host", value.name,
-                    "name", value.name + " " + String.valueOf(" - (" + i[0] + ")"),
-                    "port", String.valueOf(value.port),
-                    "path", path));
-                if (key.equals(hostKey)) {
-                    instance[0] = i[0];
-                }
-                i[0]++;
-                return true;
-            });
-        } catch (Exception x) {
-            LOG.error("Failure.", x);
-        }
         headerData.put("cluster", cluster);
-        if (!instances.isEmpty() && subject != null && subject.isAuthenticated()) {
-            headerData.put("instance", String.valueOf(instance[0]));
-            headerData.put("total", String.valueOf(instances.size()));
-            headerData.put("instances", instances);
-        }
+       
 
         Map<String, Object> data = Maps.newHashMap();
         data.put("header", headerRegion.render(user, headerData));

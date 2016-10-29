@@ -675,7 +675,7 @@ public class UpenaMain {
         SoyService soyService = new SoyService(renderer,
             new HeaderRegion("soy.chrome.headerRegion", renderer),
             new MenuRegion("soy.chrome.menuRegion", renderer),
-            new HomeRegion("soy.page.homeRegion", renderer),
+            new HomeRegion("soy.page.homeRegion", renderer, hostKey, upenaStore),
             clusterName,
             hostKey,
             upenaStore
@@ -685,7 +685,7 @@ public class UpenaMain {
         UnauthorizedPluginRegion unauthorizedRegion = new UnauthorizedPluginRegion("soy.page.unauthorizedPluginRegion", renderer);
 
         ManagePlugin auth = new ManagePlugin("login", null, "Login", "/ui/auth/login",
-            AuthPluginEndpoints.class, authRegion, null);
+            AuthPluginEndpoints.class, authRegion, null, "read");
 
         HealthPluginRegion healthPluginRegion = new HealthPluginRegion(mapper,
             System.currentTimeMillis(),

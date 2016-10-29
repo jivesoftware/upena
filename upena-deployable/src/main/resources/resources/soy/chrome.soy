@@ -4,6 +4,7 @@
  * @param title
  * @param menu
  * @param region
+ * @param user
  */
 {template .chromeRegion}
 <!DOCTYPE HTML>
@@ -38,6 +39,13 @@
 
 	</head>
 	<body>
+        {if $user}
+            <div style="position:absolute;top:0;right:0;">
+                <a  class="btn btn-default btn-xs ladda-button" data-spinner-color="#222" data-style="expand-right" href="/ui/auth/logout"  title="logout">
+                    <span class="ladda-label glyphicon glyphicon-log-out"></span>{sp}{$user}
+                </a>
+            </div>
+        {/if}
         //{$header|noAutoescape}
         {$menu|noAutoescape}
         {$region|noAutoescape}
@@ -79,34 +87,13 @@
 
 /**
  *
- * @param cluster
- * @param instance
- * @param total
- * @param instances
  * @param plugins
- * @param user
  */
 {template .headerRegion}
 	<nav class="navbar navbar-default navbar-fixed-top">
         <div class="container">
             <div id="navbar" class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
-                    <li class="active"><a class="navbar-brand" href="/ui">
-                        <span><img src="/static/img/icon.png" alt="Upena"  height="24"></span>
-                    </li>
-                    {if $instances}
-                        <li class="dropdown">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
-                                &nbsp;&nbsp;{$cluster}&nbsp;&nbsp;
-                                {$instance}/{$total}&nbsp;
-                                <span class="caret"></span></a>
-                            <ul class="dropdown-menu">
-                                {foreach $i in $instances}
-                                    <li><a href="https://{$i.host}:{$i.port}{$i.path}">{$i.name}</a></li>
-                                {/foreach}
-                            </ul>
-                        </li>
-                    {/if}
                     {foreach $plugin in $plugins}
                         {if $plugin.active}
                             <li class="active">
@@ -131,13 +118,6 @@
                         {/if}
                     {/foreach}
                 </ul>
-                {if $user}
-                    <ul class="nav navbar-nav navbar-right">
-                        <li><a href="/ui/auth/logout">
-                            Logout:{$user}
-                        </a></li>
-                    </ul>
-                {/if}
             </div>
         </div>
     </nav>
@@ -145,30 +125,12 @@
 
 /**
  *
- * @param cluster
- * @param instance
- * @param total
- * @param instances
  * @param plugins
- * @param user
  */
 {template .menuRegion}
     <div class="navmenu navmenu-inverse navmenu-fixed-left offcanvas-sm">
       <a class="navmenu-brand visible-lg" href="/ui"><span><img src="/static/img/icon.png" alt="Upena"  height="36"></span></a>
       <ul class="nav navmenu-nav">
-        {if $instances}
-            <li class="dropdown">
-               <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                   &nbsp;&nbsp;{$cluster}&nbsp;&nbsp;
-                   {$instance}/{$total}&nbsp;
-                   <b class="caret"></b></a>
-               <ul class="dropdown-menu">
-                   {foreach $i in $instances}
-                       <li><a href="https://{$i.host}:{$i.port}{$i.path}">{$i.name}</a></li>
-                   {/foreach}
-               </ul>
-            </li>
-        {/if}
         {foreach $plugin in $plugins}
             {if $plugin.separator}
                 <li style="border-bottom: 2px groove rgba(51, 51, 51, 0.25); font-style: italic; color: gray;"></li>
@@ -194,11 +156,6 @@
                 </li>
             {/if}
         {/foreach}
-        {if $user}
-            <li><a  class="ladda-button" data-spinner-color="#222" data-style="expand-right" href="/ui/auth/logout"  title="logout">
-                <span class="ladda-label glyphicon glyphicon-log-out"></span>{sp}{$user}
-            </a></li>
-        {/if}
       </ul>
     </div>
 
