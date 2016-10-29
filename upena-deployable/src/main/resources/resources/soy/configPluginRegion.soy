@@ -216,7 +216,7 @@
                         <td style="width:100px;" bgcolor="#B2C9DF"></td>
                         <td style="width:100px;" bgcolor="#C2D9EF"></td>
                         <td bgcolor="#FFFFE0">
-                            <input class="form-control" type="checkbox" name="service" value="true" {if $service}checked="checked"{/if}>service</input>
+                            <input class="form-control" data-toggle="toggle" type="checkbox" name="service" value="true" {if $service}checked="checked"{/if}>service</input>
                         </td>
                         <td bgcolor="#FFFFE0">
                             <input type="text" autocomplete="off" role="combobox" style="width:350px; padding-left:10px;"
@@ -238,7 +238,7 @@
                         <td style="width:100px;" bgcolor="#B2C9DF"></td>
                         <td style="width:100px;" bgcolor="#C2D9EF"></td>
                         <td bgcolor="#FFE6CC">
-                            <input type="checkbox" name="health" value="true" {if $health}checked="checked"{/if}>health</input>
+                            <input data-toggle="toggle" type="checkbox" name="health" value="true" {if $health}checked="checked"{/if}>health</input>
                         </td>
                         <td bgcolor="#FFE6CC">
                             <input type="text" autocomplete="off" role="combobox" style="width:350px; padding-left:10px;"
@@ -263,7 +263,7 @@
                         <td bgcolor="#E6F3FF">
                             <input type="text" autocomplete="off" role="combobox" style="width:350px; padding-left:10px;"
                                placeholder="value" value="{$value?:''}" name="value">
-                            <input type="checkbox" name="overridden" value="true" {if $overridden}checked="checked"{/if}>overridden</input>
+                            <input data-toggle="toggle" type="checkbox" name="overridden" value="true" {if $overridden}checked="checked"{/if}>overridden</input>
                         </td>
                         <td bgcolor="#FFFFFF" style="width:100px; text-align: center;">Value</td>
                         <td bgcolor="#F0F0F5"></td>
