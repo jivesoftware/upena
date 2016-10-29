@@ -26,7 +26,7 @@
                         data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="addMonkey">
                         <tr style="background-color:#ddd;">
                             <td bgcolor>
-                                <input class="form-control" type="checkbox" name="enabled" value="true" {if $filters.enabled}checked="checked"{/if}>
+                                <input class="form-control" data-toggle="toggle" type="checkbox" name="enabled" value="true" {if $filters.enabled}checked="checked"{/if}>
                             </td>
                             <td>
                                 <div>
@@ -75,7 +75,7 @@
                             data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="editMonkey">
                             <tr>
                                 <td>
-                                    <input class="form-control" type="checkbox" name="enabled" value="true" {if $m.enabled}checked="checked"{/if}>
+                                    <input class="form-control" data-toggle="toggle" type="checkbox" name="enabled" value="true" {if $m.enabled}checked="checked"{/if}>
                                 </td>
                                 <td>
                                     <div>

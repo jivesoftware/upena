@@ -114,6 +114,18 @@ public class UpenaLoopbackEndpoints {
         }
     }
 
+    @GET
+    @Consumes("application/json")
+    @Path("/request/instance/publicKey/{instanceKey}")
+    public Response requestInstancePublicKey(@PathParam("instanceKey") String instanceKey) {
+        try {
+            return Response.ok(upenaService.instancePublicKey(instanceKey)).build();
+        } catch (Exception x) {
+            LOG.warn("Failed to provide password for:" + instanceKey, x);
+            return Response.serverError().build();
+        }
+    }
+
     @POST
     @Consumes("application/json")
     @Path("/session/validate")

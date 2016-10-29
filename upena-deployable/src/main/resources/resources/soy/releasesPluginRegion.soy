@@ -49,7 +49,7 @@
                             placeholder="Repository" value="{$filters.repository?:''}" name="repository" id="descriptionPicker" class="form-control">
                             <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
                             placeholder="Version" value="{$filters.version?:''}" name="version" id="descriptionPicker" class="form-control">
-                            Autorelease<input type="checkbox" name="autoRelease" value="true" {if $filters.autoRelease}checked="checked"{/if}>
+                            Autorelease<input data-toggle="toggle" type="checkbox" name="autoRelease" value="true" {if $filters.autoRelease}checked="checked"{/if}>
                         </td>
                         <td></td>
                         <td>
@@ -112,7 +112,7 @@
                                                 <li>groupId:artifactId:type:version</li>
                                                 <li><input size="256" id="{$r.key}" type="text" name="version" class="form-control" value={$r.version?:''}></li>
 
-                                                <li>Auto release:<input type="checkbox" name="autoRelease" value="true" {if $r.autoRelease}checked="checked"{/if}></li>
+                                                <li>Auto release:<input data-toggle="toggle" type="checkbox" name="autoRelease" value="true" {if $r.autoRelease}checked="checked"{/if}></li>
                                                 {if $readWrite}
                                                     <li><button title="Upgrade" type="submit" name="action" value="update" class="btn btn-default">Update</button></li>
                                                 {/if}

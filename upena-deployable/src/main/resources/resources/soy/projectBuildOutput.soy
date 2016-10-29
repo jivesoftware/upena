@@ -23,7 +23,7 @@
         <div>
             <button id="project-refresh-submit" title="Refresh" class="btn btn-default build-log-refresh" name="action" value="refresh"><span class="glyphicon glyphicon-refresh" aria-hidden="true">Refresh</span></button>
             {sp}
-            <input id="project-refresh-bottom" type="checkbox" name="refresh" value="true" {if $refresh}checked="checked"{/if}> <label for="project-refresh-bottom">Auto-refresh (1s)</label>
+            <input id="project-refresh-bottom" data-toggle="toggle" type="checkbox" name="refresh" value="true" {if $refresh}checked="checked"{/if}> <label for="project-refresh-bottom">Auto-refresh (1s)</label>
         </div>
     </div>
 {/template}

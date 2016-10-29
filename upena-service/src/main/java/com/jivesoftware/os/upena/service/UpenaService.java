@@ -307,6 +307,14 @@ public class UpenaService {
         return instanceDescriptor;
     }
 
+    public String instancePublicKey(String instanceKey) throws Exception {
+        Instance instance = upenaStore.instances.get(new InstanceKey(instanceKey));
+        if (instance != null) {
+            return instance.publicKey;
+        }
+        return null;
+    }
+
     public String keyStorePassword(String instanceKey) throws Exception {
        return passwordStore.password(instanceKey);
     }

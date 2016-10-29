@@ -42,7 +42,7 @@
                                 {/foreach}
                             </select>
                             &nbsp age:{$age}
-                            <input onChange='this.form.submit();' type="checkbox" name="enabled" value="true" {if $enabled == 'true'}checked="checked"{/if}>
+                            <input onChange='this.form.submit();' data-toggle="toggle" type="checkbox" name="enabled" value="true" {if $enabled == 'true'}checked="checked"{/if}>
                         </td>
                     </tr>
                 </table>
