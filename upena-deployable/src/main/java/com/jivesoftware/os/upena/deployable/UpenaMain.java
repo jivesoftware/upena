@@ -62,9 +62,11 @@ import com.jivesoftware.os.upena.deployable.endpoints.api.UbaServiceRestEndpoint
 import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaClusterRestEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaEndpoints.AmzaClusterName;
+import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaHealthEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaHostRestEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaInstanceRestEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaReleaseRestEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaRepoEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaServiceRestEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaTenantRestEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.loopback.UpenaLoopbackEndpoints;
