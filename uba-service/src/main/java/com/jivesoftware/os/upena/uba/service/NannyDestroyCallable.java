@@ -59,11 +59,11 @@ class NannyDestroyCallable implements Callable<Boolean> {
                         }
                     }
                     if (checks > 10) {
-                        ubaLog.record("failed to killed status never OFFLINE", Nanny.idToHtml(id), invokeScript.scriptPath(instancePath, "status"));
+                        ubaLog.record("failed", Nanny.idToHtml(id), "never OFFLINE != "+invokeScript.scriptPath(instancePath, "status"));
                         return false;
                     }
                 } else {
-                    ubaLog.record("failed to killed missing script", Nanny.idToHtml(id), invokeScript.scriptPath(instancePath, "kill"));
+                    ubaLog.record("failed", Nanny.idToHtml(id), "MISSING:"+invokeScript.scriptPath(instancePath, "kill"));
                     return false;
                 }
             }

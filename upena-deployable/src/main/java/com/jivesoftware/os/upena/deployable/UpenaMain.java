@@ -404,7 +404,7 @@ public class UpenaMain {
 
         UbaLog ubaLog = (what, why, how) -> {
             try {
-                upenaStore.record("Uba-" + ringHost.getHost() + ":" + ringHost.getPort(), what, System.currentTimeMillis(), why, "", how);
+                upenaStore.record("Uba", what, System.currentTimeMillis(), why, ringHost.getHost() + ":" + ringHost.getPort(), how);
             } catch (Exception x) {
                 x.printStackTrace(); // Hmm lame
             }
@@ -910,5 +910,4 @@ public class UpenaMain {
 //            return null;
 //        }
 //    }
-
 }
