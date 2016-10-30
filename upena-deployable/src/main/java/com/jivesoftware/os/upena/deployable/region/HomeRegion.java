@@ -117,22 +117,33 @@ public class HomeRegion implements PageRegion<HomeInput> {
             data.put("instances", instances);
         }
 
+        SystemInfo si = null;
         try {
-            SystemInfo si = new SystemInfo();
-            HardwareAbstractionLayer hal = si.getHardware();
-            OperatingSystem os = si.getOperatingSystem();
-            data.put("os", Collections.singletonList(os.toString()));
-            data.put("procs", printProcessor(hal.getProcessor()));
-            data.put("memory", printMemory(hal.getMemory()));
-            data.put("cpu", printCpu(hal.getProcessor()));
-            data.put("process", printProcesses(os, hal.getMemory()));
-            data.put("sensor", printSensors(hal.getSensors()));
-            data.put("power", printPowerSources(hal.getPowerSources()));
-            data.put("disk", printDisks(hal.getDiskStores()));
-            data.put("fs", printFileSystem(os.getFileSystem()));
-            data.put("nic", printNetworkInterfaces(hal.getNetworkIFs()));
+            si = new SystemInfo();
         } catch (Exception x) {
-            LOG.warn("oshi failed.", x);
+            LOG.warn("oshi SystemInfo failed.", x);
+        }
+        if (si != null) {
+            try {
+                HardwareAbstractionLayer hal = si.getHardware();
+                data.put("procs", printProcessor(hal));
+                data.put("memory", printMemory(hal));
+                data.put("cpu", printCpu(hal));
+                data.put("sensor", printSensors(hal));
+                data.put("power", printPowerSources(hal));
+                data.put("nic", printNetworkInterfaces(hal));
+                data.put("disk", printDisks(hal));
+            } catch (Exception x) {
+                LOG.warn("oshi HardwareAbstractionLayer failed.", x);
+            }
+
+            try {
+                OperatingSystem os = si.getOperatingSystem();
+                data.put("fs", printFileSystem(os));
+                data.put("os", Collections.singletonList(os.toString()));
+            } catch (Exception x) {
+                LOG.warn("oshi OperatingSystem failed.", x);
+            }
         }
 
         try {
@@ -148,9 +159,10 @@ public class HomeRegion implements PageRegion<HomeInput> {
         return "Upena";
     }
 
-    private static List<String> printProcessor(CentralProcessor processor) {
+    private static List<String> printProcessor(HardwareAbstractionLayer hal) {
         List<String> l = new ArrayList<>();
         try {
+            CentralProcessor processor = hal.getProcessor();
             l.add(processor.toString());
             l.add(" " + processor.getPhysicalProcessorCount() + " physical CPU(s)");
             l.add(" " + processor.getLogicalProcessorCount() + " logical CPU(s)");
@@ -164,9 +176,10 @@ public class HomeRegion implements PageRegion<HomeInput> {
         return l;
     }
 
-    private static List<String> printMemory(GlobalMemory memory) {
+    private static List<String> printMemory(HardwareAbstractionLayer hal) {
         List<String> l = new ArrayList<>();
         try {
+            GlobalMemory memory = hal.getMemory();
             l.add("Memory: " + FormatUtil.formatBytes(memory.getAvailable()) + "/" + FormatUtil.formatBytes(memory.getTotal()));
             l.add("Swap used: " + FormatUtil.formatBytes(memory.getSwapUsed()) + "/" + FormatUtil.formatBytes(memory.getSwapTotal()));
         } catch (Exception x) {
@@ -176,9 +189,10 @@ public class HomeRegion implements PageRegion<HomeInput> {
         return l;
     }
 
-    private static List<String> printCpu(CentralProcessor processor) {
+    private static List<String> printCpu(HardwareAbstractionLayer hal) {
         List<String> l = new ArrayList<>();
         try {
+            CentralProcessor processor = hal.getProcessor();
             l.add("Uptime: " + FormatUtil.formatElapsedSecs(processor.getSystemUptime()));
 
             long[] prevTicks = processor.getSystemCpuLoadTicks();
@@ -242,9 +256,10 @@ public class HomeRegion implements PageRegion<HomeInput> {
         return l;
     }
 
-    private static List<String> printSensors(Sensors sensors) {
+    private static List<String> printSensors(HardwareAbstractionLayer hal) {
         List<String> l = new ArrayList<>();
         try {
+            Sensors sensors = hal.getSensors();
             l.add("Sensors:");
             l.add(String.format(" CPU Temperature: %.1f°C%n", sensors.getCpuTemperature()));
             l.add(" Fan Speeds: " + Arrays.toString(sensors.getFanSpeeds()));
@@ -256,9 +271,10 @@ public class HomeRegion implements PageRegion<HomeInput> {
         return l;
     }
 
-    private static List<String> printPowerSources(PowerSource[] powerSources) {
+    private static List<String> printPowerSources(HardwareAbstractionLayer hal) {
         List<String> l = new ArrayList<>();
         try {
+            PowerSource[] powerSources = hal.getPowerSources();
             StringBuilder sb = new StringBuilder("Power: ");
             if (powerSources.length == 0) {
                 sb.append("Unknown");
@@ -284,9 +300,10 @@ public class HomeRegion implements PageRegion<HomeInput> {
         return l;
     }
 
-    private static List<String> printDisks(HWDiskStore[] diskStores) {
+    private static List<String> printDisks(HardwareAbstractionLayer hal) {
         List<String> l = new ArrayList<>();
         try {
+            HWDiskStore[] diskStores = hal.getDiskStores();
             l.add("Disks:");
             for (HWDiskStore disk : diskStores) {
                 boolean readwrite = disk.getReads() > 0 || disk.getWrites() > 0;
@@ -315,9 +332,10 @@ public class HomeRegion implements PageRegion<HomeInput> {
         return l;
     }
 
-    private static List<String> printFileSystem(FileSystem fileSystem) {
+    private static List<String> printFileSystem(OperatingSystem os) {
         List<String> l = new ArrayList<>();
         try {
+            FileSystem fileSystem = os.getFileSystem();
             l.add("File System:");
 
             l.add(String.format(" File Descriptors: %d/%d%n", fileSystem.getOpenFileDescriptors(),
@@ -339,9 +357,10 @@ public class HomeRegion implements PageRegion<HomeInput> {
         return l;
     }
 
-    private static List<String> printNetworkInterfaces(NetworkIF[] networkIFs) {
+    private static List<String> printNetworkInterfaces(HardwareAbstractionLayer hal) {
         List<String> l = new ArrayList<>();
         try {
+            NetworkIF[] networkIFs = hal.getNetworkIFs();
             l.add("Network interfaces:");
             for (NetworkIF net : networkIFs) {
                 l.add(String.format(" Name: %s (%s)%n", net.getName(), net.getDisplayName()));
