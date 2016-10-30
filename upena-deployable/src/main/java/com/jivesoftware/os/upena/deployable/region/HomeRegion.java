@@ -124,8 +124,9 @@ public class HomeRegion implements PageRegion<HomeInput> {
             LOG.warn("oshi SystemInfo failed.", x);
         }
         if (si != null) {
+            HardwareAbstractionLayer hal = null;
             try {
-                HardwareAbstractionLayer hal = si.getHardware();
+                hal = si.getHardware();
                 data.put("procs", printProcessor(hal));
                 data.put("memory", printMemory(hal));
                 data.put("cpu", printCpu(hal));
@@ -133,6 +134,7 @@ public class HomeRegion implements PageRegion<HomeInput> {
                 data.put("power", printPowerSources(hal));
                 data.put("nic", printNetworkInterfaces(hal));
                 data.put("disk", printDisks(hal));
+
             } catch (Exception x) {
                 LOG.warn("oshi HardwareAbstractionLayer failed.", x);
             }
@@ -141,6 +143,12 @@ public class HomeRegion implements PageRegion<HomeInput> {
                 OperatingSystem os = si.getOperatingSystem();
                 data.put("fs", printFileSystem(os));
                 data.put("os", Collections.singletonList(os.toString()));
+                if (hal != null) {
+                    data.put("process", printProcesses(os, hal));
+                } else {
+                    data.put("process", Collections.singletonList("ERROR"));
+                }
+
             } catch (Exception x) {
                 LOG.warn("oshi OperatingSystem failed.", x);
             }
@@ -234,9 +242,10 @@ public class HomeRegion implements PageRegion<HomeInput> {
         return l;
     }
 
-    private static List<String> printProcesses(OperatingSystem os, GlobalMemory memory) {
+    private static List<String> printProcesses(OperatingSystem os, HardwareAbstractionLayer hal) {
         List<String> l = new ArrayList<>();
         try {
+            GlobalMemory memory = hal.getMemory();
             l.add("Processes: " + os.getProcessCount() + ", Threads: " + os.getThreadCount());
             // Sort by highest CPU
             List<OSProcess> procs = Arrays.asList(os.getProcesses(5, ProcessSort.CPU));
@@ -244,7 +253,7 @@ public class HomeRegion implements PageRegion<HomeInput> {
             l.add("   PID  %CPU %MEM       VSZ       RSS Name");
             for (int i = 0; i < procs.size() && i < 5; i++) {
                 OSProcess p = procs.get(i);
-                l.add(String.format(" %5d %5.1f %4.1f %9s %9s %s%n", p.getProcessID(),
+                l.add(String.format(" %5d, %5.1f, %4.1f, %9s, %9s, %s%n", p.getProcessID(),
                     100d * (p.getKernelTime() + p.getUserTime()) / p.getUpTime(),
                     100d * p.getResidentSetSize() / memory.getTotal(), FormatUtil.formatBytes(p.getVirtualSize()),
                     FormatUtil.formatBytes(p.getResidentSetSize()), p.getName()));
