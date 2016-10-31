@@ -198,10 +198,16 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
                     handleEnable(user, filter);
                 } else if (input.action.equals("enableSSL")) {
                     SecurityUtils.getSubject().checkPermission("write");
-                    handleEnableSSL(user, filter);
+                    handleSSL(user, filter, true);
+                } else if (input.action.equals("disableSSL")) {
+                    SecurityUtils.getSubject().checkPermission("write");
+                    handleSSL(user, filter, false);
                 } else if (input.action.equals("enableSAUTH")) {
                     SecurityUtils.getSubject().checkPermission("write");
-                    handleEnableSAUTH(user, filter);
+                    handleSAUTH(user, filter, true);
+                } else if (input.action.equals("disableSAUTH")) {
+                    SecurityUtils.getSubject().checkPermission("write");
+                    handleSAUTH(user, filter, false);
                 } else if (input.action.equals("disable")) {
                     SecurityUtils.getSubject().checkPermission("write");
                     handleDisable(user, filter);
@@ -317,7 +323,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
         }
     }
 
-    private void handleEnableSSL(String user, InstanceFilter filter) throws Exception {
+    private void handleSSL(String user, InstanceFilter filter, boolean state) throws Exception {
         List<String> enable = new ArrayList<>();
         Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(false, filter);
         for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {
@@ -325,18 +331,18 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
             TimestampedValue<Instance> timestampedValue = entrySet.getValue();
             Instance instance = timestampedValue.getValue();
             if (!instance.ports.get("main").sslEnabled) {
-                instance.ports.get("main").sslEnabled = true;
-                instance.ports.get("manage").sslEnabled = true;
+                instance.ports.get("main").sslEnabled = state;
+                instance.ports.get("manage").sslEnabled = state;
                 upenaStore.instances.update(key, instance);
                 enable.add(instanceToHumanReadableString(instance));
             }
         }
         if (!enable.isEmpty()) {
-            upenaStore.record(user, "enabledSSL", System.currentTimeMillis(), "", "instance-ui", enable.toString());
+            upenaStore.record(user, "SSL=" + state, System.currentTimeMillis(), "", "instance-ui", enable.toString());
         }
     }
 
-    private void handleEnableSAUTH(String user, InstanceFilter filter) throws Exception {
+    private void handleSAUTH(String user, InstanceFilter filter, boolean state) throws Exception {
         List<String> enable = new ArrayList<>();
         Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(false, filter);
         for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {
@@ -344,14 +350,14 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
             TimestampedValue<Instance> timestampedValue = entrySet.getValue();
             Instance instance = timestampedValue.getValue();
             if (!instance.ports.get("main").serviceAuthEnabled) {
-                instance.ports.get("main").serviceAuthEnabled = true;
-                instance.ports.get("manage").serviceAuthEnabled = true;
+                instance.ports.get("main").serviceAuthEnabled = state;
+                instance.ports.get("manage").serviceAuthEnabled = state;
                 upenaStore.instances.update(key, instance);
                 enable.add(instanceToHumanReadableString(instance));
             }
         }
         if (!enable.isEmpty()) {
-            upenaStore.record(user, "enabledSAUTH", System.currentTimeMillis(), "", "instance-ui", enable.toString());
+            upenaStore.record(user, "SAUTH=" + state, System.currentTimeMillis(), "", "instance-ui", enable.toString());
         }
     }
 
