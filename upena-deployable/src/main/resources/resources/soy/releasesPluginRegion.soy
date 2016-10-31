@@ -53,11 +53,19 @@
                         </td>
                         <td></td>
                         <td>
-                            <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-search">&nbsp;Filter</span></button>
+                            <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                                <span class="glyphicon glyphicon-search"></span> Filter
+                            </button>
                             {if $readWrite}
-                                <button title="Add" type="submit" name="action" value="add" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-plus">&nbsp;Add</span></button>
-                                <button title="Export" type="submit" name="action" value="export" class="btn btn-default"><span class="glyphicon glyphicon-export">&nbsp;Export</span></button>
-                                <button onclick="return confirm('Are you sure you want to upgrade all releases?')" title="Upgrade All" type="submit" name="action" value="upgrade-all" class="btn btn-default"><span class="glyphicon glyphicon-fast-forward">&nbsp;Upgrade-All</span></button>
+                                <button title="Add" type="submit" name="action" value="add" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                                    <span class="glyphicon glyphicon-plus"></span> Add
+                                </button>
+                                <button title="Export" type="submit" name="action" value="export" class="btn btn-default">
+                                    <span class="glyphicon glyphicon-export"></span> Export
+                                </button>
+                                <button onclick="return confirm('Are you sure you want to upgrade all releases?')" title="Upgrade All" type="submit" name="action" value="upgrade-all" class="btn btn-default">
+                                    <span class="glyphicon glyphicon-fast-forward"></span> Upgrade-All
+                                </button>
                             {/if}
                         </td>
                     </tr>
@@ -85,36 +93,36 @@
                                         {if $r.rollback}
                                             {if $readWrite}
                                                 <li>
-                                                    <form id="edit-{$r.key}" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                                                    <form id="edit-rollback-{$r.key}" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
                                                         method="post" name="roleback">
-                                                        <input type="hidden" name="key" value="{$r.key}">
-                                                        <input type="hidden" name="name" value="{$r.name}">
-                                                        <input type="hidden" name="repository" value="{$r.repository}">
-                                                        <input type="hidden" name="version" value="{$r.version}">
+                                                        <input form="edit-rollback-{$r.key}" type="hidden" name="key" value="{$r.key}">
+                                                        <input form="edit-rollback-{$r.key}" type="hidden" name="name" value="{$r.name}">
+                                                        <input form="edit-rollback-{$r.key}" type="hidden" name="repository" value="{$r.repository}">
+                                                        <input form="edit-rollback-{$r.key}" type="hidden" name="version" value="{$r.version}">
                                                         <div style="display: inline;">{$r.rollback}&nbsp;&nbsp;&nbsp;</div>
-                                                        <div style="display: inline;"><input type="hidden" name="rollback" value="{$r.rollback}"></div>
+                                                        <div style="display: inline;"><input form="edit-rollback-{$r.key}" type="hidden" name="rollback" value="{$r.rollback}"></div>
                                                         <div style="display: inline;">
-                                                            <button onclick="return confirm('Are you sure you want to rollback?')" title="Rollback" type="submit" name="action" value="rollback" class="btn btn-default" style="color: orange;">Rollback</button>
+                                                            <button form="edit-rollback-{$r.key}" onclick="return confirm('Are you sure you want to rollback?')" title="Rollback" type="submit" name="action" value="rollback" class="btn btn-default" style="color: orange;">Rollback</button>
                                                         </div>
                                                     </form>
                                                 </li>
                                             {/if}
                                         {/if}
-                                        <form id="edit-{$r.key}" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                                        <form id="edit-update-{$r.key}" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
                                             method="post" name="updateRelease">
 
-                                                <li>Name:<input type="hidden" name="key" value="{$r.key}"></li>
-                                                <li><input type="text" autocomplete="off" role="combobox" style="padding-left:10px;" placeholder="Name" value="{$r.name}" name="name" id="namePicker" class="form-control"></li>
+                                                <li>Name:<input form="edit-update-{$r.key}" type="hidden" name="key" value="{$r.key}"></li>
+                                                <li><input form="edit-update-{$r.key}" type="text" autocomplete="off" role="combobox" style="padding-left:10px;" placeholder="Name" value="{$r.name}" name="name" id="namePicker" class="form-control"></li>
 
                                                 <li>Repository:</li>
-                                                <li><input type="text" name="repository" class="form-control" value={$r.repository?:''}></li>
+                                                <li><input form="edit-update-{$r.key}" type="text" name="repository" class="form-control" value={$r.repository?:''}></li>
 
                                                 <li>groupId:artifactId:type:version</li>
-                                                <li><input size="256" id="{$r.key}" type="text" name="version" class="form-control" value={$r.version?:''}></li>
+                                                <li><input form="edit-update-{$r.key}" size="256" id="{$r.key}" type="text" name="version" class="form-control" value={$r.version?:''}></li>
 
-                                                <li>Auto release:<input data-toggle="toggle" type="checkbox" name="autoRelease" value="true" {if $r.autoRelease}checked="checked"{/if}></li>
+                                                <li>Auto release:<input form="edit-update-{$r.key}" data-toggle="toggle" type="checkbox" name="autoRelease" value="true" {if $r.autoRelease}checked="checked"{/if}></li>
                                                 {if $readWrite}
-                                                    <li><button title="Upgrade" type="submit" name="action" value="update" class="btn btn-default">Update</button></li>
+                                                    <li><button form="edit-update-{$r.key}" title="Upgrade" type="submit" name="action" value="update" class="btn btn-default">Update</button></li>
                                                 {/if}
                                         </form>
                                     </ul>
@@ -209,7 +217,9 @@
                                     <input type="hidden" name="name" value="{$r.name}">
                                     <input type="hidden" name="repository" value="{$r.repository}">
                                     <input type="hidden" name="version" value="{$r.version}">
-                                    <button onclick="return confirm('Are you sure you want to delete?')" title="Remove" type="submit" name="action" value="remove" class="btn btn-default"><span class="glyphicon glyphicon-trash">&nbsp;Remove</span></button>
+                                    <button onclick="return confirm('Are you sure you want to delete?')" title="Remove" type="submit" name="action" value="remove" class="btn btn-default">
+                                        <span class="glyphicon glyphicon-trash"></span> Remove
+                                    </button>
                             </form>
                         {/if}
                     <td>
@@ -224,7 +234,9 @@
                     <span class="btn btn-default btn-file"><span>Browse...</span><input type="file" name="file"/></span>
                     <span class="fileinput-filename"></span><span class="fileinput-new">&nbsp;&nbsp;&nbsp;No file chosen&nbsp;&nbsp;&nbsp;</span>
                 </div>
-                <button title="Import" type="submit"  value="import" class="btn btn-default"><span class="glyphicon glyphicon-import">&nbsp;Import</span></button>
+                <button title="Import" type="submit"  value="import" class="btn btn-default">
+                    <span class="glyphicon glyphicon-import"></span> Import
+                </button>
             </form>
         </div>
     {/if}

@@ -36,8 +36,12 @@
                             <td>
                             </td>
                             <td>
-                                <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-search">&nbsp;Filter</span></button>
-                                <button title="Add" type="submit" name="action" value="add" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-plus">&nbsp;Add</span></button>
+                                <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                                    <span class="glyphicon glyphicon-search"></span> Filter
+                                </button>
+                                <button title="Add" type="submit" name="action" value="add" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                                    <span class="glyphicon glyphicon-plus"></span> Add
+                                </button>
                             </td>
                         </form>
                     </tr>
@@ -209,10 +213,10 @@
                                          </li>
                                     </ul>
                                     <button title="Update" type="submit" name="action" value="update" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
-                                        <span class="glyphicon glyphicon-save">&nbsp;Update</span>
+                                        <span class="glyphicon glyphicon-save"></span> Update
                                     </button>
                                     <button title="Update" type="submit" name="action" value="clone" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
-                                        <span class="glyphicon glyphicon-backboard">&nbsp;Clone</span>
+                                        <span class="glyphicon glyphicon-backboard"></span> Clone
                                     </button>
                                 </form>
                             </div>
@@ -238,7 +242,7 @@
                                                                 <input type="hidden" name="newCoordinate" value="{$v.version}">
                                                                 {$v.name}->
                                                                 <button title="Update" type="submit" name="action" value="setVersion" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
-                                                                    <span class="glyphicon glyphicon-send">&nbsp;{$v.version}</span>
+                                                                    <span class="glyphicon glyphicon-send"></span> {$v.version}
                                                                 </button>
                                                             </form>
                                                          </li>
@@ -263,10 +267,10 @@
                                             <li>
                                                 <form id="upgrade-release-{$c.key}" method="post" name="UpgradeRelease">
                                                     <input type="hidden" name="key" value="{$c.key}">
-                                                    {$r.name}->{$r.version}
+                                                    {$r.name}-&gt;{$r.version}
                                                     {if $r.alternateVersion}
                                                         <button onclick="return confirm('Are you sure you want to upgrade?')" title="Upgrade" type="submit" name="action" value="upgradeRelease" class="btn btn-default">
-                                                            <span class="glyphicon glyphicon-send">&nbsp;{$r.alternateVersion}</span>
+                                                            <span class="glyphicon glyphicon-send"></span> {$r.alternateVersion}
                                                         </button>
                                                     {/if}
                                                 </form>
@@ -279,8 +283,12 @@
                         <td>
                             <form id="project-actions" method="post" name="projectActions">
                                 <input type="hidden" name="key" value="{$c.key}">
-                                <button onclick="return confirm('Are you sure you want to wipe all files related to this project?')" title="Wipe" type="submit" name="action" value="wipe" class="btn btn-default"><span class="glyphicon glyphicon-erase">&nbsp;Wipe</span></button>
-                                <button onclick="return confirm('Are you sure you want to delete?')" title="Remove" type="submit" name="action" value="remove" class="btn btn-default"><span class="glyphicon glyphicon-trash">&nbsp;Remove</span></button>
+                                <button onclick="return confirm('Are you sure you want to wipe all files related to this project?')" title="Wipe" type="submit" name="action" value="wipe" class="btn btn-default">
+                                    <span class="glyphicon glyphicon-erase"></span> Wipe
+                                </button>
+                                <button onclick="return confirm('Are you sure you want to delete?')" title="Remove" type="submit" name="action" value="remove" class="btn btn-default">
+                                    <span class="glyphicon glyphicon-trash"></span> Remove
+                                </button>
                             </form>
                         </td>
                     </tr>

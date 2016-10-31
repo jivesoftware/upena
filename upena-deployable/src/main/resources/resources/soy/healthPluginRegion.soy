@@ -63,7 +63,7 @@
                     </td>
                     <td>
                         <button title="Filter" type="submit" name="filter" value="filter" class="btn btn-primary ladda-button"  data-spinner-color="#222" data-style="expand-right">
-                            <span class="glyphicon glyphicon-search">&nbsp;Filter</span>
+                            <span class="glyphicon glyphicon-search"><span> Filter
                         </button>
                     </td>
                 </tr>
@@ -140,7 +140,7 @@
                                                     <span>Hosts<span><br>
                                                     <ul>
                                                         {foreach $ah in $hosts}
-                                                            <li><input data-toggle="toggle" type="checkbox" name="hostKeys" value="{$ah.key}">{$ah.name}</li>
+                                                            <li><input type="checkbox" name="hostKeys" value="{$ah.key}">{$ah.name}</li>
                                                         {/foreach}
                                                     </ul>
                                                     <input type="hidden" name="serviceKey" value="{$service.serviceKey}">
@@ -476,7 +476,7 @@
                                                             <span>Hosts<span><br>
                                                             <ul>
                                                                 {foreach $ah in $hosts}
-                                                                    <li><input data-toggle="toggle" type="checkbox" name="hostKeys" value="{$ah.key}">{$ah.name}</li>
+                                                                    <li><input type="checkbox" name="hostKeys" value="{$ah.key}">{$ah.name}</li>
                                                                 {/foreach}
                                                             </ul>
                                                         {/if}

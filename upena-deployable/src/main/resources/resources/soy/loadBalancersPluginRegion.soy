@@ -95,8 +95,12 @@
                     <td>
                     </td>
                     <td>
-                        <button id="filter" title="Filter" type="submit" name="action" value="filter" class="btn btn-primary ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-search">&nbspFilter</span></button>
-                        <button title="Add" type="submit" name="action" value="add" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-plus">&nbspAdd</span></button>
+                        <button id="filter" title="Filter" type="submit" name="action" value="filter" class="btn btn-primary ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                            <span class="glyphicon glyphicon-search"></span> Filter
+                        </button>
+                        <button title="Add" type="submit" name="action" value="add" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                            <span class="glyphicon glyphicon-plus"></span> Add
+                        </button>
                     </td>
                 </tr>
                 <tr>
@@ -184,15 +188,23 @@
                                             <li>Availability Zones:<input type="text" name="availabilityZones" value="{$i.availabilityZones}"></li>
                                             <li>Security Groups:<input type="text" name="securityGroups" value="{$i.securityGroups}"></li>
                                             <li>Subnets:<input type="text" name="subnets" value="{$i.subnets}"></li>
-                                            <li><button title="Update" type="submit" name="action" value="update" class="btn btn-default"><span class="glyphicon glyphicon-save ladda-button"  data-spinner-color="#222" data-style="expand-right">&nbspUpdate</span></button></li>
+                                            <li>
+                                                <button title="Update" type="submit" name="action" value="update" class="btn btn-default">
+                                                    <span class="glyphicon glyphicon-save ladda-button"  data-spinner-color="#222" data-style="expand-right"></span> Update
+                                                </button>
+                                            </li>
 
                                     </form>
                                 </ul>
                             </div>
                         </td>
                         <td>
-                            <button form="edit-lb" title="Update" type="submit" name="action" value="update" class="btn btn-default"><span class="glyphicon glyphicon-save ladda-button"  data-spinner-color="#222" data-style="expand-right">&nbspUpdate</span></button>
-                            <button form="edit-lb" onclick="return confirm('Are you sure you want to delete?')" title="Remove" type="submit" name="action" value="remove" class="btn btn-default"><span class="glyphicon glyphicon-trash">&nbspRemove</span></button>
+                            <button form="edit-lb" title="Update" type="submit" name="action" value="update" class="btn btn-default">
+                                <span class="glyphicon glyphicon-save ladda-button"  data-spinner-color="#222" data-style="expand-right"></span> Update
+                            </button>
+                            <button form="edit-lb" onclick="return confirm('Are you sure you want to delete?')" title="Remove" type="submit" name="action" value="remove" class="btn btn-default">
+                                <span class="glyphicon glyphicon-trash"></span> Remove
+                            </button>
                         </td>
                     </tr>
             {/foreach}
@@ -245,7 +257,9 @@
                             {$i.key}
                         </td>
                         <td>
-                            <button form="remove-unattachedLoadBalancers-{$i.key}" onclick="return confirm('Are you sure you want to delete?')" title="Remove" type="submit" name="action" value="remove-unattached" class="btn btn-default"><span class="glyphicon glyphicon-trash">&nbspRemove</span></button>
+                            <button form="remove-unattachedLoadBalancers-{$i.key}" onclick="return confirm('Are you sure you want to delete?')" title="Remove" type="submit" name="action" value="remove-unattached" class="btn btn-default">
+                                <span class="glyphicon glyphicon-trash"></span> Remove
+                            </button>
                         </td>
                     </tr>
                 </form>

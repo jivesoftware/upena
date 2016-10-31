@@ -528,9 +528,8 @@ public class UpenaMain {
             .addInjectable(upenaConfigStore)
             .addInjectable(UpenaService.class, upenaService);
 
-        // TODO force server to bind to loopback
         InitializeRestfulServer initializeLoopbackRestfulServer = new InitializeRestfulServer(
-            true,
+            Boolean.parseBoolean(System.getProperty("amza.loopback.strict", "true")),
             loopbackPort,
             "UpenaNode",
             false,

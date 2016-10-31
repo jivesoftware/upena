@@ -15,7 +15,7 @@
                 {/if}
             <br>
             <div class="well">
-                <form id="add-proxy" data-active-class="btn-default" method="post" name="addProxy">
+                <form id="auth-login" data-active-class="btn-default" method="post" name="addProxy">
                     <div class="text-center">
                         <div>
                             <img src="/static/img/icon.png" alt="Upena"  height="64">
@@ -28,24 +28,24 @@
                                 <div class="form-group">
                                     <div class="right-inner-addon">
                                         <i class="fa fa-envelope-open" aria-hidden="true"></i>
-                                        <input name="username" class="form-control input-lg" placeholder="Email Address" type="text" value="{$username?:''}">
+                                        <input form="auth-login" name="username" class="form-control input-lg" placeholder="Email Address" type="text" value="{$username?:''}">
                                     </div>
                                     <div class="form-group">
                                         <div class="right-inner-addon">
                                             <i class="fa fa-key" aria-hidden="true"></i>
-                                            <input name="password" class="form-control input-lg" placeholder="Password" type="password">
+                                            <input form="auth-login" name="password" class="form-control input-lg" placeholder="Password" type="password">
                                         </div>
                                     </div>
                                     <div class="form-group">
                                         <div class="right-inner-addon">
-                                            <input type="checkbox" name="rememberMe" value="true" data-toggle="toggle"/> Remember me
+                                            <input form="auth-login" type="checkbox" name="rememberMe" value="true" data-toggle="toggle"/> Remember me
                                         </div>
                                     </div>
                                 </div>
                             </fieldset>
                             <br>
                             <div class=" text-center">
-                                <button class="btn btn-primary">Sign In</button>
+                                <button form="auth-login" class="btn btn-primary">Sign In</button>
                             </div>
                         </div>
                     </div>
