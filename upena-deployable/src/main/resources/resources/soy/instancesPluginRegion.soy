@@ -115,9 +115,9 @@
                             </div>
                         </td>
                         <td>
-                            <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-search">&nbspFilter</span></button>
+                            <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-search"></span> Filter</button>
                             {if $readWrite}
-                                <button title="Add" type="submit" name="action" value="add" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-plus">&nbspAdd</span></button>
+                                <button title="Add" type="submit" name="action" value="add" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-plus"></span> Add</button>
                                 <button form="filter-form" type="submit" name="action" value="restartAllNow" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">Restart Now</button>
                                 <button form="filter-form" type="submit" name="action" value="restartAll" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">Rolling Restart</button>
                                 <button form="filter-form" type="submit" name="action" value="cancelRestartAll" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">Cancel Restart</button>
@@ -131,8 +131,8 @@
             
 
             {foreach $i in $instances}
-                <form id="edit-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
-                    data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="editInstance">
+                <form id="edit-host-{$i.key}" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                    data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="editInstance-{$i.key}">
                     <tr>
                         <td>
                             <label>
@@ -206,7 +206,7 @@
                                             </td>
                                             <td>
                                                 {if $readWrite}
-                                                    <button title="Add" onClick="upena.instancePorts.addPort('{$i.key}')" class="btn btn-default"><span class="glyphicon glyphicon-plus">&nbspAdd</span></button>
+                                                    <button title="Add" onClick="upena.instancePorts.addPort('{$i.key}')" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span> Add</button>
                                                 {/if}
                                             </td>
                                         </tr>
@@ -243,7 +243,7 @@
                                                                         <td>
                                                                             {if $readWrite}
                                                                                 <button title="Remove" onClick="upena.instancePorts.removePortProperty('{$i.key}', '{$p.portName}', '{$nv.name}')" class="btn btn-default">
-                                                                                    <span class="glyphicon glyphicon-trash">&nbspRemove</span>
+                                                                                    <span class="glyphicon glyphicon-trash"></span> Remove
                                                                                 </button>
                                                                             {/if}
                                                                         </td>
@@ -261,7 +261,7 @@
                                                                     <td>
                                                                         {if $readWrite}
                                                                             <button title="Add" onClick="upena.instancePorts.addPortProperty('{$i.key}', '{$p.portName}')" class="btn btn-default">
-                                                                                <span class="glyphicon glyphicon-plus">&nbspAdd</span>
+                                                                                <span class="glyphicon glyphicon-plus"></span> Add
                                                                             </button>
                                                                         {/if}
                                                                     </td>
@@ -273,7 +273,7 @@
                                                 <td>
                                                     {if $readWrite}
                                                         <button title="Remove" onClick="upena.instancePorts.removePort('{$i.key}', '{$p.portName}')" class="btn btn-default">
-                                                            <span class="glyphicon glyphicon-trash">&nbspRemove</span>
+                                                            <span class="glyphicon glyphicon-trash"></span> Remove
                                                         </button>
                                                     {/if}
                                                 </td>
@@ -298,9 +298,9 @@
                         <td>
                             {if $readWrite}
                                 <input type="hidden" name="key" value="{$i.key}">
-                                <button title="Update" type="submit" name="action" value="restart" class="btn btn-default"><span class="glyphicon glyphicon-repeat ladda-button"  data-spinner-color="#222" data-style="expand-right">&nbspRestart</span></button>
-                                <button title="Update" type="submit" name="action" value="update" class="btn btn-default"><span class="glyphicon glyphicon-save ladda-button"  data-spinner-color="#222" data-style="expand-right">&nbspUpdate</span></button>
-                                <button onclick="return confirm('Are you sure you want to delete?')" title="Remove" type="submit" name="action" value="remove" class="btn btn-default"><span class="glyphicon glyphicon-trash">&nbspRemove</span></button>
+                                <button title="Update" type="submit" name="action" value="restart" class="btn btn-default"><span class="glyphicon glyphicon-repeat ladda-button"  data-spinner-color="#222" data-style="expand-right"></span> Restart</button>
+                                <button title="Update" type="submit" name="action" value="update" class="btn btn-default"><span class="glyphicon glyphicon-save ladda-button"  data-spinner-color="#222" data-style="expand-right"></span> Update</button>
+                                <button onclick="return confirm('Are you sure you want to delete?')" title="Remove" type="submit" name="action" value="remove" class="btn btn-default"><span class="glyphicon glyphicon-trash"></span> Remove</button>
                             {/if}
                         </td>
                     </tr>
