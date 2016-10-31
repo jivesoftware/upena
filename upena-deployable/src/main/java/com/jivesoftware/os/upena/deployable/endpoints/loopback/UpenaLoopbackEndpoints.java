@@ -26,8 +26,6 @@ import com.jivesoftware.os.routing.bird.shared.InstanceDescriptorsRequest;
 import com.jivesoftware.os.routing.bird.shared.InstanceDescriptorsResponse;
 import com.jivesoftware.os.routing.bird.shared.ResponseHelper;
 import com.jivesoftware.os.upena.service.DiscoveredRoutes;
-import com.jivesoftware.os.upena.service.DiscoveredRoutes.RouteHealths;
-import com.jivesoftware.os.upena.service.DiscoveredRoutes.Routes;
 import com.jivesoftware.os.upena.service.SessionValidation;
 import com.jivesoftware.os.upena.service.UpenaService;
 import javax.inject.Singleton;
@@ -61,30 +59,6 @@ public class UpenaLoopbackEndpoints {
         this.discoveredRoutes = discoveredRoutes;
         this.upenaService = upenaService;
         this.mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    }
-
-    @GET
-    @Consumes("application/json")
-    @Path("/routes/instances")
-    public Response getInstancesRoutes() {
-        try {
-            return ResponseHelper.INSTANCE.jsonResponse(new Routes(discoveredRoutes.routes()));
-        } catch (Exception x) {
-            LOG.error("Failed getting instance routes", x);
-            return ResponseHelper.INSTANCE.errorResponse("Failed building all health view.", x);
-        }
-    }
-
-    @GET
-    @Consumes("application/json")
-    @Path("/routes/health/{sinceTimestampMillis}")
-    public Response getRoutesHealth(@PathParam("sinceTimestampMillis") long sinceTimestampMillis) {
-        try {
-            return ResponseHelper.INSTANCE.jsonResponse(new RouteHealths(discoveredRoutes.routesHealth(sinceTimestampMillis)));
-        } catch (Exception x) {
-            LOG.error("Failed getting routes health", x);
-            return ResponseHelper.INSTANCE.errorResponse("Failed building all health view.", x);
-        }
     }
 
     @POST

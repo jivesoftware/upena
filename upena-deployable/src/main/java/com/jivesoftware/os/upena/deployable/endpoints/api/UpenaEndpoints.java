@@ -19,12 +19,16 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
+import com.jivesoftware.os.routing.bird.shared.ResponseHelper;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
+import com.jivesoftware.os.upena.service.DiscoveredRoutes;
 import java.net.URI;
 import javax.inject.Singleton;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -41,6 +45,7 @@ public class UpenaEndpoints {
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
+    private final DiscoveredRoutes discoveredRoutes;
     private final AmzaClusterName amzaClusterName;
 
     public static class AmzaClusterName {
@@ -56,9 +61,11 @@ public class UpenaEndpoints {
     private final ObjectMapper mapper = new ObjectMapper();
     private final SoyService soyService;
 
-    public UpenaEndpoints(@Context AmzaClusterName amzaClusterName,
+    public UpenaEndpoints(@Context DiscoveredRoutes discoveredRoutes,
+        @Context AmzaClusterName amzaClusterName,
         @Context SoyService soyService) {
 
+        this.discoveredRoutes = discoveredRoutes;
         this.amzaClusterName = amzaClusterName;
         this.soyService = soyService;
         this.mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -80,5 +87,31 @@ public class UpenaEndpoints {
         String rendered = soyService.render(httpRequest.getRemoteUser(), uriInfo.getAbsolutePath() + "propagator/download", amzaClusterName.name);
         return Response.ok(rendered).build();
     }
+
+
+    @GET
+    @Consumes("application/json")
+    @Path("/routes/instances")
+    public Response getInstancesRoutes() {
+        try {
+            return ResponseHelper.INSTANCE.jsonResponse(new DiscoveredRoutes.Routes(discoveredRoutes.routes()));
+        } catch (Exception x) {
+            LOG.error("Failed getting instance routes", x);
+            return ResponseHelper.INSTANCE.errorResponse("Failed building all health view.", x);
+        }
+    }
+
+    @GET
+    @Consumes("application/json")
+    @Path("/routes/health/{sinceTimestampMillis}")
+    public Response getRoutesHealth(@PathParam("sinceTimestampMillis") long sinceTimestampMillis) {
+        try {
+            return ResponseHelper.INSTANCE.jsonResponse(new DiscoveredRoutes.RouteHealths(discoveredRoutes.routesHealth(sinceTimestampMillis)));
+        } catch (Exception x) {
+            LOG.error("Failed getting routes health", x);
+            return ResponseHelper.INSTANCE.errorResponse("Failed building all health view.", x);
+        }
+    }
+
 
 }
