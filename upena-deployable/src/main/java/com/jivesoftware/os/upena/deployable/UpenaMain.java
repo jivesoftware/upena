@@ -90,7 +90,6 @@ import com.jivesoftware.os.upena.deployable.endpoints.ui.ProjectsPluginEndpoints
 import com.jivesoftware.os.upena.deployable.endpoints.ui.ProxyPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ui.ReleasesPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ui.RepoPluginEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.ui.SARPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ui.ServicesPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ui.TopologyPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ui.UpenaRingPluginEndpoints;
@@ -123,7 +122,6 @@ import com.jivesoftware.os.upena.deployable.region.ProjectsPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ProxyPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ReleasesPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.RepoPluginRegion;
-import com.jivesoftware.os.upena.deployable.region.SARPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ServicesPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.TopologyPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.UnauthorizedPluginRegion;
@@ -650,7 +648,6 @@ public class UpenaMain {
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/releasesPluginRegion.soy"), "releases.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/upenaRingPluginRegion.soy"), "upenaRing.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/configPluginRegion.soy"), "config.soy");
-        soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/sarPluginRegion.soy"), "sarPluginRegion.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/profilerPluginRegion.soy"), "profilerPluginRegion.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/projectsPluginRegion.soy"), "projects.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/projectBuildOutput.soy"), "projectOutput.soy");
@@ -769,10 +766,6 @@ public class UpenaMain {
             new UpenaRingPluginRegion(storeMapper, "soy.page.upenaRingPluginRegion", renderer, amzaInstance, upenaStore, upenaConfigStore), null, "read",
             "debug");
 
-        ManagePlugin sar = new ManagePlugin("dashboard", null, "SAR", "/ui/sar",
-            SARPluginEndpoints.class,
-            new SARPluginRegion("soy.page.sarPluginRegion", renderer, amzaInstance, ringHost), null, "read", "debug");
-
         ManagePlugin loadBalancer = new ManagePlugin("scale", null, "Load Balancer", "/ui/loadbalancers",
             LoadBalancersPluginEndpoints.class,
             new LoadBalancersPluginRegion("soy.page.loadBalancersPluginRegion", renderer, upenaStore, awsClientFactory), null, "read", "debug");
@@ -840,7 +833,6 @@ public class UpenaMain {
             plugins.add(breakpointDumper);
         }
         plugins.add(profiler);
-        plugins.add(sar);
         plugins.add(ring);
 
         jerseyEndpoints.addInjectable(UpenaSSLConfig.class, upenaSSLConfig);
