@@ -18,10 +18,10 @@
                             <div class="input-group-addon" id="basic-addon1">
                                 <img src="/static/img/cluster.png" alt="Cluster" style="width:20px;height:20px;">
                             </div>
-                            <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                            <input form="filter-health" type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
                                 placeholder="Cluster" value="{$filters.cluster?:''}" name="cluster" id="clusterPicker"
                                 class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/clusters">
-                            <input type="hidden" name="clusterKey" value="{$filters.clusterKey?:''}" />
+                            <input form="filter-health" type="hidden" name="clusterKey" value="{$filters.clusterKey?:''}" />
                         </div>
                     </td>
                     <td>
@@ -29,10 +29,10 @@
                             <div class="input-group-addon" id="basic-addon1">
                                 <img src="/static/img/host.png" alt="Host" style="width:20px;height:20px;">&nbsp
                             </div>
-                            <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                            <input form="filter-health" type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
                                 placeholder="Host" value="{$filters.host?:''}" name="host" id="hostPicker"
                                 class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/hosts">
-                            <input type="hidden" name="hostKey" value="{$filters.hostKey?:''}" />
+                            <input form="filter-health" type="hidden" name="hostKey" value="{$filters.hostKey?:''}" />
                          </div>
                     </td>
                     <td>
@@ -40,10 +40,10 @@
                             <div class="input-group-addon" id="basic-addon1">
                                 <img src="/static/img/service.png" alt="Service" style="width:20px;height:20px;">&nbsp
                             </div>
-                            <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                            <input form="filter-health" type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
                                 placeholder="Service" value="{$filters.service?:''}" name="service" id="servicePicker"
                                 class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/services">
-                            <input type="hidden" name="serviceKey" value="{$filters.serviceKey?:''}" />
+                            <input form="filter-health" type="hidden" name="serviceKey" value="{$filters.serviceKey?:''}" />
                         </div>
                     </td>
                     <td>
@@ -51,14 +51,16 @@
                             <div class="input-group-addon" id="basic-addon1">
                                 <img src="/static/img/release.png" alt="Release" style="width:20px;height:20px;">&nbsp
                             </div>
-                            <input type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
+                            <input form="filter-health" type="text" autocomplete="off" role="combobox" style="width:200px; padding-left:10px;"
                                 placeholder="Release" value="{$filters.release?:''}" name="release" id="releasePicker"
                                 class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/releases">
-                            <input type="hidden" name="releaseKey" value="{$filters.releaseKey?:''}" />
+                            <input form="filter-health" type="hidden" name="releaseKey" value="{$filters.releaseKey?:''}" />
                         </div>
                     </td>
                     <td style="width:100%">
-                        <button title="Filter" type="submit" name="filter" value="filter" class="btn btn-primary btn-sm"><span class="glyphicon glyphicon-search"></span> Filter</button>
+                        <button form="filter-health" title="Filter" type="submit" name="filter" value="filter" class="btn btn-primary btn-sm">
+                            <span class="glyphicon glyphicon-search"></span> Filter
+                        </button>
                     </td>
                 </tr>
             </table>
@@ -70,44 +72,44 @@
                 <tr>
                     <td>
                         <label class="ladda-button"  data-spinner-color="#222" data-style="expand-right" data-spinner-color="#000">
-                            <img src="/static/img/cluster.png" alt="Cluster" style="width:24px;height:24px;">&nbsp
-                            Cluster&nbsp
-                            <input onclick="this.form.submit()" data-toggle="toggle" type="checkbox" name="linkType" value="linkCluster" {if $filters.linkType.linkCluster}checked="checked"{/if}>
+                            <img src="/static/img/cluster.png" alt="Cluster" style="width:24px;height:24px;">&nbsp;
+                            Cluster&nbsp;
+                            <input form="filter-health" onclick="this.form.submit()" data-toggle="toggle" type="checkbox" name="linkType" value="linkCluster" {if $filters.linkType.linkCluster}checked="checked"{/if}>
                         </label>
                     </td>
                     <td>
                         <label class="ladda-button"  data-spinner-color="#222" data-style="expand-right" data-spinner-color="#000">
-                            <img src="/static/img/rack.png" alt="Cluster" style="width:24px;height:24px;">&nbsp
-                            Rack&nbsp
-                            <input onclick="this.form.submit()" data-toggle="toggle" type="checkbox" name="linkType" value="linkRack" {if $filters.linkType.linkRack}checked="checked"{/if}>
+                            <img src="/static/img/rack.png" alt="Cluster" style="width:24px;height:24px;">&nbsp;
+                            Rack&nbsp;
+                            <input form="filter-health" onclick="this.form.submit()" data-toggle="toggle" type="checkbox" name="linkType" value="linkRack" {if $filters.linkType.linkRack}checked="checked"{/if}>
                         </label>
                     </td>
                     <td>
                         <label class="ladda-button"  data-spinner-color="#222" data-style="expand-right" data-spinner-color="#000">
-                            <img src="/static/img/host.png" alt="Cluster" style="width:24px;height:24px;">&nbsp
-                            Host&nbsp
-                            <input onclick="this.form.submit()" data-toggle="toggle" type="checkbox" name="linkType" value="linkHost" {if $filters.linkType.linkHost}checked="checked"{/if}>
+                            <img src="/static/img/host.png" alt="Cluster" style="width:24px;height:24px;">&nbsp;
+                            Host&nbsp;
+                            <input form="filter-health" onclick="this.form.submit()" data-toggle="toggle" type="checkbox" name="linkType" value="linkHost" {if $filters.linkType.linkHost}checked="checked"{/if}>
                         </label>
                     </td>
                     <td>
                         <label class="ladda-button"  data-spinner-color="#222" data-style="expand-right" data-spinner-color="#000">
-                            <img src="/static/img/service.png" alt="Cluster" style="width:24px;height:24px;">&nbsp
-                            Service&nbsp
-                            <input onclick="this.form.submit()" data-toggle="toggle" type="checkbox" name="linkType" value="linkService" {if $filters.linkType.linkService}checked="checked"{/if}>
+                            <img src="/static/img/service.png" alt="Cluster" style="width:24px;height:24px;">&nbsp;
+                            Service&nbsp;
+                            <input form="filter-health" onclick="this.form.submit()" data-toggle="toggle" type="checkbox" name="linkType" value="linkService" {if $filters.linkType.linkService}checked="checked"{/if}>
                         </label>
                     </td>
                     <td>
                         <label class="ladda-button"  data-spinner-color="#222" data-style="expand-right" data-spinner-color="#000">
-                            <img src="/static/img/release.png" alt="Cluster" style="width:24px;height:24px;">&nbsp
-                            Release&nbsp
-                            <input onclick="this.form.submit()" data-toggle="toggle" type="checkbox" name="linkType" value="linkRelease" {if $filters.linkType.linkRelease}checked="checked"{/if}>
+                            <img src="/static/img/release.png" alt="Cluster" style="width:24px;height:24px;">&nbsp;
+                            Release&nbsp;
+                            <input form="filter-health" onclick="this.form.submit()" data-toggle="toggle" type="checkbox" name="linkType" value="linkRelease" {if $filters.linkType.linkRelease}checked="checked"{/if}>
                         </label>
                     </td>
                     <td>
                         <label class="ladda-button"  data-spinner-color="#222" data-style="expand-right" data-spinner-color="#000">
-                            <img src="/static/img/instance.png" alt="Cluster" style="width:24px;height:24px;">&nbsp
-                            Instance&nbsp
-                            <input onclick="this.form.submit()" data-toggle="toggle" type="checkbox" name="linkType" value="linkInstance" {if $filters.linkType.linkInstance}checked="checked"{/if}>
+                            <img src="/static/img/instance.png" alt="Cluster" style="width:24px;height:24px;">&nbsp;
+                            Instance&nbsp;
+                            <input form="filter-health" onclick="this.form.submit()" data-toggle="toggle" type="checkbox" name="linkType" value="linkInstance" {if $filters.linkType.linkInstance}checked="checked"{/if}>
                         </label>
                     </td>
                 </tr>
@@ -115,8 +117,7 @@
 
             <div id="upena-topology" data-nodes="{$topologyNodes|escapeHtml}" data-edges="{$topologyEdges|escapeHtml}" data-legend="{$serviceLegend|escapeHtml}"></div>
             <div id="topology-health"></div>
-
-        </from>
+        </form>
     </div>
 {/template}
 

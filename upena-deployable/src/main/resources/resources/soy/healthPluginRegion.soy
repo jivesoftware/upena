@@ -140,7 +140,7 @@
                                                     <span>Hosts<span><br>
                                                     <ul>
                                                         {foreach $ah in $hosts}
-                                                            <li><input data-toggle="toggle" type="checkbox" name="hostKeys" value="{$ah.key}">{$ah.name}</li>
+                                                            <li><input type="checkbox" name="hostKeys" value="{$ah.key}">{$ah.name}</li>
                                                         {/foreach}
                                                     </ul>
                                                     <input type="hidden" name="serviceKey" value="{$service.serviceKey}">
@@ -476,7 +476,7 @@
                                                             <span>Hosts<span><br>
                                                             <ul>
                                                                 {foreach $ah in $hosts}
-                                                                    <li><input data-toggle="toggle" type="checkbox" name="hostKeys" value="{$ah.key}">{$ah.name}</li>
+                                                                    <li><input type="checkbox" name="hostKeys" value="{$ah.key}">{$ah.name}</li>
                                                                 {/foreach}
                                                             </ul>
                                                         {/if}

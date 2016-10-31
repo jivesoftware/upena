@@ -41,15 +41,15 @@
                                     <option value="{$sn.name}" {if $sn.name == $serviceName}selected="selected"{/if}>{$sn.name} {$sn.enabled}</option>
                                 {/foreach}
                             </select>
-                            &nbsp age:{$age}
-                            <input onChange='this.form.submit();' data-toggle="toggle" type="checkbox" name="enabled" value="true" {if $enabled == 'true'}checked="checked"{/if}>
+                            &nbsp; age:{$age}
+                            <input form="profiler" onChange='this.form.submit();' data-toggle="toggle" type="checkbox" name="enabled" value="true" {if $enabled == 'true'}checked="checked"{/if}>
                         </td>
                     </tr>
                 </table>
             </div>
             <div style="overflow-y: hidden; to overflow-x: auto;">
                 {if $profile}
-                    <input onChange='this.form.submit();' type="image" src="{$profile}" alt="Submit">
+                    <input form="profiler" onChange='this.form.submit();' type="image" src="{$profile}" alt="Submit">
                 {/if}
             </div>
             {if $over}
@@ -102,7 +102,7 @@
                         <td>Value Strategy</td>
                         <td>
                             {foreach $vs in $valueStrategies}
-                                <input onChange='this.form.submit();' type="radio" class="j-ui-elem" value="{$vs}" name="valueStrategy" {if $vs == $valueStrategy}checked{/if}>
+                                <input form="profiler" onChange='this.form.submit();' type="radio" class="j-ui-elem" value="{$vs}" name="valueStrategy" {if $vs == $valueStrategy}checked{/if}>
                                 &nbsp; {$vs}
                                 &nbsp; &nbsp;
                             {/foreach}
@@ -112,7 +112,7 @@
                         <td>Stack Strategy</td>
                         <td>
                             {foreach $ss in $stackStrategies}
-                                <input onChange='this.form.submit();' type="radio" class="j-ui-elem" value="{$ss}" name="stackStrategy" {if $ss == $stackStrategy}checked{/if}>
+                                <input form="profiler" onChange='this.form.submit();' type="radio" class="j-ui-elem" value="{$ss}" name="stackStrategy" {if $ss == $stackStrategy}checked{/if}>
                                 &nbsp; {$ss}
                                 &nbsp; &nbsp;
                             {/foreach}
@@ -122,7 +122,7 @@
                         <td>Bar Strategy</td>
                         <td>
                             {foreach $bs in $barStrategies}
-                                <input onChange='this.form.submit();' type="radio" class="j-ui-elem" value="{$bs}" name="barStrategy" {if $bs == $barStrategy}checked{/if}>
+                                <input form="profiler" onChange='this.form.submit();' type="radio" class="j-ui-elem" value="{$bs}" name="barStrategy" {if $bs == $barStrategy}checked{/if}>
                                 &nbsp; {$bs}
                                 &nbsp; &nbsp;
                             {/foreach}
@@ -132,7 +132,7 @@
                         <td>Class Name Strategy</td>
                         <td>
                             {foreach $cns in $classNameStrategies}
-                                <input onChange='this.form.submit();' type="radio" class="j-ui-elem" value="{$cns}" name="classNameStrategy" {if $cns == $classNameStrategy}checked{/if}>
+                                <input form="profiler" onChange='this.form.submit();' type="radio" class="j-ui-elem" value="{$cns}" name="classNameStrategy" {if $cns == $classNameStrategy}checked{/if}>
                                 &nbsp; {$cns}
                                 &nbsp; &nbsp;
                             {/foreach}
@@ -142,7 +142,7 @@
                         <td>Bar Coloring</td>
                         <td>
                             {foreach $c in $colorings}
-                                <input onChange='this.form.submit();' type="radio" class="j-ui-elem" value="{$c}" name="coloring"  {if $c == $coloring}checked{/if}>
+                                <input form="profiler" onChange='this.form.submit();' type="radio" class="j-ui-elem" value="{$c}" name="coloring"  {if $c == $coloring}checked{/if}>
                                 &nbsp; {$c}
                                 &nbsp; &nbsp;
                             {/foreach}
@@ -162,7 +162,7 @@
                         <td>Order</td>
                         <td>
                             {foreach $so in $stackOrders}
-                                <input onChange='this.form.submit();' type="radio" class="j-ui-elem" value="{$so}" name="stackOrder"  {if $so == $stackOrder}checked{/if}>
+                                <input form="profiler" onChange='this.form.submit();' type="radio" class="j-ui-elem" value="{$so}" name="stackOrder"  {if $so == $stackOrder}checked{/if}>
                                 &nbsp; {$so}
                                 &nbsp; &nbsp;
                             {/foreach}

@@ -57,67 +57,67 @@
                         </td>
                         <td bgcolor>
                             {if $readWrite}
-                                <input class="form-control" data-toggle="toggle" type="checkbox" name="enabled" value="true" {if $filters.enabled}checked="checked"{/if}>
+                                <input form="filter-form" class="form-control" data-toggle="toggle" type="checkbox" name="enabled" value="true" {if $filters.enabled}checked="checked"{/if}>
                                 <button form="filter-form" type="submit" name="action" value="disable" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">Disable</button>
                                 <button form="filter-form" type="submit" name="action" value="enable" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">Enable</button>
                             {/if}
                         </td>
                         <td bgcolor>
                             {if $readWrite}
-                                <input class="form-control" data-toggle="toggle" type="checkbox" name="sslEnabled" value="true" {if $filters.sslEnabled}checked="checked"{/if}>
+                                <input form="filter-form" class="form-control" data-toggle="toggle" type="checkbox" name="sslEnabled" value="true" {if $filters.sslEnabled}checked="checked"{/if}>
                                 <button form="filter-form" type="submit" name="action" value="disableSSL" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">Disable</button>
                                 <button form="filter-form" type="submit" name="action" value="enableSSL" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">Enable</button>
                             {/if}
                         </td>
                         <td bgcolor>
                             {if $readWrite}
-                                <input class="form-control" data-toggle="toggle" type="checkbox" name="serviceAuthEnabled" value="true" {if $filters.serviceAuthEnabled}checked="checked"{/if}>
+                                <input form="filter-form" class="form-control" data-toggle="toggle" type="checkbox" name="serviceAuthEnabled" value="true" {if $filters.serviceAuthEnabled}checked="checked"{/if}>
                                 <button form="filter-form" type="submit" name="action" value="disableSAUTH" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">Disable</button>
                                 <button form="filter-form" type="submit" name="action" value="enableSAUTH" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">Enable</button>
                             {/if}
                         </td>
                         <td>
                             <div>
-                                <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                <input form="filter-form" type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
                                     placeholder="Cluster" value="{$filters.cluster?:''}" name="cluster" id="clusterPicker"
                                     class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/clusters">
-                                <input type="hidden" name="clusterKey" value="{$filters.clusterKey?:''}" />
+                                <input form="filter-form" type="hidden" name="clusterKey" value="{$filters.clusterKey?:''}" />
                             </div>
                         </td>
                         <td>
                             <div>
-                                <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                <input form="filter-form" type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
                                     placeholder="Host" value="{$filters.host?:''}" name="host" id="hostPicker"
                                     class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/hosts">
-                                <input type="hidden" name="hostKey" value="{$filters.hostKey?:''}" />
+                                <input form="filter-form" type="hidden" name="hostKey" value="{$filters.hostKey?:''}" />
                             </div>
                         </td>
                         <td>
                             <div>
-                                <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                <input form="filter-form" type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
                                     placeholder="Service" value="{$filters.service?:''}" name="service" id="servicePicker"
                                     class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/services">
-                                <input type="hidden" name="serviceKey" value="{$filters.serviceKey?:''}" />
+                                <input form="filter-form" type="hidden" name="serviceKey" value="{$filters.serviceKey?:''}" />
                             </div>
                         </td>
                         <td>
                         </td>
                         <td style="width:100px;">
-                            <input type="text" autocomplete="off" role="combobox" class="form-control" style="padding-left:10px;"
+                            <input form="filter-form" type="text" autocomplete="off" role="combobox" class="form-control" style="padding-left:10px;"
                                 placeholder="Id" value="{$filters.instanceId?:''}" name="instanceId" id="idPicker">
                         </td>
                         <td>
                             <div>
-                                <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                <input form="filter-form" type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
                                     placeholder="Release" value="{$filters.release?:''}" name="release" id="releasePicker"
                                     class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/releases">
-                                <input type="hidden" name="releaseKey" value="{$filters.releaseKey?:''}" />
+                                <input form="filter-form" type="hidden" name="releaseKey" value="{$filters.releaseKey?:''}" />
                             </div>
                         </td>
                         <td>
-                            <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-search"></span> Filter</button>
+                            <button form="filter-form" title="Filter" type="submit" name="action" value="filter" class="btn btn-primary ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-search"></span> Filter</button>
                             {if $readWrite}
-                                <button title="Add" type="submit" name="action" value="add" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-plus"></span> Add</button>
+                                <button form="filter-form" title="Add" type="submit" name="action" value="add" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-plus"></span> Add</button>
                                 <button form="filter-form" type="submit" name="action" value="restartAllNow" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">Restart Now</button>
                                 <button form="filter-form" type="submit" name="action" value="restartAll" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">Rolling Restart</button>
                                 <button form="filter-form" type="submit" name="action" value="cancelRestartAll" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">Cancel Restart</button>
@@ -131,7 +131,7 @@
             
 
             {foreach $i in $instances}
-                <form id="edit-host-{$i.key}" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                <form id="edit-instance-{$i.key}" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
                     data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="editInstance-{$i.key}">
                     <tr>
                         <td>
@@ -146,41 +146,41 @@
                             </label>
                         </td>
                         <td>
-                            <input class="form-control" data-toggle="toggle" type="checkbox" name="enabled" value="true" {if $i.enabled}checked="checked"{/if}>
+                            <input form="edit-instance-{$i.key}" class="form-control" data-toggle="toggle" type="checkbox" name="enabled" value="true" {if $i.enabled}checked="checked"{/if}>
                         </td>
                         <td>
-                            <input class="form-control" data-toggle="toggle" type="checkbox" name="sslEnabled" value="true" {if $i.sslEnabled}checked="checked"{/if}>
+                            <input form="edit-instance-{$i.key}" class="form-control" data-toggle="toggle" type="checkbox" name="sslEnabled" value="true" {if $i.sslEnabled}checked="checked"{/if}>
                         </td>
                         <td>
-                            <input class="form-control" data-toggle="toggle" type="checkbox" name="serviceAuthEnabled" value="true" {if $i.serviceAuthEnabled}checked="checked"{/if}>
+                            <input form="edit-instance-{$i.key}" class="form-control" data-toggle="toggle" type="checkbox" name="serviceAuthEnabled" value="true" {if $i.serviceAuthEnabled}checked="checked"{/if}>
                         </td>
                         <td>
                             <div>
-                                <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                <input form="edit-instance-{$i.key}" type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
                                     placeholder="Cluster" value="{$i.cluster.name}" name="cluster" class="upena-hs-field form-control"
                                     data-upena-lookup="/ui/lookup/clusters" />
-                                <input type="hidden" name="clusterKey" value="{$i.cluster.key}" />
+                                <input form="edit-instance-{$i.key}" type="hidden" name="clusterKey" value="{$i.cluster.key}" />
                             </div>
                         </td>
                         <td>
                             <div>
-                                <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                <input form="edit-instance-{$i.key}" type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
                                     placeholder="Host" value="{$i.host.name}" name="host" class="upena-hs-field form-control"
                                     data-upena-lookup="/ui/lookup/hosts" />
-                                <input type="hidden" name="hostKey" value="{$i.host.key}" />
+                                <input form="edit-instance-{$i.key}" type="hidden" name="hostKey" value="{$i.host.key}" />
                             </div>
                         </td>
                         <td>
                            <div>
-                                <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                <input form="edit-instance-{$i.key}" type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
                                     placeholder="Service" value="{$i.service.name}" name="service" class="upena-hs-field form-control"
                                     data-upena-lookup="/ui/lookup/services" />
-                                <input type="hidden" name="serviceKey" value="{$i.service.key}" />
+                                <input form="edit-instance-{$i.key}" type="hidden" name="serviceKey" value="{$i.service.key}" />
                             </div>
                         </td>
                         <td>
                             <a href="#" rel="popover" id="popoverAnchor-{$i.key}" data-popover-content="#portsPopover-{$i.key}" data-placement="left" class="btn btn-default" title="Ports">
-                                <span class="glyphicon glyphicon-menu-down"></span>Ports
+                                <span class="glyphicon glyphicon-menu-down"></span> Ports
                             </a>
                             <div id="portsPopover-{$i.key}" class="hide" style="overflow:scroll; height:400px;">
                                 <table>
@@ -195,18 +195,18 @@
                                     <tbody>
                                         <tr class="well">
                                             <td>
-                                                <input type="text" id="portName-{$i.key}" style="padding-left:10px;"
+                                                <input form="edit-instance-{$i.key}" type="text" id="portName-{$i.key}" style="padding-left:10px;"
                                                     placeholder="port name" value="">
                                             </td>
                                             <td>
-                                                <input type="number" id="port-{$i.key}" style="padding-left:10px;"
+                                                <input form="edit-instance-{$i.key}" type="number" id="port-{$i.key}" style="padding-left:10px;"
                                                     placeholder="port number" value="">
                                             </td>
                                             <td>
                                             </td>
                                             <td>
                                                 {if $readWrite}
-                                                    <button title="Add" onClick="upena.instancePorts.addPort('{$i.key}')" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span> Add</button>
+                                                    <button form="edit-instance-{$i.key}" title="Add" onClick="upena.instancePorts.addPort('{$i.key}')" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span> Add</button>
                                                 {/if}
                                             </td>
                                         </tr>
@@ -220,7 +220,7 @@
                                                 </td>
                                                 <td class="well" colspan="3">
                                                     <a href="#" rel="popover" id="propertyPopoverAnchor-{$i.key}-{$p.portName}" data-popover-content="#propertyPopover-{$i.key}-{$p.portName}" data-placement="left" class="btn btn-primary" title="{$p.portName} Properties">
-                                                        <span class="glyphicon glyphicon-menu-down"></span>Properties
+                                                        <span class="glyphicon glyphicon-menu-down"></span> Properties
                                                     </a>
                                                     <div id="propertyPopover-{$i.key}-{$p.portName}" class="hide" style="overflow:scroll; height:400px;">
                                                         <table>
@@ -284,23 +284,29 @@
                             </div>
                         </td>
                         <td style="width:100px;">
-                            <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                            <input form="edit-instance-{$i.key}" type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
                                 placeholder="Id" value="{$i.instanceId}" name="instanceId" class="form-control">
                         </td>
                         <td>
                             <div>
-                                <input type="text" style="padding-left:10px;"
+                                <input form="edit-instance-{$i.key}" type="text" style="padding-left:10px;"
                                     placeholder="Release" value="{$i.release.name}" name="release" class="upena-hs-field form-control"
                                     data-upena-lookup="/ui/lookup/releases" />
-                                <input type="hidden" name="releaseKey" value="{$i.release.key}" />
+                                <input form="edit-instance-{$i.key}" type="hidden" name="releaseKey" value="{$i.release.key}" />
                             </div>
                         </td>
                         <td>
                             {if $readWrite}
-                                <input type="hidden" name="key" value="{$i.key}">
-                                <button title="Update" type="submit" name="action" value="restart" class="btn btn-default"><span class="glyphicon glyphicon-repeat ladda-button"  data-spinner-color="#222" data-style="expand-right"></span> Restart</button>
-                                <button title="Update" type="submit" name="action" value="update" class="btn btn-default"><span class="glyphicon glyphicon-save ladda-button"  data-spinner-color="#222" data-style="expand-right"></span> Update</button>
-                                <button onclick="return confirm('Are you sure you want to delete?')" title="Remove" type="submit" name="action" value="remove" class="btn btn-default"><span class="glyphicon glyphicon-trash"></span> Remove</button>
+                                <input form="edit-instance-{$i.key}" type="hidden" name="key" value="{$i.key}">
+                                <button form="edit-instance-{$i.key}" title="Update" type="submit" name="action" value="restart" class="btn btn-default">
+                                    <span class="glyphicon glyphicon-repeat ladda-button"  data-spinner-color="#222" data-style="expand-right"></span> Restart
+                                </button>
+                                <button form="edit-instance-{$i.key}" title="Update" type="submit" name="action" value="update" class="btn btn-default">
+                                    <span class="glyphicon glyphicon-save ladda-button"  data-spinner-color="#222" data-style="expand-right"></span> Update
+                                </button>
+                                <button form="edit-instance-{$i.key}" onclick="return confirm('Are you sure you want to delete?')" title="Remove" type="submit" name="action" value="remove" class="btn btn-default">
+                                    <span class="glyphicon glyphicon-trash"></span> Remove
+                                </button>
                             {/if}
                         </td>
                     </tr>

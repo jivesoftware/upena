@@ -26,45 +26,45 @@
                         data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="addMonkey">
                         <tr style="background-color:#ddd;">
                             <td bgcolor>
-                                <input class="form-control" data-toggle="toggle" type="checkbox" name="enabled" value="true" {if $filters.enabled}checked="checked"{/if}>
+                                <input form="add-monkey" class="form-control" data-toggle="toggle" type="checkbox" name="enabled" value="true" {if $filters.enabled}checked="checked"{/if}>
                             </td>
                             <td>
                                 <div>
-                                    <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                    <input form="add-monkey" type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
                                         placeholder="Cluster" value="{$filters.cluster?:''}" name="cluster" id="clusterPicker"
                                         class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/clusters">
-                                    <input type="hidden" name="clusterKey" value="{$filters.clusterKey?:''}" />
+                                    <input form="add-monkey" type="hidden" name="clusterKey" value="{$filters.clusterKey?:''}" />
                                 </div>
                             </td>
                             <td>
                                 <div>
-                                    <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                    <input form="add-monkey" type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
                                         placeholder="Host" value="{$filters.host?:''}" name="host" id="hostPicker"
                                         class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/hosts">
-                                    <input type="hidden" name="hostKey" value="{$filters.hostKey?:''}" />
+                                    <input form="add-monkey" type="hidden" name="hostKey" value="{$filters.hostKey?:''}" />
                                 </div>
                             </td>
                             <td>
                                 <div>
-                                    <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                    <input form="add-monkey" type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
                                         placeholder="Service" value="{$filters.service?:''}" name="service" id="servicePicker"
                                         class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/services">
-                                    <input type="hidden" name="serviceKey" value="{$filters.serviceKey?:''}" />
+                                    <input form="add-monkey" type="hidden" name="serviceKey" value="{$filters.serviceKey?:''}" />
                                 </div>
                             </td>
                             <td>
                                 <div>
-                                    <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                    <input form="add-monkey" type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
                                         placeholder="Strategy" value="{$filters.strategy?:''}" name="strategy" id="strategyPicker"
                                         class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/strategies">
-                                    <input type="hidden" name="strategyKey" value="{$filters.strategyKey?:''}" />
+                                    <input form="add-monkey" type="hidden" name="strategyKey" value="{$filters.strategyKey?:''}" />
                                 </div>
                             </td>
                             <td>
-                                <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                                <button form="add-monkey" title="Filter" type="submit" name="action" value="filter" class="btn btn-primary ladda-button"  data-spinner-color="#222" data-style="expand-right">
                                     <span class="glyphicon glyphicon-search"></span> Filter
                                 </button>
-                                <button title="Add" type="submit" name="action" value="add" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                                <button form="add-monkey" title="Add" type="submit" name="action" value="add" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
                                     <span class="glyphicon glyphicon-plus"></span> Add
                                 </button>
                             </td>
@@ -75,42 +75,42 @@
                    
 
                     {foreach $m in $monkeys}
-                        <form id="edit-monkey" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                        <form id="edit-monkey-{$m.key}" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
                             data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="editMonkey">
                             <tr>
                                 <td>
-                                    <input class="form-control" data-toggle="toggle" type="checkbox" name="enabled" value="true" {if $m.enabled}checked="checked"{/if}>
+                                    <input form="edit-monkey-{$m.key}" class="form-control" data-toggle="toggle" type="checkbox" name="enabled" value="true" {if $m.enabled}checked="checked"{/if}>
                                 </td>
                                 <td>
                                     <div>
-                                        <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                        <input form="edit-monkey-{$m.key}" type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
                                             placeholder="Cluster" value="{$m.cluster.name}" name="cluster" class="upena-hs-field form-control"
                                             data-upena-lookup="/ui/lookup/clusters" />
-                                        <input type="hidden" name="clusterKey" value="{$m.cluster.key}" />
+                                        <input form="edit-monkey-{$m.key}" type="hidden" name="clusterKey" value="{$m.cluster.key}" />
                                     </div>
                                 </td>
                                 <td>
                                     <div>
-                                        <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                        <input form="edit-monkey-{$m.key}" type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
                                             placeholder="Host" value="{$m.host.name}" name="host" class="upena-hs-field form-control"
                                             data-upena-lookup="/ui/lookup/hosts" />
-                                        <input type="hidden" name="hostKey" value="{$m.host.key}" />
+                                        <input form="edit-monkey-{$m.key}" type="hidden" name="hostKey" value="{$m.host.key}" />
                                     </div>
                                 </td>
                                 <td>
                                    <div>
-                                        <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                        <input form="edit-monkey-{$m.key}" type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
                                             placeholder="Service" value="{$m.service.name}" name="service" class="upena-hs-field form-control"
                                             data-upena-lookup="/ui/lookup/services" />
-                                        <input type="hidden" name="serviceKey" value="{$m.service.key}" />
+                                        <input form="edit-monkey-{$m.key}" type="hidden" name="serviceKey" value="{$m.service.key}" />
                                     </div>
                                 </td>
                                 <td>
                                    <div>
-                                        <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                        <input form="edit-monkey-{$m.key}" type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
                                             placeholder="Strategy" value="{$m.strategy.name}" name="strategy" class="upena-hs-field form-control"
                                             data-upena-lookup="/ui/lookup/strategies" />
-                                        <input type="hidden" name="strategyKey" value="{$m.strategy.key}" />
+                                        <input form="edit-monkey-{$m.key}" type="hidden" name="strategyKey" value="{$m.strategy.key}" />
                                     </div>
                                 </td>
                                 <td>
@@ -146,15 +146,15 @@
                                                 {/if}
                                                 <tr>
                                                     <td>
-                                                        <input type="text" id="propertyName-{$m.key}" style="padding-left:10px;"
+                                                        <input form="edit-monkey-{$m.key}" type="text" id="propertyName-{$m.key}" style="padding-left:10px;"
                                                             placeholder="property name" value="">
                                                     </td>
                                                     <td>
-                                                        <input type="text" id="propertyValue-{$m.key}" style="padding-left:10px;"
+                                                        <input form="edit-monkey-{$m.key}" type="text" id="propertyValue-{$m.key}" style="padding-left:10px;"
                                                             placeholder="property value" value="">
                                                     </td>
                                                     <td>
-                                                        <button title="Add" onClick="upena.monkey.addProperty('{$m.key}')" class="btn btn-default">
+                                                        <button form="edit-monkey-{$m.key}" title="Add" onClick="upena.monkey.addProperty('{$m.key}')" class="btn btn-default">
                                                             <span class="glyphicon glyphicon-plus"></span> Add
                                                         </button>
                                                     </td>
@@ -164,11 +164,11 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <input type="hidden" name="key" value="{$m.key}">
-                                    <button title="Update" type="submit" name="action" value="update" class="btn btn-default">
+                                    <input form="edit-monkey-{$m.key}" type="hidden" name="key" value="{$m.key}">
+                                    <button form="edit-monkey-{$m.key}" title="Update" type="submit" name="action" value="update" class="btn btn-default">
                                         <span class="glyphicon glyphicon-save ladda-button"  data-spinner-color="#222" data-style="expand-right"></span> Update
                                     </button>
-                                    <button onclick="return confirm('Are you sure you want to delete?')" title="Remove" type="submit" name="action" value="remove" class="btn btn-default">
+                                    <button form="edit-monkey-{$m.key}" onclick="return confirm('Are you sure you want to delete?')" title="Remove" type="submit" name="action" value="remove" class="btn btn-default">
                                         <span class="glyphicon glyphicon-trash"></span> Remove
                                     </button>
                                 </td>
