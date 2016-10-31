@@ -63,11 +63,11 @@
                             </td>
                             <td>
                                 <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary">
-                                    <span class="glyphicon glyphicon-search ladda-button"  data-spinner-color="#222" data-style="expand-right">&nbspFilter</span>
+                                    <span class="glyphicon glyphicon-search ladda-button"  data-spinner-color="#222" data-style="expand-right"></span> Filter
                                 </button>
                                 {if $readWrite}
                                     <button title="Add" type="submit" name="action" value="add" class="btn btn-default">
-                                        <span class="glyphicon glyphicon-plus ladda-button"  data-spinner-color="#222" data-style="expand-right">&nbspAdd</span>
+                                        <span class="glyphicon glyphicon-plus ladda-button"  data-spinner-color="#222" data-style="expand-right"></span> Add
                                     </button>
                                 {/if}
                             <td>
@@ -122,10 +122,10 @@
                                     {if $readWrite}
                                         <input type="hidden" name="key" value="{$h.key}">
                                         <button title="Update" type="submit" name="action" value="update" class="btn btn-default">
-                                            <span class="glyphicon glyphicon-save">&nbspUpdate</span>
+                                            <span class="glyphicon glyphicon-save"></span> Update
                                         </button>
                                         <button onclick="return confirm('Are you sure you want to delete?')" title="Remove" type="submit" name="action" value="remove" class="btn btn-default">
-                                            <span class="glyphicon glyphicon-trash">&nbspRemove</span>
+                                            <span class="glyphicon glyphicon-trash"></span> Remove
                                         </button>
                                     {/if}
                                 <td>

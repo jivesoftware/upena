@@ -33,11 +33,11 @@
                             </td>
                             <td>
                                 <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary ladda-button"  data-spinner-color="#222" data-style="expand-right">
-                                    <span class="glyphicon glyphicon-search">&nbspFilter</span>
+                                    <span class="glyphicon glyphicon-search"></span> Filter
                                 </button>
                                 {if $readWrite}
                                     <button title="Add" type="submit" name="action" value="add" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
-                                        <span class="glyphicon glyphicon-plus">&nbspAdd</span>
+                                        <span class="glyphicon glyphicon-plus"></span> Add
                                     </button>
                                 {/if}
                             </td>
@@ -104,7 +104,7 @@
                                                     </td>
                                                     <td>
                                                             <button title="Add" onClick="upena.clusterReleaseGroups.add('{$c.key}')" class="btn btn-default">
-                                                                <span class="glyphicon glyphicon-plus">&nbspAdd</span>
+                                                                <span class="glyphicon glyphicon-plus"></span> Add
                                                             </button>
                                                     </td>
                                                 </tr>
@@ -117,10 +117,10 @@
                                     <input type="hidden" name="key" value="{$c.key}">
                                     {if $readWrite}
                                         <button title="Update" type="submit" name="action" value="update" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
-                                            <span class="glyphicon glyphicon-save">&nbspUpdate</span>
+                                            <span class="glyphicon glyphicon-save"></span> Update
                                         </button>
                                         <button onclick="return confirm('Are you sure you want to delete?')" title="Remove" type="submit" name="action" value="remove" class="btn btn-default">
-                                            <span class="glyphicon glyphicon-trash">&nbspRemove</span>
+                                            <span class="glyphicon glyphicon-trash"></span> Remove
                                         </button>
                                     {/if}
                                 </td>

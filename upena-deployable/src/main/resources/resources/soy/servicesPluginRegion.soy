@@ -38,10 +38,16 @@
                                 placeholder="Description" value="{$filters.description?:''}" name="description" id="descriptionPicker" class="form-control">
                             </td>
                             <td>
-                                <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-search">&nbspFilter</span></button>
+                                <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                                    <span class="glyphicon glyphicon-search"></span> Filter
+                                </button>
                                 {if $readWrite}
-                                    <button title="Add" type="submit" name="action" value="add" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-plus">&nbspAdd</span></button>
-                                    <button title="Export" type="submit" name="action" value="export" class="btn btn-default"><span class="glyphicon glyphicon-export">&nbspExport</span></button>
+                                    <button title="Add" type="submit" name="action" value="add" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                                        <span class="glyphicon glyphicon-plus"></span> Add
+                                    </button>
+                                    <button title="Export" type="submit" name="action" value="export" class="btn btn-default">
+                                        <span class="glyphicon glyphicon-export"></span> Export
+                                    </button>
                                 {/if}
                             <td>
                         </tr>
@@ -70,8 +76,12 @@
                                 <td>
                                     {if $readWrite}
                                         <input type="hidden" name="key" value="{$s.key}">
-                                        <button title="Update" type="submit" name="action" value="update" class="btn btn-default"><span class="glyphicon glyphicon-save ladda-button"  data-spinner-color="#222" data-style="expand-right">&nbspUpdate</span></button>
-                                        <button onclick="return confirm('Are you sure you want to delete?')" title="Remove" type="submit" name="action" value="remove" class="btn btn-default"><span class="glyphicon glyphicon-trash">&nbspRemove</span></button>
+                                        <button title="Update" type="submit" name="action" value="update" class="btn btn-default">
+                                            <span class="glyphicon glyphicon-save ladda-button" data-spinner-color="#222" data-style="expand-right"></span> Update
+                                        </button>
+                                        <button onclick="return confirm('Are you sure you want to delete?')" title="Remove" type="submit" name="action" value="remove" class="btn btn-default">
+                                            <span class="glyphicon glyphicon-trash"></span> Remove
+                                        </button>
                                     {/if}
                                 <td>
                             </tr>
@@ -86,7 +96,9 @@
                             <span class="btn btn-default btn-file"><span>Browse...</span><input type="file" name="file"/></span>
                             <span class="fileinput-filename"></span><span class="fileinput-new">&nbsp;&nbsp;&nbsp;No file chosen&nbsp;&nbsp;&nbsp;</span>
                         </div>
-                        <button title="Import" type="submit"  value="import" class="btn btn-default"><span class="glyphicon glyphicon-import">&nbsp;Import</span></button>
+                        <button title="Import" type="submit"  value="import" class="btn btn-default">
+                            <span class="glyphicon glyphicon-import"></span> Import
+                        </button>
                     </form>
                 </div>
             {/if}

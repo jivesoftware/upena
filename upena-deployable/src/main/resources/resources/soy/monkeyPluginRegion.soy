@@ -61,8 +61,12 @@
                                 </div>
                             </td>
                             <td>
-                                <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-search">&nbsp;Filter</span></button>
-                                <button title="Add" type="submit" name="action" value="add" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-plus">&nbsp;Add</span></button>
+                                <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                                    <span class="glyphicon glyphicon-search"></span> Filter
+                                </button>
+                                <button title="Add" type="submit" name="action" value="add" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                                    <span class="glyphicon glyphicon-plus"></span> Add
+                                </button>
                             </td>
                         </tr>
                     </form>
@@ -133,7 +137,9 @@
                                                                 {$nv.value}
                                                             </td>
                                                             <td>
-                                                                <button title="Remove" onClick="upena.monkey.removeProperty('{$m.key}', '{$nv.name}', '{$nv.value}')" class="btn btn-default"><span class="glyphicon glyphicon-trash">&nbsp;Remove</span></button>
+                                                                <button title="Remove" onClick="upena.monkey.removeProperty('{$m.key}', '{$nv.name}', '{$nv.value}')" class="btn btn-default">
+                                                                    <span class="glyphicon glyphicon-trash"></span> Remove
+                                                                </button>
                                                             </td>
                                                         </tr>
                                                     {/foreach}
@@ -148,7 +154,9 @@
                                                             placeholder="property value" value="">
                                                     </td>
                                                     <td>
-                                                        <button title="Add" onClick="upena.monkey.addProperty('{$m.key}')" class="btn btn-default"><span class="glyphicon glyphicon-plus">&nbsp;Add</span></button>
+                                                        <button title="Add" onClick="upena.monkey.addProperty('{$m.key}')" class="btn btn-default">
+                                                            <span class="glyphicon glyphicon-plus"></span> Add
+                                                        </button>
                                                     </td>
                                                 </tr>
                                             </tbody>
@@ -157,8 +165,12 @@
                                 </td>
                                 <td>
                                     <input type="hidden" name="key" value="{$m.key}">
-                                    <button title="Update" type="submit" name="action" value="update" class="btn btn-default"><span class="glyphicon glyphicon-save ladda-button"  data-spinner-color="#222" data-style="expand-right">&nbsp;Update</span></button>
-                                    <button onclick="return confirm('Are you sure you want to delete?')" title="Remove" type="submit" name="action" value="remove" class="btn btn-default"><span class="glyphicon glyphicon-trash">&nbsp;Remove</span></button>
+                                    <button title="Update" type="submit" name="action" value="update" class="btn btn-default">
+                                        <span class="glyphicon glyphicon-save ladda-button"  data-spinner-color="#222" data-style="expand-right"></span> Update
+                                    </button>
+                                    <button onclick="return confirm('Are you sure you want to delete?')" title="Remove" type="submit" name="action" value="remove" class="btn btn-default">
+                                        <span class="glyphicon glyphicon-trash"></span> Remove
+                                    </button>
                                 </td>
                             </tr>
                         </form>
