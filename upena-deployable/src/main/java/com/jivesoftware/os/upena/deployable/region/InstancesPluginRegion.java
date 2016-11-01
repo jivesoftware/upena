@@ -332,7 +332,6 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
             Instance instance = timestampedValue.getValue();
             if (instance.ports.get("main").sslEnabled != state) {
                 instance.ports.get("main").sslEnabled = state;
-                instance.ports.get("manage").sslEnabled = state;
                 upenaStore.instances.update(key, instance);
                 enable.add(instanceToHumanReadableString(instance));
             }
@@ -351,7 +350,6 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
             Instance instance = timestampedValue.getValue();
             if (instance.ports.get("main").serviceAuthEnabled != state) {
                 instance.ports.get("main").serviceAuthEnabled = state;
-                instance.ports.get("manage").serviceAuthEnabled = state;
                 upenaStore.instances.update(key, instance);
                 enable.add(instanceToHumanReadableString(instance));
             }

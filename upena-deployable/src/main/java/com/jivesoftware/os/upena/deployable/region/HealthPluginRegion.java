@@ -236,7 +236,6 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
 
                                 String simpleHealthHtml = "";
                                 List<Map<String, String>> simpleServiceHealth = simpleServiceHealth(nannyHealth.instanceDescriptor.instanceKey);
-                                LOG.info("simpleServiceHealth:" + simpleServiceHealth);
                                 Map<String, Object> simpleHealthMap = Maps.newHashMap();
                                 if (nannyHealth.unexpectedRestart > -1) {
                                     simpleHealthMap.put("unexpectedRestart", UpenaHealthEndpoints.humanReadableUptime(now - nannyHealth.unexpectedRestart));

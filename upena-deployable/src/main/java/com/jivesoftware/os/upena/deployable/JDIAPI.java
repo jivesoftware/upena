@@ -1,6 +1,8 @@
 package com.jivesoftware.os.upena.deployable;
 
 import com.google.common.base.Joiner;
+import com.jivesoftware.os.mlogger.core.MetricLogger;
+import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.ArrayReference;
 import com.sun.jdi.ArrayType;
@@ -63,6 +65,8 @@ import sun.tools.attach.HotSpotVirtualMachine;
  */
 public class JDIAPI {
 
+    private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
+
     public static enum ThreadDumpLineType {
         thread, monitor, location, eod;
     }
@@ -88,7 +92,7 @@ public class JDIAPI {
         if (socketConnector != null) {
             Map<String, Connector.Argument> defaultArguments = socketConnector.defaultArguments();
             for (Map.Entry<String, Connector.Argument> entry : defaultArguments.entrySet()) {
-                System.out.println(entry.getKey() + " " + entry.getValue().getClass() + " " + entry.getValue());
+                LOG.info(entry.getKey() + " " + entry.getValue().getClass() + " " + entry.getValue());
             }
 
             Connector.StringArgument hostNameArg = (Connector.StringArgument) defaultArguments.get("hostname");
@@ -96,7 +100,7 @@ public class JDIAPI {
             Connector.IntegerArgument portArg = (Connector.IntegerArgument) defaultArguments.get("port");
             portArg.setValue(port);
             VirtualMachine vm = socketConnector.attach(defaultArguments);
-            System.out.println("Attached to process '" + vm.name() + "'");
+            LOG.info("Attached to process '" + vm.name() + "'");
             vm.suspend();
             try {
                 List<ThreadReference> allThreads = vm.allThreads();
@@ -192,7 +196,7 @@ public class JDIAPI {
         if (socketConnector != null) {
             Map<String, Connector.Argument> defaultArguments = socketConnector.defaultArguments();
             for (Map.Entry<String, Connector.Argument> entry : defaultArguments.entrySet()) {
-                System.out.println(entry.getKey() + " " + entry.getValue().getClass() + " " + entry.getValue());
+                LOG.info(entry.getKey() + " " + entry.getValue().getClass() + " " + entry.getValue());
             }
 
             Connector.StringArgument hostNameArg = (Connector.StringArgument) defaultArguments.get("hostname");
@@ -200,7 +204,7 @@ public class JDIAPI {
             Connector.IntegerArgument portArg = (Connector.IntegerArgument) defaultArguments.get("port");
             portArg.setValue(port);
             VirtualMachine vm = socketConnector.attach(defaultArguments);
-            System.out.println("Attached to process '" + vm.name() + "'");
+            LOG.info("Attached to process '" + vm.name() + "'");
 
             try {
                 vm.suspend();
@@ -402,6 +406,7 @@ public class JDIAPI {
         public void run(BreakpointState breakpointState, StackFrames stackFrames) throws Exception {
             if (!attached.compareAndSet(false, true)) {
                 log.add("Breakpoint debugger already attached...");
+                LOG.info("Breakpoint debugger already attached...");
                 return;
             }
             log.clear();
@@ -413,6 +418,7 @@ public class JDIAPI {
                 if (attachingConnector.transport().name().equals("dt_socket")) {
                     socketConnector = attachingConnector;
                     log.add("Found socket connector..");
+                    LOG.info("Found socket connector..");
                     break;
                 }
             }
@@ -426,6 +432,7 @@ public class JDIAPI {
                     portArg.setValue(port);
                     vm = socketConnector.attach(defaultArguments);
                     log.add("Attached to " + vm.description());
+                    LOG.info("Attached to " + vm.description());
 
                     while (attached.get()) {
                         log.clear();
@@ -450,6 +457,7 @@ public class JDIAPI {
                             if (breakpointLocation != null) {
                                 breakpointLocations.add(breakpointLocation);
                                 attachedBreakpoints.add(breakpoint);
+                                LOG.info("Attached breakpoint " + breakpoint);
                             }
                         }
 
@@ -466,19 +474,23 @@ public class JDIAPI {
                                 if (breakPointsVersion < version.get()) {
                                     evtReqMgr.deleteAllBreakpoints();
                                     log.add("Cleared all breakpoints");
+                                    LOG.info("Cleared all breakpoints");
                                     break;
                                 }
                                 log.clear();
                                 EventSet evtSet = evtQueue.remove(1000);
                                 if (evtSet == null) {
                                     if (attached.get()) {
+                                        LOG.info("Still attached");
                                         continue;
                                     } else {
                                         log.add("Dettaching from breakpoints");
+                                        LOG.info("Dettaching from breakpoints");
                                         break;
                                     }
                                 }
                                 log.add("Consuming events");
+                                LOG.info("Consuming events");
                                 EventIterator evtIter = evtSet.eventIterator();
                                 while (evtIter.hasNext()) {
                                     try {
@@ -493,6 +505,7 @@ public class JDIAPI {
                                             int breakpointLineNumber = location.lineNumber();
 
                                             log.add("Breakpoint triggered:" + breakpointClass + ":" + breakpointLineNumber);
+                                            LOG.info("Breakpoint triggered:" + breakpointClass + ":" + breakpointLineNumber);
                                             BreakpointEvent brEvt = (BreakpointEvent) evt;
                                             ThreadReference threadRef = brEvt.thread();
                                             int frameCount = threadRef.frameCount();
@@ -580,9 +593,11 @@ public class JDIAPI {
                         }
                     }
                     log.add("Exiting Debugger");
+                    LOG.info("Exiting Debugger");
                 } finally {
                     if (vm != null) {
                         log.add("Shutting down debugger.");
+                        LOG.info("Shutting down debugger.");
                         vm.resume();
                         vm.dispose();
                     }

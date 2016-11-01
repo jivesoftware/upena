@@ -1241,6 +1241,20 @@ $(document).ready(function () {
 
     //upena.livehealth.init();
 
+    $('.tree li:has(ul)').addClass('parent_li').find(' > div').attr('title', 'Collapse this branch');
+    $('.tree li.parent_li > div').parent('li.parent_li').find(' > ul > li').hide();
+    $('.tree li.parent_li > div').on('click', function (e) {
+        var children = $(this).parent('li.parent_li').find(' > ul > li');
+        if (children.is(":visible")) {
+            children.hide('fast');
+            $(this).attr('title', 'Expand this branch').find(' > span > i').addClass('fa-plus-circle').removeClass('fa-minus-circle');
+        } else {
+            children.show('fast');
+            $(this).attr('title', 'Collapse this branch').find(' > span > i').addClass('fa-minus-circle').removeClass('fa-plus-circle');
+        }
+        e.stopPropagation();
+    });
+
 });
 
 $(window).focus(function () {

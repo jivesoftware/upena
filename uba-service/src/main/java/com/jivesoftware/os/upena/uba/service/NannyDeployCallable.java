@@ -18,6 +18,8 @@ package com.jivesoftware.os.upena.uba.service;
 import com.google.common.base.Joiner;
 import com.jivesoftware.os.jive.utils.shell.utils.Untar;
 import com.jivesoftware.os.jive.utils.shell.utils.Unzip;
+import com.jivesoftware.os.mlogger.core.MetricLogger;
+import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.routing.bird.shared.InstanceDescriptor;
 import java.io.File;
 import java.io.IOException;
@@ -39,6 +41,8 @@ import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.resolution.ArtifactResult;
 
 class NannyDeployCallable implements Callable<Boolean> {
+
+    private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
     private final RepositoryProvider repositoryProvider;
     private final UbaCoordinate ubaCoordinate;
@@ -103,9 +107,9 @@ class NannyDeployCallable implements Callable<Boolean> {
             instancePath.deployLog().delete();
 
             libDir = instancePath.lib();
-            System.out.println("Clearing:" + libDir);
+            LOG.info("Clearing:" + libDir);
             FileUtils.deleteDirectory(libDir);
-            System.out.println("Creating if absent:" + libDir);
+            LOG.info("Creating if absent:" + libDir);
             if (!libDir.exists() && !libDir.mkdirs()) {
                 throw new RuntimeException("Failed trying to mkdirs for " + libDir);
             }
@@ -117,9 +121,9 @@ class NannyDeployCallable implements Callable<Boolean> {
         File pluginlibDir = null;
         try {
             pluginlibDir = instancePath.pluginLib();
-            System.out.println("Clearing:" + pluginlibDir);
+            LOG.info("Clearing:" + pluginlibDir);
             FileUtils.deleteDirectory(pluginlibDir);
-            System.out.println("Creating if absent:" + pluginlibDir);
+            LOG.info("Creating if absent:" + pluginlibDir);
             if (!pluginlibDir.exists() && !pluginlibDir.mkdirs()) {
                 throw new RuntimeException("Failed trying to mkdirs for " + pluginlibDir);
             }
@@ -131,9 +135,9 @@ class NannyDeployCallable implements Callable<Boolean> {
         File resourcesDir = null;
         try {
             resourcesDir = instancePath.resources();
-            System.out.println("Clearing:" + resourcesDir);
+            LOG.info("Clearing:" + resourcesDir);
             FileUtils.deleteDirectory(resourcesDir);
-            System.out.println("Creating if absent:" + resourcesDir);
+            LOG.info("Creating if absent:" + resourcesDir);
             if (!resourcesDir.exists() && !resourcesDir.mkdirs()) {
                 throw new RuntimeException("Failed trying to mkdirs for " + resourcesDir);
             }
@@ -148,27 +152,19 @@ class NannyDeployCallable implements Callable<Boolean> {
         String[] repos = id.repository.split(",");
         List<RemoteRepository> remoteRepos = repositoryProvider.newRepositories(system, session, null, repos);
 
-        System.out.println("------------------------------------------------------------");
-        System.out.println(" Resolving:" + id);
-        System.out.println("------------------------------------------------------------");
+        LOG.info(" Resolving:" + id);
         String[] deployablecoordinates = id.versionName.trim().split(",");
         boolean successfulDeploy = deploy(deployablecoordinates[0], remoteRepos, system, session, libDir);
         if (successfulDeploy) {
             if (deployablecoordinates.length > 1) {
-                System.out.println("------------------------------------------------------------");
-                System.out.println(" Deploying plugins:" + (deployablecoordinates.length - 1));
-                System.out.println("------------------------------------------------------------");
+                LOG.info(" Deploying plugins:" + (deployablecoordinates.length - 1));
 
                 for (int i = 1; i < deployablecoordinates.length; i++) {
-                    System.out.println("------------------------------------------------------------");
-                    System.out.println(" Deploying plugin:" + deployablecoordinates[i]);
-                    System.out.println("------------------------------------------------------------");
+                    LOG.info(" Deploying plugin:" + deployablecoordinates[i]);
                     successfulDeploy |= deploy(deployablecoordinates[i], remoteRepos, system, session, pluginlibDir);
                 }
 
-                System.out.println("------------------------------------------------------------");
-                System.out.println(" Deployed all plugins? " + successfulDeploy);
-                System.out.println("------------------------------------------------------------");
+                LOG.info(" Deployed all plugins? " + successfulDeploy);
             }
         }
         return successfulDeploy;
@@ -178,7 +174,7 @@ class NannyDeployCallable implements Callable<Boolean> {
         File dir) {
         String[] versionParts = deployablecoordinate.trim().split(":");
         if (versionParts.length != 4) {
-            System.out.println("deployable coordinates must be of the following form: groupId:artifactId:packaging:version");
+            LOG.info("deployable coordinates must be of the following form: groupId:artifactId:packaging:version");
             return false;
         }
         String groupId = versionParts[0];
@@ -193,12 +189,10 @@ class NannyDeployCallable implements Callable<Boolean> {
 
         ArtifactResult artifactResult;
         try {
-            System.out.println("------------------------------------------------------------");
-            System.out.println(" Resolving: " + deployablecoordinate);
-            System.out.println("------------------------------------------------------------");
+            LOG.info(" Resolving: " + deployablecoordinate);
             artifactResult = system.resolveArtifact(session, artifactRequest);
             artifact = artifactResult.getArtifact();
-            System.out.println(artifact + " resolved to  " + artifact.getFile());
+            LOG.info(artifact + " resolved to  " + artifact.getFile());
 
         } catch (ArtifactResolutionException x) {
             deployLog.log("Nanny", "failed to resolve artifact:", x);
@@ -209,9 +203,7 @@ class NannyDeployCallable implements Callable<Boolean> {
 
             if (packaging.equals("tar.gz") || packaging.equals("tgz")) {
                 File tarGzip = instancePath.artifactFile("." + packaging);
-                System.out.println("------------------------------------------------------------");
-                System.out.println(" Upacking:" + tarGzip);
-                System.out.println("------------------------------------------------------------");
+                LOG.info(" Upacking:" + tarGzip);
                 FileUtils.copyFile(artifact.getFile(), tarGzip, true);
                 deployLog.log("Nanny", "deployed " + tarGzip, null);
                 if (!explodeArtifact(tarGzip)) {

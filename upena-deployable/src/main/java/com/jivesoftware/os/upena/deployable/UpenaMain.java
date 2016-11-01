@@ -215,7 +215,7 @@ public class UpenaMain {
         try {
             if (args.length == 0) {
                 for (String u : USAGE) {
-                    System.out.println(u);
+                    LOG.info(u);
                 }
                 System.exit(1);
             } else {
@@ -786,7 +786,7 @@ public class UpenaMain {
 
             breakpointDumper = new ManagePlugin("record", null, "Breakpoint Dumper", "/ui/breakpoint",
                 BreakpointDumperPluginEndpoints.class,
-                new BreakpointDumperPluginRegion("soy.page.breakpointDumperPluginRegion", renderer, upenaStore, jvmapi), null, "read", "debug");
+                new BreakpointDumperPluginRegion(hostKey, "soy.page.breakpointDumperPluginRegion", renderer, upenaStore, jvmapi), null, "read", "debug");
         }
 
         ManagePlugin aws = null;
@@ -888,17 +888,4 @@ public class UpenaMain {
         beanConfig.setTitle("Upena");
     }
 
-//    public static ContextHandler buildSwaggerUI(String context) {
-//        try {
-//            final ResourceHandler swaggerUIResourceHandler = new ResourceHandler();
-//            swaggerUIResourceHandler.setResourceBase("/static/vendor/swaggerui");
-//            final ContextHandler swaggerUIContext = new ContextHandler();
-//            swaggerUIContext.setContextPath(context);
-//            swaggerUIContext.setHandler(swaggerUIResourceHandler);
-//            return swaggerUIContext;
-//        } catch (Exception x) {
-//            x.printStackTrace();
-//            return null;
-//        }
-//    }
 }

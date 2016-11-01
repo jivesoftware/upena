@@ -16,6 +16,10 @@
 package com.jivesoftware.os.upena.amza.test;
 
 import com.google.common.base.Optional;
+import com.jivesoftware.os.jive.utils.ordered.id.ConstantWriterIdProvider;
+import com.jivesoftware.os.jive.utils.ordered.id.JiveEpochTimestampProvider;
+import com.jivesoftware.os.jive.utils.ordered.id.OrderIdProviderImpl;
+import com.jivesoftware.os.jive.utils.ordered.id.TimestampedOrderIdProvider;
 import com.jivesoftware.os.upena.amza.service.AmzaChangeIdPacker;
 import com.jivesoftware.os.upena.amza.service.AmzaService;
 import com.jivesoftware.os.upena.amza.service.AmzaServiceInitializer;
@@ -25,14 +29,11 @@ import com.jivesoftware.os.upena.amza.service.storage.replication.SendFailureLis
 import com.jivesoftware.os.upena.amza.service.storage.replication.TakeFailureListener;
 import com.jivesoftware.os.upena.amza.shared.MemoryRowsIndex;
 import com.jivesoftware.os.upena.amza.shared.RingHost;
-import com.jivesoftware.os.upena.amza.shared.RowChanges;
 import com.jivesoftware.os.upena.amza.shared.RowIndexKey;
 import com.jivesoftware.os.upena.amza.shared.RowScan;
 import com.jivesoftware.os.upena.amza.shared.RowScanable;
 import com.jivesoftware.os.upena.amza.shared.RowsChanged;
-import com.jivesoftware.os.upena.amza.shared.RowsIndex;
 import com.jivesoftware.os.upena.amza.shared.RowsIndexProvider;
-import com.jivesoftware.os.upena.amza.shared.RowsStorage;
 import com.jivesoftware.os.upena.amza.shared.RowsStorageProvider;
 import com.jivesoftware.os.upena.amza.shared.TableName;
 import com.jivesoftware.os.upena.amza.shared.UpdatesSender;
@@ -42,10 +43,6 @@ import com.jivesoftware.os.upena.amza.storage.RowMarshaller;
 import com.jivesoftware.os.upena.amza.storage.RowTable;
 import com.jivesoftware.os.upena.amza.storage.binary.BinaryRowMarshaller;
 import com.jivesoftware.os.upena.amza.storage.binary.BinaryRowsTx;
-import com.jivesoftware.os.jive.utils.ordered.id.ConstantWriterIdProvider;
-import com.jivesoftware.os.jive.utils.ordered.id.JiveEpochTimestampProvider;
-import com.jivesoftware.os.jive.utils.ordered.id.OrderIdProviderImpl;
-import com.jivesoftware.os.jive.utils.ordered.id.TimestampedOrderIdProvider;
 import de.ruedigermoeller.serialization.FSTConfiguration;
 import java.io.File;
 import java.util.Collection;
@@ -99,32 +96,21 @@ public class AmzaTestCluster {
         config.takeFromNeighborsIntervalInMillis = 1000;
         config.compactTombstoneIfOlderThanNMillis = 1000L;
 
-        UpdatesSender changeSetSender = new UpdatesSender() {
-            @Override
-            public void sendUpdates(RingHost ringHost,
-                    TableName mapName, RowScanable changes) throws Exception {
-                AmzaNode service = cluster.get(ringHost);
-                if (service == null) {
-                    throw new IllegalStateException("Service doesn't exists for " + ringHost);
-                } else {
-                    service.addToReplicatedWAL(mapName, changes);
-                }
+        UpdatesSender changeSetSender = (RingHost ringHost, TableName mapName, RowScanable changes) -> {
+            AmzaNode service1 = cluster.get(ringHost);
+            if (service1 == null) {
+                throw new IllegalStateException("Service doesn't exists for " + ringHost);
+            } else {
+                service1.addToReplicatedWAL(mapName, changes);
             }
         };
 
-        UpdatesTaker tableTaker = new UpdatesTaker() {
-
-            @Override
-            public void takeUpdates(RingHost ringHost,
-                    TableName mapName,
-                    long transationId,
-                    RowScan rowStream) throws Exception {
-                AmzaNode service = cluster.get(ringHost);
-                if (service == null) {
-                    throw new IllegalStateException("Service doesn't exists for " + ringHost);
-                } else {
-                    service.takeTable(mapName, transationId, rowStream);
-                }
+        UpdatesTaker tableTaker = (RingHost ringHost, TableName mapName, long transationId, RowScan rowStream) -> {
+            AmzaNode service1 = cluster.get(ringHost);
+            if (service1 == null) {
+                throw new IllegalStateException("Service doesn't exists for " + ringHost);
+            } else {
+                service1.takeTable(mapName, transationId, rowStream);
             }
         };
 
@@ -132,26 +118,16 @@ public class AmzaTestCluster {
         final TimestampedOrderIdProvider orderIdProvider = new OrderIdProviderImpl(new ConstantWriterIdProvider(serviceHost.getPort()),
                 new AmzaChangeIdPacker(), new JiveEpochTimestampProvider());
 
-        final RowsIndexProvider tableIndexProvider = new RowsIndexProvider() {
+        final RowsIndexProvider tableIndexProvider = (TableName tableName) -> new MemoryRowsIndex();
 
-            @Override
-            public RowsIndex createRowsIndex(TableName tableName) throws Exception {
-
-                return new MemoryRowsIndex();
-            }
-        };
-
-        RowsStorageProvider tableStorageProvider = new RowsStorageProvider() {
-            @Override
-            public RowsStorage createRowsStorage(File workingDirectory, String tableDomain, TableName tableName) throws Exception {
-                File file = new File(workingDirectory, tableDomain + File.separator + tableName.getTableName() + ".kvt");
-                file.getParentFile().mkdirs();
-                RowMarshaller<byte[]> rowMarshaller = new BinaryRowMarshaller();
-                return new RowTable(tableName,
-                        orderIdProvider,
-                        rowMarshaller,
-                        new BinaryRowsTx(file, rowMarshaller, tableIndexProvider, 100));
-            }
+        RowsStorageProvider tableStorageProvider = (File workingDirectory, String tableDomain, TableName tableName) -> {
+            File file = new File(workingDirectory, tableDomain + File.separator + tableName.getTableName() + ".kvt");
+            file.getParentFile().mkdirs();
+            RowMarshaller<byte[]> rowMarshaller = new BinaryRowMarshaller();
+            return new RowTable(tableName,
+                orderIdProvider,
+                rowMarshaller,
+                new BinaryRowsTx(file, rowMarshaller, tableIndexProvider, 100));
         };
 
         FstMarshaller marshaller = new FstMarshaller(FSTConfiguration.getDefaultConfiguration());
@@ -164,13 +140,8 @@ public class AmzaTestCluster {
                 changeSetSender,
                 tableTaker,
                 Optional.<SendFailureListener>absent(),
-                Optional.<TakeFailureListener>absent(),
-                new RowChanges() {
-
-                    @Override
-                    public void changes(RowsChanged changes) throws Exception {
-                    }
-                });
+                Optional.<TakeFailureListener>absent(), (RowsChanged changes) -> {
+        });
 
         amzaService.start(serviceHost, config.resendReplicasIntervalInMillis,
                 config.applyReplicasIntervalInMillis,
@@ -180,14 +151,11 @@ public class AmzaTestCluster {
 
         //if (serviceHost.getPort() % 2 == 0) {
         final TableName tableName = new TableName("test", "table1", null, null);
-        amzaService.watch(tableName, new RowChanges() {
-            @Override
-            public void changes(RowsChanged changes) throws Exception {
-                if (changes.getApply().size() > 0) {
-                    System.out.println("Service:" + serviceHost
-                            + " Table:" + tableName.getTableName()
-                            + " Changed:" + changes.getApply().size());
-                }
+        amzaService.watch(tableName, (RowsChanged changes) -> {
+            if (changes.getApply().size() > 0) {
+                System.out.println("Service:" + serviceHost
+                    + " Table:" + tableName.getTableName()
+                    + " Changed:" + changes.getApply().size());
             }
         });
         //}
