@@ -414,21 +414,27 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
                 true, null, "localhost", manage.port);
 
             Throwns throwns = requestHelper.executeGetRequest("/manage/thrown", Throwns.class, null);
+            long mostRecentTimestamp = 0;
+            long total = 0;
             if (throwns != null && !throwns.isEmpty()) {
-                decorate(throwns);
+                // TODO sort by recency
+
+                for (Thrown thrown : throwns) {
+                    total += Long.parseLong(thrown.thrown);
+                    mostRecentTimestamp = Math.max(mostRecentTimestamp, Long.parseLong(thrown.timestamps.get(thrown.timestamps.size() - 1)));
+                    decorate(thrown);
+                }
                 instanceMap.put("thrown", throwns);
                 instances.add(instanceMap);
             }
+
+            instanceMap.put("total", String.valueOf(total));
+            instanceMap.put("recency", UpenaHealthEndpoints.humanReadableUptime(System.currentTimeMillis() - mostRecentTimestamp));
+
         }
 
         return instances;
 
-    }
-
-    private void decorate(Throwns throwns) {
-        for (Thrown thrown : throwns) {
-            decorate(thrown);
-        }
     }
 
     private void decorate(Thrown thrown) throws NumberFormatException {

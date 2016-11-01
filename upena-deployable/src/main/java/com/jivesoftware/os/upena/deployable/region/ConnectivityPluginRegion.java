@@ -321,20 +321,11 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
                 Node to = null;
                 MinMaxDouble edgeWeight = new MinMaxDouble();
                 double successPerSecond = 0;
-                int count = 0;
-                int sslCount = 0;
-                int sauthCount = 0;
-
+                
                 for (Map.Entry<String, ConnectionHealth> familyConnectionHealth : familyConnectionHealths.entrySet()) {
                     ConnectionHealth connectionHealth = familyConnectionHealth.getValue();
                     if (to == null) {
-                        count++;
                         InstanceDescriptor instanceDescriptor = connectionHealth.connectionDescriptor.getInstanceDescriptor();
-                        InstanceDescriptor.InstanceDescriptorPort mainPort = instanceDescriptor.ports.get("main"); // barf
-                        if (mainPort != null) {
-                            sslCount += mainPort.sslEnabled ? 1 : 0;
-                            sauthCount += mainPort.serviceAuthEnabled ? 1 : 0;
-                        }
                         String toServiceName = instanceDescriptor.serviceName;
                         to = nodes.get(toServiceName);
                         if (to == null) {
@@ -355,19 +346,8 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
                 edge.min = 1d - mmd.zeroToOne(edgeWeight.min);
                 edge.max = 1d - mmd.zeroToOne(edgeWeight.max);
 
-                String suffix = "";
-                if (count == sslCount) {
-                    suffix += "SSL";
-                } else if (sslCount > 0) {
-                    suffix += "nonSSL & SSL";
-                }
-                if (count == sauthCount) {
-                    suffix += ", SAUTH";
-                } else if (sslCount > 0) {
-                    suffix += ", nonSAUTH & SAUTH";
-                }
-
-                edge.label = numberFormat.format(successPerSecond) + "/sec " + suffix;
+                
+                edge.label = numberFormat.format(successPerSecond) + "/sec ";
             }
         }
 
@@ -387,19 +367,8 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
             }
             node.put("fontSize", n.fontSize);
 
-            String suffix = "";
-            if (n.count == n.sslCount) {
-                suffix += "SSL";
-            } else if (n.sslCount > 0) {
-                suffix += "nonSSL & SSL";
-            }
-            if (n.count == n.sauthCount) {
-                suffix += ", SAUTH";
-            } else if (n.sslCount > 0) {
-                suffix += ", nonSAUTH & SAUTH";
-            }
-
-            node.put("label", n.label + " (" + n.count + ") " + suffix);
+            
+            node.put("label", n.label + " (" + n.count + ") ");
             node.put("count", String.valueOf(n.count));
 
             if (n.focusHtml != null && n.focusHtml instanceof List) {

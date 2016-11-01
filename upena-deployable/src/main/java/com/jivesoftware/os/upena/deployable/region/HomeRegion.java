@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
 import oshi.SystemInfo;
@@ -45,8 +46,6 @@ public class HomeRegion implements PageRegion<HomeInput> {
     private final SoyRenderer renderer;
     private final HostKey hostKey;
     private final UpenaStore upenaStore;
-
-
 
     public HomeRegion(String template,
         SoyRenderer renderer,
@@ -157,6 +156,14 @@ public class HomeRegion implements PageRegion<HomeInput> {
             return "Woop :(";
         }
     }
+
+    private final AtomicReference<List<String>> procs = new AtomicReference<>();
+    private final AtomicReference<List<String>> memory = new AtomicReference<>();
+    private final AtomicReference<List<String>> cpu = new AtomicReference<>();
+    private final AtomicReference<List<String>> sensor = new AtomicReference<>();
+    private final AtomicReference<List<String>> power = new AtomicReference<>();
+    private final AtomicReference<List<String>> nic = new AtomicReference<>();
+    private final AtomicReference<List<String>> disk = new AtomicReference<>();
 
     @Override
     public String getTitle() {
