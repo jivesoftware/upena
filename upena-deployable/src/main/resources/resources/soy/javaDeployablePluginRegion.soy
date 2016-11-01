@@ -1,0 +1,52 @@
+{namespace soy.page}
+
+/**
+ * Java Deployable Probe plugin page
+ * 
+ * @param? instanceKey
+ * @param? uis
+ * @param? result
+ */
+{template .javaDeployablePluginRegion}
+    <div class="panel">
+        
+        {if $uis}
+            {foreach $u in $uis}
+                <a class="btn btn-default" href="{$u.scheme}://{$u.host}:{$u.port}{$u.url}">{$u.name}</a>
+                <a class="btn btn-default" href="/ui/proxy/redirect?host={$u.host}&amp;port={$u.port}&amp;path={$u.url}"><span class="glyphicon glyphicon-random"></span></a>{sp}
+            {/foreach}
+        {/if}
+        
+        <form id="aws-describe" method="post" name="describe">
+            <input type="hidden" name="instanceKey" value="{$instanceKey?:''}" />
+
+            <button title="Health" type="submit" name="action" value="health" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                <span>Health</span>
+            </button>
+            <button title="Tail" type="submit" name="action" value="tail" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                <span>Tail</span>
+            </button>
+            <button title="Metrics" type="submit" name="action" value="metrics" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                <span>Metrics</span>
+            </button>
+            <button title="Thread Dump" type="submit" name="action" value="threadDump" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                <span>Thread Dump</span>
+            </button>
+            <button title="Force GC" type="submit" name="action" value="forceGC" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                <span>Force GC</span>
+            </button>
+            <button title="Reset Errors" type="submit" name="action" value="resetErrors" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                <span>Reset Errors</span>
+            </button>
+            <button title="Reset Thrown" type="submit" name="action" value="resetThrown" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                <span>Reset Thrown</span>
+            </button>
+            <button title="Reset Health" type="submit" name="action" value="resetHealth" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                <span>Reset Health</span>
+            </button>
+        </form>
+        {if $result}
+            <pre style="white-space: pre-wrap; word-wrap: normal; word-break: break-word;">{$result|noAutoescape}</pre>
+        {/if}
+    </div>
+{/template}

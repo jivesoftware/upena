@@ -186,7 +186,7 @@
                                                         {if $health.instances}{$health.color}{else}transparent{/if}; color:#222; border-radius: 4px 0 0 4px;">
 
                                                     {if $health.sslEnabled or $health.serviceAuthEnabled}
-                                                        <span class="fa-stack fa">
+                                                        <span class="fa">
                                                             {if $health.sslEnabled}
                                                                 <i class="fa fa-lock" aria-hidden="true"></i>
                                                             {/if}
@@ -235,6 +235,7 @@
                                             </div>
                                         </div>
                                         <div id="popover-{$health.uid}" class="hide" style="background-color: rgba(255, 255, 255, 0.7);">
+                                            
                                             {if $health.hostInfo}
                                                 <div class="panel panel-default" style="background-color: rgba(255, 255, 255, 0.7);">
                                                     <div class="panel-heading">Host Info</div>
@@ -277,6 +278,9 @@
                                             {/if}
                                             {if $health.instances}
                                                 {foreach $i in $health.instances}
+
+                                                    
+
                                                     <div class="upena-panel">
                                                         <div class="upena-heading">
                                                             <span class="glyphicon glyphicon-apple"></span>{sp}
@@ -468,7 +472,8 @@
                                                                 </li>
                                                             {/if}
                                                         </ul>
-                                                        <div style="width:1200px" class="uis" ></div>
+                                                        //<div style="width:1200px" class="uis" ></div>
+                                                        <iframe width="1200" height="800" src="/ui/java/deployable/{$health.instanceKey}" frameborder="0" allowfullscreen></iframe>
                                                     </div>
                                                 {/foreach}
                                             {else}
