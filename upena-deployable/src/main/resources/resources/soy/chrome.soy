@@ -40,7 +40,7 @@
 	</head>
 	<body>
         {if $user}
-            <div style="position:absolute;top:0;right:0;">
+            <div style="z-index:100; position: fixed;top: 3px;right: 3px;">
                 <a  class="btn btn-default btn-xs ladda-button" data-spinner-color="#222" data-style="expand-right" href="/ui/auth/logout"  title="logout">
                     <span class="ladda-label glyphicon glyphicon-log-out"></span>{sp}{$user}
                 </a>
