@@ -268,7 +268,6 @@ public class ModulesPluginRegion implements PageRegion<ModulesPluginRegionInput>
                 edge.put("to", "id" + e.to);
                 edge.put("color", e.edgeColor);
                 renderEdges.add(edge);
-                //System.out.println("edge:" + edge);
             }
 
             data.put("moduleEdges", mapper.writeValueAsString(renderEdges));
@@ -330,7 +329,6 @@ public class ModulesPluginRegion implements PageRegion<ModulesPluginRegionInput>
             if (artifact.equals(d)) {
                 continue;
             }
-            //System.out.println(artifact + "->" + d);
             if (groupIdPrefixes.isEmpty()) {
                 //Node an = graph.artifact(d, false);
                 Node gn = graph.group(d);

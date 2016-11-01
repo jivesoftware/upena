@@ -73,7 +73,7 @@ public class AuthPluginEndpoints {
     @Produces(MediaType.TEXT_HTML)
     public Response postUnauthorized(@Context HttpServletRequest httpRequest) {
         try {
-            System.out.println("httpRequest:"+httpRequest);
+            LOG.info("httpRequest:"+httpRequest);
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), unauthorizedPluginRegion, new UnauthorizedPluginRegion.UnauthorizedInput());
             return Response.ok(rendered).build();
         } catch (Exception e) {
@@ -87,7 +87,7 @@ public class AuthPluginEndpoints {
     @Produces(MediaType.TEXT_HTML)
     public Response getUnauthorized(@Context HttpServletRequest httpRequest) {
         try {
-            System.out.println("httpRequest:"+httpRequest);
+            LOG.info("httpRequest:"+httpRequest);
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), unauthorizedPluginRegion, new UnauthorizedPluginRegion.UnauthorizedInput());
             return Response.ok(rendered).build();
         } catch (Exception e) {

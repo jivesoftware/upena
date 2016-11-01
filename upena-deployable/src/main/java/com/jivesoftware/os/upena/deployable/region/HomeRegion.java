@@ -46,6 +46,8 @@ public class HomeRegion implements PageRegion<HomeInput> {
     private final HostKey hostKey;
     private final UpenaStore upenaStore;
 
+
+
     public HomeRegion(String template,
         SoyRenderer renderer,
         HostKey hostKey,
@@ -95,18 +97,12 @@ public class HomeRegion implements PageRegion<HomeInput> {
         data.put("upenaClusterName", input.upenaClusterName);
 
         List<Map<String, String>> instances = new ArrayList<>();
-        int[] instance = new int[1];
-        int[] i = new int[1];
         try {
             upenaStore.hosts.scan((HostKey key, Host value) -> {
                 instances.add(ImmutableMap.of("host", value.name,
-                    "name", value.name + " " + String.valueOf(" - (" + i[0] + ")"),
+                    "name", value.name,
                     "port", String.valueOf(value.port),
                     "path", "/ui"));
-                if (key.equals(hostKey)) {
-                    instance[0] = i[0];
-                }
-                i[0]++;
                 return true;
             });
         } catch (Exception x) {

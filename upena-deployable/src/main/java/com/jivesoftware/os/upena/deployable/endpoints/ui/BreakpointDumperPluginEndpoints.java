@@ -45,7 +45,7 @@ public class BreakpointDumperPluginEndpoints {
 
         return shiroRequestHelper.call("breakpoint", () -> {
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-                new BreakpointDumperPluginRegionInput("", "", "", "", "", "", "", "", "", Collections.emptyList(),
+                new BreakpointDumperPluginRegionInput("", "", "", "", "", "", "", "", "", "", Collections.emptyList(),
                     "", 0, 1, 0, "", "", "", 0, 0, "", ""));
             return Response.ok(rendered).build();
         });
@@ -55,6 +55,7 @@ public class BreakpointDumperPluginEndpoints {
     @Produces(MediaType.TEXT_HTML)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response breakpoint(@Context HttpServletRequest httpRequest,
+        @FormParam("instanceKey") @DefaultValue("") String instanceKey,
         @FormParam("clusterKey") @DefaultValue("") String clusterKey,
         @FormParam("cluster") @DefaultValue("") String cluster,
         @FormParam("hostKey") @DefaultValue("") String hostKey,
@@ -81,7 +82,8 @@ public class BreakpointDumperPluginEndpoints {
 
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(),
                 pluginRegion,
-                new BreakpointDumperPluginRegionInput(clusterKey,
+                new BreakpointDumperPluginRegionInput(instanceKey,
+                    clusterKey,
                     cluster,
                     hostKey,
                     host,

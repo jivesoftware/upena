@@ -58,7 +58,7 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 // soy.page.healthPluginRegion
 public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRegionInput> {
 
-    private static final MetricLogger log = MetricLoggerFactory.getLogger();
+    private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
     private final ObjectMapper mapper;
     private final NumberFormat numberFormat = NumberFormat.getNumberInstance();
 
@@ -218,7 +218,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
             return renderer.render(template, data);
 
         } catch (Exception e) {
-            log.error("Unable to retrieve data", e);
+            LOG.error("Unable to retrieve data", e);
             return "Oops:" + ExceptionUtils.getStackTrace(e);
         }
 
@@ -388,16 +388,16 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
             node.put("fontSize", n.fontSize);
 
             String suffix = "";
-                if (n.count == n.sslCount) {
-                    suffix += "SSL";
-                } else if (n.sslCount > 0) {
-                    suffix += "nonSSL & SSL";
-                }
-                if (n.count == n.sauthCount) {
-                    suffix += ", SAUTH";
-                } else if (n.sslCount > 0) {
-                    suffix += ", nonSAUTH & SAUTH";
-                }
+            if (n.count == n.sslCount) {
+                suffix += "SSL";
+            } else if (n.sslCount > 0) {
+                suffix += "nonSSL & SSL";
+            }
+            if (n.count == n.sauthCount) {
+                suffix += ", SAUTH";
+            } else if (n.sslCount > 0) {
+                suffix += ", nonSAUTH & SAUTH";
+            }
 
             node.put("label", n.label + " (" + n.count + ") " + suffix);
             node.put("count", String.valueOf(n.count));
@@ -516,7 +516,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
             MinMaxDouble mmd = new MinMaxDouble();
             return renderConnectionHealth(mmd, nodes, renderService, instanceKey);
         } catch (Exception e) {
-            log.error("Unable to retrieve data", e);
+            LOG.error("Unable to retrieve data", e);
             return "Oops:" + ExceptionUtils.getStackTrace(e);
         }
     }
@@ -761,7 +761,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
         if (edge == null) {
             edge = new Edge(from.id, to.id, "");
             edges.put(from.id + "->" + to.id, edge);
-            System.out.println("edge:" + edge);
+            LOG.info("edge:" + edge);
         }
         return edge;
     }
@@ -881,7 +881,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
                             discoveredRoutes.connectionHealth(routeHealth);
                         }
                     } catch (Exception x) {
-                        System.out.println("Failed getting route health for instances " + ringHost + " " + x);
+                        LOG.warn("Failed getting route health for instances " + ringHost, x);
                     }
 
                     try {
@@ -892,7 +892,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
                     } catch (Exception x) {
                         Routes routes = new Routes(Collections.emptyList());
                         nodeRoutes.put(ringHost, routes);
-                        System.out.println("Failed getting routes for instances " + ringHost + " " + x);
+                        LOG.warn("Failed getting routes for instances " + ringHost, x);
                     } finally {
                         nodeRecency.put(nodeKey, start);
                         currentlyExecuting.remove(ringHost);

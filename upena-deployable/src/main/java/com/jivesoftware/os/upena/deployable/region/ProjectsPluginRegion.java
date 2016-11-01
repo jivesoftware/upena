@@ -1069,7 +1069,6 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
         project.dependantReleaseGroups = new HashMap<>();
         for (String moduleCoordinate : moduleCoordinates) {
 
-            System.out.println("INFO Modules:" + moduleCoordinate);
             String[] coordinate = moduleCoordinate.trim().split(":");
             String find = coordinate[0] + ":" + coordinate[1] + ":";
             ReleaseGroupFilter filter = new ReleaseGroupFilter(null, null, find, null, null, 0, 1000);

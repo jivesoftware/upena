@@ -18,7 +18,6 @@ package com.jivesoftware.os.upena.service;
 import com.jivesoftware.os.upena.shared.ChaosState;
 import com.jivesoftware.os.upena.shared.InstanceKey;
 import com.jivesoftware.os.upena.shared.ServiceKey;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -102,7 +101,7 @@ public class ChaosStateGenerator {
 
         Set<InstanceKey> instancesCopy = new HashSet<>(instances);
         InstanceKey mitm = popRandom(instancesCopy);
-        System.out.println("mitm: " + mitm);
+        //System.out.println("mitm: " + mitm);
 
         Set<InstanceKey> instancesCopyCopy = new HashSet<>(instancesCopy);
 

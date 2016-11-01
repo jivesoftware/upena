@@ -80,6 +80,8 @@ public class RepoPluginRegion implements PageRegion<RepoPluginRegionInput> {
 
             if (input.action != null) {
                 if (input.action.equals("remove") && input.fileNameFilter != null && input.fileNameFilter.length() > 0) {
+                    SecurityUtils.getSubject().checkPermission("write");
+
                     File f = new File(repoFile, input.fileNameFilter);
                     if (f.exists()) {
                         FileUtils.forceDelete(f);

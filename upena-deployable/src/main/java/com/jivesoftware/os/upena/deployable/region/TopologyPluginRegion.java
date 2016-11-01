@@ -381,7 +381,6 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
 
                 }
 
-                //System.out.println("linkable.size() = " + linkable.size());
                 for (int i = 0; i < linkable.size() - 1; i++) {
                     Node f = linkable.get(i);
                     Node t = linkable.get(i + 1);
@@ -500,7 +499,6 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
         if (edge == null) {
             edge = new Edge(from.id, to.id, "");
             edges.put(from.id + "->" + to.id, edge);
-            //System.out.println("edge:" + edge);
         }
         return edge;
     }

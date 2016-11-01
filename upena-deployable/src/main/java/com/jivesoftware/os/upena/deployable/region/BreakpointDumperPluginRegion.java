@@ -4,19 +4,24 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Maps;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
+import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelper;
+import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelperUtils;
 import com.jivesoftware.os.upena.deployable.JDIAPI;
 import com.jivesoftware.os.upena.deployable.JDIAPI.BreakpointDebugger;
 import com.jivesoftware.os.upena.deployable.JDIAPI.BreakpointDebugger.BreakpointState;
 import com.jivesoftware.os.upena.deployable.JDIAPI.BreakpointDebugger.StackFrames;
+import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaHealthEndpoints;
 import com.jivesoftware.os.upena.deployable.region.BreakpointDumperPluginRegion.BreakpointDumperPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.service.UpenaStore;
+import com.jivesoftware.os.upena.shared.Cluster;
 import com.jivesoftware.os.upena.shared.ClusterKey;
 import com.jivesoftware.os.upena.shared.Host;
 import com.jivesoftware.os.upena.shared.HostKey;
 import com.jivesoftware.os.upena.shared.Instance;
 import com.jivesoftware.os.upena.shared.InstanceFilter;
 import com.jivesoftware.os.upena.shared.InstanceKey;
+import com.jivesoftware.os.upena.shared.ReleaseGroup;
 import com.jivesoftware.os.upena.shared.ReleaseGroupKey;
 import com.jivesoftware.os.upena.shared.Service;
 import com.jivesoftware.os.upena.shared.ServiceKey;
@@ -28,6 +33,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -41,8 +47,9 @@ import org.eclipse.jetty.util.ConcurrentHashSet;
 // soy.page.upenaRingPluginRegion
 public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumperPluginRegionInput> {
 
-    private static final MetricLogger log = MetricLoggerFactory.getLogger();
+    private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
+    private final HostKey hostKey;
     private final String template;
     private final SoyRenderer renderer;
     private final UpenaStore upenaStore;
@@ -50,10 +57,13 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
     private final Map<Long, BreakpointDebuggerSession> debuggerSessions = new ConcurrentSkipListMap<>();
     private final AtomicLong debuggerSessionId = new AtomicLong(0);
 
-    public BreakpointDumperPluginRegion(String template,
+    public BreakpointDumperPluginRegion(HostKey hostKey,
+        String template,
         SoyRenderer renderer,
         UpenaStore upenaStore,
         JDIAPI jvm) {
+
+        this.hostKey = hostKey;
         this.template = template;
         this.renderer = renderer;
         this.upenaStore = upenaStore;
@@ -69,6 +79,7 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
 
     public static class BreakpointDumperPluginRegionInput implements PluginInput {
 
+        final String instanceKey;
         final String clusterKey;
         final String cluster;
         final String hostKey;
@@ -82,7 +93,7 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
         final String hostName;
         final int port;
 
-        final long sessionId;
+        long sessionId;
         final long connectionId;
         final String breakPointFieldName;
         final String filter;
@@ -94,7 +105,8 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
 
         final String action;
 
-        public BreakpointDumperPluginRegionInput(String clusterKey, String cluster, String hostKey, String host, String serviceKey, String service,
+        public BreakpointDumperPluginRegionInput(String instanceKey, String clusterKey, String cluster, String hostKey, String host, String serviceKey,
+            String service,
             String instanceId, String releaseKey, String release, List<String> instanceKeys, String hostName,
             int port,
             long sessionId,
@@ -106,6 +118,8 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
             int maxVersions,
             String breakpoint,
             String action) {
+
+            this.instanceKey = instanceKey;
             this.clusterKey = clusterKey;
             this.cluster = cluster;
             this.hostKey = hostKey;
@@ -158,18 +172,41 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
         filters.put("release", input.release);
         data.put("filters", filters);
 
-        if (input.action.equals("addSession")) {
-            long sessionId = debuggerSessionId.incrementAndGet();
-            debuggerSessions.put(sessionId, new BreakpointDebuggerSession(sessionId, 10));
-        } else if (input.action.equals("refresh")) {
+        if (input.sessionId == 0) {
+            input.sessionId = debuggerSessionId.get();
+        }
+
+        if (input.action.equals("refresh")) {
         } else if (input.action.length() > 0) {
             BreakpointDebuggerSession session = debuggerSessions.get(input.sessionId);
             if (session == null) {
-                data.put("message", "Failed to " + input.action + " connection because there is no session for sessionId:" + input.sessionId);
-            } else {
+                long sessionId = debuggerSessionId.incrementAndGet();
+                session = new BreakpointDebuggerSession(sessionId, 10);
+                debuggerSessions.put(sessionId, session);
+            }
 
-                if (input.action.equals("addConnections")) {
+            if (input.action.equals("addConnections")) {
 
+                if (!input.instanceKey.isEmpty()) {
+                    Instance instance = upenaStore.instances.get(new InstanceKey(input.instanceKey));
+                    if (instance != null) {
+                        Instance.Port debugPort = instance.ports.get("debug");
+                        if (debugPort != null) {
+                            Host host = upenaStore.hosts.get(instance.hostKey);
+                            if (host != null) {
+                                Service service = upenaStore.services.get(instance.serviceKey);
+                                if (service != null) {
+                                    session.add(input.sessionId, service.name, host.hostName, debugPort.port);
+                                    if (input.className != null && !input.className.isEmpty()) {
+                                        session.addBreakpoint(input.className, input.lineNumber);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else if (input.hostName != null && !input.hostName.isEmpty() && input.port > 0) {
+                    session.add(input.sessionId, "manual", input.hostName, input.port);
+                } else {
                     InstanceFilter filter = new InstanceFilter(
                         input.clusterKey.isEmpty() ? null : new ClusterKey(input.clusterKey),
                         input.hostKey.isEmpty() ? null : new HostKey(input.hostKey),
@@ -188,82 +225,82 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
                             if (host != null) {
                                 Service service = upenaStore.services.get(instance.serviceKey);
                                 if (service != null) {
-                                    session.add(debuggerSessionId.incrementAndGet(), service.name, host.hostName, debugPort.port);
+                                    session.add(input.sessionId, service.name, host.hostName, debugPort.port);
+                                    if (input.className != null && !input.className.isEmpty()) {
+
+                                        session.addBreakpoint(input.className, input.lineNumber);
+                                    }
                                 }
                             }
                         }
                     }
-
-                    if (input.hostName != null && !input.hostName.isEmpty() && input.port > 0) {
-                        session.add(debuggerSessionId.incrementAndGet(), "manual", input.hostName, input.port);
-                    }
                 }
+            }
 
-                if (input.action.equals("attachAll")) {
-                    data.put("message", session.attachAll());
-                }
+            if (input.action.equals("attachAll")) {
+                data.put("message", session.attachAll());
+            }
 
-                if (input.action.equals("dettachAll")) {
-                    data.put("message", session.dettachAll());
-                }
+            if (input.action.equals("dettachAll")) {
+                data.put("message", session.dettachAll());
+            }
 
-                if (input.action.equals("removeAllConnections")) {
-                    data.put("message", session.removeAllConnection());
-                }
+            if (input.action.equals("removeAllConnections")) {
+                data.put("message", session.removeAllConnection());
+            }
 
-                if (input.action.equals("attach")) {
-                    data.put("message", session.attach(input.connectionId));
-                }
+            if (input.action.equals("attach")) {
+                data.put("message", session.attach(input.connectionId));
+            }
 
-                if (input.action.equals("dettach")) {
-                    data.put("message", session.dettach(input.connectionId));
-                }
+            if (input.action.equals("dettach")) {
+                data.put("message", session.dettach(input.connectionId));
+            }
 
-                if (input.action.equals("removeConnection")) {
-                    data.put("message", session.removeConnection(input.connectionId));
-                }
+            if (input.action.equals("removeConnection")) {
+                data.put("message", session.removeConnection(input.connectionId));
+            }
 
-                if (input.action.equals("addBreakpoint")) {
-                    if (input.breakpoint != null && input.breakpoint.length() > 0) {
-                        String[] classNameLineNumber = input.breakpoint.trim().split(":");
-                        int lineNumber = Integer.parseInt(classNameLineNumber[1]);
-                        session.addBreakpoint(classNameLineNumber[0], lineNumber);
-                    }
-                    if (input.className != null && input.className.length() > 0) {
-                        session.addBreakpoint(input.className, input.lineNumber);
-                    }
+            if (input.action.equals("addBreakpoint")) {
+                if (input.breakpoint != null && input.breakpoint.length() > 0) {
+                    String[] classNameLineNumber = input.breakpoint.trim().split(":");
+                    int lineNumber = Integer.parseInt(classNameLineNumber[1]);
+                    session.addBreakpoint(classNameLineNumber[0], lineNumber);
                 }
+                if (input.className != null && input.className.length() > 0) {
+                    session.addBreakpoint(input.className, input.lineNumber);
+                }
+            }
 
-                if (input.action.equals("removeBreakpoint")) {
-                    if (input.breakpoint != null && input.breakpoint.length() > 0) {
-                        String[] classNameLineNumber = input.breakpoint.trim().split(":");
-                        int lineNumber = Integer.parseInt(classNameLineNumber[1]);
-                        session.removeBreakpoint(classNameLineNumber[0], lineNumber);
-                    }
-                    if (input.className != null && input.className.length() > 0) {
-                        session.removeBreakpoint(input.className, input.lineNumber);
-                    }
+            if (input.action.equals("removeBreakpoint")) {
+                if (input.breakpoint != null && input.breakpoint.length() > 0) {
+                    String[] classNameLineNumber = input.breakpoint.trim().split(":");
+                    int lineNumber = Integer.parseInt(classNameLineNumber[1]);
+                    session.removeBreakpoint(classNameLineNumber[0], lineNumber);
                 }
+                if (input.className != null && input.className.length() > 0) {
+                    session.removeBreakpoint(input.className, input.lineNumber);
+                }
+            }
 
-                if (input.action.equals("setBreakPointFieldFilter")) {
-                    session.setBreakPointFieldFilter(input.className, input.lineNumber, input.breakPointFieldName, input.filter);
-                    data.put("message", "Adding filter=" + input.filter + " to " + input.className + ":" + input.lineNumber + ":" + input.breakPointFieldName);
-                }
+            if (input.action.equals("setBreakPointFieldFilter")) {
+                session.setBreakPointFieldFilter(input.className, input.lineNumber, input.breakPointFieldName, input.filter);
+                data.put("message", "Adding filter=" + input.filter + " to " + input.className + ":" + input.lineNumber + ":" + input.breakPointFieldName);
+            }
 
-                if (input.action.equals("removeBreakPointFieldFilter")) {
-                    session.removeBreakPointFieldFilter(input.className, input.lineNumber, input.breakPointFieldName);
-                    data.put("message", "Removing filter=" + input.filter + " to " + input.className + ":" + input.lineNumber + ":" + input.breakPointFieldName);
-                }
+            if (input.action.equals("removeBreakPointFieldFilter")) {
+                session.removeBreakPointFieldFilter(input.className, input.lineNumber, input.breakPointFieldName);
+                data.put("message", "Removing filter=" + input.filter + " to " + input.className + ":" + input.lineNumber + ":" + input.breakPointFieldName);
+            }
 
-                if (input.action.equals("enableBreakPointField")) {
-                    session.enableBreakpointField(input.className, input.lineNumber, input.breakPointFieldName);
-                    data.put("message", "Enable " + input.className + ":" + input.lineNumber + ":" + input.breakPointFieldName);
-                }
+            if (input.action.equals("enableBreakPointField")) {
+                session.enableBreakpointField(input.className, input.lineNumber, input.breakPointFieldName);
+                data.put("message", "Enable " + input.className + ":" + input.lineNumber + ":" + input.breakPointFieldName);
+            }
 
-                if (input.action.equals("disableBreakPointField")) {
-                    session.disableBreakpointField(input.className, input.lineNumber, input.breakPointFieldName);
-                    data.put("message", "Disable " + input.className + ":" + input.lineNumber + ":" + input.breakPointFieldName);
-                }
+            if (input.action.equals("disableBreakPointField")) {
+                session.disableBreakpointField(input.className, input.lineNumber, input.breakPointFieldName);
+                data.put("message", "Disable " + input.className + ":" + input.lineNumber + ":" + input.breakPointFieldName);
             }
         }
 
@@ -321,7 +358,191 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
         }
 
         data.put("sessions", sessions);
+
+        try {
+            List<Map<String, Object>> thrown = populateThrown();
+            data.put("thrown", thrown);
+        } catch (Exception x) {
+            LOG.warn("Failed populating thrown", x);
+        }
+
         return renderer.render(template, data);
+    }
+
+    private List<Map<String, Object>> populateThrown() throws Exception {
+
+        ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(false, new InstanceFilter(null, hostKey, null, null,
+            null, 0, 100_000));
+
+        List<Map<String, Object>> instances = new ArrayList<>();
+        for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entry : found.entrySet()) {
+            if (entry.getValue().getTombstoned()) {
+                continue;
+            }
+            Instance instance = entry.getValue().getValue();
+            if (!instance.enabled) {
+                continue;
+            }
+            Cluster cluster = upenaStore.clusters.get(instance.clusterKey);
+            if (cluster == null) {
+                continue;
+            }
+            Host host = upenaStore.hosts.get(instance.hostKey);
+            if (host == null) {
+                continue;
+            }
+            Service service = upenaStore.services.get(instance.serviceKey);
+            if (service == null) {
+                continue;
+            }
+            ReleaseGroup releaseGroup = upenaStore.releaseGroups.get(instance.releaseGroupKey);
+            if (releaseGroup == null) {
+                continue;
+            }
+
+            Map<String, Object> instanceMap = new HashMap<>();
+            instanceMap.put("instanceKey", entry.getKey().getKey());
+            instanceMap.put("cluster", cluster.name);
+            instanceMap.put("host", host.hostName);
+            instanceMap.put("service", service.name);
+            instanceMap.put("release", releaseGroup.name);
+            instanceMap.put("instanceId", String.valueOf(instance.instanceId));
+
+            Instance.Port manage = instance.ports.get("manage");
+            LOG.debug("fetching thrown:http://localhost:" + manage.port + "/manage/thrown");
+            HttpRequestHelper requestHelper = HttpRequestHelperUtils.buildRequestHelper(manage.sslEnabled,
+                true, null, "localhost", manage.port);
+
+            Throwns throwns = requestHelper.executeGetRequest("/manage/thrown", Throwns.class, null);
+            if (throwns != null && !throwns.isEmpty()) {
+                decorate(throwns);
+                instanceMap.put("thrown", throwns);
+                instances.add(instanceMap);
+            }
+        }
+
+        return instances;
+
+    }
+
+    private void decorate(Throwns throwns) {
+        for (Thrown thrown : throwns) {
+            decorate(thrown);
+        }
+    }
+
+    private void decorate(Thrown thrown) throws NumberFormatException {
+        if (thrown.level.equals("info")) {
+            thrown.level = "info";
+        } else if (thrown.level.equals("debug")) {
+            thrown.level = "success";
+        } else if (thrown.level.equals("warn")) {
+            thrown.level = "warning";
+        } else if (thrown.level.equals("error")) {
+            thrown.level = "danger";
+        } else {
+            thrown.level = "default";
+        }
+        thrown.recency = UpenaHealthEndpoints.humanReadableUptime(System.currentTimeMillis() - Long.parseLong(thrown.timestamps.get(
+            thrown.timestamps.size() - 1)));
+
+        for (Thrown value : thrown.getCause().values()) {
+            decorate(value);
+        }
+    }
+
+    public static class Throwns extends ArrayList<Thrown> {
+
+    }
+
+    public static class Thrown {
+
+        public String key;
+        public String level;
+        public String message;
+        public List<ClassMethodFileLine> stackTrace = new ArrayList<>();
+        public String thrown;
+        public List<String> timestamps = new ArrayList<>();
+        public String recency = "";
+        public Map<String, Thrown> cause = new HashMap<>();
+
+        public String getKey() {
+            return key;
+        }
+
+        public String getLevel() {
+            return level;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public List<ClassMethodFileLine> getStackTrace() {
+            return stackTrace;
+        }
+
+        public String getThrown() {
+            return thrown;
+        }
+
+        public List<String> getTimestamps() {
+            return timestamps;
+        }
+
+        public String getRecency() {
+            return recency;
+        }
+
+        public Map<String, Thrown> getCause() {
+            return cause;
+        }
+
+        @Override
+        public String toString() {
+            return "Thrown{" + "key=" + key + ", level=" + level + ", message=" + message + ", stackTrace=" + stackTrace + ", thrown=" + thrown + ", timestamps=" + timestamps + ", cause=" + cause + '}';
+        }
+
+    }
+
+    public static class ClassMethodFileLine {
+
+        public String className;
+        public String declaringClass;
+        public String methodName;
+        public String fileName;
+        public int lineNumber;
+        public String nativeMethod;
+
+        public String getClassName() {
+            return className;
+        }
+
+        public String getDeclaringClass() {
+            return declaringClass;
+        }
+
+        public String getMethodName() {
+            return methodName;
+        }
+
+        public String getFileName() {
+            return fileName;
+        }
+
+        public int getLineNumber() {
+            return lineNumber;
+        }
+
+        public String getNativeMethod() {
+            return nativeMethod;
+        }
+
+        @Override
+        public String toString() {
+            return "ClassMethodFileLine{" + "className=" + className + ", declaringClass=" + declaringClass + ", methodName=" + methodName + ", fileName=" + fileName + ", lineNumber=" + lineNumber + ", nativeMethod=" + nativeMethod + '}';
+        }
+
     }
 
     @Override
@@ -481,7 +702,7 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
 
         private final Set<String> disabledFields = new ConcurrentHashSet<>();
         private final Map<String, String> fieldFilters = new ConcurrentHashMap<>();
-        
+
         public BreakpointDebuggerState(long id, String name, BreakpointDebugger breakpointDebugger) {
             this.id = id;
             this.name = name;
@@ -503,12 +724,18 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
         @Override
         public void run() {
             if (breakpointDebugger.attached()) {
+                LOG.info("Already attached!");
                 return;
             }
             try {
+                LOG.info("Run!");
                 breakpointDebugger.run(this, this);
+                LOG.info("Done!");
             } catch (Exception x) {
                 breakpointDebugger.log(x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace()));
+                LOG.error("", x);
+            } finally {
+                breakpointDebugger.dettach();
             }
         }
 
