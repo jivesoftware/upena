@@ -677,6 +677,17 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                             Map<String, Object> cell = hostRows.get(hi).get(si + 1);
                             cell.put("uid", "uid-" + uid);
                             uid++;
+
+                            InstanceDescriptor.InstanceDescriptorPort port = id.ports.get("main");
+                            if (port != null) {
+                                if (port.serviceAuthEnabled) {
+                                    cell.put("serviceAuthEnabled", "true");
+                                }
+                                if (port.sslEnabled) {
+                                    cell.put("sslEnabled", "true");
+                                }
+                            }
+
                             cell.put("instanceKey", id.instanceKey);
                             cell.put("clusterKey", id.clusterKey);
                             cell.put("cluster", id.clusterName);
@@ -906,7 +917,8 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                     try {
                         HttpRequestHelper requestHelper = HttpRequestHelperUtils.buildRequestHelper(upenaSSLConfig.sslEnable,
                             upenaSSLConfig.allowSelfSignedCerts, upenaSSLConfig.signer, ringHost.getHost(), ringHost.getPort());
-                        UpenaHealthEndpoints.NodeHealth nodeHealth = requestHelper.executeGetRequest("/health/instance", UpenaHealthEndpoints.NodeHealth.class, null);
+                        UpenaHealthEndpoints.NodeHealth nodeHealth = requestHelper.executeGetRequest("/health/instance", UpenaHealthEndpoints.NodeHealth.class,
+                            null);
                         nodeHealths.put(ringHost, nodeHealth);
 
                         for (UpenaHealthEndpoints.NannyHealth nannyHealth : nodeHealth.nannyHealths) {

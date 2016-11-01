@@ -174,8 +174,7 @@
                                         </div>
                                     {elseif $health.uid}
                                         <div data-health-hook="{$health.instanceKey ? $health.instanceKey : $health.health ? $health.health : ''}"
-                                            style="{if $health.instances}border-color:#ddd; border-radius: 4px;{/if}"
-                                        >
+                                            style="{if $health.instances}border-color:#ddd; border-radius: 4px;{/if}">
 
                                             {if $health.instances}
                                                 <div class="grid-host-panel popover-health health-color"
@@ -185,6 +184,14 @@
                                                     data-placement="bottom"
                                                     style="float: left; padding: 0 2px; width:50%; text-align:center; background-color:
                                                         {if $health.instances}{$health.color}{else}transparent{/if}; color:#222; border-radius: 4px 0 0 4px;">
+                                                    <span class="fa-stack fa">
+                                                        {if $health.sslEnabled}
+                                                            <i class="fa fa-lock" aria-hidden="true"></i>
+                                                        {/if}
+                                                        {if $health.serviceAuthEnabled}
+                                                            <i class="fa fa-key" aria-hidden="true"></i>
+                                                        {/if}
+                                                    </span>
                                                     <span class="glyphicon glyphicon-menu-down"></span>
                                                 </div>
                                                 <div id="popoverAnchor-age-{$health.uid}" data-popover-content="#popover-age-{$health.uid}" data-placement="top" data-trigger="hover"
