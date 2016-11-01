@@ -59,6 +59,7 @@ import com.jivesoftware.os.upena.config.UpenaConfigRestEndpoints;
 import com.jivesoftware.os.upena.config.UpenaConfigStore;
 import com.jivesoftware.os.upena.deployable.aws.AWSClientFactory;
 import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaClusterRestEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaDeployableLoopbackProxyEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaEndpoints.AmzaClusterName;
 import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaHealthEndpoints;
@@ -85,6 +86,7 @@ import com.jivesoftware.os.upena.deployable.endpoints.ui.JVMPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ui.LoadBalancersPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ui.ModulesPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ui.MonkeyPluginEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.ui.ProbeJavaDeployablePluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ui.ProfilerPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ui.ProjectsPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ui.ProxyPluginEndpoints;
@@ -113,10 +115,11 @@ import com.jivesoftware.os.upena.deployable.region.HostsPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.InstancesPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.JVMPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.LoadBalancersPluginRegion;
-import com.jivesoftware.os.upena.deployable.region.ManagePlugin;
 import com.jivesoftware.os.upena.deployable.region.MenuRegion;
 import com.jivesoftware.os.upena.deployable.region.ModulesPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.MonkeyPluginRegion;
+import com.jivesoftware.os.upena.deployable.region.PluginHandle;
+import com.jivesoftware.os.upena.deployable.region.ProbeJavaDeployablePluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ProfilerPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ProjectsPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ProxyPluginRegion;
@@ -468,6 +471,7 @@ public class UpenaMain {
             .addEndpoint(AmzaReplicationRestEndpoints.class)
             .addInjectable(AmzaInstance.class, amzaService)
             .addEndpoint(UpenaEndpoints.class)
+            .addEndpoint(UpenaDeployableLoopbackProxyEndpoints.class)
             .addEndpoint(UpenaHealthEndpoints.class)
             .addEndpoint(UpenaRepoEndpoints.class)
             .addInjectable(DiscoveredRoutes.class, discoveredRoutes)
@@ -657,6 +661,7 @@ public class UpenaMain {
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/loadBalancersPluginRegion.soy"), "loadBalancersPluginRegion.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/authPluginRegion.soy"), "authPluginRegion.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/unauthorizedPluginRegion.soy"), "unauthorizedPluginRegion.soy");
+        soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/javaDeployablePluginRegion.soy"), "javaDeployablePluginRegion.soy");
 
         if (jvmapi != null) {
             soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/jvmPluginRegion.soy"), "jvmPluginRegion.soy");
@@ -680,7 +685,7 @@ public class UpenaMain {
         AuthPluginRegion authRegion = new AuthPluginRegion("soy.page.authPluginRegion", renderer);
         UnauthorizedPluginRegion unauthorizedRegion = new UnauthorizedPluginRegion("soy.page.unauthorizedPluginRegion", renderer);
 
-        ManagePlugin auth = new ManagePlugin("login", null, "Login", "/ui/auth/login",
+        PluginHandle auth = new PluginHandle("login", null, "Login", "/ui/auth/login",
             AuthPluginEndpoints.class, authRegion, null, "read");
 
         HealthPluginRegion healthPluginRegion = new HealthPluginRegion(mapper,
@@ -701,116 +706,120 @@ public class UpenaMain {
         InstancesPluginRegion instancesPluginRegion = new InstancesPluginRegion("soy.page.instancesPluginRegion",
             "soy.page.instancesPluginRegionList", renderer, upenaStore, hostKey, healthPluginRegion, awsClientFactory);
 
-        ManagePlugin health = new ManagePlugin("fire", null, "Health", "/ui/health",
+        PluginHandle health = new PluginHandle("fire", null, "Health", "/ui/health",
             HealthPluginEndpoints.class, healthPluginRegion, null, "read");
 
-        ManagePlugin topology = new ManagePlugin("th", null, "Topology", "/ui/topology",
+        PluginHandle topology = new PluginHandle("th", null, "Topology", "/ui/topology",
             TopologyPluginEndpoints.class,
             new TopologyPluginRegion(mapper, "soy.page.topologyPluginRegion", "soy.page.connectionsHealth",
                 renderer, amzaInstance, upenaSSLConfig, upenaStore, healthPluginRegion, hostsPluginRegion, releasesPluginRegion, instancesPluginRegion,
                 discoveredRoutes), null,
             "read");
 
-        ManagePlugin connectivity = new ManagePlugin("transfer", null, "Connectivity", "/ui/connectivity",
+        PluginHandle connectivity = new PluginHandle("transfer", null, "Connectivity", "/ui/connectivity",
             ConnectivityPluginEndpoints.class,
             new ConnectivityPluginRegion(mapper, "soy.page.connectivityPluginRegion", "soy.page.connectionsHealth", "soy.page.connectionOverview",
                 renderer, amzaInstance, upenaSSLConfig, upenaStore, healthPluginRegion, hostsPluginRegion, releasesPluginRegion, instancesPluginRegion,
                 discoveredRoutes), null,
             "read");
 
-        ManagePlugin changes = new ManagePlugin("road", null, "Changes", "/ui/changeLog",
+        PluginHandle changes = new PluginHandle("road", null, "Changes", "/ui/changeLog",
             ChangeLogPluginEndpoints.class,
             new ChangeLogPluginRegion("soy.page.changeLogPluginRegion", renderer, upenaStore), null, "read");
 
-        ManagePlugin instances = new ManagePlugin("star", null, "Instances", "/ui/instances",
+        PluginHandle instances = new PluginHandle("star", null, "Instances", "/ui/instances",
             InstancesPluginEndpoints.class, instancesPluginRegion, null, "read");
 
-        ManagePlugin config = new ManagePlugin("cog", null, "Config", "/ui/config",
+        PluginHandle config = new PluginHandle("cog", null, "Config", "/ui/config",
             ConfigPluginEndpoints.class,
             new ConfigPluginRegion(mapper, "soy.page.configPluginRegion", renderer, upenaSSLConfig, upenaStore, upenaConfigStore), null, "read");
 
-        ManagePlugin repo = new ManagePlugin("hdd", null, "Repository", "/ui/repo",
+        PluginHandle repo = new PluginHandle("hdd", null, "Repository", "/ui/repo",
             RepoPluginEndpoints.class,
             new RepoPluginRegion("soy.page.repoPluginRegion", renderer, upenaStore, localPathToRepo), null, "read");
 
-        ManagePlugin projects = new ManagePlugin("folder-open", null, "Projects", "/ui/projects",
+        PluginHandle projects = new PluginHandle("folder-open", null, "Projects", "/ui/projects",
             ProjectsPluginEndpoints.class,
             new ProjectsPluginRegion("soy.page.projectsPluginRegion", "soy.page.projectBuildOutput", "soy.page.projectBuildOutputTail", renderer, upenaStore,
                 localPathToRepo), null, "read");
 
-        ManagePlugin clusters = new ManagePlugin("cloud", null, "Clusters", "/ui/clusters",
+        PluginHandle clusters = new PluginHandle("cloud", null, "Clusters", "/ui/clusters",
             ClustersPluginEndpoints.class,
             new ClustersPluginRegion("soy.page.clustersPluginRegion", renderer, upenaStore), null, "read");
 
-        ManagePlugin hosts = new ManagePlugin("tasks", null, "Hosts", "/ui/hosts",
+        PluginHandle hosts = new PluginHandle("tasks", null, "Hosts", "/ui/hosts",
             HostsPluginEndpoints.class, hostsPluginRegion, null, "read");
 
-        ManagePlugin services = new ManagePlugin("tint", null, "Services", "/ui/services",
+        PluginHandle services = new PluginHandle("tint", null, "Services", "/ui/services",
             ServicesPluginEndpoints.class,
             new ServicesPluginRegion(mapper, "soy.page.servicesPluginRegion", renderer, upenaStore), null, "read");
 
-        ManagePlugin releases = new ManagePlugin("send", null, "Releases", "/ui/releases",
+        PluginHandle releases = new PluginHandle("send", null, "Releases", "/ui/releases",
             ReleasesPluginEndpoints.class, releasesPluginRegion, null, "read");
 
-        ManagePlugin modules = new ManagePlugin("wrench", null, "Modules", "/ui/modules",
+        PluginHandle modules = new PluginHandle("wrench", null, "Modules", "/ui/modules",
             ModulesPluginEndpoints.class,
             new ModulesPluginRegion(mapper, repositoryProvider, "soy.page.modulesPluginRegion", renderer, upenaStore), null, "read");
 
-        ManagePlugin proxy = new ManagePlugin("random", null, "Proxies", "/ui/proxy",
+        PluginHandle proxy = new PluginHandle("random", null, "Proxies", "/ui/proxy",
             ProxyPluginEndpoints.class,
             new ProxyPluginRegion("soy.page.proxyPluginRegion", renderer), null, "read", "debug");
 
-        ManagePlugin ring = new ManagePlugin("leaf", null, "Upena", "/ui/ring",
+        PluginHandle ring = new PluginHandle("leaf", null, "Upena", "/ui/ring",
             UpenaRingPluginEndpoints.class,
             new UpenaRingPluginRegion(storeMapper, "soy.page.upenaRingPluginRegion", renderer, amzaInstance, upenaStore, upenaConfigStore), null, "read",
             "debug");
 
-        ManagePlugin loadBalancer = new ManagePlugin("scale", null, "Load Balancer", "/ui/loadbalancers",
+        PluginHandle loadBalancer = new PluginHandle("scale", null, "Load Balancer", "/ui/loadbalancers",
             LoadBalancersPluginEndpoints.class,
             new LoadBalancersPluginRegion("soy.page.loadBalancersPluginRegion", renderer, upenaStore, awsClientFactory), null, "read", "debug");
 
         ServicesCallDepthStack servicesCallDepthStack = new ServicesCallDepthStack();
         PerfService perfService = new PerfService(servicesCallDepthStack);
 
-        ManagePlugin profiler = new ManagePlugin("hourglass", null, "Profiler", "/ui/profiler",
+        PluginHandle profiler = new PluginHandle("hourglass", null, "Profiler", "/ui/profiler",
             ProfilerPluginEndpoints.class,
             new ProfilerPluginRegion("soy.page.profilerPluginRegion", renderer, new VisualizeProfile(new NameUtils(), servicesCallDepthStack)), null, "read",
             "debug");
 
-        ManagePlugin jvm = null;
-        ManagePlugin breakpointDumper = null;
+        PluginHandle jvm = null;
+        PluginHandle breakpointDumper = null;
         if (jvmapi != null) {
-            jvm = new ManagePlugin("camera", null, "JVM", "/ui/jvm",
+            jvm = new PluginHandle("camera", null, "JVM", "/ui/jvm",
                 JVMPluginEndpoints.class,
                 new JVMPluginRegion("soy.page.jvmPluginRegion", renderer, upenaStore, jvmapi), null, "read", "debug");
 
-            breakpointDumper = new ManagePlugin("record", null, "Breakpoint Dumper", "/ui/breakpoint",
+            breakpointDumper = new PluginHandle("record", null, "Breakpoint Dumper", "/ui/breakpoint",
                 BreakpointDumperPluginEndpoints.class,
                 new BreakpointDumperPluginRegion(hostKey, "soy.page.breakpointDumperPluginRegion", renderer, upenaStore, jvmapi), null, "read", "debug");
         }
 
-        ManagePlugin aws = null;
-        aws = new ManagePlugin("globe", null, "AWS", "/ui/aws",
+        PluginHandle aws = null;
+        aws = new PluginHandle("globe", null, "AWS", "/ui/aws",
             AWSPluginEndpoints.class,
             new AWSPluginRegion("soy.page.awsPluginRegion", renderer, awsClientFactory), null, "read", "debug");
 
-        ManagePlugin monkey = new ManagePlugin("flash", null, "Chaos", "/ui/chaos",
+        PluginHandle monkey = new PluginHandle("flash", null, "Chaos", "/ui/chaos",
             MonkeyPluginEndpoints.class,
             new MonkeyPluginRegion("soy.page.monkeyPluginRegion", renderer, upenaStore), null, "read", "debug");
 
-        ManagePlugin api = new ManagePlugin("play-circle", null, "API", "/ui/api",
+        PluginHandle api = new PluginHandle("play-circle", null, "API", "/ui/api",
             ApiPluginEndpoints.class,
             null, null, "read", "debug");
 
-        List<ManagePlugin> plugins = new ArrayList<>();
+        PluginHandle probe = new PluginHandle("hand-right", null, "Deployable", "/ui/java/deployable",
+            ProbeJavaDeployablePluginEndpoints.class,
+            new ProbeJavaDeployablePluginRegion(hostKey, "soy.page.javaDeployablePluginRegion", renderer, upenaStore), null, "read", "debug");
+
+        List<PluginHandle> plugins = new ArrayList<>();
         plugins.add(auth);
-        plugins.add(new ManagePlugin(null, null, "API", null, null, null, "separator", "read"));
+        plugins.add(new PluginHandle(null, null, "API", null, null, null, "separator", "read"));
         plugins.add(api);
-        plugins.add(new ManagePlugin(null, null, "Build", null, null, null, "separator", "read"));
+        plugins.add(new PluginHandle(null, null, "Build", null, null, null, "separator", "read"));
         plugins.add(repo);
         plugins.add(projects);
         plugins.add(modules);
-        plugins.add(new ManagePlugin(null, null, "Config", null, null, null, "separator", "read"));
+        plugins.add(new PluginHandle(null, null, "Config", null, null, null, "separator", "read"));
         plugins.add(aws);
         plugins.add(changes);
         plugins.add(config);
@@ -820,11 +829,11 @@ public class UpenaMain {
         plugins.add(releases);
         plugins.add(instances);
         plugins.add(loadBalancer);
-        plugins.add(new ManagePlugin(null, null, "Health", null, null, null, "separator", "read"));
+        plugins.add(new PluginHandle(null, null, "Health", null, null, null, "separator", "read"));
         plugins.add(health);
         plugins.add(connectivity);
         plugins.add(topology);
-        plugins.add(new ManagePlugin(null, null, "Tools", null, null, null, "separator", "read", "debug"));
+        plugins.add(new PluginHandle(null, null, "Tools", null, null, null, "separator", "read", "debug"));
         plugins.add(monkey);
         plugins.add(proxy);
         if (jvm != null) {
@@ -842,7 +851,7 @@ public class UpenaMain {
         jerseyEndpoints.addEndpoint(PerfServiceEndpoints.class);
         jerseyEndpoints.addInjectable(PerfService.class, perfService);
 
-        for (ManagePlugin plugin : plugins) {
+        for (PluginHandle plugin : plugins) {
             soyService.registerPlugin(plugin);
             if (plugin.separator == null) {
                 jerseyEndpoints.addEndpoint(plugin.endpointsClass);
@@ -851,6 +860,11 @@ public class UpenaMain {
                 }
             }
         }
+        
+        soyService.registerPlugin(probe);
+        jerseyEndpoints.addEndpoint(probe.endpointsClass);
+        jerseyEndpoints.addInjectable(probe.region.getClass(), probe.region);
+
 
         jerseyEndpoints.addInjectable(UnauthorizedPluginRegion.class, unauthorizedRegion);
         //jerseyEndpoints.addEndpoint(UpenaPropagatorEndpoints.class);

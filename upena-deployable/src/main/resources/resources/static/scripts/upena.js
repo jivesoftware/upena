@@ -1242,6 +1242,7 @@ $(document).ready(function () {
     //upena.livehealth.init();
 
     $('.tree li:has(ul)').addClass('parent_li').find(' > div').attr('title', 'Collapse this branch');
+
     $('.tree li.parent_li > div').on('click', function (e) {
         var children = $(this).parent('li.parent_li').find(' > ul > li');
         if (children.is(":visible")) {

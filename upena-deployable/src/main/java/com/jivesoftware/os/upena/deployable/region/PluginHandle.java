@@ -3,7 +3,7 @@ package com.jivesoftware.os.upena.deployable.region;
 /**
  *
  */
-public class ManagePlugin {
+public class PluginHandle {
 
     public final String glyphicon;
     public final String icon;
@@ -14,7 +14,7 @@ public class ManagePlugin {
     public final String separator;
     public final String[] permissions;
 
-    public ManagePlugin(String glyphicon, String icon, String name, String path, Class<?> endpointsClass, Region<?> region, String separator, String... permissions) {
+    public PluginHandle(String glyphicon, String icon, String name, String path, Class<?> endpointsClass, Region<?> region, String separator, String... permissions) {
         this.glyphicon = glyphicon;
         this.icon = icon;
         this.name = name;

@@ -26,7 +26,7 @@ public class ChromeRegion<I extends PluginInput, R extends PageRegion<I>> implem
     private final SoyRenderer renderer;
     private final HeaderRegion headerRegion;
     private final MenuRegion menuRegion;
-    private final List<ManagePlugin> plugins;
+    private final List<PluginHandle> plugins;
     private final R region;
     private final String cluster;
     
@@ -35,7 +35,7 @@ public class ChromeRegion<I extends PluginInput, R extends PageRegion<I>> implem
         SoyRenderer renderer,
         HeaderRegion headerRegion,
         MenuRegion menuRegion,
-        List<ManagePlugin> plugins,
+        List<PluginHandle> plugins,
         R region,
         String cluster,
         HostKey hostKey,
@@ -68,7 +68,7 @@ public class ChromeRegion<I extends PluginInput, R extends PageRegion<I>> implem
             LOG.error("Failure.", x);
         }
         Subject subject = s;
-        List<Map<String, String>> p = plugins.stream().filter((ManagePlugin t) -> {
+        List<Map<String, String>> p = plugins.stream().filter((PluginHandle t) -> {
             if (t.permissions == null || t.permissions.length == 0) {
                 return true;
             }

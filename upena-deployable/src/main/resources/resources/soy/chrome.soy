@@ -55,6 +55,47 @@
 </html>
 {/template}
 
+
+/**
+ * @param region
+ */
+{template .noChromeRegion}
+<!DOCTYPE HTML>
+<html lang="en" dir="ltr">
+	<head>
+	    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        {call .styles /}
+        <script type="text/javascript" src="/static/scripts/jquery-2.1.4.min.js"></script>
+        <script type="text/javascript" src="/static/scripts/jquery.form.js"></script>
+        <script type="text/javascript" src="/static/scripts/Chart.js"></script>
+        <script type="text/javascript" src="/static/scripts/Chart.StackedBar.js"></script>
+        <script type="text/javascript" src="/static/scripts/legend.js"></script>
+        <script type="text/javascript" src="/static/vendor/bootstrap-3.3.5/js/bootstrap.js"></script>
+        <script type="text/javascript" src="/static/scripts/raphael-min.js"></script>
+        <script type="text/javascript" src="/static/scripts/dracula_graffle.js"></script>
+        <script type="text/javascript" src="/static/scripts/dracula_graph.js"></script>
+        <script type="text/javascript" src="/static/scripts/dracula_algorithms.js"></script>
+        <script type="text/javascript" src="/static/vendor/bootstrap-slider/js/bootstrap-slider.js"></script>
+        <script type="text/javascript" src="/static/scripts/upena.js"></script>
+        <script src="/static/vendor/ladda-bootstrap/dist/spin.min.js"></script>
+		<script src="/static/vendor/ladda-bootstrap/dist/ladda.min.js"></script>
+        <script src="/static/vendor/float-table-head/dist/jquery.floatThead.min.js"></script>
+        <script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
+        <link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
+        <link href="/static/img/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+        <link rel="stylesheet" href="/static/vendor/ladda-bootstrap/dist/ladda-themeless.min.css">
+
+
+        <link rel="stylesheet" href="/static/css/jasny-bootstrap.css">
+        <script src="//cdnjs.cloudflare.com/ajax/libs/jasny-bootstrap/3.1.3/js/jasny-bootstrap.min.js"></script>
+
+	</head>
+	<body  style="padding-left: 0;">
+        {$region|noAutoescape}
+    </body>
+</html>
+{/template}
+
 /**
  *
  */
