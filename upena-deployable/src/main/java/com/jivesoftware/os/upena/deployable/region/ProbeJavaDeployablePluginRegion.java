@@ -84,8 +84,6 @@ public class ProbeJavaDeployablePluginRegion implements PageRegion<ProbeJavaDepl
             Host host = null;
             if (instance == null) {
                 data.put("result", Arrays.asList(new String[]{"There is no instance for key:" + input.instanceKey}));
-            } else if (!instance.hostKey.equals(hostKey)) {
-
             } else {
                 host = upenaStore.hosts.get(instance.hostKey);
                 if (host == null) {
@@ -153,7 +151,7 @@ public class ProbeJavaDeployablePluginRegion implements PageRegion<ProbeJavaDepl
                     data.put("result", r == null ? "" : r);
                 } else {
                     SecurityUtils.getSubject().checkPermission("read");
-                    String r = proxy.get("/manage/metrics/ui");
+                    String r = proxy.get("/manage/health/ui");
                     data.put("result", r == null ? "" : r);
                 }
             }
