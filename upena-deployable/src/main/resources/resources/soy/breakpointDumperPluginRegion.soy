@@ -355,7 +355,7 @@
                             <div class="btn btn-default">
                                 <span><i class="fa fa-plus-circle" aria-hidden="true"></i></span>
                             </div>
-                            <span>  {$i.cluster}:{$i.host}:{$i.service}:{$i.release}:{$i.instanceId} </span>
+                             <span style="color:gray;font-style: italic;"> {$i.recency} </span><span>  {$i.cluster}:{$i.host}:{$i.service}:{$i.release}:{$i.instanceId} </span><span class="badge"> {$i.total} </span>
                             <ul>
                                 {if $i.thrown}
                                     {foreach $t in $i.thrown}
