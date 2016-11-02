@@ -3,7 +3,7 @@ package com.jivesoftware.os.upena.deployable.region;
 import com.google.common.collect.Maps;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
-import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaHealthEndpoints;
+import com.jivesoftware.os.upena.deployable.UpenaHealth;
 import com.jivesoftware.os.upena.deployable.region.RepoPluginRegion.RepoPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.service.UpenaStore;
@@ -197,7 +197,7 @@ public class RepoPluginRegion implements PageRegion<RepoPluginRegionInput> {
         Map<String, Object> map = new HashMap<>();
         map.put("name", getIndentString(indent) + "+--" + file.getName() + ((isDir) ? "/" : ""));
         map.put("path", getRelativePath(root, file));
-        map.put("lastModified", isDir ? "" : UpenaHealthEndpoints.humanReadableUptime(System.currentTimeMillis() - file.lastModified()));
+        map.put("lastModified", isDir ? "" : UpenaHealth.humanReadableUptime(System.currentTimeMillis() - file.lastModified()));
         return map;
     }
 

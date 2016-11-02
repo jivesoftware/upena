@@ -9,14 +9,17 @@ import com.jivesoftware.os.routing.bird.endpoints.base.HasUI;
 import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelper;
 import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelperUtils;
 import com.jivesoftware.os.upena.deployable.UpenaSSLConfig;
-import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaDeployableLoopbackProxyEndpoints.LoopbackGet;
-import com.jivesoftware.os.upena.deployable.region.ProbeJavaDeployablePluginRegion.ProbeJavaDeployablePluginRegionInput;
+import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaManagedDeployableEndpoints.LoopbackGet;
+import com.jivesoftware.os.upena.deployable.region.ManagedDeployablePluginRegion.ManagedDeployablePluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
+import com.jivesoftware.os.upena.service.SessionStore;
 import com.jivesoftware.os.upena.service.UpenaStore;
 import com.jivesoftware.os.upena.shared.Host;
 import com.jivesoftware.os.upena.shared.HostKey;
 import com.jivesoftware.os.upena.shared.Instance;
 import com.jivesoftware.os.upena.shared.InstanceKey;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -28,10 +31,11 @@ import org.apache.shiro.authz.AuthorizationException;
  *
  */
 // soy.page.upenaRingPluginRegion
-public class ProbeJavaDeployablePluginRegion implements PageRegion<ProbeJavaDeployablePluginRegionInput> {
+public class ManagedDeployablePluginRegion implements PageRegion<ManagedDeployablePluginRegionInput> {
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
+    private final SessionStore sessionStore;
     private final HostKey hostKey;
     private final String template;
     private final SoyRenderer renderer;
@@ -39,13 +43,15 @@ public class ProbeJavaDeployablePluginRegion implements PageRegion<ProbeJavaDepl
     private final UpenaSSLConfig upenaSSLConfig;
     private final int upenaPort;
 
-    public ProbeJavaDeployablePluginRegion(HostKey hostKey,
+    public ManagedDeployablePluginRegion(SessionStore sessionStore,
+        HostKey hostKey,
         String template,
         SoyRenderer renderer,
         UpenaStore upenaStore,
         UpenaSSLConfig upenaSSLConfig,
         int upenaPort
     ) {
+        this.sessionStore = sessionStore;
         this.hostKey = hostKey;
         this.template = template;
         this.renderer = renderer;
@@ -59,12 +65,12 @@ public class ProbeJavaDeployablePluginRegion implements PageRegion<ProbeJavaDepl
         return "/ui/java/deployable";
     }
 
-    public static class ProbeJavaDeployablePluginRegionInput implements PluginInput {
+    public static class ManagedDeployablePluginRegionInput implements PluginInput {
 
         final String instanceKey;
         final String action;
 
-        public ProbeJavaDeployablePluginRegionInput(String instanceKey, String action) {
+        public ManagedDeployablePluginRegionInput(String instanceKey, String action) {
             this.instanceKey = instanceKey;
             this.action = action;
         }
@@ -76,8 +82,47 @@ public class ProbeJavaDeployablePluginRegion implements PageRegion<ProbeJavaDepl
 
     }
 
+    public URI redirectToUI(String instanceKey, String portName, String uiPath) throws Exception {
+
+        ProxyAsNeeded proxy = buildProxy(instanceKey, new HashMap<>());
+        if (proxy != null) {
+            Instance instance = upenaStore.instances.get(new InstanceKey(instanceKey));
+            Host host = upenaStore.hosts.get(instance.hostKey);
+            Instance.Port port = instance.ports.get(portName);
+            if (port != null) {
+
+                String token = proxy.allocateAccessToken();
+
+                return URI.create((port.sslEnabled ? "https" : "http") + "://" + host.hostName
+                    + ":" + port.port
+                    + (uiPath.startsWith("/") ? uiPath : "/" + uiPath)
+                    + "?rb_access_token=" + token
+                );
+            }
+        }
+        return null;
+    }
+
+    private ProxyAsNeeded buildProxy(String instanceKey, Map<String, Object> data) throws Exception {
+        Instance instance = upenaStore.instances.get(new InstanceKey(instanceKey));
+        ProxyAsNeeded proxy = null;
+        if (instance == null) {
+            data.put("result", Arrays.asList(new String[]{"There is no instance for key:" + instanceKey}));
+        } else {
+            Host host = upenaStore.hosts.get(instance.hostKey);
+            if (host == null) {
+                data.put("result", Arrays.asList(new String[]{"There is no host for key:" + instance.hostKey}));
+            } else if (instance.hostKey.equals(hostKey)) {
+                proxy = new Local(instanceKey, instance);
+            } else {
+                proxy = new Proxied(instanceKey, host.hostName);
+            }
+        }
+        return proxy;
+    }
+
     @Override
-    public String render(String user, ProbeJavaDeployablePluginRegionInput input) {
+    public String render(String user, ManagedDeployablePluginRegionInput input) {
         SecurityUtils.getSubject().checkPermission("debug");
 
         Map<String, Object> data = Maps.newHashMap();
@@ -86,23 +131,11 @@ public class ProbeJavaDeployablePluginRegion implements PageRegion<ProbeJavaDepl
         data.put("action", input.action);
 
         try {
-            Instance instance = upenaStore.instances.get(new InstanceKey(input.instanceKey));
-            ProxyAsNeeded proxy = null;
-            Host host = null;
-            if (instance == null) {
-                data.put("result", Arrays.asList(new String[]{"There is no instance for key:" + input.instanceKey}));
-            } else {
-                host = upenaStore.hosts.get(instance.hostKey);
-                if (host == null) {
-                    data.put("result", Arrays.asList(new String[]{"There is no host for key:" + instance.hostKey}));
-                } else if (instance.hostKey.equals(hostKey)) {
-                    proxy = new Local(instance);
-                } else {
-                    proxy = new Proxied(input.instanceKey, host.hostName);
-                }
-            }
+            ProxyAsNeeded proxy = buildProxy(input.instanceKey, data);
 
             if (proxy != null) {
+                Instance instance = upenaStore.instances.get(new InstanceKey(input.instanceKey));
+                Host host = upenaStore.hosts.get(instance.hostKey);
                 Instance.Port managePort = instance.ports.get("manage");
 
                 HasUI hasUI = proxy.get("/manage/hasUI", HasUI.class, null);
@@ -178,12 +211,14 @@ public class ProbeJavaDeployablePluginRegion implements PageRegion<ProbeJavaDepl
         return "Java Deployable";
     }
 
-    static class Local implements ProxyAsNeeded {
+    class Local implements ProxyAsNeeded {
 
+        private final String instanceKey;
         private final Instance instance;
         HttpRequestHelper requestHelper;
 
-        public Local(Instance instance) throws Exception {
+        public Local(String instanceKey, Instance instance) throws Exception {
+            this.instanceKey = instanceKey;
             this.instance = instance;
             Instance.Port manage = instance.ports.get("manage");
             this.requestHelper = HttpRequestHelperUtils.buildRequestHelper(manage.sslEnabled, true, null, "localhost", manage.port);
@@ -198,6 +233,11 @@ public class ProbeJavaDeployablePluginRegion implements PageRegion<ProbeJavaDepl
         @Override
         public <J> J get(String path, Class<J> c, J d) {
             return requestHelper.executeGetRequest(path, c, d);
+        }
+
+        @Override
+        public String allocateAccessToken() {
+            return sessionStore.generateAccessToken(instanceKey);
         }
 
     }
@@ -218,7 +258,7 @@ public class ProbeJavaDeployablePluginRegion implements PageRegion<ProbeJavaDepl
 
         @Override
         public String get(String path) {
-            byte[] r = requestHelper.executeRequest(new LoopbackGet(path), "/deployable/loopback/" + instanceKey, null);
+            byte[] r = requestHelper.executeRequest(new LoopbackGet(path), "/upena/deployable/loopback/" + instanceKey, null);
             if (r == null) {
                 return null;
             }
@@ -227,7 +267,13 @@ public class ProbeJavaDeployablePluginRegion implements PageRegion<ProbeJavaDepl
 
         @Override
         public <J> J get(String path, Class<J> c, J d) {
-            return requestHelper.executeRequest(new LoopbackGet(path), "/deployable/loopback/" + instanceKey, c, d);
+            return requestHelper.executeRequest(new LoopbackGet(path), "/upena/deployable/loopback/" + instanceKey, c, d);
+        }
+
+        @Override
+        public String allocateAccessToken() {
+            byte[] token = requestHelper.executeGet("/upena/deployable/ui/accessToken/" + instanceKey);
+            return (token != null) ? new String(token, StandardCharsets.UTF_8) : null;
         }
     }
 
@@ -236,5 +282,7 @@ public class ProbeJavaDeployablePluginRegion implements PageRegion<ProbeJavaDepl
         String get(String path);
 
         <J> J get(String path, Class<J> c, J d);
+
+        String allocateAccessToken();
     }
 }

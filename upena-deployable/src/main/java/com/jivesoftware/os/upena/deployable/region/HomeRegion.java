@@ -65,12 +65,7 @@ public class HomeRegion implements PageRegion<HomeInput> {
 
     public static class HomeInput implements PluginInput {
 
-        final String wgetURL;
-        final String upenaClusterName;
-
-        public HomeInput(String wgetURL, String upenaClusterName) {
-            this.wgetURL = wgetURL;
-            this.upenaClusterName = upenaClusterName;
+        public HomeInput() {
         }
 
         @Override
@@ -92,9 +87,7 @@ public class HomeRegion implements PageRegion<HomeInput> {
         }
         Subject subject = s;
         Map<String, Object> data = Maps.newHashMap();
-        data.put("wgetURL", input.wgetURL);
-        data.put("upenaClusterName", input.upenaClusterName);
-
+        
         List<Map<String, String>> instances = new ArrayList<>();
         try {
             upenaStore.hosts.scan((HostKey key, Host value) -> {

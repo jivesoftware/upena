@@ -1,8 +1,9 @@
 package com.jivesoftware.os.upena.deployable.endpoints.ui;
 
 import com.jivesoftware.os.upena.deployable.ShiroRequestHelper;
-import com.jivesoftware.os.upena.deployable.region.ProbeJavaDeployablePluginRegion;
+import com.jivesoftware.os.upena.deployable.region.ManagedDeployablePluginRegion;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
+import java.net.URI;
 import javax.inject.Singleton;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -13,6 +14,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -22,44 +24,62 @@ import javax.ws.rs.core.Response;
  */
 @Singleton
 @Path("/ui/java/deployable")
-public class ProbeJavaDeployablePluginEndpoints {
+public class ManagedDeployablePluginEndpoints {
 
     private final ShiroRequestHelper shiroRequestHelper;
     private final SoyService soyService;
-    private final ProbeJavaDeployablePluginRegion pluginRegion;
+    private final ManagedDeployablePluginRegion pluginRegion;
 
-    public ProbeJavaDeployablePluginEndpoints(@Context ShiroRequestHelper shiroRequestHelper,
+    public ManagedDeployablePluginEndpoints(@Context ShiroRequestHelper shiroRequestHelper,
         @Context SoyService soyService,
-        @Context ProbeJavaDeployablePluginRegion pluginRegion) {
+        @Context ManagedDeployablePluginRegion pluginRegion) {
 
         this.shiroRequestHelper = shiroRequestHelper;
         this.soyService = soyService;
         this.pluginRegion = pluginRegion;
     }
 
-    @Path("/{instanceKey}")
+    @Path("/probe/{instanceKey}")
     @GET()
     @Produces(MediaType.TEXT_HTML)
     public Response javaDeployableProbe(@PathParam("instanceKey") @DefaultValue("unspecified") String instanceKey,
         @Context HttpServletRequest httpRequest) {
-        return shiroRequestHelper.call("/ui/java/deployable", () -> {
+        return shiroRequestHelper.call("/ui/java/deployable/probe", () -> {
             String rendered = soyService.renderNoChromePlugin(httpRequest.getRemoteUser(), pluginRegion,
-                new ProbeJavaDeployablePluginRegion.ProbeJavaDeployablePluginRegionInput(instanceKey, ""));
+                new ManagedDeployablePluginRegion.ManagedDeployablePluginRegionInput(instanceKey, ""));
             return Response.ok(rendered).build();
         });
     }
 
-    @Path("/{instanceKey}")
+    @Path("/probe/{instanceKey}")
     @POST
     @Produces(MediaType.TEXT_HTML)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response action(@PathParam("instanceKey") @DefaultValue("unspecified") String instanceKey,
         @Context HttpServletRequest httpRequest,
         @FormParam("action") @DefaultValue("") String action) {
-        return shiroRequestHelper.call("/ui/java/deployable/action", () -> {
+        return shiroRequestHelper.call("/ui/java/deployable/probe/action", () -> {
             String rendered = soyService.renderNoChromePlugin(httpRequest.getRemoteUser(), pluginRegion,
-                new ProbeJavaDeployablePluginRegion.ProbeJavaDeployablePluginRegionInput(instanceKey, action));
+                new ManagedDeployablePluginRegion.ManagedDeployablePluginRegionInput(instanceKey, action));
             return Response.ok(rendered).build();
         });
     }
+
+    @Path("/ui/{instanceKey}")
+    @GET()
+    @Produces(MediaType.TEXT_HTML)
+    public Response redirectToUI(@PathParam("instanceKey") @DefaultValue("unspecified") String instanceKey,
+        @QueryParam("portName") @DefaultValue("unspecified") String portName,
+        @QueryParam("path") @DefaultValue("unspecified") String uiPath,
+        @Context HttpServletRequest httpRequest) {
+
+        return shiroRequestHelper.call("/ui/java/deployable/ui", () -> {
+            URI uri = pluginRegion.redirectToUI(instanceKey,portName, uiPath);
+            if (uri == null) {
+                return Response.ok("Failed to redirect.").build();
+            }
+            return Response.temporaryRedirect(uri).build();
+        });
+    }
+
 }

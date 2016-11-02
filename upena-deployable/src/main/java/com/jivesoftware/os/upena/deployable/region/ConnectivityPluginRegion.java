@@ -14,9 +14,9 @@ import com.jivesoftware.os.routing.bird.shared.InstanceConnectionHealth;
 import com.jivesoftware.os.routing.bird.shared.InstanceDescriptor;
 import com.jivesoftware.os.upena.amza.shared.AmzaInstance;
 import com.jivesoftware.os.upena.amza.shared.RingHost;
+import com.jivesoftware.os.upena.deployable.UpenaHealth.NannyHealth;
+import com.jivesoftware.os.upena.deployable.UpenaHealth.NodeHealth;
 import com.jivesoftware.os.upena.deployable.UpenaSSLConfig;
-import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaHealthEndpoints.NannyHealth;
-import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaHealthEndpoints.NodeHealth;
 import com.jivesoftware.os.upena.deployable.region.ConnectivityPluginRegion.ConnectivityPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.service.DiscoveredRoutes;
@@ -845,7 +845,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
                         long sinceTimestampMillis = last == null ? 0 : last;
                         HttpRequestHelper requestHelper = HttpRequestHelperUtils.buildRequestHelper(upenaSSLConfig.sslEnable,
                             upenaSSLConfig.allowSelfSignedCerts, upenaSSLConfig.signer, ringHost.getHost(), ringHost.getPort());
-                        RouteHealths routeHealths = requestHelper.executeGetRequest("/routes/health/" + sinceTimestampMillis, RouteHealths.class, null);
+                        RouteHealths routeHealths = requestHelper.executeGetRequest("/upena/routes/health/" + sinceTimestampMillis, RouteHealths.class, null);
                         for (InstanceConnectionHealth routeHealth : routeHealths.getRouteHealths()) {
                             discoveredRoutes.connectionHealth(routeHealth);
                         }
@@ -856,7 +856,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
                     try {
                         HttpRequestHelper requestHelper = HttpRequestHelperUtils.buildRequestHelper(upenaSSLConfig.sslEnable,
                             upenaSSLConfig.allowSelfSignedCerts, upenaSSLConfig.signer, ringHost.getHost(), ringHost.getPort());
-                        Routes routes = requestHelper.executeGetRequest("/routes/instances", Routes.class, null);
+                        Routes routes = requestHelper.executeGetRequest("/upena/routes/instances", Routes.class, null);
                         nodeRoutes.put(ringHost, routes);
                     } catch (Exception x) {
                         Routes routes = new Routes(Collections.emptyList());

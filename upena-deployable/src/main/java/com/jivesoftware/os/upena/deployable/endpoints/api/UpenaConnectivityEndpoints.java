@@ -18,13 +18,12 @@ package com.jivesoftware.os.upena.deployable.endpoints.api;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.routing.bird.shared.ResponseHelper;
-import com.jivesoftware.os.upena.deployable.UpenaHealth;
-import com.jivesoftware.os.upena.deployable.UpenaHealth.NodeHealth;
-import io.swagger.annotations.Api;
+import com.jivesoftware.os.upena.service.DiscoveredRoutes;
 import javax.inject.Singleton;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
@@ -32,29 +31,38 @@ import javax.ws.rs.core.Response;
  *
  * @author jonathan.colt
  */
-@Api(value = "Upena Health Check")
 @Singleton
-@Path("/health")
-public class UpenaHealthEndpoints {
+@Path("/upena/routes")
+public class UpenaConnectivityEndpoints {
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
-    private final UpenaHealth upenaHealth;
-    
-    public UpenaHealthEndpoints(@Context UpenaHealth upenaHealth) {
+    private final DiscoveredRoutes discoveredRoutes;
 
-        this.upenaHealth = upenaHealth;
+    public UpenaConnectivityEndpoints(@Context DiscoveredRoutes discoveredRoutes) {
+        this.discoveredRoutes = discoveredRoutes;
     }
 
     @GET
     @Consumes("application/json")
-    @Path("/instance")
-    public Response getInstanceHealth() {
+    @Path("/instances")
+    public Response getInstancesRoutes() {
         try {
-            NodeHealth node = upenaHealth.buildNodeHealth();
-            return ResponseHelper.INSTANCE.jsonResponse(node);
+            return ResponseHelper.INSTANCE.jsonResponse(new DiscoveredRoutes.Routes(discoveredRoutes.routes()));
         } catch (Exception x) {
-            LOG.error("Failed getting instance health", x);
+            LOG.error("Failed getting instance routes", x);
+            return ResponseHelper.INSTANCE.errorResponse("Failed building all health view.", x);
+        }
+    }
+
+    @GET
+    @Consumes("application/json")
+    @Path("/health/{sinceTimestampMillis}")
+    public Response getRoutesHealth(@PathParam("sinceTimestampMillis") long sinceTimestampMillis) {
+        try {
+            return ResponseHelper.INSTANCE.jsonResponse(new DiscoveredRoutes.RouteHealths(discoveredRoutes.routesHealth(sinceTimestampMillis)));
+        } catch (Exception x) {
+            LOG.error("Failed getting routes health", x);
             return ResponseHelper.INSTANCE.errorResponse("Failed building all health view.", x);
         }
     }

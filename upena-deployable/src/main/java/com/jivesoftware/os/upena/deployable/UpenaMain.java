@@ -28,9 +28,19 @@ import com.jivesoftware.os.jive.utils.ordered.id.OrderIdProviderImpl;
 import com.jivesoftware.os.jive.utils.ordered.id.TimestampedOrderIdProvider;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
+import com.jivesoftware.os.routing.bird.authentication.AuthValidationFilter;
+import com.jivesoftware.os.routing.bird.authentication.NoAuthEvaluator;
+import com.jivesoftware.os.routing.bird.health.api.PercentileHealthCheckConfig;
+import com.jivesoftware.os.routing.bird.health.checkers.PercentileHealthChecker;
 import com.jivesoftware.os.routing.bird.http.client.OAuthSigner;
 import com.jivesoftware.os.routing.bird.server.InitializeRestfulServer;
 import com.jivesoftware.os.routing.bird.server.RestfulServer;
+import com.jivesoftware.os.routing.bird.server.oauth.AuthValidationException;
+import com.jivesoftware.os.routing.bird.server.oauth.OAuthEvaluator;
+import com.jivesoftware.os.routing.bird.server.oauth.OAuthSecretManager;
+import com.jivesoftware.os.routing.bird.server.oauth.OAuthServiceLocatorShim;
+import com.jivesoftware.os.routing.bird.server.oauth.validator.AuthValidator;
+import com.jivesoftware.os.routing.bird.server.oauth.validator.DefaultOAuthValidator;
 import com.jivesoftware.os.routing.bird.shared.InstanceDescriptorsRequest;
 import com.jivesoftware.os.routing.bird.shared.InstanceDescriptorsResponse;
 import com.jivesoftware.os.uba.shared.PasswordStore;
@@ -59,12 +69,12 @@ import com.jivesoftware.os.upena.config.UpenaConfigRestEndpoints;
 import com.jivesoftware.os.upena.config.UpenaConfigStore;
 import com.jivesoftware.os.upena.deployable.aws.AWSClientFactory;
 import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaClusterRestEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaDeployableLoopbackProxyEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaConnectivityEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaEndpoints.AmzaClusterName;
 import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaHealthEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaHostRestEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaInstanceRestEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaManagedDeployableEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaReleaseRestEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaRepoEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaServiceRestEndpoints;
@@ -84,9 +94,9 @@ import com.jivesoftware.os.upena.deployable.endpoints.ui.HostsPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ui.InstancesPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ui.JVMPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ui.LoadBalancersPluginEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.ui.ManagedDeployablePluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ui.ModulesPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ui.MonkeyPluginEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.ui.ProbeJavaDeployablePluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ui.ProfilerPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ui.ProjectsPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ui.ProxyPluginEndpoints;
@@ -115,11 +125,11 @@ import com.jivesoftware.os.upena.deployable.region.HostsPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.InstancesPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.JVMPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.LoadBalancersPluginRegion;
+import com.jivesoftware.os.upena.deployable.region.ManagedDeployablePluginRegion;
 import com.jivesoftware.os.upena.deployable.region.MenuRegion;
 import com.jivesoftware.os.upena.deployable.region.ModulesPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.MonkeyPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.PluginHandle;
-import com.jivesoftware.os.upena.deployable.region.ProbeJavaDeployablePluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ProfilerPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ProjectsPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ProxyPluginRegion;
@@ -165,6 +175,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import org.glassfish.jersey.oauth1.signature.OAuth1Request;
+import org.glassfish.jersey.oauth1.signature.OAuth1Signature;
+import org.merlin.config.BindInterfaceToConfiguration;
 
 public class UpenaMain {
 
@@ -453,6 +466,8 @@ public class UpenaMain {
             null,
             ubaLog);
 
+        UpenaHealth upenaHealth = new UpenaHealth(amzaService, upenaSSLConfig, upenaConfigStore, ubaService, ringHost, hostKey);
+
         DiscoveredRoutes discoveredRoutes = new DiscoveredRoutes();
         ShiroRequestHelper shiroRequestHelper = new ShiroRequestHelper();
 
@@ -464,6 +479,7 @@ public class UpenaMain {
             .addEndpoint(UpenaReleaseRestEndpoints.class)
             .addEndpoint(UpenaInstanceRestEndpoints.class)
             .addEndpoint(UpenaTenantRestEndpoints.class)
+            .addInjectable(upenaHealth)
             .addInjectable(upenaService)
             .addInjectable(upenaStore)
             .addInjectable(upenaConfigStore)
@@ -471,7 +487,8 @@ public class UpenaMain {
             .addEndpoint(AmzaReplicationRestEndpoints.class)
             .addInjectable(AmzaInstance.class, amzaService)
             .addEndpoint(UpenaEndpoints.class)
-            .addEndpoint(UpenaDeployableLoopbackProxyEndpoints.class)
+            .addEndpoint(UpenaConnectivityEndpoints.class)
+            .addEndpoint(UpenaManagedDeployableEndpoints.class)
             .addEndpoint(UpenaHealthEndpoints.class)
             .addEndpoint(UpenaRepoEndpoints.class)
             .addInjectable(DiscoveredRoutes.class, discoveredRoutes)
@@ -479,6 +496,46 @@ public class UpenaMain {
             .addInjectable(HostKey.class, hostKey)
             .addInjectable(UpenaAutoRelease.class, new UpenaAutoRelease(repositoryProvider, upenaStore))
             .addInjectable(PathToRepo.class, localPathToRepo);
+
+        PercentileHealthCheckConfig phcc = BindInterfaceToConfiguration.bindDefault(PercentileHealthCheckConfig.class);
+        PercentileHealthChecker authFilterHealthCheck = new PercentileHealthChecker(phcc);
+        AuthValidationFilter authValidationFilter = new AuthValidationFilter(authFilterHealthCheck);
+        authValidationFilter.addEvaluator(new NoAuthEvaluator(),
+            "/",
+            "/ui/*", // Handled by Shiro
+            "/repo/*" // Cough
+        );
+
+        OAuth1Signature verifier = new OAuth1Signature(new OAuthServiceLocatorShim());
+        String secret = System.getProperty("upena.secret");
+        if (secret == null) {
+            secret = clusterName;
+            LOG.warn("Please provide a stronger secret via -Dupena.secret");
+        }
+        String finalSecret = secret;
+        OAuthSecretManager oAuthSecretManager = new OAuthSecretManager() {
+            @Override
+            public void clearCache() {
+            }
+
+            @Override
+            public String getSecret(String id) throws AuthValidationException {
+                return finalSecret;
+            }
+
+            @Override
+            public void verifyLastSecretRemovalTime() throws Exception {
+            }
+        };
+        AuthValidator<OAuth1Signature, OAuth1Request> oAuthValidator = new DefaultOAuthValidator(Executors.newScheduledThreadPool(1),
+            Long.MAX_VALUE, oAuthSecretManager,
+            10_000,
+            false
+        );
+        oAuthValidator.start();
+        authValidationFilter.addEvaluator(new OAuthEvaluator(oAuthValidator, verifier), "/upena/*"); // Cough
+
+        jerseyEndpoints.addContainerRequestFilter(authValidationFilter);
 
         String region = System.getProperty("aws.region", null);
         String roleArn = System.getProperty("aws.roleArn", null);
@@ -496,6 +553,7 @@ public class UpenaMain {
             ringHost,
             upenaSSLConfig,
             port,
+            sessionStore,
             upenaStore,
             upenaConfigStore,
             jerseyEndpoints,
@@ -622,6 +680,7 @@ public class UpenaMain {
         RingHost ringHost,
         UpenaSSLConfig upenaSSLConfig,
         int port,
+        SessionStore sessionStore,
         UpenaStore upenaStore,
         UpenaConfigStore upenaConfigStore,
         UpenaJerseyEndpoints jerseyEndpoints,
@@ -807,8 +866,9 @@ public class UpenaMain {
             null, null, "read", "debug");
 
         PluginHandle probe = new PluginHandle("hand-right", null, "Deployable", "/ui/java/deployable",
-            ProbeJavaDeployablePluginEndpoints.class,
-            new ProbeJavaDeployablePluginRegion(hostKey,
+            ManagedDeployablePluginEndpoints.class,
+            new ManagedDeployablePluginRegion(sessionStore,
+                hostKey,
                 "soy.page.javaDeployablePluginRegion",
                 renderer,
                 upenaStore,
@@ -865,15 +925,13 @@ public class UpenaMain {
                 }
             }
         }
-        
+
         soyService.registerPlugin(probe);
         jerseyEndpoints.addEndpoint(probe.endpointsClass);
         jerseyEndpoints.addInjectable(probe.region.getClass(), probe.region);
 
-
         jerseyEndpoints.addInjectable(UnauthorizedPluginRegion.class, unauthorizedRegion);
         //jerseyEndpoints.addEndpoint(UpenaPropagatorEndpoints.class);
-        jerseyEndpoints.addInjectable(AmzaClusterName.class, new AmzaClusterName((clusterName == null) ? "manual" : clusterName));
     }
 
     private RowsStorageProvider rowsStorageProvider(final OrderIdProvider orderIdProvider) {
