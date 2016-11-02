@@ -8,6 +8,7 @@ import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.routing.bird.endpoints.base.HasUI;
 import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelper;
 import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelperUtils;
+import com.jivesoftware.os.upena.deployable.UpenaSSLConfig;
 import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaDeployableLoopbackProxyEndpoints.LoopbackGet;
 import com.jivesoftware.os.upena.deployable.region.ProbeJavaDeployablePluginRegion.ProbeJavaDeployablePluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
@@ -35,16 +36,22 @@ public class ProbeJavaDeployablePluginRegion implements PageRegion<ProbeJavaDepl
     private final String template;
     private final SoyRenderer renderer;
     private final UpenaStore upenaStore;
+    private final UpenaSSLConfig upenaSSLConfig;
+    private final int upenaPort;
 
     public ProbeJavaDeployablePluginRegion(HostKey hostKey,
         String template,
         SoyRenderer renderer,
-        UpenaStore upenaStore
+        UpenaStore upenaStore,
+        UpenaSSLConfig upenaSSLConfig,
+        int upenaPort
     ) {
         this.hostKey = hostKey;
         this.template = template;
         this.renderer = renderer;
         this.upenaStore = upenaStore;
+        this.upenaSSLConfig = upenaSSLConfig;
+        this.upenaPort = upenaPort;
     }
 
     @Override
@@ -195,18 +202,18 @@ public class ProbeJavaDeployablePluginRegion implements PageRegion<ProbeJavaDepl
 
     }
 
-    static class Proxied implements ProxyAsNeeded {
+    class Proxied implements ProxyAsNeeded {
 
-        String instanceKey;
-        HttpRequestHelper requestHelper;
+        private final String instanceKey;
+        private final HttpRequestHelper requestHelper;
 
         public Proxied(String instanceKey, String host) throws Exception {
             this.instanceKey = instanceKey;
-            boolean sslEnable = true;// fix
-            boolean allowSelfSigendCerts = true; // fix
-            int upenaPort = 1175; // fix
-
-            this.requestHelper = HttpRequestHelperUtils.buildRequestHelper(sslEnable, allowSelfSigendCerts, null, host, upenaPort);
+            this.requestHelper = HttpRequestHelperUtils.buildRequestHelper(upenaSSLConfig.sslEnable,
+                upenaSSLConfig.allowSelfSignedCerts,
+                upenaSSLConfig.signer,
+                host,
+                upenaPort);
         }
 
         @Override

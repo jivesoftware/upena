@@ -495,6 +495,7 @@ public class UpenaMain {
             hostKey,
             ringHost,
             upenaSSLConfig,
+            port,
             upenaStore,
             upenaConfigStore,
             jerseyEndpoints,
@@ -513,9 +514,6 @@ public class UpenaMain {
 
         buildSwagger();
         initializeRestfulServer.addClasspathResource("/resources");
-//        initializeRestfulServer.addContextHandler("/docs/", (Server server, String context, String applicationName) -> {
-//            return buildSwaggerUI(context);
-//        });
         initializeRestfulServer.addContextHandler("/", jerseyEndpoints);
 
         RestfulServer restfulServer = initializeRestfulServer.build();
@@ -623,6 +621,7 @@ public class UpenaMain {
         HostKey hostKey,
         RingHost ringHost,
         UpenaSSLConfig upenaSSLConfig,
+        int port,
         UpenaStore upenaStore,
         UpenaConfigStore upenaConfigStore,
         UpenaJerseyEndpoints jerseyEndpoints,
@@ -809,7 +808,13 @@ public class UpenaMain {
 
         PluginHandle probe = new PluginHandle("hand-right", null, "Deployable", "/ui/java/deployable",
             ProbeJavaDeployablePluginEndpoints.class,
-            new ProbeJavaDeployablePluginRegion(hostKey, "soy.page.javaDeployablePluginRegion", renderer, upenaStore), null, "read", "debug");
+            new ProbeJavaDeployablePluginRegion(hostKey,
+                "soy.page.javaDeployablePluginRegion",
+                renderer,
+                upenaStore,
+                upenaSSLConfig,
+                port
+            ), null, "read", "debug");
 
         List<PluginHandle> plugins = new ArrayList<>();
         plugins.add(auth);
