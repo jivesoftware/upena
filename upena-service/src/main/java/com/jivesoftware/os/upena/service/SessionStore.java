@@ -18,7 +18,7 @@ public class SessionStore {
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
     private final Map<String, Session> sessions = new ConcurrentHashMap<>();
-    private final Map<String, Session> availableSessions = new ConcurrentHashMap<>();
+    private final Map<String, Session> tokenAccessibleSessions = new ConcurrentHashMap<>();
     private final SecureRandom random = new SecureRandom();
 
     private final long expireSessionAfterMillis;
@@ -33,41 +33,45 @@ public class SessionStore {
         if (session == null) {
             return false;
         }
-        for (Map.Entry<String, String> entry : session.entrySet()) {
-            LOG.info("FIXME: key={} value={}", entry.getKey(), entry.getValue());
-        }
 
         String sessionId = session.get(RouteSessionValidator.SESSION_ID);
-        Session had = sessions.get(sessionId);
+        String sessionToken = session.get(RouteSessionValidator.SESSION_TOKEN);
+        Session had = sessions.get(sessionToken);
         if (had != null) {
-            if (had.isValid(expireSessionAfterMillis, expireIdleSessionAfterMillis)) {
-                if (had.sessionToken.equals(session.get(RouteSessionValidator.SESSION_TOKEN))) {
+            if (had.isValid(expireSessionAfterMillis, expireIdleSessionAfterMillis) ) {
+                if (had.sessionId.equals(sessionId)) {
                     had.touch();
                     return true;
                 } else {
-                    LOG.warn("validation of sessionId={} failed due to session token miss match.", sessionId);
+                    LOG.warn("Validation of sessionId={} failed due to session mismatch.", sessionId);
                     return false;
                 }
             } else {
                 sessions.remove(sessionId);
                 return false;
             }
-        } else {
-            String newSessionToken = nextSessionToken();
-            String sessionTokenKey = nextSessionToken();
-            availableSessions.put(sessionTokenKey, new Session(System.currentTimeMillis(), newSessionToken));
-            // TODO send a link using sessionTokenKey
-            // when given sessionTokenKey back and assuming it hasn't expired make session valid
-            Session availableSession = availableSessions.remove(sessionTokenKey);
-            if (availableSession != null && availableSession.isValid(expireSessionAfterMillis, expireIdleSessionAfterMillis)) {
-                availableSession.touch();
-                // TODO cookie fun?
-                sessions.putIfAbsent(sessionId, availableSession);
-                return true;
-            } else {
-                return false;
-            }
         }
+        return false;
+    }
+
+    public String exchangeAccessForSession(String sessionId, String accessToken) {
+        Session availableSession = tokenAccessibleSessions.remove(accessToken);
+        if (availableSession != null
+            && availableSession.isValid(expireSessionAfterMillis, expireIdleSessionAfterMillis)
+            && availableSession.sessionId.equals(sessionId)) {
+            availableSession.touch();
+            sessions.putIfAbsent(availableSession.sessionToken, availableSession);
+            return availableSession.sessionToken;
+        } else {
+            return null;
+        }
+    }
+
+    public String generateAccessToken(String instanceKey) {
+        String accessToken = nextSessionToken();
+        String newSessionToken = nextSessionToken();
+        tokenAccessibleSessions.put(accessToken, new Session(System.currentTimeMillis(), instanceKey, newSessionToken));
+        return accessToken;
     }
 
     public String nextSessionToken() {
@@ -78,11 +82,13 @@ public class SessionStore {
 
         private final long sessionBirthTimestampMillis;
         private final AtomicLong toucedMillis;
+        public final String sessionId;
         public final String sessionToken;
 
-        public Session(long sessionBirthTimestampMillis, String sessionToken) {
+        public Session(long sessionBirthTimestampMillis, String sessionId, String sessionToken) {
             this.sessionBirthTimestampMillis = sessionBirthTimestampMillis;
             this.toucedMillis = new AtomicLong(sessionBirthTimestampMillis);
+            this.sessionId = sessionId;
             this.sessionToken = sessionToken;
         }
 

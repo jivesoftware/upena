@@ -19,12 +19,15 @@ import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelper;
 import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelperUtils;
+import com.jivesoftware.os.upena.service.SessionStore;
 import com.jivesoftware.os.upena.service.UpenaStore;
 import com.jivesoftware.os.upena.shared.HostKey;
 import com.jivesoftware.os.upena.shared.Instance;
 import com.jivesoftware.os.upena.shared.InstanceKey;
+import java.nio.charset.StandardCharsets;
 import javax.inject.Singleton;
 import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -38,17 +41,21 @@ import javax.ws.rs.core.Response;
  * @author jonathan.colt
  */
 @Singleton
-@Path("/deployable/loopback/")
-public class UpenaDeployableLoopbackProxyEndpoints {
+@Path("/upena/deployable")
+public class UpenaManagedDeployableEndpoints {
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
     private final HostKey hostKey;
     private final UpenaStore upenaStore;
+    private final SessionStore sessionStore;
 
-    public UpenaDeployableLoopbackProxyEndpoints(@Context HostKey hostKey, @Context UpenaStore upenaStore) {
+    public UpenaManagedDeployableEndpoints(@Context HostKey hostKey,
+        @Context UpenaStore upenaStore,
+        @Context SessionStore sessionStore) {
         this.hostKey = hostKey;
         this.upenaStore = upenaStore;
+        this.sessionStore = sessionStore;
     }
 
     public static class LoopbackGet {
@@ -64,7 +71,7 @@ public class UpenaDeployableLoopbackProxyEndpoints {
 
     }
 
-    @Path("/{instanceKey}")
+    @Path("/loopback/{instanceKey}")
     @POST
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response loopbackGet(@PathParam("instanceKey") @DefaultValue("unspecified") String instanceKey, LoopbackGet get) throws Exception {
@@ -86,6 +93,18 @@ public class UpenaDeployableLoopbackProxyEndpoints {
 
         } catch (Exception x) {
             LOG.warn("HasUI proxy failed", x);
+            return Response.serverError().build();
+        }
+    }
+
+    @Path("/ui/accessToken/{instanceKey}")
+    @GET
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    public Response uiAccessToken(@PathParam("instanceKey") @DefaultValue("unspecified") String instanceKey) throws Exception {
+        try {
+            return Response.ok(sessionStore.generateAccessToken(instanceKey).getBytes(StandardCharsets.UTF_8)).build();
+        } catch (Exception x) {
+            LOG.warn("UI access token failed", x);
             return Response.serverError().build();
         }
     }

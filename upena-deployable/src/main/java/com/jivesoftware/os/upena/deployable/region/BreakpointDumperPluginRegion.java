@@ -10,7 +10,7 @@ import com.jivesoftware.os.upena.deployable.JDIAPI;
 import com.jivesoftware.os.upena.deployable.JDIAPI.BreakpointDebugger;
 import com.jivesoftware.os.upena.deployable.JDIAPI.BreakpointDebugger.BreakpointState;
 import com.jivesoftware.os.upena.deployable.JDIAPI.BreakpointDebugger.StackFrames;
-import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaHealthEndpoints;
+import com.jivesoftware.os.upena.deployable.UpenaHealth;
 import com.jivesoftware.os.upena.deployable.region.BreakpointDumperPluginRegion.BreakpointDumperPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.service.UpenaStore;
@@ -429,7 +429,7 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
             }
 
             instanceMap.put("total", String.valueOf(total));
-            instanceMap.put("recency", UpenaHealthEndpoints.humanReadableUptime(System.currentTimeMillis() - mostRecentTimestamp));
+            instanceMap.put("recency", UpenaHealth.humanReadableUptime(System.currentTimeMillis() - mostRecentTimestamp));
 
         }
 
@@ -449,7 +449,7 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
         } else {
             thrown.level = "default";
         }
-        thrown.recency = UpenaHealthEndpoints.humanReadableUptime(System.currentTimeMillis() - Long.parseLong(thrown.timestamps.get(
+        thrown.recency = UpenaHealth.humanReadableUptime(System.currentTimeMillis() - Long.parseLong(thrown.timestamps.get(
             thrown.timestamps.size() - 1)));
 
         for (Thrown value : thrown.getCause().values()) {

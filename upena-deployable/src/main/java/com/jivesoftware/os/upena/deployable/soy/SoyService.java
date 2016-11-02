@@ -46,9 +46,9 @@ public class SoyService {
 
     }
 
-    public String render(String user, String upenaJarWGetURL, String upenaClusterName) throws Exception {
+    public String render(String user) throws Exception {
 
-        return chrome("soy.chrome.chromeRegion", homeRegion).render(user, new HomeInput(upenaJarWGetURL, upenaClusterName));
+        return chrome("soy.chrome.chromeRegion", homeRegion).render(user, new HomeInput());
     }
 
     public void registerPlugin(PluginHandle plugin) {

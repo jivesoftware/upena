@@ -25,9 +25,11 @@ import com.jivesoftware.os.routing.bird.shared.InstanceConnectionHealth;
 import com.jivesoftware.os.routing.bird.shared.InstanceDescriptorsRequest;
 import com.jivesoftware.os.routing.bird.shared.InstanceDescriptorsResponse;
 import com.jivesoftware.os.routing.bird.shared.ResponseHelper;
+import com.jivesoftware.os.upena.deployable.UpenaHealth;
 import com.jivesoftware.os.upena.service.DiscoveredRoutes;
 import com.jivesoftware.os.upena.service.SessionValidation;
 import com.jivesoftware.os.upena.service.UpenaService;
+import com.jivesoftware.os.upena.service.UpenaStore;
 import javax.inject.Singleton;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -35,7 +37,9 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 
 /**
  *
@@ -47,17 +51,21 @@ public class UpenaLoopbackEndpoints {
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
-
     private final ObjectMapper mapper = new ObjectMapper();
+    private final UpenaHealth upenaHealth;
     private final DiscoveredRoutes discoveredRoutes;
     private final UpenaService upenaService;
-    
-    public UpenaLoopbackEndpoints(
-        @Context DiscoveredRoutes discoveredRoutes,
-        @Context UpenaService upenaService) {
+    private final UpenaStore upenaStore;
 
+    public UpenaLoopbackEndpoints(@Context UpenaHealth upenaHealth,
+        @Context DiscoveredRoutes discoveredRoutes,
+        @Context UpenaService upenaService,
+        @Context UpenaStore upenaStore) {
+
+        this.upenaHealth = upenaHealth;
         this.discoveredRoutes = discoveredRoutes;
         this.upenaService = upenaService;
+        this.upenaStore =upenaStore;
         this.mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
@@ -139,4 +147,67 @@ public class UpenaLoopbackEndpoints {
             return ResponseHelper.INSTANCE.errorResponse("Failed to instanceDescriptorsRequest for:" + instanceDescriptorsRequest, x);
         }
     }
+
+    @GET
+    @Path("/health/check/{clusterName}/{healthy}")
+    public Response getHealthCheck(@Context UriInfo uriInfo,
+        @PathParam("clusterName") String clusterName,
+        @PathParam("healthy") float health) {
+        try {
+            UpenaHealth.NodeHealth upenaHealth = this.upenaHealth.buildNodeHealth();
+            double minHealth = 1.0d;
+            StringBuilder sb = new StringBuilder();
+            sb.append("<ul>");
+            for (UpenaHealth.NannyHealth nannyHealth : upenaHealth.nannyHealths) {
+                if (clusterName.equals("all") || nannyHealth.instanceDescriptor.clusterName.equals(clusterName)) {
+                    if (nannyHealth.serviceHealth.health < health) {
+                        for (UpenaHealth.Health h : nannyHealth.serviceHealth.healthChecks) {
+                            if (h.health < health) {
+                                sb.append("<li>");
+                                sb.append(nannyHealth.instanceDescriptor.clusterName).append(":");
+                                sb.append(nannyHealth.instanceDescriptor.serviceName).append(":");
+                                sb.append(nannyHealth.instanceDescriptor.releaseGroupName).append(":");
+                                sb.append(nannyHealth.instanceDescriptor.instanceName).append("=");
+                                sb.append(h.health);
+                                sb.append("</li>");
+                                sb.append("<li><ul>");
+                                sb.append("</li>").append(h.status).append("</li>");
+                                sb.append("</ul></li>");
+
+                                if (h.health < minHealth) {
+                                    minHealth = h.health;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            sb.append("</ul>");
+            if (minHealth < health) {
+                upenaStore.record(upenaHealth.host, "checkHealth", System.currentTimeMillis(), "health:" + minHealth + " < " + health, "endpoint", sb
+                    .toString());
+                return Response.status(Response.Status.NOT_ACCEPTABLE).entity(sb.toString()).type(MediaType.TEXT_PLAIN).build();
+            } else {
+                return Response.ok(minHealth, MediaType.TEXT_PLAIN).build();
+            }
+        } catch (Exception x) {
+            LOG.error("Failed to check instance health. {} {} ", new Object[]{clusterName, health}, x);
+            return Response.serverError().entity(x.toString()).type(MediaType.TEXT_PLAIN).build();
+        }
+    }
+
+    @GET
+    @Consumes("application/json")
+    @Path("/health/cluster")
+    public Response getClusterHealth(@Context UriInfo uriInfo) {
+        try {
+            UpenaHealth.ClusterHealth clusterHealth = upenaHealth.buildClusterHealth(uriInfo);
+            return ResponseHelper.INSTANCE.jsonResponse(clusterHealth);
+        } catch (Exception x) {
+            LOG.error("Failed getting cluster health", x);
+            return ResponseHelper.INSTANCE.errorResponse("Failed building all health view.", x);
+        }
+    }
+
+   
 }

@@ -6,7 +6,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
-import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaHealthEndpoints;
+import com.jivesoftware.os.upena.deployable.UpenaHealth;
 import com.jivesoftware.os.upena.deployable.region.ProjectsPluginRegion.ProjectsPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.service.UpenaStore;
@@ -683,15 +683,15 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
 
                 row.put("running", got != null);
                 if (got != null) {
-                    row.put("elapse", UpenaHealthEndpoints.humanReadableUptime(System.currentTimeMillis() - got.get()));
+                    row.put("elapse", UpenaHealth.humanReadableUptime(System.currentTimeMillis() - got.get()));
                 }
 
                 if (failedOutput.exists()) {
                     row.put("status", "danger");
-                    row.put("elapse", UpenaHealthEndpoints.humanReadableUptime(System.currentTimeMillis() - failedOutput.lastModified()));
+                    row.put("elapse", UpenaHealth.humanReadableUptime(System.currentTimeMillis() - failedOutput.lastModified()));
                 } else if (successOutput.exists()) {
                     row.put("status", "success");
-                    row.put("elapse", UpenaHealthEndpoints.humanReadableUptime(System.currentTimeMillis() - successOutput.lastModified()));
+                    row.put("elapse", UpenaHealth.humanReadableUptime(System.currentTimeMillis() - successOutput.lastModified()));
                 } else if (runningOutput.exists()) {
                     row.put("status", "info");
                 } else {
