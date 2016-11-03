@@ -175,6 +175,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
+import oauth.signpost.signature.HmacSha1MessageSigner;
 import org.glassfish.jersey.oauth1.signature.OAuth1Request;
 import org.glassfish.jersey.oauth1.signature.OAuth1Signature;
 import org.merlin.config.BindInterfaceToConfiguration;
@@ -322,7 +324,27 @@ public class UpenaMain {
                 }
             }
         }
-        OAuthSigner authSigner = null;
+
+        String consumerKey = System.getProperty("upena.consumerKey", clusterName);
+        if (consumerKey == null) {
+            consumerKey = "upena";
+            LOG.warn("Please provide a stronger consumerKey via -Dupena.consumerKey");
+        }
+        String finalConsumerKey = consumerKey;
+
+        String secret = System.getProperty("upena.secret");
+        if (secret == null) {
+            secret = "secret";
+            LOG.warn("Please provide a stronger secret via -Dupena.secret");
+        }
+        String finalSecret = secret;
+
+        OAuthSigner authSigner = (request) -> {
+            CommonsHttpOAuthConsumer oAuthConsumer = new CommonsHttpOAuthConsumer(finalConsumerKey, finalSecret);
+            oAuthConsumer.setTokenWithSecret(finalConsumerKey, finalSecret);
+            oAuthConsumer.setMessageSigner(new HmacSha1MessageSigner());
+            return oAuthConsumer.sign(request);
+        };
         UpenaSSLConfig upenaSSLConfig = new UpenaSSLConfig(sslEnable, sslAutoGenerateSelfSignedCert, authSigner);
         UpdatesSender changeSetSender = new HttpUpdatesSender(sslEnable, sslAutoGenerateSelfSignedCert, authSigner);
         UpdatesTaker tableTaker = new HttpUpdatesTaker(sslEnable, sslAutoGenerateSelfSignedCert, authSigner);
@@ -507,12 +529,6 @@ public class UpenaMain {
         );
 
         OAuth1Signature verifier = new OAuth1Signature(new OAuthServiceLocatorShim());
-        String secret = System.getProperty("upena.secret");
-        if (secret == null) {
-            secret = clusterName;
-            LOG.warn("Please provide a stronger secret via -Dupena.secret");
-        }
-        String finalSecret = secret;
         OAuthSecretManager oAuthSecretManager = new OAuthSecretManager() {
             @Override
             public void clearCache() {
@@ -520,7 +536,7 @@ public class UpenaMain {
 
             @Override
             public String getSecret(String id) throws AuthValidationException {
-                return finalSecret;
+                return id.equals(finalConsumerKey) ? finalSecret : null;
             }
 
             @Override
@@ -528,7 +544,8 @@ public class UpenaMain {
             }
         };
         AuthValidator<OAuth1Signature, OAuth1Request> oAuthValidator = new DefaultOAuthValidator(Executors.newScheduledThreadPool(1),
-            Long.MAX_VALUE, oAuthSecretManager,
+            Long.MAX_VALUE,
+            oAuthSecretManager,
             10_000,
             false
         );
