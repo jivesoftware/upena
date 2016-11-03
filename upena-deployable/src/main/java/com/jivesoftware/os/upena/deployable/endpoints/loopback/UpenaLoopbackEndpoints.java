@@ -42,6 +42,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
 /**
@@ -132,7 +133,11 @@ public class UpenaLoopbackEndpoints {
     public Response exchangeAccessToken(@PathParam("instanceKey") String instanceKey, @PathParam("accessToken") String accessToken) {
         try {
             String sessionToken = sessionStore.exchangeAccessForSession(instanceKey, accessToken);
-            return Response.ok(sessionToken == null ? new byte[0] : sessionToken.getBytes(StandardCharsets.UTF_8)).build();
+            if (sessionToken == null) {
+                return Response.status(Status.UNAUTHORIZED).build();
+            } else {
+                return Response.ok(sessionToken.getBytes(StandardCharsets.UTF_8)).build();
+            }
         } catch (Exception x) { 
             LOG.warn("Failed to exchange access token for:" + instanceKey, x);
             return Response.serverError().build();
