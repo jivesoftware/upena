@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.jivesoftware.os.upena.deployable.endpoints.api;
+package com.jivesoftware.os.upena.deployable.endpoints.api.v1;
 
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
@@ -33,7 +33,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
 @Api(value = "Upena Host CRUD")
-@Path("/upena/host")
+@Path("/api/v1/upena/host")
 public class UpenaHostRestEndpoints {
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
