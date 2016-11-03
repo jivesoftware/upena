@@ -341,8 +341,8 @@ public class UpenaMain {
 
         OAuthSigner authSigner = (request) -> {
             CommonsHttpOAuthConsumer oAuthConsumer = new CommonsHttpOAuthConsumer(finalConsumerKey, finalSecret);
-            oAuthConsumer.setTokenWithSecret(finalConsumerKey, finalSecret);
             oAuthConsumer.setMessageSigner(new HmacSha1MessageSigner());
+            oAuthConsumer.setTokenWithSecret(finalConsumerKey, finalSecret);
             return oAuthConsumer.sign(request);
         };
         UpenaSSLConfig upenaSSLConfig = new UpenaSSLConfig(sslEnable, sslAutoGenerateSelfSignedCert, authSigner);
