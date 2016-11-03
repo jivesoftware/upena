@@ -550,7 +550,7 @@ public class UpenaMain {
             false
         );
         oAuthValidator.start();
-        authValidationFilter.addEvaluator(new OAuthEvaluator(oAuthValidator, verifier), "/upena/*"); // Cough
+        authValidationFilter.addEvaluator(new OAuthEvaluator(oAuthValidator, verifier), "/upena/*", "/amza/*");
 
         jerseyEndpoints.addContainerRequestFilter(authValidationFilter);
 
