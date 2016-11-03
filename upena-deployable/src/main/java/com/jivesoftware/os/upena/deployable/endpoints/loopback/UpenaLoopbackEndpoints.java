@@ -131,7 +131,8 @@ public class UpenaLoopbackEndpoints {
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response exchangeAccessToken(@PathParam("instanceKey") String instanceKey, @PathParam("accessToken") String accessToken) {
         try {
-            return Response.ok(sessionStore.exchangeAccessForSession(instanceKey, accessToken).getBytes(StandardCharsets.UTF_8)).build();
+            String sessionToken = sessionStore.exchangeAccessForSession(instanceKey, accessToken);
+            return Response.ok(sessionToken == null ? new byte[0] : sessionToken.getBytes(StandardCharsets.UTF_8)).build();
         } catch (Exception x) { 
             LOG.warn("Failed to exchange access token for:" + instanceKey, x);
             return Response.serverError().build();

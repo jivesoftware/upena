@@ -41,6 +41,7 @@ import com.jivesoftware.os.routing.bird.server.oauth.OAuthSecretManager;
 import com.jivesoftware.os.routing.bird.server.oauth.OAuthServiceLocatorShim;
 import com.jivesoftware.os.routing.bird.server.oauth.validator.AuthValidator;
 import com.jivesoftware.os.routing.bird.server.oauth.validator.DefaultOAuthValidator;
+import com.jivesoftware.os.routing.bird.shared.AuthEvaluator.AuthStatus;
 import com.jivesoftware.os.routing.bird.shared.InstanceDescriptorsRequest;
 import com.jivesoftware.os.routing.bird.shared.InstanceDescriptorsResponse;
 import com.jivesoftware.os.uba.shared.PasswordStore;
@@ -68,17 +69,17 @@ import com.jivesoftware.os.upena.amza.transport.http.replication.endpoints.AmzaR
 import com.jivesoftware.os.upena.config.UpenaConfigRestEndpoints;
 import com.jivesoftware.os.upena.config.UpenaConfigStore;
 import com.jivesoftware.os.upena.deployable.aws.AWSClientFactory;
-import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaClusterRestEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.api.v1.UpenaClusterRestEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaConnectivityEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaHealthEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaHostRestEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaInstanceRestEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.api.v1.UpenaHostRestEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.api.v1.UpenaInstanceRestEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaManagedDeployableEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaReleaseRestEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.api.v1.UpenaReleaseRestEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaRepoEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaServiceRestEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaTenantRestEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.api.v1.UpenaServiceRestEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.api.v1.UpenaTenantRestEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.loopback.UpenaLoopbackEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ui.AWSPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ui.ApiPluginEndpoints;
@@ -164,12 +165,15 @@ import com.jivesoftware.os.upena.uba.service.UpenaClient;
 import de.ruedigermoeller.serialization.FSTConfiguration;
 import io.swagger.jaxrs.config.BeanConfig;
 import java.io.File;
+import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.NavigableMap;
 import java.util.Random;
+import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -552,6 +556,37 @@ public class UpenaMain {
         oAuthValidator.start();
         authValidationFilter.addEvaluator(new OAuthEvaluator(oAuthValidator, verifier), "/upena/*", "/amza/*");
 
+
+
+        // TODO something better someday
+        String upenaApiUsername = System.getProperty("upena.api.username", null);
+        String upenaApiPassword = System.getProperty("upena.api.password", null);
+
+        if (upenaApiUsername != null && upenaApiPassword != null) {
+            authValidationFilter.addEvaluator(containerRequestContext -> {
+                String authCredentials = containerRequestContext.getHeaderString("Authentication");
+                if (authCredentials == null) {
+                    return AuthStatus.not_handled;
+                }
+
+                final String encodedUserPassword = authCredentials.replaceFirst("Basic" + " ", "");
+                String usernameAndPassword = null;
+                try {
+                    byte[] decodedBytes = Base64.getDecoder().decode(encodedUserPassword);
+                    usernameAndPassword = new String(decodedBytes, "UTF-8");
+                } catch (IOException e) {
+                    return AuthStatus.denied;
+                }
+                final StringTokenizer tokenizer = new StringTokenizer(usernameAndPassword, ":");
+                final String username = tokenizer.nextToken();
+                final String password = tokenizer.nextToken();
+
+                boolean authenticationStatus = upenaApiUsername.equals(username) && upenaApiPassword.equals(password);
+
+                return authenticationStatus ? AuthStatus.authorized : AuthStatus.denied;
+            }, "/api/*");
+        }
+
         jerseyEndpoints.addContainerRequestFilter(authValidationFilter);
 
         String region = System.getProperty("aws.region", null);
@@ -601,6 +636,7 @@ public class UpenaMain {
         UpenaJerseyEndpoints loopbackJerseyEndpoints = new UpenaJerseyEndpoints()
             .addEndpoint(UpenaLoopbackEndpoints.class)
             .addEndpoint(UpenaConfigRestEndpoints.class)
+            .addInjectable(SessionStore.class, sessionStore)
             .addInjectable(DiscoveredRoutes.class, discoveredRoutes)
             .addInjectable(upenaConfigStore)
             .addInjectable(UpenaService.class, upenaService);

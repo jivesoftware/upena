@@ -13,15 +13,15 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.jivesoftware.os.upena.deployable.endpoints.api;
+package com.jivesoftware.os.upena.deployable.endpoints.api.v1;
 
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.routing.bird.shared.ResponseHelper;
 import com.jivesoftware.os.upena.service.UpenaStore;
-import com.jivesoftware.os.upena.shared.Cluster;
-import com.jivesoftware.os.upena.shared.ClusterFilter;
-import com.jivesoftware.os.upena.shared.ClusterKey;
+import com.jivesoftware.os.upena.shared.Instance;
+import com.jivesoftware.os.upena.shared.InstanceFilter;
+import com.jivesoftware.os.upena.shared.InstanceKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
 import io.swagger.annotations.Api;
 import java.util.Map;
@@ -32,25 +32,26 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
-@Api(value = "Upena Cluster CRUD")
-@Path("/upena/cluster")
-public class UpenaClusterRestEndpoints {
+@Api(value = "Upena Instance CRUD")
+@Path("/api/v1/upena/instance")
+public class UpenaInstanceRestEndpoints {
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
     private final UpenaStore upenaStore;
-   
-    public UpenaClusterRestEndpoints(@Context UpenaStore upenaStore) {
+
+    public UpenaInstanceRestEndpoints(@Context UpenaStore upenaStore) {
         this.upenaStore = upenaStore;
     }
 
     @POST
     @Consumes("application/json")
     @Path("/add")
-    public Response addCluster(Cluster value) {
+    public Response addInstance(Instance value) {
         try {
-            LOG.debug("Attempting to add: " + value);
-            ClusterKey key = upenaStore.clusters.update(null, value);
-            return ResponseHelper.INSTANCE.jsonResponse(key);
+            LOG.info("Attempting to add: " + value);
+            InstanceKey instanceKey = upenaStore.instances.update(null, value); // hack
+            LOG.info("Added: " + value);
+            return ResponseHelper.INSTANCE.jsonResponse(instanceKey);
         } catch (Exception x) {
             LOG.warn("Failed to add: " + value, x);
             return ResponseHelper.INSTANCE.errorResponse("Failed to update " + value, x);
@@ -60,13 +61,14 @@ public class UpenaClusterRestEndpoints {
     @POST
     @Consumes("application/json")
     @Path("/update")
-    public Response updateCluster(Cluster value, @QueryParam(value = "key") String key) {
+    public Response updateInstance(Instance value, @QueryParam(value = "key") String key) {
         try {
-            LOG.debug("Attempting to update: " + value);
-            ClusterKey clusterKey = upenaStore.clusters.update(new ClusterKey(key), value);
-            return ResponseHelper.INSTANCE.jsonResponse(clusterKey);
+            LOG.info("Attempting to update: " + value);
+            InstanceKey instanceKey = upenaStore.instances.update(new InstanceKey(key), value);
+            LOG.info("Updated: " + value);
+            return ResponseHelper.INSTANCE.jsonResponse(instanceKey);
         } catch (Exception x) {
-            LOG.warn("Failed to update: " + value, x);
+            LOG.warn("Failed to update: " + value + " key:" + key, x);
             return ResponseHelper.INSTANCE.errorResponse("Failed to update " + value, x);
         }
     }
@@ -74,23 +76,23 @@ public class UpenaClusterRestEndpoints {
     @POST
     @Consumes("application/json")
     @Path("/get")
-    public Response getCluster(ClusterKey key) {
+    public Response getInstance(InstanceKey key) {
         try {
-            Cluster cluster = upenaStore.clusters.get(key);
-            return ResponseHelper.INSTANCE.jsonResponse(cluster);
+            Instance instance = upenaStore.instances.get(key);
+            return ResponseHelper.INSTANCE.jsonResponse(instance);
         } catch (Exception x) {
             LOG.warn("Failed to get: " + key, x);
-            return ResponseHelper.INSTANCE.errorResponse("Failed to remove " + key, x);
+            return ResponseHelper.INSTANCE.errorResponse("Failed to get " + key, x);
         }
     }
 
     @POST
     @Consumes("application/json")
     @Path("/remove")
-    public Response removeCluster(ClusterKey key) {
+    public Response removeInstance(InstanceKey key) {
         try {
-            boolean removeCluster = upenaStore.clusters.remove(key);
-            return ResponseHelper.INSTANCE.jsonResponse(removeCluster);
+            boolean removeInstance = upenaStore.instances.remove(key);
+            return ResponseHelper.INSTANCE.jsonResponse(removeInstance);
         } catch (Exception x) {
             LOG.warn("Failed to remove: " + key, x);
             return ResponseHelper.INSTANCE.errorResponse("Failed to remove " + key, x);
@@ -100,10 +102,10 @@ public class UpenaClusterRestEndpoints {
     @POST
     @Consumes("application/json")
     @Path("/find")
-    public Response findCluster(ClusterFilter filter) {
+    public Response findInstance(InstanceFilter filter) {
         try {
-            Map<ClusterKey, TimestampedValue<Cluster>> found = upenaStore.clusters.find(false, filter);
-            LOG.debug("filter:" + filter + " found:" + found.size() + " items.");
+            Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(false, filter);
+            LOG.info("filter:" + filter + " found:" + found.size() + " items.");
             return ResponseHelper.INSTANCE.jsonResponse(found);
         } catch (Exception x) {
             LOG.warn("Failed to find: " + filter, x);
