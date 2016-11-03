@@ -81,26 +81,27 @@ public class SessionStore {
     private static class Session {
 
         private final long sessionBirthTimestampMillis;
-        private final AtomicLong toucedMillis;
+        private final AtomicLong touchedMillis;
         public final String sessionId;
         public final String sessionToken;
 
         public Session(long sessionBirthTimestampMillis, String sessionId, String sessionToken) {
             this.sessionBirthTimestampMillis = sessionBirthTimestampMillis;
-            this.toucedMillis = new AtomicLong(sessionBirthTimestampMillis);
+            this.touchedMillis = new AtomicLong(sessionBirthTimestampMillis);
             this.sessionId = sessionId;
             this.sessionToken = sessionToken;
         }
 
         public void touch() {
-            toucedMillis.set(System.currentTimeMillis());
+            touchedMillis.set(System.currentTimeMillis());
         }
 
         public boolean isValid(long expireSessionAfterMillis, long expireIdleSessionAfterMillis) {
-            if (sessionBirthTimestampMillis + expireSessionAfterMillis > System.currentTimeMillis()) {
+            long now = System.currentTimeMillis();
+            if (sessionBirthTimestampMillis + expireSessionAfterMillis < now) {
                 return false;
             }
-            if (toucedMillis.get() + expireIdleSessionAfterMillis > System.currentTimeMillis()) {
+            if (touchedMillis.get() + expireIdleSessionAfterMillis < now) {
                 return false;
             }
             return true;
