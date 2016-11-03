@@ -546,7 +546,7 @@ public class UpenaMain {
         AuthValidator<OAuth1Signature, OAuth1Request> oAuthValidator = new DefaultOAuthValidator(Executors.newScheduledThreadPool(1),
             Long.MAX_VALUE,
             oAuthSecretManager,
-            10_000,
+            60_000,
             false
         );
         oAuthValidator.start();

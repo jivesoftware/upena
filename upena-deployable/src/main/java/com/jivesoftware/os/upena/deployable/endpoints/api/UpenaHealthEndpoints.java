@@ -34,7 +34,7 @@ import javax.ws.rs.core.Response;
  */
 @Api(value = "Upena Health Check")
 @Singleton
-@Path("/health")
+@Path("/upena/health")
 public class UpenaHealthEndpoints {
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
