@@ -925,6 +925,7 @@ public class UpenaMain {
         plugins.add(profiler);
         plugins.add(ring);
 
+        jerseyEndpoints.addInjectable(SessionStore.class, sessionStore);
         jerseyEndpoints.addInjectable(UpenaSSLConfig.class, upenaSSLConfig);
         jerseyEndpoints.addInjectable(SoyService.class, soyService);
         jerseyEndpoints.addEndpoint(AsyncLookupEndpoints.class);
