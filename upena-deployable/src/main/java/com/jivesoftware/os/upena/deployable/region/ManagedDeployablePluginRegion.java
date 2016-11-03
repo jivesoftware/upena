@@ -151,7 +151,7 @@ public class ManagedDeployablePluginRegion implements PageRegion<ManagedDeployab
                             u.put("host", host.hostName);
                             u.put("port", String.valueOf(port.port));
                             u.put("url", ui.url);
-                            u.put("uiPath", "/ui/deployable/accessToken/" + input.instanceKey + "?portName=" + ui.portName + "&path=" + ui.url);
+                            u.put("uiPath", "/ui/deployable/redirect/" + input.instanceKey + "?portName=" + ui.portName + "&path=" + ui.url);
                             uis.add(u);
                         }
                     }

@@ -75,7 +75,7 @@ public class ManagedDeployablePluginEndpoints {
         });
     }
 
-    @Path("/ui/{instanceKey}")
+    @Path("/redirect/{instanceKey}")
     @GET()
     @Produces(MediaType.TEXT_HTML)
     public Response redirectToUI(@PathParam("instanceKey") @DefaultValue("unspecified") String instanceKey,
@@ -83,7 +83,7 @@ public class ManagedDeployablePluginEndpoints {
         @QueryParam("path") @DefaultValue("unspecified") String uiPath,
         @Context HttpServletRequest httpRequest) {
 
-        return shiroRequestHelper.call("/ui/deployable/ui", () -> {
+        return shiroRequestHelper.call("/ui/deployable/redirect", () -> {
             URI uri = pluginRegion.redirectToUI(instanceKey, portName, uiPath);
             if (uri == null) {
                 return Response.ok("Failed to redirect.").build();
