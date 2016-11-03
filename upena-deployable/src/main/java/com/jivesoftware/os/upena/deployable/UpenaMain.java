@@ -736,7 +736,7 @@ public class UpenaMain {
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/loadBalancersPluginRegion.soy"), "loadBalancersPluginRegion.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/authPluginRegion.soy"), "authPluginRegion.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/unauthorizedPluginRegion.soy"), "unauthorizedPluginRegion.soy");
-        soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/javaDeployablePluginRegion.soy"), "javaDeployablePluginRegion.soy");
+        soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/deployablePluginRegion.soy"), "deployablePluginRegion.soy");
 
         if (jvmapi != null) {
             soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/jvmPluginRegion.soy"), "jvmPluginRegion.soy");
@@ -882,11 +882,11 @@ public class UpenaMain {
             ApiPluginEndpoints.class,
             null, null, "read", "debug");
 
-        PluginHandle probe = new PluginHandle("hand-right", null, "Deployable", "/ui/java/deployable",
+        PluginHandle probe = new PluginHandle("hand-right", null, "Deployable", "/ui/deployable",
             ManagedDeployablePluginEndpoints.class,
             new ManagedDeployablePluginRegion(sessionStore,
                 hostKey,
-                "soy.page.javaDeployablePluginRegion",
+                "soy.page.deployablePluginRegion",
                 renderer,
                 upenaStore,
                 upenaSSLConfig,
