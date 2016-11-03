@@ -62,7 +62,7 @@ public class ManagedDeployablePluginRegion implements PageRegion<ManagedDeployab
 
     @Override
     public String getRootPath() {
-        return "/ui/java/deployable";
+        return "/ui/deployable";
     }
 
     public static class ManagedDeployablePluginRegionInput implements PluginInput {
@@ -151,7 +151,7 @@ public class ManagedDeployablePluginRegion implements PageRegion<ManagedDeployab
                             u.put("host", host.hostName);
                             u.put("port", String.valueOf(port.port));
                             u.put("url", ui.url);
-                            u.put("uiPath", "/upena/deployable/ui/accessToken/" + input.instanceKey + "?portName=" + ui.portName + "&path=" + ui.url);
+                            u.put("uiPath", "/ui/deployable/accessToken/" + input.instanceKey + "?portName=" + ui.portName + "&path=" + ui.url);
                             uis.add(u);
                         }
                     }
@@ -273,7 +273,7 @@ public class ManagedDeployablePluginRegion implements PageRegion<ManagedDeployab
 
         @Override
         public String allocateAccessToken() {
-            byte[] token = requestHelper.executeGet("/upena/deployable/ui/accessToken/" + instanceKey);
+            byte[] token = requestHelper.executeGet("/ui/deployable/accessToken/" + instanceKey);
             return (token != null) ? new String(token, StandardCharsets.UTF_8) : null;
         }
     }
