@@ -48,12 +48,15 @@ public class UpenaManagedDeployableEndpoints {
 
     private final HostKey hostKey;
     private final UpenaStore upenaStore;
+    private final SessionStore sessionStore;
 
 
     public UpenaManagedDeployableEndpoints(@Context HostKey hostKey,
-        @Context UpenaStore upenaStore) {
+        @Context UpenaStore upenaStore,
+        @Context SessionStore sessionStore) {
         this.hostKey = hostKey;
         this.upenaStore = upenaStore;
+        this.sessionStore = sessionStore;
     }
 
     public static class LoopbackGet {
@@ -95,5 +98,15 @@ public class UpenaManagedDeployableEndpoints {
         }
     }
 
-
+    @Path("/accessToken/{instanceKey}")
+    @GET
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    public Response uiAccessToken(@PathParam("instanceKey") @DefaultValue("unspecified") String instanceKey) throws Exception {
+        try {
+            return Response.ok(sessionStore.generateAccessToken(instanceKey).getBytes(StandardCharsets.UTF_8)).build();
+        } catch (Exception x) {
+            LOG.warn("UI access token failed", x);
+            return Response.serverError().build();
+        }
+    }
 }
