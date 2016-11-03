@@ -419,7 +419,8 @@ public class UpenaMain {
             return System.getProperty("MASTER_PASSWORD", "PASSWORD"); // cough
         };
 
-        SessionStore sessionStore = new SessionStore(TimeUnit.MINUTES.toMillis(60), TimeUnit.MINUTES.toMillis(1));
+        SessionStore sessionStore = new SessionStore(TimeUnit.MINUTES.toMillis(60),
+            TimeUnit.MINUTES.toMillis(30));
 
         UpenaService upenaService = new UpenaService(passwordStore, sessionStore, upenaStore, chaosService);
 
