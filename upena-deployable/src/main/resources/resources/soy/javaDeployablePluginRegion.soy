@@ -5,7 +5,8 @@
  * 
  * @param? instanceKey
  * @param? uis
- * @param? result
+ * @param? textResult
+ * @param? htmlResult
  */
 {template .javaDeployablePluginRegion}
     <div class="panel">
@@ -45,8 +46,11 @@
                 <span>Reset Health</span>
             </button>
         </form>
-        {if $result}
-            <pre style="white-space: pre-wrap; word-wrap: normal; word-break: break-word;">{$result|noAutoescape}</pre>
+        {if $textResult}
+            <pre style="white-space: pre-wrap; word-wrap: normal; word-break: break-word;">{$textResult|noAutoescape}</pre>
+        {/if}
+        {if $htmlResult}
+            {$htmlResult|noAutoescape}
         {/if}
     </div>
 {/template}

@@ -161,39 +161,39 @@ public class ManagedDeployablePluginRegion implements PageRegion<ManagedDeployab
                 if (input.action.equals("health")) {
                     SecurityUtils.getSubject().checkPermission("read");
                     String r = proxy.get("/manage/health/ui");
-                    data.put("result", r == null ? "" : r);
+                    data.put("htmlResult", r == null ? "" : r);
                 } else if (input.action.equals("metrics")) {
                     SecurityUtils.getSubject().checkPermission("read");
                     String r = proxy.get("/manage/metrics/ui");
-                    data.put("result", r == null ? "" : r);
+                    data.put("textResult", r == null ? "" : r);
                 } else if (input.action.equals("tail")) {
                     SecurityUtils.getSubject().checkPermission("read");
                     String r = proxy.get("/manage/tail");
-                    data.put("result", r == null ? "" : r);
+                    data.put("textResult", r == null ? "" : r);
                 } else if (input.action.equals("threadDump")) {
                     SecurityUtils.getSubject().checkPermission("read");
                     String r = proxy.get("/manage/threadDump");
-                    data.put("result", r == null ? "" : r);
+                    data.put("textResult", r == null ? "" : r);
                 } else if (input.action.equals("forceGC")) {
                     SecurityUtils.getSubject().checkPermission("read");
                     String r = proxy.get("/manage/forceGC");
-                    data.put("result", r == null ? "" : r);
+                    data.put("textResult", r == null ? "" : r);
                 } else if (input.action.equals("resetErrors")) {
                     SecurityUtils.getSubject().checkPermission("read");
                     String r = proxy.get("/manage/resetErrors");
-                    data.put("result", r == null ? "" : r);
+                    data.put("textResult", r == null ? "" : r);
                 } else if (input.action.equals("resetThrown")) {
                     SecurityUtils.getSubject().checkPermission("read");
                     String r = proxy.get("/manage/resetThrown");
-                    data.put("result", r == null ? "" : r);
+                    data.put("textResult", r == null ? "" : r);
                 } else if (input.action.equals("resetHealth")) {
                     SecurityUtils.getSubject().checkPermission("read");
                     String r = proxy.get("/manage/resetHealth");
-                    data.put("result", r == null ? "" : r);
+                    data.put("textResult", r == null ? "" : r);
                 } else {
                     SecurityUtils.getSubject().checkPermission("read");
                     String r = proxy.get("/manage/health/ui");
-                    data.put("result", r == null ? "" : r);
+                    data.put("htmlResult", r == null ? "" : r);
                 }
             }
         } catch (AuthorizationException x) {
