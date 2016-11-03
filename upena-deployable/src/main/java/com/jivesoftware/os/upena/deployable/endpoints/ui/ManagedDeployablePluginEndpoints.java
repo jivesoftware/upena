@@ -1,5 +1,7 @@
 package com.jivesoftware.os.upena.deployable.endpoints.ui;
 
+import com.jivesoftware.os.mlogger.core.MetricLogger;
+import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.deployable.ShiroRequestHelper;
 import com.jivesoftware.os.upena.deployable.region.ManagedDeployablePluginRegion;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
@@ -22,14 +24,14 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import static org.eclipse.jetty.http.HttpParser.LOG;
-
 /**
  *
  */
 @Singleton
 @Path("/ui/deployable")
 public class ManagedDeployablePluginEndpoints {
+
+    private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
     private final ShiroRequestHelper shiroRequestHelper;
     private final SoyService soyService;
