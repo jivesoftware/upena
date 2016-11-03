@@ -273,7 +273,7 @@ public class ManagedDeployablePluginRegion implements PageRegion<ManagedDeployab
 
         @Override
         public String allocateAccessToken() {
-            byte[] token = requestHelper.executeGet("/ui/deployable/accessToken/" + instanceKey);
+            byte[] token = requestHelper.executeGet("/upena/deployable/accessToken/" + instanceKey);
             return (token != null) ? new String(token, StandardCharsets.UTF_8) : null;
         }
     }

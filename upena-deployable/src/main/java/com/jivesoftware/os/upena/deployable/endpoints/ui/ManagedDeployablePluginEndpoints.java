@@ -36,17 +36,14 @@ public class ManagedDeployablePluginEndpoints {
     private final ShiroRequestHelper shiroRequestHelper;
     private final SoyService soyService;
     private final ManagedDeployablePluginRegion pluginRegion;
-    private final SessionStore sessionStore;
 
     public ManagedDeployablePluginEndpoints(@Context ShiroRequestHelper shiroRequestHelper,
         @Context SoyService soyService,
-        @Context ManagedDeployablePluginRegion pluginRegion,
-        @Context SessionStore sessionStore) {
+        @Context ManagedDeployablePluginRegion pluginRegion) {
 
         this.shiroRequestHelper = shiroRequestHelper;
         this.soyService = soyService;
         this.pluginRegion = pluginRegion;
-        this.sessionStore = sessionStore;
     }
 
     @Path("/probe/{instanceKey}")
@@ -90,18 +87,6 @@ public class ManagedDeployablePluginEndpoints {
             }
             return Response.temporaryRedirect(uri).build();
         });
-    }
-
-    @Path("/accessToken/{instanceKey}")
-    @GET
-    @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response uiAccessToken(@PathParam("instanceKey") @DefaultValue("unspecified") String instanceKey) throws Exception {
-        try {
-            return Response.ok(sessionStore.generateAccessToken(instanceKey).getBytes(StandardCharsets.UTF_8)).build();
-        } catch (Exception x) {
-            LOG.warn("UI access token failed", x);
-            return Response.serverError().build();
-        }
     }
 
 }
