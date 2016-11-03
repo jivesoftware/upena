@@ -27,15 +27,18 @@ import com.jivesoftware.os.routing.bird.shared.InstanceDescriptorsResponse;
 import com.jivesoftware.os.routing.bird.shared.ResponseHelper;
 import com.jivesoftware.os.upena.deployable.UpenaHealth;
 import com.jivesoftware.os.upena.service.DiscoveredRoutes;
+import com.jivesoftware.os.upena.service.SessionStore;
 import com.jivesoftware.os.upena.service.SessionValidation;
 import com.jivesoftware.os.upena.service.UpenaService;
 import com.jivesoftware.os.upena.service.UpenaStore;
+import java.nio.charset.StandardCharsets;
 import javax.inject.Singleton;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -56,16 +59,19 @@ public class UpenaLoopbackEndpoints {
     private final DiscoveredRoutes discoveredRoutes;
     private final UpenaService upenaService;
     private final UpenaStore upenaStore;
+    private final SessionStore sessionStore;
 
     public UpenaLoopbackEndpoints(@Context UpenaHealth upenaHealth,
         @Context DiscoveredRoutes discoveredRoutes,
         @Context UpenaService upenaService,
-        @Context UpenaStore upenaStore) {
+        @Context UpenaStore upenaStore,
+        @Context SessionStore sessionStore) {
 
         this.upenaHealth = upenaHealth;
         this.discoveredRoutes = discoveredRoutes;
         this.upenaService = upenaService;
-        this.upenaStore =upenaStore;
+        this.upenaStore = upenaStore;
+        this.sessionStore = sessionStore;
         this.mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
@@ -116,6 +122,18 @@ public class UpenaLoopbackEndpoints {
             return Response.ok(upenaService.isValid(sessionValidation)).build();
         } catch (Exception x) {
             LOG.warn("Failed validate session", x);
+            return Response.serverError().build();
+        }
+    }
+
+    @GET
+    @Path("/session/exchangeAccessToken/{instanceKey}/{accessToken}")
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    public Response exchangeAccessToken(@PathParam("instanceKey") String instanceKey, @PathParam("accessToken") String accessToken) {
+        try {
+            return Response.ok(sessionStore.exchangeAccessForSession(instanceKey, accessToken).getBytes(StandardCharsets.UTF_8)).build();
+        } catch (Exception x) { 
+            LOG.warn("Failed to exchange access token for:" + instanceKey, x);
             return Response.serverError().build();
         }
     }
@@ -209,5 +227,4 @@ public class UpenaLoopbackEndpoints {
         }
     }
 
-   
 }

@@ -74,7 +74,7 @@ public class ManagedDeployablePluginEndpoints {
         @Context HttpServletRequest httpRequest) {
 
         return shiroRequestHelper.call("/ui/java/deployable/ui", () -> {
-            URI uri = pluginRegion.redirectToUI(instanceKey,portName, uiPath);
+            URI uri = pluginRegion.redirectToUI(instanceKey, portName, uiPath);
             if (uri == null) {
                 return Response.ok("Failed to redirect.").build();
             }
