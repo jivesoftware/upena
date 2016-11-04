@@ -761,13 +761,13 @@ upena.connectivity = {
 
                 var sslIcon = null;
                 if (node.sslEnabled) {
-                   sslIcon = r.image("/static/img/lock.png", n.point[0] - (halfW - iconSize), n.point[1] - halfIconSize, iconSize, iconSize);
+                   sslIcon = r.image("/static/img/lock.png", n.point[0] - (halfW + iconSize), n.point[1] - halfIconSize, iconSize, iconSize);
                    w += iconSize;
                 }
 
                 var authIcon = null;
                 if (node.serviceAuthEnabled) {
-                    authIcon = r.image("/static/img/key.png", n.point[0] + (halfW - iconSize), n.point[1] - halfIconSize, iconSize, iconSize);
+                    authIcon = r.image("/static/img/key.png", n.point[0] + (halfW - halfIconSize), n.point[1] - halfIconSize, iconSize, iconSize);
                     w += iconSize;
                 }
 
