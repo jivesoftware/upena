@@ -15,6 +15,7 @@
  */
 package com.jivesoftware.os.upena.uba.service;
 
+import com.google.common.base.Throwables;
 import com.jivesoftware.os.routing.bird.shared.RSAKeyPairGenerator;
 import com.google.common.cache.Cache;
 import com.jivesoftware.os.jive.utils.shell.utils.Curl;
@@ -115,9 +116,13 @@ public class Nanny {
                 if (!certFile.exists() || !generator.validate(id.instanceKey, password, certFile)) {
                     generateSSL = true;
                 }
-            } catch (UnrecoverableKeyException x) {
-                LOG.warn("Looks like password changed so existing certs will be replaced with regenerate certs.");
-                generateSSL = true;
+            } catch (IOException x) {
+                if (Throwables.getRootCause(x) instanceof UnrecoverableKeyException) {
+                    LOG.warn("Looks like password changed so existing certs will be replaced with regenerate certs.");
+                    generateSSL = true;
+                } else {
+                    throw x;
+                }
             }
 
             if (generateSSL) {
@@ -137,9 +142,13 @@ public class Nanny {
             if (id.publicKey == null || !id.publicKey.equals(generator.getPublicKey(id.instanceKey, password, oauthKeystoreFile, oauthPublicKeyFile))) {
                 generateOauth = true;
             }
-        } catch (UnrecoverableKeyException x) {
-            LOG.warn("Looks like password changed so existing oauth certs will be replaced with regenerate certs.");
-            generateOauth = true;
+        } catch (IOException x) {
+            if (Throwables.getRootCause(x) instanceof UnrecoverableKeyException) {
+                LOG.warn("Looks like password changed so existing oauth certs will be replaced with regenerate certs.");
+                generateOauth = true;
+            } else {
+                throw x;
+            }
         }
         if (generateOauth) {
             FileUtils.deleteQuietly(oauthKeystoreFile);
