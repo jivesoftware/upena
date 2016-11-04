@@ -757,12 +757,12 @@ upena.connectivity = {
                 var halfIconSize = iconSize / 2;
 
                 var sslIcon = null;
-                if (n.sslEnabled) {
+                if (node.sslEnabled) {
                    icon = r.image("/static/img/lock.png", n.point[0] + w, n.point[1] - halfIconSize, iconSize, iconSize);
                    w += iconSize + halfIconSize;
                 }
                 var authIcon = null;
-                if (n.serviceAuthEnabled) {
+                if (node.serviceAuthEnabled) {
                     authIcon = r.image("/static/img/key.png", n.point[0] + w, n.point[1] - halfIconSize, iconSize, iconSize);
                     w += iconSize + halfIconSize;
                 }
