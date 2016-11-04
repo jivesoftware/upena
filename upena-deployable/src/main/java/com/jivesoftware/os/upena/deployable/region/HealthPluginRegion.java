@@ -705,7 +705,8 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                                 List<String> ports = new ArrayList<>();
                                 for (Map.Entry<String, InstanceDescriptor.InstanceDescriptorPort> instancePort : id.ports.entrySet()) {
                                     ports.add(instancePort.getKey() + "=" + instancePort.getValue().port
-                                        + " " + ((instancePort.getValue().sslEnabled) ? "SSL" : "") + " " + ((instancePort.getValue().serviceAuthEnabled) ? "SAUTH" : ""));
+                                        + " " + ((instancePort.getValue().sslEnabled) ? "<img src=\"/static/img/lock.png\" alt=\"SSL Enabled\" style=\"width:20px;height:20px;\">" : "")
+                                        + " " + ((instancePort.getValue().serviceAuthEnabled)? "<img src=\"/static/img/key.png\" alt=\"Service Auth Enabled\" style=\"width:20px;height:20px;\">" : ""));
                                 }
                                 cell.put("ports", ports);
 
