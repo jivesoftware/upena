@@ -10,31 +10,15 @@ import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.deployable.region.ReleasesPluginRegion.ReleasesPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.service.UpenaStore;
-import com.jivesoftware.os.upena.shared.Cluster;
-import com.jivesoftware.os.upena.shared.Host;
-import com.jivesoftware.os.upena.shared.Instance;
-import com.jivesoftware.os.upena.shared.InstanceFilter;
-import com.jivesoftware.os.upena.shared.InstanceKey;
-import com.jivesoftware.os.upena.shared.ReleaseGroup;
-import com.jivesoftware.os.upena.shared.ReleaseGroupFilter;
-import com.jivesoftware.os.upena.shared.ReleaseGroupKey;
-import com.jivesoftware.os.upena.shared.ReleaseGroupPropertyKey;
-import com.jivesoftware.os.upena.shared.Service;
-import com.jivesoftware.os.upena.shared.ServiceKey;
-import com.jivesoftware.os.upena.shared.TimestampedValue;
+import com.jivesoftware.os.upena.shared.*;
 import com.jivesoftware.os.upena.uba.service.RepositoryProvider;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.AuthorizationException;
+
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 /**
  *
@@ -210,11 +194,11 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
                         input.email.isEmpty() ? null : input.email,
                         0, 100_000);
                     data.put("message", "Filtering: "
-                        + "name.contains '" + input.name + "' "
-                        + "description.contains '" + input.description + "' "
-                        + "version.contains '" + input.version + "' "
-                        + "repository.contains '" + input.repository + "'"
-                        + "email.contains '" + input.email + "'"
+                            + "name.contains '" + input.name + "' "
+                            + "description.contains '" + input.description + "' "
+                            + "version.contains '" + input.version + "' "
+                            + "repository.contains '" + input.repository + "'"
+                            + "email.contains '" + input.email + "'"
                     );
                 } else if (input.action.equals("add")) {
                     SecurityUtils.getSubject().checkPermission("write");
@@ -335,7 +319,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
             });
 
             data.put("releases", rows);
-        } catch(AuthorizationException x) {
+        } catch (AuthorizationException x) {
             throw x;
         } catch (Exception e) {
             LOG.error("Unable to retrieve data", e);
@@ -382,7 +366,8 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
                             newerVersion.toString(),
                             value.repository,
                             value.description,
-                            value.autoRelease);
+                            value.autoRelease,
+                            value.properties);
                         upenaStore.releaseGroups.update(key, updated);
                         messages.add("Updated Release:" + value.name);
                         upenaStore.record(user, "updated", System.currentTimeMillis(), "", "release-ui", updated.toString());
@@ -434,7 +419,8 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
                         input.rollback,
                         input.repository,
                         input.description,
-                        input.autoRelease);
+                        input.autoRelease,
+                        release.properties);
                     upenaStore.releaseGroups.update(new ReleaseGroupKey(input.key), updated);
                     data.put("message", "Rollback Release:" + input.name);
                     upenaStore.record(user, "rollback", System.currentTimeMillis(), "", "release-ui", updated.toString());
@@ -493,7 +479,8 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
                         input.upgrade,
                         input.repository,
                         input.description,
-                        input.autoRelease);
+                        input.autoRelease,
+                        release.properties);
                     upenaStore.releaseGroups.update(new ReleaseGroupKey(input.key), updated);
                     data.put("message", "Upgrade Release:" + input.name);
                     upenaStore.record(user, "upgrade", System.currentTimeMillis(), "", "release-ui", updated.toString());
@@ -523,7 +510,9 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
                         input.upgrade,
                         input.repository,
                         input.description,
-                        input.autoRelease);
+                        input.autoRelease,
+                        release.properties);
+
                     upenaStore.releaseGroups.update(new ReleaseGroupKey(input.key), updated);
                     data.put("message", "Upgrade Release:" + input.name);
                     upenaStore.record(user, "upgrade", System.currentTimeMillis(), "", "release-ui", updated.toString());
@@ -553,7 +542,9 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
                         input.version,
                         input.repository,
                         input.description,
-                        input.autoRelease);
+                        input.autoRelease,
+                        release.properties);
+
                     upenaStore.releaseGroups.update(new ReleaseGroupKey(input.key), updated);
                     data.put("message", "Updated Release:" + input.name);
                     upenaStore.record(user, "updated", System.currentTimeMillis(), "", "release-ui", updated.toString());
@@ -577,7 +568,8 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
                 input.version,
                 input.repository,
                 input.description,
-                input.autoRelease
+                input.autoRelease,
+                new ConcurrentHashMap<>()
             );
             upenaStore.releaseGroups.update(null, newRelease);
 

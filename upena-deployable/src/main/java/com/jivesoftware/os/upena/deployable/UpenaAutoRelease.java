@@ -24,11 +24,6 @@ import com.jivesoftware.os.upena.shared.ReleaseGroupFilter;
 import com.jivesoftware.os.upena.shared.ReleaseGroupKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
 import com.jivesoftware.os.upena.uba.service.RepositoryProvider;
-import java.io.File;
-import java.io.FileReader;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentNavigableMap;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.eclipse.aether.DefaultRepositorySystemSession;
@@ -39,8 +34,14 @@ import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.resolution.VersionRangeRequest;
 import org.eclipse.aether.resolution.VersionRangeResult;
 
+import java.io.File;
+import java.io.FileReader;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentNavigableMap;
+
 /**
- *
  * @author jonathan.colt
  */
 public class UpenaAutoRelease {
@@ -102,13 +103,13 @@ public class UpenaAutoRelease {
 
                         if (changed) {
                             releaseGroup = new ReleaseGroup(releaseGroup.name, releaseGroup.email, releaseGroup.rollbackVersion, newVersion.toString(),
-                                releaseGroup.repository, releaseGroup.description, releaseGroup.autoRelease);
+                                releaseGroup.repository, releaseGroup.description, releaseGroup.autoRelease, new ConcurrentHashMap<>());
 
                             upenaStore.releaseGroups.update(entry.getKey(), releaseGroup);
 
                             upenaStore.record("autoRelease", "updated release", System.currentTimeMillis(), "new version detected", releaseGroup.name,
                                 newVersion
-                                .toString());
+                                    .toString());
                         }
                     }
                 }
