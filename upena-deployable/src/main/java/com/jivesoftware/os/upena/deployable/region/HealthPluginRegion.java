@@ -702,6 +702,13 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                                 cell.put("health", d2f(sh));
                                 cell.put("age", nannyHealth.uptime);
 
+                                List<String> ports = new ArrayList<>();
+                                for (Map.Entry<String, InstanceDescriptor.InstanceDescriptorPort> instancePort : id.ports.entrySet()) {
+                                    ports.add(instancePort.getKey() + "=" + instancePort.getValue().port
+                                        + " " + ((instancePort.getValue().sslEnabled) ? "SSL" : "") + " " + ((instancePort.getValue().serviceAuthEnabled) ? "SAUTH" : ""));
+                                }
+                                data.put("ports", ports);
+
                                 if (nannyHealth.unexpectedRestart > -1) {
                                     cell.put("unexpectedRestart",
                                         UpenaHealth.humanReadableUptime(System.currentTimeMillis() - nannyHealth.unexpectedRestart));
@@ -877,22 +884,6 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
             return (serviceName + ":" + serviceKey).compareTo(o.serviceName + ":" + o.serviceKey);
         }
 
-    }
-
-    public Map<String, Object> waveform(String label,
-        Color color,
-        Color pointColor,
-        List<Integer> values) {
-        Map<String, Object> waveform = new HashMap<>();
-        waveform.put("label", label);
-        waveform.put("fillColor", "rgba(" + color.getRed() + "," + color.getGreen() + "," + color.getBlue() + ",0.2)");
-        waveform.put("strokeColor", "rgba(" + color.getRed() + "," + color.getGreen() + "," + color.getBlue() + ",1)");
-        waveform.put("pointColor", "rgba(" + pointColor.getRed() + "," + pointColor.getGreen() + "," + pointColor.getBlue() + ",1)");
-        waveform.put("pointStrokeColor", "rgba(" + pointColor.getRed() + "," + pointColor.getGreen() + "," + pointColor.getBlue() + ",1)");
-        waveform.put("pointHighlightFill", "rgba(" + pointColor.getRed() + "," + pointColor.getGreen() + "," + pointColor.getBlue() + ",1)");
-        waveform.put("pointHighlightStroke", "rgba(" + pointColor.getRed() + "," + pointColor.getGreen() + "," + pointColor.getBlue() + ",1)");
-        waveform.put("data", values);
-        return waveform;
     }
 
     @Override
