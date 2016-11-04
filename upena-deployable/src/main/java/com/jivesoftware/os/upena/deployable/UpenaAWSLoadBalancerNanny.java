@@ -157,6 +157,7 @@ public class UpenaAWSLoadBalancerNanny {
                 boolean[] modified = {false};
 
                 ModifyTargetGroupRequest modifyTargetGroupRequest = new ModifyTargetGroupRequest();
+                modifyTargetGroupRequest.setTargetGroupArn(targetGroup.getTargetGroupArn());
                 updateIfChanged(
                     targetGroup.getMatcher() != null ? targetGroup.getMatcher().getHttpCode() : ReleaseGroupPropertyKey.matcher.getDefaultValue(),
                     releaseGroup.properties,
