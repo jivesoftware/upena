@@ -1,30 +1,7 @@
 package com.jivesoftware.os.upena.deployable;
 
 import com.amazonaws.services.elasticloadbalancingv2.AmazonElasticLoadBalancingClient;
-import com.amazonaws.services.elasticloadbalancingv2.model.AddTagsRequest;
-import com.amazonaws.services.elasticloadbalancingv2.model.CreateTargetGroupRequest;
-import com.amazonaws.services.elasticloadbalancingv2.model.CreateTargetGroupResult;
-import com.amazonaws.services.elasticloadbalancingv2.model.DeregisterTargetsRequest;
-import com.amazonaws.services.elasticloadbalancingv2.model.DescribeTagsRequest;
-import com.amazonaws.services.elasticloadbalancingv2.model.DescribeTagsResult;
-import com.amazonaws.services.elasticloadbalancingv2.model.DescribeTargetGroupAttributesRequest;
-import com.amazonaws.services.elasticloadbalancingv2.model.DescribeTargetGroupAttributesResult;
-import com.amazonaws.services.elasticloadbalancingv2.model.DescribeTargetGroupsRequest;
-import com.amazonaws.services.elasticloadbalancingv2.model.DescribeTargetGroupsResult;
-import com.amazonaws.services.elasticloadbalancingv2.model.DescribeTargetHealthRequest;
-import com.amazonaws.services.elasticloadbalancingv2.model.DescribeTargetHealthResult;
-import com.amazonaws.services.elasticloadbalancingv2.model.Matcher;
-import com.amazonaws.services.elasticloadbalancingv2.model.ModifyTargetGroupAttributesRequest;
-import com.amazonaws.services.elasticloadbalancingv2.model.ModifyTargetGroupRequest;
-import com.amazonaws.services.elasticloadbalancingv2.model.ProtocolEnum;
-import com.amazonaws.services.elasticloadbalancingv2.model.RegisterTargetsRequest;
-import com.amazonaws.services.elasticloadbalancingv2.model.Tag;
-import com.amazonaws.services.elasticloadbalancingv2.model.TagDescription;
-import com.amazonaws.services.elasticloadbalancingv2.model.TargetDescription;
-import com.amazonaws.services.elasticloadbalancingv2.model.TargetGroup;
-import com.amazonaws.services.elasticloadbalancingv2.model.TargetGroupAttribute;
-import com.amazonaws.services.elasticloadbalancingv2.model.TargetHealth;
-import com.amazonaws.services.elasticloadbalancingv2.model.TargetHealthDescription;
+import com.amazonaws.services.elasticloadbalancingv2.model.*;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
@@ -34,27 +11,13 @@ import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.deployable.aws.AWSClientFactory;
 import com.jivesoftware.os.upena.service.JenkinsHash;
 import com.jivesoftware.os.upena.service.UpenaStore;
-import com.jivesoftware.os.upena.shared.Cluster;
-import com.jivesoftware.os.upena.shared.Host;
-import com.jivesoftware.os.upena.shared.HostKey;
-import com.jivesoftware.os.upena.shared.Instance;
-import com.jivesoftware.os.upena.shared.InstanceFilter;
-import com.jivesoftware.os.upena.shared.InstanceKey;
-import com.jivesoftware.os.upena.shared.ReleaseGroup;
-import com.jivesoftware.os.upena.shared.ReleaseGroupKey;
-import com.jivesoftware.os.upena.shared.ReleaseGroupPropertyKey;
-import com.jivesoftware.os.upena.shared.Service;
-import com.jivesoftware.os.upena.shared.TimestampedValue;
+import com.jivesoftware.os.upena.shared.*;
+
 import java.nio.charset.StandardCharsets;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentNavigableMap;
 
 /**
- *
  * @author jonathan.colt
  */
 public class UpenaAWSLoadBalancerNanny {
@@ -81,10 +44,11 @@ public class UpenaAWSLoadBalancerNanny {
         }
 
         if (!awsClientFactory.enabled()) {
+            LOG.info("Aws LB nanny no oping because AwsClientFactory is disabled");
             return;
         }
 
-        ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(false, 
+        ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(false,
             new InstanceFilter(null, selfHostKey, null, null, null, 0, 100_000));
 
         Set<String> missingTargetGroups = new HashSet<>();
@@ -105,6 +69,8 @@ public class UpenaAWSLoadBalancerNanny {
         ListMultimap<String, Instance> targetGroupInstances,
         Map<String, ReleaseGroupKey> targetGroupRelease,
         Map<String, String> targetGroupIdToName) throws Exception {
+
+        LOG.info("Figuring out target groups....");
         JenkinsHash jenkinsHash = new JenkinsHash();
 
         for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entry : found.entrySet()) {
@@ -131,6 +97,7 @@ public class UpenaAWSLoadBalancerNanny {
                 }
             }
         }
+        LOG.info("Figured out ({}) desired target groups", desiredTargetGroups.size());
     }
 
     private void ensureTargetGroups(AmazonElasticLoadBalancingClient elbc,
@@ -138,6 +105,8 @@ public class UpenaAWSLoadBalancerNanny {
         Set<String> missingTargetGroups,
         Map<String, ReleaseGroupKey> targetGroupRelease,
         Map<String, String> targetGroupIdToName) throws Exception {
+
+        LOG.info("Ensuring target groups....");
 
         DescribeTargetGroupsRequest describeTargetGroupsRequest = new DescribeTargetGroupsRequest();
         DescribeTargetGroupsResult describeTargetGroups = elbc.describeTargetGroups(describeTargetGroupsRequest);
@@ -367,6 +336,10 @@ public class UpenaAWSLoadBalancerNanny {
                     }
                 }
             }
+
+            LOG.info("Created ({}) missing target groups.", missingTargetGroups.size());
+        } else {
+            LOG.info("All target groups accounted for.");
         }
     }
 
@@ -374,6 +347,9 @@ public class UpenaAWSLoadBalancerNanny {
         ListMultimap<String, Instance> targetGroupInstances,
         Map<String, TargetGroup> targetGroups,
         AmazonElasticLoadBalancingClient elbc) throws Exception {
+
+
+        LOG.info("Ensure targets registered...");
         // ensure instance is registered
         Host self = upenaStore.hosts.get(selfHostKey);
 
@@ -454,7 +430,7 @@ public class UpenaAWSLoadBalancerNanny {
             if (targetGroups.containsKey(entry.getKey())) {
                 String targetGroupArn = targetGroups.get(entry.getKey()).getTargetGroupArn();
 
-                 List<TargetDescription> targetDescriptions = Lists.newArrayList();
+                List<TargetDescription> targetDescriptions = Lists.newArrayList();
                 for (Instance instance : entry.getValue()) {
                     TargetDescription targetDescription = new TargetDescription();
                     targetDescription.setId(self.instanceId);
@@ -471,6 +447,8 @@ public class UpenaAWSLoadBalancerNanny {
 
             }
         }
+
+        LOG.info("All targets registered.");
     }
 
     public void cleanupAll() throws Exception {
