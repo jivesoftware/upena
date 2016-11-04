@@ -198,10 +198,22 @@ public class UpenaMain {
         "",
         "    java -jar upena.jar <hostName> <clusterName>     (automatic cluster discovery)",
         "",
-        "Overridable properties:",
+        " Overridable properties:",
         "",
-        "    -DMASTER_PASSWORD=<password>",
-        "         (used to read keystores) ",
+        "     Controls upena ssl terminination.",
+        "       -Dssl.enabled=true",
+        "       -Dssl.keystore.password=password",
+        "       -Dssl.keystore.path=./certs/sslKeystore",
+        "       -Dssl.keystore.alias=upenanode",
+        "       -Dssl.keystore.autoGenerate=true",
+        "",
+        "     Controls upena to upena authentication.",
+        "       -Dupena.consumerKey=<clusterName>",
+        "       -Dupena.secret=secret",
+        "            (all upena nodes that are part of the same cluster should have the same 'consumerKey' and 'secret'.) ",
+        "",
+        "     Controls handed out to deployable on request so they can access their instance specific keystores.",
+        "       -Dsauth.keystore.password=password",
         "",
         "    -Dhost.instance.id=<instanceId>",
         "    -Dhost.rack=<rackId>",
@@ -210,6 +222,8 @@ public class UpenaMain {
         "    -Dmanual.peers=<upenaPeer1Host:port,upenaPeer2Host:port,...>",
         "",
         "    -Damza.port=1175",
+        "    -Damza.loopback.port=1174",
+        "    -Damza.loopback.strict=true",
         "         (change the port upena uses to interact with other upena nodes.) ",
         "",
         "    -Dmin.service.port=10000",
@@ -228,8 +242,8 @@ public class UpenaMain {
         "          -Damza.discovery.group=225.4.5.6",
         "          -Damza.discovery.port=1123",
         "",
-        "Example:",
-        "nohup java -Xdebug -Xrunjdwp:transport=dt_socket,address=1176,server=y,suspend=n -classpath \"/usr/java/latest/lib/tools.jar:./upena.jar\" com.jivesoftware.os.upena.deployable.UpenaMain `hostname` dev",
+        " Example:",
+        " nohup java -Xdebug -Xrunjdwp:transport=dt_socket,address=1176,server=y,suspend=n -classpath \"/usr/java/latest/lib/tools.jar:./upena.jar\" com.jivesoftware.os.upena.deployable.UpenaMain `hostname` dev",
         "",};
 
     public static void main(String[] args) throws Exception {
@@ -416,7 +430,7 @@ public class UpenaMain {
 
         ChaosService chaosService = new ChaosService(upenaStore);
         PasswordStore passwordStore = (key) -> {
-            return System.getProperty("MASTER_PASSWORD", "PASSWORD"); // cough
+            return System.getProperty("sauth.keystore.password", "password"); // cough
         };
 
         SessionStore sessionStore = new SessionStore(TimeUnit.MINUTES.toMillis(60),
