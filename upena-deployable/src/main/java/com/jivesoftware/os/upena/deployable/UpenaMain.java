@@ -529,6 +529,7 @@ public class UpenaMain {
         AuthValidationFilter authValidationFilter = new AuthValidationFilter(authFilterHealthCheck);
         authValidationFilter.addEvaluator(new NoAuthEvaluator(),
             "/",
+            "/swagger.json",
             "/ui/*", // Handled by Shiro
             "/repo/*" // Cough
         );

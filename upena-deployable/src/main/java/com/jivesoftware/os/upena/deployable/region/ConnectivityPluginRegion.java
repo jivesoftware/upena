@@ -249,6 +249,10 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
             if (from == null) {
 
                 from = new Node(serviceName, id, serviceIdColor(serviceColor, serviceName), "12", 1);
+                from.sslEnabled = instance.ports.get("main").sslEnabled;
+                from.serviceAuthEnabled = instance.ports.get("main").serviceAuthEnabled;
+
+
                 id++;
                 nodes.put(serviceName, from);
 
@@ -274,6 +278,9 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
                     Node to = nodes.get(toServiceName);
                     if (to == null) {
                         to = new Node(toServiceName, id, serviceIdColor(serviceColor, toServiceName), "12", 1);
+                        to.sslEnabled = instanceDescriptor.ports.get("main").sslEnabled;
+                        to.serviceAuthEnabled = instanceDescriptor.ports.get("main").serviceAuthEnabled;
+
                         id++;
                         nodes.put(toServiceName, to);
 
@@ -330,6 +337,9 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
                         to = nodes.get(toServiceName);
                         if (to == null) {
                             to = new Node(toServiceName, id, serviceIdColor(serviceColor, toServiceName), "12", 0);
+                            to.sslEnabled = instanceDescriptor.ports.get("main").sslEnabled;
+                            to.serviceAuthEnabled = instanceDescriptor.ports.get("main").serviceAuthEnabled;
+
                             nodes.put(toServiceName, to);
                             id++;
                         }
@@ -355,6 +365,8 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
         for (Node n : nodes.values()) {
             Map<String, String> node = new HashMap<>();
             node.put("id", "id" + n.id);
+            node.put("sslEnabled", String.valueOf(n.sslEnabled));
+            node.put("serviceAuthEnabled", String.valueOf(n.serviceAuthEnabled));
 
             if (n.minHealth == Double.MAX_VALUE) {
                 node.put("maxbgcolor", n.bgcolor);
@@ -749,6 +761,8 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
         int sauthCount = 0;
         double maxHealth = -Double.MAX_VALUE;
         double minHealth = Double.MAX_VALUE;
+        boolean sslEnabled;
+        boolean serviceAuthEnabled;
 
         public Node(String label, int id, String bgcolor, String fontSize, int count) {
             this.label = label;

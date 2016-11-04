@@ -707,7 +707,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                                     ports.add(instancePort.getKey() + "=" + instancePort.getValue().port
                                         + " " + ((instancePort.getValue().sslEnabled) ? "SSL" : "") + " " + ((instancePort.getValue().serviceAuthEnabled) ? "SAUTH" : ""));
                                 }
-                                data.put("ports", ports);
+                                cell.put("ports", ports);
 
                                 if (nannyHealth.unexpectedRestart > -1) {
                                     cell.put("unexpectedRestart",

@@ -752,10 +752,26 @@ upena.connectivity = {
                 var bb = text.getBBox(true);
                 var w = hs + (pad / 2) + bb.width + pad;
                 var h = bb.height + pad;
+
+                var iconSize = 24;
+                var halfIconSize = iconSize / 2;
+
+                var sslIcon = null;
+                if (n.sslEnabled) {
+                   icon = r.image("/static/img/lock.png", n.point[0] + w, n.point[1] - halfIconSize, iconSize, iconSize);
+                   w += iconSize + halfIconSize;
+                }
+                var authIcon = null;
+                if (n.serviceAuthEnabled) {
+                    authIcon = r.image("/static/img/key.png", n.point[0] + w, n.point[1] - halfIconSize, iconSize, iconSize);
+                    w += iconSize + halfIconSize;
+                }
+
+
                 var rect = r.rect(n.point[0] - (w / 2) - (hs / 2), n.point[1] - (h / 2), w, h).attr({
                     stroke: "#000",
                     fill: "#" + node.color,
-                    r: "12px",
+                    r: "4px",
                     "stroke-width": "1px",
                     opacity: 0.4,
                 });
@@ -771,6 +787,12 @@ upena.connectivity = {
                 set.push(rect);
                 set.push(health);
                 set.push(text);
+                if (sslIcon != null) {
+                    set.push(text);
+                }
+                if (authIcon != null) {
+                    set.push(authIcon);
+                }
 
                 //set.items.forEach(function(el) {el.tooltip(r.set().push(r.rect(-70,-100, 30, 30).attr({"fill": "#999", "stroke-width": 1, r : "4px"})))});
 
