@@ -442,6 +442,19 @@
                                                             {/if}
                                                         </div>
                                                         <ul>
+                                                            {if $health.ports}
+                                                                <div style="width:100%">
+                                                                    <table class="table table-condensed table-responsive">
+                                                                        <tr>
+                                                                            {foreach $p in $health.ports}
+                                                                                <td>
+                                                                                    {$p}
+                                                                                </td>
+                                                                            {/foreach}
+                                                                        </tr>
+                                                                    </table>
+                                                                </div>
+                                                            {/if}
                                                             {if $health.unexpectedRestart}
                                                                 <li><span class="label label-warning">Was unexpectedly restarted:{$health.unexpectedRestart}</span></li>
                                                             {/if}
