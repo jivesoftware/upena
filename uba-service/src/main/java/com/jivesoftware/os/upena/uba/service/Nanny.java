@@ -26,6 +26,7 @@ import com.jivesoftware.os.uba.shared.PasswordStore;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.security.UnrecoverableKeyException;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -103,13 +104,26 @@ public class Nanny {
                 break;
             }
         }
+        boolean generated = false;
         if (sslEnabled) {
             SelfSigningCertGenerator generator = new SelfSigningCertGenerator();
             String password = passwordStore.password(id.instanceKey + "-ssl");
             File certFile = instancePath.certs("sslKeystore");
-            if (!certFile.exists() || !generator.validate(id.instanceKey, password, certFile)) {
+
+            boolean generateSSL = false;
+            try {
+                if (!certFile.exists() || !generator.validate(id.instanceKey, password, certFile)) {
+                    generateSSL = true;
+                }
+            } catch (UnrecoverableKeyException x) {
+                LOG.warn("Looks like password changed so existing certs will be replaced with regenerate certs.");
+                generateSSL = true;
+            }
+
+            if (generateSSL) {
                 FileUtils.deleteQuietly(certFile);
                 generator.create(id.instanceKey, password, certFile);
+                generated = true;
             }
         }
 
@@ -117,14 +131,23 @@ public class Nanny {
         File oauthPublicKeyFile = instancePath.certs("oauthPublicKey");
         String password = passwordStore.password(id.instanceKey + "-oauth");
         RSAKeyPairGenerator generator = new RSAKeyPairGenerator();
-        if (id.publicKey == null || !id.publicKey.equals(generator.getPublicKey(id.instanceKey, password, oauthKeystoreFile, oauthPublicKeyFile))) {
+
+        boolean generateOauth = false;
+        try {
+            if (id.publicKey == null || !id.publicKey.equals(generator.getPublicKey(id.instanceKey, password, oauthKeystoreFile, oauthPublicKeyFile))) {
+                generateOauth = true;
+            }
+        } catch (UnrecoverableKeyException x) {
+            LOG.warn("Looks like password changed so existing oauth certs will be replaced with regenerate certs.");
+            generateOauth = true;
+        }
+        if (generateOauth) {
             FileUtils.deleteQuietly(oauthKeystoreFile);
             FileUtils.deleteQuietly(oauthPublicKeyFile);
             generator.create(id.instanceKey, password, oauthKeystoreFile, oauthPublicKeyFile);
             upenaClient.updateKeyPair(id.instanceKey, generator.getPublicKey(id.instanceKey, password, oauthKeystoreFile, oauthPublicKeyFile));
-            return false;
         }
-        return true;
+        return generated;
     }
 
     public String getStatus() {
@@ -166,6 +189,10 @@ public class Nanny {
         if (id.restartTimestampGMTMillis > lastRestart.get()) {
             restartAtTimestamp.set(id.restartTimestampGMTMillis);
         }
+    }
+
+    public void forceRestart() {
+        restartAtTimestamp.set(System.currentTimeMillis());
     }
 
     public DeployLog getDeployLog() {

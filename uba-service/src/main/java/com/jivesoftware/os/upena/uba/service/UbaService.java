@@ -95,7 +95,9 @@ public class UbaService {
                 String nanneyKey = uba.instanceDescriptorKey(instanceDescriptor, instancePath);
                 if (!nannies.containsKey(nanneyKey)) {
                     Nanny newNanny = uba.newNanny(instanceDescriptor, instancePath);
-                    newNanny.ensureCerts(instanceDescriptor);
+                    if (newNanny.ensureCerts(instanceDescriptor)) {
+                        newNanny.forceRestart();
+                    }
                     nannies.put(nanneyKey, newNanny);
                 }
             }
