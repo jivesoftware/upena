@@ -448,7 +448,7 @@
                                                                         <tr>
                                                                             {foreach $p in $health.ports}
                                                                                 <td>
-                                                                                    {$p}
+                                                                                    {$p|noAutoescape}
                                                                                 </td>
                                                                             {/foreach}
                                                                         </tr>

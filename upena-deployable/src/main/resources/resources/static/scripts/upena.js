@@ -748,6 +748,8 @@ upena.connectivity = {
                 /* the Raphael set is obligatory, containing all you want to display */
                 var pad = 12;
                 var hs = 10;
+
+
                 var text = r.text(n.point[0], n.point[1], n.label).attr({"font-size": node.fontSize + "px", opacity: 1.0, fill: "#000"});
                 var bb = text.getBBox(true);
                 var w = hs + (pad / 2) + bb.width + pad;
@@ -759,14 +761,14 @@ upena.connectivity = {
 
                 var sslIcon = null;
                 if (node.sslEnabled) {
-                   sslIcon = r.image("/static/img/lock.png", n.point[0] + halfW, n.point[1] - halfIconSize, iconSize, iconSize);
-                   w += iconSize + halfIconSize;
-                   halfW += iconSize
+                   sslIcon = r.image("/static/img/lock.png", n.point[0] - (halfW + iconSize), n.point[1] - halfIconSize, iconSize, iconSize);
+                   w += iconSize;
                 }
+
                 var authIcon = null;
                 if (node.serviceAuthEnabled) {
                     authIcon = r.image("/static/img/key.png", n.point[0] + halfW, n.point[1] - halfIconSize, iconSize, iconSize);
-                    w += iconSize + halfIconSize;
+                    w += iconSize;
                 }
 
 
