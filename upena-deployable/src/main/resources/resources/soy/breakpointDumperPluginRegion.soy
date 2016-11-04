@@ -381,7 +381,7 @@
  * @param? t
  */
 {template .thrown}
-    <li>
+    <li style="display:none">
         <div class="btn btn-{$t.level}">
             <span><i class="fa fa-plus-circle " aria-hidden="true"></i></span>
         </div>
@@ -389,7 +389,7 @@
         <ul>
             {if $t.stackTrace}
                 {foreach $trace in $t.stackTrace}
-                    <li  style="display:none">
+                    <li style="display:none">
                         <span style="color:#357ab7;font-style: italic;">  {$trace.className} </span>:<span style="color:black;"> {$trace.methodName} </span>:<span style="color:gray;"> {$trace.lineNumber}  </span>
                         <form style="display: inline;" method="post" >
                             <input type="hidden" name="instanceKey" value="{$instanceKey}"/>
