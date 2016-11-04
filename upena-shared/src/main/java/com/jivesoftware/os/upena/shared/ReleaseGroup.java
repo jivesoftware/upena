@@ -18,6 +18,7 @@ package com.jivesoftware.os.upena.shared;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Objects;
@@ -34,7 +35,7 @@ public class ReleaseGroup implements Stored<ReleaseGroup>, Serializable {
     public final String repository;
     public final String description;
     public final boolean autoRelease;
-    public final Map<String, String> properties = new ConcurrentHashMap<>();
+    public final Map<String, String> properties;
 
     @JsonCreator
     public ReleaseGroup(@JsonProperty("name") String name,
@@ -43,7 +44,8 @@ public class ReleaseGroup implements Stored<ReleaseGroup>, Serializable {
         @JsonProperty("version") String version,
         @JsonProperty("repository") String repository,
         @JsonProperty("description") String description,
-        @JsonProperty("autoRelease") boolean autoRelease) {
+        @JsonProperty("autoRelease") boolean autoRelease,
+        @JsonProperty("properties") Map<String, String> properties) {
         this.name = name;
         this.email = email;
         this.rollbackVersion = rollbackVersion;
@@ -51,6 +53,7 @@ public class ReleaseGroup implements Stored<ReleaseGroup>, Serializable {
         this.repository = repository;
         this.description = description;
         this.autoRelease = autoRelease;
+        this.properties = properties == null ? new ConcurrentHashMap<>() : properties;
     }
 
     @Override
