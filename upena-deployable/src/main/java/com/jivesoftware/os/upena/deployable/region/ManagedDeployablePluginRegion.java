@@ -18,14 +18,15 @@ import com.jivesoftware.os.upena.shared.Host;
 import com.jivesoftware.os.upena.shared.HostKey;
 import com.jivesoftware.os.upena.shared.Instance;
 import com.jivesoftware.os.upena.shared.InstanceKey;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authz.AuthorizationException;
+
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.authz.AuthorizationException;
 
 /**
  *
@@ -93,7 +94,7 @@ public class ManagedDeployablePluginRegion implements PageRegion<ManagedDeployab
 
                 String token = proxy.allocateAccessToken();
 
-                return URI.create((port.sslEnabled ? "https" : "http") + "://" + host.hostName
+                return URI.create((port.sslEnabled ? "https" : "http") + "://" + host.name
                     + ":" + port.port
                     + (uiPath.startsWith("/") ? uiPath : "/" + uiPath)
                     + "?rb_access_token=" + token
@@ -115,7 +116,7 @@ public class ManagedDeployablePluginRegion implements PageRegion<ManagedDeployab
             } else if (instance.hostKey.equals(hostKey)) {
                 proxy = new Local(instanceKey, instance);
             } else {
-                proxy = new Proxied(instanceKey, host.hostName);
+                proxy = new Proxied(instanceKey, host.name);
             }
         }
         return proxy;
@@ -148,7 +149,7 @@ public class ManagedDeployablePluginRegion implements PageRegion<ManagedDeployab
                             Map<String, String> u = new HashMap<>();
                             u.put("name", ui.name);
                             u.put("scheme", (port.sslEnabled) ? "https" : "http");
-                            u.put("host", host.hostName);
+                            u.put("host", host.name);
                             u.put("port", String.valueOf(port.port));
                             u.put("url", ui.url);
                             u.put("uiPath", "/ui/deployable/redirect/" + input.instanceKey + "?portName=" + ui.portName + "&path=" + ui.url);
