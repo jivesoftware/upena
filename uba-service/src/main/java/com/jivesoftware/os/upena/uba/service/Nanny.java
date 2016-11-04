@@ -16,28 +16,25 @@
 package com.jivesoftware.os.upena.uba.service;
 
 import com.google.common.base.Throwables;
-import com.jivesoftware.os.routing.bird.shared.RSAKeyPairGenerator;
 import com.google.common.cache.Cache;
 import com.jivesoftware.os.jive.utils.shell.utils.Curl;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.routing.bird.shared.InstanceDescriptor;
+import com.jivesoftware.os.routing.bird.shared.RSAKeyPairGenerator;
 import com.jivesoftware.os.uba.shared.NannyReport;
 import com.jivesoftware.os.uba.shared.PasswordStore;
+import org.apache.commons.io.FileUtils;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.security.UnrecoverableKeyException;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
-import org.apache.commons.io.FileUtils;
 
 public class Nanny {
 
@@ -108,7 +105,7 @@ public class Nanny {
         boolean generated = false;
         if (sslEnabled) {
             SelfSigningCertGenerator generator = new SelfSigningCertGenerator();
-            String password = passwordStore.password(id.instanceKey + "-ssl");
+            String password = passwordStore.password(id.instanceKey);
             File certFile = instancePath.certs("sslKeystore");
 
             boolean generateSSL = false;
@@ -134,7 +131,7 @@ public class Nanny {
 
         File oauthKeystoreFile = instancePath.certs("oauthKeystore");
         File oauthPublicKeyFile = instancePath.certs("oauthPublicKey");
-        String password = passwordStore.password(id.instanceKey + "-oauth");
+        String password = passwordStore.password(id.instanceKey);
         RSAKeyPairGenerator generator = new RSAKeyPairGenerator();
 
         boolean generateOauth = false;
