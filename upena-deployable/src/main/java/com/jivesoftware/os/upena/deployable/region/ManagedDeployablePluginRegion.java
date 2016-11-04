@@ -191,6 +191,10 @@ public class ManagedDeployablePluginRegion implements PageRegion<ManagedDeployab
                     SecurityUtils.getSubject().checkPermission("read");
                     String r = proxy.get("/manage/resetHealth");
                     data.put("textResult", r == null ? "" : r);
+                } else if (input.action.equals("routes")) {
+                    SecurityUtils.getSubject().checkPermission("read");
+                    String r = proxy.get("/manage/tenant/routing/report");
+                    data.put("textResult", r == null ? "" : r);
                 } else {
                     SecurityUtils.getSubject().checkPermission("read");
                     String r = proxy.get("/manage/health/ui");
