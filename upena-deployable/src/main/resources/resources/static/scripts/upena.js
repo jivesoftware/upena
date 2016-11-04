@@ -753,17 +753,19 @@ upena.connectivity = {
                 var w = hs + (pad / 2) + bb.width + pad;
                 var h = bb.height + pad;
 
-                var iconSize = 24;
+                var iconSize = 18;
                 var halfIconSize = iconSize / 2;
+                var halfW = w/2;
 
                 var sslIcon = null;
                 if (node.sslEnabled) {
-                   icon = r.image("/static/img/lock.png", n.point[0] + w, n.point[1] - halfIconSize, iconSize, iconSize);
+                   sslIcon = r.image("/static/img/lock.png", n.point[0] + halfW, n.point[1] - halfIconSize, iconSize, iconSize);
                    w += iconSize + halfIconSize;
+                   halfW += iconSize
                 }
                 var authIcon = null;
                 if (node.serviceAuthEnabled) {
-                    authIcon = r.image("/static/img/key.png", n.point[0] + w, n.point[1] - halfIconSize, iconSize, iconSize);
+                    authIcon = r.image("/static/img/key.png", n.point[0] + halfW, n.point[1] - halfIconSize, iconSize, iconSize);
                     w += iconSize + halfIconSize;
                 }
 
@@ -788,7 +790,7 @@ upena.connectivity = {
                 set.push(health);
                 set.push(text);
                 if (sslIcon != null) {
-                    set.push(text);
+                    set.push(sslIcon);
                 }
                 if (authIcon != null) {
                     set.push(authIcon);
