@@ -24,13 +24,14 @@ import com.jivesoftware.os.upena.shared.ServiceFilter;
 import com.jivesoftware.os.upena.shared.ServiceKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
 import io.swagger.annotations.Api;
-import java.util.Map;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
+import java.util.Map;
 
 @Api(value = "Upena Service CRUD")
 @Path("/api/v1/upena/service")
@@ -46,7 +47,7 @@ public class UpenaServiceRestEndpoints {
 
     @POST
     @Consumes("application/json")
-    @Path("/service/add")
+    @Path("/add")
     public Response addService(Service value) {
         try {
             ServiceKey serviceKey = upenaStore.services.update(null, value);
@@ -59,7 +60,7 @@ public class UpenaServiceRestEndpoints {
 
     @POST
     @Consumes("application/json")
-    @Path("/service/update")
+    @Path("/update")
     public Response updateService(Service value, @QueryParam(value = "key") String key) {
         try {
             ServiceKey serviceKey = upenaStore.services.update(new ServiceKey(key), value);
@@ -72,7 +73,7 @@ public class UpenaServiceRestEndpoints {
 
     @POST
     @Consumes("application/json")
-    @Path("/service/get")
+    @Path("/get")
     public Response getService(ServiceKey key) {
         try {
             Service service = upenaStore.services.get(key);
@@ -85,7 +86,7 @@ public class UpenaServiceRestEndpoints {
 
     @POST
     @Consumes("application/json")
-    @Path("/service/remove")
+    @Path("/remove")
     public Response removeService(ServiceKey key) {
         try {
             boolean removeService = upenaStore.services.remove(key);
@@ -98,7 +99,7 @@ public class UpenaServiceRestEndpoints {
 
     @POST
     @Consumes("application/json")
-    @Path("/service/find")
+    @Path("/find")
     public Response findService(ServiceFilter filter) {
         try {
             Map<ServiceKey, TimestampedValue<Service>> found = upenaStore.services.find(false, filter);
