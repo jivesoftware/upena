@@ -720,6 +720,7 @@ public class UpenaMain {
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/authPluginRegion.soy"), "authPluginRegion.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/unauthorizedPluginRegion.soy"), "unauthorizedPluginRegion.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/deployablePluginRegion.soy"), "deployablePluginRegion.soy");
+        soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/thrownPluginRegion.soy"), "thrownPluginRegion.soy");
 
         if (jvmapi != null) {
             soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/jvmPluginRegion.soy"), "jvmPluginRegion.soy");
@@ -865,6 +866,10 @@ public class UpenaMain {
             ApiPluginEndpoints.class,
             null, null, "read", "debug");
 
+        PluginHandle thrown = new PluginHandle("equalizer", null, "Thrown", "/ui/thrown",
+            ThrownPluginEndpoints.class,
+            new ThrownPluginRegion(hostKey, "soy.page.thrownPluginRegion", renderer, upenaStore), null, "read", "debug");
+
         PluginHandle probe = new PluginHandle("hand-right", null, "Deployable", "/ui/deployable",
             ManagedDeployablePluginEndpoints.class,
             new ManagedDeployablePluginRegion(sessionStore,
@@ -903,6 +908,7 @@ public class UpenaMain {
         plugins.add(proxy);
         if (jvm != null) {
             plugins.add(jvm);
+            plugins.add(thrown);
             plugins.add(breakpointDumper);
         }
         plugins.add(profiler);
