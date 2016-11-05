@@ -6,9 +6,9 @@ package com.jivesoftware.os.upena.shared;
  */
 public enum ReleaseGroupPropertyKey {
     matcher(null, "200-299"),
-    protocol(null, "HTTP"),
+    protocol(null, "HTTPS"),
     healthCheckPath(null, "/health/check"),
-    healthCheckProtocol(null, "HTTP"),
+    healthCheckProtocol(null, "HTTPS"),
     healthCheckTimeoutSeconds(null, "5"),
     healthyThresholdCount(null, "5"),
     unhealthyThresholdCount(null, "2"),
