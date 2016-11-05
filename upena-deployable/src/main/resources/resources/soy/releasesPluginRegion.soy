@@ -85,7 +85,7 @@
                             <li>
                                 <div style="display: inline;">
                                     <a href="#" rel="popover" id="popoverAnchor-release-{$r.key}" data-popover-content="#popover-release-{$r.key}" data-placement="bottom" class="btn btn-default" title="{$r.name} @ {$r.version?:''}">
-                                        <span class="glyphicon glyphicon-menu-down">{sp}{$r.name}{sp}@{sp}{$r.version?:''}</span>
+                                        <span class="glyphicon glyphicon-menu-down"></span>{sp}{$r.name}{sp}@{sp}{$r.version?:''}
                                     </a>
                                 </div>
                                 <div id="popover-release-{$r.key}" class="hide">
@@ -157,7 +157,7 @@
                     </td>
                     <td>
                         <a href="#" rel="popover" id="propertyPopoverAnchor-config-{$r.key}" data-popover-content="#propertyPopover-config-{$r.key}" data-placement="left" class="btn btn-default" title="Config">
-                            <span class="glyphicon glyphicon-menu-down"></span>Config
+                            <span class="glyphicon glyphicon-menu-down"></span> Config
                         </a>
                         <div id="propertyPopover-config-{$r.key}" class="hide" style="overflow:scroll; height:400px;">
                             <table>
@@ -181,7 +181,7 @@
                                                     placeholder="property value" value="">
                                             </td>
                                             <td>
-                                                <button title="Add" onClick="upena.release.addProperty('{$r.key}')" class="btn btn-default"><span class="glyphicon glyphicon-plus">&nbspAdd</span></button>
+                                                <button title="Add" onClick="upena.release.addProperty('{$r.key}')" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span>&nbsp;Add</button>
                                             </td>
                                         </tr>
                                     {/if}
@@ -199,7 +199,7 @@
                                             <td>
                                                 {if $readWrite}
                                                     <button title="Remove" onClick="upena.release.removeProperty('{$r.key}', '{$nv.name}', '{$nv.value}')" class="btn btn-default">
-                                                        <span class="glyphicon glyphicon-trash">&nbspRemove</span>
+                                                        <span class="glyphicon glyphicon-trash"></span>&nbsp;Remove
                                                     </button>
                                                 {/if}
                                             </td>

@@ -179,7 +179,7 @@
                         <td>
                             <div>
                                 <a href="#" rel="popover" id="popoverAnchor-{$c.key}" data-popover-content="#popover-{$c.key}" data-placement="bottom" class="btn btn-default" title="{$c.name}">
-                                    <span class="glyphicon glyphicon-menu-down">{$c.name}</span>
+                                    <span class="glyphicon glyphicon-menu-down"></span> {$c.name}
                                 </a>
                             </div>
                             <div  id="popover-{$c.key}" class="hide">
@@ -258,7 +258,7 @@
                             {if $c.hasReleases}
                                 <div>
                                     <a href="#" rel="popover" id="popoverAnchor-release-{$c.key}" data-popover-content="#popover-release-{$c.key}" data-placement="bottom" class="btn btn-default" title="Services">
-                                        <span class="glyphicon glyphicon-menu-down">({$c.hasReleases})&nbsp;Services</span>
+                                        <span class="glyphicon glyphicon-menu-down"></span> ({$c.hasReleases})&nbsp;Services
                                     </a>
                                 </div>
                                 <div  id="popover-release-{$c.key}" class="hide">
