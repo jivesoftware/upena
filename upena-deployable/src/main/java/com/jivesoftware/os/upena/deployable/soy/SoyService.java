@@ -3,6 +3,7 @@ package com.jivesoftware.os.upena.deployable.soy;
 import com.google.common.collect.Lists;
 import com.jivesoftware.os.upena.deployable.region.ChromeRegion;
 import com.jivesoftware.os.upena.deployable.region.HeaderRegion;
+import com.jivesoftware.os.upena.deployable.region.HomeRegion;
 import com.jivesoftware.os.upena.deployable.region.HomeRegion.HomeInput;
 import com.jivesoftware.os.upena.deployable.region.MenuRegion;
 import com.jivesoftware.os.upena.deployable.region.PageRegion;
@@ -20,7 +21,7 @@ public class SoyService {
     private final SoyRenderer renderer;
     private final HeaderRegion headerRegion;
     private final MenuRegion menuRegion;
-    private final PageRegion<HomeInput> homeRegion;
+    private final HomeRegion homeRegion;
     private final String cluster;
     private final HostKey hostKey;
     private final UpenaStore upenaStore;
@@ -31,7 +32,7 @@ public class SoyService {
         SoyRenderer renderer,
         HeaderRegion headerRegion,
         MenuRegion menuRegion,
-        PageRegion<HomeInput> homeRegion,
+        HomeRegion homeRegion,
         String cluster,
         HostKey hostKey,
         UpenaStore upenaStore
@@ -65,6 +66,10 @@ public class SoyService {
             cluster,
             hostKey,
             upenaStore);
+    }
+
+    public String renderOverview(String user) {
+        return homeRegion.renderOverview(user);
     }
 
 
