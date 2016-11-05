@@ -214,6 +214,8 @@
                                     </li>
                                     <li>
                                         {call .breakpoint}
+                                            {param b: $c /}
+                                            {param b: $s /}
                                             {param b: $b /}
                                         {/call}
                                     </li>
@@ -229,6 +231,8 @@
 
 
 /**
+ * @param? c
+ * @param? s
  * @param? b
  */
 {template .breakpoint}
