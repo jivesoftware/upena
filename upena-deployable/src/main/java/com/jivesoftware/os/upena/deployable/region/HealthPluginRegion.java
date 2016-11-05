@@ -105,43 +105,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
         return "/ui/health";
     }
 
-    public Map<String, Object> poll(HealthPluginRegionInput healthPluginRegionInput) throws Exception {
 
-        Map<ServiceKey, String> serviceColor = ServiceColorUtil.serviceKeysColor(upenaStore);
-
-        List<String> labels = new ArrayList<>();
-        List<Map<String, Object>> valueDatasets = new ArrayList<>();
-
-        int labelCount = 0;
-        for (Map.Entry<String, InstanceSparseCircularHitsBucketBuffer> waveforms : instanceHealthHistory.entrySet()) {
-            String id = waveforms.getKey();
-            List<String> values = new ArrayList<>();
-            InstanceSparseCircularHitsBucketBuffer buffer = waveforms.getValue();
-            double[] rawSignal = buffer.buffer.rawSignal();
-            labelCount = Math.max(labelCount, rawSignal.length);
-            double lastValue = 0d;
-            for (double d : rawSignal) {
-                values.add(String.valueOf(d));
-                lastValue = d;
-            }
-            Map<String, Object> w = waveform(id,
-                trafficlightColorRGB(lastValue, 1f),
-                serviceColor.getOrDefault(new ServiceKey(buffer.instanceDescriptor.serviceKey), "127,127,127"),
-                values);
-            valueDatasets.add(w);
-        }
-
-        for (int i = 0; i < labelCount; i++) {
-            labels.add("");
-        }
-
-        Map<String, Object> map = new HashMap<>();
-        map.put("id", "health-waveform");
-        map.put("graphType", "Line");
-        map.put("waveforms", ImmutableMap.of("labels", labels, "datasets", valueDatasets));
-        return map;
-
-    }
 
     private static class InstanceSparseCircularHitsBucketBuffer {
 
