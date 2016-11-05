@@ -353,6 +353,13 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
 
         data.put("sessions", sessions);
 
+        return  renderer.render(template, data);
+    }
+
+    public String render(String user) throws Exception {
+
+        Map<String, Object> data = Maps.newHashMap();
+
         return renderer.render(template, data);
     }
 

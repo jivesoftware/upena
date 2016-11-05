@@ -781,23 +781,15 @@ upena.connectivity = {
                 });
                 var rect2 = r.rect(n.point[0] - (w / 2) - (hs / 2) + h, n.point[1] - (h / 2), w-h, h).attr({
                     stroke: "#000",
-                    fill: "#aaa",
-                    r: "4px",
-                    "stroke-width": "1px",
-                    opacity: 0.4,
-                });
-                var health = r.rect(n.point[0] - (w / 2) - (hs / 2) + (pad / 2), n.point[1] - (h / 2) + (pad / 2), hs, hs).attr({
-                    stroke: "#111",
                     fill: "270-#" + node.maxbgcolor + "-#" + node.minbgcolor,
                     r: "4px",
                     "stroke-width": "1px",
-                    opacity: 1.0,
+                    opacity: 0.4,
                 });
 
                 var set = r.set();
                 set.push(rect);
                 set.push(rect2);
-                set.push(health);
                 set.push(text);
                 if (sslIcon != null) {
                     set.push(sslIcon);
@@ -927,123 +919,6 @@ upena.health = {
 };
 
 
-upena.sar = {
-    waves: {},
-    data: {},
-    initChart: function (which) {
-        var $canvas = $(which);
-        var ctx = which.getContext("2d");
-        var id = $canvas.data('sarWaveId');
-        if (!upena.sar.waves[id]) {
-            var type = "Line"; //$canvas.data('sarWaveType');
-            var data = upena.sar.data[id];
-            upena.sar.waves[id] = (new Chart(ctx))[type](data, {
-                multiTooltipTemplate: "<%= datasetLabel %> - <%= value %>",
-                scaleLineColor: "rgba(128,128,128,0.5)",
-                tooltipFillColor: "rgba(0,0,0,1)",
-                pointDot: true,
-                pointDotRadius: 4,
-                bezierCurve: false,
-                datasetFill: false,
-                responsive: true,
-                animation: false,
-                legendTemplate: "<ul class=\"<%=name.toLowerCase()%>-legend\"><% for (var i=0; i<datasets.length; i++){%><li><span style=\"background-color:<%=datasets[i].strokeColor%>\"></span><%if(datasets[i].label){%><%=datasets[i].label%><%}%></li><%}%></ul>"
-            });
-
-            upena.sar.waves[id].generateLegend();
-        }
-        upena.sar.waves[id].update();
-    },
-    init: function () {
-
-        $('.sar-wave').each(function (i) {
-            upena.sar.initChart(this);
-        });
-    }
-};
-
-upena.livehealth = {
-    input: {},
-    chart: null,
-    requireFocus: true,
-    init: function () {
-
-        $waveform = $('#health-rt-poll');
-
-        upena.livehealth.graphType = $waveform.data('graphType');
-        upena.livehealth.graphProp = (upena.livehealth.graphType == 'Line' || upena.livehealth.graphType == 'Radar') ? 'points'
-                : (upena.livehealth.graphType == 'Bar' || upena.livehealth.graphType == 'StackedBar') ? 'bars'
-                : 'unknown';
-
-        if (upena.livehealth.requireFocus) {
-            upena.onWindowFocus.push(function () {
-                if (upena.livehealth.chart) {
-                    upena.livehealth.chart.update();
-                }
-            });
-        }
-
-        upena.livehealth.poll();
-    },
-    poll: function () {
-        $.ajax({
-            type: "POST",
-            url: "/ui/health/poll",
-            data: {
-                line: upena.livehealth.graphType,
-            },
-            //contentType: "application/json",
-            success: function (data) {
-                upena.livehealth.update(data);
-            },
-            error: function () {
-                console.log("error!");
-            }
-        });
-    },
-    update: function (data) {
-
-        if (data.waveforms) {
-            if (!upena.livehealth.chart || (chartData && chartData.datasets && chartData.datasets.length != data.waveforms.datasets.length)) {
-
-                upena.livehealth.chart = null;
-
-                var ctx = $('#health-rt-canvas')[0].getContext("2d");
-                var chartData = {
-                    labels: data.waveforms.labels,
-                    datasets: data.waveforms.datasets
-                };
-
-                upena.livehealth.chart = (new Chart(ctx))["Line"](chartData, {
-                    pointDot: true,
-                    pointDotRadius: 4,
-                    bezierCurve: false,
-                    datasetFill: false,
-                    responsive: true,
-                    scaleBeginAtZero: false,
-                    animation: false,
-                    multiTooltipTemplate: "<%= datasetLabel %> - <%= value %>",
-                    legendTemplate: "<ul class=\"<%=name.toLowerCase()%>-legend\"><% for (var i=0; i<datasets.length; i++){%><li><span style=\"background-color:<%=datasets[i].strokeColor%>\"></span><%if(datasets[i].label){%><%=datasets[i].label%><%}%></li><%}%></ul>"
-                });
-            } else {
-
-                for (var i = 0; i < upena.livehealth.chart.datasets.length; i++) {
-                    var values = data.waveforms.datasets[i].data;
-                    for (var j = 0; j < values.length; j++) {
-                        upena.livehealth.chart.datasets[i].points[j].value = values[j];
-                        upena.livehealth.chart.datasets[i].fillColor = data.waveforms.datasets[i].fillColor;
-                        upena.livehealth.chart.datasets[i].strokeColor = data.waveforms.datasets[i].strokeColor;
-                    }
-                }
-                upena.livehealth.chart.update();
-            }
-
-        }
-        setTimeout(upena.livehealth.poll, 1000);
-    }
-
-};
-
 upena.projectBuildOutput = {
     key: null,
     timeoutHandle: null,
@@ -1160,22 +1035,6 @@ $(document).ready(function () {
         upena.projectBuildOutput.init();
     }
 
-    if ($('.sar-wave').length) {
-        upena.sar.init();
-    }
-
-    if ($('.sar-scroll-wave').length) {
-
-        $('.sar-scroll-wave').each(function (j, va) {
-            $(va).on('scroll', function () {
-                $('.sar-scroll-wave').each(function (j, vb) {
-                    if ($(va) !== $(vb)) {
-                        $(vb).scrollLeft($(va).scrollLeft());
-                    }
-                });
-            });
-        });
-    }
 
 
     $('#bottom').on('scroll', function () {
@@ -1274,8 +1133,6 @@ $(document).ready(function () {
             }
         });
     })();
-
-    //upena.livehealth.init();
 
     $('.tree li:has(ul)').addClass('parent_li').find(' > div').attr('title', 'Collapse this branch');
 
