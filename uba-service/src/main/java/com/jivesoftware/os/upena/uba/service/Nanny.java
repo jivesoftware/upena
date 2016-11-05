@@ -218,7 +218,7 @@ public class Nanny {
         long now = System.currentTimeMillis();
         if (restartAtTimestamp.get() > 0 && restartAtTimestamp.get() < now) {
             status.set("Restarting");
-            deployLog.log("Nanny", "Restart triggered by timestamp. " + this, null);
+            deployLog.log("Nanny", "restart triggered by timestamp. " + this, null);
             if (kill()) {
                 lastRestart.set(now);
                 restartAtTimestamp.set(-1);
@@ -270,15 +270,15 @@ public class Nanny {
                                         }
                                         redeploy.set(false);
                                         status.set("Redeployed");
-                                        deployLog.log("Nanny", " successfully redeployed. " + this, null);
+                                        deployLog.log("Nanny", "successfully redeployed. " + this, null);
                                     } catch (Exception x) {
                                         status.set("Failed redeployed");
-                                        deployLog.log("Nanny", " failed to redeployed. " + this, x);
+                                        deployLog.log("Nanny", "failed to redeployed. " + this, x);
                                     }
                                 }
                             } catch (ExecutionException ee) {
                                 status.set("Unexpected state");
-                                deployLog.log("Nanny", " Encountered an unexpected condition. " + this, ee);
+                                deployLog.log("Nanny", "encountered an unexpected condition. " + this, ee);
                             }
                         }
                     }
@@ -300,7 +300,7 @@ public class Nanny {
                     }
 
                 } catch (InterruptedException | ExecutionException x) {
-                    deployLog.log("Nanny", " is already running. " + this, x);
+                    deployLog.log("Nanny", "is already running. " + this, x);
                 }
                 return deployLog.getState();
             } else {

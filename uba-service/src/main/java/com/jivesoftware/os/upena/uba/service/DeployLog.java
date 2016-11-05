@@ -17,6 +17,8 @@ package com.jivesoftware.os.upena.uba.service;
 
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
+import org.apache.commons.collections.buffer.CircularFifoBuffer;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -24,7 +26,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
-import org.apache.commons.collections.buffer.CircularFifoBuffer;
 
 public class DeployLog implements CommandLog {
 
@@ -47,7 +48,7 @@ public class DeployLog implements CommandLog {
             PrintWriter printWriter = new PrintWriter(result);
             t.printStackTrace(printWriter);
             messages.add(result.toString());
-            state.set(message + " " + result.toString());
+            state.set(message);
         } else {
             LOG.info(context + " " + message);
             messages.add(message);
@@ -68,7 +69,7 @@ public class DeployLog implements CommandLog {
 
     @Override
     synchronized public void commit() {
-        state.set("Log cleared");
+        state.set("");
         commitedLog.clear();
         for (Iterator it = messages.iterator(); it.hasNext();) {
             Object object = it.next();

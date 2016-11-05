@@ -21,10 +21,6 @@ import com.jivesoftware.os.jive.utils.shell.utils.Unzip;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.routing.bird.shared.InstanceDescriptor;
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-import java.util.concurrent.Callable;
 import org.apache.commons.compress.archivers.ArchiveException;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.aether.RepositorySystem;
@@ -39,6 +35,11 @@ import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.resolution.ArtifactRequest;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.resolution.ArtifactResult;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+import java.util.concurrent.Callable;
 
 class NannyDeployCallable implements Callable<Boolean> {
 
@@ -226,7 +227,7 @@ class NannyDeployCallable implements Callable<Boolean> {
             DeployArtifactDependencies deployArtifactDependencies = new DeployArtifactDependencies(deployLog, system, session, remoteRepos, dir);
             collectResult.getRoot().accept(deployArtifactDependencies);
             boolean successfulDeploy = deployArtifactDependencies.successfulDeploy();
-            deployLog.log("Nanny", "SUCCESS " + successfulDeploy, null);
+            deployLog.log("Nanny", "success " + successfulDeploy, null);
             return successfulDeploy;
         } catch (IOException | ArtifactResolutionException | DependencyCollectionException x) {
             deployLog.log("Nanny", "failed to deploy artifact:", x);
