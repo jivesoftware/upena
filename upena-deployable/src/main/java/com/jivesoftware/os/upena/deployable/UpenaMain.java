@@ -52,15 +52,7 @@ import com.jivesoftware.os.upena.amza.service.AmzaServiceInitializer.AmzaService
 import com.jivesoftware.os.upena.amza.service.discovery.AmzaDiscovery;
 import com.jivesoftware.os.upena.amza.service.storage.replication.SendFailureListener;
 import com.jivesoftware.os.upena.amza.service.storage.replication.TakeFailureListener;
-import com.jivesoftware.os.upena.amza.shared.AmzaInstance;
-import com.jivesoftware.os.upena.amza.shared.MemoryRowsIndex;
-import com.jivesoftware.os.upena.amza.shared.RingHost;
-import com.jivesoftware.os.upena.amza.shared.RowIndexKey;
-import com.jivesoftware.os.upena.amza.shared.RowIndexValue;
-import com.jivesoftware.os.upena.amza.shared.RowsIndexProvider;
-import com.jivesoftware.os.upena.amza.shared.RowsStorageProvider;
-import com.jivesoftware.os.upena.amza.shared.UpdatesSender;
-import com.jivesoftware.os.upena.amza.shared.UpdatesTaker;
+import com.jivesoftware.os.upena.amza.shared.*;
 import com.jivesoftware.os.upena.amza.storage.RowTable;
 import com.jivesoftware.os.upena.amza.storage.binary.BinaryRowMarshaller;
 import com.jivesoftware.os.upena.amza.storage.binary.BinaryRowsTx;
@@ -70,101 +62,32 @@ import com.jivesoftware.os.upena.amza.transport.http.replication.endpoints.AmzaR
 import com.jivesoftware.os.upena.config.UpenaConfigRestEndpoints;
 import com.jivesoftware.os.upena.config.UpenaConfigStore;
 import com.jivesoftware.os.upena.deployable.aws.AWSClientFactory;
-import com.jivesoftware.os.upena.deployable.endpoints.api.v1.UpenaClusterRestEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaConnectivityEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaHealthEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.api.v1.UpenaHostRestEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.api.v1.UpenaInstanceRestEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaManagedDeployableEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.api.v1.UpenaReleaseRestEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaRepoEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.api.v1.UpenaServiceRestEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.api.v1.UpenaTenantRestEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.api.*;
+import com.jivesoftware.os.upena.deployable.endpoints.api.v1.*;
 import com.jivesoftware.os.upena.deployable.endpoints.loopback.UpenaLoopbackEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.ui.AWSPluginEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.ui.ApiPluginEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.ui.AsyncLookupEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.ui.AuthPluginEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.ui.BreakpointDumperPluginEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.ui.ChangeLogPluginEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.ui.ClustersPluginEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.ui.ConfigPluginEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.ui.ConnectivityPluginEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.ui.HealthPluginEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.ui.HostsPluginEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.ui.InstancesPluginEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.ui.JVMPluginEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.ui.LoadBalancersPluginEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.ui.ManagedDeployablePluginEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.ui.ModulesPluginEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.ui.MonkeyPluginEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.ui.ProfilerPluginEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.ui.ProjectsPluginEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.ui.ProxyPluginEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.ui.ReleasesPluginEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.ui.RepoPluginEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.ui.ServicesPluginEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.ui.TopologyPluginEndpoints;
-import com.jivesoftware.os.upena.deployable.endpoints.ui.UpenaRingPluginEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.ui.*;
 import com.jivesoftware.os.upena.deployable.lookup.AsyncLookupService;
 import com.jivesoftware.os.upena.deployable.profiler.model.ServicesCallDepthStack;
 import com.jivesoftware.os.upena.deployable.profiler.server.endpoints.PerfService;
 import com.jivesoftware.os.upena.deployable.profiler.server.endpoints.PerfServiceEndpoints;
 import com.jivesoftware.os.upena.deployable.profiler.visualize.NameUtils;
 import com.jivesoftware.os.upena.deployable.profiler.visualize.VisualizeProfile;
-import com.jivesoftware.os.upena.deployable.region.AWSPluginRegion;
-import com.jivesoftware.os.upena.deployable.region.AuthPluginRegion;
-import com.jivesoftware.os.upena.deployable.region.BreakpointDumperPluginRegion;
-import com.jivesoftware.os.upena.deployable.region.ChangeLogPluginRegion;
-import com.jivesoftware.os.upena.deployable.region.ClustersPluginRegion;
-import com.jivesoftware.os.upena.deployable.region.ConfigPluginRegion;
-import com.jivesoftware.os.upena.deployable.region.ConnectivityPluginRegion;
-import com.jivesoftware.os.upena.deployable.region.HeaderRegion;
-import com.jivesoftware.os.upena.deployable.region.HealthPluginRegion;
-import com.jivesoftware.os.upena.deployable.region.HomeRegion;
-import com.jivesoftware.os.upena.deployable.region.HostsPluginRegion;
-import com.jivesoftware.os.upena.deployable.region.InstancesPluginRegion;
-import com.jivesoftware.os.upena.deployable.region.JVMPluginRegion;
-import com.jivesoftware.os.upena.deployable.region.LoadBalancersPluginRegion;
-import com.jivesoftware.os.upena.deployable.region.ManagedDeployablePluginRegion;
-import com.jivesoftware.os.upena.deployable.region.MenuRegion;
-import com.jivesoftware.os.upena.deployable.region.ModulesPluginRegion;
-import com.jivesoftware.os.upena.deployable.region.MonkeyPluginRegion;
-import com.jivesoftware.os.upena.deployable.region.PluginHandle;
-import com.jivesoftware.os.upena.deployable.region.ProfilerPluginRegion;
-import com.jivesoftware.os.upena.deployable.region.ProjectsPluginRegion;
-import com.jivesoftware.os.upena.deployable.region.ProxyPluginRegion;
-import com.jivesoftware.os.upena.deployable.region.ReleasesPluginRegion;
-import com.jivesoftware.os.upena.deployable.region.RepoPluginRegion;
-import com.jivesoftware.os.upena.deployable.region.ServicesPluginRegion;
-import com.jivesoftware.os.upena.deployable.region.TopologyPluginRegion;
-import com.jivesoftware.os.upena.deployable.region.UnauthorizedPluginRegion;
-import com.jivesoftware.os.upena.deployable.region.UpenaRingPluginRegion;
+import com.jivesoftware.os.upena.deployable.region.*;
 import com.jivesoftware.os.upena.deployable.server.UpenaJerseyEndpoints;
 import com.jivesoftware.os.upena.deployable.soy.SoyDataUtils;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
-import com.jivesoftware.os.upena.service.ChaosService;
-import com.jivesoftware.os.upena.service.DiscoveredRoutes;
-import com.jivesoftware.os.upena.service.HostKeyProvider;
-import com.jivesoftware.os.upena.service.SessionStore;
-import com.jivesoftware.os.upena.service.UpenaService;
-import com.jivesoftware.os.upena.service.UpenaStore;
-import com.jivesoftware.os.upena.shared.Host;
-import com.jivesoftware.os.upena.shared.HostKey;
-import com.jivesoftware.os.upena.shared.Instance;
-import com.jivesoftware.os.upena.shared.InstanceKey;
-import com.jivesoftware.os.upena.shared.PathToRepo;
-import com.jivesoftware.os.upena.uba.service.RepositoryProvider;
-import com.jivesoftware.os.upena.uba.service.SelfSigningCertGenerator;
-import com.jivesoftware.os.upena.uba.service.UbaCoordinate;
-import com.jivesoftware.os.upena.uba.service.UbaLog;
-import com.jivesoftware.os.upena.uba.service.UbaService;
-import com.jivesoftware.os.upena.uba.service.UbaServiceInitializer;
-import com.jivesoftware.os.upena.uba.service.UpenaClient;
+import com.jivesoftware.os.upena.service.*;
+import com.jivesoftware.os.upena.shared.*;
+import com.jivesoftware.os.upena.uba.service.*;
 import de.ruedigermoeller.serialization.FSTConfiguration;
 import io.swagger.jaxrs.config.BeanConfig;
+import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
+import oauth.signpost.signature.HmacSha1MessageSigner;
+import org.glassfish.jersey.oauth1.signature.OAuth1Request;
+import org.glassfish.jersey.oauth1.signature.OAuth1Signature;
+import org.merlin.config.BindInterfaceToConfiguration;
+
 import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -172,28 +95,18 @@ import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.StandardOpenOption;
 import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.List;
-import java.util.NavigableMap;
-import java.util.Random;
-import java.util.StringTokenizer;
+import java.util.*;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
-import oauth.signpost.signature.HmacSha1MessageSigner;
-import org.glassfish.jersey.oauth1.signature.OAuth1Request;
-import org.glassfish.jersey.oauth1.signature.OAuth1Signature;
-import org.merlin.config.BindInterfaceToConfiguration;
 
 public class UpenaMain {
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
-    public static final String[] USAGE = new String[] {
+    public static final String[] USAGE = new String[]{
         "Usage:",
         "",
         "    java -jar upena.jar <hostName>                   (manual cluster discovery)",
@@ -249,7 +162,7 @@ public class UpenaMain {
         " Example:",
         " nohup java -Xdebug -Xrunjdwp:transport=dt_socket,address=1176,server=y,suspend=n -classpath \"/usr/java/latest/lib/tools.jar:./upena.jar\" com" +
             ".jivesoftware.os.upena.deployable.UpenaMain `hostname` dev",
-        "", };
+        "",};
 
     public static void main(String[] args) throws Exception {
 
@@ -671,6 +584,7 @@ public class UpenaMain {
             .addInjectable(SessionStore.class, sessionStore)
             .addInjectable(DiscoveredRoutes.class, discoveredRoutes)
             .addInjectable(upenaConfigStore)
+            .addInjectable(upenaHealth)
             .addInjectable(UpenaService.class, upenaService);
 
         InitializeRestfulServer initializeLoopbackRestfulServer = new InitializeRestfulServer(
