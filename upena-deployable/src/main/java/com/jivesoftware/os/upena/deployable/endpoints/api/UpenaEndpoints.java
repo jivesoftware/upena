@@ -16,7 +16,7 @@
 package com.jivesoftware.os.upena.deployable.endpoints.api;
 
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
-import java.net.URI;
+
 import javax.inject.Singleton;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
@@ -26,6 +26,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import java.net.URI;
 
 /**
  *
@@ -54,6 +55,15 @@ public class UpenaEndpoints {
     public Response get(@Context HttpServletRequest httpRequest,
         @Context UriInfo uriInfo) throws Exception {
         String rendered = soyService.render(httpRequest.getRemoteUser());
+        return Response.ok(rendered).build();
+    }
+
+    @Path("/ui/overview")
+    @GET
+    @Produces(MediaType.TEXT_HTML)
+    public Response overview(@Context HttpServletRequest httpRequest,
+        @Context UriInfo uriInfo) throws Exception {
+        String rendered = soyService.renderOverview(httpRequest.getRemoteUser());
         return Response.ok(rendered).build();
     }
 

@@ -985,7 +985,47 @@ upena.projectBuildOutput = {
     }
 };
 
+upena.overview = {
+    input: {},
+    requireFocus: true,
+    html: null,
+    init: function () {
+        $overview = $('#overview');
+        upena.overview.poll();
+    },
+    poll: function () {
+        $.ajax({
+            type: "GET",
+            url: "/upena/ui/metrics/overview",
+            dataType: "html",
+            data: {
+                name: ""
+            },
+            //contentType: "application/json",
+            success: function (data) {
+                upena.overview.draw(data);
+            },
+            error: function () {
+                //TODO error message
+                console.log("error!");
+            }
+        });
+    },
+    draw: function (data) {
+        $('#overview').html(data);
+
+        if (!upena.overview.requireFocus || upena.windowFocused) {
+            //upena.stats.update();
+        }
+        setTimeout(upena.overview.poll, 1000);
+    }
+};
+
 $(document).ready(function () {
+
+    if ($('#overview').length) {
+        upena.overview.init();
+    }
 
     $('[data-toggle="tooltip"]').tooltip({
         animated: 'fade',

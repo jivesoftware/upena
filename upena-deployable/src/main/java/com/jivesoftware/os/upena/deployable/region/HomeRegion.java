@@ -9,12 +9,6 @@ import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.service.UpenaStore;
 import com.jivesoftware.os.upena.shared.Host;
 import com.jivesoftware.os.upena.shared.HostKey;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
 import oshi.SystemInfo;
@@ -35,17 +29,29 @@ import oshi.software.os.OperatingSystem.ProcessSort;
 import oshi.util.FormatUtil;
 import oshi.util.Util;
 
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
+import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+
 /**
  *
  */
 public class HomeRegion implements PageRegion<HomeInput> {
 
-    private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
     private final String template;
     private final SoyRenderer renderer;
     private final HostKey hostKey;
     private final UpenaStore upenaStore;
+    private final RuntimeMXBean runtimeBean;
 
     public HomeRegion(String template,
         SoyRenderer renderer,
@@ -56,6 +62,7 @@ public class HomeRegion implements PageRegion<HomeInput> {
         this.renderer = renderer;
         this.hostKey = hostKey;
         this.upenaStore = upenaStore;
+        runtimeBean = ManagementFactory.getRuntimeMXBean();
     }
 
     @Override
@@ -148,6 +155,159 @@ public class HomeRegion implements PageRegion<HomeInput> {
             LOG.warn("soy render failed.", x);
             return "Woop :(";
         }
+    }
+
+    private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
+    private final NumberFormat numberFormat = NumberFormat.getInstance();
+
+    public String renderOverview(String user) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("<p>uptime<span class=\"badge\">").append(getDurationBreakdown(runtimeBean.getUptime())).append("</span></p>");
+
+
+//        sb.append(progress("Gets (" + numberFormat.format(grandTotal.gets.longValue()) + ")",
+//            (int) (((double) grandTotal.getsLatency / 1000d) * 100),
+//            getDurationBreakdown(grandTotal.getsLatency) + " lag"));
+//
+//        sb.append(progress("Scans (" + numberFormat.format(grandTotal.scans.longValue()) + ")",
+//            (int) ((grandTotal.scansLatency / 1000d) * 100),
+//            getDurationBreakdown(grandTotal.scansLatency) + " lag"));
+//
+//        sb.append(progress("ScanKeys (" + numberFormat.format(grandTotal.scanKeys.longValue()) + ")",
+//            (int) ((grandTotal.scanKeysLatency / 1000d) * 100),
+//            getDurationBreakdown(grandTotal.scanKeysLatency) + " lag"));
+//
+//        sb.append(progress("Direct Applied (" + numberFormat.format(grandTotal.directApplies.longValue()) + ")",
+//            (int) ((grandTotal.directAppliesLag / 1000d) * 100),
+//            getDurationBreakdown(grandTotal.directAppliesLag) + " lag"));
+//
+//        sb.append(progress("Updates (" + numberFormat.format(grandTotal.updates.longValue()) + ")",
+//            (int) ((grandTotal.updatesLag / 10000d) * 100),
+//            getDurationBreakdown(grandTotal.updatesLag) + " lag"));
+//
+//        sb.append(progress("Offers (" + numberFormat.format(grandTotal.offers.longValue()) + ")",
+//            (int) ((grandTotal.offersLag / 10000d) * 100),
+//            getDurationBreakdown(grandTotal.offersLag) + " lag"));
+//
+//        sb.append(progress("Took (" + numberFormat.format(grandTotal.takes.longValue()) + ")",
+//            (int) ((grandTotal.takesLag / 10000d) * 100),
+//            getDurationBreakdown(grandTotal.takesLag) + " lag"));
+//
+//        sb.append(progress("Took Applied (" + numberFormat.format(grandTotal.takeApplies.longValue()) + ")",
+//            (int) ((grandTotal.takeAppliesLag / 1000d) * 100),
+//            getDurationBreakdown(grandTotal.takeAppliesLag) + " lag"));
+//
+//        sb.append(progress("Took Average Rows (" + numberFormat.format(amzaStats.takes.longValue()) + ")",
+//            (int) (((double) amzaStats.takeExcessRows.longValue()/ amzaStats.takes.longValue()) / 4096 * 100),
+//            numberFormat.format(amzaStats.takeExcessRows.longValue())));
+//
+//        sb.append(progress("Acks (" + numberFormat.format(grandTotal.acks.longValue()) + ")",
+//            (int) ((grandTotal.acksLag / 10000d) * 100),
+//            getDurationBreakdown(grandTotal.acksLag) + " lag"));
+//
+//        sb.append(progress("Quorums (" + numberFormat.format(grandTotal.quorums.longValue()) + " / " + numberFormat.format(grandTotal.quorumTimeouts.longValue()) + ")",
+//            (int) ((grandTotal.quorumsLatency / 10000d) * 100),
+//            getDurationBreakdown(grandTotal.quorumsLatency) + " lag"));
+//
+//        sb.append(progress("Active Long Polls (" + numberFormat.format(amzaStats.availableRowsStream.longValue()) + ")",
+//            (int) ((amzaStats.availableRowsStream.longValue() / 100d) * 100), ""));
+//
+//        sb.append(progress("Active Row Streaming (" + numberFormat.format(amzaStats.rowsStream.longValue()) + ")",
+//            (int) ((amzaStats.rowsStream.longValue() / 100d) * 100), "" + numberFormat.format(amzaStats.completedRowsStream.longValue())));
+//
+//        sb.append(progress("Active Row Acknowledging (" + numberFormat.format(amzaStats.rowsTaken.longValue()) + ")",
+//            (int) ((amzaStats.rowsTaken.longValue() / 100d) * 100), "" + numberFormat.format(amzaStats.completedRowsTake.longValue())));
+//
+//        sb.append(progress("Back Pressure (" + numberFormat.format(amzaStats.backPressure.longValue()) + ")",
+//            (int) ((amzaStats.backPressure.longValue() / 10000d) * 100), "" + amzaStats.pushBacks.longValue()));
+//
+//        long[] count = amzaStats.deltaStripeMergeLoaded;
+//        double[] load = amzaStats.deltaStripeLoad;
+//        long[] mergeCount = amzaStats.deltaStripeMergePending;
+//        double[] mergeLoad = amzaStats.deltaStripeMerge;
+//        if (count.length == load.length) {
+//            for (int i = 0; i < load.length; i++) {
+//                sb.append(progress(" Delta Stripe " + i + " (" + load[i] + ")", (int) (load[i] * 100), "" + numberFormat.format(count[i])));
+//                if (mergeLoad.length > i && mergeCount.length > i) {
+//                    sb.append(progress("Merge Stripe " + i + " (" + numberFormat.format(mergeLoad[i]) + ")", (int) (mergeLoad[i] * 100),
+//                        numberFormat.format(mergeCount[i]) + " partitions"));
+//                }
+//            }
+//        } else {
+//            LOG.warn("BUG count.length={} should equal load.length={}", count.length, load.length);
+//        }
+//
+//        int tombostoneCompaction = amzaStats.ongoingCompaction(AmzaStats.CompactionFamily.tombstone);
+//        int mergeCompaction = amzaStats.ongoingCompaction(AmzaStats.CompactionFamily.merge);
+//        int expungeCompaction = amzaStats.ongoingCompaction(AmzaStats.CompactionFamily.expunge);
+//
+//        sb.append(progress("Tombstone Compactions (" + numberFormat.format(tombostoneCompaction) + ")",
+//            (int) ((tombostoneCompaction / 10d) * 100), " total:" + amzaStats.getTotalCompactions(CompactionFamily.tombstone)));
+//
+//        sb.append(progress("Merge Compactions (" + numberFormat.format(mergeCompaction) + ")",
+//            (int) ((mergeCompaction / 10d) * 100), " total:" + amzaStats.getTotalCompactions(CompactionFamily.merge)));
+//
+//        sb.append(progress("Expunge Compactions (" + numberFormat.format(expungeCompaction) + ")",
+//            (int) ((expungeCompaction / 10d) * 100), " total:" + amzaStats.getTotalCompactions(CompactionFamily.expunge)));
+
+        return sb.toString();
+    }
+
+    private String progress(String title, int progress, String value) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("title", title);
+        data.put("progress", progress);
+        data.put("value", value);
+        return renderer.render("soy.page.amzaStackedProgress", data);
+    }
+
+    public static String getDurationBreakdown(long millis) {
+        if (millis < 0) {
+            return String.valueOf(millis);
+        }
+
+        long hours = TimeUnit.MILLISECONDS.toHours(millis);
+        millis -= TimeUnit.HOURS.toMillis(hours);
+        long minutes = TimeUnit.MILLISECONDS.toMinutes(millis);
+        millis -= TimeUnit.MINUTES.toMillis(minutes);
+        long seconds = TimeUnit.MILLISECONDS.toSeconds(millis);
+        millis -= TimeUnit.SECONDS.toMillis(seconds);
+
+        StringBuilder sb = new StringBuilder(64);
+        boolean showRemaining = true;
+        if (showRemaining || hours > 0) {
+            if (hours < 10) {
+                sb.append('0');
+            }
+            sb.append(hours);
+            sb.append(":");
+            showRemaining = true;
+        }
+        if (showRemaining || minutes > 0) {
+            if (minutes < 10) {
+                sb.append('0');
+            }
+            sb.append(minutes);
+            sb.append(":");
+            showRemaining = true;
+        }
+        if (showRemaining || seconds > 0) {
+            if (seconds < 10) {
+                sb.append('0');
+            }
+            sb.append(seconds);
+            sb.append(".");
+            showRemaining = true;
+        }
+        if (millis < 100) {
+            sb.append('0');
+        }
+        if (millis < 10) {
+            sb.append('0');
+        }
+        sb.append(millis);
+
+        return (sb.toString());
     }
 
     private final AtomicReference<List<String>> procs = new AtomicReference<>();
