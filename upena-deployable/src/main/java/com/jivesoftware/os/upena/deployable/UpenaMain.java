@@ -778,7 +778,7 @@ public class UpenaMain {
         PluginHandle connectivity = new PluginHandle("transfer", null, "Connectivity", "/ui/connectivity",
             ConnectivityPluginEndpoints.class,
             new ConnectivityPluginRegion(mapper, "soy.page.connectivityPluginRegion", "soy.page.connectionsHealth", "soy.page.connectionOverview",
-                renderer, amzaInstance, upenaSSLConfig, upenaStore, healthPluginRegion, hostsPluginRegion, releasesPluginRegion, instancesPluginRegion,
+                renderer, amzaInstance, upenaSSLConfig, upenaStore, healthPluginRegion,
                 discoveredRoutes), null,
             "read");
 
@@ -850,7 +850,7 @@ public class UpenaMain {
 
             breakpointDumper = new PluginHandle("record", null, "Breakpoint Dumper", "/ui/breakpoint",
                 BreakpointDumperPluginEndpoints.class,
-                new BreakpointDumperPluginRegion(hostKey, "soy.page.breakpointDumperPluginRegion", renderer, upenaStore, jvmapi), null, "read", "debug");
+                new BreakpointDumperPluginRegion("soy.page.breakpointDumperPluginRegion", renderer, upenaStore, jvmapi), null, "read", "debug");
         }
 
         PluginHandle aws = null;
@@ -941,7 +941,7 @@ public class UpenaMain {
     }
 
     private RowsStorageProvider rowsStorageProvider(final OrderIdProvider orderIdProvider) {
-        RowsStorageProvider rowsStorageProvider = (workingDirectory, tableDomain, tableName) -> {
+        return (workingDirectory, tableDomain, tableName) -> {
             final File directory = new File(workingDirectory, tableDomain);
             directory.mkdirs();
             File file = new File(directory, tableName.getTableName() + ".kvt");
@@ -957,7 +957,6 @@ public class UpenaMain {
                 rowMarshaller,
                 new BinaryRowsTx(file, rowMarshaller, tableIndexProvider, 1000));
         };
-        return rowsStorageProvider;
     }
 
     public static void buildSwagger() {

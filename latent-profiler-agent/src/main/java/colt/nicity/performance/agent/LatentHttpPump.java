@@ -13,11 +13,7 @@ import colt.nicity.performance.latent.LatentDepth;
 import colt.nicity.performance.latent.http.ApacheHttpClient;
 import colt.nicity.performance.latent.http.HttpResponse;
 import colt.nicity.performance.latent.http.json.JSONObject;
-import java.util.HashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.commons.httpclient.HostConfiguration;
 import org.apache.commons.httpclient.HttpConnectionManager;
 import org.apache.commons.httpclient.HttpVersion;
@@ -25,6 +21,13 @@ import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.commons.httpclient.cookie.CookiePolicy;
 import org.apache.commons.httpclient.params.HttpConnectionParams;
 import org.apache.commons.httpclient.params.HttpMethodParams;
+
+import java.util.HashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  *
@@ -110,7 +113,8 @@ public class LatentHttpPump {
     private final AtomicBoolean enabled = new AtomicBoolean(true);
 
     public void start() {
-        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
+        ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("latent-%d").build();
+        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1, namedThreadFactory);
         scheduledExecutorService.scheduleWithFixedDelay(() -> {
             try {
                 final long now = System.currentTimeMillis();

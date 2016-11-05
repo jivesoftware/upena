@@ -40,12 +40,11 @@ public class NameUtils {
         int startOfArgs = longMethodName.indexOf('(');
         String methodName = longMethodName.substring(0, startOfArgs);
         String args = longMethodName.substring(startOfArgs, longMethodName.indexOf(")"));
-        String[] ls = new String[]{
+        return new String[]{
             methodName + "(" + Joiner.on(", ").join(simpleArgs(args)) + ")",
             "latency: " + latencyString(methodArea.classMethod.getSuccesslatency()),
             "called: " + methodArea.classMethod.getCalled(),
             "total: " + latencyString(methodArea.classMethod.getCalled() * methodArea.classMethod.getSuccesslatency())};
-        return ls;
     }
 
     String[] simpleArgs(String args) {

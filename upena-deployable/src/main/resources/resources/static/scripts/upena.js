@@ -761,7 +761,7 @@ upena.connectivity = {
 
                 var sslIcon = null;
                 if (node.sslEnabled) {
-                   sslIcon = r.image("/static/img/lock.png", n.point[0] - (halfW - halfIconSize), n.point[1] - halfIconSize, iconSize, iconSize);
+                   sslIcon = r.image("/static/img/lock.png", n.point[0] - (halfW - iconSize), n.point[1] - halfIconSize, iconSize, iconSize);
                    w += iconSize;
                 }
 
@@ -774,14 +774,14 @@ upena.connectivity = {
 
                 var rect = r.rect(n.point[0] - (w / 2) - (hs / 2), n.point[1] - (h / 2), h, h).attr({
                     stroke: "#000",
-                    fill: "#aaa",
+                    fill: "#" + node.color,
                     r: "4px",
                     "stroke-width": "1px",
                     opacity: 0.4,
                 });
                 var rect2 = r.rect(n.point[0] - (w / 2) - (hs / 2) + h, n.point[1] - (h / 2), w-h, h).attr({
                     stroke: "#000",
-                    fill: "#" + node.color,
+                    fill: "#aaa",
                     r: "4px",
                     "stroke-width": "1px",
                     opacity: 0.4,
@@ -1204,6 +1204,8 @@ $(document).ready(function () {
             }
         });
     })();
+
+
 
     (function () {
         var hack = {};

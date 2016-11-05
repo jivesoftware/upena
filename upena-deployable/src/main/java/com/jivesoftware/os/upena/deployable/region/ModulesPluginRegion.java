@@ -18,17 +18,6 @@ import com.jivesoftware.os.upena.shared.ReleaseGroupKey;
 import com.jivesoftware.os.upena.shared.ServiceKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
 import com.jivesoftware.os.upena.uba.service.RepositoryProvider;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Random;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentNavigableMap;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.Artifact;
@@ -43,6 +32,18 @@ import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.resolution.ArtifactRequest;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.resolution.ArtifactResult;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Random;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentNavigableMap;
 
 /**
  *
@@ -404,7 +405,7 @@ public class ModulesPluginRegion implements PageRegion<ModulesPluginRegionInput>
 
         public Node group(Artifact artifact) {
             String key = artifact.getGroupId();
-            Node node = nodes.computeIfAbsent(key, (String t) -> {
+            return nodes.computeIfAbsent(key, (String t) -> {
                 String title = artifact.getGroupId().substring(artifact.getGroupId().lastIndexOf(".") + 1);
                 Node n = new Node(title, t, randomColor(title.hashCode()), "22");
                 n.icon = "group";
@@ -412,7 +413,6 @@ public class ModulesPluginRegion implements PageRegion<ModulesPluginRegionInput>
                 return n;
 
             });
-            return node;
         }
 
         public Node artifact(Artifact artifact, boolean isDeployable) {
@@ -433,11 +433,10 @@ public class ModulesPluginRegion implements PageRegion<ModulesPluginRegionInput>
         }
 
         public Edge edge(Node from, Node to) {
-            Edge edge = edges.computeIfAbsent(from.id + "->" + to.id, (String key) -> {
+           return edges.computeIfAbsent(from.id + "->" + to.id, (String key) -> {
                 Edge e = new Edge(from.id, to.id, to.version);
                 return e;
             });
-            return edge;
         }
     }
 

@@ -16,8 +16,11 @@
 package com.jivesoftware.os.upena.amza.service;
 
 import com.google.common.collect.Lists;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.jivesoftware.os.jive.utils.ordered.id.TimestampedOrderIdProvider;
+import com.jivesoftware.os.mlogger.core.MetricLogger;
+import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.amza.service.storage.RowStoreUpdates;
-import com.jivesoftware.os.upena.amza.service.storage.RowsStorageUpdates;
 import com.jivesoftware.os.upena.amza.service.storage.TableStore;
 import com.jivesoftware.os.upena.amza.service.storage.TableStoreProvider;
 import com.jivesoftware.os.upena.amza.service.storage.replication.HostRing;
@@ -33,9 +36,7 @@ import com.jivesoftware.os.upena.amza.shared.RowIndexValue;
 import com.jivesoftware.os.upena.amza.shared.RowScan;
 import com.jivesoftware.os.upena.amza.shared.RowScanable;
 import com.jivesoftware.os.upena.amza.shared.TableName;
-import com.jivesoftware.os.jive.utils.ordered.id.TimestampedOrderIdProvider;
-import com.jivesoftware.os.mlogger.core.MetricLogger;
-import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -46,6 +47,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -94,7 +96,8 @@ public class AmzaService implements HostRingProvider, AmzaInstance {
         final int silenceBackToBackErrors = 100;
         if (scheduledThreadPool == null) {
             this.ringHost = ringHost;
-            scheduledThreadPool = Executors.newScheduledThreadPool(4);
+            ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("tableReplicator-%d").build();
+            scheduledThreadPool = Executors.newScheduledThreadPool(4,namedThreadFactory);
             scheduledThreadPool.scheduleWithFixedDelay(new Runnable() {
                 int failedToSend = 0;
 

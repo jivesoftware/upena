@@ -13,18 +13,10 @@ import com.jivesoftware.os.routing.bird.server.JacksonFeature;
 import com.jivesoftware.os.routing.bird.server.binding.Injectable;
 import com.jivesoftware.os.routing.bird.server.binding.InjectableBinder;
 import io.swagger.jaxrs.listing.ApiListingResource;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import javax.servlet.DispatcherType;
-import javax.ws.rs.container.ContainerRequestFilter;
 import org.apache.shiro.web.env.EnvironmentLoaderListener;
 import org.apache.shiro.web.servlet.ShiroFilter;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.glassfish.hk2.utilities.Binder;
@@ -33,6 +25,14 @@ import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.filter.HttpMethodOverrideFilter;
 import org.glassfish.jersey.servlet.ServletContainer;
+
+import javax.servlet.DispatcherType;
+import javax.ws.rs.container.ContainerRequestFilter;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  *

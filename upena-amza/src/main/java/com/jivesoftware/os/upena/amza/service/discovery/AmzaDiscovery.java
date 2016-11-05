@@ -15,10 +15,12 @@
  */
 package com.jivesoftware.os.upena.amza.service.discovery;
 
-import com.jivesoftware.os.upena.amza.service.AmzaService;
-import com.jivesoftware.os.upena.amza.shared.RingHost;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
+import com.jivesoftware.os.upena.amza.service.AmzaService;
+import com.jivesoftware.os.upena.amza.shared.RingHost;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
@@ -28,10 +30,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 /**
- *
  * This is still a work in progress.
  */
 public class AmzaDiscovery {
@@ -43,7 +45,8 @@ public class AmzaDiscovery {
     private final RingHost ringHost;
     private final InetAddress multicastGroup;
     private final int multicastPort;
-    private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(2);
+    private final ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("discovery-%d").build();
+    private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(2, namedThreadFactory);
 
     public AmzaDiscovery(AmzaService amzaService, RingHost ringHost, String clusterName, String multicastGroup, int multicastPort) throws UnknownHostException {
         this.amzaService = amzaService;

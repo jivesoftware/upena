@@ -22,15 +22,12 @@ import com.jivesoftware.os.upena.service.UpenaStore;
 import com.jivesoftware.os.upena.shared.ReleaseGroup;
 import com.jivesoftware.os.upena.shared.ReleaseGroupFilter;
 import com.jivesoftware.os.upena.shared.ReleaseGroupKey;
-import com.jivesoftware.os.upena.shared.ServiceKey;
 import com.jivesoftware.os.upena.shared.Tenant;
 import com.jivesoftware.os.upena.shared.TenantFilter;
 import com.jivesoftware.os.upena.shared.TenantKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
 import io.swagger.annotations.Api;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ConcurrentNavigableMap;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -40,6 +37,9 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentNavigableMap;
 
 @Api(value = "Upena Tenant CRUD")
 @Path("/api/v1/upena/tenant")
@@ -135,9 +135,9 @@ public class UpenaTenantRestEndpoints {
             Map.Entry<TenantKey, TimestampedValue<Tenant>> firstTenant = foundTenants.firstEntry();
             Tenant t = firstTenant.getValue().getValue();
             if (releaseId == null || releaseId.length() == 0) {
-                upenaStore.tenants.update(new TenantKey(tenantId), new Tenant(t.tenantId, t.description, new HashMap<ServiceKey, ReleaseGroupKey>()));
+                upenaStore.tenants.update(new TenantKey(tenantId), new Tenant(t.tenantId, t.description, new HashMap<>()));
             } else {
-                upenaStore.tenants.update(new TenantKey(tenantId), new Tenant(t.tenantId, t.description, new HashMap<ServiceKey, ReleaseGroupKey>()));
+                upenaStore.tenants.update(new TenantKey(tenantId), new Tenant(t.tenantId, t.description, new HashMap<>()));
             }
 
             LOG.info("Mapped tenant to release: tenantId:" + tenantId + " releaseId:" + releaseId);

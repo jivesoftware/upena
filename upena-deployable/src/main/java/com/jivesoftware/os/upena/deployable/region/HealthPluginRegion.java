@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.routing.bird.endpoints.base.HasUI;
@@ -33,7 +34,9 @@ import com.jivesoftware.os.upena.shared.Service;
 import com.jivesoftware.os.upena.shared.ServiceFilter;
 import com.jivesoftware.os.upena.shared.ServiceKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
-import java.awt.Color;
+import org.apache.shiro.SecurityUtils;
+
+import java.awt.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -46,8 +49,8 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.apache.shiro.SecurityUtils;
 
 /**
  *
@@ -67,7 +70,8 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
     private final UpenaSSLConfig upenaSSLConfig;
     private final UpenaStore upenaStore;
     private final UpenaConfigStore configStore;
-    private final ExecutorService executorService = Executors.newCachedThreadPool();
+    private final ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("nodeHealths-%d").build();
+    private final ExecutorService executorService = Executors.newCachedThreadPool(namedThreadFactory);
 
     private final Map<String, InstanceSparseCircularHitsBucketBuffer> instanceHealthHistory = new ConcurrentHashMap<>();
 

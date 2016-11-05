@@ -61,8 +61,7 @@ public abstract class URandom {
     public static int rand(Seed _longSeed) {
         long x = (_longSeed.randSeed * randMult + randAdd) & randMask;
         _longSeed.randSeed = x;
-        int rand = (int) (x >>> (16));
-        return rand;
+        return (int) (x >>> (16));
     }
 
     /**
