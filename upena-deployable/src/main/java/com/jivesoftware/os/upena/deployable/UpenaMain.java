@@ -551,6 +551,7 @@ public class UpenaMain {
             upenaSSLConfig,
             port,
             sessionStore,
+            ubaService,
             upenaStore,
             upenaConfigStore,
             jerseyEndpoints,
@@ -681,6 +682,7 @@ public class UpenaMain {
         UpenaSSLConfig upenaSSLConfig,
         int port,
         SessionStore sessionStore,
+        UbaService ubaService,
         UpenaStore upenaStore,
         UpenaConfigStore upenaConfigStore,
         UpenaJerseyEndpoints jerseyEndpoints,
@@ -721,6 +723,10 @@ public class UpenaMain {
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/unauthorizedPluginRegion.soy"), "unauthorizedPluginRegion.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/deployablePluginRegion.soy"), "deployablePluginRegion.soy");
         soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/thrownPluginRegion.soy"), "thrownPluginRegion.soy");
+        soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/upenaStackedProgress.soy"), "upenaStackedProgress.soy");
+
+
+
 
         if (jvmapi != null) {
             soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/jvmPluginRegion.soy"), "jvmPluginRegion.soy");
@@ -735,7 +741,7 @@ public class UpenaMain {
         SoyService soyService = new SoyService(renderer,
             new HeaderRegion("soy.chrome.headerRegion", renderer),
             new MenuRegion("soy.chrome.menuRegion", renderer),
-            new HomeRegion("soy.page.homeRegion", renderer, hostKey, upenaStore),
+            new HomeRegion("soy.page.homeRegion", renderer, hostKey, upenaStore, ubaService),
             clusterName,
             hostKey,
             upenaStore

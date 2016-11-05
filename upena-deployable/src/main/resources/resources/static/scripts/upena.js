@@ -996,7 +996,7 @@ upena.overview = {
     poll: function () {
         $.ajax({
             type: "GET",
-            url: "/upena/ui/metrics/overview",
+            url: "/ui/overview",
             dataType: "html",
             data: {
                 name: ""

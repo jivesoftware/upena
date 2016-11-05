@@ -1,14 +1,19 @@
 package com.jivesoftware.os.upena.deployable.region;
 
+import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multiset;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
+import com.jivesoftware.os.uba.shared.NannyReport;
+import com.jivesoftware.os.uba.shared.UbaReport;
 import com.jivesoftware.os.upena.deployable.region.HomeRegion.HomeInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.service.UpenaStore;
 import com.jivesoftware.os.upena.shared.Host;
 import com.jivesoftware.os.upena.shared.HostKey;
+import com.jivesoftware.os.upena.uba.service.UbaService;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
 import oshi.SystemInfo;
@@ -51,17 +56,20 @@ public class HomeRegion implements PageRegion<HomeInput> {
     private final SoyRenderer renderer;
     private final HostKey hostKey;
     private final UpenaStore upenaStore;
+    private final UbaService ubaService;
     private final RuntimeMXBean runtimeBean;
 
     public HomeRegion(String template,
         SoyRenderer renderer,
         HostKey hostKey,
-        UpenaStore upenaStore) {
+        UpenaStore upenaStore,
+        UbaService ubaService) {
 
         this.template = template;
         this.renderer = renderer;
         this.hostKey = hostKey;
         this.upenaStore = upenaStore;
+        this.ubaService = ubaService;
         runtimeBean = ManagementFactory.getRuntimeMXBean();
     }
 
@@ -94,7 +102,7 @@ public class HomeRegion implements PageRegion<HomeInput> {
         }
         Subject subject = s;
         Map<String, Object> data = Maps.newHashMap();
-        
+
         List<Map<String, String>> instances = new ArrayList<>();
         try {
             upenaStore.hosts.scan((HostKey key, Host value) -> {
@@ -160,9 +168,24 @@ public class HomeRegion implements PageRegion<HomeInput> {
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
     private final NumberFormat numberFormat = NumberFormat.getInstance();
 
-    public String renderOverview(String user) {
+    public String renderOverview(String user) throws Exception {
         StringBuilder sb = new StringBuilder();
         sb.append("<p>uptime<span class=\"badge\">").append(getDurationBreakdown(runtimeBean.getUptime())).append("</span></p>");
+
+        UbaReport ubaReport = ubaService.report();
+        Multiset<String> stateCount = HashMultiset.create();
+        double total = 0;
+        for (NannyReport nannyReport : ubaReport.nannyReports) {
+            total++;
+            stateCount.add(nannyReport.state);
+        }
+        String[] states = stateCount.elementSet().toArray(new String[0]);
+        Arrays.sort(states);
+        for (String state : states) {
+            sb.append(progress(state + " (" + numberFormat.format(stateCount.count(state)) + ")",
+                (int) (((double) stateCount.count(state) / total) * 100),
+                numberFormat.format(total)));
+        }
 
 
 //        sb.append(progress("Gets (" + numberFormat.format(grandTotal.gets.longValue()) + ")",
@@ -258,7 +281,7 @@ public class HomeRegion implements PageRegion<HomeInput> {
         data.put("title", title);
         data.put("progress", progress);
         data.put("value", value);
-        return renderer.render("soy.page.amzaStackedProgress", data);
+        return renderer.render("soy.page.upenaStackedProgress", data);
     }
 
     public static String getDurationBreakdown(long millis) {
