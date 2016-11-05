@@ -370,12 +370,17 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
 
                                                     Properties properties = new Properties();
 
-                                                    String repoUrl = "https://localhost:1175/repo";
+                                                    String repoUrl = "http://localhost:1175/repo";
 
                                                     // TODO deploy to backup/HA url
+                                                    
                                                     properties.setProperty("altDeploymentRepository", "mine::default::" + repoUrl);
                                                     properties.setProperty("altReleaseRepository", "mine::default::" + repoUrl);
                                                     properties.setProperty("altSnapshotRepository", "mine::default::" + repoUrl);
+
+                                                    properties.setProperty("maven.wagon.http.ssl.insecure", "true");
+                                                    properties.setProperty("maven.wagon.http.ssl.allowall", "true");
+                                                    properties.setProperty("maven.wagon.http.ssl.ignore.validity.date", "true");
 
                                                     properties.setProperty("skipTests", "true");
                                                     properties.setProperty("deployAtEnd", "true");

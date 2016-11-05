@@ -761,7 +761,7 @@ upena.connectivity = {
 
                 var sslIcon = null;
                 if (node.sslEnabled) {
-                   sslIcon = r.image("/static/img/lock.png", n.point[0] - (halfW - iconSize), n.point[1] - halfIconSize, iconSize, iconSize);
+                   sslIcon = r.image("/static/img/lock.png", n.point[0] - (halfW + iconSize), n.point[1] - halfIconSize, iconSize, iconSize);
                    w += iconSize;
                 }
 

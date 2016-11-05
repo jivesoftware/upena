@@ -8,10 +8,20 @@ import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelperUtils;
 import com.jivesoftware.os.upena.deployable.UpenaHealth;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.service.UpenaStore;
-import com.jivesoftware.os.upena.shared.*;
+import com.jivesoftware.os.upena.shared.Cluster;
+import com.jivesoftware.os.upena.shared.Host;
+import com.jivesoftware.os.upena.shared.HostKey;
+import com.jivesoftware.os.upena.shared.Instance;
+import com.jivesoftware.os.upena.shared.InstanceFilter;
+import com.jivesoftware.os.upena.shared.InstanceKey;
+import com.jivesoftware.os.upena.shared.ReleaseGroup;
+import com.jivesoftware.os.upena.shared.Service;
+import com.jivesoftware.os.upena.shared.TimestampedValue;
 import org.apache.shiro.SecurityUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -192,15 +202,22 @@ public class ThrownPluginRegion implements PageRegion<ThrownPluginRegion.ThrownP
             instanceMap.put("instanceId", String.valueOf(instance.instanceId));
 
             Instance.Port manage = instance.ports.get("manage");
-            LOG.debug("fetching thrown:http://localhost:" + manage.port + "/manage/thrown");
+            LOG.debug("fetching thrown:http" + (manage.sslEnabled ? "s" : "") + "://localhost:" + manage.port + "/manage/thrown");
             HttpRequestHelper requestHelper = HttpRequestHelperUtils.buildRequestHelper(manage.sslEnabled,
                 true, null, "localhost", manage.port);
 
             Throwns throwns = requestHelper.executeGetRequest("/manage/thrown", Throwns.class, null);
+            Collections.sort(throwns, new Comparator<Thrown>() {
+                @Override
+                public int compare(Thrown o1, Thrown o2) {
+                    return Long.compare(Long.parseLong(o2.timestamps.get(o2.timestamps.size() - 1)),
+                        Long.parseLong(o1.timestamps.get(o1.timestamps.size() - 1)));
+                }
+            });
+
             long mostRecentTimestamp = 0;
             long total = 0;
             if (throwns != null && !throwns.isEmpty()) {
-                // TODO sort by recency
 
                 for (Thrown thrown : throwns) {
                     total += Long.parseLong(thrown.thrown);
