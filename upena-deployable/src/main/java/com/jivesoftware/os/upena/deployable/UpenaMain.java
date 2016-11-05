@@ -584,6 +584,7 @@ public class UpenaMain {
             .addInjectable(SessionStore.class, sessionStore)
             .addInjectable(DiscoveredRoutes.class, discoveredRoutes)
             .addInjectable(upenaConfigStore)
+            .addInjectable(upenaStore)
             .addInjectable(upenaHealth)
             .addInjectable(UpenaService.class, upenaService);
 
