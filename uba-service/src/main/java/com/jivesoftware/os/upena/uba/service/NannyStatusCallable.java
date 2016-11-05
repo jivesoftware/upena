@@ -69,7 +69,7 @@ class NannyStatusCallable implements Callable<Boolean> {
             if (!id.enabled
                 && Objects.firstNonNull(haveRunConfigExtractionCache.getIfPresent(id.instanceKey), Boolean.FALSE)) {
                 status.set("");
-                deployLog.log("Service:" + instancePath.toHumanReadableName(), "Skipping config extraction.", null);
+                deployLog.log("Service:" + instancePath.toHumanReadableName(), "disabled", null);
                 healthLog.commit();
                 startupTimestamp.set(-1);
                 return true;
@@ -78,7 +78,7 @@ class NannyStatusCallable implements Callable<Boolean> {
             status.set("");
             if (invokeScript.invoke(deployLog, instancePath, "status")) {
                 status.set("");
-                deployLog.log("Service:" + instancePath.toHumanReadableName() + " 'status'", "ONLINE", null);
+                deployLog.log("Service:" + instancePath.toHumanReadableName() + " 'status'", "online", null);
                 if (!invokeScript.invoke(healthLog, instancePath, "health")) {
                     status.set("No health");
                     deployLog.log("Service:" + instancePath.toHumanReadableName() + " 'health'", "nanny health command failed", null);
@@ -133,7 +133,7 @@ class NannyStatusCallable implements Callable<Boolean> {
                 healthLog.forcedHealthState("Service Startup", "Service is being verified. Phase: verify...", "Be patient");
                 status.set("Verfying" + checks);
                 if (invokeScript.invoke(deployLog, instancePath, "status")) {
-                    deployLog.log("Service:" + instancePath.toHumanReadableName() + " 'status'", "ONLINE", null);
+                    deployLog.log("Service:" + instancePath.toHumanReadableName() + " 'status'", "online", null);
                     status.set("Health" + checks);
                     if (!invokeScript.invoke(healthLog, instancePath, "health")) {
                         status.set("Health failed!" + checks);

@@ -170,7 +170,7 @@ public class HomeRegion implements PageRegion<HomeInput> {
 
     public String renderOverview(String user) throws Exception {
         StringBuilder sb = new StringBuilder();
-        sb.append("<p>uptime<span class=\"badge\">").append(getDurationBreakdown(runtimeBean.getUptime())).append("</span></p>");
+        sb.append("<p><span class=\"badge\">").append("uptime "+getDurationBreakdown(runtimeBean.getUptime())).append("</span></p>");
 
         UbaReport ubaReport = ubaService.report();
         Multiset<String> stateCount = HashMultiset.create();

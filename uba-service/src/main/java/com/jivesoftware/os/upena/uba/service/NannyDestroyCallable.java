@@ -1,10 +1,11 @@
 package com.jivesoftware.os.upena.uba.service;
 
 import com.jivesoftware.os.routing.bird.shared.InstanceDescriptor;
+import org.apache.commons.io.FileUtils;
+
 import java.io.File;
 import java.util.Collection;
 import java.util.concurrent.Callable;
-import org.apache.commons.io.FileUtils;
 
 class NannyDestroyCallable implements Callable<Boolean> {
 
@@ -48,12 +49,12 @@ class NannyDestroyCallable implements Callable<Boolean> {
                     while (checks < 10) {
                         // todo expose to config or to instance
                         if (!invokeScript.invoke(deployLog, instancePath, "status")) {
-                            deployLog.log("Service:" + instancePath.toHumanReadableName(), "OFFLINE", null);
+                            deployLog.log("Service:" + instancePath.toHumanReadableName(), "offline", null);
                             break;
                         } else {
                             checks++;
                             deployLog.log("Service:" + instancePath.toHumanReadableName(),
-                                "Waiting for service to die for " + checks + " time.", null);
+                                "waiting for service to die for " + checks + " time.", null);
                             healthLog.forcedHealthState("Service health", "Service is refusing to be killed for the " + checks + " time.", "");
                             Thread.sleep(1000); // todo expose to config or to instance
                         }

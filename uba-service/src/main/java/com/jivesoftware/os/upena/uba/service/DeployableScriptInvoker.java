@@ -46,7 +46,7 @@ public class DeployableScriptInvoker {
     public Boolean invoke(final CommandLog commandLog, final InstancePath instancePath, final String script) {
         final String context = "Service:" + instancePath.toHumanReadableName() + " bin/" + script;
         try {
-            commandLog.log(context, "", null);
+            commandLog.log(context, "invoking:" + script, null);
             File scriptFile = instancePath.script(script);
             String[] command = new String[]{scriptFile.getAbsolutePath()};
             ShellOut.ShellOutput shellOutput = new ShellOut.ShellOutput() {
@@ -69,7 +69,7 @@ public class DeployableScriptInvoker {
             });
             return future.get() == 0;
         } catch (InterruptedException | ExecutionException x) {
-            commandLog.log(context, "Encountered exception.", x);
+            commandLog.log(context, "failure:" + script, x);
             return false;
         }
     }
