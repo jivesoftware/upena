@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelper;
@@ -36,6 +37,8 @@ import com.jivesoftware.os.upena.shared.Service;
 import com.jivesoftware.os.upena.shared.ServiceFilter;
 import com.jivesoftware.os.upena.shared.ServiceKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
+import org.apache.commons.lang.exception.ExceptionUtils;
+
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -49,7 +52,7 @@ import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import java.util.concurrent.ThreadFactory;
 
 /**
  *
@@ -72,7 +75,8 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
     private final ReleasesPluginRegion releasesPluginRegion;
     private final InstancesPluginRegion instancesPluginRegion;
     private final DiscoveredRoutes discoveredRoutes;
-    private final ExecutorService executorService = Executors.newCachedThreadPool();
+    private final ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("topology-%d").build();
+    private final ExecutorService executorService = Executors.newCachedThreadPool(namedThreadFactory);
 
     public TopologyPluginRegion(ObjectMapper mapper,
         String template,
@@ -472,8 +476,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
         if (si == null) {
             si = 0;
         }
-        String idColor = healthPluginRegion.getHEXIdColor(((float) si / (float) serviceColor.size()), 1f);
-        return idColor;
+        return healthPluginRegion.getHEXIdColor(((float) si / (float) serviceColor.size()), 1f);
     }
 
     private NannyHealth nannyHealth(String instanceId) throws Exception {

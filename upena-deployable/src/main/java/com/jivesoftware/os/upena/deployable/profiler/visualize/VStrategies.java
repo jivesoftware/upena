@@ -394,12 +394,12 @@ public class VStrategies {
 
     public static enum StackOrder {
 
-        ascending, desending;
+        ascending, desending
     }
 
     public static enum Background {
 
-        alpha, white, black;
+        alpha, white, black
     }
 
 }

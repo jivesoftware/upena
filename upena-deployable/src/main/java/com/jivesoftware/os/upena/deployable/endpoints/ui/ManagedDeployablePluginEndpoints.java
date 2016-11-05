@@ -5,10 +5,7 @@ import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.deployable.ShiroRequestHelper;
 import com.jivesoftware.os.upena.deployable.region.ManagedDeployablePluginRegion;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
-import com.jivesoftware.os.upena.service.SessionStore;
 
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import javax.inject.Singleton;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -23,6 +20,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.net.URI;
 
 /**
  *

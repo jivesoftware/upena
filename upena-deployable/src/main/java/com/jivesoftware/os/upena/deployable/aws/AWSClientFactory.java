@@ -37,11 +37,10 @@ public class AWSClientFactory {
 
         AssumeRoleResult assumeResult = stsClient.assumeRole(assumeRequest);
 
-        BasicSessionCredentials temporaryCredentials = new BasicSessionCredentials(
+        return new BasicSessionCredentials(
             assumeResult.getCredentials()
             .getAccessKeyId(), assumeResult.getCredentials().getSecretAccessKey(),
             assumeResult.getCredentials().getSessionToken());
-        return temporaryCredentials;
     }
 
     public AmazonEC2Client getEC2(String session) {

@@ -2,6 +2,7 @@ package com.jivesoftware.os.upena.deployable.region;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Maps;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.deployable.JDIAPI;
@@ -34,6 +35,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -44,7 +46,6 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
-    private final HostKey hostKey;
     private final String template;
     private final SoyRenderer renderer;
     private final UpenaStore upenaStore;
@@ -52,13 +53,11 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
     private final Map<Long, BreakpointDebuggerSession> debuggerSessions = new ConcurrentSkipListMap<>();
     private final AtomicLong debuggerSessionId = new AtomicLong(0);
 
-    public BreakpointDumperPluginRegion(HostKey hostKey,
-        String template,
+    public BreakpointDumperPluginRegion(String template,
         SoyRenderer renderer,
         UpenaStore upenaStore,
         JDIAPI jvm) {
 
-        this.hostKey = hostKey;
         this.template = template;
         this.renderer = renderer;
         this.upenaStore = upenaStore;
@@ -368,7 +367,8 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
         final long id;
         final int maxVersions;
         final Map<Long, BreakpointDebuggerState> breakpointDebuggers = new ConcurrentHashMap<>();
-        final Executor debuggerThread = Executors.newCachedThreadPool();
+        final ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("debugger-%d").build();
+        final Executor debuggerThread = Executors.newCachedThreadPool(namedThreadFactory);
 
         public BreakpointDebuggerSession(long id, int maxVersions) {
             this.id = id;
@@ -626,7 +626,7 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
                 if (fieldNames != null && !fieldNames.isEmpty()) {
                     List<Map<String, Object>> fns = new ArrayList<>();
                     for (String name : fieldNames) {
-                        HashMap m = new HashMap<>();
+                        HashMap<String,Object> m = new HashMap<>();
                         m.put("name", name);
                         //m.put("disabled", bla); // TODO
                         fns.add(m);

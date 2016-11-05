@@ -44,6 +44,8 @@ import com.sun.jdi.event.EventSet;
 import com.sun.jdi.request.BreakpointRequest;
 import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.EventRequestManager;
+import sun.tools.attach.HotSpotVirtualMachine;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -57,7 +59,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
-import sun.tools.attach.HotSpotVirtualMachine;
 
 /**
  *
@@ -68,7 +69,7 @@ public class JDIAPI {
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
     public static enum ThreadDumpLineType {
-        thread, monitor, location, eod;
+        thread, monitor, location, eod
     }
 
     private static String[] primitiveTypeNames = {"boolean", "byte", "char",
@@ -337,8 +338,8 @@ public class JDIAPI {
         private final String hostName;
         private final int port;
 
-        private final Set<Breakpoint> breakpoints = Collections.newSetFromMap(new ConcurrentHashMap<Breakpoint, Boolean>());
-        private final Set<Breakpoint> attachedBreakpoints = Collections.newSetFromMap(new ConcurrentHashMap<Breakpoint, Boolean>());
+        private final Set<Breakpoint> breakpoints = Collections.newSetFromMap(new ConcurrentHashMap<>());
+        private final Set<Breakpoint> attachedBreakpoints = Collections.newSetFromMap(new ConcurrentHashMap<>());
         private final AtomicLong version = new AtomicLong();
         private final List<String> log = new ArrayList<>();
 

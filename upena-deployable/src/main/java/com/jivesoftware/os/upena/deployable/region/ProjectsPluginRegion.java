@@ -4,6 +4,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.deployable.UpenaHealth;
@@ -19,6 +20,22 @@ import com.jivesoftware.os.upena.shared.ReleaseGroup;
 import com.jivesoftware.os.upena.shared.ReleaseGroupFilter;
 import com.jivesoftware.os.upena.shared.ReleaseGroupKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
+import org.apache.commons.io.FileUtils;
+import org.apache.maven.shared.invoker.DefaultInvocationRequest;
+import org.apache.maven.shared.invoker.DefaultInvoker;
+import org.apache.maven.shared.invoker.InvocationRequest;
+import org.apache.maven.shared.invoker.InvocationResult;
+import org.apache.maven.shared.invoker.Invoker;
+import org.apache.shiro.SecurityUtils;
+import org.eclipse.jgit.api.CreateBranchCommand;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.PullResult;
+import org.eclipse.jgit.api.ResetCommand;
+import org.eclipse.jgit.api.ResetCommand.ResetType;
+import org.eclipse.jgit.api.Status;
+import org.eclipse.jgit.lib.Ref;
+import org.eclipse.jgit.lib.TextProgressMonitor;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
@@ -38,22 +55,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicLong;
-import org.apache.commons.io.FileUtils;
-import org.apache.maven.shared.invoker.DefaultInvocationRequest;
-import org.apache.maven.shared.invoker.DefaultInvoker;
-import org.apache.maven.shared.invoker.InvocationRequest;
-import org.apache.maven.shared.invoker.InvocationResult;
-import org.apache.maven.shared.invoker.Invoker;
-import org.apache.shiro.SecurityUtils;
-import org.eclipse.jgit.api.CreateBranchCommand;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.PullResult;
-import org.eclipse.jgit.api.ResetCommand;
-import org.eclipse.jgit.api.ResetCommand.ResetType;
-import org.eclipse.jgit.api.Status;
-import org.eclipse.jgit.lib.Ref;
-import org.eclipse.jgit.lib.TextProgressMonitor;
 
 /**
  *
@@ -71,7 +74,8 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
     private final PathToRepo localPathToRepo;
 
     private final Map<ProjectKey, AtomicLong> runningProjects = new ConcurrentHashMap<>();
-    private final ExecutorService projectExecutors = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+    private final ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("project-%d").build();
+    private final ExecutorService projectExecutors = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(), namedThreadFactory);
 
     public ProjectsPluginRegion(String template,
         String outputTemplate,
@@ -366,7 +370,7 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
 
                                                     Properties properties = new Properties();
 
-                                                    String repoUrl = "http://localhost:1175/repo";
+                                                    String repoUrl = "https://localhost:1175/repo";
 
                                                     // TODO deploy to backup/HA url
                                                     properties.setProperty("altDeploymentRepository", "mine::default::" + repoUrl);
