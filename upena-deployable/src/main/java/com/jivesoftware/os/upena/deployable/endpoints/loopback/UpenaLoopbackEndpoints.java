@@ -19,31 +19,18 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
-import com.jivesoftware.os.routing.bird.shared.ConnectionDescriptorsRequest;
-import com.jivesoftware.os.routing.bird.shared.ConnectionDescriptorsResponse;
-import com.jivesoftware.os.routing.bird.shared.InstanceConnectionHealth;
-import com.jivesoftware.os.routing.bird.shared.InstanceDescriptorsRequest;
-import com.jivesoftware.os.routing.bird.shared.InstanceDescriptorsResponse;
-import com.jivesoftware.os.routing.bird.shared.ResponseHelper;
+import com.jivesoftware.os.routing.bird.shared.*;
 import com.jivesoftware.os.upena.deployable.UpenaHealth;
-import com.jivesoftware.os.upena.service.DiscoveredRoutes;
-import com.jivesoftware.os.upena.service.SessionStore;
-import com.jivesoftware.os.upena.service.SessionValidation;
-import com.jivesoftware.os.upena.service.UpenaService;
-import com.jivesoftware.os.upena.service.UpenaStore;
-import java.nio.charset.StandardCharsets;
+import com.jivesoftware.os.upena.service.*;
+
 import javax.inject.Singleton;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
+import java.nio.charset.StandardCharsets;
 
 /**
  *
@@ -81,9 +68,9 @@ public class UpenaLoopbackEndpoints {
     @Path("/request/connections")
     public Response requestConnections(ConnectionDescriptorsRequest connectionsRequest) {
         try {
-            LOG.info("connectionsRequest:" + connectionsRequest);
+            LOG.debug("connectionsRequest:" + connectionsRequest);
             ConnectionDescriptorsResponse connectionDescriptorsResponse = upenaService.connectionRequest(connectionsRequest);
-            LOG.info("connectionDescriptorsResponse:" + connectionDescriptorsResponse);
+            LOG.debug("connectionDescriptorsResponse:" + connectionDescriptorsResponse);
             return ResponseHelper.INSTANCE.jsonResponse(connectionDescriptorsResponse);
         } catch (Exception x) {
             LOG.warn("Failed to connectionsRequest:" + connectionsRequest, x);
