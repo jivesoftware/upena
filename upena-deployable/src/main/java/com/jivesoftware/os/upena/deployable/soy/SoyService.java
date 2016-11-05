@@ -68,7 +68,7 @@ public class SoyService {
             upenaStore);
     }
 
-    public String renderOverview(String user) {
+    public String renderOverview(String user) throws Exception {
         return homeRegion.renderOverview(user);
     }
 
