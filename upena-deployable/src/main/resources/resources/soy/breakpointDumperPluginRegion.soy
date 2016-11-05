@@ -6,7 +6,6 @@
  * @param? message
  * @param? filters
  * @param? sessions
- * @param? thrown
  */
 {template .breakpointDumperPluginRegion}
     <div class="upena-panel">
@@ -347,65 +346,9 @@
                 </li>
             {/foreach}
         </ul>
-        <div class="tree">
-            <ul>
-                {if $thrown}
-                    {foreach $i in $thrown}
-                        <li>
-                            <div class="btn btn-default">
-                                <span><i class="fa fa-plus-circle" aria-hidden="true"></i></span>
-                            </div>
-                             <span style="color:gray;font-style: italic;"> {$i.recency} </span><span>  {$i.cluster}:{$i.host}:{$i.service}:{$i.release}:{$i.instanceId} </span><span class="badge"> {$i.total} </span>
-                            <ul>
-                                {if $i.thrown}
-                                    {foreach $t in $i.thrown}
-                                            {call .thrown}
-                                                {param instanceKey: $i.instanceKey /}
-                                                {param t: $t /}
-                                            {/call}
-                                    {/foreach}
-                                {/if}
-                            </ul>
-                        </li>
-                    {/foreach}
-                {/if}
-            </ul>
-        </div>
-    </div>
     
 {/template}
 
-
-/**
- * @param? instanceKey
- * @param? t
- */
-{template .thrown}
-    <li style="display:none">
-        <div class="btn btn-{$t.level}">
-            <span><i class="fa fa-plus-circle " aria-hidden="true"></i></span>
-        </div>
-            <span style="color:gray;font-style: italic;"> {$t.recency} </span><span>  <b>{$t.message}</b> </span><span class="badge"> {$t.thrown} </span>
-        <ul>
-            {if $t.stackTrace}
-                {foreach $trace in $t.stackTrace}
-                    <li style="display:none">
-                        <span style="color:#357ab7;font-style: italic;">  {$trace.className} </span>:<span style="color:black;"> {$trace.methodName} </span>:<span style="color:gray;"> {$trace.lineNumber}  </span>
-                        <form style="display: inline;" method="post" >
-                            <input type="hidden" name="instanceKey" value="{$instanceKey}"/>
-                            <input type="hidden" name="className" value="{$trace.className}"/>
-                            <input type="hidden" name="lineNumber" value="{$trace.lineNumber}"/>
-                            <button style="display: inline;" title="filter" type="submit" name="action" value="addConnections" class="btn btn-success ladda-button"  data-spinner-color="#222" data-style="expand-right">
-                                <span class="fa fa-bug"></span>
-                            </button>
-                        </form>
-                    </li>
-                {/foreach}
-            {/if}
-
-        </ul>
-    </li>
-{/template}
 
 
 
