@@ -167,15 +167,25 @@ import com.jivesoftware.os.upena.uba.service.UbaServiceInitializer;
 import com.jivesoftware.os.upena.uba.service.UpenaClient;
 import de.ruedigermoeller.serialization.FSTConfiguration;
 import io.swagger.jaxrs.config.BeanConfig;
+import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
+import oauth.signpost.signature.HmacSha1MessageSigner;
+import org.apache.commons.io.IOUtils;
+import org.glassfish.jersey.oauth1.signature.OAuth1Request;
+import org.glassfish.jersey.oauth1.signature.OAuth1Signature;
+import org.merlin.config.BindInterfaceToConfiguration;
+
 import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.net.URL;
+import java.net.URLDecoder;
 import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.StandardOpenOption;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.NavigableMap;
 import java.util.Random;
@@ -185,18 +195,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
-import oauth.signpost.signature.HmacSha1MessageSigner;
-import org.apache.commons.io.IOUtils;
-import org.glassfish.jersey.oauth1.signature.OAuth1Request;
-import org.glassfish.jersey.oauth1.signature.OAuth1Signature;
-import org.merlin.config.BindInterfaceToConfiguration;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 public class UpenaMain {
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
-    public static final String[] USAGE = new String[] {
+    public static final String[] USAGE = new String[]{
         "Usage:",
         "",
         "    java -jar upena.jar <hostName>                   (manual cluster discovery)",
@@ -252,7 +258,7 @@ public class UpenaMain {
         " Example:",
         " nohup java -Xdebug -Xrunjdwp:transport=dt_socket,address=1176,server=y,suspend=n -classpath \"/usr/java/latest/lib/tools.jar:./upena.jar\" com" +
             ".jivesoftware.os.upena.deployable.UpenaMain `hostname` dev",
-        "", };
+        "",};
 
     public static void main(String[] args) throws Exception {
 
@@ -783,12 +789,28 @@ public class UpenaMain {
 
         LOG.info("Add....");
 
-        List<String> soyFiles = IOUtils.readLines(this.getClass().getResourceAsStream("/resources/soy/"), StandardCharsets.UTF_8);
-        for (String soyFile : soyFiles) {
-            soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/" + soyFile), soyFile);
+
+        URL dirURL = UpenaMain.class.getClassLoader().getResource("resources/soy/");
+        if (dirURL != null && dirURL.getProtocol().equals("jar")) {
+            String jarPath = dirURL.getPath().substring(5, dirURL.getPath().indexOf("!"));
+            JarFile jar = new JarFile(URLDecoder.decode(jarPath, "UTF-8"));
+            Enumeration<JarEntry> entries = jar.entries();
+            while (entries.hasMoreElements()) {
+                String name = entries.nextElement().getName();
+                if (name.endsWith(".soy") && name.startsWith("resources/soy/")) {
+                    String soyName = name.substring(name.lastIndexOf('/') + 1);
+                    LOG.info("/" + name + " " + soyName);
+                    soyFileSetBuilder.add(this.getClass().getResource("/" + name), soyName);
+                }
+            }
+        } else {
+            List<String> soyFiles = IOUtils.readLines(this.getClass().getResourceAsStream("resources/soy/"), StandardCharsets.UTF_8);
+            for (String soyFile : soyFiles) {
+                LOG.info("Adding {}", soyFile);
+                soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/" + soyFile), soyFile);
+            }
         }
 
-        soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/awsPluginRegion.soy"), "awsPluginRegion.soy");
 
         SoyFileSet sfs = soyFileSetBuilder.build();
         SoyTofu tofu = sfs.compileToTofu();
