@@ -13,15 +13,6 @@
         {if $message}
             <pre>{$message}</pre>
         {/if}
-        <div>
-            <div style="display: inline;">
-                <form id="attachBreakPointDebugger" method="post" name="attachBreakPointDebugger">
-                    <button title="threadDump" type="submit" name="action" value="refresh" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
-                        <span class="glyphicon glyphicon-refresh"></span> Refresh
-                    </button>
-                </form>
-            </div>
-        </div>
 
         <ul class="list-group" style="list-style-type:none">
             {foreach $s in $sessions}
@@ -190,36 +181,16 @@
                                 {/foreach}
                             {/if}
                             {if $c.breakpoints}
-                                {foreach $b in $c.breakpoints}
-                                    <li class="list-group-item disabled">
-                                        <div style="display: inline;">
-                                            {if $b.attached}
-                                                <span class="glyphicon glyphicon-transfer"></span>
-                                            {else}
-                                                <span class="glyphicon glyphicon-alert"></span>
-                                            {/if}
-                                            &nbsp;&nbsp;&nbsp;{$b.className}:{$b.lineNumber}&nbsp;&nbsp;&nbsp;
-                                        </div>
-                                        {if $c.attached}{else}
-                                            <form style="display: inline;" id="dettachBreakPointDebugger" method="post" name="dettachBreakPointDebugger">
-                                                <input type="hidden" name="sessionId" value="{$s.id}"/>
-                                                <input type="hidden" name="connectionId" value="{$c.id}"/>
-                                                <input type="hidden" name="className" value="{$b.className}"/>
-                                                <input type="hidden" name="lineNumber" value="{$b.lineNumber}"/>
-                                                <button style="display: inline;" title="remove breakpoint" type="submit" name="action" value="removeBreakpoint" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
-                                                    <span class="glyphicon glyphicon-trash"></span>
-                                                </button>
-                                            </form>
-                                        {/if}
-                                    </li>
-                                    <li>
-                                        {call .breakpoint}
-                                            {param c: $c /}
-                                            {param s: $s /}
-                                            {param b: $b /}
-                                        {/call}
-                                    </li>
-                                {/foreach}
+                               {if $c.attached}
+                                    <div class="breakpointDump" data-session-id="{$s.id}" data-connection-id="{$c.id}">
+
+                                    </div>
+                               {else}
+                                   {call .breakpoints}
+                                       {param sid: $s.id /}
+                                       {param c: $c /}
+                                   {/call}
+                               {/if}
                             {/if}
                         {/foreach}
                     </ul>
@@ -231,11 +202,52 @@
 
 
 /**
+ * @param? sid
  * @param? c
- * @param? s
+ */
+{template .breakpoints}
+
+    {foreach $b in $c.breakpoints}
+        <li class="list-group-item disabled">
+            <div style="display: inline;">
+                {if $b.attached}
+                    <span class="glyphicon glyphicon-transfer"></span>
+                {else}
+                    <span class="glyphicon glyphicon-alert"></span>
+                {/if}
+                &nbsp;&nbsp;&nbsp;{$b.className}:{$b.lineNumber}&nbsp;&nbsp;&nbsp;
+            </div>
+            {if $c.attached}{else}
+                <form style="display: inline;" id="dettachBreakPointDebugger" method="post" name="dettachBreakPointDebugger">
+                    <input type="hidden" name="sessionId" value="{$sid}"/>
+                    <input type="hidden" name="connectionId" value="{$c.id}"/>
+                    <input type="hidden" name="className" value="{$b.className}"/>
+                    <input type="hidden" name="lineNumber" value="{$b.lineNumber}"/>
+                    <button style="display: inline;" title="remove breakpoint" type="submit" name="action" value="removeBreakpoint" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                        <span class="glyphicon glyphicon-trash"></span>
+                    </button>
+                </form>
+            {/if}
+        </li>
+        <li>
+            {call .breakpoint}
+                {param sid: $sid /}
+                {param c: $c /}
+                {param b: $b /}
+            {/call}
+        </li>
+    {/foreach}
+
+{/template}
+
+/**
+ * @param? sid
+ * @param? c
  * @param? b
  */
 {template .breakpoint}
+
+
     {if $b.progress}
         <li class="list-group-item">
             <div class="progress">
@@ -252,7 +264,7 @@
                     <tr>
                         <td>
                             <form style="display: inline;" id="dettachBreakPointDebugger" method="post" name="dettachBreakPointDebugger">
-                                <input type="hidden" name="sessionId" value="{$s.id}"/>
+                                <input type="hidden" name="sessionId" value="{$sid}"/>
                                 <input type="hidden" name="connectionId" value="{$c.id}"/>
                                 <input type="hidden" name="breakPointFieldName" value="{$d.fieldName}"/>
                                 <div style="display: inline;">
@@ -272,7 +284,7 @@
                         <td>
                             {if $d.filter}
                                 <form style="display: inline;" method="post" >
-                                    <input type="hidden" name="sessionId" value="{$s.id}"/>
+                                    <input type="hidden" name="sessionId" value="{$sid}"/>
                                     <input type="hidden" name="className" value="{$b.className}"/>
                                     <input type="hidden" name="lineNumber" value="{$b.lineNumber}"/>
                                     <input type="hidden" name="breakPointFieldName" value="{$d.fieldName}"/>
@@ -291,7 +303,7 @@
                             </div>
                             <div id="popover-filter-{$d.fieldName}" class="hide">
                                 <form style="display: inline;" id="dettachBreakPointDebugger" method="post" name="dettachBreakPointDebugger">
-                                    <input type="hidden" name="sessionId" value="{$s.id}"/>
+                                    <input type="hidden" name="sessionId" value="{$sid}"/>
                                     <input type="hidden" name="className" value="{$b.className}"/>
                                     <input type="hidden" name="lineNumber" value="{$b.lineNumber}"/>
                                     <input type="hidden" name="breakPointFieldName" value="{$d.fieldName}"/>
@@ -338,7 +350,134 @@
                                         <li class="list-group-item">
                                             <div style="display: inline;">
                                                 <form style="display: inline;" id="dettachBreakPointDebugger" method="post" name="dettachBreakPointDebugger">
-                                                    <input type="hidden" name="sessionId" value="{$s.id}"/>
+                                                    <input type="hidden" name="sessionId" value="{$sid}"/>
+                                                    <input type="hidden" name="fieldName" value="{$d.fieldName}"/>
+                                                    <input type="hidden" name="childFieldName" value="{$cf.name}"/>
+                                                    {if $cf.enabled}
+                                                        <button style="display: inline;" title="click to enable" type="submit" name="action" value="enableChildField">
+                                                            <span class="glyphicon glyphicon-unchecked"></span>
+                                                        </button>
+                                                    {else}
+                                                        <button style="display: inline;" title="click to disable" type="submit" name="action" value="disableChildField">
+                                                            <span class="glyphicon glyphicon-check"></span>
+                                                        </button>
+                                                    {/if}
+                                                </form>
+                                                &nbsp;&nbsp;&nbsp;
+                                                {$cf.name}
+                                            </div>
+                                        </li>
+                                    {/foreach}
+                                </div>
+                            {/if}
+                        </td>
+                        <td>{$d.hostName}:{$d.port}</td>
+                    </tr>
+                {/foreach}
+            </table>
+        </li>
+    {/if}
+{/template}
+
+
+
+/**
+ * @param? sid
+ * @param? c
+ */
+{template .liveBreakpoints}
+
+    {foreach $b in $c.breakpoints}
+        <li class="list-group-item disabled">
+            <div style="display: inline;">
+                <span class="glyphicon glyphicon-transfer"></span>
+                &nbsp;&nbsp;&nbsp;{$b.className}:{$b.lineNumber}&nbsp;&nbsp;&nbsp;
+            </div>
+        </li>
+        <li>
+            {call .liveBreakpoint}
+                {param sid: $sid /}
+                {param c: $c /}
+                {param b: $b /}
+            {/call}
+        </li>
+    {/foreach}
+
+{/template}
+
+/**
+ * @param? sid
+ * @param? c
+ * @param? b
+ */
+{template .liveBreakpoint}
+
+
+    {if $b.progress}
+        <li class="list-group-item">
+            <div class="progress">
+                <div class="progress-bar" role="progressbar" aria-valuenow="{$b.progress}" aria-valuemin="0" aria-valuemax="100" style="width: {$b.progress}%;">
+                  <span class="sr-only">{$b.progress}% Complete</span>
+                </div>
+            </div>
+        </li>
+    {/if}
+    {if $b.dump}
+        <li class="list-group-item">
+            <table class="table table-hover table-condensed table-responsive">
+                {foreach $d in $b.dump}
+                    <tr>
+                        <td>
+                            <form style="display: inline;" id="dettachBreakPointDebugger" method="post" name="dettachBreakPointDebugger">
+                                <input type="hidden" name="sessionId" value="{$sid}"/>
+                                <input type="hidden" name="connectionId" value="{$c.id}"/>
+                                <input type="hidden" name="breakPointFieldName" value="{$d.fieldName}"/>
+                                <div style="display: inline;">
+                                    {if $d.disable}
+                                        <span class="glyphicon glyphicon-unchecked"></span>
+                                     {/if}
+                                </div>
+                            </form>
+                        </td>
+                        <td><div><a data-toggle="tooltip" title="{$d.className}">{$d.fieldName}</a></div></td>
+                        <td>
+
+                        </td>
+                        <td>
+                            {if $d.fullValue}
+                                <div style="display: inline;">
+                                    {if $d.exception}{$d.exception}{/if}
+                                    {$d.value}
+                                    <a href="#" rel="popover" id="popoverAnchor-f-{$d.fieldName}" style="display: inline;"
+                                        data-popover-content="#popover-f-{$d.fieldName}" data-placement="bottom"
+                                        title="{$d.fieldName}">
+                                        <span class="glyphicon glyphicon-option-horizontal"></span>
+                                    </a>
+                                </div>
+                                <div id="popover-f-{$d.fieldName}" class="hide">
+                                    {$d.fullValue}
+                                </div>
+                            {else}
+                                {if $d.exception}{$d.exception}{/if}
+                                {$d.value}
+                            {/if}
+                        </td>
+                        <td>
+                            {if $d.fieldNames}
+                                <div style="display: inline;">
+                                    <a href="#" rel="popover" id="popoverAnchor-cf-{$d.fieldName}" style="display: inline;"
+                                        data-popover-content="#popover-cf-{$d.fieldName}" data-placement="left" class=""
+                                        title="Child fields of {$d.fieldName}">
+                                        <span class="glyphicon glyphicon-triangle-right"></span>
+                                    </a>
+                                </div>
+                                <div id="popover-cf-{$d.fieldName}" class="hide">
+                                    <ul  class="list-group" style="list-style-type:none">
+                                    {foreach $cf in $d.fieldNames}
+                                        <li class="list-group-item">
+                                            <div style="display: inline;">
+                                                <form style="display: inline;" id="dettachBreakPointDebugger" method="post" name="dettachBreakPointDebugger">
+                                                    <input type="hidden" name="sessionId" value="{$sid}"/>
                                                     <input type="hidden" name="fieldName" value="{$d.fieldName}"/>
                                                     <input type="hidden" name="childFieldName" value="{$cf.name}"/>
                                                     {if $cf.enabled}

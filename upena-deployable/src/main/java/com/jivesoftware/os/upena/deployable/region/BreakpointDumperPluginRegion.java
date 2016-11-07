@@ -36,6 +36,7 @@ import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -70,6 +71,7 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
     public String getRootPath() {
         return "/ui/breakpoint";
     }
+
 
     public static class BreakpointDumperPluginRegionInput implements PluginInput {
 
@@ -179,6 +181,27 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
                 debuggerSessions.put(sessionId, session);
             }
 
+            if (input.action.equals("attachAll")) {
+                data.put("message", session.attachAll());
+            }
+
+            if (input.action.equals("dettachAll")) {
+                data.put("message", session.dettachAll());
+            }
+
+            if (input.action.equals("removeAllConnections")) {
+                data.put("message", session.removeAllConnection());
+            }
+
+            if (input.action.equals("attach")) {
+                data.put("message", session.attach(input.connectionId));
+            }
+
+            if (input.action.equals("dettach")) {
+                data.put("message", session.dettach(input.connectionId));
+            }
+
+
             if (input.action.equals("addConnections")) {
 
                 if (!input.instanceKey.isEmpty()) {
@@ -231,25 +254,6 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
                 }
             }
 
-            if (input.action.equals("attachAll")) {
-                data.put("message", session.attachAll());
-            }
-
-            if (input.action.equals("dettachAll")) {
-                data.put("message", session.dettachAll());
-            }
-
-            if (input.action.equals("removeAllConnections")) {
-                data.put("message", session.removeAllConnection());
-            }
-
-            if (input.action.equals("attach")) {
-                data.put("message", session.attach(input.connectionId));
-            }
-
-            if (input.action.equals("dettach")) {
-                data.put("message", session.dettach(input.connectionId));
-            }
 
             if (input.action.equals("removeConnection")) {
                 data.put("message", session.removeConnection(input.connectionId));
@@ -305,44 +309,7 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
             if (debuggerSession != null) {
                 List<Map<String, Object>> connections = new ArrayList<>();
                 for (Map.Entry<Long, BreakpointDebuggerState> entry : debuggerSession.getAll()) {
-                    Map<String, Object> connection = new HashMap<>();
-                    BreakpointDebuggerState state = entry.getValue();
-                    connection.put("id", String.valueOf(state.id));
-
-                    connection.put("name", state.name);
-                    connection.put("log", state.breakpointDebugger.getLog());
-                    if (state.isCapturing()) {
-                        connection.put("attached", String.valueOf(true));
-                    }
-
-                    List<Map<String, Object>> breakpoints = new ArrayList<>();
-                    for (BreakpointDebugger.Breakpoint bp : state.breakpointDebugger.getBreakpoints()) {
-                        Map<String, Object> breakpoint = new HashMap<>();
-                        if (state.breakpointDebugger.isAttached(bp)) {
-                            breakpoint.put("attached", "true");
-                        }
-                        breakpoint.put("className", bp.getClassName());
-                        breakpoint.put("lineNumber", bp.getLineNumber());
-                        breakpoint.put("progress", state.progress(bp.getClassName(), bp.getLineNumber()));
-                        List<Map<String, Object>> got = state.getCaptured(bp.getClassName(), bp.getLineNumber());
-                        if (got == null || got.isEmpty()) {
-                            got = state.getCapturing(bp.getClassName(), bp.getLineNumber());
-                            breakpoint.put("dump", got);
-                        } else {
-                            breakpoint.put("dump", got);
-                        }
-
-                        got = state.getCapturedFrames(bp.getClassName(), bp.getLineNumber());
-                        breakpoint.put("frames", got);
-                        if (got == null || got.isEmpty()) {
-                            got = state.getCapturingFrames(bp.getClassName(), bp.getLineNumber());
-                            breakpoint.put("frames", got);
-                        }
-                        breakpoints.add(breakpoint);
-                    }
-
-                    connection.put("breakpoints", breakpoints);
-                    connections.add(connection);
+                    connections.add(connectionData(entry.getValue()));
                 }
                 Map<String, Object> session = new HashMap<>();
                 session.put("id", String.valueOf(key));
@@ -355,6 +322,64 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
 
         return  renderer.render(template, data);
     }
+
+    private Map<String, Object> connectionData(BreakpointDebuggerState state) {
+        Map<String, Object> connection = new HashMap<>();
+        connection.put("id", String.valueOf(state.id));
+
+        connection.put("name", state.name);
+        connection.put("log", state.breakpointDebugger.getLog());
+        if (state.isCapturing()) {
+            connection.put("attached", String.valueOf(true));
+        }
+
+        List<Map<String, Object>> breakpoints = new ArrayList<>();
+        for (BreakpointDebugger.Breakpoint bp : state.breakpointDebugger.getBreakpoints()) {
+            Map<String, Object> breakpoint = new HashMap<>();
+            //if (state.breakpointDebugger.isAttached(bp)) {
+            if (state.attaching.get() || state.breakpointDebugger.attached()) {
+                breakpoint.put("attached", "true");
+            }
+            breakpoint.put("className", bp.getClassName());
+            breakpoint.put("lineNumber", bp.getLineNumber());
+            breakpoint.put("progress", state.progress(bp.getClassName(), bp.getLineNumber()));
+            List<Map<String, Object>> got = state.getCaptured(bp.getClassName(), bp.getLineNumber());
+            if (got == null || got.isEmpty()) {
+                got = state.getCapturing(bp.getClassName(), bp.getLineNumber());
+                breakpoint.put("dump", got);
+            } else {
+                breakpoint.put("dump", got);
+            }
+
+            got = state.getCapturedFrames(bp.getClassName(), bp.getLineNumber());
+            breakpoint.put("frames", got);
+            if (got == null || got.isEmpty()) {
+                got = state.getCapturingFrames(bp.getClassName(), bp.getLineNumber());
+                breakpoint.put("frames", got);
+            }
+            breakpoints.add(breakpoint);
+        }
+
+        connection.put("breakpoints", breakpoints);
+        return connection;
+    }
+
+
+    public String dump(String remoteUser, String sessionId, String connectionId) {
+        BreakpointDebuggerSession session = debuggerSessions.get(Long.parseLong(sessionId));
+        if (session != null) {
+            BreakpointDebuggerState state = session.breakpointDebuggers.get(Long.parseLong(connectionId));
+            if (state != null) {
+                Map<String, Object> data = new HashMap<>();
+                data.put("sid", sessionId);
+                data.put("c", connectionData(state));
+                return renderer.render("soy.page.liveBreakpoints", data);
+            }
+        }
+        return "No state for "+sessionId+":"+connectionId+" "+System.currentTimeMillis();
+    }
+
+
 
     public String render(String user) throws Exception {
 
@@ -416,6 +441,7 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
             StringBuilder sb = new StringBuilder();
             BreakpointDebuggerState got = breakpointDebuggers.get(connectionId);
             if (got != null) {
+                got.attaching.set(true);
                 sb.append("submited ").append(got.name).append("... ");
                 debuggerThread.execute(got);
             } else {
@@ -428,6 +454,7 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
             StringBuilder sb = new StringBuilder();
             BreakpointDebuggerState got = breakpointDebuggers.get(connectionId);
             if (got != null) {
+                got.attaching.set(false);
                 sb.append("dettach ").append(got.name).append("... ");
                 got.breakpointDebugger.dettach();
             } else {
@@ -522,6 +549,7 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
         private final Set<String> disabledFields = new ConcurrentHashSet<>();
         private final Map<String, String> fieldFilters = new ConcurrentHashMap<>();
 
+
         public BreakpointDebuggerState(long id, String name, BreakpointDebugger breakpointDebugger) {
             this.id = id;
             this.name = name;
@@ -539,6 +567,10 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
         private void removeBreakPointFieldFilter(String className, int lineNumber, String breakPointFieldName) {
             fieldFilters.remove(className + ":" + lineNumber + ":" + breakPointFieldName);
         }
+
+        public final AtomicBoolean attaching = new AtomicBoolean();
+
+
 
         @Override
         public void run() {

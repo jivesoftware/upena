@@ -1005,3 +1005,10 @@ form#query-filters.query-show-advanced td.query-advanced { display: table-cell; 
 .tree li.parent_li>span:hover, .tree li.parent_li>span:hover+ul li span {
     color:#000
 }
+
+
+.monospace {
+    white-space: pre-wrap;
+    word-wrap: normal;
+    word-break: break-word;
+}

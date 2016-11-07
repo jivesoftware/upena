@@ -42,7 +42,7 @@
             {else}
             {/if}
         {/let}
-        <li style="color:{$color}" class="build-log-line" data-line="{$offset + index($l)}" {if $done and isLast($l)}data-done="true"{/if}>
+        <li style="color:{$color}" class="monospace build-log-line" data-line="{$offset + index($l)}" {if $done and isLast($l)}data-done="true"{/if}>
 
             {if $alert}
                 <div class="alert alert-{$alert}" role="alert"> <strong>{$l}</strong></div>

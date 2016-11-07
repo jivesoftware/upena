@@ -20,12 +20,13 @@ import com.jivesoftware.os.upena.shared.ReleaseGroup;
 import com.jivesoftware.os.upena.shared.ReleaseGroupKey;
 import com.jivesoftware.os.upena.shared.Service;
 import com.jivesoftware.os.upena.shared.ServiceKey;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authz.AuthorizationException;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.authz.AuthorizationException;
 
 /**
  *
@@ -181,6 +182,8 @@ public class UpenaRingPluginRegion implements PageRegion<UpenaRingPluginRegionIn
                 upenaStore.services.find(true, null);
                 upenaStore.releaseGroups.find(true, null);
                 upenaStore.instances.find(true, null);
+            }  else if (input.action.equals("forceShutdown")) {
+                System.exit(1);
             }
 
             List<Map<String, String>> rows = new ArrayList<>();

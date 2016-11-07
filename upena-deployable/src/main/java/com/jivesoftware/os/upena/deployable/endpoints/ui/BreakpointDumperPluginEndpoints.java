@@ -4,8 +4,7 @@ import com.jivesoftware.os.upena.deployable.ShiroRequestHelper;
 import com.jivesoftware.os.upena.deployable.region.BreakpointDumperPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.BreakpointDumperPluginRegion.BreakpointDumperPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
-import java.util.Collections;
-import java.util.List;
+
 import javax.inject.Singleton;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -14,10 +13,13 @@ import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.Collections;
+import java.util.List;
 
 /**
  *
@@ -106,5 +108,14 @@ public class BreakpointDumperPluginEndpoints {
                     action));
             return Response.ok(rendered).build();
         });
+    }
+
+    @Path("/dump/{sessionId}/{connectionId}")
+    @GET
+    @Produces(MediaType.TEXT_HTML)
+    public Response dumpId(@Context HttpServletRequest httpRequest,
+        @PathParam("sessionId") @DefaultValue("") String sessionId,
+        @PathParam("connectionId") @DefaultValue("") String connectionId) throws Exception {
+        return Response.ok(pluginRegion.dump(httpRequest.getRemoteUser(), sessionId, connectionId)).build();
     }
 }

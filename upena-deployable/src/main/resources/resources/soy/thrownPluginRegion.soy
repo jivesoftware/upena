@@ -16,8 +16,8 @@
             <ul>
                 {if $thrown}
                     {foreach $i in $thrown}
-                        <li>
-                            <div class="btn btn-default">
+                        <li class="monospace">
+                            <div class="btn btn-default btn-xs">
                                 <span><i class="fa fa-plus-circle" aria-hidden="true"></i></span>
                             </div>
                              <span style="color:gray;font-style: italic;"> {$i.recency} </span><span>  {$i.cluster}:{$i.service}:{$i.release}:{$i.instanceId} </span><span class="badge"> {$i.total} </span>
@@ -46,28 +46,62 @@
  * @param? t
  */
 {template .thrown}
-    <li style="display:none">
-        <div class="btn btn-{$t.level}">
+    <li class="monospace" style="display:none">
+        <div class="btn btn-{$t.level} btn-xs">
             <span><i class="fa fa-plus-circle " aria-hidden="true"></i></span>
         </div>
-            <span style="color:gray;font-style: italic;"> {$t.recency} </span><span>  <b>{$t.message}</b> </span><span class="badge"> {$t.thrown} </span>
+        <span style="color:gray;font-style: italic;"> {$t.latest.timestamp} </span><span>{$t.package_}  <b>{$t.class_}</b> </span><span class="badge"> {$t.thrown} </span>
         <ul>
+            {if $t.messages}
+                <li class="monospace" style="display:none">
+                    <div>
+                        <div>
+                            <a href="#" rel="popover" id="popoverAnchor-{$t.key}" data-popover-content="#messagesPopover-{$t.id}" data-placement="bottom" class="btn btn-default btn-xs" title="Messages">
+                                <span class="glyphicon glyphicon-menu-down"></span><span>{$t.latest.timestamp} {$t.latest.threadName} {$t.latest.message} </span>
+                            </a>
+                        </div>
+                        <div id="messagesPopover-{$t.id}" class="hide">
+                            <table class="table table-striped monospace">
+                                {foreach $m in $t.messages}
+                                    <tr><td>
+                                        <span>{$m.timestamp} {$m.threadName} {$m.message}</span>
+                                    </td></tr>
+                                {/foreach}
+                            </table>
+                        </div>
+                    </div>
+                </li>
+            {/if}
             {if $t.stackTrace}
                 {foreach $trace in $t.stackTrace}
-                    <li style="display:none">
+                    <li class="monospace" style="display:none">
                         <span style="color:#357ab7;font-style: italic;">  {$trace.className} </span>:<span style="color:black;"> {$trace.methodName} </span>:<span style="color:gray;"> {$trace.lineNumber}  </span>
                         <form action="/ui/breakpoint" style="display: inline;" method="post" >
                             <input type="hidden" name="instanceKey" value="{$instanceKey}"/>
                             <input type="hidden" name="className" value="{$trace.className}"/>
                             <input type="hidden" name="lineNumber" value="{$trace.lineNumber}"/>
-                            <button style="display: inline;" title="filter" type="submit" name="action" value="addConnections" class="btn btn-success ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                            <button style="display: inline;" title="filter" type="submit" name="action" value="addConnections" class="btn btn-success ladda-button btn-xs"  data-spinner-color="#222" data-style="expand-right">
                                 <span class="fa fa-bug"></span>
                             </button>
                         </form>
                     </li>
                 {/foreach}
             {/if}
-
+            {if $t.cause}
+                {foreach $c in keys($t.cause)}
+                    <li class="monospace" style="display:none">
+                        <div class="btn btn-default btn-xs">
+                            <span><i class="fa fa-plus-circle" aria-hidden="true"></i>Cause By...</span>
+                        </div>
+                        <ul>
+                            {call .thrown}
+                                {param instanceKey: $instanceKey /}
+                                {param t: $t.cause[$c] /}
+                            {/call}
+                        </ul>
+                    </li>
+                {/foreach}
+            {/if}
         </ul>
     </li>
 {/template}
