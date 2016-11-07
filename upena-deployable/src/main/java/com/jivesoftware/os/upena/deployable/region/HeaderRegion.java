@@ -30,6 +30,8 @@ public class HeaderRegion implements Region<HeaderInput> {
 
     @Override
     public String render(String user, HeaderInput input) {
+
         return renderer.render(template, input);
+
     }
 }
