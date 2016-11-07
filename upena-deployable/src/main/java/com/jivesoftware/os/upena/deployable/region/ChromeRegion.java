@@ -7,12 +7,13 @@ import com.jivesoftware.os.upena.deployable.region.HeaderRegion.HeaderInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.service.UpenaStore;
 import com.jivesoftware.os.upena.shared.HostKey;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.subject.Subject;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.subject.Subject;
 
 /**
  *
@@ -59,7 +60,7 @@ public class ChromeRegion<I extends PluginInput, R extends PageRegion<I>> implem
 
     public String render(String path, String user, String name, String title, String htmlRegion) {
         HeaderInput headerData = new HeaderInput();
-       
+
         Subject s;
         try {
             s = SecurityUtils.getSubject();

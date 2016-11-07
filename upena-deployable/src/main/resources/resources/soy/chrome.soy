@@ -165,11 +165,12 @@
 {/template}
 
 /**
- *
+ * @param cluster
  * @param plugins
  */
 {template .menuRegion}
     <div class="navmenu navmenu-inverse navmenu-fixed-left offcanvas-sm">
+      <span><b>{$cluster}</b></span>
       <a class="navmenu-brand visible-lg" href="/ui"><span><img src="/static/img/icon.png" alt="Upena"  height="36"></span></a>
       <ul class="nav navmenu-nav">
         {foreach $plugin in $plugins}
