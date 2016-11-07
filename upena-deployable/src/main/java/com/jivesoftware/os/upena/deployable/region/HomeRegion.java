@@ -541,7 +541,7 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
                     FormatUtil.formatBytes(usable), FormatUtil.formatBytes(fs.getTotalSpace()), 100d * usable / total,
                     fs.getVolume(), fs.getMount()));
 
-                sb.append(progress(fs.getName() + " (" + (total - usable) + ")", (int) (100d * (total - usable) / total), FormatUtil.formatBytes(fs.getTotalSpace())));
+                sb.append(progress(fs.getName() + " (" + FormatUtil.formatBytes(total - usable) + ")", (int) (100d * (total - usable) / total), FormatUtil.formatBytes(fs.getTotalSpace())));
             }
         } catch (Exception x) {
             l.add("ERROR");
@@ -582,8 +582,8 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
                         double sentBps = ((net.getBytesSent() - lastBytesSent.get()) / (double) (now - lastTimesstamp.get())) * 8000;
                         double recvBps = ((net.getBytesRecv() - lastBytesRecv.get()) / (double) (now - lastTimesstamp.get())) * 8000;
 
-                        sb.append(progress("nic sent (" + sentBps + ")", (int) (100d * (sentBps) / net.getSpeed()), FormatUtil.formatValue(net.getSpeed(), "bps")));
-                        sb.append(progress("nic recv (" + recvBps + ")", (int) (100d * (recvBps) / net.getSpeed()), FormatUtil.formatValue(net.getSpeed(), "bps")));
+                        sb.append(progress("nic sent (" + FormatUtil.formatValue((long)sentBps, "bps") + ")", (int) (100d * (sentBps) / net.getSpeed()), FormatUtil.formatValue(net.getSpeed(), "bps")));
+                        sb.append(progress("nic recv (" + FormatUtil.formatValue((long)recvBps, "bps") + ")", (int) (100d * (recvBps) / net.getSpeed()), FormatUtil.formatValue(net.getSpeed(), "bps")));
                     }
 
                     lastTimesstamp.set(System.currentTimeMillis());
