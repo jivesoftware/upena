@@ -394,18 +394,19 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
             }
             l.add(procCpu.toString());
 
+            long maxLoad = load.length * 10; // ??
 
             sb.append(progress("1m load avg (" + (loadAverage[0] < 0 ? " N/A" : String.format(" %.2f", loadAverage[0])) + ")",
-                (int) (((double) loadAverage[0] / load.length) * 100),
-                String.valueOf(load.length)));
+                (int) (((double) loadAverage[0] / maxLoad) * 100),
+                String.valueOf(maxLoad)));
 
             sb.append(progress("5m load avg (" + (loadAverage[1] < 0 ? " N/A" : String.format(" %.2f", loadAverage[1])) + ")",
-                (int) (((double) loadAverage[1] / load.length) * 100),
-                String.valueOf(load.length)));
+                (int) (((double) loadAverage[1] / maxLoad) * 100),
+                String.valueOf(maxLoad)));
 
             sb.append(progress("15m load avg (" + (loadAverage[2] < 0 ? " N/A" : String.format(" %.2f", loadAverage[2])) + ")",
-                (int) (((double) loadAverage[2] / load.length) * 100),
-                String.valueOf(load.length)));
+                (int) (((double) loadAverage[2] / maxLoad) * 100),
+                String.valueOf(maxLoad)));
 
 
             sb.append(progress("User (" + user + ")", (int) (100d * user / totalCpu), String.valueOf(totalCpu)));
