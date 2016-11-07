@@ -23,6 +23,10 @@ import com.jivesoftware.os.upena.shared.ServiceKey;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.AuthorizationException;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -194,6 +198,18 @@ public class UpenaRingPluginRegion implements PageRegion<UpenaRingPluginRegionIn
                 rows.add(row);
             }
             data.put("ring", rows);
+
+
+            try {
+                StringBuilder sb = new StringBuilder();
+                sb.append(tailLogFile(new File("./logs/service.log"), 80 * 1000)); // barf
+                data.put("tail", sb.toString());
+
+            } catch (Exception x) {
+                LOG.warn("Failed to tail log.",x);
+            }
+
+
         } catch(AuthorizationException x) {
             throw x;
         } catch (Exception e) {
@@ -205,6 +221,30 @@ public class UpenaRingPluginRegion implements PageRegion<UpenaRingPluginRegionIn
     @Override
     public String getTitle() {
         return "Upena Ring";
+    }
+
+
+    private String tailLogFile(File file, int lastNBytes) {
+        if (!file.exists()) {
+            return "Log file:" + file.getAbsolutePath() + " doesnt exist?";
+        }
+        try (RandomAccessFile fileHandler = new RandomAccessFile(file, "r")) {
+            long fileLength = file.length() - 1;
+            long start = fileLength - lastNBytes;
+            if (start < 0) {
+                start = 0;
+            }
+            byte[] bytes = new byte[(int) (fileLength - start)];
+            fileHandler.seek(start);
+            fileHandler.readFully(bytes);
+            return new String(bytes, "ASCII");
+        } catch (FileNotFoundException e) {
+            LOG.warn("Tailing failed locate file. " + file);
+            return "Tailing failed locate file. " + file;
+        } catch (IOException e) {
+            LOG.warn("Tailing file encountered the following error. " + file, e);
+            return "Tailing file encountered the following error. " + file;
+        }
     }
 
 }

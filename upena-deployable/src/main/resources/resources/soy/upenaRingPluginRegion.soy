@@ -5,7 +5,8 @@
  * 
  * @param? ring
  * @param? readWrite
- */
+ * @param? tail
+  */
 {template .upenaRingPluginRegion}
     {if $ring}
         <div class="upena-panel">
@@ -112,6 +113,11 @@
                         </button>
                     </form>
                 </div>
+            {/if}
+            {if $tail}
+                <pre class="monospace">
+                    {$tail}
+                </pre>
             {/if}
         </div>
     {/if}

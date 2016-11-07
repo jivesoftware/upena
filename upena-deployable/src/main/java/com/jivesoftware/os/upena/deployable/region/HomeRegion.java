@@ -396,15 +396,15 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
 
             long maxLoad = load.length * 10; // ??
 
-            sb.append(progress("1m load avg (" + (loadAverage[0] < 0 ? " N/A" : String.format(" %.2f", loadAverage[0])) + ")",
+            sb.append(progress("1m load (" + (loadAverage[0] < 0 ? " N/A" : String.format(" %.2f", loadAverage[0])) + ")",
                 (int) (((double) loadAverage[0] / maxLoad) * 100),
                 String.valueOf(maxLoad)));
 
-            sb.append(progress("5m load avg (" + (loadAverage[1] < 0 ? " N/A" : String.format(" %.2f", loadAverage[1])) + ")",
+            sb.append(progress("5m load (" + (loadAverage[1] < 0 ? " N/A" : String.format(" %.2f", loadAverage[1])) + ")",
                 (int) (((double) loadAverage[1] / maxLoad) * 100),
                 String.valueOf(maxLoad)));
 
-            sb.append(progress("15m load avg (" + (loadAverage[2] < 0 ? " N/A" : String.format(" %.2f", loadAverage[2])) + ")",
+            sb.append(progress("15m load (" + (loadAverage[2] < 0 ? " N/A" : String.format(" %.2f", loadAverage[2])) + ")",
                 (int) (((double) loadAverage[2] / maxLoad) * 100),
                 String.valueOf(maxLoad)));
 
