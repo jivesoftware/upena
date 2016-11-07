@@ -1023,6 +1023,35 @@ upena.overview = {
 
 $(document).ready(function () {
 
+    function livebreakpointdump() {
+        $(".breakpointDump").each(function() {
+            $this = $(this);
+            var sessionId = $this.data('session-id');
+            var connectionId = $this.data('connection-id');
+            $.ajax({
+              type: "GET",
+              url: "/ui/breakpoint/dump/"+sessionId+"/"+connectionId,
+              dataType: "html",
+              data: {
+                  name: ""
+              },
+              //contentType: "application/json",
+              success: function (data) {
+                  $this.html(data);
+              },
+              error: function () {
+                  //TODO error message
+                  console.log("error!");
+              }
+            });
+        });
+    }
+
+    window.setInterval(function() {
+      livebreakpointdump();
+    }, 1000);
+
+
     if ($('#overview').length) {
         upena.overview.init();
     }

@@ -71,6 +71,13 @@
                     <tr>
                         <td>
                             {if $readWrite}
+                                <button onclick="return confirm('Are you sure you want to shutdown this node?')" title="Remove" type="submit" name="action" value="forceShutdown" class="btn btn-default ladda-button" data-style="expand-right">
+                                    <span class="glyphicon glyphicon-stop"></span> Shutdown
+                                </button>
+                            {/if}
+                        </td>
+                        <td>
+                            {if $readWrite}
                                 <button onclick="return confirm('Are you sure you want to clear the change log?')" title="Remove" type="submit" name="action" value="clearChangeLog" class="btn btn-default ladda-button" data-style="expand-right">
                                     <span class="glyphicon glyphicon-trash"></span> Clear ChangeLog
                                 </button>

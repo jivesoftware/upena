@@ -95,9 +95,9 @@ public class ManagedDeployablePluginRegion implements PageRegion<ManagedDeployab
                 String token = proxy.allocateAccessToken();
 
                 return URI.create((port.sslEnabled ? "https" : "http") + "://" + host.name
-                    + ":" + port.port
-                    + (uiPath.startsWith("/") ? uiPath : "/" + uiPath)
-                    + "?rb_access_token=" + token
+                        + ":" + port.port
+                        + (uiPath.startsWith("/") ? uiPath : "/" + uiPath)
+                        + "?rb_access_token=" + token
                 );
             }
         }
@@ -166,7 +166,7 @@ public class ManagedDeployablePluginRegion implements PageRegion<ManagedDeployab
                 } else if (input.action.equals("metrics")) {
                     SecurityUtils.getSubject().checkPermission("read");
                     String r = proxy.get("/manage/metrics/ui");
-                    data.put("textResult", r == null ? "" : r);
+                    data.put("htmlResult", r == null ? "" : r);
                 } else if (input.action.equals("tail")) {
                     SecurityUtils.getSubject().checkPermission("read");
                     String r = proxy.get("/manage/tail");
@@ -174,7 +174,51 @@ public class ManagedDeployablePluginRegion implements PageRegion<ManagedDeployab
                 } else if (input.action.equals("threadDump")) {
                     SecurityUtils.getSubject().checkPermission("read");
                     String r = proxy.get("/manage/threadDump");
-                    data.put("textResult", r == null ? "" : r);
+                    StringBuilder sb = new StringBuilder();
+                    if (r != null) {
+                        String[] lines = r.split("\\r?\\n");
+                        sb.append("<pre class=\"monospace\">");
+                        for (String l : lines) {
+                            if (l.trim().startsWith("at ")) {
+                                sb.append(l);
+
+                                try {
+                                    String instanceKey = input.instanceKey;
+                                    String[] split = l.trim().split("\\(");
+
+
+                                    String className = split[0].substring(3, split[0].lastIndexOf('.'));
+                                    if (!split[1].contains("Native")) {
+                                        String lineNumber = split[1].substring(split[1].lastIndexOf(':') + 1, split[1].lastIndexOf(')'));
+
+//                                        System.out.println("'" + className + "'");
+//                                        System.out.println("'" + lineNumber + "'");
+
+
+                                        sb.append("<form action=\"/ui/breakpoint\" style=\"display: inline;\" method=\"post\" >");
+                                        sb.append("<input type=\"hidden\" name=\"instanceKey\" value=\"" + instanceKey + "\"/>");
+                                        sb.append("<input type=\"hidden\" name=\"className\" value=\"" + className + "\"/>");
+                                        sb.append("<input type=\"hidden\" name=\"lineNumber\" value=\"" + lineNumber + "\"/>");
+                                        sb.append("<button style=\"display: inline;\" title=\"filter\" type=\"submit\" name=\"action\" value=\"addConnections\" class=\"btn btn-success btn-xs ladda-button\"  data-spinner-color=\"#222\" data-style=\"expand-right\">");
+                                        sb.append("<span class=\"fa fa-bug\"></span>");
+                                        sb.append("</button>");
+                                        sb.append("</form>");
+                                    }
+                                } catch (Exception x) {
+                                    LOG.error("Failed find expected class and line in "+l);
+                                }
+                                sb.append("\n");
+
+                            } else {
+                                sb.append(l);
+                                sb.append("\n");
+                            }
+                        }
+                        sb.append("</pre>");
+
+                    }
+
+                    data.put("htmlResult", sb.toString());
                 } else if (input.action.equals("forceGC")) {
                     SecurityUtils.getSubject().checkPermission("read");
                     String r = proxy.get("/manage/forceGC");

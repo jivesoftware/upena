@@ -25,7 +25,9 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentNavigableMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  *
@@ -210,19 +212,20 @@ public class ThrownPluginRegion implements PageRegion<ThrownPluginRegion.ThrownP
             Collections.sort(throwns, new Comparator<Thrown>() {
                 @Override
                 public int compare(Thrown o1, Thrown o2) {
-                    return Long.compare(Long.parseLong(o2.timestamps.get(o2.timestamps.size() - 1)),
-                        Long.parseLong(o1.timestamps.get(o1.timestamps.size() - 1)));
+                    return Long.compare(Long.parseLong(o2.messages.get(o2.messages.size() - 1).timestamp),
+                        Long.parseLong(o1.messages.get(o1.messages.size() - 1).timestamp));
                 }
             });
 
+            AtomicInteger id = new AtomicInteger();
             long mostRecentTimestamp = 0;
             long total = 0;
             if (throwns != null && !throwns.isEmpty()) {
 
                 for (Thrown thrown : throwns) {
                     total += Long.parseLong(thrown.thrown);
-                    mostRecentTimestamp = Math.max(mostRecentTimestamp, Long.parseLong(thrown.timestamps.get(thrown.timestamps.size() - 1)));
-                    decorate(thrown);
+                    mostRecentTimestamp = Math.max(mostRecentTimestamp, Long.parseLong(thrown.messages.get(thrown.messages.size() - 1).timestamp));
+                    decorate(id, thrown);
                 }
                 instanceMap.put("thrown", throwns);
                 instances.add(instanceMap);
@@ -237,7 +240,10 @@ public class ThrownPluginRegion implements PageRegion<ThrownPluginRegion.ThrownP
 
     }
 
-    private void decorate(Thrown thrown) throws NumberFormatException {
+    private void decorate(AtomicInteger id, Thrown thrown) throws NumberFormatException {
+
+        thrown.id = String.valueOf(id.getAndIncrement());
+
         if (thrown.level.equals("info")) {
             thrown.level = "info";
         } else if (thrown.level.equals("debug")) {
@@ -249,11 +255,16 @@ public class ThrownPluginRegion implements PageRegion<ThrownPluginRegion.ThrownP
         } else {
             thrown.level = "default";
         }
-        thrown.recency = UpenaHealth.humanReadableUptime(System.currentTimeMillis() - Long.parseLong(thrown.timestamps.get(
-            thrown.timestamps.size() - 1)));
+
+        thrown.latest = thrown.getMessages().get(thrown.getMessages().size() - 1);
+
+        for (ThrownMessage thrownMessage : thrown.getMessages()) {
+            long t = Long.parseLong(thrownMessage.timestamp);
+            thrownMessage.timestamp = UpenaHealth.humanReadableUptime(System.currentTimeMillis() - t);
+        }
 
         for (Thrown value : thrown.getCause().values()) {
-            decorate(value);
+            decorate(id, value);
         }
     }
 
@@ -263,14 +274,20 @@ public class ThrownPluginRegion implements PageRegion<ThrownPluginRegion.ThrownP
 
     public static class Thrown {
 
+        public String id;
         public String key;
         public String level;
-        public String message;
+        public String package_;
+        public String class_;
+        public ThrownMessage latest;
+        public List<ThrownMessage> messages;
         public List<ClassMethodFileLine> stackTrace = new ArrayList<>();
         public String thrown;
-        public List<String> timestamps = new ArrayList<>();
-        public String recency = "";
-        public Map<String, Thrown> cause = new HashMap<>();
+        public Map<String, Thrown> cause = new ConcurrentHashMap<>();
+
+        public String getId() {
+            return id;
+        }
 
         public String getKey() {
             return key;
@@ -280,8 +297,20 @@ public class ThrownPluginRegion implements PageRegion<ThrownPluginRegion.ThrownP
             return level;
         }
 
-        public String getMessage() {
-            return message;
+        public String getPackage_() {
+            return package_;
+        }
+
+        public String getClass_() {
+            return class_;
+        }
+
+        public ThrownMessage getLatest() {
+            return latest;
+        }
+
+        public List<ThrownMessage> getMessages() {
+            return messages;
         }
 
         public List<ClassMethodFileLine> getStackTrace() {
@@ -292,23 +321,50 @@ public class ThrownPluginRegion implements PageRegion<ThrownPluginRegion.ThrownP
             return thrown;
         }
 
-        public List<String> getTimestamps() {
-            return timestamps;
-        }
-
-        public String getRecency() {
-            return recency;
-        }
-
         public Map<String, Thrown> getCause() {
             return cause;
         }
 
         @Override
         public String toString() {
-            return "Thrown{" + "key=" + key + ", level=" + level + ", message=" + message + ", stackTrace=" + stackTrace + ", thrown=" + thrown + ", timestamps=" + timestamps + ", cause=" + cause + '}';
+            return "Thrown{" +
+                "key='" + key + '\'' +
+                ", level='" + level + '\'' +
+                ", package_='" + package_ + '\'' +
+                ", class_='" + class_ + '\'' +
+                ", messages=" + messages +
+                ", stackTrace=" + stackTrace +
+                ", thrown='" + thrown + '\'' +
+                ", cause=" + cause +
+                '}';
+        }
+    }
+
+    public static class ThrownMessage {
+        public String threadName;
+        public String message;
+        public String timestamp;
+
+        public String getThreadName() {
+            return threadName;
         }
 
+        public String getMessage() {
+            return message;
+        }
+
+        public String getTimestamp() {
+            return timestamp;
+        }
+
+        @Override
+        public String toString() {
+            return "ThrownMessage{" +
+                "threadName='" + threadName + '\'' +
+                ", message='" + message + '\'' +
+                ", timestamp='" + timestamp + '\'' +
+                '}';
+        }
     }
 
     public static class ClassMethodFileLine {
@@ -346,9 +402,15 @@ public class ThrownPluginRegion implements PageRegion<ThrownPluginRegion.ThrownP
 
         @Override
         public String toString() {
-            return "ClassMethodFileLine{" + "className=" + className + ", declaringClass=" + declaringClass + ", methodName=" + methodName + ", fileName=" + fileName + ", lineNumber=" + lineNumber + ", nativeMethod=" + nativeMethod + '}';
+            return "ClassMethodFileLine{" +
+                "className='" + className + '\'' +
+                ", declaringClass='" + declaringClass + '\'' +
+                ", methodName='" + methodName + '\'' +
+                ", fileName='" + fileName + '\'' +
+                ", lineNumber=" + lineNumber +
+                ", nativeMethod='" + nativeMethod + '\'' +
+                '}';
         }
-
     }
 
     @Override

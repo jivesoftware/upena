@@ -625,7 +625,7 @@ public class JDIAPI {
             List<Field> allFields = ((ObjectReference) var).referenceType().allFields();
             List<Callable<String>> fieldValues = new ArrayList<>();
             for (Field field : allFields) {
-                fieldValues.add((Callable<String>) () -> valueToString(threadRef, ((ObjectReference) var).getValue(field)));
+                fieldValues.add(() -> valueToString(threadRef, ((ObjectReference) var).getValue(field)));
             }
             return fieldValues;
         } else {
