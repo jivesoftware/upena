@@ -1,23 +1,32 @@
 
-/*
- * Don't add custom CSS unless you absolutely have to...  usually in response to shared JavaScript components
- * which rely on jive.css...
- */
 
-/* Tenant/user picker: eliminate list item numbering */
-html, body {
-    height: 100%;
-}
-body {
-    padding: 0 0 0 0;
+div.panel {
+    margin: 65px 15px 15px 15px;
 }
 
-body {
-    padding: 0 0 0 0;
+.container {
+    margin-top: 65px;
 }
 
-.table-borderless tbody tr td, .table-borderless tbody tr th, .table-borderless thead tr th {
-    border: none;
+
+div.upena-title {
+    margin: 0 75px;
+    line-height: 48px;
+    font-size: 14pt;
+    text-align: center;
+    font-weight: bold;
+}
+
+button.navbar-toggle {
+    float: left;
+    margin-left: 15px;
+    display: inline-block;
+}
+
+button.navbar-toggle-logout {
+    float: right;
+    display: inline-block;
+    padding: 6px 10px;
 }
 
 
@@ -38,65 +47,6 @@ th.rotate > div > span {
     padding: 5px 10px;
 }
 
-div.navmenu {
-    padding-top: 15px;
-    width: 162px;
-}
-
-.panel-default > .panel-heading  {
-    background-image: linear-gradient(to bottom,#808080 0,#000000 100%);
-    color: white;
-}
-
-.popover-content {
-    padding: 0px 0px;
-}
-
-.navbar {
-    display: block;
-    text-align: center;
-}
-.navbar-brand {
-    display: inline-block;
-    float: none;
-}
-.navbar-toggle {
-    position: absolute;
-    float: left;
-    margin-left: 15px;
-}
-
-.container {
-    max-width: 100%;
-}
-
-@media (min-width: 1px) {
-    .navbar-toggle {
-        display: block !important;
-    }
-}
-
-@media (min-width: 992px) {
-    body {
-        padding: 0 0 0 160px;
-    }
-    .navmenu {
-        padding-top: 0;
-        width: 160px;
-    }
-    .navbar {
-        display: none !important; /* IE8 fix */
-    }
-}
-
-
-li.j-listitem {
-    list-style: none;
-}
-
-.icon-warn {
-    color: #F0AD4E;
-}
 
 .changelog {
     border-spacing: 0;
@@ -106,7 +56,6 @@ li.j-listitem {
 }
 
 
-/* theme */
 body {
     background-image: url(/static/img/bkg.jpg);
     background-repeat: no-repeat;
@@ -114,34 +63,6 @@ body {
     background-size: cover;
     background-color: #d0d0d0;
     background-attachment: fixed;
-}
-
-/* Used by event stream */
-div.pad {
-    padding: 3px;
-}
-
-thead.upena-thead {
-    background-color: white;
-}
-
-
-div.upena-heading {
-    background-image: linear-gradient(to top,rgb(51, 122, 183) 0,rgb(211, 225, 239) 100%);
-    padding: 10px 10px;
-}
-span.upena-title {
-    color: white;
-    font-weight: bold;
-}
-
-div.upena-panel {
-    border-left: 10px solid rgba(51, 122, 183, 0.19);
-    border-top: 15px solid rgba(51, 122, 183, 0.2);
-    height: 100%;
-}
-
-div.health-age {
 }
 
 
@@ -152,20 +73,6 @@ div.unexpected-restart div.health-age {
 div.datacenter-and-rack {
     font-style: italic;
     color: #000;
-}
-
-/* Used by event stream and view inspection to allow for links in JSON dumps */
-div.pre-ish {
-    font-family: courier, "courier new", monospace;
-    font-size: 1em;
-    background-color: #f5f5f5;
-    color: #000;
-    white-space: pre-wrap;
-    border-radius: 4px;
-}
-
-div.container {
-    width: 100% !important;
 }
 
 .vertical-text {
@@ -314,31 +221,6 @@ form#query-filters.query-advanced { display: none; }
 form#query-filters.query-show-advanced tr.query-advanced { display: table-row; }
 form#query-filters.query-show-advanced td.query-advanced { display: table-cell; }
 
-.navbar-inverse .navbar-nav>.active>a, .navbar-inverse .navbar-nav>.open>a {
-    background-image: -webkit-linear-gradient(top,#080808 0,#0f0f0f 100%);
-    background-image: -o-linear-gradient(top,#080808 0,#0f0f0f 100%);
-    background-image: -webkit-gradient(linear,left top,left bottom,from(#080808),to(#0f0f0f));
-    background-image: linear-gradient(to bottom,#EEE 0,#BBB 100%);
-    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff080808', endColorstr='#ff0f0f0f', GradientType=0);
-    background-repeat: repeat-x;
-    -webkit-box-shadow: inset 0 3px 9px rgba(0,0,0,.25);
-    box-shadow: inset 0 3px 9px rgba(0,0,0,.25);
-}
-
-
-.navbar-inverse .navbar-nav>.active>a, .navbar-inverse .navbar-nav>.active>a:focus, .navbar-inverse .navbar-nav>.active>a:hover {
-    color: #111;
-    background-color: #080808;
-}
-
-.table-hover tbody tr:hover td, .table-hover tbody tr:hover th {
-    background-color: #ddd;
-    -moz-border-radius: 5px;
-    -webkit-border-radius: 5px;
-    -khtml-border-radius: 5px;
-    border-radius: 5px;
-}
-
 .coloredBox {
     text-align:center;
     float: left;
@@ -353,397 +235,6 @@ form#query-filters.query-show-advanced td.query-advanced { display: table-cell; 
     -khtml-border-radius: 8px;
     border-radius: 8px;
 }
-
-.panel > .panel-transparent {
-    background-color: rgba(255, 255, 255, 0.66);
-}
-
-#seeweed {
-    position: fixed;
-    bottom: 0px;
-    width: 100%;
-}
-
-
-.bubble_wrap{
-    height: 100%;
-    left: 7px;
-    position: absolute;
-    top: 30px;
-    width: 200px;
-}
-.bubbles{
-    background-color: rgba(255, 255, 255, 0.16);
-    border: 1px solid #585858;
-    border-radius: 10px 10px 10px 10px;
-    -moz-border-radius: 10px 10px 10px 10px;
-    -webkit-border-radius: 10px 10px 10px 10px;
-    -o-border-radius: 10px 10px 10px 10px;
-    -ms-border-radius: 10px 10px 10px 10px;
-    height: 20px;
-    left: 33px;
-    position: absolute;
-    top: 260px;
-    width: 20px;
-}
-.b2{
-    left: 50px;
-    top: 100%;
-
-}
-.b3{
-    left: 60px;
-    top: 100%;
-}
-.b4{
-    left: 80px;
-    top: 100%;
-}
-.b5{
-    left: 90px;
-    top: 100%;
-}
-
-
-
-
-
-
-
-/*start of bubble animations*/
-.b0{
-    animation-name:bubbles;
-    animation-delay:2s;
-    animation-duration:4s;
-    animation-iteration-count:infinite;
-    animation-timing-function: linear;
-
-    -moz-animation-name:bubbles;
-    -moz-animation-delay:2s;
-    -moz-animation-duration:4s;
-    -moz-animation-iteration-count:infinite;
-    -moz-animation-timing-function: linear;
-
-    -webkit-animation-name:bubbles;
-    -webkit-animation-delay:2s;
-    -webkit-animation-duration:4s;
-    -webkit-animation-iteration-count:infinite;
-    -webkit-animation-timing-function: linear;
-}
-@keyframes bubbles{
-    from{
-        top:100%;
-        left:33px;
-    }
-    50%{
-        left:39px;
-    }
-    to{
-        top:0px;
-        left:33px;
-    }
-}
-@-moz-keyframes bubbles{
-    from{
-        top:100%;
-        left:33px;
-    }
-    50%{
-        left:39px;
-    }
-    to{
-        top:0px;
-        left:33px;
-    }
-}
-@-webkit-keyframes bubbles{
-    from{
-        top:100%;
-        left:33px;
-    }
-    50%{
-        left:39px;
-    }
-    to{
-        top:0px;
-        left:33px;
-    }
-}
-.b1{
-    animation-name:bubbles;
-    animation-duration:7s;
-    animation-iteration-count:infinite;
-    animation-timing-function: linear;
-
-    -moz-animation-name:bubbles;
-    -moz-animation-duration:7s;
-    -moz-animation-iteration-count:infinite;
-    -moz-animation-timing-function: linear;
-
-    -webkit-animation-name:bubbles;
-    -webkit-animation-duration:7s;
-    -webkit-animation-iteration-count:infinite;
-    -webkit-animation-timing-function: linear;
-}
-@keyframes bubbles{
-    from{
-        top:100%;
-    }
-    to{
-        top:0px;
-    }
-}
-@-moz-keyframes bubbles{
-    from{
-        top:100%;
-    }
-    to{
-        top:0px;
-    }
-}
-@-webkit-keyframes bubbles{
-    from{
-        top:100%;
-    }
-    to{
-        top:0px;
-    }
-}
-.b2{
-    animation-name:bubbles;
-    animation-delay:1s;
-    animation-duration:4s;
-    animation-iteration-count:infinite;
-    animation-timing-function: linear;
-
-    -moz-animation-name:bubbles;
-    -moz-animation-delay:1s;
-    -moz-animation-duration:4s;
-    -moz-animation-iteration-count:infinite;
-    -moz-animation-timing-function: linear;
-
-    -webkit-animation-name:bubbles;
-    -webkit-animation-delay:1s;
-    -webkit-animation-duration:4s;
-    -webkit-animation-iteration-count:infinite;
-    -webkit-animation-timing-function: linear;
-}
-@keyframes bubbles{
-    from{
-        top:100%;
-    }
-    to{
-        top:0px;
-    }
-}
-@-moz-keyframes bubbles{
-    from{
-        top:100%;
-    }
-    to{
-        top:0px;
-    }
-}
-@-webkit-keyframes bubbles{
-    from{
-        top:100%;
-    }
-    to{
-        top:0px;
-    }
-}
-.b3{
-    animation-name:bubbles;
-    animation-delay:500s;
-    animation-duration:3s;
-    animation-iteration-count:infinite;
-    animation-timing-function: linear;
-
-    -moz-animation-name:bubbles;
-    -moz-animation-delay:500s;
-    -moz-animation-duration:3s;
-    -moz-animation-iteration-count:infinite;
-    -moz-animation-timing-function: linear;
-
-    -webkit-animation-name:bubbles;
-    -webkit-animation-delay:500s;
-    -webkit-animation-duration:3s;
-    -webkit-animation-iteration-count:infinite;
-    -webkit-animation-timing-function: linear;
-}
-@keyframes bubbles{
-    from{
-        top:100%;
-        left:60px;
-    }
-    25%{
-        left:30px;
-    }
-    50%{
-        left:58px;
-    }
-    75%{
-        left:37px;
-    }
-    to{
-        top:0px;
-        left:60px;
-    }
-}
-@-moz-keyframes bubbles{
-    from{
-        top:100%;
-        left:60px;
-    }
-    25%{
-        left:30px;
-    }
-    50%{
-        left:58px;
-    }
-    75%{
-        left:37px;
-    }
-    to{
-        top:0px;
-        left:60px;
-    }
-}
-@-webkit-keyframes bubbles{
-    from{
-        top:100%;
-        left:60px;
-    }
-    25%{
-        left:30px;
-    }
-    50%{
-        left:58px;
-    }
-    75%{
-        left:37px;
-    }
-    to{
-        top:0px;
-        left:60px;
-    }
-}
-.b4{
-    animation-name:bubbles;
-    animation-duration:6s;
-    animation-iteration-count:infinite;
-    animation-timing-function: linear;
-
-    -moz-animation-name:bubbles;
-    -moz-animation-duration:6s;
-    -moz-animation-iteration-count:infinite;
-    -moz-animation-timing-function: linear;
-
-    -webkit-animation-name:bubbles;
-    -webkit-animation-duration:6s;
-    -webkit-animation-iteration-count:infinite;
-    -webkit-animation-timing-function: linear;
-}
-@keyframes bubbles{
-    from{
-        top:100%;
-    }
-    to{
-        top:0px;
-    }
-}
-@-moz-keyframes bubbles{
-    from{
-        top:260px;
-    }
-    to{
-        top:0px;
-    }
-}
-@-webkit-keyframes bubbles{
-    from{
-        top:100%;
-    }
-    to{
-        top:0px;
-    }
-}
-.b5{
-    animation-name:bubbles;
-    animation-duration:5s;
-    animation-iteration-count:infinite;
-    animation-timing-function: linear;
-
-    -moz-animation-name:bubbles;
-    -moz-animation-duration:5s;
-    -moz-animation-iteration-count:infinite;
-    -moz-animation-timing-function: linear;
-
-    -webkit-animation-name:bubbles;
-    -webkit-animation-duration:5s;
-    -webkit-animation-iteration-count:infinite;
-    -webkit-animation-timing-function: linear;
-}
-@keyframes bubbles{
-    from{
-        top:100%;
-    }
-    to{
-        top:0px;
-    }
-}
-@-moz-keyframes bubbles{
-    from{
-        top:100%;
-    }
-    to{
-        top:0px;
-    }
-}
-@-webkit-keyframes bubbles{
-    from{
-        top:100%;
-    }
-    to{
-        top:0px;
-    }
-}
-/*tail bubbles*/
-.b6,.b7,.b8{
-    opacity:0;
-}
-.b6,.b8{
-    transform:scale(0.5);
-    -moz-transform:scale(0.5);
-    -webkit-transform:scale(0.5);
-    -ms-transform:scale(0.5);
-    -o-transform:scale(0.5);
-}
-.b7{
-    transform:scale(0.8);
-    -moz-transform:scale(0.8);
-    -webkit-transform:scale(0.8);
-    -o-transform:scale(0.8);
-    -ms-transform:scale(0.8);
-}
-.bw2{
-    width:80px;
-    animation-name:tail_bubbles;
-    animation-duration:30s;
-    animation-iteration-count:infinite;
-    animation-timing-function: linear;
-
-    -moz-animation-name:tail_bubbles;
-    -moz-animation-duration:30s;
-    -moz-animation-iteration-count:infinite;
-    -moz-animation-timing-function: linear;
-
-    -webkit-animation-name:tail_bubbles;
-    -webkit-animation-duration:30s;
-    -webkit-animation-iteration-count:infinite;
-    -webkit-animation-timing-function: linear;
-}
-
 
 .tooltip {
     position: relative;
@@ -1005,7 +496,6 @@ form#query-filters.query-show-advanced td.query-advanced { display: table-cell; 
 .tree li.parent_li>span:hover, .tree li.parent_li>span:hover+ul li span {
     color:#000
 }
-
 
 .monospace {
     white-space: pre-wrap;

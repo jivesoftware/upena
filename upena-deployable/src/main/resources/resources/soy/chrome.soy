@@ -4,13 +4,12 @@
  * @param title
  * @param menu
  * @param region
- * @param user
  */
 {template .chromeRegion}
 <!DOCTYPE HTML>
 <html lang="en" dir="ltr">
 	<head>
-	    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	    //<meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>{$title}</title>
         {call .styles /}
         <script type="text/javascript" src="/static/scripts/jquery-2.1.4.min.js"></script>
@@ -18,7 +17,7 @@
         <script type="text/javascript" src="/static/scripts/Chart.js"></script>
         <script type="text/javascript" src="/static/scripts/Chart.StackedBar.js"></script>
         <script type="text/javascript" src="/static/scripts/legend.js"></script>
-        <script type="text/javascript" src="/static/vendor/bootstrap-3.3.5/js/bootstrap.js"></script>
+        <script type="text/javascript" src="/static/vendor/bootstrap-3.3.7/js/bootstrap.js"></script>
         <script type="text/javascript" src="/static/scripts/raphael-min.js"></script>
         <script type="text/javascript" src="/static/scripts/dracula_graffle.js"></script>
         <script type="text/javascript" src="/static/scripts/dracula_graph.js"></script>
@@ -34,19 +33,11 @@
         <link rel="stylesheet" href="/static/vendor/ladda-bootstrap/dist/ladda-themeless.min.css">
 
 
-        <link rel="stylesheet" href="/static/css/jasny-bootstrap.css">
-        <script src="//cdnjs.cloudflare.com/ajax/libs/jasny-bootstrap/3.1.3/js/jasny-bootstrap.min.js"></script>
+        <link rel="stylesheet" href="/static/vendor/jasny-bootstrap/css/jasny-bootstrap.min.css">
+        <script src="/static/vendor/jasny-bootstrap/js/jasny-bootstrap.min.js"></script>
 
 	</head>
 	<body>
-        {if $user}
-            <div style="z-index:100; position: fixed;top: 3px;right: 3px;">
-                <a  class="btn btn-default btn-xs ladda-button" data-spinner-color="#222" data-style="expand-right" href="/ui/auth/logout"  title="logout">
-                    <span class="ladda-label glyphicon glyphicon-log-out"></span>{sp}{$user}
-                </a>
-            </div>
-        {/if}
-        //{$header|noAutoescape}
         {$menu|noAutoescape}
         {$region|noAutoescape}
         {call .footer}
@@ -63,14 +54,14 @@
 <!DOCTYPE HTML>
 <html lang="en" dir="ltr">
 	<head>
-	    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	    //<meta name="viewport" content="width=device-width, initial-scale=1.0">
         {call .styles /}
         <script type="text/javascript" src="/static/scripts/jquery-2.1.4.min.js"></script>
         <script type="text/javascript" src="/static/scripts/jquery.form.js"></script>
         <script type="text/javascript" src="/static/scripts/Chart.js"></script>
         <script type="text/javascript" src="/static/scripts/Chart.StackedBar.js"></script>
         <script type="text/javascript" src="/static/scripts/legend.js"></script>
-        <script type="text/javascript" src="/static/vendor/bootstrap-3.3.5/js/bootstrap.js"></script>
+        <script type="text/javascript" src="/static/vendor/bootstrap-3.3.7/js/bootstrap.js"></script>
         <script type="text/javascript" src="/static/scripts/raphael-min.js"></script>
         <script type="text/javascript" src="/static/scripts/dracula_graffle.js"></script>
         <script type="text/javascript" src="/static/scripts/dracula_graph.js"></script>
@@ -86,8 +77,8 @@
         <link rel="stylesheet" href="/static/vendor/ladda-bootstrap/dist/ladda-themeless.min.css">
 
 
-        <link rel="stylesheet" href="/static/css/jasny-bootstrap.css">
-        <script src="//cdnjs.cloudflare.com/ajax/libs/jasny-bootstrap/3.1.3/js/jasny-bootstrap.min.js"></script>
+        <link rel="stylesheet" href="/static/vendor/jasny-bootstrap/css/jasny-bootstrap.min.css">
+        <script src="/static/vendor/jasny-bootstrap/css/js/jasny-bootstrap.min.js"></script>
 
 	</head>
 	<body  style="padding-left: 0;">
@@ -107,8 +98,8 @@
     <link rel="stylesheet" href="/static/css/jquery-ui/ui-lightness/jquery-ui-1.10.4.custom.min.css">
 
     <!-- Vanilla bootstrap -->
-    <link rel="stylesheet" type="text/css" href="/static/vendor/bootstrap-3.3.5/css/bootstrap.min.css">
-	<link rel="stylesheet" type="text/css" media="screen" href="/static/vendor/bootstrap-3.3.5/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" type="text/css" href="/static/vendor/bootstrap-3.3.7/css/bootstrap.min.css">
+	<link rel="stylesheet" type="text/css" media="screen" href="/static/vendor/bootstrap-3.3.7/css/bootstrap-theme.min.css">
 
     <!-- bootstrap-multiselect -->
     <link rel="stylesheet" href="/static/vendor/bootstrap-multiselect/css/bootstrap-multiselect.css">
@@ -126,115 +117,64 @@
     <![endif]-->
 {/template}
 
-/**
- *
- * @param plugins
- */
-{template .headerRegion}
-	<nav class="navbar navbar-default navbar-fixed-top">
-        <div class="container">
-            <div id="navbar" class="navbar-collapse collapse">
-                <ul class="nav navbar-nav">
-                    {foreach $plugin in $plugins}
-                        {if $plugin.active}
-                            <li class="active">
-                                <a class="ladda-button" data-spinner-color="#222" data-style="expand-right" href="{$plugin.path}">
-                                    {if $plugin.icon}
-                                        <span class="ladda-label"><img src="/static/img/{$plugin.icon}.png" alt="Release" style="width:20px;height:20px;">&nbsp;{$plugin.name}</span>
-                                    {else}
-                                        <span class="ladda-label glyphicon glyphicon-{$plugin.glyphicon}"></span>&nbsp;{$plugin.name}
-                                    {/if}
-                                </a>
-                            </li>
-                        {else}
-                            <li>
-                                <a style="border-radius: 10px 10px 0 0;" class="ladda-button"  data-spinner-color="#222" data-style="expand-right" href="{$plugin.path}">
-                                    {if $plugin.icon}
-                                        <span class="ladda-label"><img src="/static/img/{$plugin.icon}.png" alt="Release" style="width:20px;height:20px;">&nbsp;{$plugin.name}</span>
-                                    {else}
-                                       <span class="ladda-label glyphicon glyphicon-{$plugin.glyphicon}"></span>&nbsp;{$plugin.name}
-                                    {/if}
-                                </a>
-                            </li>
-                        {/if}
-                    {/foreach}
-                </ul>
-            </div>
-        </div>
-    </nav>
-{/template}
 
 /**
  * @param cluster
  * @param plugins
+ * @param user
  */
 {template .menuRegion}
-    <div class="navmenu navmenu-inverse navmenu-fixed-left offcanvas-sm">
-      <a class="navmenu-brand visible-lg" href="/ui">
-        <span><img src="/static/img/icon.png" alt="Upena"  height="36"></span><br>
-        <span><b>{$cluster}</b></span>
-      </a>
-      <ul class="nav navmenu-nav">
-        {foreach $plugin in $plugins}
-            {if $plugin.separator}
-                <li style="border-bottom: 2px groove rgba(51, 51, 51, 0.25); font-style: italic; color: gray;"></li>
-            {elseif $plugin.active}
-                <li class="active">
-                    <a class="ladda-button" data-spinner-color="#222" data-style="expand-right" href="{$plugin.path}" title="{$plugin.name}">
-                        {if $plugin.icon}
-                            {sp}<span class="ladda-label"><img src="/static/img/{$plugin.icon}.png" alt="Release" style="width:20px;height:20px;">{sp}{$plugin.name}</span>
-                        {else}
-                            {sp}<span class="ladda-label glyphicon glyphicon-{$plugin.glyphicon}"></span>{sp}{$plugin.name}
-                        {/if}
-                    </a>
-                </li>
-            {else}
-                <li>
-                    <a style="border-radius: 10px 10px 0 0;" class="ladda-button"  data-spinner-color="#222" data-style="expand-right" href="{$plugin.path}" title="{$plugin.name}">
-                        {if $plugin.icon}
-                            {sp}<span class="ladda-label"><img src="/static/img/{$plugin.icon}.png" alt="Release" style="width:20px;height:20px;">{sp}{$plugin.name}</span>
-                        {else}
-                           {sp}<span class="ladda-label glyphicon glyphicon-{$plugin.glyphicon}"></span>{sp}{$plugin.name}
-                        {/if}
-                    </a>
-                </li>
-            {/if}
-        {/foreach}
-      </ul>
-    </div>
 
-    <div class="navbar navbar-inverse navbar-fixed-top hidden-lg" style="overflow-x:auto">
-        <button type="button" class="navbar-toggle" data-toggle="offcanvas" data-target=".navmenu">
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-        </button>
-        <a class="navbar-brand" href="#"><img src="/static/img/icon.png" alt="Upena"  height="24"></a>
-        {foreach $plugin in $plugins}
-            {if $plugin.active}
-                <a style="color: black;" class="button active ladda-button" data-spinner-color="#222" data-style="expand-right" href="{$plugin.path}" title="{$plugin.name}">
-                    {if $plugin.icon}
-                        <span class="active ladda-label"><img src="/static/img/{$plugin.icon}.png" alt="{$plugin.name}" style="width:20px;height:20px;"></span>
-                    {else}
-                        <span class="active ladda-label glyphicon glyphicon-{$plugin.glyphicon}"></span>
-                    {/if}
-                </a>
-            {else}
-                <a style="color: black;border-radius: 10px 10px 0 0;" class="active ladda-button"  data-spinner-color="#222" data-style="expand-right" href="{$plugin.path}" title="{$plugin.name}">
-                    {if $plugin.icon}
-                        <span class="ladda-label"><img src="/static/img/{$plugin.icon}.png" alt="{$plugin.name}" style="width:20px;height:20px;"></span>
-                    {else}
-                       <span class="ladda-label glyphicon glyphicon-{$plugin.glyphicon}"></span>
-                    {/if}
-                </a>
-            {/if}
-            &nbsp;&nbsp;
-        {/foreach}
-        <a style="color: black;" class="active ladda-button" data-spinner-color="#222" data-style="expand-right" href="/ui/auth/logout">
-            <span class="ladda-label glyphicon glyphicon-log-out">
+
+    <div class="navmenu navmenu-default navmenu-fixed-left offcanvas" style="">
+        <a class="navmenu-brand" href="/ui">
+          <span><img src="/static/img/icon.png" alt="Upena"  height="36"></span><br>
         </a>
-    </div>
 
+        <ul class="nav navmenu-nav">
+            {foreach $plugin in $plugins}
+                {if $plugin.separator}
+                    <li style="border-bottom: 2px groove rgba(51, 51, 51, 0.25); font-style: italic; color: gray;"></li>
+                {elseif $plugin.active}
+                    <li class="active">
+                        <a class="ladda-button" data-spinner-color="#222" data-style="expand-right" href="{$plugin.path}" title="{$plugin.name}">
+                            {if $plugin.icon}
+                                {sp}<span class="ladda-label"><img src="/static/img/{$plugin.icon}.png"">{sp}{$plugin.name}</span>
+                            {else}
+                                {sp}<span class="ladda-label glyphicon glyphicon-{$plugin.glyphicon}"></span>{sp}{$plugin.name}
+                            {/if}
+                        </a>
+                    </li>
+                {else}
+                    <li>
+                        <a style="border-radius: 10px 10px 0 0;" class="ladda-button"  data-spinner-color="#222" data-style="expand-right" href="{$plugin.path}" title="{$plugin.name}">
+                            {if $plugin.icon}
+                                {sp}<span class="ladda-label"><img src="/static/img/{$plugin.icon}.png">{sp}{$plugin.name}</span>
+                            {else}
+                               {sp}<span class="ladda-label glyphicon glyphicon-{$plugin.glyphicon}"></span>{sp}{$plugin.name}
+                            {/if}
+                        </a>
+                    </li>
+                {/if}
+            {/foreach}
+          </ul>
+    </div>
+   <div class="navbar navbar-default navbar-fixed-top" style="">
+         <button type="button" class="navbar-toggle" data-toggle="offcanvas" data-target=".navmenu" data-canvas="body">
+           <span class="icon-bar"></span>
+           <span class="icon-bar"></span>
+           <span class="icon-bar"></span>
+         </button>
+        {if $user}
+            <form  method="get" action="/ui/auth/logout">
+                <button type="submit" class="navbar-toggle navbar-toggle-logout">
+                    <span class="ladda-label glyphicon glyphicon-log-out"></span>{sp}{$user}
+                </button>
+            </form>
+        {/if}
+        <div class="upena-title">{$cluster}</div>
+
+   </div>
 {/template}
 
 /**

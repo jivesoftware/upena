@@ -25,7 +25,7 @@ public class ChromeRegion<I extends PluginInput, R extends PageRegion<I>> implem
 
     private final String template;
     private final SoyRenderer renderer;
-    private final HeaderRegion headerRegion;
+    //private final HeaderRegion headerRegion;
     private final MenuRegion menuRegion;
     private final List<PluginHandle> plugins;
     private final R region;
@@ -34,7 +34,7 @@ public class ChromeRegion<I extends PluginInput, R extends PageRegion<I>> implem
 
     public ChromeRegion(String template,
         SoyRenderer renderer,
-        HeaderRegion headerRegion,
+        //HeaderRegion headerRegion,
         MenuRegion menuRegion,
         List<PluginHandle> plugins,
         R region,
@@ -44,7 +44,7 @@ public class ChromeRegion<I extends PluginInput, R extends PageRegion<I>> implem
 
         this.template = template;
         this.renderer = renderer;
-        this.headerRegion = headerRegion;
+        //this.headerRegion = headerRegion;
         this.menuRegion = menuRegion;
         this.plugins = plugins;
         this.region = region;
@@ -103,7 +103,7 @@ public class ChromeRegion<I extends PluginInput, R extends PageRegion<I>> implem
        
 
         Map<String, Object> data = Maps.newHashMap();
-        data.put("header", headerRegion.render(user, headerData));
+        //data.put("header", headerRegion.render(user, headerData));
         data.put("menu", menuRegion.render(user, headerData));
         data.put("region", htmlRegion);
         data.put("title", title);
