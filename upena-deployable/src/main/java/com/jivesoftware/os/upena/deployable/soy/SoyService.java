@@ -2,7 +2,6 @@ package com.jivesoftware.os.upena.deployable.soy;
 
 import com.google.common.collect.Lists;
 import com.jivesoftware.os.upena.deployable.region.ChromeRegion;
-import com.jivesoftware.os.upena.deployable.region.HeaderRegion;
 import com.jivesoftware.os.upena.deployable.region.HomeRegion;
 import com.jivesoftware.os.upena.deployable.region.HomeRegion.HomeInput;
 import com.jivesoftware.os.upena.deployable.region.MenuRegion;
@@ -11,6 +10,7 @@ import com.jivesoftware.os.upena.deployable.region.PluginHandle;
 import com.jivesoftware.os.upena.deployable.region.PluginInput;
 import com.jivesoftware.os.upena.service.UpenaStore;
 import com.jivesoftware.os.upena.shared.HostKey;
+
 import java.util.List;
 
 /**
@@ -19,7 +19,7 @@ import java.util.List;
 public class SoyService {
 
     private final SoyRenderer renderer;
-    private final HeaderRegion headerRegion;
+    //private final HeaderRegion headerRegion;
     private final MenuRegion menuRegion;
     private final HomeRegion homeRegion;
     private final String cluster;
@@ -30,7 +30,7 @@ public class SoyService {
 
     public SoyService(
         SoyRenderer renderer,
-        HeaderRegion headerRegion,
+        //HeaderRegion headerRegion,
         MenuRegion menuRegion,
         HomeRegion homeRegion,
         String cluster,
@@ -38,7 +38,7 @@ public class SoyService {
         UpenaStore upenaStore
     ) {
         this.renderer = renderer;
-        this.headerRegion = headerRegion;
+        //this.headerRegion = headerRegion;
         this.menuRegion = menuRegion;
         this.homeRegion = homeRegion;
         this.cluster = cluster;
@@ -59,11 +59,11 @@ public class SoyService {
     private <I extends PluginInput, R extends PageRegion<I>> ChromeRegion<I, R> chrome(String template, R region) {
         return new ChromeRegion<>(template,
             renderer,
-            headerRegion,
+            //headerRegion,
             menuRegion,
             plugins,
             region,
-            cluster,
+            cluster == null ? "untitled" : cluster,
             hostKey,
             upenaStore);
     }

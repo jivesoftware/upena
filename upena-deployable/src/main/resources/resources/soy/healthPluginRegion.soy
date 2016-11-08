@@ -11,8 +11,8 @@
  * @param? readWrite
  */
 {template .healthPluginRegion}
-    <div id="upena-health" class="upena-panel">
-        <div class="upena-heading"><span class="upena-title">Health</span></div>
+    <div id="upena-health" class="panel panel-info">
+        <div class="panel-heading"><span class="panel-title">Health</span></div>
         <form id="filter-health" class="j-form" data-active-class="btn-default" method="get" name="filter-health">
             <table class="table table-condensed table-responsive">
                 <tr style="background-color:#ddd;">
@@ -278,8 +278,8 @@
                                             {/if}
                                             {if $health.instances}
                                                 {foreach $i in $health.instances}
-                                                    <div class="upena-panel">
-                                                        <div class="upena-heading">
+                                                    <div class="panel panel-info">
+                                                        <div class="panel-heading">
                                                             <span class="glyphicon glyphicon-apple"></span>{sp}
                                                             {$i.clusterName}&nbsp;-&nbsp;{$i.serviceName|noAutoescape}
                                                                             &nbsp;&nbsp;&nbsp;&nbsp;port={$i.port}

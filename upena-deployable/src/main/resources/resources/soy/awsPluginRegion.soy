@@ -9,8 +9,8 @@
  * @param? volumes
  */
 {template .awsPluginRegion}
-    <div class="upena-panel">
-        <div class="upena-heading"><span class="upena-title">AWS {$action}</span></div>
+    <div class="panel panel-info">
+        <div class="panel-heading"><span class="panel-title">AWS {$action}</span></div>
         
         <form id="aws-describe" method="post" name="describe">
             <button title="Load Balancers" type="submit" name="action" value="loadBalancers" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
@@ -25,8 +25,8 @@
         </form>
     </div>
     {if $loadBalancers}
-        <div class="upena-panel">
-            <div class="upena-heading"><span class="upena-title">Load Balancers</span></div>
+        <div class="panel panel-info">
+            <div class="panel-heading"><span class="panel-title">Load Balancers</span></div>
             <ul class="list-group" style="list-style-type:none">
                 {foreach $loadBalancer in $loadBalancers}
                     <li>
@@ -37,8 +37,8 @@
         </div>
     {/if}
     {if $instances}
-        <div class="upena-panel">
-            <div class="upena-heading"><span class="upena-title">Instances</span></div>
+        <div class="panel panel-info">
+            <div class="panel-heading"><span class="panel-title">Instances</span></div>
             <ul class="list-group" style="list-style-type:none">
                 {foreach $instance in $instances}
                     <li>
@@ -49,8 +49,8 @@
         </div>
     {/if}
     {if $volumes}
-        <div class="upena-panel">
-            <div class="upena-heading"><span class="upena-title">Volumes</span></div>
+        <div class="panel panel-info">
+            <div class="panel-heading"><span class="panel-title">Volumes</span></div>
             <ul class="list-group" style="list-style-type:none">
                 {foreach $volume in $volumes}
                     <li>
