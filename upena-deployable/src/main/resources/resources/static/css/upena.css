@@ -1,13 +1,11 @@
 
-
 div.panel {
-    margin: 65px 15px 15px 15px;
+    margin: 15px;
 }
 
-.container {
-    margin-top: 65px;
+div.popover-content {
+    padding: 0px;
 }
-
 
 div.upena-title {
     margin: 0 75px;
@@ -57,6 +55,7 @@ th.rotate > div > span {
 
 
 body {
+    margin-top: 65px;
     background-image: url(/static/img/bkg.jpg);
     background-repeat: no-repeat;
     background-position: center center;

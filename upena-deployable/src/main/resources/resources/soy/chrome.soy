@@ -9,33 +9,9 @@
 <!DOCTYPE HTML>
 <html lang="en" dir="ltr">
 	<head>
-	    //<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	    <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>{$title}</title>
-        {call .styles /}
-        <script type="text/javascript" src="/static/scripts/jquery-2.1.4.min.js"></script>
-        <script type="text/javascript" src="/static/scripts/jquery.form.js"></script>
-        <script type="text/javascript" src="/static/scripts/Chart.js"></script>
-        <script type="text/javascript" src="/static/scripts/Chart.StackedBar.js"></script>
-        <script type="text/javascript" src="/static/scripts/legend.js"></script>
-        <script type="text/javascript" src="/static/vendor/bootstrap-3.3.7/js/bootstrap.js"></script>
-        <script type="text/javascript" src="/static/scripts/raphael-min.js"></script>
-        <script type="text/javascript" src="/static/scripts/dracula_graffle.js"></script>
-        <script type="text/javascript" src="/static/scripts/dracula_graph.js"></script>
-        <script type="text/javascript" src="/static/scripts/dracula_algorithms.js"></script>
-        <script type="text/javascript" src="/static/vendor/bootstrap-slider/js/bootstrap-slider.js"></script>
-        <script type="text/javascript" src="/static/scripts/upena.js"></script>
-        <script src="/static/vendor/ladda-bootstrap/dist/spin.min.js"></script>
-		<script src="/static/vendor/ladda-bootstrap/dist/ladda.min.js"></script>
-        <script src="/static/vendor/float-table-head/dist/jquery.floatThead.min.js"></script>
-        <script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
-        <link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
-        <link href="/static/img/favicon.ico" rel="shortcut icon" type="image/x-icon" />
-        <link rel="stylesheet" href="/static/vendor/ladda-bootstrap/dist/ladda-themeless.min.css">
-
-
-        <link rel="stylesheet" href="/static/vendor/jasny-bootstrap/css/jasny-bootstrap.min.css">
-        <script src="/static/vendor/jasny-bootstrap/js/jasny-bootstrap.min.js"></script>
-
+        {call .resources /}
 	</head>
 	<body>
         {$menu|noAutoescape}
@@ -54,34 +30,10 @@
 <!DOCTYPE HTML>
 <html lang="en" dir="ltr">
 	<head>
-	    //<meta name="viewport" content="width=device-width, initial-scale=1.0">
-        {call .styles /}
-        <script type="text/javascript" src="/static/scripts/jquery-2.1.4.min.js"></script>
-        <script type="text/javascript" src="/static/scripts/jquery.form.js"></script>
-        <script type="text/javascript" src="/static/scripts/Chart.js"></script>
-        <script type="text/javascript" src="/static/scripts/Chart.StackedBar.js"></script>
-        <script type="text/javascript" src="/static/scripts/legend.js"></script>
-        <script type="text/javascript" src="/static/vendor/bootstrap-3.3.7/js/bootstrap.js"></script>
-        <script type="text/javascript" src="/static/scripts/raphael-min.js"></script>
-        <script type="text/javascript" src="/static/scripts/dracula_graffle.js"></script>
-        <script type="text/javascript" src="/static/scripts/dracula_graph.js"></script>
-        <script type="text/javascript" src="/static/scripts/dracula_algorithms.js"></script>
-        <script type="text/javascript" src="/static/vendor/bootstrap-slider/js/bootstrap-slider.js"></script>
-        <script type="text/javascript" src="/static/scripts/upena.js"></script>
-        <script src="/static/vendor/ladda-bootstrap/dist/spin.min.js"></script>
-		<script src="/static/vendor/ladda-bootstrap/dist/ladda.min.js"></script>
-        <script src="/static/vendor/float-table-head/dist/jquery.floatThead.min.js"></script>
-        <script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
-        <link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
-        <link href="/static/img/favicon.ico" rel="shortcut icon" type="image/x-icon" />
-        <link rel="stylesheet" href="/static/vendor/ladda-bootstrap/dist/ladda-themeless.min.css">
-
-
-        <link rel="stylesheet" href="/static/vendor/jasny-bootstrap/css/jasny-bootstrap.min.css">
-        <script src="/static/vendor/jasny-bootstrap/css/js/jasny-bootstrap.min.js"></script>
-
+	    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        {call .resources /}
 	</head>
-	<body  style="padding-left: 0;">
+	<body  style="padding-left: 0; margin-top: 15px;">
         {$region|noAutoescape}
     </body>
 </html>
@@ -90,7 +42,7 @@
 /**
  *
  */
-{template .styles}
+{template .resources}
     <!-- Character Encoding -->
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 
@@ -106,15 +58,32 @@
     <link rel="stylesheet" href="/static/vendor/bootstrap-multiselect/css/prettify.css">
     <link rel="stylesheet" href="/static/vendor/bootstrap-slider/css/bootstrap-slider.css">
     
-    // HEY ENGINEERS, add CSS here for now:
     <link rel="stylesheet" href="/static/css/upena.css">
     <link rel="stylesheet" href="/static/vendor/font-awesome-4.7.0/css/font-awesome.min.css">
 
-    // following CC is for IE8 and lower. No harm in leaving it here.
-    // It's no overhead to other browsers and would automatically give unsupported IE8 a fighting chance to view content
-    <!--[if lt IE 9]>
-    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
+    <link href="/static/vendor/bootstrap-toggle-2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
+    <link href="/static/img/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+    <link rel="stylesheet" href="/static/vendor/ladda-bootstrap/dist/ladda-themeless.min.css">
+    <link rel="stylesheet" href="/static/vendor/jasny-bootstrap/css/jasny-bootstrap.min.css">
+
+    <script type="text/javascript" src="/static/scripts/jquery-2.1.4.min.js"></script>
+    <script type="text/javascript" src="/static/scripts/jquery.form.js"></script>
+    <script type="text/javascript" src="/static/scripts/Chart.js"></script>
+    <script type="text/javascript" src="/static/scripts/Chart.StackedBar.js"></script>
+    <script type="text/javascript" src="/static/scripts/legend.js"></script>
+    <script type="text/javascript" src="/static/vendor/bootstrap-3.3.7/js/bootstrap.js"></script>
+    <script type="text/javascript" src="/static/scripts/raphael-min.js"></script>
+    <script type="text/javascript" src="/static/scripts/dracula_graffle.js"></script>
+    <script type="text/javascript" src="/static/scripts/dracula_graph.js"></script>
+    <script type="text/javascript" src="/static/scripts/dracula_algorithms.js"></script>
+    <script type="text/javascript" src="/static/vendor/bootstrap-slider/js/bootstrap-slider.js"></script>
+    <script type="text/javascript" src="/static/scripts/upena.js"></script>
+    <script src="/static/vendor/ladda-bootstrap/dist/spin.min.js"></script>
+    <script src="/static/vendor/ladda-bootstrap/dist/ladda.min.js"></script>
+    <script src="/static/vendor/float-table-head/dist/jquery.floatThead.min.js"></script>
+    <script src="/static/vendor/bootstrap-toggle-2.2.2/js/bootstrap-toggle.min.js"></script>
+    <script src="/static/vendor/jasny-bootstrap/js/jasny-bootstrap.min.js"></script>
+
 {/template}
 
 
