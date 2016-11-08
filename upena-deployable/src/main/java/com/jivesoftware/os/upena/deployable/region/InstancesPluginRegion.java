@@ -25,6 +25,11 @@ import com.jivesoftware.os.upena.shared.ReleaseGroupKey;
 import com.jivesoftware.os.upena.shared.Service;
 import com.jivesoftware.os.upena.shared.ServiceKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.DurationFormatUtils;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authz.AuthorizationException;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -37,10 +42,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.time.DurationFormatUtils;
-import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.authz.AuthorizationException;
 
 /**
  *
@@ -633,10 +634,11 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
 
                     // Good god really!?
                     updatedInstance.ports.get("main").sslEnabled = input.sslEnabled;
-                    updatedInstance.ports.get("manage").sslEnabled = input.sslEnabled;
-
                     updatedInstance.ports.get("main").serviceAuthEnabled = input.serviceAuthEnabled;
-                    updatedInstance.ports.get("manage").serviceAuthEnabled = input.serviceAuthEnabled;
+
+                    // Barf
+                    updatedInstance.ports.get("manage").sslEnabled = false;
+                    updatedInstance.ports.get("manage").serviceAuthEnabled = false;
 
                     upenaStore.instances.update(new InstanceKey(input.key), updatedInstance);
 
