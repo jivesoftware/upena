@@ -7,83 +7,78 @@
  */
 {template .changeLogPluginRegion}
     {if $log}
-        <div class="panel-heading"><span class="panel-title">Change Log</span></div>
+        <div class="panel panel-info">
+            <div class="panel-heading"><span class="panel-title">Change Log</span></div>
 
-        {if $message}
-            <pre>{$message}</pre>
-        {/if}
+            {if $message}
+                <pre>{$message}</pre>
+            {/if}
 
-        <table class="table  float-table-head table-condensed table-hover table-responsive">
-            <thead class="upena-thead">
-                <tr>
-                    <th>When</th>
-                    <th>Who</th>
-                    <th>What</th>
-                    <th>Where</th>
-                    <th>Why</th>
-                    <th>How</th>
-                    <th>Action</th>
-                </tr>
-                <form id="add-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
-                    method="post">
-                    <tr class="well">
-                        <td>
-                            <input type="text" style="padding-left:10px;"
-                            placeholder="When" value="{$filters.when?:''}" name="when" id="whenPicker" class="form-control">
-                        </td>
-                        <td>
-                            <input type="text" style="padding-left:10px;"
-                            placeholder="Who" value="{$filters.who?:''}" name="who" id="whoPicker" class="form-control">
-                        </td>
-                        <td>
-                            <input type="text" style="padding-left:10px;"
-                            placeholder="What" value="{$filters.what?:''}" name="what" id="whatPicker" class="form-control">
-                        </td>
-                        <td>
-                            <input type="text" style="padding-left:10px;"
-                            placeholder="Where" value="{$filters.where?:''}" name="where" id="whyPicker" class="form-control">
-                        </td>
-                        <td>
-                            <input type="text" style="padding-left:10px;"
-                            placeholder="Why" value="{$filters.why?:''}" name="why" id="whyPicker" class="form-control">
-                        </td>
-                        <td>
-                            <input type="text" style="padding-left:10px;"
-                            placeholder="How" value="{$filters.how?:''}" name="how" id="howPicker" class="form-control">
-                        </td>
-                        <td>
-                            <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-search"></span> Filter</button>
-                        <td>
+            <table class="table  float-table-head table-condensed table-hover table-responsive">
+                <thead class="upena-thead">
+                    <tr>
+                        <th>When</th>
+                        <th>Who</th>
+                        <th>What</th>
+                        <th>Where</th>
+                        <th>Why</th>
+                        <th>How</th>
+                        <th>Action</th>
                     </tr>
-                </form>
-            </thead>
-        </table>
-       
+                    <form id="add-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                        method="post">
+                        <tr class="well">
+                            <td>
+                                <input type="text" style="padding-left:10px;"
+                                placeholder="When" value="{$filters.when?:''}" name="when" id="whenPicker" class="form-control">
+                            </td>
+                            <td>
+                                <input type="text" style="padding-left:10px;"
+                                placeholder="Who" value="{$filters.who?:''}" name="who" id="whoPicker" class="form-control">
+                            </td>
+                            <td>
+                                <input type="text" style="padding-left:10px;"
+                                placeholder="What" value="{$filters.what?:''}" name="what" id="whatPicker" class="form-control">
+                            </td>
+                            <td>
+                                <input type="text" style="padding-left:10px;"
+                                placeholder="Where" value="{$filters.where?:''}" name="where" id="whyPicker" class="form-control">
+                            </td>
+                            <td>
+                                <input type="text" style="padding-left:10px;"
+                                placeholder="Why" value="{$filters.why?:''}" name="why" id="whyPicker" class="form-control">
+                            </td>
+                            <td>
+                                <input type="text" style="padding-left:10px;"
+                                placeholder="How" value="{$filters.how?:''}" name="how" id="howPicker" class="form-control">
+                            </td>
+                            <td>
+                                <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-search"></span> Filter</button>
+                            <td>
+                        </tr>
+                    </form>
+                </thead>
+            </table>
 
-<div class="container">
-//  <div class="page-header">
-//    <h1 id="timeline">Change Log</h1>
-//  </div>
-  <ul class="timeline">
-    {foreach $l in $log}
-        <li class="{$l.class|noAutoescape}">
-            <div class="timeline-badge"><i class="glyphicon glyphicon-check"></i>{$l.what|noAutoescape}</div>
-            <div class="timeline-panel">
-                <div class="timeline-heading">
-                  <h4 class="timeline-title"><i class="fa fa-user-circle" aria-hidden="true"></i>{$l.who|noAutoescape}:<i class="fa fa-location-arrow" aria-hidden="true"></i>{$l.where|noAutoescape}</h4>
-                  <p><small class="text-muted"><i class="glyphicon glyphicon-time"></i>{$l.when|noAutoescape}</small></p>
-                </div>
-                <div class="timeline-body">
-                  <p>why:{$l.why|noAutoescape}</p>
-                  <p>how:{$l.how|noAutoescape}</p>
-                </div>
-            </div>
-        </li>
-    {/foreach}    
-  </ul>
-</div>
 
 
-        
+            <ul class="timeline">
+                {foreach $l in $log}
+                    <li class="{$l.class|noAutoescape}">
+                        <div class="timeline-badge"><i class="glyphicon glyphicon-check"></i>{$l.what|noAutoescape}</div>
+                            <div class="timeline-panel">
+                                <div class="timeline-heading">
+                                    <h4 class="timeline-title"><i class="fa fa-user-circle" aria-hidden="true"></i>{$l.who|noAutoescape}:<i class="fa fa-location-arrow" aria-hidden="true"></i>{$l.where|noAutoescape}</h4>
+                                    <p><small class="text-muted"><i class="glyphicon glyphicon-time"></i>{$l.when|noAutoescape}</small></p>
+                                </div>
+                                <div class="timeline-body">
+                                    <p>why:{$l.why|noAutoescape}</p>
+                                    <p>how:{$l.how|noAutoescape}</p>
+                            </div>
+                        </div>
+                    </li>
+                {/foreach}
+            </ul>
+        </div>
     {/if}
 {/template}
