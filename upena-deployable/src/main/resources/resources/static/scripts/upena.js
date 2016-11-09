@@ -357,7 +357,7 @@ upena.cfg = {
                 updates.push(instanceKey, ': ', prop, ' -> ', value, '\n');
             });
         });
-        if (confirm(updates.join(''))) {
+        if (BootstrapDialog.confirm(updates.join(''))) {
             $.ajax("/ui/config/modify", {
                 data: JSON.stringify({'updates': upena.cfg.pending}),
                 method: "post",
