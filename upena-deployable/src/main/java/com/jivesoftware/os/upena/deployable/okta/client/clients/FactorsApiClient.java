@@ -1,0 +1,131 @@
+package com.jivesoftware.os.upena.deployable.okta.client.clients;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.jivesoftware.os.upena.deployable.okta.client.framework.ApiClientConfiguration;
+import com.jivesoftware.os.upena.deployable.okta.client.framework.JsonApiClient;
+import com.jivesoftware.os.upena.deployable.okta.client.models.factors.Factor;
+import com.jivesoftware.os.upena.deployable.okta.client.models.factors.FactorCatalogEntry;
+import com.jivesoftware.os.upena.deployable.okta.client.models.factors.FactorDevice;
+import com.jivesoftware.os.upena.deployable.okta.client.models.factors.FactorDeviceEnrollRequest;
+import com.jivesoftware.os.upena.deployable.okta.client.models.factors.FactorDeviceRequest;
+import com.jivesoftware.os.upena.deployable.okta.client.models.factors.FactorEnrollRequest;
+import com.jivesoftware.os.upena.deployable.okta.client.models.factors.FactorUpdateRequest;
+import com.jivesoftware.os.upena.deployable.okta.client.models.factors.FactorVerificationResponse;
+import com.jivesoftware.os.upena.deployable.okta.client.models.factors.Question;
+import com.jivesoftware.os.upena.deployable.okta.client.models.factors.Verification;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class FactorsApiClient extends JsonApiClient {
+
+    public static final String USER_ID = "userId";
+    public static final String FACTOR_ID = "factorId";
+    public static final String PASSCODE = "passCode";
+    public static final String NEXT_PASSCODE = "nextPassCode";
+
+    public FactorsApiClient(ApiClientConfiguration config) {
+        super(config);
+    }
+
+    ////////////////////////////////////////////
+    // COMMON METHODS
+    ////////////////////////////////////////////
+
+    public List<FactorCatalogEntry> getFactorsCatalog(String userId) throws IOException {
+        return get(getEncodedPath("/%s/factors/catalog", userId), new TypeReference<List<FactorCatalogEntry>>() { });
+    }
+
+    public List<Factor> getUserLifecycleFactors(String userId) throws IOException {
+        return get(getEncodedPath("/%s/factors", userId), new TypeReference<List<Factor>>() { });
+    }
+
+    public List<Question> getAvailableQuestions(String userId) throws IOException {
+        return get(getEncodedPath("/%s/factors/questions", userId), new TypeReference<List<Question>>() { });
+    }
+
+    // Factor CRUD
+
+    public Factor enrollFactor(String userId, FactorEnrollRequest enrollRequest) throws IOException {
+        return post(getEncodedPath("/%s/factors", userId), enrollRequest, new TypeReference<Factor>() { });
+    }
+
+    public Factor enrollSecurityQuestion(String userId, String question, String answer) throws IOException {
+        FactorEnrollRequest factorEnrollRequest = new FactorEnrollRequest();
+        factorEnrollRequest.setFactorType("question");
+        factorEnrollRequest.setProvider("OKTA");
+        Map profile = new HashMap<String, String>();
+        profile.put("question", question);
+        profile.put("answer", answer);
+        factorEnrollRequest.setProfile(profile);
+
+        return enrollFactor(userId, factorEnrollRequest);
+    }
+
+    public Factor enrollFactor(String userId, FactorEnrollRequest enrollRequest, boolean updatePhone) throws IOException {
+        return post(getEncodedPath("/%s/factors?updatePhone=%s", userId, String.valueOf(updatePhone)), enrollRequest, new TypeReference<Factor>() { });
+    }
+
+    public Factor getFactor(String userId, String userFactorId) throws IOException {
+        return get(getEncodedPath("/%s/factors/%s", userId, userFactorId), new TypeReference<Factor>() { });
+    }
+
+    public Factor updateFactor(String userId, String userFactorId, FactorUpdateRequest updateRequest) throws IOException {
+        return put(getEncodedPath("/%s/factors/%s", userId, userFactorId), updateRequest, new TypeReference<Factor>() { });
+    }
+
+    public void resetFactor(String userId, String userFactorId) throws IOException {
+        delete(getEncodedPath("/%s/factors/%s", userId, userFactorId));
+    }
+
+    // Factor LIFECYCLE
+
+    public Factor activateFactor(String userId, String factorId, String passCode) throws IOException {
+        return activateFactor(userId, factorId, passCode, null);
+    }
+
+    public Factor activateFactor(String userId, String factorId, String passCode, String nextPassCode) throws IOException {
+        Verification verification = new Verification();
+        verification.setPassCode(passCode);
+        verification.setNextPassCode(nextPassCode);
+        return post(getEncodedPath("/%s/factors/%s/lifecycle/activate", userId, factorId), verification, new TypeReference<Factor>() { });
+    }
+
+    public Factor resendCode(String userId, String userFactorId) throws IOException {
+        return post(getEncodedPath("/%s/factors/%s/resend", userId, userFactorId), null, new TypeReference<Factor>() { });
+    }
+
+    public FactorVerificationResponse verifyFactor(String userId, String factorId, Verification verification) throws IOException {
+        return post(getEncodedPath("/%s/factors/%s/verify", userId, factorId), verification, new TypeReference<FactorVerificationResponse>() { });
+    }
+
+    // FactorDevice CRUD
+
+    public FactorDevice enrollFactorDevice(String userId, FactorDeviceEnrollRequest factorDeviceEnrollRequest) throws IOException {
+        return post(getEncodedPath("/%s/devices", userId), factorDeviceEnrollRequest, new TypeReference<FactorDevice>() { });
+    }
+    
+    public FactorDevice getFactorDevice(String userId, String userFactorId, String phoneId) throws IOException {
+        return get(getEncodedPath("/%s/factors/%s/devices/%s", userId, userFactorId, phoneId), new TypeReference<FactorDevice>() { });
+    }
+
+    public FactorDevice updateFactorDevice(String userId, String userFactorId, FactorDeviceRequest updateRequest) throws IOException {
+        return post(getEncodedPath("/%s/factors/%s", userId, userFactorId), updateRequest, new TypeReference<FactorDevice>() { });
+    }
+
+    // FactorDevice LIFECYCLE
+
+    public Factor activateFactorDevice(String userId, String userFactorId, String deviceId, String passCode) throws IOException {
+        Verification verification = new Verification();
+        verification.setPassCode(passCode);
+        return post(getEncodedPath("/%s/factors/%s/devices/%s/lifecycle/activate", userId, userFactorId, deviceId), verification, new TypeReference<Factor>() { });
+    }
+
+    @Override
+    protected String getFullPath(String relativePath) {
+        return String.format("/api/v%d/users%s", this.apiVersion, relativePath);
+    }
+
+}

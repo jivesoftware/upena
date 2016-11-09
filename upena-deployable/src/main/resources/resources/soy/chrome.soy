@@ -95,7 +95,7 @@
 {template .menuRegion}
 
 
-    <div class="navmenu navmenu-default navmenu-fixed-left offcanvas" style="">
+    /*<div class="navmenu navmenu-default navmenu-fixed-left offcanvas" style="">
         <a class="navmenu-brand" href="/ui">
           <span><img src="/static/img/icon.png" alt="Upena"  height="36"></span><br>
         </a>
@@ -127,13 +127,49 @@
                 {/if}
             {/foreach}
           </ul>
-    </div>
-   <div class="navbar navbar-default navbar-fixed-top" style="">
-         <button type="button" class="navbar-toggle" data-toggle="offcanvas" data-target=".navmenu" data-canvas="body">
-           <span class="icon-bar"></span>
-           <span class="icon-bar"></span>
-           <span class="icon-bar"></span>
-         </button>
+    </div>*/
+    <nav class="navbar navbar-default navbar-fixed-top">
+        <ul class="nav navbar-nav">
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle navbar-toggle navbar-toggle-menu" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                    <img src="/static/img/menu-icon.png" alt="Upena"  height="20">
+                </a>
+                <ul class="dropdown-menu">
+                    {if $plugins}
+                        <li>
+                            <a class="ladda-button" data-spinner-color="#222" data-style="expand-right" href="/ui" title="Home">
+                                <span class="ladda-label glyphicon glyphicon-home"></span>Home</span>
+                            </a>
+                        </li>
+                        {foreach $plugin in $plugins}
+                            {if $plugin.separator}
+                                <li role="separator" class="divider"></li>
+                            {elseif $plugin.active}
+                                <li class="active">
+                                    <a class="ladda-button" data-spinner-color="#222" data-style="expand-right" href="{$plugin.path}" title="{$plugin.name}">
+                                    {if $plugin.icon}
+                                        {sp}<span class="ladda-label"><img src="/static/img/{$plugin.icon}.png"">{sp}{$plugin.name}</span>
+                                    {else}
+                                        {sp}<span class="ladda-label glyphicon glyphicon-{$plugin.glyphicon}"></span>{sp}{$plugin.name}
+                                    {/if}
+                                    </a>
+                                </li>
+                            {else}
+                                <li>
+                                    <a style="border-radius: 10px 10px 0 0;" class="ladda-button"  data-spinner-color="#222" data-style="expand-right" href="{$plugin.path}" title="{$plugin.name}">
+                                    {if $plugin.icon}
+                                        {sp}<span class="ladda-label"><img src="/static/img/{$plugin.icon}.png">{sp}{$plugin.name}</span>
+                                    {else}
+                                        {sp}<span class="ladda-label glyphicon glyphicon-{$plugin.glyphicon}"></span>{sp}{$plugin.name}
+                                    {/if}
+                                    </a>
+                                </li>
+                            {/if}
+                        {/foreach}
+                    {/if}
+                </ul>
+            </li>
+        </ul>
         {if $user}
             <form  method="get" action="/ui/auth/logout">
                 <button type="submit" class="navbar-toggle navbar-toggle-logout">
@@ -142,8 +178,9 @@
             </form>
         {/if}
         <div class="upena-title">{$cluster}</div>
+    </nav>
 
-   </div>
+
 {/template}
 
 /**

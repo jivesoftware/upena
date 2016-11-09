@@ -16,6 +16,7 @@ import com.jivesoftware.os.upena.shared.Host;
 import com.jivesoftware.os.upena.shared.HostKey;
 import com.jivesoftware.os.upena.uba.service.UbaService;
 import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.subject.Subject;
 import oshi.SystemInfo;
 import oshi.hardware.CentralProcessor;
@@ -173,6 +174,19 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
             s = null;
             LOG.error("Failure.", x);
         }
+
+        PrincipalCollection principals = s.getPrincipals();
+        LOG.info("Realms:" + principals.getRealmNames());
+        LOG.info("Primary:"+principals.getPrimaryPrincipal()+" "+principals.getClass()+" "+principals.getPrimaryPrincipal().getClass());
+
+
+        LOG.info("role:readwrite?" + s.hasRole("readwrite"));
+        LOG.info("role:readonly?"+s.hasRole("readonly"));
+
+        LOG.info("perm:read?" + s.isPermitted("read"));
+        LOG.info("perm:write?"+s.isPermitted("write"));
+
+
         Subject subject = s;
         Map<String, Object> data = Maps.newHashMap();
 

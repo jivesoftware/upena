@@ -537,8 +537,9 @@ public class UpenaMain {
 
         DiscoveredRoutes discoveredRoutes = new DiscoveredRoutes();
         ShiroRequestHelper shiroRequestHelper = new ShiroRequestHelper();
+        String shiroConfigLocation = System.getProperty("shiro.ini.location", "classpath:shiro.ini");
 
-        UpenaJerseyEndpoints jerseyEndpoints = new UpenaJerseyEndpoints()
+        UpenaJerseyEndpoints jerseyEndpoints = new UpenaJerseyEndpoints(shiroConfigLocation)
             .addInjectable(ShiroRequestHelper.class, shiroRequestHelper)
             .addEndpoint(UpenaClusterRestEndpoints.class)
             .addEndpoint(UpenaHostRestEndpoints.class)
@@ -677,7 +678,8 @@ public class UpenaMain {
         LOG.info("|      Jetty Service Online");
         LOG.info("-----------------------------------------------------------------------");
 
-        UpenaJerseyEndpoints loopbackJerseyEndpoints = new UpenaJerseyEndpoints()
+
+        UpenaJerseyEndpoints loopbackJerseyEndpoints = new UpenaJerseyEndpoints(null)
             .addEndpoint(UpenaLoopbackEndpoints.class)
             .addEndpoint(UpenaConfigRestEndpoints.class)
             .addInjectable(SessionStore.class, sessionStore)
