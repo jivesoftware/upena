@@ -15,9 +15,21 @@ div.upena-title {
     font-weight: bold;
 }
 
+.dropdown:hover .dropdown-menu {
+    display: block;
+    margin-top: 0; // remove the gap so it doesn't close
+ }
+
 button.navbar-toggle {
     float: left;
     margin-left: 15px;
+    display: inline-block;
+}
+
+a.navbar-toggle-menu {
+    float: left;
+    margin: 6px 6px 6px 6px;
+    padding: 6px 6px 6px 6px !important;
     display: inline-block;
 }
 

@@ -42,6 +42,7 @@ public class UpenaJerseyEndpoints implements HasServletContextHandler {
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
+    private final String shiroConfigLocation;
     private final Set<Class<?>> allClasses = new HashSet<>();
     private final Set<Class<?>> allInjectedClasses = new HashSet<>();
     private final Set<Object> allBinders = new HashSet<>();
@@ -51,7 +52,9 @@ public class UpenaJerseyEndpoints implements HasServletContextHandler {
 
     private final ObjectMapper mapper;
 
-    public UpenaJerseyEndpoints() {
+    public UpenaJerseyEndpoints(String shiroConfigLocation) {
+
+        this.shiroConfigLocation = shiroConfigLocation;
         this.mapper = new ObjectMapper()
             .configure(JsonGenerator.Feature.WRITE_NUMBERS_AS_STRINGS, true)
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -159,7 +162,9 @@ public class UpenaJerseyEndpoints implements HasServletContextHandler {
         }
         servletContextHandler.addServlet(servletHolder, "/*");
 
-        servletContextHandler.setInitParameter("shiroConfigLocations", "classpath:shiro.ini");
+        if (shiroConfigLocation != null) {
+            servletContextHandler.setInitParameter("shiroConfigLocations", shiroConfigLocation);
+        }
         servletContextHandler.addEventListener(new EnvironmentLoaderListener());
         servletContextHandler.addFilter(ShiroFilter.class, "/ui/*", EnumSet.of(DispatcherType.REQUEST, DispatcherType.FORWARD, DispatcherType.INCLUDE,
             DispatcherType.ERROR));
