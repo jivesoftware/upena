@@ -54,6 +54,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
     private final String template;
     private final String simpleTemplate;
     private final SoyRenderer renderer;
+    private final UpenaHealth upenaHealth;
     private final UpenaStore upenaStore;
     private final HostKey selfHostKey;
 
@@ -63,6 +64,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
     public InstancesPluginRegion(String template,
         String simpleTemplate,
         SoyRenderer renderer,
+        UpenaHealth upenaHealth,
         UpenaStore upenaStore,
         HostKey selfHostKey,
         HealthPluginRegion healthPluginRegion,
@@ -71,6 +73,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
         this.template = template;
         this.simpleTemplate = simpleTemplate;
         this.renderer = renderer;
+        this.upenaHealth = upenaHealth;
         this.upenaStore = upenaStore;
         this.selfHostKey = selfHostKey;
         this.healthPluginRegion = healthPluginRegion;
@@ -657,7 +660,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
 
     private UpenaHealth.NannyHealth nannyHealth(String instanceId) throws Exception {
         UpenaHealth.NannyHealth health = null;
-        Collection<UpenaHealth.NodeHealth> nodeHealths = healthPluginRegion.buildClusterHealth().values();
+        Collection<UpenaHealth.NodeHealth> nodeHealths = upenaHealth.buildClusterHealth().values();
         for (UpenaHealth.NodeHealth nodeHealth : nodeHealths) {
             for (UpenaHealth.NannyHealth nannyHealth : nodeHealth.nannyHealths) {
                 if (nannyHealth.instanceDescriptor.instanceKey.equals(instanceId)) {

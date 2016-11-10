@@ -207,17 +207,17 @@ public class UpenaLoopbackEndpoints {
         }
     }
 
-    @GET
+   /* @GET
     @Consumes("application/json")
     @Path("/health/cluster")
     public Response getClusterHealth(@Context UriInfo uriInfo) {
         try {
-            UpenaHealth.ClusterHealth clusterHealth = upenaHealth.buildClusterHealth(uriInfo);
+            UpenaHealth.ClusterHealth clusterHealth = upenaHealth.buildClusterHealth();
             return ResponseHelper.INSTANCE.jsonResponse(clusterHealth);
         } catch (Exception x) {
             LOG.error("Failed getting cluster health", x);
             return ResponseHelper.INSTANCE.errorResponse("Failed building all health view.", x);
         }
-    }
+    }*/
 
 }

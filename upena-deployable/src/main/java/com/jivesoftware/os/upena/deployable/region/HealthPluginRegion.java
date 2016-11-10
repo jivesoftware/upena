@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.routing.bird.endpoints.base.HasUI;
@@ -12,11 +11,8 @@ import com.jivesoftware.os.routing.bird.endpoints.base.HasUI.UI;
 import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelper;
 import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelperUtils;
 import com.jivesoftware.os.routing.bird.shared.InstanceDescriptor;
-import com.jivesoftware.os.upena.amza.shared.AmzaInstance;
 import com.jivesoftware.os.upena.amza.shared.RingHost;
-import com.jivesoftware.os.upena.config.UpenaConfigStore;
 import com.jivesoftware.os.upena.deployable.UpenaHealth;
-import com.jivesoftware.os.upena.deployable.UpenaSSLConfig;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.service.UpenaStore;
 import com.jivesoftware.os.upena.shared.Cluster;
@@ -34,9 +30,7 @@ import com.jivesoftware.os.upena.shared.Service;
 import com.jivesoftware.os.upena.shared.ServiceFilter;
 import com.jivesoftware.os.upena.shared.ServiceKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
-import org.apache.shiro.SecurityUtils;
-
-import java.awt.*;
+import java.awt.Color;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -44,13 +38,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListSet;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.apache.shiro.SecurityUtils;
 
 /**
  *
@@ -66,14 +57,9 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
     private final String instanceTemplate;
     private final String popupTemplate;
     private final SoyRenderer renderer;
-    private final AmzaInstance amzaInstance;
-    private final UpenaSSLConfig upenaSSLConfig;
-    private final UpenaStore upenaStore;
-    private final UpenaConfigStore configStore;
-    private final ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("nodeHealths-%d").build();
-    private final ExecutorService executorService = Executors.newCachedThreadPool(namedThreadFactory);
 
-    private final Map<String, InstanceSparseCircularHitsBucketBuffer> instanceHealthHistory = new ConcurrentHashMap<>();
+    private final UpenaHealth upenaHealth;
+    private final UpenaStore upenaStore;
 
     public HealthPluginRegion(ObjectMapper mapper,
         long startupTime,
@@ -82,10 +68,8 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
         String instanceTemplate,
         String popupTemplate,
         SoyRenderer renderer,
-        AmzaInstance amzaInstance,
-        UpenaSSLConfig upenaSSLConfig,
-        UpenaStore upenaStore,
-        UpenaConfigStore configStore) {
+        UpenaHealth upenaHealth,
+        UpenaStore upenaStore) {
 
         this.mapper = mapper;
         this.startupTime = startupTime;
@@ -94,10 +78,8 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
         this.instanceTemplate = instanceTemplate;
         this.popupTemplate = popupTemplate;
         this.renderer = renderer;
-        this.amzaInstance = amzaInstance;
-        this.upenaSSLConfig = upenaSSLConfig;
+        this.upenaHealth = upenaHealth;
         this.upenaStore = upenaStore;
-        this.configStore = configStore;
     }
 
     @Override
@@ -106,17 +88,6 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
     }
 
 
-
-    private static class InstanceSparseCircularHitsBucketBuffer {
-
-        public final InstanceDescriptor instanceDescriptor;
-        public final SparseCircularHitsBucketBuffer buffer;
-
-        public InstanceSparseCircularHitsBucketBuffer(InstanceDescriptor instanceDescriptor, SparseCircularHitsBucketBuffer circularHitsBucketBuffer) {
-            this.instanceDescriptor = instanceDescriptor;
-            this.buffer = circularHitsBucketBuffer;
-        }
-    }
 
     public Map<String, Object> waveform(String label,
         String color,
@@ -165,7 +136,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
 
             Map<String, Double> minHostHealth = new HashMap<>();
             Map<String, Double> minServiceHealth = new HashMap<>();
-            for (UpenaHealth.NodeHealth nodeHealth : buildClusterHealth().values()) {
+            for (UpenaHealth.NodeHealth nodeHealth : upenaHealth.buildClusterHealth().values()) {
 
                 for (UpenaHealth.NannyHealth nannyHealth : nodeHealth.nannyHealths) {
                     if (nannyHealth.serviceHealth != null) {
@@ -257,7 +228,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
             for (Map.Entry<String, Double> m : minHostHealth.entrySet()) {
 
                 String[] parts = m.getKey().split(":");
-                Long recency = nodeRecency.get(parts[1] + ":" + parts[2]);
+                Long recency = upenaHealth.nodeRecency.get(parts[1] + ":" + parts[2]);
                 String age = recency != null
                     ? UpenaHealth.shortHumanReadableUptime(System.currentTimeMillis() - recency)
                     : ">" + UpenaHealth.shortHumanReadableUptime(System.currentTimeMillis() - startupTime);
@@ -375,7 +346,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
             filter.put("service", input.service);
             data.put("filter", filter);
 
-            ConcurrentMap<RingHost, UpenaHealth.NodeHealth> nodeHealths = buildClusterHealth();
+            ConcurrentMap<RingHost, UpenaHealth.NodeHealth> nodeHealths = upenaHealth.buildClusterHealth();
 
             Map<String, Double> minClusterHealth = new HashMap<>();
             for (UpenaHealth.NodeHealth nodeHealth : nodeHealths.values()) {
@@ -568,7 +539,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                     Integer hi = hostIndexs.get(host);
                     if (hi != null) {
 
-                        Long recency = nodeRecency.get(nodeHealth.host + ":" + nodeHealth.port);
+                        Long recency = upenaHealth.nodeRecency.get(nodeHealth.host + ":" + nodeHealth.port);
                         String age = recency != null
                             ? UpenaHealth.shortHumanReadableUptime(System.currentTimeMillis() - recency)
                             : ">" + UpenaHealth.shortHumanReadableUptime(System.currentTimeMillis() - startupTime);
@@ -621,7 +592,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                             }
 
                             int si = service.index;
-                            Long recency = nodeRecency.get(nodeHealth.host + ":" + nodeHealth.port);
+                            Long recency = upenaHealth.nodeRecency.get(nodeHealth.host + ":" + nodeHealth.port);
                             String age = recency != null
                                 ? UpenaHealth.shortHumanReadableUptime(System.currentTimeMillis() - recency)
                                 : ">" + UpenaHealth.shortHumanReadableUptime(System.currentTimeMillis() - startupTime);
@@ -865,48 +836,6 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
         return String.valueOf((int) (val * 100));
     }
 
-    private final ConcurrentMap<RingHost, UpenaHealth.NodeHealth> nodeHealths = Maps.newConcurrentMap();
-    private final ConcurrentMap<String, Long> nodeRecency = Maps.newConcurrentMap();
-    private final ConcurrentMap<RingHost, Boolean> currentlyExecuting = Maps.newConcurrentMap();
-
-    ConcurrentMap<RingHost, UpenaHealth.NodeHealth> buildClusterHealth() throws Exception {
-
-        for (RingHost ringHost : amzaInstance.getRing("MASTER")) {
-            if (currentlyExecuting.putIfAbsent(ringHost, true) == null) {
-                executorService.submit(() -> {
-                    try {
-                        HttpRequestHelper requestHelper = HttpRequestHelperUtils.buildRequestHelper(upenaSSLConfig.sslEnable,
-                            upenaSSLConfig.allowSelfSignedCerts, upenaSSLConfig.signer, ringHost.getHost(), ringHost.getPort());
-                        UpenaHealth.NodeHealth nodeHealth = requestHelper.executeGetRequest("/upena/health/instance", UpenaHealth.NodeHealth.class,
-                            null);
-                        nodeHealths.put(ringHost, nodeHealth);
-
-                        for (UpenaHealth.NannyHealth nannyHealth : nodeHealth.nannyHealths) {
-                            instanceHealthHistory.compute(nannyHealth.instanceDescriptor.instanceKey, (instanceKey, instance) -> {
-                                if (instance == null) {
-                                    instance = new InstanceSparseCircularHitsBucketBuffer(nannyHealth.instanceDescriptor,
-                                        new SparseCircularHitsBucketBuffer(60, 0, 1000));
-                                }
-                                instance.buffer.set(System.currentTimeMillis(), Math.max(0d, nannyHealth.serviceHealth.health));
-                                return instance;
-                            });
-                        }
-                    } catch (Exception x) {
-                        UpenaHealth.NodeHealth nodeHealth = new UpenaHealth.NodeHealth("", ringHost.getHost(), ringHost.getPort());
-                        nodeHealth.health = 0.0d;
-                        nodeHealth.nannyHealths = new ArrayList<>();
-                        nodeHealths.put(ringHost, nodeHealth);
-                        LOG.warn("Failed getting cluster health for " + ringHost + " " + x);
-                    } finally {
-                        nodeRecency.put(ringHost.getHost() + ":" + ringHost.getPort(), System.currentTimeMillis());
-                        currentlyExecuting.remove(ringHost);
-                    }
-                });
-            }
-        }
-        return nodeHealths;
-    }
-
     String getHEXTrafficlightColor(double value, float sat) {
         //String s = Integer.toHexString(Color.HSBtoRGB(0.6f, 1f - ((float) value), sat) & 0xffffff);
         String s = Integer.toHexString(Color.HSBtoRGB((float) value / 3f, sat, 1f) & 0xffffff);
@@ -974,7 +903,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
             }
 
             // TODO fix this brute force crap
-            ConcurrentMap<RingHost, UpenaHealth.NodeHealth> nodeHealths = buildClusterHealth();
+            ConcurrentMap<RingHost, UpenaHealth.NodeHealth> nodeHealths = upenaHealth.buildClusterHealth();
             for (UpenaHealth.NodeHealth nodeHealth : nodeHealths.values()) {
                 for (UpenaHealth.NannyHealth nannyHealth : nodeHealth.nannyHealths) {
                     if (nannyHealth.instanceDescriptor.instanceKey.equals(instanceKey)) {
@@ -1030,7 +959,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
     }
 
     public List<Map<String, String>> simpleServiceHealth(String instanceKey) throws IOException {
-        for (UpenaHealth.NodeHealth nodeHealth : nodeHealths.values()) {
+        for (UpenaHealth.NodeHealth nodeHealth : upenaHealth.nodeHealths.values()) {
             for (UpenaHealth.NannyHealth nannyHealth : nodeHealth.nannyHealths) {
                 if (nannyHealth.instanceDescriptor.instanceKey.equals(instanceKey)) {
                     return simpleServiceHealth(nannyHealth);

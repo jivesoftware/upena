@@ -13,6 +13,7 @@ import com.jivesoftware.os.routing.bird.shared.HostPort;
 import com.jivesoftware.os.routing.bird.shared.InstanceConnectionHealth;
 import com.jivesoftware.os.upena.amza.shared.AmzaInstance;
 import com.jivesoftware.os.upena.amza.shared.RingHost;
+import com.jivesoftware.os.upena.deployable.UpenaHealth;
 import com.jivesoftware.os.upena.deployable.UpenaHealth.NannyHealth;
 import com.jivesoftware.os.upena.deployable.UpenaHealth.NodeHealth;
 import com.jivesoftware.os.upena.deployable.UpenaSSLConfig;
@@ -67,6 +68,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
     private final String template;
     private final String connectionHealthTemplate;
     private final SoyRenderer renderer;
+    private final UpenaHealth upenaHealth;
     private final AmzaInstance amzaInstance;
     private final UpenaSSLConfig upenaSSLConfig;
     private final UpenaStore upenaStore;
@@ -82,7 +84,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
         String template,
         String connectionHealthTemplate,
         SoyRenderer renderer,
-        AmzaInstance amzaInstance,
+        UpenaHealth upenaHealth, AmzaInstance amzaInstance,
         UpenaSSLConfig upenaSSLConfig,
         UpenaStore upenaStore,
         HealthPluginRegion healthPluginRegion,
@@ -95,6 +97,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
         this.template = template;
         this.connectionHealthTemplate = connectionHealthTemplate;
         this.renderer = renderer;
+        this.upenaHealth = upenaHealth;
         this.amzaInstance = amzaInstance;
         this.upenaSSLConfig = upenaSSLConfig;
         this.upenaStore = upenaStore;
@@ -481,7 +484,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
 
     private NannyHealth nannyHealth(String instanceId) throws Exception {
         NannyHealth health = null;
-        Collection<NodeHealth> nodeHealths = healthPluginRegion.buildClusterHealth().values();
+        Collection<NodeHealth> nodeHealths = upenaHealth.buildClusterHealth().values();
         for (NodeHealth nodeHealth : nodeHealths) {
             for (NannyHealth nannyHealth : nodeHealth.nannyHealths) {
                 if (nannyHealth.instanceDescriptor.instanceKey.equals(instanceId)) {
