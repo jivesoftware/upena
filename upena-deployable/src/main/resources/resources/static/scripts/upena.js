@@ -357,7 +357,7 @@ upena.cfg = {
                 updates.push(instanceKey, ': ', prop, ' -> ', value, '\n');
             });
         });
-        if (confirm(updates.join(''))) {
+        if (BootstrapDialog.confirm(updates.join(''))) {
             $.ajax("/ui/config/modify", {
                 data: JSON.stringify({'updates': upena.cfg.pending}),
                 method: "post",
@@ -1021,6 +1021,39 @@ upena.overview = {
     }
 };
 
+upena.healthGradient = {
+    input: {},
+    requireFocus: true,
+    html: null,
+    init: function () {
+        healthGradient = $('#healthGradient');
+        upena.healthGradient.poll();
+    },
+    poll: function () {
+        $.ajax({
+            type: "GET",
+            url: "/ui/healthGradient",
+            dataType: "text",
+            success: function (data) {
+                upena.healthGradient.draw(data);
+            },
+            error: function () {
+                console.log("error!");
+            }
+        });
+    },
+    draw: function (data) {
+
+    console.log("update "+data);
+        $('#healthGradient').css('background', data);
+
+        if (!upena.healthGradient.requireFocus || upena.windowFocused) {
+            //upena.stats.update();
+        }
+        setTimeout(upena.healthGradient.poll, 1000);
+    }
+};
+
 $(document).ready(function () {
 
     function livebreakpointdump() {
@@ -1055,6 +1088,10 @@ $(document).ready(function () {
     if ($('#overview').length) {
         upena.overview.init();
     }
+
+    if ($('#healthGradient').length) {
+            upena.healthGradient.init();
+        }
 
     $('[data-toggle="tooltip"]').tooltip({
         animated: 'fade',

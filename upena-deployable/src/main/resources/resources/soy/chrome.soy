@@ -65,6 +65,7 @@
     <link href="/static/img/favicon.ico" rel="shortcut icon" type="image/x-icon" />
     <link rel="stylesheet" href="/static/vendor/ladda-bootstrap/dist/ladda-themeless.min.css">
     <link rel="stylesheet" href="/static/vendor/jasny-bootstrap/css/jasny-bootstrap.min.css">
+    <link rel="stylesheet" href="/static/vendor/bootstrap3-dialog-1.34.7/css/bootstrap-dialog.min.css">
 
     <script type="text/javascript" src="/static/scripts/jquery-2.1.4.min.js"></script>
     <script type="text/javascript" src="/static/scripts/jquery.form.js"></script>
@@ -83,6 +84,7 @@
     <script src="/static/vendor/float-table-head/dist/jquery.floatThead.min.js"></script>
     <script src="/static/vendor/bootstrap-toggle-2.2.2/js/bootstrap-toggle.min.js"></script>
     <script src="/static/vendor/jasny-bootstrap/js/jasny-bootstrap.min.js"></script>
+    <script src="/static/vendor/bootstrap3-dialog-1.34.7/js/bootstrap-dialog.min.js"></script>
 
 {/template}
 
@@ -95,39 +97,6 @@
 {template .menuRegion}
 
 
-    /*<div class="navmenu navmenu-default navmenu-fixed-left offcanvas" style="">
-        <a class="navmenu-brand" href="/ui">
-          <span><img src="/static/img/icon.png" alt="Upena"  height="36"></span><br>
-        </a>
-
-        <ul class="nav navmenu-nav">
-            {foreach $plugin in $plugins}
-                {if $plugin.separator}
-                    <li style="border-bottom: 2px groove rgba(51, 51, 51, 0.25); font-style: italic; color: gray;"></li>
-                {elseif $plugin.active}
-                    <li class="active">
-                        <a class="ladda-button" data-spinner-color="#222" data-style="expand-right" href="{$plugin.path}" title="{$plugin.name}">
-                            {if $plugin.icon}
-                                {sp}<span class="ladda-label"><img src="/static/img/{$plugin.icon}.png"">{sp}{$plugin.name}</span>
-                            {else}
-                                {sp}<span class="ladda-label glyphicon glyphicon-{$plugin.glyphicon}"></span>{sp}{$plugin.name}
-                            {/if}
-                        </a>
-                    </li>
-                {else}
-                    <li>
-                        <a style="border-radius: 10px 10px 0 0;" class="ladda-button"  data-spinner-color="#222" data-style="expand-right" href="{$plugin.path}" title="{$plugin.name}">
-                            {if $plugin.icon}
-                                {sp}<span class="ladda-label"><img src="/static/img/{$plugin.icon}.png">{sp}{$plugin.name}</span>
-                            {else}
-                               {sp}<span class="ladda-label glyphicon glyphicon-{$plugin.glyphicon}"></span>{sp}{$plugin.name}
-                            {/if}
-                        </a>
-                    </li>
-                {/if}
-            {/foreach}
-          </ul>
-    </div>*/
     <nav class="navbar navbar-default navbar-fixed-top">
         <ul class="nav navbar-nav">
             <li class="dropdown">
@@ -177,7 +146,7 @@
                 </button>
             </form>
         {/if}
-        <div class="upena-title">{$cluster}</div>
+        <div id="healthGradient"  class="upena-title">{$cluster}</div>
     </nav>
 
 
@@ -188,7 +157,10 @@
  */
 {template .favicon}
     <!-- favicon -->
-    //<link rel="icon" type="image/png" href="/static/img/favicon.png">
+<link rel="icon" type="image/png"href="/static/img/favicon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/static/img/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="96x96" href="/static/img/favicon-96x96.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/static/img/favicon-16x16.png">
 {/template}
 
 /**

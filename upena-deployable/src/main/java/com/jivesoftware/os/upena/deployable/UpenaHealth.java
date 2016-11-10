@@ -3,6 +3,9 @@ package com.jivesoftware.os.upena.deployable;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelper;
@@ -11,18 +14,24 @@ import com.jivesoftware.os.routing.bird.shared.InstanceDescriptor;
 import com.jivesoftware.os.upena.amza.shared.AmzaInstance;
 import com.jivesoftware.os.upena.amza.shared.RingHost;
 import com.jivesoftware.os.upena.config.UpenaConfigStore;
+import com.jivesoftware.os.upena.deployable.region.SparseCircularHitsBucketBuffer;
 import com.jivesoftware.os.upena.shared.HostKey;
 import com.jivesoftware.os.upena.uba.service.Nanny;
 import com.jivesoftware.os.upena.uba.service.UbaService;
+import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
-import javax.ws.rs.core.UriInfo;
 
 /**
- *
  * @author jonathan.colt
  */
 public class UpenaHealth {
@@ -37,6 +46,9 @@ public class UpenaHealth {
     private final RingHost ringHost;
     private final HostKey ringHostKey;
     private final long startupTime = System.currentTimeMillis();
+
+    private final ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("nodeHealths-%d").build();
+    private final ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(), namedThreadFactory);
 
     public UpenaHealth(
         AmzaInstance amzaInstance,
@@ -55,28 +67,94 @@ public class UpenaHealth {
         this.mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
-    public UpenaHealth.ClusterHealth buildClusterHealth(UriInfo uriInfo) throws Exception {
-        UpenaHealth.ClusterHealth clusterHealth = new UpenaHealth.ClusterHealth();
-        for (RingHost ringHost : amzaInstance.getRing("MASTER")) {
-            try {
-                HttpRequestHelper requestHelper = HttpRequestHelperUtils.buildRequestHelper(upenaSSLConfig.sslEnable,
-                    upenaSSLConfig.allowSelfSignedCerts, upenaSSLConfig.signer,
-                    ringHost.getHost(), ringHost.getPort());
-                String path = Joiner.on("/").join(uriInfo.getPathSegments().subList(0, uriInfo.getPathSegments().size()));
-                UpenaHealth.NodeHealth nodeHealth = requestHelper.executeGetRequest("/" + path + "/instance", UpenaHealth.NodeHealth.class,
-                    null);
-                clusterHealth.health = Math.min(nodeHealth.health, clusterHealth.health);
-                clusterHealth.nodeHealths.add(nodeHealth);
-            } catch (Exception x) {
-                clusterHealth.health = 0.0d;
-                UpenaHealth.NodeHealth nodeHealth = new UpenaHealth.NodeHealth("", ringHost.getHost(), ringHost.getPort());
-                nodeHealth.health = 0.0d;
-                nodeHealth.nannyHealths = new ArrayList<>();
-                clusterHealth.nodeHealths.add(nodeHealth);
-                LOG.warn("Failed getting cluster health for " + ringHost, x);
+    public String healthGradient() throws Exception {
+        ConcurrentMap<RingHost, NodeHealth> health = buildClusterHealth();
+        List<Double> healths = Lists.newArrayList();
+        for (NodeHealth nodeHealth : health.values()) {
+            for (NannyHealth nannyHealth : nodeHealth.nannyHealths) {
+                healths.add(nannyHealth.serviceHealth.health);
             }
         }
-        return clusterHealth;
+        if (healths.size() == 1) {
+            healths.add(healths.get(0));
+        }
+
+        Collections.sort(healths);
+        List<String> gradient = Lists.newArrayList();
+        for (Double h : healths) {
+            gradient.add(getHEXTrafficlightColor(h, 0.9f));
+        }
+        return "linear-gradient(to right, #" + Joiner.on(", #").join(gradient) + ")";
+
+    }
+
+    public final ConcurrentMap<RingHost, UpenaHealth.NodeHealth> nodeHealths = Maps.newConcurrentMap();
+    public final ConcurrentMap<String, Long> nodeRecency = Maps.newConcurrentMap();
+    public final ConcurrentMap<RingHost, Boolean> currentlyExecuting = Maps.newConcurrentMap();
+    public final ConcurrentMap<RingHost, Long> lastExecuted = Maps.newConcurrentMap();
+    public final Map<String, InstanceSparseCircularHitsBucketBuffer> instanceHealthHistory = new ConcurrentHashMap<>();
+
+    public ConcurrentMap<RingHost, NodeHealth> buildClusterHealth() throws Exception {
+
+        for (RingHost ringHost : amzaInstance.getRing("MASTER")) {
+            if (currentlyExecuting.putIfAbsent(ringHost, true) == null) {
+
+                Long timestamp = lastExecuted.get(ringHost);
+                if (timestamp == null || timestamp + 1 < System.currentTimeMillis()) {
+                    executorService.submit(() -> {
+                        try {
+                            HttpRequestHelper requestHelper = HttpRequestHelperUtils.buildRequestHelper(upenaSSLConfig.sslEnable,
+                                upenaSSLConfig.allowSelfSignedCerts, upenaSSLConfig.signer, ringHost.getHost(), ringHost.getPort());
+                            UpenaHealth.NodeHealth nodeHealth = requestHelper.executeGetRequest("/upena/health/instance", UpenaHealth.NodeHealth.class,
+                                null);
+                            nodeHealths.put(ringHost, nodeHealth);
+
+                            for (UpenaHealth.NannyHealth nannyHealth : nodeHealth.nannyHealths) {
+                                instanceHealthHistory.compute(nannyHealth.instanceDescriptor.instanceKey, (instanceKey, instance) -> {
+                                    if (instance == null) {
+                                        instance = new InstanceSparseCircularHitsBucketBuffer(nannyHealth.instanceDescriptor,
+                                            new SparseCircularHitsBucketBuffer(60, 0, 1000));
+                                    }
+                                    instance.buffer.set(System.currentTimeMillis(), Math.max(0d, nannyHealth.serviceHealth.health));
+                                    return instance;
+                                });
+                            }
+                        } catch (Exception x) {
+                            UpenaHealth.NodeHealth nodeHealth = new UpenaHealth.NodeHealth("", ringHost.getHost(), ringHost.getPort());
+                            nodeHealth.health = 0.0d;
+                            nodeHealth.nannyHealths = new ArrayList<>();
+                            nodeHealths.put(ringHost, nodeHealth);
+                            LOG.warn("Failed getting cluster health for " + ringHost + " " + x);
+                        } finally {
+                            lastExecuted.put(ringHost, System.currentTimeMillis());
+                            nodeRecency.put(ringHost.getHost() + ":" + ringHost.getPort(), System.currentTimeMillis());
+                            currentlyExecuting.remove(ringHost);
+                        }
+                    });
+                } else {
+                    currentlyExecuting.remove(ringHost);
+                }
+            }
+        }
+        return nodeHealths;
+    }
+
+    private static class InstanceSparseCircularHitsBucketBuffer {
+
+        public final InstanceDescriptor instanceDescriptor;
+        public final SparseCircularHitsBucketBuffer buffer;
+
+        public InstanceSparseCircularHitsBucketBuffer(InstanceDescriptor instanceDescriptor, SparseCircularHitsBucketBuffer circularHitsBucketBuffer) {
+            this.instanceDescriptor = instanceDescriptor;
+            this.buffer = circularHitsBucketBuffer;
+        }
+    }
+
+
+    String getHEXTrafficlightColor(double value, float sat) {
+        //String s = Integer.toHexString(Color.HSBtoRGB(0.6f, 1f - ((float) value), sat) & 0xffffff);
+        String s = Integer.toHexString(Color.HSBtoRGB((float) value / 3f, sat, 1f) & 0xffffff);
+        return "000000".substring(s.length()) + s;
     }
 
     public NodeHealth buildNodeHealth() throws Exception {

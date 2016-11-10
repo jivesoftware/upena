@@ -651,6 +651,7 @@ public class UpenaMain {
             port,
             sessionStore,
             ubaService,
+            upenaHealth,
             upenaStore,
             upenaConfigStore,
             jerseyEndpoints,
@@ -783,6 +784,7 @@ public class UpenaMain {
         int port,
         SessionStore sessionStore,
         UbaService ubaService,
+        UpenaHealth upenaHealth,
         UpenaStore upenaStore,
         UpenaConfigStore upenaConfigStore,
         UpenaJerseyEndpoints jerseyEndpoints,
@@ -841,16 +843,14 @@ public class UpenaMain {
             "soy.page.instanceHealthPluginRegion",
             "soy.page.healthPopup",
             renderer,
-            amzaInstance,
-            upenaSSLConfig,
-            upenaStore,
-            upenaConfigStore);
+            upenaHealth,
+            upenaStore);
         ReleasesPluginRegion releasesPluginRegion = new ReleasesPluginRegion(mapper, repositoryProvider,
             "soy.page.releasesPluginRegion", "soy.page.releasesPluginRegionList",
             renderer, upenaStore);
         HostsPluginRegion hostsPluginRegion = new HostsPluginRegion("soy.page.hostsPluginRegion", renderer, upenaStore);
         InstancesPluginRegion instancesPluginRegion = new InstancesPluginRegion("soy.page.instancesPluginRegion",
-            "soy.page.instancesPluginRegionList", renderer, upenaStore, hostKey, healthPluginRegion, awsClientFactory);
+            "soy.page.instancesPluginRegionList", renderer, upenaHealth, upenaStore, hostKey, healthPluginRegion, awsClientFactory);
 
         PluginHandle health = new PluginHandle("fire", null, "Health", "/ui/health",
             HealthPluginEndpoints.class, healthPluginRegion, null, "read");
@@ -858,14 +858,14 @@ public class UpenaMain {
         PluginHandle topology = new PluginHandle("th", null, "Topology", "/ui/topology",
             TopologyPluginEndpoints.class,
             new TopologyPluginRegion(mapper, "soy.page.topologyPluginRegion", "soy.page.connectionsHealth",
-                renderer, amzaInstance, upenaSSLConfig, upenaStore, healthPluginRegion, hostsPluginRegion, releasesPluginRegion, instancesPluginRegion,
+                renderer, upenaHealth, amzaInstance, upenaSSLConfig, upenaStore, healthPluginRegion, hostsPluginRegion, releasesPluginRegion, instancesPluginRegion,
                 discoveredRoutes), null,
             "read");
 
         PluginHandle connectivity = new PluginHandle("transfer", null, "Connectivity", "/ui/connectivity",
             ConnectivityPluginEndpoints.class,
             new ConnectivityPluginRegion(mapper, "soy.page.connectivityPluginRegion", "soy.page.connectionsHealth", "soy.page.connectionOverview",
-                renderer, amzaInstance, upenaSSLConfig, upenaStore, healthPluginRegion,
+                renderer, upenaHealth, amzaInstance, upenaSSLConfig, upenaStore, healthPluginRegion,
                 discoveredRoutes), null,
             "read");
 

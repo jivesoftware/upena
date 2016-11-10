@@ -15,6 +15,7 @@ import com.jivesoftware.os.routing.bird.shared.InstanceConnectionHealth;
 import com.jivesoftware.os.routing.bird.shared.InstanceDescriptor;
 import com.jivesoftware.os.upena.amza.shared.AmzaInstance;
 import com.jivesoftware.os.upena.amza.shared.RingHost;
+import com.jivesoftware.os.upena.deployable.UpenaHealth;
 import com.jivesoftware.os.upena.deployable.UpenaHealth.NannyHealth;
 import com.jivesoftware.os.upena.deployable.UpenaHealth.NodeHealth;
 import com.jivesoftware.os.upena.deployable.UpenaSSLConfig;
@@ -69,6 +70,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
     private final String connectionHealthTemplate;
     private final String connectionOverviewTemplate;
     private final SoyRenderer renderer;
+    private final UpenaHealth upenaHealth;
     private final AmzaInstance amzaInstance;
     private final UpenaSSLConfig upenaSSLConfig;
     private final UpenaStore upenaStore;
@@ -82,6 +84,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
         String connectionHealthTemplate,
         String connectionOverviewTemplate,
         SoyRenderer renderer,
+        UpenaHealth upenaHealth,
         AmzaInstance amzaInstance,
         UpenaSSLConfig upenaSSLConfig,
         UpenaStore upenaStore,
@@ -93,6 +96,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
         this.connectionHealthTemplate = connectionHealthTemplate;
         this.connectionOverviewTemplate = connectionOverviewTemplate;
         this.renderer = renderer;
+        this.upenaHealth = upenaHealth;
         this.amzaInstance = amzaInstance;
         this.upenaSSLConfig = upenaSSLConfig;
         this.upenaStore = upenaStore;
@@ -204,7 +208,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
 
             connectivityGraph(user, instanceFilter, serviceColor, data);
 
-            for (String ensure : new String[]{"connectivityNodes", "connectivityEdges"}) {
+            for (String ensure : new String[] { "connectivityNodes", "connectivityEdges" }) {
                 if (!data.containsKey(ensure)) {
                     data.put(ensure, Collections.emptyList());
                 }
@@ -323,7 +327,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
                 Node to = null;
                 MinMaxDouble edgeWeight = new MinMaxDouble();
                 double successPerSecond = 0;
-                
+
                 for (Map.Entry<String, ConnectionHealth> familyConnectionHealth : familyConnectionHealths.entrySet()) {
                     ConnectionHealth connectionHealth = familyConnectionHealth.getValue();
                     if (to == null) {
@@ -351,7 +355,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
                 edge.min = 1d - mmd.zeroToOne(edgeWeight.min);
                 edge.max = 1d - mmd.zeroToOne(edgeWeight.max);
 
-                
+
                 edge.label = numberFormat.format(successPerSecond) + "/sec ";
             }
         }
@@ -374,7 +378,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
             }
             node.put("fontSize", n.fontSize);
 
-            
+
             node.put("label", n.label + " (" + n.count + ") ");
             node.put("count", String.valueOf(n.count));
 
@@ -507,7 +511,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
 
     private NannyHealth nannyHealth(String instanceId) throws Exception {
         NannyHealth health = null;
-        Collection<NodeHealth> nodeHealths = healthPluginRegion.buildClusterHealth().values();
+        Collection<NodeHealth> nodeHealths = upenaHealth.buildClusterHealth().values();
         for (NodeHealth nodeHealth : nodeHealths) {
             for (NannyHealth nannyHealth : nodeHealth.nannyHealths) {
                 if (nannyHealth.instanceDescriptor.instanceKey.equals(instanceId)) {

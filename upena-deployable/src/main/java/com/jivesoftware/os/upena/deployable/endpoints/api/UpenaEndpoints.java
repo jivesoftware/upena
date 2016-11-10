@@ -15,6 +15,7 @@
  */
 package com.jivesoftware.os.upena.deployable.endpoints.api;
 
+import com.jivesoftware.os.upena.deployable.UpenaHealth;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
 
 import javax.inject.Singleton;
@@ -37,9 +38,12 @@ import java.net.URI;
 public class UpenaEndpoints {
 
     private final SoyService soyService;
+    private final UpenaHealth upenaHealth;
 
-    public UpenaEndpoints(@Context SoyService soyService) {
+    public UpenaEndpoints(@Context SoyService soyService,
+        @Context UpenaHealth upenaHealth) {
         this.soyService = soyService;
+        this.upenaHealth = upenaHealth;
     }
 
     @GET
@@ -65,6 +69,14 @@ public class UpenaEndpoints {
         @Context UriInfo uriInfo) throws Exception {
         String rendered = soyService.renderOverview(httpRequest.getRemoteUser());
         return Response.ok(rendered).build();
+    }
+
+    @Path("/ui/healthGradient")
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response healthGradient(@Context HttpServletRequest httpRequest,
+        @Context UriInfo uriInfo) throws Exception {
+        return Response.ok(upenaHealth.healthGradient()).build();
     }
 
 }
