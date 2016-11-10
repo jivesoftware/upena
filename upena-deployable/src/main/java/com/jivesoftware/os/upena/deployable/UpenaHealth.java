@@ -82,7 +82,11 @@ public class UpenaHealth {
         Collections.sort(healths);
         List<String> gradient = Lists.newArrayList();
         for (Double h : healths) {
-            gradient.add(getHEXTrafficlightColor(h, 0.9f));
+            String color = getHEXTrafficlightColor(h, 0.9f);
+            if (h < 0 || h > 1) {
+                color = "888";
+            }
+            gradient.add(color);
         }
         return "linear-gradient(to right, #" + Joiner.on(", #").join(gradient) + ")";
 
