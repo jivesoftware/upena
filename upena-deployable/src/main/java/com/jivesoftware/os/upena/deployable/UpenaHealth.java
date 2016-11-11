@@ -155,7 +155,7 @@ public class UpenaHealth {
     }
 
 
-    String getHEXTrafficlightColor(double value, float sat) {
+    public static String getHEXTrafficlightColor(double value, float sat) {
         //String s = Integer.toHexString(Color.HSBtoRGB(0.6f, 1f - ((float) value), sat) & 0xffffff);
         String s = Integer.toHexString(Color.HSBtoRGB((float) value / 3f, sat, 1f) & 0xffffff);
         return "000000".substring(s.length()) + s;
