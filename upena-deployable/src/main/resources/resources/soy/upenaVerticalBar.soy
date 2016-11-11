@@ -1,0 +1,26 @@
+{namespace soy.page}
+
+/**
+* @param title
+* @param progress
+* @param color
+* @param value
+*/
+{template .upenaVerticalBar}
+    <div style="display:inline-block">
+        <div>{$title}</div>
+        <div class="chart big-font-size" style="text-align: center;">
+            <div class="bar bar-{$progress} {$color}">
+                <div class="face side-0">
+                    <div class="growing-bar"></div>
+                </div>
+                <div class="face side-1">
+                    <div class="growing-bar"></div>
+                </div>
+                <div class="face top"></div>
+                <div class="face floor"></div>
+            </div>
+        </div>
+        <div>{$value}</div>
+    </div>
+{/template}
