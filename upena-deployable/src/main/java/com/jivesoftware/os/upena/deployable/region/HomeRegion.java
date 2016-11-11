@@ -384,7 +384,7 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
             l.add("Swap used: " + FormatUtil.formatBytes(memory.getSwapUsed()) + "/" + FormatUtil.formatBytes(memory.getSwapTotal()));
 
             header.append("<th>memory</th>");
-            values.append(td(FormatUtil.formatBytes(memory.getAvailable()),
+            values.append(td((int) (((double) memory.getAvailable() / memory.getTotal()) * 100)+"%",
                 (int) (((double) memory.getAvailable() / memory.getTotal()) * 100),
                 "cyan", FormatUtil.formatBytes(memory.getTotal())));
 
@@ -467,19 +467,19 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
 
 
             header.append("<th>User</th>");
-            values.append(td(String.valueOf(user), (int) (100d * user / totalCpu), "red", String.valueOf(totalCpu)));
+            values.append(td(String.valueOf((int) (100d * user / totalCpu))+"%", (int) (100d * user / totalCpu), "red", String.valueOf(totalCpu)));
             header.append("<th>Nice</th>");
-            values.append(td(String.valueOf(nice), (int) (100d * nice / totalCpu), "red", String.valueOf(totalCpu)));
+            values.append(td(String.valueOf((int) (100d * nice / totalCpu))+"%", (int) (100d * nice / totalCpu), "red", String.valueOf(totalCpu)));
             header.append("<th>System</th>");
-            values.append(td(String.valueOf(sys), (int) (100d * sys / totalCpu), "red", String.valueOf(totalCpu)));
+            values.append(td(String.valueOf((int) (100d * sys / totalCpu))+"%", (int) (100d * sys / totalCpu), "red", String.valueOf(totalCpu)));
             header.append("<th>Idle</th>");
-            values.append(td(String.valueOf(idle), (int) (100d * idle / totalCpu), "red", String.valueOf(totalCpu)));
+            values.append(td(String.valueOf((int) (100d * idle / totalCpu))+"%", (int) (100d * idle / totalCpu), "red", String.valueOf(totalCpu)));
             header.append("<th>Iowait</th>");
-            values.append(td(String.valueOf(iowait), (int) (100d * iowait / totalCpu), "red", String.valueOf(totalCpu)));
+            values.append(td(String.valueOf((int) (100d * iowait / totalCpu))+"%", (int) (100d * iowait / totalCpu), "red", String.valueOf(totalCpu)));
             header.append("<th>IRQ</th>");
-            values.append(td(String.valueOf(irq), (int) (100d * irq / totalCpu), "red", String.valueOf(totalCpu)));
+            values.append(td(String.valueOf((int) (100d * irq / totalCpu))+"%", (int) (100d * irq / totalCpu), "red", String.valueOf(totalCpu)));
             header.append("<th>softIRQ</th>");
-            values.append(td(String.valueOf(softirq), (int) (100d * softirq / totalCpu), "red", String.valueOf(totalCpu)));
+            values.append(td(String.valueOf((int) (100d * softirq / totalCpu))+"%", (int) (100d * softirq / totalCpu), "red", String.valueOf(totalCpu)));
 
 
         } catch (Exception x) {
@@ -688,7 +688,7 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
                     fs.getVolume(), fs.getMount()));
 
                 header.append("<th>" + fs.getName() + "</th>");
-                values.append(td(FormatUtil.formatBytes(total - usable), (int) (100d * (total - usable) / total), "yellow",
+                values.append(td((int) (100d * (total - usable) / total)+"%", (int) (100d * (total - usable) / total), "yellow",
                     FormatUtil.formatBytes(fs.getTotalSpace())));
             }
         } catch (Exception x) {
