@@ -1017,7 +1017,7 @@ upena.overview = {
         if (!upena.overview.requireFocus || upena.windowFocused) {
             //upena.stats.update();
         }
-        setTimeout(upena.overview.poll, 1000);
+        setTimeout(upena.overview.poll, 10000);
     }
 };
 

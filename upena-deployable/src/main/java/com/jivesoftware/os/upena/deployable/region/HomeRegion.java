@@ -236,6 +236,7 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
         sb.append("<p><span class=\"badge\">").append("uptime " + getDurationBreakdown(runtimeBean.getUptime())).append("</span></p>");
 
 
+        sb.append("<div>");
         sb.append(overview.get().toString());
 
 
@@ -251,18 +252,20 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
         for (String state : states) {
             sb.append(progress(state + " (" + numberFormat.format(stateCount.count(state)) + ")",
                 (int) (((double) stateCount.count(state) / total) * 100),
-                numberFormat.format(total)));
+                "lime", numberFormat.format(total)));
         }
+        sb.append("</div>");
 
         return sb.toString();
     }
 
-    private String progress(String title, int progress, String value) {
+    private String progress(String title, int progress, String color, String value) {
         Map<String, Object> data = new HashMap<>();
         data.put("title", title);
         data.put("progress", progress);
+        data.put("color", color);
         data.put("value", value);
-        return renderer.render("soy.page.upenaStackedProgress", data);
+        return renderer.render("soy.page.upenaVerticalBar", data);
     }
 
     public static String getDurationBreakdown(long millis) {
@@ -347,11 +350,11 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
 
             sb.append(progress("Memory (" + FormatUtil.formatBytes(memory.getAvailable()) + ")",
                 (int) (((double) memory.getAvailable() / memory.getTotal()) * 100),
-                FormatUtil.formatBytes(memory.getTotal())));
+                "cyan", FormatUtil.formatBytes(memory.getTotal())));
 
             sb.append(progress("Swap (" + FormatUtil.formatBytes(memory.getSwapUsed()) + ")",
                 (int) (((double) memory.getSwapUsed() / memory.getSwapTotal()) * 100),
-                FormatUtil.formatBytes(memory.getSwapTotal())));
+                "cyan", FormatUtil.formatBytes(memory.getSwapTotal())));
 
         } catch (Exception x) {
             l.add("ERROR");
@@ -412,24 +415,24 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
 
             sb.append(progress("1m load (" + (loadAverage[0] < 0 ? " N/A" : String.format(" %.2f", loadAverage[0])) + ")",
                 (int) (((double) loadAverage[0] / maxLoad) * 100),
-                String.valueOf(maxLoad)));
+                "navy", String.valueOf(maxLoad)));
 
             sb.append(progress("5m load (" + (loadAverage[1] < 0 ? " N/A" : String.format(" %.2f", loadAverage[1])) + ")",
                 (int) (((double) loadAverage[1] / maxLoad) * 100),
-                String.valueOf(maxLoad)));
+                "navy", String.valueOf(maxLoad)));
 
             sb.append(progress("15m load (" + (loadAverage[2] < 0 ? " N/A" : String.format(" %.2f", loadAverage[2])) + ")",
                 (int) (((double) loadAverage[2] / maxLoad) * 100),
-                String.valueOf(maxLoad)));
+                "navy", String.valueOf(maxLoad)));
 
 
-            sb.append(progress("User (" + user + ")", (int) (100d * user / totalCpu), String.valueOf(totalCpu)));
-            sb.append(progress("Nice (" + nice + ")", (int) (100d * nice / totalCpu), String.valueOf(totalCpu)));
-            sb.append(progress("System (" + sys + ")", (int) (100d * sys / totalCpu), String.valueOf(totalCpu)));
-            sb.append(progress("Idle (" + user + ")", (int) (100d * idle / totalCpu), String.valueOf(totalCpu)));
-            sb.append(progress("Iowait (" + iowait + ")", (int) (100d * iowait / totalCpu), String.valueOf(totalCpu)));
-            sb.append(progress("IRQ (" + irq + ")", (int) (100d * irq / totalCpu), String.valueOf(totalCpu)));
-            sb.append(progress("softIRQ (" + softirq + ")", (int) (100d * softirq / totalCpu), String.valueOf(totalCpu)));
+            sb.append(progress("User (" + user + ")", (int) (100d * user / totalCpu), "red", String.valueOf(totalCpu)));
+            sb.append(progress("Nice (" + nice + ")", (int) (100d * nice / totalCpu), "red", String.valueOf(totalCpu)));
+            sb.append(progress("System (" + sys + ")", (int) (100d * sys / totalCpu), "red", String.valueOf(totalCpu)));
+            sb.append(progress("Idle (" + user + ")", (int) (100d * idle / totalCpu), "red", String.valueOf(totalCpu)));
+            sb.append(progress("Iowait (" + iowait + ")", (int) (100d * iowait / totalCpu), "red", String.valueOf(totalCpu)));
+            sb.append(progress("IRQ (" + irq + ")", (int) (100d * irq / totalCpu), "red", String.valueOf(totalCpu)));
+            sb.append(progress("softIRQ (" + softirq + ")", (int) (100d * softirq / totalCpu), "red", String.valueOf(totalCpu)));
 
 
         } catch (Exception x) {
@@ -556,7 +559,7 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
                     FormatUtil.formatBytes(usable), FormatUtil.formatBytes(fs.getTotalSpace()), 100d * usable / total,
                     fs.getVolume(), fs.getMount()));
 
-                sb.append(progress(fs.getName() + " (" + FormatUtil.formatBytes(total - usable) + ")", (int) (100d * (total - usable) / total), FormatUtil.formatBytes(fs.getTotalSpace())));
+                sb.append(progress(fs.getName() + " (" + FormatUtil.formatBytes(total - usable) + ")", (int) (100d * (total - usable) / total), "yellow", FormatUtil.formatBytes(fs.getTotalSpace())));
             }
         } catch (Exception x) {
             l.add("ERROR");
@@ -597,8 +600,8 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
                         double sentBps = ((net.getBytesSent() - lastBytesSent.get()) / (double) (now - lastTimesstamp.get())) * 8000;
                         double recvBps = ((net.getBytesRecv() - lastBytesRecv.get()) / (double) (now - lastTimesstamp.get())) * 8000;
 
-                        sb.append(progress("nic sent (" + FormatUtil.formatValue((long)sentBps, "bps") + ")", (int) (100d * (sentBps) / net.getSpeed()), FormatUtil.formatValue(net.getSpeed(), "bps")));
-                        sb.append(progress("nic recv (" + FormatUtil.formatValue((long)recvBps, "bps") + ")", (int) (100d * (recvBps) / net.getSpeed()), FormatUtil.formatValue(net.getSpeed(), "bps")));
+                        sb.append(progress("nic sent (" + FormatUtil.formatValue((long)sentBps, "bps") + ")", (int) (100d * (sentBps) / net.getSpeed()), "red", FormatUtil.formatValue(net.getSpeed(), "bps")));
+                        sb.append(progress("nic recv (" + FormatUtil.formatValue((long)recvBps, "bps") + ")", (int) (100d * (recvBps) / net.getSpeed()), "red", FormatUtil.formatValue(net.getSpeed(), "bps")));
                     }
 
                     lastTimesstamp.set(System.currentTimeMillis());
