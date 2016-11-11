@@ -9,12 +9,29 @@ import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.uba.shared.NannyReport;
 import com.jivesoftware.os.uba.shared.UbaReport;
+import com.jivesoftware.os.upena.deployable.UpenaHealth;
 import com.jivesoftware.os.upena.deployable.region.HomeRegion.HomeInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.service.UpenaStore;
 import com.jivesoftware.os.upena.shared.Host;
 import com.jivesoftware.os.upena.shared.HostKey;
 import com.jivesoftware.os.upena.uba.service.UbaService;
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
+import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.subject.Subject;
@@ -35,22 +52,6 @@ import oshi.software.os.OperatingSystem;
 import oshi.software.os.OperatingSystem.ProcessSort;
 import oshi.util.FormatUtil;
 import oshi.util.Util;
-
-import java.lang.management.ManagementFactory;
-import java.lang.management.RuntimeMXBean;
-import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  *
@@ -96,13 +97,15 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
     private final AtomicReference<List<String>> osys = new AtomicReference<>(Collections.singletonList("ERROR"));
     private final AtomicReference<List<String>> processes = new AtomicReference<>(Collections.singletonList("ERROR"));
 
-    private final AtomicReference<StringBuilder> overview = new AtomicReference<>(new StringBuilder());
+    private final AtomicReference<StringBuilder> overviewHeaders = new AtomicReference<>(new StringBuilder());
+    private final LinkedList<StringBuilder> overview = new LinkedList<>();
 
 
     @Override
     public void run() {
 
-        StringBuilder sb = new StringBuilder();
+        StringBuilder header = new StringBuilder();
+        StringBuilder values = new StringBuilder();
         try {
             SystemInfo si = null;
             try {
@@ -115,13 +118,13 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
                 hal = si.getHardware();
 
 
-                procs.set(printProcessor(hal, sb));
-                memory.set(printMemory(hal, sb));
-                cpu.set(printCpu(hal, sb));
-                sensor.set(printSensors(hal, sb));
-                power.set(printPowerSources(hal, sb));
-                nic.set(printNetworkInterfaces(hal, sb));
-                disk.set(printDisks(hal, sb));
+                procs.set(printProcessor(hal, header, values));
+                memory.set(printMemory(hal, header, values));
+                nic.set(printNetworkInterfaces(hal, header, values));
+                cpu.set(printCpu(hal, header, values));
+                sensor.set(printSensors(hal, header, values));
+                power.set(printPowerSources(hal, header, values));
+                disk.set(printDisks(hal, header, values));
 
             } catch (Exception x) {
                 LOG.warn("oshi HardwareAbstractionLayer failed.", x);
@@ -129,10 +132,10 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
 
             try {
                 OperatingSystem os = si.getOperatingSystem();
-                fsys.set(printFileSystem(os, sb));
+                fsys.set(printFileSystem(os, header, values));
                 osys.set(Collections.singletonList(os.toString()));
                 if (hal != null) {
-                    processes.set(printProcesses(os, hal, sb));
+                    processes.set(printProcesses(os, hal, header, values));
                 } else {
                     processes.set(Collections.singletonList("ERROR"));
                 }
@@ -144,7 +147,12 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
         } catch (Exception x) {
             LOG.warn("Home failed...", x);
         }
-        overview.set(sb);
+        overviewHeaders.set(header);
+
+        overview.addFirst(values);
+        if (overview.size() > 100) {
+            overview.removeLast();
+        }
     }
 
     @Override
@@ -177,14 +185,14 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
 
         PrincipalCollection principals = s.getPrincipals();
         LOG.info("Realms:" + principals.getRealmNames());
-        LOG.info("Primary:"+principals.getPrimaryPrincipal()+" "+principals.getClass()+" "+principals.getPrimaryPrincipal().getClass());
+        LOG.info("Primary:" + principals.getPrimaryPrincipal() + " " + principals.getClass() + " " + principals.getPrimaryPrincipal().getClass());
 
 
         LOG.info("role:readwrite?" + s.hasRole("readwrite"));
-        LOG.info("role:readonly?"+s.hasRole("readonly"));
+        LOG.info("role:readonly?" + s.hasRole("readonly"));
 
         LOG.info("perm:read?" + s.isPermitted("read"));
-        LOG.info("perm:write?"+s.isPermitted("write"));
+        LOG.info("perm:write?" + s.isPermitted("write"));
 
 
         Subject subject = s;
@@ -233,11 +241,10 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
 
     public String renderOverview(String user) throws Exception {
         StringBuilder sb = new StringBuilder();
-        sb.append("<p><span class=\"badge\">").append("uptime " + getDurationBreakdown(runtimeBean.getUptime())).append("</span></p>");
 
 
-        sb.append("<div>");
-        sb.append(overview.get().toString());
+        sb.append("<p>");
+        sb.append("<span class=\"badge\">").append("uptime " + getDurationBreakdown(runtimeBean.getUptime())).append("</span>");
 
 
         UbaReport ubaReport = ubaService.report();
@@ -247,25 +254,54 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
             total++;
             stateCount.add(nannyReport.state);
         }
+
+
         String[] states = stateCount.elementSet().toArray(new String[0]);
         Arrays.sort(states);
         for (String state : states) {
-            sb.append(progress(state + " (" + numberFormat.format(stateCount.count(state)) + ")",
+            sb.append(bar(state + " (" + numberFormat.format(stateCount.count(state)) + ")",
                 (int) (((double) stateCount.count(state) / total) * 100),
                 "lime", numberFormat.format(total)));
         }
-        sb.append("</div>");
+        sb.append("</p>");
+
+
+        sb.append("<table class=\"table table-condensed\"> ");
+        sb.append("<thead> ");
+        sb.append("<tr> ");
+        sb.append(overviewHeaders.get().toString());
+        sb.append("</tr> ");
+        sb.append("</thead> ");
+        sb.append("<tbody> ");
+        for (StringBuilder stringBuilder : overview) {
+            sb.append("</tr> ");
+            sb.append(stringBuilder.toString());
+            sb.append("</tr> ");
+        }
+
+
+        sb.append("</tbody> ");
+        sb.append("</table>");
+
 
         return sb.toString();
     }
 
-    private String progress(String title, int progress, String color, String value) {
+    private String td(String title, int progress, String color, String value) {
+
+        return "<td style=\"background-color:#" + UpenaHealth.getHEXTrafficlightColor((100 - progress) / 100d, 0.5f) + "\">" + title + "</td>";
+    }
+
+
+    private String bar(String title, int progress, String color, String value) {
+
         Map<String, Object> data = new HashMap<>();
         data.put("title", title);
         data.put("progress", progress);
         data.put("color", color);
         data.put("value", value);
-        return renderer.render("soy.page.upenaVerticalBar", data);
+        return renderer.render("soy.page.upenaStackedProgress", data);
+
     }
 
     public static String getDurationBreakdown(long millis) {
@@ -323,7 +359,7 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
         return "Upena";
     }
 
-    private List<String> printProcessor(HardwareAbstractionLayer hal, StringBuilder sb) {
+    private List<String> printProcessor(HardwareAbstractionLayer hal, StringBuilder header, StringBuilder values) {
         List<String> l = new ArrayList<>();
         try {
             CentralProcessor processor = hal.getProcessor();
@@ -340,19 +376,20 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
         return l;
     }
 
-    private List<String> printMemory(HardwareAbstractionLayer hal, StringBuilder sb) {
+    private List<String> printMemory(HardwareAbstractionLayer hal, StringBuilder header, StringBuilder values) {
         List<String> l = new ArrayList<>();
         try {
             GlobalMemory memory = hal.getMemory();
             l.add("Memory: " + FormatUtil.formatBytes(memory.getAvailable()) + "/" + FormatUtil.formatBytes(memory.getTotal()));
             l.add("Swap used: " + FormatUtil.formatBytes(memory.getSwapUsed()) + "/" + FormatUtil.formatBytes(memory.getSwapTotal()));
 
-
-            sb.append(progress("Memory (" + FormatUtil.formatBytes(memory.getAvailable()) + ")",
+            header.append("<th>memory</th>");
+            values.append(td(FormatUtil.formatBytes(memory.getAvailable()),
                 (int) (((double) memory.getAvailable() / memory.getTotal()) * 100),
                 "cyan", FormatUtil.formatBytes(memory.getTotal())));
 
-            sb.append(progress("Swap (" + FormatUtil.formatBytes(memory.getSwapUsed()) + ")",
+            header.append("<th>swap</th>");
+            values.append(td(FormatUtil.formatBytes(memory.getSwapUsed()),
                 (int) (((double) memory.getSwapUsed() / memory.getSwapTotal()) * 100),
                 "cyan", FormatUtil.formatBytes(memory.getSwapTotal())));
 
@@ -363,7 +400,7 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
         return l;
     }
 
-    private List<String> printCpu(HardwareAbstractionLayer hal, StringBuilder sb) {
+    private List<String> printCpu(HardwareAbstractionLayer hal, StringBuilder header, StringBuilder values) {
         List<String> l = new ArrayList<>();
         try {
             CentralProcessor processor = hal.getProcessor();
@@ -413,26 +450,36 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
 
             long maxLoad = load.length * 10; // ??
 
-            sb.append(progress("1m load (" + (loadAverage[0] < 0 ? " N/A" : String.format(" %.2f", loadAverage[0])) + ")",
+            header.append("<th>1min</th>");
+            values.append(td((loadAverage[0] < 0 ? " N/A" : String.format(" %.2f", loadAverage[0])),
                 (int) (((double) loadAverage[0] / maxLoad) * 100),
                 "navy", String.valueOf(maxLoad)));
 
-            sb.append(progress("5m load (" + (loadAverage[1] < 0 ? " N/A" : String.format(" %.2f", loadAverage[1])) + ")",
+            header.append("<th>5min</th>");
+            values.append(td((loadAverage[1] < 0 ? " N/A" : String.format(" %.2f", loadAverage[1])),
                 (int) (((double) loadAverage[1] / maxLoad) * 100),
                 "navy", String.valueOf(maxLoad)));
 
-            sb.append(progress("15m load (" + (loadAverage[2] < 0 ? " N/A" : String.format(" %.2f", loadAverage[2])) + ")",
+            header.append("<th>15min</th>");
+            values.append(td((loadAverage[2] < 0 ? " N/A" : String.format(" %.2f", loadAverage[2])),
                 (int) (((double) loadAverage[2] / maxLoad) * 100),
                 "navy", String.valueOf(maxLoad)));
 
 
-            sb.append(progress("User (" + user + ")", (int) (100d * user / totalCpu), "red", String.valueOf(totalCpu)));
-            sb.append(progress("Nice (" + nice + ")", (int) (100d * nice / totalCpu), "red", String.valueOf(totalCpu)));
-            sb.append(progress("System (" + sys + ")", (int) (100d * sys / totalCpu), "red", String.valueOf(totalCpu)));
-            sb.append(progress("Idle (" + user + ")", (int) (100d * idle / totalCpu), "red", String.valueOf(totalCpu)));
-            sb.append(progress("Iowait (" + iowait + ")", (int) (100d * iowait / totalCpu), "red", String.valueOf(totalCpu)));
-            sb.append(progress("IRQ (" + irq + ")", (int) (100d * irq / totalCpu), "red", String.valueOf(totalCpu)));
-            sb.append(progress("softIRQ (" + softirq + ")", (int) (100d * softirq / totalCpu), "red", String.valueOf(totalCpu)));
+            header.append("<th>User</th>");
+            values.append(td(String.valueOf(user), (int) (100d * user / totalCpu), "red", String.valueOf(totalCpu)));
+            header.append("<th>Nice</th>");
+            values.append(td(String.valueOf(nice), (int) (100d * nice / totalCpu), "red", String.valueOf(totalCpu)));
+            header.append("<th>System</th>");
+            values.append(td(String.valueOf(sys), (int) (100d * sys / totalCpu), "red", String.valueOf(totalCpu)));
+            header.append("<th>Idle</th>");
+            values.append(td(String.valueOf(idle), (int) (100d * idle / totalCpu), "red", String.valueOf(totalCpu)));
+            header.append("<th>Iowait</th>");
+            values.append(td(String.valueOf(iowait), (int) (100d * iowait / totalCpu), "red", String.valueOf(totalCpu)));
+            header.append("<th>IRQ</th>");
+            values.append(td(String.valueOf(irq), (int) (100d * irq / totalCpu), "red", String.valueOf(totalCpu)));
+            header.append("<th>softIRQ</th>");
+            values.append(td(String.valueOf(softirq), (int) (100d * softirq / totalCpu), "red", String.valueOf(totalCpu)));
 
 
         } catch (Exception x) {
@@ -442,11 +489,19 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
         return l;
     }
 
-    private static List<String> printProcesses(OperatingSystem os, HardwareAbstractionLayer hal, StringBuilder sb) {
+    private List<String> printProcesses(OperatingSystem os, HardwareAbstractionLayer hal, StringBuilder header, StringBuilder values) {
         List<String> l = new ArrayList<>();
         try {
             GlobalMemory memory = hal.getMemory();
             l.add("Processes: " + os.getProcessCount() + ", Threads: " + os.getThreadCount());
+
+            header.append("<th>process</th>");
+            values.append(td(String.valueOf(os.getProcessCount()), 0, "red", ""));
+
+            header.append("<th>threads</th>");
+            values.append(td(String.valueOf(os.getThreadCount()), 0, "red", ""));
+
+
             // Sort by highest CPU
             List<OSProcess> procs = Arrays.asList(os.getProcesses(5, ProcessSort.CPU));
 
@@ -465,7 +520,7 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
         return l;
     }
 
-    private static List<String> printSensors(HardwareAbstractionLayer hal, StringBuilder sb) {
+    private static List<String> printSensors(HardwareAbstractionLayer hal, StringBuilder header, StringBuilder values) {
         List<String> l = new ArrayList<>();
         try {
             Sensors sensors = hal.getSensors();
@@ -480,7 +535,7 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
         return l;
     }
 
-    private static List<String> printPowerSources(HardwareAbstractionLayer hal, StringBuilder sb) {
+    private static List<String> printPowerSources(HardwareAbstractionLayer hal, StringBuilder header, StringBuilder values) {
         List<String> l = new ArrayList<>();
         try {
             PowerSource[] powerSources = hal.getPowerSources();
@@ -509,10 +564,30 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
         return l;
     }
 
-    private static List<String> printDisks(HardwareAbstractionLayer hal, StringBuilder sb) {
+    AtomicLong[] lastReadCount;
+    AtomicLong[] lastReads;
+    AtomicLong[] lastWriteCount;
+    AtomicLong[] lastWrites;
+
+    private List<String> printDisks(HardwareAbstractionLayer hal, StringBuilder header, StringBuilder values) {
         List<String> l = new ArrayList<>();
         try {
             HWDiskStore[] diskStores = hal.getDiskStores();
+
+            if (lastReadCount == null || lastReadCount.length != diskStores.length) {
+                lastReadCount = new AtomicLong[diskStores.length];
+                lastReads = new AtomicLong[diskStores.length];
+                lastWriteCount = new AtomicLong[diskStores.length];
+                lastWrites = new AtomicLong[diskStores.length];
+
+                for (int i = 0; i < diskStores.length; i++) {
+                    lastReadCount[i] = new AtomicLong(-1);
+                    lastReads[i] = new AtomicLong(-1);
+                    lastWriteCount[i] = new AtomicLong(-1);
+                    lastWrites[i] = new AtomicLong(-1);
+                }
+            }
+
             l.add("Disks:");
             for (HWDiskStore disk : diskStores) {
                 boolean readwrite = disk.getReads() > 0 || disk.getWrites() > 0;
@@ -534,6 +609,55 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
                         part.getMountPoint().isEmpty() ? "" : " @ " + part.getMountPoint()));
                 }
             }
+
+            int i = 1;
+            for (HWDiskStore disk : diskStores) {
+                boolean readwrite = disk.getReads() > 0 || disk.getWrites() > 0;
+                l.add(String.format(" %s: (model: %s - S/N: %s) size: %s, reads: %s (%s), writes: %s (%s), xfer: %s ms%n",
+                    disk.getName(), disk.getModel(), disk.getSerial(),
+                    disk.getSize() > 0 ? FormatUtil.formatBytesDecimal(disk.getSize()) : "?",
+                    readwrite ? disk.getReads() : "?", readwrite ? FormatUtil.formatBytes(disk.getReadBytes()) : "?",
+                    readwrite ? disk.getWrites() : "?", readwrite ? FormatUtil.formatBytes(disk.getWriteBytes()) : "?",
+                    readwrite ? disk.getTransferTime() : "?"));
+
+                header.append("<th>disk-" + i + "-#R</th>");
+                if (lastReadCount[i - 1].get() != -1) {
+                    values.append(td(readwrite ? String.valueOf(disk.getReads() - lastReadCount[i - 1].get()) : "?", 0, "red", ""));
+                } else {
+                    values.append("<td></td>");
+                }
+                header.append("<th>disk-" + i + "-R</th>");
+                if (lastReads[i - 1].get() != -1) {
+
+                    values.append(td(readwrite ? FormatUtil.formatBytes(disk.getReadBytes() - lastReads[i - 1].get()) : "?", 0, "red", ""));
+                } else {
+                    values.append("<td></td>");
+                }
+
+                header.append("<th>disk-" + i + "-#W</th>");
+                if (lastWriteCount[i - 1].get() != -1) {
+                    values.append(td(readwrite ? String.valueOf(disk.getWrites() - lastWriteCount[i - 1].get()) : "?", 0, "red", ""));
+                } else {
+                    values.append("<td></td>");
+                }
+
+                header.append("<th>disk-" + i + "-W</th>");
+                if (lastWrites[i - 1].get() != -1) {
+                    values.append(td(readwrite ? FormatUtil.formatBytes(disk.getWriteBytes() - lastWrites[i - 1].get()) : "?", 0, "red", ""));
+                } else {
+                    values.append("<td></td>");
+                }
+
+                lastReadCount[i - 1].set(readwrite ? disk.getReads() : -1);
+                lastReads[i - 1].set(readwrite ? disk.getReadBytes() : -1);
+                lastWriteCount[i - 1].set(readwrite ? disk.getWrites() : -1);
+                lastWrites[i - 1].set(readwrite ? disk.getWriteBytes() : -1);
+
+
+                i++;
+            }
+
+
         } catch (Exception x) {
             l.add("ERROR");
             LOG.warn("Failure", x);
@@ -541,7 +665,7 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
         return l;
     }
 
-    private List<String> printFileSystem(OperatingSystem os, StringBuilder sb) {
+    private List<String> printFileSystem(OperatingSystem os, StringBuilder header, StringBuilder values) {
         List<String> l = new ArrayList<>();
         try {
             FileSystem fileSystem = os.getFileSystem();
@@ -549,6 +673,10 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
 
             l.add(String.format(" File Descriptors: %d/%d%n", fileSystem.getOpenFileDescriptors(),
                 fileSystem.getMaxFileDescriptors()));
+
+            header.append("<th>fd</th>");
+            values.append(td(String.valueOf(fileSystem.getOpenFileDescriptors()),
+                (int) (100 * (fileSystem.getOpenFileDescriptors() / (float) fileSystem.getMaxFileDescriptors())), "red", ""));
 
             OSFileStore[] fileStores = fileSystem.getFileStores();
             for (OSFileStore fs : fileStores) {
@@ -559,7 +687,9 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
                     FormatUtil.formatBytes(usable), FormatUtil.formatBytes(fs.getTotalSpace()), 100d * usable / total,
                     fs.getVolume(), fs.getMount()));
 
-                sb.append(progress(fs.getName() + " (" + FormatUtil.formatBytes(total - usable) + ")", (int) (100d * (total - usable) / total), "yellow", FormatUtil.formatBytes(fs.getTotalSpace())));
+                header.append("<th>" + fs.getName() + "</th>");
+                values.append(td(FormatUtil.formatBytes(total - usable), (int) (100d * (total - usable) / total), "yellow",
+                    FormatUtil.formatBytes(fs.getTotalSpace())));
             }
         } catch (Exception x) {
             l.add("ERROR");
@@ -573,7 +703,7 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
     AtomicLong lastBytesRecv = new AtomicLong(-1);
 
 
-    private List<String> printNetworkInterfaces(HardwareAbstractionLayer hal, StringBuilder sb) {
+    private List<String> printNetworkInterfaces(HardwareAbstractionLayer hal, StringBuilder header, StringBuilder values) {
         List<String> l = new ArrayList<>();
         try {
             NetworkIF[] networkIFs = hal.getNetworkIFs();
@@ -595,13 +725,24 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
                         hasData ? net.getPacketsSent() + " packets" : "?",
                         hasData ? FormatUtil.formatBytes(net.getBytesSent()) : "?"));
 
+                    header.append("<th>sent</th>");
+                    header.append("<th>recv</th>");
+
                     if (lastBytesRecv.get() != -1) {
                         long now = System.currentTimeMillis();
                         double sentBps = ((net.getBytesSent() - lastBytesSent.get()) / (double) (now - lastTimesstamp.get())) * 8000;
                         double recvBps = ((net.getBytesRecv() - lastBytesRecv.get()) / (double) (now - lastTimesstamp.get())) * 8000;
 
-                        sb.append(progress("nic sent (" + FormatUtil.formatValue((long)sentBps, "bps") + ")", (int) (100d * (sentBps) / net.getSpeed()), "red", FormatUtil.formatValue(net.getSpeed(), "bps")));
-                        sb.append(progress("nic recv (" + FormatUtil.formatValue((long)recvBps, "bps") + ")", (int) (100d * (recvBps) / net.getSpeed()), "red", FormatUtil.formatValue(net.getSpeed(), "bps")));
+                        values.append(
+                            td(FormatUtil.formatValue((long) sentBps, "bps"), (int) (100d * (sentBps) / net.getSpeed()), "red",
+                                FormatUtil.formatValue(net.getSpeed(), "bps")));
+
+                        values.append(
+                            td(FormatUtil.formatValue((long) recvBps, "bps"), (int) (100d * (recvBps) / net.getSpeed()), "red",
+                                FormatUtil.formatValue(net.getSpeed(), "bps")));
+                    } else {
+                        values.append("<td></td>");
+                        values.append("<td></td>");
                     }
 
                     lastTimesstamp.set(System.currentTimeMillis());
