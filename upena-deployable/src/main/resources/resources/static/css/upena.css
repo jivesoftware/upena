@@ -7,6 +7,10 @@ div.popover-content {
     padding: 0px;
 }
 
+div#healthGradient:hover {
+    cursor: pointer;
+}
+
 div.upena-title {
     margin: 0 75px;
     line-height: 48px;
