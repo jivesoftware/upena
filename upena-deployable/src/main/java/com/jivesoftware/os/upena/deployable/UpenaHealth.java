@@ -161,6 +161,12 @@ public class UpenaHealth {
         return "000000".substring(s.length()) + s;
     }
 
+    public static String trafficlightColorRGB(double value, float sat, float alpha) {
+        //String s = Integer.toHexString(Color.HSBtoRGB(0.6f, 1f - ((float) value), sat) & 0xffffff);
+        Color color = new Color(Color.HSBtoRGB((float) value / 3f, sat, 1f));
+        return color.getRed() + "," + color.getGreen() + "," + color.getBlue()+","+alpha;
+    }
+
     public NodeHealth buildNodeHealth() throws Exception {
         NodeHealth nodeHealth = new NodeHealth(ringHostKey.getKey(), ringHost.getHost(), ringHost.getPort());
         for (Map.Entry<String, Nanny> nanny : ubaService.iterateNannies()) {
