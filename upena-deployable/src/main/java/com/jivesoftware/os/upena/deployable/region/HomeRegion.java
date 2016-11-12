@@ -287,8 +287,8 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
     }
 
     private String td(String title, int progress, String color, String value) {
-
-        return "<td style=\"background-color:#" + UpenaHealth.getHEXTrafficlightColor((100 - progress) / 100d, 0.5f) + "\">" + title + "</td>";
+        double v = (100 - progress) / 100d;
+        return "<td style=\"background-color: rgba(" + UpenaHealth.trafficlightColorRGB(v, 0.75f, (float)(1d-v)) + ")\">" + title + "</td>";
     }
 
 
