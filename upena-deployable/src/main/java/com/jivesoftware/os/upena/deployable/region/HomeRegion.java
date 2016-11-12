@@ -1,14 +1,10 @@
 package com.jivesoftware.os.upena.deployable.region;
 
-import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Multiset;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
-import com.jivesoftware.os.uba.shared.NannyReport;
-import com.jivesoftware.os.uba.shared.UbaReport;
 import com.jivesoftware.os.upena.deployable.UpenaHealth;
 import com.jivesoftware.os.upena.deployable.region.HomeRegion.HomeInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
@@ -22,6 +18,7 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -105,7 +102,9 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
     public void run() {
 
         StringBuilder header = new StringBuilder();
+        header.append("<th>time</th>");
         StringBuilder values = new StringBuilder();
+        values.append("<td>"+new Date().toString()+"</td>");
         try {
             SystemInfo si = null;
             try {
@@ -243,7 +242,7 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
         StringBuilder sb = new StringBuilder();
 
 
-        sb.append("<p>");
+       /* sb.append("<p>");
         sb.append("<span class=\"badge\">").append("uptime " + getDurationBreakdown(runtimeBean.getUptime())).append("</span>");
 
 
@@ -264,9 +263,9 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
                 "lime", numberFormat.format(total)));
         }
         sb.append("</p>");
+*/
 
-
-        sb.append("<table class=\"table table-condensed\"> ");
+        sb.append("<table class=\"table-hover table-condensed float-table-head table-responsive\"> ");
         sb.append("<thead> ");
         sb.append("<tr> ");
         sb.append(overviewHeaders.get().toString());
@@ -674,7 +673,7 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
             l.add(String.format(" File Descriptors: %d/%d%n", fileSystem.getOpenFileDescriptors(),
                 fileSystem.getMaxFileDescriptors()));
 
-            header.append("<th>fd</th>");
+            header.append("<th>file descriptors</th>");
             values.append(td(String.valueOf(fileSystem.getOpenFileDescriptors()),
                 (int) (100 * (fileSystem.getOpenFileDescriptors() / (float) fileSystem.getMaxFileDescriptors())), "red", ""));
 
