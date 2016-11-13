@@ -1,3 +1,7 @@
+.gooey-area {
+    filter:url('#goo');
+}
+
 
 div.panel {
     margin: 15px;
