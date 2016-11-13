@@ -265,7 +265,7 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
         sb.append("</p>");
 */
 
-        sb.append("<table class=\"table-hover table-condensed float-table-head table-responsive\"> ");
+        sb.append("<table class=\"table-hover table-condensed float-table-head table-responsive\" style=\"width:100%\">");
         sb.append("<thead> ");
         sb.append("<tr> ");
         sb.append(overviewHeaders.get().toString());
