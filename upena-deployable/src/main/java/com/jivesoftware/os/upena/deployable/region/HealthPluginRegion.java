@@ -662,7 +662,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                                 }
 
                             } else {
-                                cell.put("color", "#404040");
+                                cell.put("color", "#222");
                                 cell.put("health", "&odash;");
                                 cell.put("age", "&odash;");
                             }
