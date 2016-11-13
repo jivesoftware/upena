@@ -94,17 +94,17 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
     private final AtomicReference<List<String>> osys = new AtomicReference<>(Collections.singletonList("ERROR"));
     private final AtomicReference<List<String>> processes = new AtomicReference<>(Collections.singletonList("ERROR"));
 
-    private final AtomicReference<StringBuilder> overviewHeaders = new AtomicReference<>(new StringBuilder());
+    private final AtomicReference<List<String>> overviewHeaders = new AtomicReference<>();
     private final LinkedList<StringBuilder> overview = new LinkedList<>();
 
 
     @Override
     public void run() {
 
-        StringBuilder header = new StringBuilder();
-        header.append("<th>time</th>");
+        List<String> header = new ArrayList<>();
+        header.add("time");
         StringBuilder values = new StringBuilder();
-        values.append("<td>"+new Date().toString()+"</td>");
+        values.append("<th>" + new Date().toString() + "</td>");
         try {
             SystemInfo si = null;
             try {
@@ -214,6 +214,8 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
             data.put("instances", instances);
         }
 
+        List<String> h = overviewHeaders.get();
+        data.put("headers", h);
 
         data.put("procs", procs.get());
         data.put("memory", memory.get());
@@ -265,22 +267,12 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
         sb.append("</p>");
 */
 
-        sb.append("<table class=\"table-hover table-condensed float-table-head table-responsive\" style=\"width:100%\">");
-        sb.append("<thead> ");
-        sb.append("<tr> ");
-        sb.append(overviewHeaders.get().toString());
-        sb.append("</tr> ");
-        sb.append("</thead> ");
-        sb.append("<tbody> ");
+
         for (StringBuilder stringBuilder : overview) {
-            sb.append("</tr> ");
+            sb.append("<tr> ");
             sb.append(stringBuilder.toString());
             sb.append("</tr> ");
         }
-
-
-        sb.append("</tbody> ");
-        sb.append("</table>");
 
 
         return sb.toString();
@@ -288,7 +280,7 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
 
     private String td(String title, int progress, String color, String value) {
         double v = (100 - progress) / 100d;
-        return "<td style=\"background-color: rgba(" + UpenaHealth.trafficlightColorRGB(v, 0.75f, (float)(1d-v)) + ")\">" + title + "</td>";
+        return "<td style=\"background-color: rgba(" + UpenaHealth.trafficlightColorRGB(v, 0.75f, (float) (1d - v)) + ")\">" + title + "</td>";
     }
 
 
@@ -358,7 +350,7 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
         return "Upena";
     }
 
-    private List<String> printProcessor(HardwareAbstractionLayer hal, StringBuilder header, StringBuilder values) {
+    private List<String> printProcessor(HardwareAbstractionLayer hal, List<String> header, StringBuilder values) {
         List<String> l = new ArrayList<>();
         try {
             CentralProcessor processor = hal.getProcessor();
@@ -375,19 +367,19 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
         return l;
     }
 
-    private List<String> printMemory(HardwareAbstractionLayer hal, StringBuilder header, StringBuilder values) {
+    private List<String> printMemory(HardwareAbstractionLayer hal, List<String> header, StringBuilder values) {
         List<String> l = new ArrayList<>();
         try {
             GlobalMemory memory = hal.getMemory();
             l.add("Memory: " + FormatUtil.formatBytes(memory.getAvailable()) + "/" + FormatUtil.formatBytes(memory.getTotal()));
             l.add("Swap used: " + FormatUtil.formatBytes(memory.getSwapUsed()) + "/" + FormatUtil.formatBytes(memory.getSwapTotal()));
 
-            header.append("<th>memory</th>");
-            values.append(td((int) (((double) memory.getAvailable() / memory.getTotal()) * 100)+"%",
+            header.add("memory");
+            values.append(td((int) (((double) memory.getAvailable() / memory.getTotal()) * 100) + "%",
                 (int) (((double) memory.getAvailable() / memory.getTotal()) * 100),
                 "cyan", FormatUtil.formatBytes(memory.getTotal())));
 
-            header.append("<th>swap</th>");
+            header.add("swap");
             values.append(td(FormatUtil.formatBytes(memory.getSwapUsed()),
                 (int) (((double) memory.getSwapUsed() / memory.getSwapTotal()) * 100),
                 "cyan", FormatUtil.formatBytes(memory.getSwapTotal())));
@@ -399,7 +391,7 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
         return l;
     }
 
-    private List<String> printCpu(HardwareAbstractionLayer hal, StringBuilder header, StringBuilder values) {
+    private List<String> printCpu(HardwareAbstractionLayer hal, List<String> header, StringBuilder values) {
         List<String> l = new ArrayList<>();
         try {
             CentralProcessor processor = hal.getProcessor();
@@ -449,36 +441,36 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
 
             long maxLoad = load.length * 10; // ??
 
-            header.append("<th>1min</th>");
+            header.add("1min");
             values.append(td((loadAverage[0] < 0 ? " N/A" : String.format(" %.2f", loadAverage[0])),
                 (int) (((double) loadAverage[0] / maxLoad) * 100),
                 "navy", String.valueOf(maxLoad)));
 
-            header.append("<th>5min</th>");
+            header.add("5min");
             values.append(td((loadAverage[1] < 0 ? " N/A" : String.format(" %.2f", loadAverage[1])),
                 (int) (((double) loadAverage[1] / maxLoad) * 100),
                 "navy", String.valueOf(maxLoad)));
 
-            header.append("<th>15min</th>");
+            header.add("15min");
             values.append(td((loadAverage[2] < 0 ? " N/A" : String.format(" %.2f", loadAverage[2])),
                 (int) (((double) loadAverage[2] / maxLoad) * 100),
                 "navy", String.valueOf(maxLoad)));
 
 
-            header.append("<th>User</th>");
-            values.append(td(String.valueOf((int) (100d * user / totalCpu))+"%", (int) (100d * user / totalCpu), "red", String.valueOf(totalCpu)));
-            header.append("<th>Nice</th>");
-            values.append(td(String.valueOf((int) (100d * nice / totalCpu))+"%", (int) (100d * nice / totalCpu), "red", String.valueOf(totalCpu)));
-            header.append("<th>System</th>");
-            values.append(td(String.valueOf((int) (100d * sys / totalCpu))+"%", (int) (100d * sys / totalCpu), "red", String.valueOf(totalCpu)));
-            header.append("<th>Idle</th>");
-            values.append(td(String.valueOf((int) (100d * idle / totalCpu))+"%", (int) (100d * idle / totalCpu), "red", String.valueOf(totalCpu)));
-            header.append("<th>Iowait</th>");
-            values.append(td(String.valueOf((int) (100d * iowait / totalCpu))+"%", (int) (100d * iowait / totalCpu), "red", String.valueOf(totalCpu)));
-            header.append("<th>IRQ</th>");
-            values.append(td(String.valueOf((int) (100d * irq / totalCpu))+"%", (int) (100d * irq / totalCpu), "red", String.valueOf(totalCpu)));
-            header.append("<th>softIRQ</th>");
-            values.append(td(String.valueOf((int) (100d * softirq / totalCpu))+"%", (int) (100d * softirq / totalCpu), "red", String.valueOf(totalCpu)));
+            header.add("User");
+            values.append(td(String.valueOf((int) (100d * user / totalCpu)) + "%", (int) (100d * user / totalCpu), "red", String.valueOf(totalCpu)));
+            header.add("Nice");
+            values.append(td(String.valueOf((int) (100d * nice / totalCpu)) + "%", (int) (100d * nice / totalCpu), "red", String.valueOf(totalCpu)));
+            header.add("System");
+            values.append(td(String.valueOf((int) (100d * sys / totalCpu)) + "%", (int) (100d * sys / totalCpu), "red", String.valueOf(totalCpu)));
+            header.add("Idle");
+            values.append(td(String.valueOf((int) (100d * idle / totalCpu)) + "%", (int) (100d * idle / totalCpu), "red", String.valueOf(totalCpu)));
+            header.add("Iowait");
+            values.append(td(String.valueOf((int) (100d * iowait / totalCpu)) + "%", (int) (100d * iowait / totalCpu), "red", String.valueOf(totalCpu)));
+            header.add("IRQ");
+            values.append(td(String.valueOf((int) (100d * irq / totalCpu)) + "%", (int) (100d * irq / totalCpu), "red", String.valueOf(totalCpu)));
+            header.add("softIRQ");
+            values.append(td(String.valueOf((int) (100d * softirq / totalCpu)) + "%", (int) (100d * softirq / totalCpu), "red", String.valueOf(totalCpu)));
 
 
         } catch (Exception x) {
@@ -488,16 +480,16 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
         return l;
     }
 
-    private List<String> printProcesses(OperatingSystem os, HardwareAbstractionLayer hal, StringBuilder header, StringBuilder values) {
+    private List<String> printProcesses(OperatingSystem os, HardwareAbstractionLayer hal, List<String> header, StringBuilder values) {
         List<String> l = new ArrayList<>();
         try {
             GlobalMemory memory = hal.getMemory();
             l.add("Processes: " + os.getProcessCount() + ", Threads: " + os.getThreadCount());
 
-            header.append("<th>process</th>");
+            header.add("process");
             values.append(td(String.valueOf(os.getProcessCount()), 0, "red", ""));
 
-            header.append("<th>threads</th>");
+            header.add("threads");
             values.append(td(String.valueOf(os.getThreadCount()), 0, "red", ""));
 
 
@@ -519,7 +511,7 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
         return l;
     }
 
-    private static List<String> printSensors(HardwareAbstractionLayer hal, StringBuilder header, StringBuilder values) {
+    private static List<String> printSensors(HardwareAbstractionLayer hal, List<String> header, StringBuilder values) {
         List<String> l = new ArrayList<>();
         try {
             Sensors sensors = hal.getSensors();
@@ -534,7 +526,7 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
         return l;
     }
 
-    private static List<String> printPowerSources(HardwareAbstractionLayer hal, StringBuilder header, StringBuilder values) {
+    private static List<String> printPowerSources(HardwareAbstractionLayer hal, List<String> header, StringBuilder values) {
         List<String> l = new ArrayList<>();
         try {
             PowerSource[] powerSources = hal.getPowerSources();
@@ -568,7 +560,7 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
     AtomicLong[] lastWriteCount;
     AtomicLong[] lastWrites;
 
-    private List<String> printDisks(HardwareAbstractionLayer hal, StringBuilder header, StringBuilder values) {
+    private List<String> printDisks(HardwareAbstractionLayer hal, List<String> header, StringBuilder values) {
         List<String> l = new ArrayList<>();
         try {
             HWDiskStore[] diskStores = hal.getDiskStores();
@@ -619,13 +611,13 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
                     readwrite ? disk.getWrites() : "?", readwrite ? FormatUtil.formatBytes(disk.getWriteBytes()) : "?",
                     readwrite ? disk.getTransferTime() : "?"));
 
-                header.append("<th>disk-" + i + "-#R</th>");
+                header.add("disk-" + i + "-#R");
                 if (lastReadCount[i - 1].get() != -1) {
                     values.append(td(readwrite ? String.valueOf(disk.getReads() - lastReadCount[i - 1].get()) : "?", 0, "red", ""));
                 } else {
                     values.append("<td></td>");
                 }
-                header.append("<th>disk-" + i + "-R</th>");
+                header.add("disk-" + i + "-R");
                 if (lastReads[i - 1].get() != -1) {
 
                     values.append(td(readwrite ? FormatUtil.formatBytes(disk.getReadBytes() - lastReads[i - 1].get()) : "?", 0, "red", ""));
@@ -633,14 +625,14 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
                     values.append("<td></td>");
                 }
 
-                header.append("<th>disk-" + i + "-#W</th>");
+                header.add("disk-" + i + "-#W");
                 if (lastWriteCount[i - 1].get() != -1) {
                     values.append(td(readwrite ? String.valueOf(disk.getWrites() - lastWriteCount[i - 1].get()) : "?", 0, "red", ""));
                 } else {
                     values.append("<td></td>");
                 }
 
-                header.append("<th>disk-" + i + "-W</th>");
+                header.add("disk-" + i + "-W");
                 if (lastWrites[i - 1].get() != -1) {
                     values.append(td(readwrite ? FormatUtil.formatBytes(disk.getWriteBytes() - lastWrites[i - 1].get()) : "?", 0, "red", ""));
                 } else {
@@ -664,7 +656,7 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
         return l;
     }
 
-    private List<String> printFileSystem(OperatingSystem os, StringBuilder header, StringBuilder values) {
+    private List<String> printFileSystem(OperatingSystem os, List<String> header, StringBuilder values) {
         List<String> l = new ArrayList<>();
         try {
             FileSystem fileSystem = os.getFileSystem();
@@ -673,7 +665,7 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
             l.add(String.format(" File Descriptors: %d/%d%n", fileSystem.getOpenFileDescriptors(),
                 fileSystem.getMaxFileDescriptors()));
 
-            header.append("<th>file descriptors</th>");
+            header.add("file descriptors");
             values.append(td(String.valueOf(fileSystem.getOpenFileDescriptors()),
                 (int) (100 * (fileSystem.getOpenFileDescriptors() / (float) fileSystem.getMaxFileDescriptors())), "red", ""));
 
@@ -686,8 +678,8 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
                     FormatUtil.formatBytes(usable), FormatUtil.formatBytes(fs.getTotalSpace()), 100d * usable / total,
                     fs.getVolume(), fs.getMount()));
 
-                header.append("<th>" + fs.getName() + "</th>");
-                values.append(td((int) (100d * (total - usable) / total)+"%", (int) (100d * (total - usable) / total), "yellow",
+                header.add(fs.getName());
+                values.append(td((int) (100d * (total - usable) / total) + "%", (int) (100d * (total - usable) / total), "yellow",
                     FormatUtil.formatBytes(fs.getTotalSpace())));
             }
         } catch (Exception x) {
@@ -702,7 +694,7 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
     AtomicLong lastBytesRecv = new AtomicLong(-1);
 
 
-    private List<String> printNetworkInterfaces(HardwareAbstractionLayer hal, StringBuilder header, StringBuilder values) {
+    private List<String> printNetworkInterfaces(HardwareAbstractionLayer hal, List<String> header, StringBuilder values) {
         List<String> l = new ArrayList<>();
         try {
             NetworkIF[] networkIFs = hal.getNetworkIFs();
@@ -724,8 +716,8 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
                         hasData ? net.getPacketsSent() + " packets" : "?",
                         hasData ? FormatUtil.formatBytes(net.getBytesSent()) : "?"));
 
-                    header.append("<th>sent</th>");
-                    header.append("<th>recv</th>");
+                    header.add("sent");
+                    header.add("recv");
 
                     if (lastBytesRecv.get() != -1) {
                         long now = System.currentTimeMillis();

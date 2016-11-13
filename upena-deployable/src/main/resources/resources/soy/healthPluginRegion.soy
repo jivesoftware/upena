@@ -174,13 +174,7 @@
                                         </div>
                                     {elseif $health.uid}
                                         <div data-health-hook="{$health.instanceKey ? $health.instanceKey : $health.health ? $health.health : ''}"
-                                            style="{if $health.instances}
-                                                border-color:#ddd; border-radius: 4px;
-                                                box-shadow:1px 1px 20px {$health.color},
-                                                  -1px 1px 20px {$health.color},
-                                                  -1px -1px 20px {$health.color},
-                                                  1px -1px 20px {$health.color} ;
-                                            {/if}
+
                                         ">
 
                                             {if $health.instances}

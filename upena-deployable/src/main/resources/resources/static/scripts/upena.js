@@ -1012,7 +1012,8 @@ upena.overview = {
         });
     },
     draw: function (data) {
-        $('#overview').html(data);
+        console.log(data);
+        $('#overview tbody').html(data);
 
         if (!upena.overview.requireFocus || upena.windowFocused) {
             //upena.stats.update();
