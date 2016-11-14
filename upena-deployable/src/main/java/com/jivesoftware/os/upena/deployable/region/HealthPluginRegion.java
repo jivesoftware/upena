@@ -30,7 +30,6 @@ import com.jivesoftware.os.upena.shared.Service;
 import com.jivesoftware.os.upena.shared.ServiceFilter;
 import com.jivesoftware.os.upena.shared.ServiceKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
-import java.awt.Color;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -42,6 +41,9 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.shiro.SecurityUtils;
+
+import static com.jivesoftware.os.upena.deployable.UpenaHealth.getHEXTrafficlightColor;
+import static com.jivesoftware.os.upena.deployable.UpenaHealth.trafficlightColorRGBA;
 
 /**
  *
@@ -148,7 +150,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
 
                                 String label = String.valueOf((int) (h * 100));
                                 String age = nannyHealth.uptime;
-                                String color = trafficlightColorRGB(h, 1f);
+                                String color = trafficlightColorRGBA(h, 1f);
                                 long now = System.currentTimeMillis();
                                 if (instance != null
                                     && instance.restartTimestampGMTMillis > 0
@@ -234,7 +236,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
 
                 healths.add(ImmutableMap.<String, Object>builder()
                     .put("id", m.getKey())
-                    .put("color", trafficlightColorRGB(Math.max(m.getValue(), 0d), 1f))
+                    .put("color", trafficlightColorRGBA(Math.max(m.getValue(), 0d), 1f))
                     .put("text", m.getKey())
                     .put("age", age)
                     .build());
@@ -419,7 +421,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                         Map<String, String> h = new HashMap<>();
                         Double ch = minClusterHealth.get(nannyHealth.instanceDescriptor.clusterKey);
                         h.put("cluster", "<div title=\"" + nannyHealth.instanceDescriptor.clusterName
-                            + "\" style=\"background-color:#" + getHEXTrafficlightColor(ch, 1f) + "\">"
+                            + "\" style=\"background-color:#" + UpenaHealth.getHEXTrafficlightColor(ch, 1f) + "\">"
                             + d2f(ch) + "</div>");
 
                         Double nh = nodeHealth.health;
@@ -837,33 +839,6 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
         return String.valueOf((int) (val * 100));
     }
 
-    String getHEXTrafficlightColor(double value, float sat) {
-        //String s = Integer.toHexString(Color.HSBtoRGB(0.6f, 1f - ((float) value), sat) & 0xffffff);
-        String s = Integer.toHexString(Color.HSBtoRGB((float) value / 3f, sat, 1f) & 0xffffff);
-        return "000000".substring(s.length()) + s;
-    }
-
-    String trafficlightColorRGB(double value, float sat) {
-        Color color = new Color(Color.HSBtoRGB((float) value / 3f, sat, 1f));
-        return color.getRed() + "," + color.getGreen() + "," + color.getBlue() + "," + Math.min(1d, Math.max(0, (1d - value)));
-    }
-
-
-    String getHEXIdColor(double value, float sat) {
-        float hue = (float) value / 3f;
-        hue = (1f / 3f) + (hue * 2);
-        String s = Integer.toHexString(Color.HSBtoRGB(hue, sat, 1f) & 0xffffff);
-        return "000000".substring(s.length()) + s;
-    }
-
-    String idColorRGB(double value, float sat) {
-        //String s = Integer.toHexString(Color.HSBtoRGB(0.6f, 1f - ((float) value), sat) & 0xffffff);
-        float hue = (float) value / 3f;
-        hue = (1f / 3f) + (hue * 2);
-        Color color = new Color(Color.HSBtoRGB(hue, sat, 1f));
-        return color.getRed() + "," + color.getGreen() + "," + color.getBlue();
-    }
-
     public String renderInstanceHealth(String instanceKey) throws Exception {
 
         Instance instance = upenaStore.instances.get(new InstanceKey(instanceKey));
@@ -941,7 +916,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
             for (UpenaHealth.Health health : serviceHealth.healthChecks) {
                 if (-Double.MAX_VALUE != health.health) {
                     Map<String, String> healthData = new HashMap<>();
-                    healthData.put("color", trafficlightColorRGB(health.health, 1f));
+                    healthData.put("color", UpenaHealth.trafficlightColorRGBA(health.health, 1f));
                     healthData.put("name", String.valueOf(health.name));
                     healthData.put("status", String.valueOf(health.status));
                     healthData.put("description", String.valueOf(health.description));
@@ -980,7 +955,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                 if (health.health >= 0.0d && health.health < 1d) {
                     Map<String, String> healthData = new HashMap<>();
                     healthData.put("score", String.valueOf((int) (100 * health.health)));
-                    healthData.put("color", trafficlightColorRGB(health.health, 1f));
+                    healthData.put("color", UpenaHealth.trafficlightColorRGBA(health.health, 1f));
                     healthData.put("name", String.valueOf(health.name));
                     healthData.put("status", String.valueOf(health.status));
 

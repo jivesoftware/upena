@@ -202,7 +202,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
             i = 0;
             for (Map.Entry<ServiceKey, TimestampedValue<Service>> entrySet : sort.entrySet()) {
                 if (!entrySet.getValue().getTombstoned()) {
-                    String idColor = healthPluginRegion.getHEXIdColor((double) i / (double) serviceColor.size(), 1f);
+                    String idColor = UpenaHealth.getHEXIdColor((double) i / (double) serviceColor.size(), 1f);
                     serviceNameLegend.add(ImmutableMap.of("name", entrySet.getValue().getValue().name, "color", idColor));
                     i++;
                 }
@@ -409,8 +409,8 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
                 node.put("minbgcolor", n.bgcolor);
                 node.put("healthRadius", "0");
             } else {
-                node.put("maxbgcolor", healthPluginRegion.getHEXTrafficlightColor(n.maxHealth, 1f));
-                node.put("minbgcolor", healthPluginRegion.getHEXTrafficlightColor(n.minHealth, 1f));
+                node.put("maxbgcolor", UpenaHealth.getHEXTrafficlightColor(n.maxHealth, 1f));
+                node.put("minbgcolor", UpenaHealth.getHEXTrafficlightColor(n.minHealth, 1f));
                 node.put("healthRadius", String.valueOf(6)); //String.valueOf((int) (1d - n.minHealth) * 4));
             }
             if (n.tooltip != null) {
@@ -440,7 +440,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
             edge.put("to", "id" + e.to);
             edge.put("color", "888");
             edge.put("minColor", "888");
-            edge.put("maxColor", healthPluginRegion.getHEXTrafficlightColor(e.min, 1f));
+            edge.put("maxColor", UpenaHealth.getHEXTrafficlightColor(e.min, 1f));
             renderEdges.add(edge);
         }
 
@@ -479,7 +479,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
         if (si == null) {
             si = 0;
         }
-        return healthPluginRegion.getHEXIdColor(((float) si / (float) serviceColor.size()), 1f);
+        return UpenaHealth.getHEXIdColor(((float) si / (float) serviceColor.size()), 1f);
     }
 
     private NannyHealth nannyHealth(String instanceId) throws Exception {

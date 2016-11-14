@@ -280,7 +280,7 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
 
     private String td(String title, int progress, String color, String value) {
         double v = (100 - progress) / 100d;
-        return "<td style=\"background-color: rgba(" + UpenaHealth.trafficlightColorRGB(v, 0.75f, (float) (1d - v)) + ")\">" + title + "</td>";
+        return "<td style=\"background-color: rgba(" + UpenaHealth.trafficlightColorRGBA(v, 1f) + ")\">" + title + "</td>";
     }
 
 

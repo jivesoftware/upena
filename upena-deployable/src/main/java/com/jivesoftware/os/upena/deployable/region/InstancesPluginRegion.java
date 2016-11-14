@@ -686,7 +686,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
         double h = 0d;
         if (timestampedValue.getValue().enabled) {
             if (nannyHealth != null) {
-                color = "#" + healthPluginRegion.getHEXTrafficlightColor(nannyHealth.serviceHealth.health, 1f);
+                color = "rgba(" + UpenaHealth.trafficlightColorRGBA(nannyHealth.serviceHealth.health, 1f)+")";
                 h = nannyHealth.serviceHealth.health;
             }
         }
