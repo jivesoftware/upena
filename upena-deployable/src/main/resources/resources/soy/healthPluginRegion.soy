@@ -173,12 +173,10 @@
                                             <img src="/static/img/rack.png" alt="Rack" style="width:20px;height:20px;">&nbsp;{$health.rack}
                                         </div>
                                     {elseif $health.uid}
-                                        <div data-health-hook="{$health.instanceKey ? $health.instanceKey : $health.health ? $health.health : ''}"
-
-                                        ">
+                                        <div data-health-hook="{$health.instanceKey ? $health.instanceKey : $health.health ? $health.health : ''}">
 
                                             {if $health.instances}
-                                                <div class="gooey grid-host-panel popover-health health-color"
+                                                <div class="grid-host-panel popover-health health-color"
                                                     id="popoverAnchor-{$health.uid}"
                                                     {if $health.instanceKey} data-popover-instance-key="{$health.instanceKey}"{/if}
                                                     data-popover-content="#popover-{$health.uid}"
@@ -491,7 +489,13 @@
                                                             {/if}
                                                         </ul>
                                                         //<div style="width:1200px" class="uis" ></div>
-                                                        <iframe width="1200" height="800" src="/ui/deployable/probe/{$health.instanceKey}" frameborder="0" allowfullscreen></iframe>
+                                                        //<iframe width="1200" height="800" src="/ui/deployable/probe/{$health.instanceKey}" frameborder="0" allowfullscreen></iframe>
+
+
+                                                        <div id='probe-{$health.instanceKey}' style="width:1200px"></div>
+                                                        <script type='text/javascript'>
+                                                          $('#probe-{$health.instanceKey}').load('/ui/deployable/probe/{$health.instanceKey}');
+                                                        </script>
                                                     </div>
                                                 {/foreach}
                                             {else}
