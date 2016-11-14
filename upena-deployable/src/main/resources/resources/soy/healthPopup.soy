@@ -37,7 +37,7 @@
         {if $health.health}
              {foreach $h in $health.health}
                 <li>
-                    <div style="border-radius:4px; display:inline-block; background-color:rgba({$h.color},0.9);">{$h.score}</div>
+                    <div style="border-radius:4px; display:inline-block; background-color:rgba({$h.color});">{$h.score}</div>
                     <span>{$h.name}</span>
                     <span>&nbsp;{$h.status}&nbsp;{$h.age}</span>
                 </li>

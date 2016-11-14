@@ -42,23 +42,23 @@
             <tbody>
                 {foreach $h in $healths}
                     <tr class="grid-host">
-                        <td style="background-color:rgba({$h.fromColor},  0.4)">{$h.from}</td>
-                        <td style="background-color:rgba({$h.toColor},  0.4)">{$h.to}</td>
+                        <td style="background-color:rgba({$h.fromColor})">{$h.from}</td>
+                        <td style="background-color:rgba({$h.toColor})">{$h.to}</td>
                         <td>{$h.family}</td>
                         <td>{$h.success}</td>
                         <td>{$h.successPerSecond}</td>
                         <td>{$h.failure}</td>
                         <td>{$h.failurePerSecond}</td>
                         <td>{$h.inflight}</td>
-                        <td style="background:rgba({$h.meanColor},  0.4)">{$h.mean}</td>
-                        <td style="background:rgba({$h.minColor},  0.4);">{$h.min}</td>
-                        <td style="background:rgba({$h.latency50thColor},  0.4)">{$h.latency50th}</td>
-                        <td style="background:rgba({$h.latency75thColor},  0.4)">{$h.latency75th}</td>
-                        <td style="background:rgba({$h.latency90thColor},  0.4)">{$h.latency90th}</td>
-                        <td style="background:rgba({$h.latency95thColor},  0.4)">{$h.latency95th}</td>
-                        <td style="background:rgba({$h.latency99thColor},  0.4)">{$h.latency99th}</td>
-                        <td style="background:rgba({$h.latency999thColor},  0.4)">{$h.latency999th}</td>
-                        <td style="background:rgba({$h.maxColor},  0.4)">{$h.max}</td>
+                        <td style="background:rgba({$h.meanColor})">{$h.mean}</td>
+                        <td style="background:rgba({$h.minColor});">{$h.min}</td>
+                        <td style="background:rgba({$h.latency50thColor})">{$h.latency50th}</td>
+                        <td style="background:rgba({$h.latency75thColor})">{$h.latency75th}</td>
+                        <td style="background:rgba({$h.latency90thColor})">{$h.latency90th}</td>
+                        <td style="background:rgba({$h.latency95thColor})">{$h.latency95th}</td>
+                        <td style="background:rgba({$h.latency99thColor})">{$h.latency99th}</td>
+                        <td style="background:rgba({$h.latency999thColor})">{$h.latency999th}</td>
+                        <td style="background:rgba({$h.maxColor})">{$h.max}</td>
                         <td>
                             <a href="/ui/connectivity/{$h.instanceKey}" class="btn btn-default" title="{$h.host}:{$h.port}">
                                 <span class="glyphicon glyphicon-transfer">{$h.host}:{$h.port}</span>

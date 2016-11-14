@@ -895,7 +895,7 @@ upena.health = {
                 upena.health.config[id] = $cell.find('.config-warn');
             }
             upena.health.color[id].hide();
-            upena.health.color[id].css('background-color', "rgba(" + data[i].color + ",0.7)");
+            upena.health.color[id].css('background-color', "rgba(" + data[i].color + ")");
             upena.health.color[id].show();
             upena.health.text[id].html(data[i].text || '');
             upena.health.age[id].html(data[i].age);
