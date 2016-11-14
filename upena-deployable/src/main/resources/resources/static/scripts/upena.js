@@ -1057,6 +1057,20 @@ upena.healthGradient = {
 
 $(document).ready(function () {
 
+    $('[data-toggle="tabajax"]').click(function(e) {
+        var $this = $(this),
+            loadurl = $this.attr('href'),
+            targ = $this.attr('data-target');
+
+        $.get(loadurl, function(data) {
+            $(targ).html(data);
+        });
+
+        $this.tab('show');
+        return false;
+    });
+
+
     function livebreakpointdump() {
         $(".breakpointDump").each(function() {
             $this = $(this);
@@ -1190,7 +1204,7 @@ $(document).ready(function () {
             var instanceKey = $(this).data('popoverInstanceKey');
             if (instanceKey) {
                 var h = hack[$(this).attr('id')];
-                $.ajax("/ui/deployable/embeddedProbe/"+instanceKey, {
+                $.ajax("/ui/deployable/embeddedProbe/"+instanceKey+"/home", {
                     method: "get",
                     data: {"instanceKey": instanceKey},
                     success: function (data) {

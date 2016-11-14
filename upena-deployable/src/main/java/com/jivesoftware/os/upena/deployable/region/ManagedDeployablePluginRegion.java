@@ -1,6 +1,7 @@
 package com.jivesoftware.os.upena.deployable.region;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
@@ -18,15 +19,14 @@ import com.jivesoftware.os.upena.shared.Host;
 import com.jivesoftware.os.upena.shared.HostKey;
 import com.jivesoftware.os.upena.shared.Instance;
 import com.jivesoftware.os.upena.shared.InstanceKey;
-import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.authz.AuthorizationException;
-
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authz.AuthorizationException;
 
 /**
  *
@@ -141,12 +141,14 @@ public class ManagedDeployablePluginRegion implements PageRegion<ManagedDeployab
 
                 HasUI hasUI = proxy.get("/manage/hasUI", HasUI.class, null);
                 List<Map<String, String>> uis = Lists.newArrayList();
+                int uiId = 0;
                 for (HasUI.UI ui : hasUI.uis) {
                     Instance.Port port = instance.ports.get(ui.portName);
                     if (port != null) {
                         if (managePort != null && managePort.port != port.port) {
 
                             Map<String, String> u = new HashMap<>();
+                            u.put("id", String.valueOf(uiId));
                             u.put("name", ui.name);
                             u.put("scheme", (port.sslEnabled) ? "https" : "http");
                             u.put("host", host.name);
@@ -156,21 +158,22 @@ public class ManagedDeployablePluginRegion implements PageRegion<ManagedDeployab
                             uis.add(u);
                         }
                     }
+                    uiId++;
                 }
                 data.put("uis", uis);
 
                 if (input.action.equals("health")) {
                     SecurityUtils.getSubject().checkPermission("read");
                     String r = proxy.get("/manage/health/ui");
-                    data.put("htmlResult", r == null ? "" : r);
+                    return renderHtml(r);
                 } else if (input.action.equals("metrics")) {
                     SecurityUtils.getSubject().checkPermission("read");
                     String r = proxy.get("/manage/metrics/ui");
-                    data.put("htmlResult", r == null ? "" : r);
+                    return renderHtml(r);
                 } else if (input.action.equals("tail")) {
                     SecurityUtils.getSubject().checkPermission("read");
                     String r = proxy.get("/manage/tail");
-                    data.put("textResult", r == null ? "" : r);
+                    return renderText(r);
                 } else if (input.action.equals("threadDump")) {
                     SecurityUtils.getSubject().checkPermission("read");
                     String r = proxy.get("/manage/threadDump");
@@ -218,31 +221,27 @@ public class ManagedDeployablePluginRegion implements PageRegion<ManagedDeployab
 
                     }
 
-                    data.put("htmlResult", sb.toString());
+                    return renderHtml(sb.toString());//data.put("htmlResult", sb.toString());
                 } else if (input.action.equals("forceGC")) {
                     SecurityUtils.getSubject().checkPermission("read");
                     String r = proxy.get("/manage/forceGC");
-                    data.put("textResult", r == null ? "" : r);
+                    return renderText(r);
                 } else if (input.action.equals("resetErrors")) {
                     SecurityUtils.getSubject().checkPermission("read");
                     String r = proxy.get("/manage/resetErrors");
-                    data.put("textResult", r == null ? "" : r);
+                    return renderText(r);
                 } else if (input.action.equals("resetThrown")) {
                     SecurityUtils.getSubject().checkPermission("read");
                     String r = proxy.get("/manage/resetThrown");
-                    data.put("textResult", r == null ? "" : r);
+                    return renderText(r);
                 } else if (input.action.equals("resetHealth")) {
                     SecurityUtils.getSubject().checkPermission("read");
                     String r = proxy.get("/manage/resetHealth");
-                    data.put("textResult", r == null ? "" : r);
+                    return renderText(r);
                 } else if (input.action.equals("routes")) {
                     SecurityUtils.getSubject().checkPermission("read");
                     String r = proxy.get("/manage/tenant/routing/report");
-                    data.put("textResult", r == null ? "" : r);
-                } else {
-                    SecurityUtils.getSubject().checkPermission("read");
-                    String r = proxy.get("/manage/health/ui");
-                    data.put("htmlResult", r == null ? "" : r);
+                    return renderText(r);
                 }
             }
         } catch (AuthorizationException x) {
@@ -254,6 +253,14 @@ public class ManagedDeployablePluginRegion implements PageRegion<ManagedDeployab
 
         }
         return renderer.render(template, data);
+    }
+
+    public String renderHtml(String html) {
+        return renderer.render("soy.page.deployablePluginRegionHtml", ImmutableMap.of("htmlResult",(html == null ? "" : html)));
+    }
+
+    public String renderText(String text) {
+        return renderer.render("soy.page.deployablePluginRegionText", ImmutableMap.of("textResult",(text == null ? "" : text)));
     }
 
     @Override

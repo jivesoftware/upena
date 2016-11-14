@@ -5,55 +5,131 @@
  * 
  * @param? instanceKey
  * @param? uis
- * @param? textResult
- * @param? htmlResult
  */
 {template .deployablePluginRegion}
     <div class="panel">
-        
-        {if $uis}
-            {foreach $u in $uis}
-                <a class="btn btn-default" href="{$u.uiPath}">{$u.name}</a>
-                <a class="btn btn-default" href="/ui/proxy/redirect?host={$u.host}&amp;port={$u.port}&amp;path={$u.url}"><span class="glyphicon glyphicon-random"></span></a>{sp}
-            {/foreach}
-        {/if}
-        
-        <form action="/ui/deployable/probe/{$instanceKey}" style="float:right" id="aws-describe" method="post" name="describe">
-            <input type="hidden" name="instanceKey" value="{$instanceKey?:''}" />
 
-            <button title="Health" type="submit" name="action" value="health" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
-                <span>Health</span>
-            </button>
-            <button title="Tail" type="submit" name="action" value="tail" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
-                <span>Tail</span>
-            </button>
-            <button title="Metrics" type="submit" name="action" value="metrics" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
-                <span>Metrics</span>
-            </button>
-            <button title="Routes" type="submit" name="action" value="routes" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
-                <span>Routes</span>
-            </button>
-            <button title="Thread Dump" type="submit" name="action" value="threadDump" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
-                <span>Thread Dump</span>
-            </button>
-            <button title="Force GC" type="submit" name="action" value="forceGC" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
-                <span>Force GC</span>
-            </button>
-            <button title="Reset Errors" type="submit" name="action" value="resetErrors" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
-                <span>Reset Errors</span>
-            </button>
-            <button title="Reset Thrown" type="submit" name="action" value="resetThrown" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
-                <span>Reset Thrown</span>
-            </button>
-            <button title="Reset Health" type="submit" name="action" value="resetHealth" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
-                <span>Reset Health</span>
-            </button>
-        </form>
-        {if $textResult}
-            <pre style="white-space: pre-wrap; word-wrap: normal; word-break: break-word;">{$textResult}</pre>
-        {/if}
-        {if $htmlResult}
-            {$htmlResult|noAutoescape}
-        {/if}
+        <ul class="nav nav-tabs tabs-up">
+            <li>
+                <a class="btn btn-default" href="/ui/deployable/probe/{$instanceKey}"><span class="glyphicon glyphicon-fullscreen"></span></a>
+            </li>
+            {if $uis}
+                {foreach $u in $uis}
+                    <li>
+                        <a class="btn btn-default" href="{$u.uiPath}">{$u.name}</a>
+                    </li>
+                    <li>
+                        <a class="btn btn-default" href="/ui/proxy/redirect?host={$u.host}&amp;port={$u.port}&amp;path={$u.url}"><span class="glyphicon glyphicon-random"></span></a>
+                    </li>
+                {/foreach}
+            {/if}
+
+            <li>
+                <a href="/ui/deployable/embeddedProbe/{$instanceKey}/health" data-target="#health" class="btn btn-default active" id="health_tab" data-toggle="tabajax" rel="tooltip">
+                    Health
+                </a>
+            </li>
+            <li>
+                <a href="/ui/deployable/embeddedProbe/{$instanceKey}/tail" data-target="#tail" class="btn btn-default" id="tail_tab" data-toggle="tabajax" rel="tooltip">
+                    Tail
+                </a>
+            </li>
+            <li>
+                <a href="/ui/deployable/embeddedProbe/{$instanceKey}/metrics" data-target="#metrics" class="btn btn-default" id="metrics_tab" data-toggle="tabajax" rel="tooltip">
+                    Metrics
+                </a>
+            </li>
+            <li>
+                <a href="/ui/deployable/embeddedProbe/{$instanceKey}/routes" data-target="#routes" class="btn btn-default" id="routes_tab" data-toggle="tabajax" rel="tooltip">
+                    Routes
+                </a>
+            </li>
+
+            <li>
+                <a href="/ui/deployable/embeddedProbe/{$instanceKey}/routes" data-target="#routes" class="btn btn-default" id="routes_tab" data-toggle="tabajax" rel="tooltip">
+                    Routes
+                </a>
+            </li>
+            <li>
+                <a href="/ui/deployable/embeddedProbe/{$instanceKey}/threadDump" data-target="#threadDump" class="btn btn-default" id="threadDump_tab" data-toggle="tabajax" rel="tooltip">
+                    Thread Dump
+                </a>
+            </li>
+            <li>
+                <a href="/ui/deployable/embeddedProbe/{$instanceKey}/resetErrors" data-target="#resetErrors" class="btn btn-default" id="resetErrors_tab" data-toggle="tabajax" rel="tooltip">
+                    Reset Errors
+                </a>
+            </li>
+            <li>
+                <a href="/ui/deployable/embeddedProbe/{$instanceKey}/resetThrown" data-target="#resetThrown" class="btn btn-default" id="resetThrown_tab" data-toggle="tabajax" rel="tooltip">
+                    Rest Thrown
+                </a>
+            </li>
+            <li>
+                <a href="/ui/deployable/embeddedProbe/{$instanceKey}/resetHealth" data-target="#resetHealth" class="btn btn-default" id="resetHealth_tab" data-toggle="tabajax" rel="tooltip">
+                    Reset Health
+                </a>
+            </li>
+
+        </ul>
+
+        <div class="tab-content">
+            <div class="tab-pane active" id="health"></div>
+            <div class="tab-pane" id="tail"></div>
+            <div class="tab-pane" id="metrics"></div>
+            <div class="tab-pane" id="routes"></div>
+            <div class="tab-pane" id="threadDump"></div>
+            <div class="tab-pane" id="forceGC"></div>
+            <div class="tab-pane" id="resetErrors"></div>
+            <div class="tab-pane" id="resetThrown"></div>
+            <div class="tab-pane" id="resetHealth"></div>
+        </div>
+
+        <script>
+            $('[data-toggle="tabajax"]').click(function(e) {lb}
+                var $this = $(this),
+                    loadurl = $this.attr('href'),
+                    targ = $this.attr('data-target');
+
+                $.get(loadurl, function(data) {lb}
+                    $(targ).html(data);
+                {rb});
+
+                $this.tab('show');
+
+                $('[data-toggle="tabajax"]').each(function (j, tab) {lb}
+                    if ($(tab).hasClass('active')) {lb}
+                        $(tab).removeClass('active');
+                     {rb}
+                  {rb});
+
+                $this.addClass('active');
+
+                return false;
+            {rb});
+
+            $('[data-toggle="tabajax"]').each(function (j, tab) {lb}
+                if ($(tab).hasClass('active')) {lb}
+                    $(tab).click();
+                 {rb}
+              {rb});
+        </script>
+
     </div>
 {/template}
+
+/**
+ * @param? textResult
+ */
+{template .deployablePluginRegionText}
+    <pre style="white-space: pre-wrap; word-wrap: normal; word-break: break-word;">{$textResult}</pre>
+{/template}
+
+
+/**
+ * @param? htmlResult
+ */
+{template .deployablePluginRegionHtml}
+    {$htmlResult|noAutoescape}
+{/template}
+
