@@ -21,11 +21,13 @@ th:hover::after {
   z-index: -1;
 }
 
-
 .gooey-area {
     filter:url('#goo');
 }
 
+.panel-no-margin {
+    margin: 0px !important;
+}
 
 div.panel {
     margin: 15px;

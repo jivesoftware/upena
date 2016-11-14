@@ -82,13 +82,13 @@ public class UpenaHealth {
         Collections.sort(healths);
         List<String> gradient = Lists.newArrayList();
         for (Double h : healths) {
-            String color = getHEXTrafficlightColor(h, 0.9f);
+            String color = "rgba("+trafficlightColorRGB(h, 0.9f, (float)(1d-h))+")";
             if (h < 0 || h > 1) {
-                color = "888";
+                color = "rgba(255,255,255,1)";
             }
             gradient.add(color);
         }
-        return "linear-gradient(to right, #" + Joiner.on(", #").join(gradient) + ")";
+        return "linear-gradient(to right, " + Joiner.on(", ").join(gradient) + ")";
 
     }
 
@@ -164,7 +164,7 @@ public class UpenaHealth {
     public static String trafficlightColorRGB(double value, float sat, float alpha) {
         //String s = Integer.toHexString(Color.HSBtoRGB(0.6f, 1f - ((float) value), sat) & 0xffffff);
         Color color = new Color(Color.HSBtoRGB((float) value / 3f, sat, 1f));
-        return color.getRed() + "," + color.getGreen() + "," + color.getBlue()+","+alpha;
+        return color.getRed() + "," + color.getGreen() + "," + color.getBlue() + "," + Math.max(0, Math.min(1d, alpha));
     }
 
     public NodeHealth buildNodeHealth() throws Exception {

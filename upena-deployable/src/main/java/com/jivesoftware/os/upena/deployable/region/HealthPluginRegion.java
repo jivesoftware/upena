@@ -88,7 +88,6 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
     }
 
 
-
     public Map<String, Object> waveform(String label,
         String color,
         String pointColor,
@@ -644,8 +643,10 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                                 List<String> ports = new ArrayList<>();
                                 for (Map.Entry<String, InstanceDescriptor.InstanceDescriptorPort> instancePort : id.ports.entrySet()) {
                                     ports.add(instancePort.getKey() + "=" + instancePort.getValue().port
-                                        + " " + ((instancePort.getValue().sslEnabled) ? "<img src=\"/static/img/lock.png\" alt=\"SSL Enabled\" style=\"width:20px;height:20px;\">" : "")
-                                        + " " + ((instancePort.getValue().serviceAuthEnabled)? "<img src=\"/static/img/key.png\" alt=\"Service Auth Enabled\" style=\"width:20px;height:20px;\">" : ""));
+                                        + " " + ((instancePort.getValue().sslEnabled) ? "<img src=\"/static/img/lock.png\" alt=\"SSL Enabled\" " +
+                                        "style=\"width:20px;height:20px;\">" : "")
+                                        + " " + ((instancePort.getValue().serviceAuthEnabled) ? "<img src=\"/static/img/key.png\" alt=\"Service Auth " +
+                                        "Enabled\" style=\"width:20px;height:20px;\">" : ""));
                                 }
                                 cell.put("ports", ports);
 
@@ -843,13 +844,12 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
     }
 
     String trafficlightColorRGB(double value, float sat) {
-        //String s = Integer.toHexString(Color.HSBtoRGB(0.6f, 1f - ((float) value), sat) & 0xffffff);
         Color color = new Color(Color.HSBtoRGB((float) value / 3f, sat, 1f));
-        return color.getRed() + "," + color.getGreen() + "," + color.getBlue();
+        return color.getRed() + "," + color.getGreen() + "," + color.getBlue() + "," + Math.min(1d, Math.max(0, (1d - value)));
     }
 
+
     String getHEXIdColor(double value, float sat) {
-        //String s = Integer.toHexString(Color.HSBtoRGB(0.6f, 1f - ((float) value), sat) & 0xffffff);
         float hue = (float) value / 3f;
         hue = (1f / 3f) + (hue * 2);
         String s = Integer.toHexString(Color.HSBtoRGB(hue, sat, 1f) & 0xffffff);
