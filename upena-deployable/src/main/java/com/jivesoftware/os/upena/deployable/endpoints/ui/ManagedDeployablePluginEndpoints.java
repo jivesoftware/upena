@@ -70,6 +70,17 @@ public class ManagedDeployablePluginEndpoints {
         });
     }
 
+    @Path("/embeddedProbe/{instanceKey}")
+    @GET()
+    @Produces(MediaType.TEXT_HTML)
+    public Response embeddedProbe(@PathParam("instanceKey") @DefaultValue("unspecified") String instanceKey,
+        @Context HttpServletRequest httpRequest) {
+        return shiroRequestHelper.call("/ui/deployable/probe", () -> {
+            return Response.ok(pluginRegion.render("",  new ManagedDeployablePluginRegion.ManagedDeployablePluginRegionInput(instanceKey, ""))).build();
+        });
+    }
+
+
     @Path("/redirect/{instanceKey}")
     @GET()
     @Produces(MediaType.TEXT_HTML)

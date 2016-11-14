@@ -488,14 +488,19 @@
                                                                 </li>
                                                             {/if}
                                                         </ul>
-                                                        //<div style="width:1200px" class="uis" ></div>
+                                                        <div style="width:1200px" class="uis" ></div>
                                                         //<iframe width="1200" height="800" src="/ui/deployable/probe/{$health.instanceKey}" frameborder="0" allowfullscreen></iframe>
 
 
-                                                        <div id='probe-{$health.instanceKey}' style="width:1200px"></div>
-                                                        <script type='text/javascript'>
-                                                          $('#probe-{$health.instanceKey}').load('/ui/deployable/probe/{$health.instanceKey}');
-                                                        </script>
+                                                        //<div id='probe-{$health.instanceKey}' style="width:1200px"></div>
+                                                        //<script type='text/javascript'>
+
+                                                         //   $('#probe-{$health.instanceKey}').isvisible(function() {lb}
+                                                         //       $('#probe-{$health.instanceKey}').load('/ui/deployable/probe/{$health.instanceKey}');
+                                                         //    {rb});
+
+                                                          //$('#probe-{$health.instanceKey}').load('/ui/deployable/probe/{$health.instanceKey}');
+                                                        //</script>
                                                     </div>
                                                 {/foreach}
                                             {else}
