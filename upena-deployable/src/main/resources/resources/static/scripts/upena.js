@@ -1051,7 +1051,7 @@ upena.healthGradient = {
         if (!upena.healthGradient.requireFocus || upena.windowFocused) {
             //upena.stats.update();
         }
-        setTimeout(upena.healthGradient.poll, 1000);
+        setTimeout(upena.healthGradient.poll, 2000);
     }
 };
 
@@ -1091,8 +1091,8 @@ $(document).ready(function () {
     }
 
     if ($('#healthGradient').length) {
-            upena.healthGradient.init();
-        }
+        upena.healthGradient.init();
+     }
 
     $('[data-toggle="tooltip"]').tooltip({
         animated: 'fade',
@@ -1190,7 +1190,7 @@ $(document).ready(function () {
             var instanceKey = $(this).data('popoverInstanceKey');
             if (instanceKey) {
                 var h = hack[$(this).attr('id')];
-                $.ajax("/ui/health/uis", {
+                $.ajax("/ui/deployable/embeddedProbe/"+instanceKey, {
                     method: "get",
                     data: {"instanceKey": instanceKey},
                     success: function (data) {
