@@ -64,44 +64,44 @@
                     {/foreach}
                 </tbody>
             </table>
-            <div class="panel-heading"><span class="panel-title">Admin</span></div>
-            
-            <form id="add-ring-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
-                        data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="addRingHost">
-                <table class="table float-table-head table-hover table-condensed table-responsive">
-                    <tr>
-                        <td>
-                            {if $readWrite}
-                                <button onclick="return confirm('Are you sure you want to shutdown this node?')" title="Remove" type="submit" name="action" value="forceShutdown" class="btn btn-default ladda-button" data-style="expand-right">
-                                    <span class="glyphicon glyphicon-stop"></span> Shutdown
-                                </button>
-                            {/if}
-                        </td>
-                        <td>
-                            {if $readWrite}
-                                <button onclick="return confirm('Are you sure you want to clear the change log?')" title="Remove" type="submit" name="action" value="clearChangeLog" class="btn btn-default ladda-button" data-style="expand-right">
-                                    <span class="glyphicon glyphicon-trash"></span> Clear ChangeLog
-                                </button>
-                            {/if}
-                        </td>
-                        <td>
-                            {if $readWrite}
-                                <button onclick="return confirm('Are you sure you want to remove bad keys?')" title="Remove" type="submit" name="action" value="removeBadKeys" class="btn btn-default ladda-button" data-style="expand-right">
-                                    <span class="glyphicon glyphicon-trash"></span> Remove Bad Keys
-                                </button>
-                            {/if}
-                        </td>
-                        <td>
-                            {if $readWrite}
-                                <button onclick="return confirm('Are you sure you want to export?')" title="Remove" type="submit" name="action" value="export" class="btn btn-default ladda-button" data-style="expand-right">
-                                    <span class="glyphicon glyphicon-download"></span> Export
-                                </button>
-                            {/if}
-                        </td>
-                    </tr>
-                </table>
-            </form>
             {if $readWrite}
+               <div class="panel-heading"><span class="panel-title">Admin</span></div>
+            
+                <form id="add-ring-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                            data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="addRingHost">
+                    <table class="table float-table-head table-hover table-condensed table-responsive">
+                        <tr>
+                            <td>
+                                {if $readWrite}
+                                    <button onclick="return confirm('Are you sure you want to shutdown this node?')" title="Remove" type="submit" name="action" value="forceShutdown" class="btn btn-default ladda-button" data-style="expand-right">
+                                        <span class="glyphicon glyphicon-stop"></span> Shutdown
+                                    </button>
+                                {/if}
+                            </td>
+                            <td>
+                                {if $readWrite}
+                                    <button onclick="return confirm('Are you sure you want to clear the change log?')" title="Remove" type="submit" name="action" value="clearChangeLog" class="btn btn-default ladda-button" data-style="expand-right">
+                                        <span class="glyphicon glyphicon-trash"></span> Clear ChangeLog
+                                    </button>
+                                {/if}
+                            </td>
+                            <td>
+                                {if $readWrite}
+                                    <button onclick="return confirm('Are you sure you want to remove bad keys?')" title="Remove" type="submit" name="action" value="removeBadKeys" class="btn btn-default ladda-button" data-style="expand-right">
+                                        <span class="glyphicon glyphicon-trash"></span> Remove Bad Keys
+                                    </button>
+                                {/if}
+                            </td>
+                            <td>
+                                {if $readWrite}
+                                    <button onclick="return confirm('Are you sure you want to export?')" title="Remove" type="submit" name="action" value="export" class="btn btn-default ladda-button" data-style="expand-right">
+                                        <span class="glyphicon glyphicon-download"></span> Export
+                                    </button>
+                                {/if}
+                            </td>
+                        </tr>
+                    </table>
+                </form>
                 <div class="btn-group" role="group" aria-label="...">
                     <form method="post" action="/ui/ring/import" enctype="multipart/form-data">
                         <div class="fileinput fileinput-new" data-provides="fileinput">
@@ -115,6 +115,7 @@
                 </div>
             {/if}
             {if $tail}
+                <div class="panel-heading"><span class="panel-title">Log</span></div>
                 <pre class="monospace">
                     {$tail}
                 </pre>
