@@ -29,7 +29,9 @@ th:hover::after {
     margin: 0px !important;
 }
 
+
 div.panel {
+    overflow: hidden !important;
     margin: 15px;
 }
 
@@ -401,6 +403,7 @@ form#query-filters.query-show-advanced td.query-advanced { display: table-cell; 
     -webkit-box-shadow: 0 1px 6px rgba(0, 0, 0, 0.175);
     box-shadow: 0 1px 6px rgba(0, 0, 0, 0.175);
     border-radius: 10px;
+    background-color: white;
 }
 
 .timeline > li > .timeline-panel:before {

@@ -82,7 +82,7 @@ public class UpenaHealth {
         Collections.sort(healths);
         List<String> gradient = Lists.newArrayList();
         for (Double h : healths) {
-            String color = "rgba("+trafficlightColorRGB(h, 0.9f, (float)(1d-h))+")";
+            String color = "rgba(" + trafficlightColorRGBA(h, 0.9f) + ")";
             if (h < 0 || h > 1) {
                 color = "rgba(255,255,255,1)";
             }
@@ -155,16 +155,31 @@ public class UpenaHealth {
     }
 
 
+    public static String getHEXIdColor(double value, float sat) {
+        float hue = (float) value / 3f;
+        hue = (1f / 3f) + (hue * 2);
+        String s = Integer.toHexString(Color.HSBtoRGB(hue, sat, 1f) & 0xffffff);
+        return "000000".substring(s.length()) + s;
+    }
+
+    public static String idColorRGB(double value, float sat) {
+        //String s = Integer.toHexString(Color.HSBtoRGB(0.6f, 1f - ((float) value), sat) & 0xffffff);
+        float hue = (float) value / 3f;
+        hue = (1f / 3f) + (hue * 2);
+        Color color = new Color(Color.HSBtoRGB(hue, sat, 1f));
+        return color.getRed() + "," + color.getGreen() + "," + color.getBlue();
+    }
+
     public static String getHEXTrafficlightColor(double value, float sat) {
         //String s = Integer.toHexString(Color.HSBtoRGB(0.6f, 1f - ((float) value), sat) & 0xffffff);
         String s = Integer.toHexString(Color.HSBtoRGB((float) value / 3f, sat, 1f) & 0xffffff);
         return "000000".substring(s.length()) + s;
     }
 
-    public static String trafficlightColorRGB(double value, float sat, float alpha) {
-        //String s = Integer.toHexString(Color.HSBtoRGB(0.6f, 1f - ((float) value), sat) & 0xffffff);
+    public static String trafficlightColorRGBA(double value, float sat) {
+        double alpha = Math.max(0, Math.min(1d, 1d - value));
         Color color = new Color(Color.HSBtoRGB((float) value / 3f, sat, 1f));
-        return color.getRed() + "," + color.getGreen() + "," + color.getBlue() + "," + Math.max(0, Math.min(1d, alpha));
+        return color.getRed() + "," + color.getGreen() + "," + color.getBlue() + "," + Math.log10(1d + (10 * alpha));
     }
 
     public NodeHealth buildNodeHealth() throws Exception {

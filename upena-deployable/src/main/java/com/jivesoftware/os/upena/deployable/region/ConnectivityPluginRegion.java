@@ -198,7 +198,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
             i = 0;
             for (Map.Entry<ServiceKey, TimestampedValue<Service>> entrySet : sort.entrySet()) {
                 if (!entrySet.getValue().getTombstoned()) {
-                    String idColor = healthPluginRegion.getHEXIdColor((double) i / (double) serviceColor.size(), 1f);
+                    String idColor = UpenaHealth.getHEXIdColor((double) i / (double) serviceColor.size(), 1f);
                     serviceNameLegend.add(ImmutableMap.of("name", entrySet.getValue().getValue().name, "color", idColor));
                     i++;
                 }
@@ -372,8 +372,8 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
                 node.put("minbgcolor", n.bgcolor);
                 node.put("healthRadius", "0");
             } else {
-                node.put("maxbgcolor", healthPluginRegion.getHEXTrafficlightColor(n.maxHealth, 1f));
-                node.put("minbgcolor", healthPluginRegion.getHEXTrafficlightColor(n.minHealth, 1f));
+                node.put("maxbgcolor", UpenaHealth.getHEXTrafficlightColor(n.maxHealth, 1f));
+                node.put("minbgcolor", UpenaHealth.getHEXTrafficlightColor(n.minHealth, 1f));
                 node.put("healthRadius", String.valueOf((int) (1d - n.minHealth) * 4));
             }
             node.put("fontSize", n.fontSize);
@@ -405,9 +405,9 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
             edge.put("from", "id" + e.from);
             edge.put("label", e.label);
             edge.put("to", "id" + e.to);
-            edge.put("color", healthPluginRegion.getHEXIdColor((e.from / (float) id), 1f));
-            edge.put("minColor", healthPluginRegion.getHEXTrafficlightColor(e.min, 1f));
-            edge.put("maxColor", healthPluginRegion.getHEXTrafficlightColor(e.max, 1f));
+            edge.put("color", UpenaHealth.getHEXIdColor((e.from / (float) id), 1f));
+            edge.put("minColor", UpenaHealth.getHEXTrafficlightColor(e.min, 1f));
+            edge.put("maxColor", UpenaHealth.getHEXTrafficlightColor(e.max, 1f));
             renderEdges.add(edge);
         }
 
@@ -506,7 +506,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
         if (si == null) {
             si = 0;
         }
-        return healthPluginRegion.getHEXIdColor(((float) si / (float) serviceColor.size()), 1f);
+        return UpenaHealth.getHEXIdColor(((float) si / (float) serviceColor.size()), 1f);
     }
 
     private NannyHealth nannyHealth(String instanceId) throws Exception {
@@ -608,24 +608,24 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
         health.put("inflight", numberFormat.format(inflight));
 
         health.put("min", numberFormat.format(latencyMin));
-        health.put("minColor", healthPluginRegion.trafficlightColorRGB(1d - mmd.zeroToOne(latencyMin), 1f));
+        health.put("minColor", UpenaHealth.trafficlightColorRGBA(1d - mmd.zeroToOne(latencyMin), 1f));
         health.put("mean", numberFormat.format(latencyMean));
-        health.put("meanColor", healthPluginRegion.trafficlightColorRGB(1d - mmd.zeroToOne(latencyMean), 1f));
+        health.put("meanColor", UpenaHealth.trafficlightColorRGBA(1d - mmd.zeroToOne(latencyMean), 1f));
         health.put("max", numberFormat.format(latencyMax));
-        health.put("maxColor", healthPluginRegion.trafficlightColorRGB(1d - mmd.zeroToOne(latencyMax), 1f));
+        health.put("maxColor", UpenaHealth.trafficlightColorRGBA(1d - mmd.zeroToOne(latencyMax), 1f));
 
         health.put("latency50th", numberFormat.format(latency50th));
-        health.put("latency50thColor", healthPluginRegion.trafficlightColorRGB(1d - mmd.zeroToOne(latency50th), 1f));
+        health.put("latency50thColor", UpenaHealth.trafficlightColorRGBA(1d - mmd.zeroToOne(latency50th), 1f));
         health.put("latency75th", numberFormat.format(latency75th));
-        health.put("latency75thColor", healthPluginRegion.trafficlightColorRGB(1d - mmd.zeroToOne(latency75th), 1f));
+        health.put("latency75thColor", UpenaHealth.trafficlightColorRGBA(1d - mmd.zeroToOne(latency75th), 1f));
         health.put("latency90th", numberFormat.format(latency90th));
-        health.put("latency90thColor", healthPluginRegion.trafficlightColorRGB(1d - mmd.zeroToOne(latency90th), 1f));
+        health.put("latency90thColor", UpenaHealth.trafficlightColorRGBA(1d - mmd.zeroToOne(latency90th), 1f));
         health.put("latency95th", numberFormat.format(latency95th));
-        health.put("latency95thColor", healthPluginRegion.trafficlightColorRGB(1d - mmd.zeroToOne(latency95th), 1f));
+        health.put("latency95thColor", UpenaHealth.trafficlightColorRGBA(1d - mmd.zeroToOne(latency95th), 1f));
         health.put("latency99th", numberFormat.format(latency99th));
-        health.put("latency99thColor", healthPluginRegion.trafficlightColorRGB(1d - mmd.zeroToOne(latency99th), 1f));
+        health.put("latency99thColor", UpenaHealth.trafficlightColorRGBA(1d - mmd.zeroToOne(latency99th), 1f));
         health.put("latency999th", numberFormat.format(latency999th));
-        health.put("latency999thColor", healthPluginRegion.trafficlightColorRGB(1d - mmd.zeroToOne(latency999th), 1f));
+        health.put("latency999thColor", UpenaHealth.trafficlightColorRGBA(1d - mmd.zeroToOne(latency999th), 1f));
 
         return health;
     }
@@ -663,13 +663,13 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
                     continue;
                 }
                 health.put("from", from);
-                health.put("fromColor", healthPluginRegion.idColorRGB(((float) fromNode.id / (float) nodes.size()), 1f));
+                health.put("fromColor", UpenaHealth.idColorRGB(((float) fromNode.id / (float) nodes.size()), 1f));
 
                 String serviceName = value.connectionDescriptor.getInstanceDescriptor().serviceName;
                 health.put("to", serviceName + "(" + value.connectionDescriptor.getInstanceDescriptor().instanceName + ")");
 
                 Node toNode = nodes.get(value.connectionDescriptor.getInstanceDescriptor().serviceName);
-                health.put("toColor", healthPluginRegion.idColorRGB(((float) toNode.id / (float) nodes.size()), 1f));
+                health.put("toColor", UpenaHealth.idColorRGB(((float) toNode.id / (float) nodes.size()), 1f));
 
                 health.put("family", familyHealth.getKey());
 
@@ -681,24 +681,24 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
                 health.put("inflight", numberFormat.format(value.attempt - value.success - value.failure));
 
                 health.put("min", numberFormat.format(value.latencyStats.latencyMin));
-                health.put("minColor", healthPluginRegion.trafficlightColorRGB(1d - mmd.zeroToOne(value.latencyStats.latencyMin), 1f));
+                health.put("minColor", UpenaHealth.trafficlightColorRGBA(1d - mmd.zeroToOne(value.latencyStats.latencyMin), 1f));
                 health.put("mean", numberFormat.format(value.latencyStats.latencyMean));
-                health.put("meanColor", healthPluginRegion.trafficlightColorRGB(1d - mmd.zeroToOne(value.latencyStats.latencyMean), 1f));
+                health.put("meanColor", UpenaHealth.trafficlightColorRGBA(1d - mmd.zeroToOne(value.latencyStats.latencyMean), 1f));
                 health.put("max", numberFormat.format(value.latencyStats.latencyMax));
-                health.put("maxColor", healthPluginRegion.trafficlightColorRGB(1d - mmd.zeroToOne(value.latencyStats.latencyMax), 1f));
+                health.put("maxColor", UpenaHealth.trafficlightColorRGBA(1d - mmd.zeroToOne(value.latencyStats.latencyMax), 1f));
 
                 health.put("latency50th", numberFormat.format(value.latencyStats.latency50th));
-                health.put("latency50thColor", healthPluginRegion.trafficlightColorRGB(1d - mmd.zeroToOne(value.latencyStats.latency50th), 1f));
+                health.put("latency50thColor", UpenaHealth.trafficlightColorRGBA(1d - mmd.zeroToOne(value.latencyStats.latency50th), 1f));
                 health.put("latency75th", numberFormat.format(value.latencyStats.latency75th));
-                health.put("latency75thColor", healthPluginRegion.trafficlightColorRGB(1d - mmd.zeroToOne(value.latencyStats.latency75th), 1f));
+                health.put("latency75thColor", UpenaHealth.trafficlightColorRGBA(1d - mmd.zeroToOne(value.latencyStats.latency75th), 1f));
                 health.put("latency90th", numberFormat.format(value.latencyStats.latency90th));
-                health.put("latency90thColor", healthPluginRegion.trafficlightColorRGB(1d - mmd.zeroToOne(value.latencyStats.latency90th), 1f));
+                health.put("latency90thColor", UpenaHealth.trafficlightColorRGBA(1d - mmd.zeroToOne(value.latencyStats.latency90th), 1f));
                 health.put("latency95th", numberFormat.format(value.latencyStats.latency95th));
-                health.put("latency95thColor", healthPluginRegion.trafficlightColorRGB(1d - mmd.zeroToOne(value.latencyStats.latency95th), 1f));
+                health.put("latency95thColor", UpenaHealth.trafficlightColorRGBA(1d - mmd.zeroToOne(value.latencyStats.latency95th), 1f));
                 health.put("latency99th", numberFormat.format(value.latencyStats.latency99th));
-                health.put("latency99thColor", healthPluginRegion.trafficlightColorRGB(1d - mmd.zeroToOne(value.latencyStats.latency99th), 1f));
+                health.put("latency99thColor", UpenaHealth.trafficlightColorRGBA(1d - mmd.zeroToOne(value.latencyStats.latency99th), 1f));
                 health.put("latency999th", numberFormat.format(value.latencyStats.latency999th));
-                health.put("latency999thColor", healthPluginRegion.trafficlightColorRGB(1d - mmd.zeroToOne(value.latencyStats.latency999th), 1f));
+                health.put("latency999thColor", UpenaHealth.trafficlightColorRGBA(1d - mmd.zeroToOne(value.latencyStats.latency999th), 1f));
 
                 health.put("host", value.connectionDescriptor.getHostPort().getHost());
                 health.put("port", value.connectionDescriptor.getHostPort().getPort());

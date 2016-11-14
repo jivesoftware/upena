@@ -59,26 +59,26 @@
                     </form>
                 </thead>
             </table>
-
-
-
-            <ul class="timeline">
-                {foreach $l in $log}
-                    <li class="{$l.class|noAutoescape}">
-                        <div class="timeline-badge"><i class="glyphicon glyphicon-check"></i>{$l.what|noAutoescape}</div>
-                            <div class="timeline-panel">
-                                <div class="timeline-heading">
-                                    <h4 class="timeline-title"><i class="fa fa-user-circle" aria-hidden="true"></i>{$l.who|noAutoescape}:<i class="fa fa-location-arrow" aria-hidden="true"></i>{$l.where|noAutoescape}</h4>
-                                    <p><small class="text-muted"><i class="glyphicon glyphicon-time"></i>{$l.when|noAutoescape}</small></p>
-                                </div>
-                                <div class="timeline-body">
-                                    <p>why:{$l.why|noAutoescape}</p>
-                                    <p>how:{$l.how|noAutoescape}</p>
-                            </div>
-                        </div>
-                    </li>
-                {/foreach}
-            </ul>
         </div>
+
+
+        <ul class="timeline">
+            {foreach $l in $log}
+                <li class="{$l.class|noAutoescape}">
+                    <div class="timeline-badge"><i class="glyphicon glyphicon-check"></i>{$l.what|noAutoescape}</div>
+                        <div class="timeline-panel">
+                            <div class="timeline-heading">
+                                <h4 class="timeline-title"><i class="fa fa-user-circle" aria-hidden="true"></i>{$l.who|noAutoescape}:<i class="fa fa-location-arrow" aria-hidden="true"></i>{$l.where|noAutoescape}</h4>
+                                <p><small class="text-muted"><i class="glyphicon glyphicon-time"></i>{$l.when|noAutoescape}</small></p>
+                            </div>
+                            <div class="timeline-body">
+                                <p>why:{$l.why|noAutoescape}</p>
+                                <p>how:{$l.how|noAutoescape}</p>
+                        </div>
+                    </div>
+                </li>
+            {/foreach}
+        </ul>
+
     {/if}
 {/template}
