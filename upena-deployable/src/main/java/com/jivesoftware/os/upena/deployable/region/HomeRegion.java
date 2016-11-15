@@ -730,12 +730,14 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
                         double sentBps = ((net.getBytesSent() - lastBytesSent.get()) / (double) (now - lastTimesstamp.get())) * 8000;
                         double recvBps = ((net.getBytesRecv() - lastBytesRecv.get()) / (double) (now - lastTimesstamp.get())) * 8000;
 
+
+                        LOG.info("send {} / {}  recv {} / {}",(net.getBytesSent() - lastBytesSent.get()),net.getSpeed(),(net.getBytesRecv() - lastBytesRecv.get()), net.getSpeed());
                         values.append(
-                            td(FormatUtil.formatValue((long) sentBps, "bps"), (int) (100d * (sentBps) / net.getSpeed()), "red",
+                            td(FormatUtil.formatValue((long) sentBps, "bps"), (int) (100d * (sentBps) / (net.getSpeed())), "red",
                                 FormatUtil.formatValue(net.getSpeed(), "bps")));
 
                         values.append(
-                            td(FormatUtil.formatValue((long) recvBps, "bps"), (int) (100d * (recvBps) / net.getSpeed()), "red",
+                            td(FormatUtil.formatValue((long) recvBps, "bps"), (int) (100d * (recvBps) / (net.getSpeed())), "red",
                                 FormatUtil.formatValue(net.getSpeed(), "bps")));
                     } else {
                         values.append("<td></td>");
