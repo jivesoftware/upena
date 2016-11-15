@@ -464,7 +464,7 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
             header.add("System");
             values.append(td(String.valueOf((int) (100d * sys / totalCpu)) + "%", (int) (100d * sys / totalCpu), "red", String.valueOf(totalCpu)));
             header.add("Idle");
-            values.append(td(String.valueOf((int) (100d * idle / totalCpu)) + "%", (int) (100d * idle / totalCpu), "red", String.valueOf(totalCpu)));
+            values.append(td(String.valueOf((int) (100d * idle / totalCpu)) + "%", 100 - (int) (100d * idle / totalCpu), "red", String.valueOf(totalCpu)));
             header.add("Iowait");
             values.append(td(String.valueOf((int) (100d * iowait / totalCpu)) + "%", (int) (100d * iowait / totalCpu), "red", String.valueOf(totalCpu)));
             header.add("IRQ");
@@ -700,6 +700,12 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
             NetworkIF[] networkIFs = hal.getNetworkIFs();
             l.add("Network interfaces:");
             for (NetworkIF net : networkIFs) {
+                try {
+                    net.updateNetworkStats();
+                } catch (Exception x) {
+                    // swallow
+                }
+
                 l.add(String.format(" Name: %s (%s)%n", net.getName(), net.getDisplayName()));
                 l.add(String.format("   MAC Address: %s %n", net.getMacaddr()));
                 l.add(String.format("   MTU: %s, Speed: %s %n", net.getMTU(), FormatUtil.formatValue(net.getSpeed(), "bps")));
