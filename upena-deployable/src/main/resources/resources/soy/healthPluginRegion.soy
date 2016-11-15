@@ -487,7 +487,10 @@
                                                             </li>
                                                         {/if}
                                                     </ul>
-                                                    <div style="width:1200px" class="uis" ></div>
+
+                                                    {if $health.enabled}
+                                                        <div style="width:1200px" class="uis" ></div>
+                                                    {/if}
                                                 </div>
                                             {/foreach}
                                         {else}

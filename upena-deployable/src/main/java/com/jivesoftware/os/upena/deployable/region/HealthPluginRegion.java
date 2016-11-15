@@ -628,6 +628,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                                 }
                             }
 
+                            cell.put("enabled", id.enabled);
                             cell.put("instanceKey", id.instanceKey);
                             cell.put("clusterKey", id.clusterKey);
                             cell.put("cluster", id.clusterName);
