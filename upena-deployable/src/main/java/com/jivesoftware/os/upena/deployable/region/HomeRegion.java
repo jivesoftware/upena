@@ -279,6 +279,7 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
     }
 
     private String td(String title, int progress, String color, String value) {
+        progress = Math.max(0, Math.min(100, progress));
         double v = (100 - progress) / 100d;
         return "<td style=\"background-color: rgba(" + UpenaHealth.trafficlightColorRGBA(v, 1f) + ")\">" + title + "</td>";
     }
@@ -725,28 +726,36 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
                     header.add("sent");
                     header.add("recv");
 
+                    long sent = -1;
+                    long recv = -1;
+                    long now = System.currentTimeMillis();
+
                     if (lastBytesRecv.get() != -1) {
-                        long now = System.currentTimeMillis();
-                        double sentBps = ((net.getBytesSent() - lastBytesSent.get()) / (double) (now - lastTimesstamp.get())) * 8000;
-                        double recvBps = ((net.getBytesRecv() - lastBytesRecv.get()) / (double) (now - lastTimesstamp.get())) * 8000;
+                        sent = net.getBytesSent();
+                        recv = net.getBytesRecv();
+                        long elapse = now - lastTimesstamp.get();
 
 
-                        LOG.info("send {} / {}  recv {} / {}",(net.getBytesSent() - lastBytesSent.get()),net.getSpeed(),(net.getBytesRecv() - lastBytesRecv.get()), net.getSpeed());
+                        double sentBs = ((sent - lastBytesSent.get()) / (double) (elapse)) * 1000;
+                        double recvBs = ((recv - lastBytesRecv.get()) / (double) (elapse)) * 1000;
+                        long nicBs = net.getSpeed() / 8; // get it interms of bytes
+
+                        LOG.info("send {} / {}  recv {} / {}", sentBs, nicBs, recvBs, nicBs);
                         values.append(
-                            td(FormatUtil.formatValue((long) sentBps, "bps"), (int) (100d * (sentBps) / (net.getSpeed())), "red",
-                                FormatUtil.formatValue(net.getSpeed(), "bps")));
+                            td(FormatUtil.formatBytes((long) sentBs), (int) (100d * (sentBs / nicBs)), "red",
+                                FormatUtil.formatBytes(nicBs)));
 
                         values.append(
-                            td(FormatUtil.formatValue((long) recvBps, "bps"), (int) (100d * (recvBps) / (net.getSpeed())), "red",
-                                FormatUtil.formatValue(net.getSpeed(), "bps")));
+                            td(FormatUtil.formatBytes((long) recvBs), (int) (100d * (recvBs / nicBs)), "red",
+                                FormatUtil.formatBytes(nicBs)));
                     } else {
                         values.append("<td></td>");
                         values.append("<td></td>");
                     }
 
-                    lastTimesstamp.set(System.currentTimeMillis());
-                    lastBytesSent.set(net.getBytesSent());
-                    lastBytesRecv.set(net.getBytesRecv());
+                    lastTimesstamp.set(now);
+                    lastBytesSent.set(sent);
+                    lastBytesRecv.set(recv);
                 }
             }
         } catch (Exception x) {
