@@ -86,10 +86,6 @@ class CheckForLatestRelease {
             VersionRangeResult rangeResult = system.resolveVersionRange(session, rangeRequest);
 
             List<Version> versions = rangeResult.getVersions();
-            for (Version v : versions) {
-                LOG.info("There is a newer version of " + deployablecoordinate + " which is " + v);
-            }
-
             if (versions.size() > 1) {
                 return groupId + ":" + artifactId + ":" + packaging + ":" + versions.get(versions.size() - 1).toString();
             } else {
