@@ -72,7 +72,7 @@
         <table class="table table-hover table-condensed  float-table-head table-responsive">
             <thead>
                 <tr>
-                    <th></th>
+                    <th><a href="/ui/instance/" class="btn btn-default" style="float:right"><span class="glyphicon glyphicon-edit"></span></a></th>
                     {foreach $service in $gridServices}
                         <th class="rotate">
                             <div>
@@ -182,7 +182,7 @@
                                                 {if $health.instanceKey} data-popover-instance-key="{$health.instanceKey}"{/if}
                                                 data-popover-content="#popover-{$health.uid}"
                                                 data-placement="bottom"
-                                                style="float: left; padding: 0 2px; width:50%; text-align:center; background-color:
+                                                style="cursor:context-menu; float: left; padding: 0 2px; width:50%; text-align:center; background-color:
                                                     {if $health.instances}
                                                         rbga({$health.color})
                                                     {else}transparent{/if}; color:#222; border-radius: 4px 0 0 4px;">
