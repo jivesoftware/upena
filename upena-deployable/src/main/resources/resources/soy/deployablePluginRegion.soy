@@ -16,57 +16,57 @@
             {if $uis}
                 {foreach $u in $uis}
                     <li>
-                        <a class="btn btn-default" href="{$u.uiPath}">{$u.name}</a>
+                        <a class="btn btn-info" href="{$u.uiPath}"><span class="glyphicon glyphicon-new-window"></span> {$u.name}</a>
                     </li>
                     <li>
-                        <a class="btn btn-default" href="/ui/proxy/redirect?host={$u.host}&amp;port={$u.port}&amp;path={$u.url}"><span class="glyphicon glyphicon-random"></span></a>
+                        <a class="btn btn-info" href="/ui/proxy/redirect?host={$u.host}&amp;port={$u.port}&amp;path={$u.url}"><span class="glyphicon glyphicon-random"></span></a>
                     </li>
                 {/foreach}
             {/if}
 
             <li>
-                <a href="/ui/deployable/embeddedProbe/{$instanceKey}/health" data-target="#health" class="btn btn-default active" id="health_tab" data-toggle="tabajax" rel="tooltip">
+                <a href="/ui/deployable/embeddedProbe/{$instanceKey}/health" data-target="#health" class="btn btn-default active" id="health-{$instanceKey}_tab" data-toggle="tabajax" rel="tooltip">
                     Health
                 </a>
             </li>
             <li>
-                <a href="/ui/deployable/embeddedProbe/{$instanceKey}/tail" data-target="#tail" class="btn btn-default" id="tail_tab" data-toggle="tabajax" rel="tooltip">
+                <a href="/ui/deployable/embeddedProbe/{$instanceKey}/tail" data-target="#tail" class="btn btn-default" id="tail-{$instanceKey}_tab" data-toggle="tabajax" rel="tooltip">
                     Tail
                 </a>
             </li>
             <li>
-                <a href="/ui/deployable/embeddedProbe/{$instanceKey}/metrics" data-target="#metrics" class="btn btn-default" id="metrics_tab" data-toggle="tabajax" rel="tooltip">
+                <a href="/ui/deployable/embeddedProbe/{$instanceKey}/metrics" data-target="#metrics" class="btn btn-default" id="metrics-{$instanceKey}_tab" data-toggle="tabajax" rel="tooltip">
                     Metrics
                 </a>
             </li>
             <li>
-                <a href="/ui/deployable/embeddedProbe/{$instanceKey}/routes" data-target="#routes" class="btn btn-default" id="routes_tab" data-toggle="tabajax" rel="tooltip">
+                <a href="/ui/deployable/embeddedProbe/{$instanceKey}/routes" data-target="#routes" class="btn btn-default" id="routes-{$instanceKey}_tab" data-toggle="tabajax" rel="tooltip">
                     Routes
                 </a>
             </li>
 
             <li>
-                <a href="/ui/deployable/embeddedProbe/{$instanceKey}/routes" data-target="#routes" class="btn btn-default" id="routes_tab" data-toggle="tabajax" rel="tooltip">
+                <a href="/ui/deployable/embeddedProbe/{$instanceKey}/routes" data-target="#routes" class="btn btn-default" id="routes-{$instanceKey}_tab" data-toggle="tabajax" rel="tooltip">
                     Routes
                 </a>
             </li>
             <li>
-                <a href="/ui/deployable/embeddedProbe/{$instanceKey}/threadDump" data-target="#threadDump" class="btn btn-default" id="threadDump_tab" data-toggle="tabajax" rel="tooltip">
+                <a href="/ui/deployable/embeddedProbe/{$instanceKey}/threadDump" data-target="#threadDump" class="btn btn-default" id="threadDump-{$instanceKey}_tab" data-toggle="tabajax" rel="tooltip">
                     Thread Dump
                 </a>
             </li>
             <li>
-                <a href="/ui/deployable/embeddedProbe/{$instanceKey}/resetErrors" data-target="#resetErrors" class="btn btn-default" id="resetErrors_tab" data-toggle="tabajax" rel="tooltip">
+                <a href="/ui/deployable/embeddedProbe/{$instanceKey}/resetErrors" data-target="#resetErrors" class="btn btn-default" id="resetErrors-{$instanceKey}_tab" data-toggle="tabajax" rel="tooltip">
                     Reset Errors
                 </a>
             </li>
             <li>
-                <a href="/ui/deployable/embeddedProbe/{$instanceKey}/resetThrown" data-target="#resetThrown" class="btn btn-default" id="resetThrown_tab" data-toggle="tabajax" rel="tooltip">
+                <a href="/ui/deployable/embeddedProbe/{$instanceKey}/resetThrown" data-target="#resetThrown" class="btn btn-default" id="resetThrown-{$instanceKey}_tab" data-toggle="tabajax" rel="tooltip">
                     Rest Thrown
                 </a>
             </li>
             <li>
-                <a href="/ui/deployable/embeddedProbe/{$instanceKey}/resetHealth" data-target="#resetHealth" class="btn btn-default" id="resetHealth_tab" data-toggle="tabajax" rel="tooltip">
+                <a href="/ui/deployable/embeddedProbe/{$instanceKey}/resetHealth" data-target="#resetHealth" class="btn btn-default" id="resetHealth-{$instanceKey}_tab" data-toggle="tabajax" rel="tooltip">
                     Reset Health
                 </a>
             </li>
@@ -74,15 +74,15 @@
         </ul>
 
         <div class="tab-content">
-            <div class="tab-pane active" id="health"></div>
-            <div class="tab-pane" id="tail"></div>
-            <div class="tab-pane" id="metrics"></div>
-            <div class="tab-pane" id="routes"></div>
-            <div class="tab-pane" id="threadDump"></div>
-            <div class="tab-pane" id="forceGC"></div>
-            <div class="tab-pane" id="resetErrors"></div>
-            <div class="tab-pane" id="resetThrown"></div>
-            <div class="tab-pane" id="resetHealth"></div>
+            <div class="tab-pane active" id="health-{$instanceKey}"></div>
+            <div class="tab-pane" id="tail-{$instanceKey}"></div>
+            <div class="tab-pane" id="metrics-{$instanceKey}"></div>
+            <div class="tab-pane" id="routes-{$instanceKey}"></div>
+            <div class="tab-pane" id="threadDump-{$instanceKey}"></div>
+            <div class="tab-pane" id="forceGC-{$instanceKey}"></div>
+            <div class="tab-pane" id="resetErrors-{$instanceKey}"></div>
+            <div class="tab-pane" id="resetThrown-{$instanceKey}"></div>
+            <div class="tab-pane" id="resetHealth-{$instanceKey}"></div>
         </div>
 
         <script>
