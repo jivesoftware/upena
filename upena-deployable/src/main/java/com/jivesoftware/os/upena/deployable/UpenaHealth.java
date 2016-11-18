@@ -204,7 +204,7 @@ public class UpenaHealth {
             }
             if (serviceHealth == null) {
                 serviceHealth = new ServiceHealth();
-                serviceHealth.health = -1;
+                serviceHealth.health = 0;
             }
             String uptime = "";
             if (nanny.getValue().getStartTimeMillis() > 0) {
@@ -281,7 +281,7 @@ public class UpenaHealth {
 
     static public class ServiceHealth {
 
-        public double health = 1.0d;
+        public double health = 0d;
         public List<Health> healthChecks = new ArrayList<>();
     }
 
