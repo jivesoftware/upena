@@ -24,48 +24,48 @@
                 <a class="btn btn-default" href="/ui/deployable/probe/{$instanceKey}"><span class="glyphicon glyphicon-fullscreen"></span></a>
             </li>
             <li>
-                <a href="/ui/deployable/embeddedProbe/{$instanceKey}/health" data-target="#d-health-{$instanceKey}" class="btn btn-default active" id="d-health-{$instanceKey}_tab" data-toggle="tabajax" rel="tooltip">
+                <a href="/ui/deployable/embeddedProbe/{$instanceKey}/health" data-target="#d-health-{$instanceKey}" class="btn btn-default active" id="d-health-{$instanceKey}_tab" data-toggle="tabajax{$instanceKey}" rel="tooltip">
                     Health
                 </a>
             </li>
             <li>
-                <a href="/ui/deployable/embeddedProbe/{$instanceKey}/tail" data-target="#d-tail-{$instanceKey}" class="btn btn-default" id="d-tail-{$instanceKey}_tab" data-toggle="tabajax" rel="tooltip">
+                <a href="/ui/deployable/embeddedProbe/{$instanceKey}/tail" data-target="#d-tail-{$instanceKey}" class="btn btn-default" id="d-tail-{$instanceKey}_tab" data-toggle="tabajax{$instanceKey}" rel="tooltip">
                     Tail
                 </a>
             </li>
             <li>
-                <a href="/ui/deployable/embeddedProbe/{$instanceKey}/metrics" data-target="#d-metrics-{$instanceKey}" class="btn btn-default" id="d-metrics-{$instanceKey}_tab" data-toggle="tabajax" rel="tooltip">
+                <a href="/ui/deployable/embeddedProbe/{$instanceKey}/metrics" data-target="#d-metrics-{$instanceKey}" class="btn btn-default" id="d-metrics-{$instanceKey}_tab" data-toggle="tabajax{$instanceKey}" rel="tooltip">
                     Metrics
                 </a>
             </li>
             <li>
-                <a href="/ui/deployable/embeddedProbe/{$instanceKey}/routes" data-target="#d-routes-{$instanceKey}" class="btn btn-default" id="d-routes-{$instanceKey}_tab" data-toggle="tabajax" rel="tooltip">
+                <a href="/ui/deployable/embeddedProbe/{$instanceKey}/routes" data-target="#d-routes-{$instanceKey}" class="btn btn-default" id="d-routes-{$instanceKey}_tab" data-toggle="tabajax{$instanceKey}" rel="tooltip">
                     Routes
                 </a>
             </li>
 
             <li>
-                <a href="/ui/deployable/embeddedProbe/{$instanceKey}/routes" data-target="#d-routes-{$instanceKey}" class="btn btn-default" id="d-routes-{$instanceKey}_tab" data-toggle="tabajax" rel="tooltip">
+                <a href="/ui/deployable/embeddedProbe/{$instanceKey}/routes" data-target="#d-routes-{$instanceKey}" class="btn btn-default" id="d-routes-{$instanceKey}_tab" data-toggle="tabajax{$instanceKey}" rel="tooltip">
                     Routes
                 </a>
             </li>
             <li>
-                <a href="/ui/deployable/embeddedProbe/{$instanceKey}/threadDump" data-target="#d-threadDump-{$instanceKey}" class="btn btn-default" id="d-threadDump-{$instanceKey}_tab" data-toggle="tabajax" rel="tooltip">
+                <a href="/ui/deployable/embeddedProbe/{$instanceKey}/threadDump" data-target="#d-threadDump-{$instanceKey}" class="btn btn-default" id="d-threadDump-{$instanceKey}_tab" data-toggle="tabajax{$instanceKey}" rel="tooltip">
                     Thread Dump
                 </a>
             </li>
             <li>
-                <a href="/ui/deployable/embeddedProbe/{$instanceKey}/resetErrors" data-target="#d-resetErrors-{$instanceKey}" class="btn btn-default" id="d-resetErrors-{$instanceKey}_tab" data-toggle="tabajax" rel="tooltip">
+                <a href="/ui/deployable/embeddedProbe/{$instanceKey}/resetErrors" data-target="#d-resetErrors-{$instanceKey}" class="btn btn-default" id="d-resetErrors-{$instanceKey}_tab" data-toggle="tabajax{$instanceKey}" rel="tooltip">
                     Reset Errors
                 </a>
             </li>
             <li>
-                <a href="/ui/deployable/embeddedProbe/{$instanceKey}/resetThrown" data-target="#d-resetThrown-{$instanceKey}" class="btn btn-default" id="rd-esetThrown-{$instanceKey}_tab" data-toggle="tabajax" rel="tooltip">
+                <a href="/ui/deployable/embeddedProbe/{$instanceKey}/resetThrown" data-target="#d-resetThrown-{$instanceKey}" class="btn btn-default" id="rd-esetThrown-{$instanceKey}_tab" data-toggle="tabajax{$instanceKey}" rel="tooltip">
                     Rest Thrown
                 </a>
             </li>
             <li>
-                <a href="/ui/deployable/embeddedProbe/{$instanceKey}/resetHealth" data-target="#d-resetHealth-{$instanceKey}" class="btn btn-default" id="d-resetHealth-{$instanceKey}_tab" data-toggle="tabajax" rel="tooltip">
+                <a href="/ui/deployable/embeddedProbe/{$instanceKey}/resetHealth" data-target="#d-resetHealth-{$instanceKey}" class="btn btn-default" id="d-resetHealth-{$instanceKey}_tab" data-toggle="tabajax{$instanceKey}" rel="tooltip">
                     Reset Health
                 </a>
             </li>
@@ -85,7 +85,7 @@
         </div>
 
         <script>
-            $('[data-toggle="tabajax"]').click(function(e) {lb}
+            $('[data-toggle="tabajax{$instanceKey}"]').click(function(e) {lb}
                 var $this = $(this),
                     loadurl = $this.attr('href'),
                     targ = $this.attr('data-target');
@@ -96,7 +96,7 @@
 
                 $this.tab('show');
 
-                $('[data-toggle="tabajax"]').each(function (j, tab) {lb}
+                $('[data-toggle="tabajax{$instanceKey}"]').each(function (j, tab) {lb}
                     if ($(tab).hasClass('active')) {lb}
                         $(tab).removeClass('active');
                      {rb}
@@ -107,7 +107,7 @@
                 return false;
             {rb});
 
-            $('[data-toggle="tabajax"]').each(function (j, tab) {lb}
+            $('[data-toggle="tabajax{$instanceKey}"]').each(function (j, tab) {lb}
                 if ($(tab).hasClass('active')) {lb}
                     $(tab).click();
                  {rb}
