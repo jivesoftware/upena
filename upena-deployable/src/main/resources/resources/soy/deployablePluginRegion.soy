@@ -94,25 +94,23 @@
                     $(targ).html(data);
                 {rb});
 
-                $this.tab('show');
-
                 $('[data-toggle="tabajax{$instanceKey}"]').each(function (j, tab) {lb}
-                    if ($(tab).hasClass('active')) {lb}
+                    if ($(tab) != $this && $(tab).hasClass('active')) {lb}
                         $(tab).removeClass('active');
                      {rb}
                   {rb});
 
                 $this.addClass('active');
+                $this.tab('show');
 
                 return false;
             {rb});
 
-                /*
             $('[data-toggle="tabajax{$instanceKey}"]').each(function (j, tab) {lb}
                 if ($(tab).hasClass('active')) {lb}
                     $(tab).click();
                  {rb}
-              {rb});*/
+              {rb});
         </script>
 
     </div>
