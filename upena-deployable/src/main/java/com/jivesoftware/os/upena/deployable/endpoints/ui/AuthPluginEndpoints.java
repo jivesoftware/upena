@@ -17,6 +17,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
 
@@ -75,7 +76,7 @@ public class AuthPluginEndpoints {
         try {
             LOG.info("httpRequest:"+httpRequest);
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), unauthorizedPluginRegion, new UnauthorizedPluginRegion.UnauthorizedInput());
-            return Response.ok(rendered).build();
+            return Response.status(Status.UNAUTHORIZED).entity(rendered).build();
         } catch (Exception e) {
             LOG.error("auth GET", e);
             return Response.serverError().entity(e.getMessage()).build();
@@ -89,7 +90,7 @@ public class AuthPluginEndpoints {
         try {
             LOG.info("httpRequest:"+httpRequest);
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), unauthorizedPluginRegion, new UnauthorizedPluginRegion.UnauthorizedInput());
-            return Response.ok(rendered).build();
+            return Response.status(Status.UNAUTHORIZED).entity(rendered).build();
         } catch (Exception e) {
             LOG.error("auth GET", e);
             return Response.serverError().entity(e.getMessage()).build();
