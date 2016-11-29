@@ -72,7 +72,9 @@ public class UpenaHealth {
         List<Double> healths = Lists.newArrayList();
         for (NodeHealth nodeHealth : health.values()) {
             for (NannyHealth nannyHealth : nodeHealth.nannyHealths) {
-                healths.add(nannyHealth.serviceHealth.health);
+                if (nannyHealth.instanceDescriptor.enabled) {
+                    healths.add(nannyHealth.serviceHealth.health);
+                }
             }
         }
         if (healths.size() == 1) {
