@@ -2,11 +2,17 @@
 
 /**
  *
+ * @param? message
  */
 {template .oktaMFAAuthPluginRegion}
     <div class="container sign-in-up">
         <div class="row">
             <div class="col-md-4 col-md-offset-4">
+            <br>
+                {if $message}
+                    <div class="alert alert-warning" role="alert">{$message}</div>
+                {/if}
+            <br>
             <div class="well">
                 <form id="auth-login" data-active-class="btn-default" method="post" name="addProxy">
                     <div class="text-center">

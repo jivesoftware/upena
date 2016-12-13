@@ -30,6 +30,12 @@ public class OktaMFAAuthPluginRegion implements PageRegion<OktaAuthInput> {
     }
 
     public static class OktaAuthInput implements PluginInput {
+        private final boolean unauthorized;
+
+        public OktaAuthInput(boolean unauthorized) {
+            this.unauthorized = unauthorized;
+        }
+
 
         @Override
         public String name() {
@@ -40,6 +46,7 @@ public class OktaMFAAuthPluginRegion implements PageRegion<OktaAuthInput> {
     @Override
     public String render(String user, OktaAuthInput input) {
         Map<String, Object> data = Maps.newHashMap();
+        data.put("message", input.unauthorized ? "Login failed." : "");
         return renderer.render(template, data);
     }
 
