@@ -5,6 +5,7 @@ import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.deployable.region.AuthPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.AuthPluginRegion.AuthInput;
 import com.jivesoftware.os.upena.deployable.region.OktaMFAAuthPluginRegion;
+import com.jivesoftware.os.upena.deployable.region.OktaMFAAuthPluginRegion.OktaAuthInput;
 import com.jivesoftware.os.upena.deployable.region.UnauthorizedPluginRegion;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
 import javax.inject.Singleton;
@@ -74,12 +75,26 @@ public class AuthPluginEndpoints {
     }
 
     @Path("/okta/mfa")
-    @POST
+    @GET
     @Produces(MediaType.TEXT_HTML)
-    public Response oktaMFA(@Context HttpServletRequest httpRequest) {
+    public Response getOktaMFA(@Context HttpServletRequest httpRequest) {
         try {
             Object got = httpRequest.getAttribute("shiroLoginFailure");
-            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), oktaMFAAuthPluginRegion, null);
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), oktaMFAAuthPluginRegion, new OktaAuthInput(got == null ? false : true));
+            return Response.ok(rendered).build();
+        } catch (Exception e) {
+            LOG.error("auth GET", e);
+            return Response.serverError().entity(e.getMessage()).build();
+        }
+    }
+
+    @Path("/okta/mfa")
+    @POST
+    @Produces(MediaType.TEXT_HTML)
+    public Response postOktaMFA(@Context HttpServletRequest httpRequest) {
+        try {
+            Object got = httpRequest.getAttribute("shiroLoginFailure");
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), oktaMFAAuthPluginRegion, new OktaAuthInput(got == null ? false : true));
             return Response.ok(rendered).build();
         } catch (Exception e) {
             LOG.error("auth GET", e);
