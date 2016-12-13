@@ -239,6 +239,11 @@ public class UpenaMain {
         "    -Damza.loopback.strict=true",
         "         (change the port upena uses to interact with other upena nodes.) ",
         "",
+        "    -Dokta.base.url=<oktaBaseUrl>",
+        "    -Dokta.api.key=<>",
+        "    -Dokta.roles.directory=<pathToRoles> ",
+        "          (one role file per okta user that you want to have root access)",
+        "",
         "    -Dmin.service.port=10000",
         "    -Dmax.service.port=32767",
         "         (adjust range to avoid port collision.) ",
@@ -537,7 +542,8 @@ public class UpenaMain {
 
         DiscoveredRoutes discoveredRoutes = new DiscoveredRoutes();
         ShiroRequestHelper shiroRequestHelper = new ShiroRequestHelper();
-        String shiroConfigLocation = System.getProperty("shiro.ini.location", "classpath:shiro.ini");
+
+        String shiroConfigLocation = System.getProperty("shiro.ini.location", "classpath:shiro.ini"); // classpath:oktashiro.ini
 
         UpenaJerseyEndpoints jerseyEndpoints = new UpenaJerseyEndpoints(shiroConfigLocation)
             .addInjectable(ShiroRequestHelper.class, shiroRequestHelper)

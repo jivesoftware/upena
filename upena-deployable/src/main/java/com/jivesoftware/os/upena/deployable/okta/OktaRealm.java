@@ -2,10 +2,12 @@ package com.jivesoftware.os.upena.deployable.okta;
 
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
-import com.jivesoftware.os.upena.deployable.okta.client.clients.UserGroupApiClient;
-import com.jivesoftware.os.upena.deployable.okta.client.framework.ApiClientConfiguration;
-import com.jivesoftware.os.upena.deployable.okta.client.models.usergroups.UserGroup;
-import com.jivesoftware.os.upena.deployable.okta.client.models.users.User;
+import java.io.File;
+import java.nio.file.Files;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
@@ -14,12 +16,6 @@ import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
 
 /**
  * Created by jonathan.colt on 11/7/16.
@@ -62,52 +58,36 @@ public class OktaRealm extends AuthorizingRealm {
 
                 SimpleAccount account = new SimpleAccount(username, "password", getName());
 
-                String baseUrl = System.getProperty("okta.base.url");
-                if (baseUrl == null) {
+                String userRolesDirectory = System.getProperty("okta.user.roles.directory");
+                if (userRolesDirectory == null) {
                     return null;
                 }
-                String apiKey = System.getProperty("okta.api.key");
-                if (baseUrl == null) {
-                    return null;
-                }
-                ApiClientConfiguration apiClientConfiguration = new ApiClientConfiguration(baseUrl, apiKey);
-                UserGroupApiClient userGroupApiClient = new UserGroupApiClient(apiClientConfiguration);
 
+                File roles = new File(userRolesDirectory, username);
+                if (roles.exists()) {
+                    try {
+                        List<String> lines = Files.readAllLines(roles.toPath());
+                        for (String line : lines) {
+                            if (line.trim().startsWith("#")) {
+                                continue;
+                            }
+                            if (line.trim().toLowerCase().startsWith("role") && line.contains(":")) {
+                                String role = line.trim().split(":")[1].trim();
+                                account.addRole(role);
+                            }
 
-                try {
-
-                    String groupId = null;
-                    List<UserGroup> userGroupsWithLimit = userGroupApiClient.getUserGroupsWithQueryAndLimit("local-upena-readonly", 1);
-                    for (UserGroup userGroup : userGroupsWithLimit) {
-                        LOG.info(userGroup.toString());
-                        if ("local-upena-readonly".equals(userGroup.getProfile().getName())) {
-                            LOG.info(userGroup.getProfile().getName());
-                            groupId = userGroup.getId();
+                            if (line.trim().toLowerCase().startsWith("perm") && line.contains(":")) {
+                                String perm = line.trim().split(":")[1].trim();
+                                account.addStringPermission(perm);
+                            }
                         }
+
+                    } catch (Exception e) {
+                        LOG.error("Failed parsing {}",new Object[]{roles}, e);
                     }
-
-                    if (groupId != null) {
-                        List<User> users = userGroupApiClient.getUsers(groupId);
-                        for (User user : users) {
-                            LOG.info("user in group:" + user.getProfile().getLogin());
-                        }
-                    }
-
-
-                } catch (IOException e) {
-                    LOG.warn("Failed getting groups:", e);
+                } else {
+                    account.addStringPermission("read");
                 }
-
-
-                account.addRole("admin");
-                account.addRole("readwrite");
-                account.addRole("readwrite");
-                //account.addRole("user");
-                //account.addRole("admin");
-
-                account.addStringPermission("*");
-                account.addStringPermission("read");
-                account.addStringPermission("write");
 
                 //account.addStringPermission("blogEntry:edit"); //this user is allowed to 'edit' _any_ blogEntry
                 //account.addStringPermission("printer:print:laserjet2000"); //allowed to 'print' to the 'printer' identified
