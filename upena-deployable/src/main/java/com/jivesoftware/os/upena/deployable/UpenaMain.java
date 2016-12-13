@@ -109,6 +109,9 @@ import com.jivesoftware.os.upena.deployable.endpoints.ui.ThrownPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ui.TopologyPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ui.UpenaRingPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.lookup.AsyncLookupService;
+import com.jivesoftware.os.upena.deployable.okta.OktaCredentialsMatcher;
+import com.jivesoftware.os.upena.deployable.okta.OktaLog;
+import com.jivesoftware.os.upena.deployable.okta.OktaRealm;
 import com.jivesoftware.os.upena.deployable.profiler.model.ServicesCallDepthStack;
 import com.jivesoftware.os.upena.deployable.profiler.server.endpoints.PerfService;
 import com.jivesoftware.os.upena.deployable.profiler.server.endpoints.PerfServiceEndpoints;
@@ -495,6 +498,18 @@ public class UpenaMain {
                 x.printStackTrace(); // Hmm lame
             }
         };
+
+        OktaLog oktaLog = (who, what, why, how) -> {
+            try {
+                upenaStore.record("okta:"+who, what, System.currentTimeMillis(), why, ringHost.getHost() + ":" + ringHost.getPort(), how);
+            } catch (Exception x) {
+                x.printStackTrace(); // Hmm lame
+            }
+        };
+
+        OktaCredentialsMatcher.oktaLog = oktaLog;
+        OktaRealm.oktaLog = oktaLog;
+
 
         UpenaClient upenaClient = new UpenaClient() {
             @Override

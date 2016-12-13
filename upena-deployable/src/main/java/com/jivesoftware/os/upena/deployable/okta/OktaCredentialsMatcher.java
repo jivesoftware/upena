@@ -19,7 +19,7 @@ import org.apache.shiro.authc.credential.CredentialsMatcher;
 public class OktaCredentialsMatcher implements CredentialsMatcher {
 
     public static final MetricLogger LOG = MetricLoggerFactory.getLogger();
-
+    public static OktaLog oktaLog;
 
     @Override
     public boolean doCredentialsMatch(AuthenticationToken token, AuthenticationInfo info) {
@@ -40,7 +40,7 @@ public class OktaCredentialsMatcher implements CredentialsMatcher {
             try {
                 apiKey = Files.readAllLines(oktaApiKey.toPath()).get(0);
             } catch (IOException x) {
-                LOG.warn("Failed to load okta key.",x);
+                LOG.warn("Failed to load okta key.", x);
                 return false;
             }
         }
@@ -65,8 +65,11 @@ public class OktaCredentialsMatcher implements CredentialsMatcher {
             LOG.info("result:" + result);
             LOG.info("expires:" + result.getExpiresAt().toString());
             LOG.info("status:" + result.getStatus().toString());
+
+            oktaLog.record(usernamePasswordToken.getUsername(), "login", "Success", "oktaAPI");
             return result.getStatus().equals("SUCCESS");
         } catch (IOException e) {
+            oktaLog.record(((UsernamePasswordToken) token).getUsername(), "login", "Failed", "oktaAPI");
             LOG.error("Authentication failed:", e);
             return false;
         }
