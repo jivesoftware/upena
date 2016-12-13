@@ -4,6 +4,7 @@ import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.deployable.region.AuthPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.AuthPluginRegion.AuthInput;
+import com.jivesoftware.os.upena.deployable.region.OktaMFAAuthPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.UnauthorizedPluginRegion;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
 import javax.inject.Singleton;
@@ -32,13 +33,16 @@ public class AuthPluginEndpoints {
 
     private final SoyService soyService;
     private final AuthPluginRegion pluginRegion;
+    private final OktaMFAAuthPluginRegion oktaMFAAuthPluginRegion;
     private final UnauthorizedPluginRegion unauthorizedPluginRegion;
 
     public AuthPluginEndpoints(@Context SoyService soyService,
         @Context AuthPluginRegion pluginRegion,
+        @Context OktaMFAAuthPluginRegion oktaMFAAuthPluginRegion,
         @Context UnauthorizedPluginRegion unauthorizedPluginRegion) {
         this.soyService = soyService;
         this.pluginRegion = pluginRegion;
+        this.oktaMFAAuthPluginRegion = oktaMFAAuthPluginRegion;
         this.unauthorizedPluginRegion = unauthorizedPluginRegion;
     }
 
@@ -62,6 +66,20 @@ public class AuthPluginEndpoints {
         try {
             Object got = httpRequest.getAttribute("shiroLoginFailure");
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion, new AuthInput(username, (got == null ? false : true)));
+            return Response.ok(rendered).build();
+        } catch (Exception e) {
+            LOG.error("auth GET", e);
+            return Response.serverError().entity(e.getMessage()).build();
+        }
+    }
+
+    @Path("/okta/mfa")
+    @POST
+    @Produces(MediaType.TEXT_HTML)
+    public Response oktaMFA(@Context HttpServletRequest httpRequest) {
+        try {
+            Object got = httpRequest.getAttribute("shiroLoginFailure");
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), oktaMFAAuthPluginRegion, null);
             return Response.ok(rendered).build();
         } catch (Exception e) {
             LOG.error("auth GET", e);

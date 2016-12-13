@@ -134,6 +134,7 @@ import com.jivesoftware.os.upena.deployable.region.ManagedDeployablePluginRegion
 import com.jivesoftware.os.upena.deployable.region.MenuRegion;
 import com.jivesoftware.os.upena.deployable.region.ModulesPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.MonkeyPluginRegion;
+import com.jivesoftware.os.upena.deployable.region.OktaMFAAuthPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.PluginHandle;
 import com.jivesoftware.os.upena.deployable.region.ProfilerPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ProjectsPluginRegion;
@@ -169,13 +170,6 @@ import com.jivesoftware.os.upena.uba.service.UbaServiceInitializer;
 import com.jivesoftware.os.upena.uba.service.UpenaClient;
 import de.ruedigermoeller.serialization.FSTConfiguration;
 import io.swagger.jaxrs.config.BeanConfig;
-import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
-import oauth.signpost.signature.HmacSha1MessageSigner;
-import org.apache.commons.io.IOUtils;
-import org.glassfish.jersey.oauth1.signature.OAuth1Request;
-import org.glassfish.jersey.oauth1.signature.OAuth1Signature;
-import org.merlin.config.BindInterfaceToConfiguration;
-
 import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -199,6 +193,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
+import oauth.signpost.signature.HmacSha1MessageSigner;
+import org.apache.commons.io.IOUtils;
+import org.glassfish.jersey.oauth1.signature.OAuth1Request;
+import org.glassfish.jersey.oauth1.signature.OAuth1Signature;
+import org.merlin.config.BindInterfaceToConfiguration;
 
 public class UpenaMain {
 
@@ -243,7 +243,8 @@ public class UpenaMain {
         "         (change the port upena uses to interact with other upena nodes.) ",
         "",
         "    -Dokta.base.url=<oktaBaseUrl>",
-        "    -Dokta.api.key=<>",
+        "    -Dokta.api.key=<?>",
+        "    -Dokta.mfa.factorId=<?>"
         "    -Dokta.roles.directory=<pathToRoles> ",
         "          (one role file per okta user that you want to have root access)",
         "",
@@ -852,6 +853,9 @@ public class UpenaMain {
         );
 
         AuthPluginRegion authRegion = new AuthPluginRegion("soy.page.authPluginRegion", renderer);
+        OktaMFAAuthPluginRegion oktaMFAAuthRegion = new OktaMFAAuthPluginRegion("soy.page.oktaMFAAuthPluginRegion", renderer);
+        jerseyEndpoints.addInjectable(OktaMFAAuthPluginRegion.class, oktaMFAAuthRegion);
+
         UnauthorizedPluginRegion unauthorizedRegion = new UnauthorizedPluginRegion("soy.page.unauthorizedPluginRegion", renderer);
 
         PluginHandle auth = new PluginHandle("login", null, "Login", "/ui/auth/login",
