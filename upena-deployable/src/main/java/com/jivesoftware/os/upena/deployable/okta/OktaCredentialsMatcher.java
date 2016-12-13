@@ -3,8 +3,12 @@ package com.jivesoftware.os.upena.deployable.okta;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.deployable.okta.client.clients.AuthApiClient;
+import com.jivesoftware.os.upena.deployable.okta.client.clients.FactorsApiClient;
+import com.jivesoftware.os.upena.deployable.okta.client.clients.UserApiClient;
 import com.jivesoftware.os.upena.deployable.okta.client.framework.ApiClientConfiguration;
 import com.jivesoftware.os.upena.deployable.okta.client.models.auth.AuthResult;
+import com.jivesoftware.os.upena.deployable.okta.client.models.factors.Factor;
+import com.jivesoftware.os.upena.deployable.okta.client.models.users.User;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -19,6 +23,37 @@ import org.apache.shiro.authc.credential.CredentialsMatcher;
  * Created by jonathan.colt on 11/8/16.
  */
 public class OktaCredentialsMatcher implements CredentialsMatcher {
+
+    public static void main(String[] args) throws IOException {
+        ApiClientConfiguration apiClientConfiguration = new ApiClientConfiguration("https://jive.okta.com", "00VITfHJrIusgZaf0AS0pCGGxV4HPHNV54gDrqP4NN");
+
+
+
+
+        UserApiClient userApiClient = new UserApiClient(apiClientConfiguration);
+
+        User user = userApiClient.getUser("jonathan.colt");
+        System.out.println(user.getId());
+
+        FactorsApiClient client = new FactorsApiClient(apiClientConfiguration);
+
+
+        for (Factor factor : client.getUserLifecycleFactors(user.getId())) {
+            System.out.println(factor.getFactorType()+" "+factor.getId()+" "+factor.getStatus());
+        }
+
+
+
+
+
+       /* AuthApiClient authApiClient = new AuthApiClient(apiClientConfiguration);
+        AuthResult result = authApiClient.authenticate(
+            "jonathan.colt",
+            new String(""),
+            "relay");*/
+
+        //System.out.println(result.getIdToken());
+    }
 
 
     public static final MetricLogger LOG = MetricLoggerFactory.getLogger();
@@ -62,11 +97,26 @@ public class OktaCredentialsMatcher implements CredentialsMatcher {
         AuthApiClient authApiClient = new AuthApiClient(apiClientConfiguration);
         if (oktaUsernamePasswordToken.getToken() != null) {
             try {
-                SecureRandom random = new SecureRandom();
-
-                String factorId = System.getProperty("okta.mfa.factorId");
-                if (factorId == null) {
+                String factorType = System.getProperty("okta.mfa.factorId");
+                if (factorType == null) {
                     LOG.error("You must specifiy an okta.mfa.factorId");
+                    return false;
+                }
+
+                    UserApiClient userApiClient = new UserApiClient(apiClientConfiguration);
+
+                User user = userApiClient.getUser(oktaUsernamePasswordToken.getUsername());
+                FactorsApiClient client = new FactorsApiClient(apiClientConfiguration);
+                String factorId = null;
+                for (Factor factor : client.getUserLifecycleFactors(user.getId())) {
+                    if (factor.getFactorType().equals(factorType)) {
+                        factorId = factor.getId();
+                        break;
+                    }
+                }
+
+                if (factorId == null) {
+                    LOG.error("The user:{} doesn't have a factor of type:{}",oktaUsernamePasswordToken.getUsername(), factorType);
                     return false;
                 }
 
