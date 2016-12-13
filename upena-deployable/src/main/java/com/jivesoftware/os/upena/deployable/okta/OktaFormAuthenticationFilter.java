@@ -24,8 +24,7 @@ public class OktaFormAuthenticationFilter extends FormAuthenticationFilter {
         Cookie[] cookies = WebUtils.toHttp(request).getCookies();
         String mfaUserName = null;
         String mfaToken = null;
-        String mfaFactorId =  WebUtils.getCleanParam(request, "mfaFactorId");
-        String mfaPassCode = WebUtils.getCleanParam(request, "mfaPassCode");
+        String mfaPassCode = WebUtils.getCleanParam(request, "passCode");
         String mfaRelay = null;
 
         if (cookies != null) {
