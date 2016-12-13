@@ -5,8 +5,6 @@ import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import java.io.File;
 import java.nio.file.Files;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
@@ -32,50 +30,50 @@ public class OktaRealm extends AuthorizingRealm {
         return "OktaRealm";
     }
 
-    private Map<String, SimpleAccount> userAccount = new ConcurrentHashMap<>(16);
+    //private Map<String, SimpleAccount> userAccount = new ConcurrentHashMap<>(16);
 
     protected SimpleAccount getAccount(String username) {
 
-        SimpleAccount account = userAccount.computeIfAbsent(username, s -> {
+        //SimpleAccount account = userAccount.computeIfAbsent(username, s -> {
 
-            SimpleAccount account1 = new SimpleAccount(username, "password", getName());
+        SimpleAccount account1 = new SimpleAccount(username, "password", getName());
 
-            String userRolesDirectory = System.getProperty("okta.user.roles.directory");
-            if (userRolesDirectory == null) {
-                return null;
-            }
+        String userRolesDirectory = System.getProperty("okta.user.roles.directory");
+        if (userRolesDirectory == null) {
+            return null;
+        }
 
-            File roles = new File(userRolesDirectory, username);
-            if (roles.exists()) {
-                try {
-                    List<String> lines = Files.readAllLines(roles.toPath());
-                    for (String line : lines) {
-                        if (line.trim().startsWith("#")) {
-                            continue;
-                        }
-                        if (line.trim().toLowerCase().startsWith("role") && line.contains(":")) {
-                            String role = line.trim().split(":")[1].trim();
-                            account1.addRole(role);
-                        }
-
-                        if (line.trim().toLowerCase().startsWith("perm") && line.contains(":")) {
-                            String perm = line.trim().split(":")[1].trim();
-                            account1.addStringPermission(perm);
-                        }
+        File roles = new File(userRolesDirectory, username);
+        if (roles.exists()) {
+            try {
+                List<String> lines = Files.readAllLines(roles.toPath());
+                for (String line : lines) {
+                    if (line.trim().startsWith("#")) {
+                        continue;
+                    }
+                    if (line.trim().toLowerCase().startsWith("role") && line.contains(":")) {
+                        String role = line.trim().split(":")[1].trim();
+                        account1.addRole(role);
                     }
 
-                } catch (Exception e) {
-                    LOG.error("Failed parsing {}",new Object[]{roles}, e);
+                    if (line.trim().toLowerCase().startsWith("perm") && line.contains(":")) {
+                        String perm = line.trim().split(":")[1].trim();
+                        account1.addStringPermission(perm);
+                    }
                 }
-            } else {
-                account1.addStringPermission("read");
-            }
 
-            //account.addStringPermission("blogEntry:edit"); //this user is allowed to 'edit' _any_ blogEntry
-            //account.addStringPermission("printer:print:laserjet2000"); //allowed to 'print' to the 'printer' identified
-            return account1;
-        });
-        return account;
+            } catch (Exception e) {
+                LOG.error("Failed parsing {}", new Object[] { roles }, e);
+            }
+        } else {
+            account1.addStringPermission("read");
+        }
+
+        //account.addStringPermission("blogEntry:edit"); //this user is allowed to 'edit' _any_ blogEntry
+        //account.addStringPermission("printer:print:laserjet2000"); //allowed to 'print' to the 'printer' identified
+        return account1;
+        //});
+        //return account;
     }
 
 
