@@ -46,7 +46,7 @@ public class OktaMFAAuthPluginRegion implements PageRegion<OktaAuthInput> {
     @Override
     public String render(String user, OktaAuthInput input) {
         Map<String, Object> data = Maps.newHashMap();
-        data.put("message", input.unauthorized ? "Login failed." : "");
+        data.put("message", input.unauthorized ? "MFA passcode failed." : "");
         return renderer.render(template, data);
     }
 
