@@ -7,7 +7,9 @@ import com.jivesoftware.os.upena.deployable.okta.client.framework.ApiClientConfi
 import com.jivesoftware.os.upena.deployable.okta.client.models.auth.AuthResult;
 import java.io.File;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.file.Files;
+import java.security.SecureRandom;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.UsernamePasswordToken;
@@ -17,6 +19,7 @@ import org.apache.shiro.authc.credential.CredentialsMatcher;
  * Created by jonathan.colt on 11/8/16.
  */
 public class OktaCredentialsMatcher implements CredentialsMatcher {
+
 
     public static final MetricLogger LOG = MetricLoggerFactory.getLogger();
     public static OktaLog oktaLog;
@@ -53,25 +56,66 @@ public class OktaCredentialsMatcher implements CredentialsMatcher {
         }
 
         ApiClientConfiguration apiClientConfiguration = new ApiClientConfiguration(baseUrl, apiKey);
+
+        OktaUsernamePasswordToken oktaUsernamePasswordToken = (OktaUsernamePasswordToken) token;
+
         AuthApiClient authApiClient = new AuthApiClient(apiClientConfiguration);
+        if (oktaUsernamePasswordToken.getToken() != null) {
+            try {
+                SecureRandom random = new SecureRandom();
 
-        try {
+                String factorId = System.getProperty("okta.mfa.factorId");
+                if (factorId == null) {
+                    LOG.error("You must specifiy an okta.mfa.factorId");
+                    return false;
+                }
 
-            UsernamePasswordToken usernamePasswordToken = (UsernamePasswordToken) token;
-            AuthResult result = authApiClient.authenticate(
-                usernamePasswordToken.getUsername(),
-                new String(usernamePasswordToken.getPassword()),
-                "relayState");
-            LOG.info("result:" + result);
-            LOG.info("expires:" + result.getExpiresAt().toString());
-            LOG.info("status:" + result.getStatus().toString());
 
-            oktaLog.record(usernamePasswordToken.getUsername(), "login", "Success", "oktaAPI");
-            return result.getStatus().equals("SUCCESS");
-        } catch (IOException e) {
-            oktaLog.record(((UsernamePasswordToken) token).getUsername(), "login", "Failed", "oktaAPI");
-            LOG.error("Authentication failed:", e);
-            return false;
+                AuthResult result = authApiClient.authenticateWithFactor(oktaUsernamePasswordToken.getToken(),
+                    factorId,
+                    oktaUsernamePasswordToken.getPassCode(),
+                    oktaUsernamePasswordToken.getRelay(),
+                    oktaUsernamePasswordToken.isRememberMe());
+
+                if (result.getStatus().equals("SUCCESS")) {
+                    oktaLog.record(oktaUsernamePasswordToken.getUsername(), "login", "Success", "oktaAPI");
+                    return true;
+                } else {
+                    return false;
+                }
+            } catch (IOException e) {
+                oktaLog.record(((UsernamePasswordToken) token).getUsername(), "login", "Failed", "oktaAPI");
+                LOG.error("Authentication failed:", e);
+                return false;
+            }
+
+        } else {
+
+
+            try {
+                SecureRandom random = new SecureRandom();
+                AuthResult result = authApiClient.authenticate(
+                    oktaUsernamePasswordToken.getUsername(),
+                    new String(oktaUsernamePasswordToken.getPassword()),
+                    new BigInteger(130, random).toString(32));
+
+                //LOG.info("result:" + result);
+                //LOG.info("expires:" + result.getExpiresAt().toString());
+                //LOG.info("status:" + result.getStatus().toString());
+
+                if (result.getStatus().equals("MFA_REQUIRED")) {
+                    throw new OktaMFARequiredException(oktaUsernamePasswordToken.getUsername(), result.getStateToken(), result.getRelayState());
+                } else if (result.getStatus().equals("SUCCESS")) {
+                    oktaLog.record(oktaUsernamePasswordToken.getUsername(), "login", "Success", "oktaAPI");
+                    return true;
+                } else {
+                    return false;
+                }
+            } catch (IOException e) {
+                oktaLog.record(((UsernamePasswordToken) token).getUsername(), "login", "Failed", "oktaAPI");
+                LOG.error("Authentication failed:", e);
+                return false;
+            }
         }
     }
 }
