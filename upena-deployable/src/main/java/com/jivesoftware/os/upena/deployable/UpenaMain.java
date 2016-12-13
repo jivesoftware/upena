@@ -244,7 +244,7 @@ public class UpenaMain {
         "",
         "    -Dokta.base.url=<oktaBaseUrl>",
         "    -Dokta.api.key=<?>",
-        "    -Dokta.mfa.factorId=<?>"
+        "    -Dokta.mfa.factorId=<?>",
         "    -Dokta.roles.directory=<pathToRoles> ",
         "          (one role file per okta user that you want to have root access)",
         "",
