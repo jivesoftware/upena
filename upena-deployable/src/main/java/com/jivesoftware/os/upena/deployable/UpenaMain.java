@@ -109,6 +109,9 @@ import com.jivesoftware.os.upena.deployable.endpoints.ui.ThrownPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ui.TopologyPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ui.UpenaRingPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.lookup.AsyncLookupService;
+import com.jivesoftware.os.upena.deployable.okta.OktaCredentialsMatcher;
+import com.jivesoftware.os.upena.deployable.okta.OktaLog;
+import com.jivesoftware.os.upena.deployable.okta.OktaRealm;
 import com.jivesoftware.os.upena.deployable.profiler.model.ServicesCallDepthStack;
 import com.jivesoftware.os.upena.deployable.profiler.server.endpoints.PerfService;
 import com.jivesoftware.os.upena.deployable.profiler.server.endpoints.PerfServiceEndpoints;
@@ -238,6 +241,11 @@ public class UpenaMain {
         "    -Damza.loopback.port=1174",
         "    -Damza.loopback.strict=true",
         "         (change the port upena uses to interact with other upena nodes.) ",
+        "",
+        "    -Dokta.base.url=<oktaBaseUrl>",
+        "    -Dokta.api.key=<>",
+        "    -Dokta.roles.directory=<pathToRoles> ",
+        "          (one role file per okta user that you want to have root access)",
         "",
         "    -Dmin.service.port=10000",
         "    -Dmax.service.port=32767",
@@ -491,6 +499,18 @@ public class UpenaMain {
             }
         };
 
+        OktaLog oktaLog = (who, what, why, how) -> {
+            try {
+                upenaStore.record("okta:"+who, what, System.currentTimeMillis(), why, ringHost.getHost() + ":" + ringHost.getPort(), how);
+            } catch (Exception x) {
+                x.printStackTrace(); // Hmm lame
+            }
+        };
+
+        OktaCredentialsMatcher.oktaLog = oktaLog;
+        OktaRealm.oktaLog = oktaLog;
+
+
         UpenaClient upenaClient = new UpenaClient() {
             @Override
             public InstanceDescriptorsResponse instanceDescriptor(InstanceDescriptorsRequest instanceDescriptorsRequest) throws Exception {
@@ -537,7 +557,8 @@ public class UpenaMain {
 
         DiscoveredRoutes discoveredRoutes = new DiscoveredRoutes();
         ShiroRequestHelper shiroRequestHelper = new ShiroRequestHelper();
-        String shiroConfigLocation = System.getProperty("shiro.ini.location", "classpath:shiro.ini");
+
+        String shiroConfigLocation = System.getProperty("shiro.ini.location", "classpath:shiro.ini"); // classpath:oktashiro.ini
 
         UpenaJerseyEndpoints jerseyEndpoints = new UpenaJerseyEndpoints(shiroConfigLocation)
             .addInjectable(ShiroRequestHelper.class, shiroRequestHelper)
