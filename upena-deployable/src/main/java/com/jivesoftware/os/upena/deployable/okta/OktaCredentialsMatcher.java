@@ -28,8 +28,6 @@ public class OktaCredentialsMatcher implements CredentialsMatcher {
         ApiClientConfiguration apiClientConfiguration = new ApiClientConfiguration("https://jive.okta.com", "00VITfHJrIusgZaf0AS0pCGGxV4HPHNV54gDrqP4NN");
 
 
-
-
         UserApiClient userApiClient = new UserApiClient(apiClientConfiguration);
 
         User user = userApiClient.getUser("jonathan.colt");
@@ -39,7 +37,7 @@ public class OktaCredentialsMatcher implements CredentialsMatcher {
 
 
         for (Factor factor : client.getUserLifecycleFactors(user.getId())) {
-            System.out.println(factor.getFactorType()+" "+factor.getId()+" "+factor.getStatus());
+            System.out.println(factor.getFactorType() + " " + factor.getId() + " " + factor.getStatus());
         }
 
 
@@ -97,13 +95,13 @@ public class OktaCredentialsMatcher implements CredentialsMatcher {
         AuthApiClient authApiClient = new AuthApiClient(apiClientConfiguration);
         if (oktaUsernamePasswordToken.getToken() != null) {
             try {
-                String factorType = System.getProperty("okta.mfa.factorId");
+                String factorType = System.getProperty("okta.mfa.factorType");
                 if (factorType == null) {
-                    LOG.error("You must specifiy an okta.mfa.factorId");
+                    LOG.error("You must specifiy an okta.mfa.factorType");
                     return false;
                 }
 
-                    UserApiClient userApiClient = new UserApiClient(apiClientConfiguration);
+                UserApiClient userApiClient = new UserApiClient(apiClientConfiguration);
 
                 User user = userApiClient.getUser(oktaUsernamePasswordToken.getUsername());
                 FactorsApiClient client = new FactorsApiClient(apiClientConfiguration);
@@ -116,7 +114,7 @@ public class OktaCredentialsMatcher implements CredentialsMatcher {
                 }
 
                 if (factorId == null) {
-                    LOG.error("The user:{} doesn't have a factor of type:{}",oktaUsernamePasswordToken.getUsername(), factorType);
+                    LOG.error("The user:{} doesn't have a factor of type:{}", oktaUsernamePasswordToken.getUsername(), factorType);
                     return false;
                 }
 
