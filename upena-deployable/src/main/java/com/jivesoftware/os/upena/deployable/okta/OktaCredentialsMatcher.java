@@ -25,32 +25,6 @@ import org.apache.shiro.authc.credential.CredentialsMatcher;
 public class OktaCredentialsMatcher implements CredentialsMatcher {
 
     public static void main(String[] args) throws IOException {
-        ApiClientConfiguration apiClientConfiguration = new ApiClientConfiguration("https://jive.okta.com", "00VITfHJrIusgZaf0AS0pCGGxV4HPHNV54gDrqP4NN");
-
-
-        UserApiClient userApiClient = new UserApiClient(apiClientConfiguration);
-
-        User user = userApiClient.getUser("jonathan.colt");
-        System.out.println(user.getId());
-
-        FactorsApiClient client = new FactorsApiClient(apiClientConfiguration);
-
-
-        for (Factor factor : client.getUserLifecycleFactors(user.getId())) {
-            System.out.println(factor.getFactorType() + " " + factor.getId() + " " + factor.getStatus());
-        }
-
-
-
-
-
-       /* AuthApiClient authApiClient = new AuthApiClient(apiClientConfiguration);
-        AuthResult result = authApiClient.authenticate(
-            "jonathan.colt",
-            new String(""),
-            "relay");*/
-
-        //System.out.println(result.getIdToken());
     }
 
 
