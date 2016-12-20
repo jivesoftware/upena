@@ -1,0 +1,80 @@
+{namespace soy.page}
+
+/**
+ * 
+ * @param? message
+ * @param? filters
+ * @param? permissions
+ * @param? readWrite
+ */
+{template .permissionsPluginRegion}
+    {if $permissions}
+        <div class="panel panel-info">
+            <div class="panel-heading"><span class="panel-title">Permissions</span></div>
+            {if $message}
+                <pre>{$message}</pre>
+            {/if}
+            <table class="table table-hover float-table-head table-condensed table-responsive">
+                <thead class="upena-thead">
+                    <tr>
+                        <th>Permission</th>
+                        <th>Description</th>
+                        <th>Actions</th>
+                    </tr>
+                    <form id="add-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                        data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="addHost">
+                        <tr style="background-color:#ddd;">
+                            <td style="width:400px;">
+                                <div>
+                                    <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                        placeholder="Permission" value="{$filters.permission?:''}" name="permission" id="permissionPicker" class="form-control">
+                                </div>
+                            </td>
+                            <td>
+                                <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                placeholder="Description" value="{$filters.description?:''}" name="description" id="descriptionPicker" class="form-control">
+                            </td>
+                            <td>
+                                <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                                    <span class="glyphicon glyphicon-search"></span> Filter
+                                </button>
+                                {if $readWrite}
+                                    <button title="Add" type="submit" name="action" value="add" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                                        <span class="glyphicon glyphicon-plus"></span> Add
+                                    </button>
+                                {/if}
+                            <td>
+                        </tr>
+                    </form>
+                </thead>
+                <tbody>
+                    {foreach $s in $permissions}
+                        <form id="edit-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                            data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="editHost">
+                            <tr>
+                                <td style="width:400px;">
+                                   {$s.name}
+                                </td>
+                                <td>
+                                    <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                    placeholder="Description" value="{$s.description}" name="description" id="descriptionPicker" class="form-control">
+                                </td>
+                                <td>
+                                    {if $readWrite}
+                                        <input type="hidden" name="key" value="{$s.key}">
+                                        <button title="Update" type="submit" name="action" value="update" class="btn btn-default">
+                                            <span class="glyphicon glyphicon-save ladda-button" data-spinner-color="#222" data-style="expand-right"></span> Update
+                                        </button>
+                                        <button onclick="return confirm('Are you sure you want to delete?')" title="Remove" type="submit" name="action" value="remove" class="btn btn-default">
+                                            <span class="glyphicon glyphicon-trash"></span> Remove
+                                        </button>
+                                    {/if}
+                                <td>
+                            </tr>
+                        </form>
+                    {/foreach}
+                </tbody>
+            </table>
+        </div>
+    {/if}
+{/template}

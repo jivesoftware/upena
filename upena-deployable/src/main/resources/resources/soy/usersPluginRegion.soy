@@ -1,0 +1,165 @@
+{namespace soy.page}
+
+/**
+ * @param? message
+ * @param? filters
+ * @param? users
+ * @param? readWrite
+ */
+{template .usersPluginRegion}
+    {if $users}
+        <div class="panel panel-info">
+            <div class="panel-heading"><span class="panel-title">Users</span></div>
+            {if $message}
+                <pre>{$message}</pre>
+            {/if}
+            {call .usersPluginRegionList}
+                {param users: $users /}
+                {param filters: $filters /}
+                {param readWrite: $readWrite /}
+            {/call}
+        </div>
+    {/if}
+{/template}
+
+/**
+ * @param? users
+ * @param? filters
+ * @param? readWrite
+ */
+{template .usersPluginRegionList}
+    <table class="table table-hover float-table-head table-condensed table-responsive">
+        <thead class="upena-thead">
+            <tr>
+                <th>Name</th>
+                <th>Permissions</th>
+                <th>Actions</th>
+            </tr>
+            {if $filters}
+                <form id="add-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                    data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="addHost">
+                    <tr style="background-color:#ddd;">
+                        <td>
+                            <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                placeholder="Name" value="{$filters.name?:''}" name="name" id="namePicker" class="form-control">
+                        </td>
+                        <td>
+                            <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                placeholder="Email" value="{$filters.email?:''}" name="email" id="emailPicker" class="form-control">
+                        </td>
+                        <td>
+                            <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                                <span class="glyphicon glyphicon-search"></span> Filter
+                            </button>
+                            {if $readWrite}
+                                <button title="Add" type="submit" name="action" value="add" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                                    <span class="glyphicon glyphicon-plus"></span> Add
+                                </button>
+                            {/if}
+                        </td>
+                    </tr>
+                </form>
+            {/if}
+        </thead>
+        <tbody>
+            {foreach $r in $users}
+                <tr>
+                    <td>
+                        <ul style="list-style-type:none">
+                            <li>
+                                <div style="display: inline;">
+                                    <a href="#" rel="popover" id="popoverAnchor-user-{$r.key}" data-popover-content="#popover-user-{$r.key}" data-placement="bottom" class="btn btn-default" title="{$r.name} @ {$r.version?:''}">
+                                        <span class="glyphicon glyphicon-menu-down"></span>{sp}{$r.name}{sp}@{sp}{$r.version?:''}
+                                    </a>
+                                </div>
+                                <div id="popover-user-{$r.key}" class="hide">
+                                    <ul style="list-style-type:none">
+                                        <form id="edit-update-{$r.key}" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                                            method="post" name="updateUser">
+
+                                                <li>Name:<input form="edit-update-{$r.key}" type="hidden" name="key" value="{$r.key}"></li>
+                                                <li><input form="edit-update-{$r.key}" type="text" autocomplete="off" role="combobox" style="padding-left:10px;" placeholder="Name" value="{$r.name}" name="name" id="namePicker" class="form-control"></li>
+
+                                                <li>Email:</li>
+                                                <li>{$r.email?:''}</li>
+
+                                        </form>
+                                    </ul>
+                                </div>
+                            </li>
+                        </ul>
+                    </td>
+                    <td>
+                        <a href="#" rel="popover" id="propertyPopoverAnchor-config-{$r.key}" data-popover-content="#propertyPopover-config-{$r.key}" data-placement="left" class="btn btn-default" title="Config">
+                            <span class="glyphicon glyphicon-menu-down"></span> Config
+                        </a>
+                        <div id="propertyPopover-config-{$r.key}" class="hide" style="height:400px;">
+                            <div>
+                                 {if $readWrite}
+                                     <table>
+                                         <tr>
+                                             <td>
+                                                 <input type="text" id="permission-{$r.key}" style="padding-left:10px;"
+                                                     placeholder="property name" value="">
+                                             </td>
+                                             <td>
+                                                 <input type="text" id="permission-duration-{$r.key}" style="padding-left:10px;"
+                                                     placeholder="property value" value="">
+                                             </td>
+                                             <td>
+                                                 <button title="Add" onClick="upena.permissions.addPermission('{$r.key}')" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span>&nbsp;Add</button>
+                                             </td>
+                                         </tr>
+                                     </table>
+                                 {/if}
+                            </div>
+                            <div style="overflow:scroll; height:400px;">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Property</th>
+                                            <th>Value</th>
+                                            <th>Default</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                          {foreach $p in $r.permissions}
+                                            <tr>
+                                                <td>
+                                                    {$p.permission}
+                                                </td>
+                                                <td>
+                                                    {$p.expires}
+                                                </td>
+                                                <td>
+                                                    {if $readWrite}
+                                                        <button title="Remove" onClick="upena.permissions.removePermission('{$r.key}', '{$p.permission}')" class="btn btn-default">
+                                                            <span class="glyphicon glyphicon-trash"></span>&nbsp;Remove
+                                                        </button>
+                                                    {/if}
+                                                </td>
+                                            </tr>
+                                        {/foreach}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        {if $readWrite}
+                            <form id="edit-{$r.key}" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                             method="post" name="editHost">
+                                    <input type="hidden" name="key" value="{$r.key}">
+                                    <input type="hidden" name="name" value="{$r.name}">
+                                    <button onclick="return confirm('Are you sure you want to delete?')" title="Remove" type="submit" name="action" value="remove" class="btn btn-default">
+                                        <span class="glyphicon glyphicon-trash"></span> Remove
+                                    </button>
+                            </form>
+                        {/if}
+                    <td>
+                </tr>
+            {/foreach}
+        </tbody>
+    </table>
+{/template}

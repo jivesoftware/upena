@@ -16,18 +16,17 @@
 package com.jivesoftware.os.upena.service;
 
 import com.jivesoftware.os.upena.service.UpenaTable.UpenaKeyProvider;
-import com.jivesoftware.os.upena.shared.Host;
-import com.jivesoftware.os.upena.shared.HostKey;
+import com.jivesoftware.os.upena.shared.User;
+import com.jivesoftware.os.upena.shared.UserKey;
 import java.nio.charset.StandardCharsets;
 
-public class HostKeyProvider implements UpenaKeyProvider<HostKey, Host> {
+public class UserKeyProvider implements UpenaKeyProvider<UserKey, User> {
 
 
     @Override
-    public HostKey getNodeKey(UpenaTable<HostKey, Host> table, Host value) {
+    public UserKey getNodeKey(UpenaTable<UserKey, User> table, User value) {
         JenkinsHash jenkinsHash = new JenkinsHash();
-        String compositeKey = value.hostName + "|" + value.port + "|" + value.workingDirectory;
-        String k = Long.toString(Math.abs(jenkinsHash.hash(compositeKey.getBytes(StandardCharsets.UTF_8), 2)));
-        return new HostKey(k);
+        String k = Long.toString(Math.abs(jenkinsHash.hash(value.email.getBytes(StandardCharsets.UTF_8), 2)));
+        return new UserKey(k);
     }
 }

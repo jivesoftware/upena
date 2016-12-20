@@ -16,18 +16,21 @@
 package com.jivesoftware.os.upena.service;
 
 import com.jivesoftware.os.upena.service.UpenaTable.UpenaKeyProvider;
-import com.jivesoftware.os.upena.shared.Host;
-import com.jivesoftware.os.upena.shared.HostKey;
+import com.jivesoftware.os.upena.shared.Permission;
+import com.jivesoftware.os.upena.shared.PermissionKey;
 import java.nio.charset.StandardCharsets;
 
-public class HostKeyProvider implements UpenaKeyProvider<HostKey, Host> {
+public class PermissionKeyProvider implements UpenaKeyProvider<PermissionKey, Permission> {
 
 
     @Override
-    public HostKey getNodeKey(UpenaTable<HostKey, Host> table, Host value) {
+    public PermissionKey getNodeKey(UpenaTable<PermissionKey, Permission> table, Permission value) {
+        return forgePermissionKey(value.permission);
+    }
+
+    public static PermissionKey forgePermissionKey(String permission) {
         JenkinsHash jenkinsHash = new JenkinsHash();
-        String compositeKey = value.hostName + "|" + value.port + "|" + value.workingDirectory;
-        String k = Long.toString(Math.abs(jenkinsHash.hash(compositeKey.getBytes(StandardCharsets.UTF_8), 2)));
-        return new HostKey(k);
+        String k = Long.toString(Math.abs(jenkinsHash.hash(permission.getBytes(StandardCharsets.UTF_8), 2)));
+        return new PermissionKey(k);
     }
 }

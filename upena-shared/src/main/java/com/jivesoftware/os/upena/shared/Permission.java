@@ -26,15 +26,12 @@ public class Permission implements Stored<Permission>, Serializable {
 
     public final String permission;
     public final String description;
-    public final long expiration;
 
     @JsonCreator
     public Permission(@JsonProperty("permission") String permission,
-        @JsonProperty("description") String description,
-        @JsonProperty("expiration") long expiration) {
+        @JsonProperty("description") String description) {
         this.permission = permission;
         this.description = description;
-        this.expiration = expiration;
     }
 
     @Override
@@ -42,7 +39,6 @@ public class Permission implements Stored<Permission>, Serializable {
         return "Cluster{"
             + "permission=" + permission
             + ", description=" + description
-            + ", expiration=" + expiration
             + '}';
     }
 
