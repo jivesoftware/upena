@@ -38,6 +38,8 @@ import com.jivesoftware.os.upena.shared.LB;
 import com.jivesoftware.os.upena.shared.LBKey;
 import com.jivesoftware.os.upena.shared.Monkey;
 import com.jivesoftware.os.upena.shared.MonkeyKey;
+import com.jivesoftware.os.upena.shared.Permission;
+import com.jivesoftware.os.upena.shared.PermissionKey;
 import com.jivesoftware.os.upena.shared.Project;
 import com.jivesoftware.os.upena.shared.ProjectKey;
 import com.jivesoftware.os.upena.shared.RecordedChange;
@@ -48,6 +50,8 @@ import com.jivesoftware.os.upena.shared.ServiceKey;
 import com.jivesoftware.os.upena.shared.Tenant;
 import com.jivesoftware.os.upena.shared.TenantKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
+import com.jivesoftware.os.upena.shared.User;
+import com.jivesoftware.os.upena.shared.UserKey;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
@@ -66,6 +70,8 @@ public class UpenaStore {
     private final InstanceChanges instanceRemoved;
     private final TenantChanges tenantChanges;
 
+    public final TableName userStoreKey = new TableName("master", "users", null, null);
+    public final TableName permissionStoreKey = new TableName("master", "permissions", null, null);
     public final TableName projectStoreKey = new TableName("master", "projects", null, null);
     public final TableName clusterStoreKey = new TableName("master", "clusters", null, null);
     public final TableName loadbalancers = new TableName("master", "loadbalancers", null, null);
@@ -78,6 +84,8 @@ public class UpenaStore {
     public final TableName chaosStateStoreKey = new TableName("master", "chaosState", null, null);
     public final TableName changeLogStoreKey = new TableName("master", "changeLog", null, null);
 
+    public final UpenaTable<UserKey, User> users;
+    public final UpenaTable<PermissionKey, Permission> permissions;
     public final UpenaTable<ProjectKey, Project> projects;
     public final UpenaTable<ClusterKey, Cluster> clusters;
     public final UpenaTable<LBKey, LB> loadBalancers;
@@ -106,6 +114,9 @@ public class UpenaStore {
         this.instanceChanges = instanceChanges;
         this.instanceRemoved = instanceRemoved;
         this.tenantChanges = tenantChanges;
+
+        users = new UpenaTable<>(mapper, amzaService.getTable(userStoreKey), UserKey.class, User.class, new UserKeyProvider(), null);
+        permissions = new UpenaTable<>(mapper, amzaService.getTable(permissionStoreKey), PermissionKey.class, Permission.class, new PermissionKeyProvider(), null);
 
         projects = new UpenaTable<>(mapper, amzaService.getTable(projectStoreKey), ProjectKey.class, Project.class, new ProjectKeyProvider(idProvider), null);
         clusters = new UpenaTable<>(mapper, amzaService.getTable(clusterStoreKey), ClusterKey.class, Cluster.class, new ClusterKeyProvider(idProvider), null);

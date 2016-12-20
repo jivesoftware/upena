@@ -19,7 +19,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
-import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -27,12 +27,13 @@ public class User implements Stored<User>, Serializable {
 
     public final String name;
     public final String email;
-    public final List<PermissionKey> permissions;
+    // value is expiration timestamp millis
+    public final Map<PermissionKey, Long> permissions;
 
     @JsonCreator
     public User(@JsonProperty("name") String name,
         @JsonProperty("email") String email,
-        @JsonProperty("permissions") List<PermissionKey> permissions) {
+        @JsonProperty("permissions") Map<PermissionKey, Long> permissions) {
         this.name = name;
         this.email = email;
         this.permissions = permissions;

@@ -159,54 +159,60 @@
                         <a href="#" rel="popover" id="propertyPopoverAnchor-config-{$r.key}" data-popover-content="#propertyPopover-config-{$r.key}" data-placement="left" class="btn btn-default" title="Config">
                             <span class="glyphicon glyphicon-menu-down"></span> Config
                         </a>
-                        <div id="propertyPopover-config-{$r.key}" class="hide" style="overflow:scroll; height:400px;">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Property</th>
-                                        <th>Value</th>
-                                        <th>Default</th>
-                                        <th></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {if $readWrite}
+                        <div id="propertyPopover-config-{$r.key}" class="hide" style="height:400px;">
+                            <div>
+                                 {if $readWrite}
+                                     <table>
+                                         <tr>
+                                             <td>
+                                                 <input type="text" id="propertyName-{$r.key}" style="padding-left:10px;"
+                                                     placeholder="property name" value="">
+                                             </td>
+                                             <td>
+                                                 <input type="text" id="propertyValue-{$r.key}" style="padding-left:10px;"
+                                                     placeholder="property value" value="">
+                                             </td>
+                                             <td>
+                                                 <button title="Add" onClick="upena.release.addProperty('{$r.key}')" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span>&nbsp;Add</button>
+                                             </td>
+                                         </tr>
+                                     </table>
+                                 {/if}
+                            </div>
+                            <div style="overflow:scroll; height:400px;">
+                                <table>
+                                    <thead>
                                         <tr>
-                                            <td>
-                                                <input type="text" id="propertyName-{$r.key}" style="padding-left:10px;"
-                                                    placeholder="property name" value="">
-                                            </td>
-                                            <td>
-                                                <input type="text" id="propertyValue-{$r.key}" style="padding-left:10px;"
-                                                    placeholder="property value" value="">
-                                            </td>
-                                            <td>
-                                                <button title="Add" onClick="upena.release.addProperty('{$r.key}')" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span>&nbsp;Add</button>
-                                            </td>
+                                            <th>Property</th>
+                                            <th>Value</th>
+                                            <th>Default</th>
+                                            <th></th>
                                         </tr>
-                                    {/if}
-                                    {foreach $nv in $r.properties}
-                                        <tr>
-                                            <td>
-                                                {$nv.name}
-                                            </td>
-                                            <td>
-                                                {$nv.value}
-                                            </td>
-                                            <td>
-                                                {$nv.default}
-                                            </td>
-                                            <td>
-                                                {if $readWrite}
-                                                    <button title="Remove" onClick="upena.release.removeProperty('{$r.key}', '{$nv.name}', '{$nv.value}')" class="btn btn-default">
-                                                        <span class="glyphicon glyphicon-trash"></span>&nbsp;Remove
-                                                    </button>
-                                                {/if}
-                                            </td>
-                                        </tr>
-                                    {/foreach}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody>
+                                          {foreach $nv in $r.properties}
+                                            <tr>
+                                                <td>
+                                                    {$nv.name}
+                                                </td>
+                                                <td>
+                                                    {$nv.value}
+                                                </td>
+                                                <td>
+                                                    {$nv.default}
+                                                </td>
+                                                <td>
+                                                    {if $readWrite}
+                                                        <button title="Remove" onClick="upena.release.removeProperty('{$r.key}', '{$nv.name}', '{$nv.value}')" class="btn btn-default">
+                                                            <span class="glyphicon glyphicon-trash"></span>&nbsp;Remove
+                                                        </button>
+                                                    {/if}
+                                                </td>
+                                            </tr>
+                                        {/foreach}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </td>
                     <td>

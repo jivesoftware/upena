@@ -99,6 +99,7 @@ import com.jivesoftware.os.upena.deployable.endpoints.ui.LoadBalancersPluginEndp
 import com.jivesoftware.os.upena.deployable.endpoints.ui.ManagedDeployablePluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ui.ModulesPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ui.MonkeyPluginEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.ui.PermissionsPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ui.ProfilerPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ui.ProjectsPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ui.ProxyPluginEndpoints;
@@ -108,6 +109,7 @@ import com.jivesoftware.os.upena.deployable.endpoints.ui.ServicesPluginEndpoints
 import com.jivesoftware.os.upena.deployable.endpoints.ui.ThrownPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ui.TopologyPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ui.UpenaRingPluginEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.ui.UsersPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.lookup.AsyncLookupService;
 import com.jivesoftware.os.upena.deployable.okta.OktaCredentialsMatcher;
 import com.jivesoftware.os.upena.deployable.okta.OktaLog;
@@ -135,6 +137,7 @@ import com.jivesoftware.os.upena.deployable.region.MenuRegion;
 import com.jivesoftware.os.upena.deployable.region.ModulesPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.MonkeyPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.OktaMFAAuthPluginRegion;
+import com.jivesoftware.os.upena.deployable.region.PermissionsPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.PluginHandle;
 import com.jivesoftware.os.upena.deployable.region.ProfilerPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ProjectsPluginRegion;
@@ -146,6 +149,7 @@ import com.jivesoftware.os.upena.deployable.region.ThrownPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.TopologyPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.UnauthorizedPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.UpenaRingPluginRegion;
+import com.jivesoftware.os.upena.deployable.region.UsersPluginRegion;
 import com.jivesoftware.os.upena.deployable.server.UpenaJerseyEndpoints;
 import com.jivesoftware.os.upena.deployable.soy.SoyDataUtils;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
@@ -914,6 +918,16 @@ public class UpenaMain {
             new ProjectsPluginRegion("soy.page.projectsPluginRegion", "soy.page.projectBuildOutput", "soy.page.projectBuildOutputTail", renderer, upenaStore,
                 localPathToRepo), null, "read");
 
+        PluginHandle users = new PluginHandle("user", null, "Users", "/ui/users",
+            UsersPluginEndpoints.class,
+            new UsersPluginRegion("soy.page.usersPluginRegion", renderer, upenaStore), null, "read");
+
+
+        PluginHandle permissions = new PluginHandle("lock", null, "Permission", "/ui/permissions",
+            PermissionsPluginEndpoints.class,
+            new PermissionsPluginRegion("soy.page.permissionsPluginRegion", renderer, upenaStore), null, "read");
+
+
         PluginHandle clusters = new PluginHandle("cloud", null, "Clusters", "/ui/clusters",
             ClustersPluginEndpoints.class,
             new ClustersPluginRegion("soy.page.clustersPluginRegion", renderer, upenaStore), null, "read");
@@ -1025,6 +1039,8 @@ public class UpenaMain {
         }
         plugins.add(profiler);
         plugins.add(ring);
+        plugins.add(users);
+        plugins.add(permissions);
 
         jerseyEndpoints.addInjectable(SessionStore.class, sessionStore);
         jerseyEndpoints.addInjectable(UpenaSSLConfig.class, upenaSSLConfig);
