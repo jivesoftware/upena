@@ -246,6 +246,39 @@ upena.release = {
     }
 }
 
+upena.permission = {
+    addPermission: function (id) {
+        var name = $('#permission-' + id).val();
+        var permissionExpiration = $('#permissionExpiration-' + id).val();
+
+        console.log(id + " " + name + " " + value);
+        $.ajax("/ui/users/permissions/add", {
+            data: JSON.stringify({'userKey': id, 'permission': name, 'expiration': permissionExpiration}),
+            method: "post",
+            contentType: "application/json",
+            success: function () {
+                window.location.reload(true);
+            },
+            error: function () {
+                alert('Save failed!');
+            }
+        });
+    },
+    removePermission: function (id, permission, permissionExpiration) {
+        $.ajax("/ui/users/permissions/remove", {
+            data: JSON.stringify({'userKey': id, 'permission': name, 'expiration': permissionExpiration}),
+            method: "post",
+            contentType: "application/json",
+            success: function () {
+                window.location.reload(true);
+            },
+            error: function () {
+                alert('Save failed!');
+            }
+        });
+    }
+}
+
 upena.monkey = {
     addProperty: function (id) {
         var name = $('#propertyName-' + id).val();

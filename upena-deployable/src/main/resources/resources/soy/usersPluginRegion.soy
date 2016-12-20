@@ -31,7 +31,7 @@
     <table class="table table-hover float-table-head table-condensed table-responsive">
         <thead class="upena-thead">
             <tr>
-                <th>Name</th>
+                <th>User</th>
                 <th>Permissions</th>
                 <th>Actions</th>
             </tr>
@@ -42,10 +42,11 @@
                         <td>
                             <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
                                 placeholder="Name" value="{$filters.name?:''}" name="name" id="namePicker" class="form-control">
-                        </td>
-                        <td>
                             <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
                                 placeholder="Email" value="{$filters.email?:''}" name="email" id="emailPicker" class="form-control">
+                        </td>
+                        <td>
+                            TODO
                         </td>
                         <td>
                             <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary ladda-button"  data-spinner-color="#222" data-style="expand-right">
@@ -82,7 +83,6 @@
 
                                                 <li>Email:</li>
                                                 <li>{$r.email?:''}</li>
-
                                         </form>
                                     </ul>
                                 </div>
@@ -90,21 +90,21 @@
                         </ul>
                     </td>
                     <td>
-                        <a href="#" rel="popover" id="propertyPopoverAnchor-config-{$r.key}" data-popover-content="#propertyPopover-config-{$r.key}" data-placement="left" class="btn btn-default" title="Config">
-                            <span class="glyphicon glyphicon-menu-down"></span> Config
+                        <a href="#" rel="popover" id="permissionsPopoverAnchor-config-{$r.key}" data-popover-content="#permissionsPopover-config-{$r.key}" data-placement="left" class="btn btn-default" title="Permissions">
+                            <span class="glyphicon glyphicon-menu-down"></span> Permissions
                         </a>
-                        <div id="propertyPopover-config-{$r.key}" class="hide" style="height:400px;">
+                        <div id="permissionsPopover-config-{$r.key}" class="hide" style="height:400px;">
                             <div>
                                  {if $readWrite}
                                      <table>
                                          <tr>
                                              <td>
                                                  <input type="text" id="permission-{$r.key}" style="padding-left:10px;"
-                                                     placeholder="property name" value="">
+                                                     placeholder="permission" value="">
                                              </td>
                                              <td>
-                                                 <input type="text" id="permission-duration-{$r.key}" style="padding-left:10px;"
-                                                     placeholder="property value" value="">
+                                                 <input type="text" id="permission-expiration-{$r.key}" style="padding-left:10px;"
+                                                     placeholder="expiration" value="">
                                              </td>
                                              <td>
                                                  <button title="Add" onClick="upena.permissions.addPermission('{$r.key}')" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span>&nbsp;Add</button>
@@ -117,10 +117,10 @@
                                 <table>
                                     <thead>
                                         <tr>
-                                            <th>Property</th>
-                                            <th>Value</th>
-                                            <th>Default</th>
-                                            <th></th>
+                                            <th>Permission</th>
+                                            <th>Expiration</th>
+                                            <th>Description</th>
+                                            <th>Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -130,7 +130,10 @@
                                                     {$p.permission}
                                                 </td>
                                                 <td>
-                                                    {$p.expires}
+                                                    {$p.expiration}
+                                                </td>
+                                                <td>
+                                                    {$p.description}
                                                 </td>
                                                 <td>
                                                     {if $readWrite}

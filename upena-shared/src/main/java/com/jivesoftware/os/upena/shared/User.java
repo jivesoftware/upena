@@ -21,6 +21,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class User implements Stored<User>, Serializable {
@@ -36,6 +37,7 @@ public class User implements Stored<User>, Serializable {
         @JsonProperty("permissions") Map<PermissionKey, Long> permissions) {
         this.name = name;
         this.email = email;
+        if (permissions == null) permissions = new ConcurrentHashMap<>();
         this.permissions = permissions;
     }
 
