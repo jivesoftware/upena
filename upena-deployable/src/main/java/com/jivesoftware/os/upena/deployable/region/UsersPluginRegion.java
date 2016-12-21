@@ -1,6 +1,8 @@
 package com.jivesoftware.os.upena.deployable.region;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
@@ -19,7 +21,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+import org.apache.commons.lang.time.DurationFormatUtils;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.AuthorizationException;
 
@@ -99,29 +103,46 @@ public class UsersPluginRegion implements PageRegion<UsersPluginRegionInput> {
                 }
             }
 
-            List<Map<String, String>> rows = new ArrayList<>();
+            List<Map<String, Object>> rows = new ArrayList<>();
             Map<UserKey, TimestampedValue<User>> found = upenaStore.users.find(false, filter);
             for (Map.Entry<UserKey, TimestampedValue<User>> entrySet : found.entrySet()) {
                 UserKey key = entrySet.getKey();
                 TimestampedValue<User> timestampedValue = entrySet.getValue();
                 User value = timestampedValue.getValue();
 
-                // TODO permissions!!!!
+                List<Map<String,String>> permissions = Lists.newArrayList();
+                for (Entry<PermissionKey,Long> e : value.permissions.entrySet()) {
+                    Permission permission = upenaStore.permissions.get(e.getKey());
+                    if (permission != null) {
+                        String expiration = "never";
+                        if ( e.getValue() != null && e.getValue() != Long.MAX_VALUE) {
+                            if (e.getValue() <= System.currentTimeMillis()) {
+                                expiration = "expired";
+                            } else {
+                                expiration = DurationFormatUtils.formatDurationHMS(e.getValue() - System.currentTimeMillis());
+                            }
+                        }
+
+                        Map<String,String> map = ImmutableMap.of("permission",permission.permission,
+                            "description",permission.description,
+                            "expiration", expiration);
+                        permissions.add(map);
+                    }
+                }
 
 
-
-                Map<String, String> row = new HashMap<>();
+                Map<String, Object> row = new HashMap<>();
                 row.put("key", key.getKey());
                 row.put("name", value.name);
                 row.put("email", value.email);
+                row.put("permissions", permissions);
                 rows.add(row);
             }
 
-            Collections.sort(rows, (Map<String, String> o1, Map<String, String> o2) -> {
-                String serviceName1 = o1.get("name");
-                String serviceName2 = o2.get("name");
-
-                int c = serviceName1.compareTo(serviceName2);
+            Collections.sort(rows, (Map<String, Object> o1, Map<String, Object> o2) -> {
+                String name1 = (String)o1.get("name");
+                String name2 = (String)o2.get("name");
+                int c = name1.compareTo(name2);
                 if (c != 0) {
                     return c;
                 }
