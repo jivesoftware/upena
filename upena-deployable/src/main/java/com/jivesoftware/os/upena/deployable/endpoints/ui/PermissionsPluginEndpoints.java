@@ -1,8 +1,8 @@
 package com.jivesoftware.os.upena.deployable.endpoints.ui;
 
 import com.jivesoftware.os.upena.deployable.ShiroRequestHelper;
-import com.jivesoftware.os.upena.deployable.region.ServicesPluginRegion;
-import com.jivesoftware.os.upena.deployable.region.ServicesPluginRegion.ServicesPluginRegionInput;
+import com.jivesoftware.os.upena.deployable.region.PermissionsPluginRegion;
+import com.jivesoftware.os.upena.deployable.region.PermissionsPluginRegion.PermissionsPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
 import javax.inject.Singleton;
 import javax.servlet.http.HttpServletRequest;
@@ -26,11 +26,11 @@ public class PermissionsPluginEndpoints {
 
     private final ShiroRequestHelper shiroRequestHelper;
     private final SoyService soyService;
-    private final ServicesPluginRegion pluginRegion;
+    private final PermissionsPluginRegion pluginRegion;
 
     public PermissionsPluginEndpoints(@Context ShiroRequestHelper shiroRequestHelper,
         @Context SoyService soyService,
-        @Context ServicesPluginRegion pluginRegion) {
+        @Context PermissionsPluginRegion pluginRegion) {
 
         this.shiroRequestHelper = shiroRequestHelper;
         this.soyService = soyService;
@@ -42,7 +42,7 @@ public class PermissionsPluginEndpoints {
     public Response services(@Context HttpServletRequest httpRequest) {
         return shiroRequestHelper.call("permissions", () -> {
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-                new ServicesPluginRegionInput("", "", "", ""));
+                new PermissionsPluginRegionInput("", "", "", ""));
             return Response.ok(rendered).build();
         });
     }
@@ -57,7 +57,7 @@ public class PermissionsPluginEndpoints {
         @FormParam("action") @DefaultValue("") String action) {
         return shiroRequestHelper.call("permission/action", () -> {
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
-                new ServicesPluginRegionInput(key, name, description, action));
+                new PermissionsPluginRegionInput(key, name, description, action));
             return Response.ok(rendered).build();
         });
     }
