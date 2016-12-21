@@ -63,26 +63,26 @@
             {/if}
         </thead>
         <tbody>
-            {foreach $r in $users}
+            {foreach $u in $users}
                 <tr>
                     <td>
                         <ul style="list-style-type:none">
                             <li>
                                 <div style="display: inline;">
-                                    <a href="#" rel="popover" id="popoverAnchor-user-{$r.key}" data-popover-content="#popover-user-{$r.key}" data-placement="bottom" class="btn btn-default" title="{$r.name} @ {$r.version?:''}">
-                                        <span class="glyphicon glyphicon-menu-down"></span>{sp}{$r.name}{sp}@{sp}{$r.version?:''}
+                                    <a href="#" rel="popover" id="popoverAnchor-user-{$u.key}" data-popover-content="#popover-user-{$u.key}" data-placement="bottom" class="btn btn-default" title="{$u.name}">
+                                        <span class="glyphicon glyphicon-menu-down"></span>{sp}{$u.name}{sp}
                                     </a>
                                 </div>
-                                <div id="popover-user-{$r.key}" class="hide">
+                                <div id="popover-user-{$u.key}" class="hide">
                                     <ul style="list-style-type:none">
-                                        <form id="edit-update-{$r.key}" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                                        <form id="edit-update-{$u.key}" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
                                             method="post" name="updateUser">
 
-                                                <li>Name:<input form="edit-update-{$r.key}" type="hidden" name="key" value="{$r.key}"></li>
-                                                <li><input form="edit-update-{$r.key}" type="text" autocomplete="off" role="combobox" style="padding-left:10px;" placeholder="Name" value="{$r.name}" name="name" id="namePicker" class="form-control"></li>
+                                                <li>Name:<input form="edit-update-{$u.key}" type="hidden" name="key" value="{$u.key}"></li>
+                                                <li><input form="edit-update-{$u.key}" type="text" autocomplete="off" role="combobox" style="padding-left:10px;" placeholder="Name" value="{$u.name}" name="name" id="namePicker" class="form-control"></li>
 
                                                 <li>Email:</li>
-                                                <li>{$r.email?:''}</li>
+                                                <li>{$u.email?:''}</li>
                                         </form>
                                     </ul>
                                 </div>
@@ -90,24 +90,24 @@
                         </ul>
                     </td>
                     <td>
-                        <a href="#" rel="popover" id="permissionsPopoverAnchor-config-{$r.key}" data-popover-content="#permissionsPopover-config-{$r.key}" data-placement="left" class="btn btn-default" title="Permissions">
+                        <a href="#" rel="popover" id="permissionsPopoverAnchor-config-{$u.key}" data-popover-content="#permissionsPopover-config-{$u.key}" data-placement="left" class="btn btn-default" title="Permissions">
                             <span class="glyphicon glyphicon-menu-down"></span> Permissions
                         </a>
-                        <div id="permissionsPopover-config-{$r.key}" class="hide" style="height:400px;">
+                        <div id="permissionsPopover-config-{$u.key}" class="hide" style="height:400px;">
                             <div>
                                  {if $readWrite}
                                      <table>
                                          <tr>
                                              <td>
-                                                 <input type="text" id="permission-{$r.key}" style="padding-left:10px;"
+                                                 <input type="text" id="permission-{$u.key}" style="padding-left:10px;"
                                                      placeholder="permission" value="">
                                              </td>
                                              <td>
-                                                 <input type="text" id="permission-expiration-{$r.key}" style="padding-left:10px;"
+                                                 <input type="text" id="permission-expiration-{$u.key}" style="padding-left:10px;"
                                                      placeholder="expiration" value="">
                                              </td>
                                              <td>
-                                                 <button title="Add" onClick="upena.permissions.addPermission('{$r.key}')" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span>&nbsp;Add</button>
+                                                 <button title="Add" onClick="upena.permissions.addPermission('{$u.key}')" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span>&nbsp;Add</button>
                                              </td>
                                          </tr>
                                      </table>
@@ -124,26 +124,26 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                          {foreach $p in $r.permissions}
-                                            <tr>
-                                                <td>
-                                                    {$p.permission}
-                                                </td>
-                                                <td>
-                                                    {$p.expiration}
-                                                </td>
-                                                <td>
-                                                    {$p.description}
-                                                </td>
-                                                <td>
-                                                    {if $readWrite}
-                                                        <button title="Remove" onClick="upena.permissions.removePermission('{$r.key}', '{$p.permission}')" class="btn btn-default">
-                                                            <span class="glyphicon glyphicon-trash"></span>&nbsp;Remove
-                                                        </button>
-                                                    {/if}
-                                                </td>
-                                            </tr>
-                                        {/foreach}
+                                          {foreach $p in $u.permissions}
+                                                <tr>
+                                                    <td>
+                                                        {$p.permission}
+                                                    </td>
+                                                    <td>
+                                                        {$p.expiration}
+                                                    </td>
+                                                    <td>
+                                                        {$p.description}
+                                                    </td>
+                                                    <td>
+                                                        {if $readWrite}
+                                                            <button title="Remove" onClick="upena.permissions.removePermission('{$u.key}', '{$p.permission}')" class="btn btn-default">
+                                                                <span class="glyphicon glyphicon-trash"></span>&nbsp;Remove
+                                                            </button>
+                                                        {/if}
+                                                    </td>
+                                                </tr>
+                                          {/foreach}
                                     </tbody>
                                 </table>
                             </div>
@@ -151,10 +151,10 @@
                     </td>
                     <td>
                         {if $readWrite}
-                            <form id="edit-{$r.key}" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                            <form id="edit-{$u.key}" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
                              method="post" name="editHost">
-                                    <input type="hidden" name="key" value="{$r.key}">
-                                    <input type="hidden" name="name" value="{$r.name}">
+                                    <input type="hidden" name="key" value="{$u.key}">
+                                    <input type="hidden" name="name" value="{$u.name}">
                                     <button onclick="return confirm('Are you sure you want to delete?')" title="Remove" type="submit" name="action" value="remove" class="btn btn-default">
                                         <span class="glyphicon glyphicon-trash"></span> Remove
                                     </button>
