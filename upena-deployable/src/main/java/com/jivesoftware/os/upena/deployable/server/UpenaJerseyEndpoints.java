@@ -13,26 +13,29 @@ import com.jivesoftware.os.routing.bird.server.JacksonFeature;
 import com.jivesoftware.os.routing.bird.server.binding.Injectable;
 import com.jivesoftware.os.routing.bird.server.binding.InjectableBinder;
 import io.swagger.jaxrs.listing.ApiListingResource;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import javax.servlet.DispatcherType;
+import javax.ws.rs.container.ContainerRequestFilter;
 import org.apache.shiro.web.env.EnvironmentLoaderListener;
 import org.apache.shiro.web.servlet.ShiroFilter;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.session.HashSessionManager;
+import org.eclipse.jetty.server.session.SessionHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.glassfish.hk2.utilities.Binder;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.server.filter.CsrfProtectionFilter;
 import org.glassfish.jersey.server.filter.HttpMethodOverrideFilter;
 import org.glassfish.jersey.servlet.ServletContainer;
-
-import javax.servlet.DispatcherType;
-import javax.ws.rs.container.ContainerRequestFilter;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 /**
  *
@@ -49,6 +52,7 @@ public class UpenaJerseyEndpoints implements HasServletContextHandler {
     private final List<Injectable<?>> allInjectables = Lists.newArrayList();
     private final List<ContainerRequestFilter> containerRequestFilters = Lists.newArrayList();
     private boolean supportCORS = false;
+    private boolean csrfEnabled = false;
 
     private final ObjectMapper mapper;
 
@@ -105,6 +109,11 @@ public class UpenaJerseyEndpoints implements HasServletContextHandler {
         return this;
     }
 
+    public UpenaJerseyEndpoints enableCSRF() {
+        csrfEnabled = true;
+        return this;
+    }
+
     public List<Injectable<?>> getInjectables() {
         return Collections.unmodifiableList(allInjectables);
     }
@@ -153,9 +162,19 @@ public class UpenaJerseyEndpoints implements HasServletContextHandler {
             rc.register(containerRequestFilter);
         }
 
+        if (csrfEnabled) {
+            rc.register(CsrfProtectionFilter.class);
+        }
+
         ServletContainer servletContainer = new ServletContainer(rc);
         ServletHolder servletHolder = new ServletHolder(servletContainer);
-        ServletContextHandler servletContextHandler = new ServletContextHandler(ServletContextHandler.SESSIONS);
+
+        HashSessionManager sessionManager = new HashSessionManager();
+        sessionManager.setMaxInactiveInterval((int)TimeUnit.DAYS.toSeconds(1));
+        sessionManager.setHttpOnly(true);
+
+        ServletContextHandler servletContextHandler = new ServletContextHandler();
+        servletContextHandler.setSessionHandler(new SessionHandler(sessionManager));
         servletContextHandler.setContextPath(context);
         if (!applicationName.isEmpty()) {
             servletContextHandler.setDisplayName(applicationName);

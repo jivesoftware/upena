@@ -49,10 +49,10 @@ public class ManagedDeployablePluginEndpoints {
     @Produces(MediaType.TEXT_HTML)
     public Response javaDeployableProbe(@PathParam("instanceKey") @DefaultValue("unspecified") String instanceKey,
         @Context HttpServletRequest httpRequest) {
-        return shiroRequestHelper.call("/ui/deployable/probe", () -> {
-            String rendered = soyService.renderNoChromePlugin(httpRequest.getRemoteUser(), pluginRegion,
+        return shiroRequestHelper.call("/ui/deployable/probe", (csrfToken) -> {
+            String rendered = soyService.renderNoChromePlugin(httpRequest.getRemoteUser(), csrfToken, pluginRegion,
                 new ManagedDeployablePluginRegion.ManagedDeployablePluginRegionInput(instanceKey, ""));
-            return Response.ok(rendered).build();
+            return Response.ok(rendered);
         });
     }
 
@@ -62,11 +62,12 @@ public class ManagedDeployablePluginEndpoints {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response action(@PathParam("instanceKey") @DefaultValue("unspecified") String instanceKey,
         @Context HttpServletRequest httpRequest,
+        @FormParam("csrfToken") String csrfToken,
         @FormParam("action") @DefaultValue("") String action) {
-        return shiroRequestHelper.call("/ui/deployable/probe/action", () -> {
-            String rendered = soyService.renderNoChromePlugin(httpRequest.getRemoteUser(), pluginRegion,
+        return shiroRequestHelper.csrfCall(csrfToken, "/ui/deployable/probe/action", (csrfToken1) -> {
+            String rendered = soyService.renderNoChromePlugin(httpRequest.getRemoteUser(), csrfToken1, pluginRegion,
                 new ManagedDeployablePluginRegion.ManagedDeployablePluginRegionInput(instanceKey, action));
-            return Response.ok(rendered).build();
+            return Response.ok(rendered);
         });
     }
 
@@ -76,8 +77,8 @@ public class ManagedDeployablePluginEndpoints {
     public Response embeddedProbe(@PathParam("instanceKey") @DefaultValue("unspecified") String instanceKey,
         @PathParam("action") @DefaultValue("unspecified") String action,
         @Context HttpServletRequest httpRequest) {
-        return shiroRequestHelper.call("/ui/deployable/embeddedProbe", () -> {
-            return Response.ok(pluginRegion.render("",  new ManagedDeployablePluginRegion.ManagedDeployablePluginRegionInput(instanceKey, action))).build();
+        return shiroRequestHelper.call("/ui/deployable/embeddedProbe", (csrfToken) -> {
+            return Response.ok(pluginRegion.render("", new ManagedDeployablePluginRegion.ManagedDeployablePluginRegionInput(instanceKey, action)));
         });
     }
 
@@ -90,12 +91,12 @@ public class ManagedDeployablePluginEndpoints {
         @QueryParam("path") @DefaultValue("unspecified") String uiPath,
         @Context HttpServletRequest httpRequest) {
 
-        return shiroRequestHelper.call("/ui/deployable/redirect", () -> {
+        return shiroRequestHelper.call("/ui/deployable/redirect", (csrfToken) -> {
             URI uri = pluginRegion.redirectToUI(instanceKey, portName, uiPath);
             if (uri == null) {
-                return Response.ok("Failed to redirect.").build();
+                return Response.ok("Failed to redirect.");
             }
-            return Response.temporaryRedirect(uri).build();
+            return Response.temporaryRedirect(uri);
         });
     }
 

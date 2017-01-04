@@ -41,9 +41,9 @@ public class ModulesPluginEndpoints {
     @GET
     @Produces(MediaType.TEXT_HTML)
     public Response modules(@Context HttpServletRequest httpRequest) {
-        return shiroRequestHelper.call("modules", () -> {
-            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion, new ModulesPluginRegionInput("", "", "", "", "", "", "", ""));
-            return Response.ok(rendered).build();
+        return shiroRequestHelper.call("modules", (csrfToken) -> {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), csrfToken, pluginRegion, new ModulesPluginRegionInput("", "", "", "", "", "", "", ""));
+            return Response.ok(rendered);
         });
     }
 
@@ -51,6 +51,7 @@ public class ModulesPluginEndpoints {
     @Produces(MediaType.TEXT_HTML)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response renderWithOptions(@Context HttpServletRequest httpRequest,
+        @FormParam("csrfToken") String csrfToken,
         @FormParam("clusterKey") @DefaultValue("") String clusterKey,
         @FormParam("cluster") @DefaultValue("") String cluster,
         @FormParam("hostKey") @DefaultValue("") String hostKey,
@@ -59,10 +60,10 @@ public class ModulesPluginEndpoints {
         @FormParam("service") @DefaultValue("") String service,
         @FormParam("releaseKey") @DefaultValue("") String releaseKey,
         @FormParam("release") @DefaultValue("") String release) {
-        return shiroRequestHelper.call("modules/options", () -> {
-            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+        return shiroRequestHelper.csrfCall(csrfToken, "modules/options", (csrfToken1) -> {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), csrfToken1, pluginRegion,
                 new ModulesPluginRegionInput(clusterKey, cluster, hostKey, host, serviceKey, service, releaseKey, release));
-            return Response.ok(rendered).build();
+            return Response.ok(rendered);
         });
     }
 }

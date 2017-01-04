@@ -19,6 +19,8 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.owasp.esapi.ESAPI;
+import org.owasp.esapi.Encoder;
 
 /**
  *
@@ -44,9 +46,9 @@ public class ProxyPluginEndpoints {
     @GET
     @Produces(MediaType.TEXT_HTML)
     public Response proxy(@Context HttpServletRequest httpRequest) {
-        return shiroRequestHelper.call("proxy", () -> {
-            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion, new ProxyInput(-1, "", -1, ""));
-            return Response.ok(rendered).build();
+        return shiroRequestHelper.call("proxy", (csrfToken) -> {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), csrfToken, pluginRegion, new ProxyInput(-1, "", -1, ""));
+            return Response.ok(rendered);
         });
     }
 
@@ -54,6 +56,7 @@ public class ProxyPluginEndpoints {
     @Produces(MediaType.TEXT_HTML)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response action(@Context HttpServletRequest httpRequest,
+        @FormParam("csrfToken") String csrfToken,
         @FormParam("localPort") @DefaultValue("-1") int localPort,
         @FormParam("remoteHost") @DefaultValue("") String remoteHost,
         @FormParam("remotePort") @DefaultValue("-1") int remotePort,
@@ -61,10 +64,10 @@ public class ProxyPluginEndpoints {
         @FormParam("urlPort") @DefaultValue("-1") int urlPort,
         @FormParam("url") @DefaultValue("") String url,
         @FormParam("action") @DefaultValue("") String action) {
-        return shiroRequestHelper.call("proxy/actions", () -> {
-            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+        return shiroRequestHelper.csrfCall(csrfToken, "proxy/actions", (csrfToken1) -> {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), csrfToken1, pluginRegion,
                 new ProxyInput(localPort, remoteHost, remotePort, action));
-            return Response.ok(rendered).build();
+            return Response.ok(rendered);
         });
     }
 
@@ -75,11 +78,14 @@ public class ProxyPluginEndpoints {
         @QueryParam("host") @DefaultValue("") String host,
         @QueryParam("port") @DefaultValue("-1") int port,
         @QueryParam("path") @DefaultValue("") String path) {
-        return shiroRequestHelper.call("proxy/redirect", () -> {
+        return shiroRequestHelper.call("proxy/redirect", (csrfToken) -> {
             UpenaProxy redirect = pluginRegion.redirect(host, port);
-            return Response.temporaryRedirect(URI.create("http://" + httpRequest.getLocalAddr()
+            Encoder encoder = ESAPI.encoder();
+            URI location = URI.create("http://" + httpRequest.getLocalAddr()
                 + ":" + redirect.getLocalPort()
-                + (path.startsWith("/") ? path : "/" + path))).build();
+                + (path.startsWith("/") ? path : "/" + path));
+            encoder.canonicalize(location.getQuery());
+            return Response.temporaryRedirect(location);
         });
     }
 

@@ -44,11 +44,11 @@ public class ThrownPluginEndpoints {
     @Produces(MediaType.TEXT_HTML)
     public Response breakpoint(@Context HttpServletRequest httpRequest) {
 
-        return shiroRequestHelper.call("breakpoint", () -> {
-            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+        return shiroRequestHelper.call("breakpoint", (csrfToken1) -> {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(),csrfToken1, pluginRegion,
                 new ThrownPluginRegionInput("", "", "", "", "", "", "", "", "", "", Collections.emptyList(),
                     "", 0, 1, 0, "", "", "", 0, 0, "", ""));
-            return Response.ok(rendered).build();
+            return Response.ok(rendered);
         });
     }
 
@@ -56,6 +56,7 @@ public class ThrownPluginEndpoints {
     @Produces(MediaType.TEXT_HTML)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response breakpoint(@Context HttpServletRequest httpRequest,
+        @FormParam("csrfToken") String csrfToken,
         @FormParam("instanceKey") @DefaultValue("") String instanceKey,
         @FormParam("clusterKey") @DefaultValue("") String clusterKey,
         @FormParam("cluster") @DefaultValue("") String cluster,
@@ -79,9 +80,10 @@ public class ThrownPluginEndpoints {
         @FormParam("breakpoint") @DefaultValue("") String breakpoint,
         @FormParam("action") @DefaultValue("") String action) {
 
-        return shiroRequestHelper.call("breakpoint", () -> {
+        return shiroRequestHelper.csrfCall(csrfToken,"breakpoint", (csrfToken1) -> {
 
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(),
+                csrfToken1,
                 pluginRegion,
                 new ThrownPluginRegionInput(instanceKey,
                     clusterKey,
@@ -105,7 +107,7 @@ public class ThrownPluginEndpoints {
                     maxVersions,
                     breakpoint,
                     action));
-            return Response.ok(rendered).build();
+            return Response.ok(rendered);
         });
     }
 }

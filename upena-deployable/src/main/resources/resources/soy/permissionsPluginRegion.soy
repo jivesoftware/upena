@@ -12,18 +12,83 @@
         <div class="panel panel-info">
             <div class="panel-heading"><span class="panel-title">Permissions</span></div>
             {if $message}
-                <pre>{$message}</pre>
+                <div class="alert alert-warn" role="alert">
+                    <pre>{$message}</pre>
+                </div>
             {/if}
+<div class="alert alert-info" role="alert">
+<pre>
+Welcome to fun with permissions strings!
+
+
+Upena's UI can be controlled by creating and assigning finer grained permissions. Upenas permission are structures as follows.
+
+upena:permissionVersion:viewName:verb
+
+Example upena:v1:config:write // a user with this permission can get to the config UI and write changes. Keep in mind that service specific permission may additional be required to 'write'.
+
+
+Upena also supports fine grain service permission as follows.
+
+service:permissionVersion:serviceName:clusterName:instanceId:hostName:releaseName:verb
+
+Example: service:v1:myservice:prod:*:*:*:*:read  // a user with this permission is allowed to 'read' from any instance + host + releases + tenant combination that is running 'myservice' on 'prod' cluster.
+
+
+To effectively have root access a user would need the following two permission.
+
+upena:v1:*
+service:v1:*
+</pre>
+</div>
             <table class="table table-hover float-table-head table-condensed table-responsive">
                 <thead class="upena-thead">
                     <tr>
-                        <th>Permission</th>
+                        <th>Version</th>
+                        <th>Service</th>
+                        <th>Cluster</th>
+                        <th>Instance</th>
+                        <th>Host</th>
+                        <th>Release</th>
+                        <th>Verb</th>
                         <th>Description</th>
                         <th>Actions</th>
                     </tr>
                     <form id="add-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
                         data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="addHost">
                         <tr style="background-color:#ddd;">
+                            <td>
+                                <div>
+                                    <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                        placeholder="Service" value="{$filters.service?:''}" name="service" id="servicePicker"
+                                        class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/services">
+                                    <input type="hidden" name="serviceKey" value="{$filters.serviceKey?:''}" />
+                                </div>
+                            </td>
+                            <td>
+                                <div>
+                                    <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                        placeholder="Cluster" value="{$filters.cluster?:''}" name="cluster" id="clusterPicker"
+                                        class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/clusters">
+                                    <input type="hidden" name="clusterKey" value="{$filters.clusterKey?:''}" />
+                                </div>
+                            </td>
+                            <td>
+                                <div>
+                                    <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                        placeholder="Host" value="{$filters.host?:''}" name="host" id="hostPicker"
+                                        class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/hosts">
+                                    <input type="hidden" name="hostKey" value="{$filters.hostKey?:''}" />
+                                </div>
+                            </td>
+                            <td>
+                                <div>
+                                    <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                                        placeholder="Release" value="{$filters.release?:''}" name="release" id="releasePicker"
+                                        class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/releases">
+                                    <input type="hidden" name="releaseKey" value="{$filters.releaseKey?:''}" />
+                                </div>
+                            </td>
                             <td style="width:400px;">
                                 <div>
                                     <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"

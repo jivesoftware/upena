@@ -40,10 +40,10 @@ public class HostsPluginEndpoints {
     @GET
     @Produces(MediaType.TEXT_HTML)
     public Response hosts(@Context HttpServletRequest httpRequest) {
-        return shiroRequestHelper.call("hosts", () -> {
-            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+        return shiroRequestHelper.call("hosts", (csrfToken) -> {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), csrfToken, pluginRegion,
                 new HostsPluginRegionInput("", "", "", "", "", "", "", "", ""));
-            return Response.ok(rendered).build();
+            return Response.ok(rendered);
         });
     }
 
@@ -51,6 +51,7 @@ public class HostsPluginEndpoints {
     @Produces(MediaType.TEXT_HTML)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response action(@Context HttpServletRequest httpRequest,
+        @FormParam("csrfToken") String csrfToken,
         @FormParam("key") @DefaultValue("") String key,
         @FormParam("name") @DefaultValue("") String name,
         @FormParam("datacenter") @DefaultValue("") String datacenter,
@@ -60,10 +61,10 @@ public class HostsPluginEndpoints {
         @FormParam("workingDirectory") @DefaultValue("") String workingDirectory,
         @FormParam("instanceId") @DefaultValue("") String instanceId,
         @FormParam("action") @DefaultValue("") String action) {
-        return shiroRequestHelper.call("hosts/actions", () -> {
-            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+        return shiroRequestHelper.csrfCall(csrfToken, "hosts/actions", (csrfToken1) -> {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), csrfToken1, pluginRegion,
                 new HostsPluginRegionInput(key, name, datacenter, rack, host, port, workingDirectory, instanceId, action));
-            return Response.ok(rendered).build();
+            return Response.ok(rendered);
         });
     }
 }

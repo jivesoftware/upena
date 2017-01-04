@@ -45,11 +45,11 @@ public class ConnectivityPluginEndpoints {
     @GET
     @Produces(MediaType.TEXT_HTML)
     public Response render(@Context HttpServletRequest httpRequest) {
-       return shiroRequestHelper.call("connectivity", () -> {
-            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion, new ConnectivityPluginRegionInput("", "", "", "", "", "", "",
+       return shiroRequestHelper.call("connectivity", (csrfToken) -> {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), csrfToken, pluginRegion, new ConnectivityPluginRegionInput("", "", "", "", "", "", "",
                 "",
                 new HashSet<>(Arrays.asList("linkCluster", "linkService", "linkInstance"))));
-            return Response.ok(rendered).build();
+            return Response.ok(rendered);
         });
     }
 
@@ -57,6 +57,7 @@ public class ConnectivityPluginEndpoints {
     @Produces(MediaType.TEXT_HTML)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response renderWithOptions(@Context HttpServletRequest httpRequest,
+        @FormParam("csrfToken") String csrfToken,
         @FormParam("clusterKey") @DefaultValue("") String clusterKey,
         @FormParam("cluster") @DefaultValue("") String cluster,
         @FormParam("hostKey") @DefaultValue("") String hostKey,
@@ -67,10 +68,10 @@ public class ConnectivityPluginEndpoints {
         @FormParam("release") @DefaultValue("") String release,
         @FormParam("linkType") @DefaultValue("linkCluster,linkService,linkInstance") List<String> linkType) {
 
-        return shiroRequestHelper.call("connectivity", () -> {
-            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+        return shiroRequestHelper.csrfCall(csrfToken, "connectivity", (csrfToken1) -> {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), csrfToken1, pluginRegion,
                 new ConnectivityPluginRegionInput(clusterKey, cluster, hostKey, host, serviceKey, service, releaseKey, release, new HashSet<>(linkType)));
-            return Response.ok(rendered).build();
+            return Response.ok(rendered);
         });
     }
 
@@ -81,10 +82,10 @@ public class ConnectivityPluginEndpoints {
     public Response renderInstance(@Context HttpServletRequest httpRequest,
         @PathParam("instanceKey") @DefaultValue("") String instanceKey) {
 
-        return shiroRequestHelper.call("connectivity/instance", () -> {
-            String rendered = soyService.wrapWithChrome("/ui/connectivity/" + instanceKey, httpRequest.getRemoteUser(),
+        return shiroRequestHelper.call("connectivity/instance", (csrfToken) -> {
+            String rendered = soyService.wrapWithChrome("/ui/connectivity/" + instanceKey, httpRequest.getRemoteUser(), csrfToken,
                 "foo", "Instance", pluginRegion.renderInstance(httpRequest.getRemoteUser(), instanceKey));
-            return Response.ok(rendered).build();
+            return Response.ok(rendered);
         });
     }
 

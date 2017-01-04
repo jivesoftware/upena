@@ -52,7 +52,7 @@ public class AuthPluginEndpoints {
     @Produces(MediaType.TEXT_HTML)
     public Response getLogin(@Context HttpServletRequest httpRequest) {
         try {
-            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion, new AuthInput("", false));
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), null, pluginRegion, new AuthInput("", false));
             return Response.ok(rendered).build();
         } catch (Exception e) {
             LOG.error("auth GET", e);
@@ -66,7 +66,7 @@ public class AuthPluginEndpoints {
     public Response postLogin(@FormParam("username") @DefaultValue("") String username, @Context HttpServletRequest httpRequest) {
         try {
             Object got = httpRequest.getAttribute("shiroLoginFailure");
-            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion, new AuthInput(username, (got == null ? false : true)));
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), null, pluginRegion, new AuthInput(username, (got == null ? false : true)));
             return Response.ok(rendered).build();
         } catch (Exception e) {
             LOG.error("auth GET", e);
@@ -80,7 +80,8 @@ public class AuthPluginEndpoints {
     public Response getOktaMFA(@Context HttpServletRequest httpRequest) {
         try {
             Object got = httpRequest.getAttribute("shiroLoginFailure");
-            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), oktaMFAAuthPluginRegion, new OktaAuthInput(got == null ? false : true));
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), null, oktaMFAAuthPluginRegion,
+                new OktaAuthInput(got == null ? false : true));
             return Response.ok(rendered).build();
         } catch (Exception e) {
             LOG.error("auth GET", e);
@@ -94,7 +95,8 @@ public class AuthPluginEndpoints {
     public Response postOktaMFA(@Context HttpServletRequest httpRequest) {
         try {
             Object got = httpRequest.getAttribute("shiroLoginFailure");
-            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), oktaMFAAuthPluginRegion, new OktaAuthInput(got == null ? false : true));
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), null, oktaMFAAuthPluginRegion,
+                new OktaAuthInput(got == null ? false : true));
             return Response.ok(rendered).build();
         } catch (Exception e) {
             LOG.error("auth GET", e);
@@ -107,8 +109,9 @@ public class AuthPluginEndpoints {
     @Produces(MediaType.TEXT_HTML)
     public Response postUnauthorized(@Context HttpServletRequest httpRequest) {
         try {
-            LOG.info("httpRequest:"+httpRequest);
-            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), unauthorizedPluginRegion, new UnauthorizedPluginRegion.UnauthorizedInput());
+            LOG.info("httpRequest:" + httpRequest);
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), null, unauthorizedPluginRegion,
+                new UnauthorizedPluginRegion.UnauthorizedInput());
             return Response.status(Status.UNAUTHORIZED).entity(rendered).build();
         } catch (Exception e) {
             LOG.error("auth GET", e);
@@ -121,8 +124,9 @@ public class AuthPluginEndpoints {
     @Produces(MediaType.TEXT_HTML)
     public Response getUnauthorized(@Context HttpServletRequest httpRequest) {
         try {
-            LOG.info("httpRequest:"+httpRequest);
-            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), unauthorizedPluginRegion, new UnauthorizedPluginRegion.UnauthorizedInput());
+            LOG.info("httpRequest:" + httpRequest);
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), null, unauthorizedPluginRegion,
+                new UnauthorizedPluginRegion.UnauthorizedInput());
             return Response.status(Status.UNAUTHORIZED).entity(rendered).build();
         } catch (Exception e) {
             LOG.error("auth GET", e);
@@ -137,7 +141,7 @@ public class AuthPluginEndpoints {
         try {
             Subject subject = SecurityUtils.getSubject();
             subject.logout();
-            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion, new AuthInput("", false));
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), null, pluginRegion, new AuthInput("", false));
             return Response.ok(rendered).build();
         } catch (Exception e) {
             LOG.error("auth GET", e);

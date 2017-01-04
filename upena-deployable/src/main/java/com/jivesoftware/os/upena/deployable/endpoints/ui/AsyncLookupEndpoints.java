@@ -53,7 +53,7 @@ public class AsyncLookupEndpoints {
         @QueryParam("remoteHost") @DefaultValue("") String remoteHost,
         @QueryParam("remotePort") @DefaultValue("-1") int remotePort,
         @QueryParam("contains") String contains) {
-        return shiroRequestHelper.call("lookup/clusters", () -> {
+        return shiroRequestHelper.call("lookup/clusters", (csrfToken) -> {
             Map<ClusterKey, TimestampedValue<Cluster>> clusters = asyncLookupService.findClusters(remoteHost, remotePort, contains);
             List<Map<String, String>> results = Lists.newArrayList();
             for (Map.Entry<ClusterKey, TimestampedValue<Cluster>> entry : clusters.entrySet()) {
@@ -66,7 +66,7 @@ public class AsyncLookupEndpoints {
                 }
                 return o1.get("key").compareTo(o2.get("key"));
             });
-            return Response.ok(objectMapper.writeValueAsString(results)).build();
+            return Response.ok(objectMapper.writeValueAsString(results));
         });
     }
 
@@ -76,7 +76,7 @@ public class AsyncLookupEndpoints {
     public Response findHosts(@QueryParam("remoteHost") @DefaultValue("") String remoteHost,
         @QueryParam("remotePort") @DefaultValue("-1") int remotePort,
         @QueryParam("contains") String contains) {
-        return shiroRequestHelper.call("lookup/hosts", () -> {
+        return shiroRequestHelper.call("lookup/hosts", (csrfToken) -> {
             Map<HostKey, TimestampedValue<Host>> hosts = asyncLookupService.findHosts(remoteHost, remotePort, contains);
             List<Map<String, String>> results = Lists.newArrayList();
             for (Map.Entry<HostKey, TimestampedValue<Host>> entry : hosts.entrySet()) {
@@ -93,7 +93,7 @@ public class AsyncLookupEndpoints {
                 }
                 return o1.get("key").compareTo(o2.get("key"));
             });
-            return Response.ok(objectMapper.writeValueAsString(results)).build();
+            return Response.ok(objectMapper.writeValueAsString(results));
         });
     }
 
@@ -103,7 +103,7 @@ public class AsyncLookupEndpoints {
     public Response findServices(@QueryParam("remoteHost") @DefaultValue("") String remoteHost,
         @QueryParam("remotePort") @DefaultValue("-1") int remotePort,
         @QueryParam("contains") String contains) {
-        return shiroRequestHelper.call("lookup/services", () -> {
+        return shiroRequestHelper.call("lookup/services", (csrfToken) -> {
             Map<ServiceKey, TimestampedValue<Service>> services = asyncLookupService.findServices(remoteHost, remotePort, contains);
             List<Map<String, String>> results = Lists.newArrayList();
             for (Map.Entry<ServiceKey, TimestampedValue<Service>> entry : services.entrySet()) {
@@ -116,7 +116,7 @@ public class AsyncLookupEndpoints {
                 }
                 return o1.get("key").compareTo(o2.get("key"));
             });
-            return Response.ok(objectMapper.writeValueAsString(results)).build();
+            return Response.ok(objectMapper.writeValueAsString(results));
         });
     }
 
@@ -126,7 +126,7 @@ public class AsyncLookupEndpoints {
     public Response findReleases(@QueryParam("remoteHost") @DefaultValue("") String remoteHost,
         @QueryParam("remotePort") @DefaultValue("-1") int remotePort,
         @QueryParam("contains") String contains) {
-        return shiroRequestHelper.call("lookup/releases", () -> {
+        return shiroRequestHelper.call("lookup/releases", (csrfToken) -> {
             Map<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> services = asyncLookupService.findReleases(remoteHost, remotePort, contains);
             List<Map<String, String>> results = Lists.newArrayList();
             for (Map.Entry<ReleaseGroupKey, TimestampedValue<ReleaseGroup>> entry : services.entrySet()) {
@@ -139,7 +139,7 @@ public class AsyncLookupEndpoints {
                 }
                 return o1.get("key").compareTo(o2.get("key"));
             });
-            return Response.ok(objectMapper.writeValueAsString(results)).build();
+            return Response.ok(objectMapper.writeValueAsString(results));
         });
     }
 
@@ -149,7 +149,7 @@ public class AsyncLookupEndpoints {
     public Response findStrategies(@QueryParam("remoteHost") @DefaultValue("") String remoteHost,
         @QueryParam("remotePort") @DefaultValue("-1") int remotePort,
         @QueryParam("contains") String contains) {
-        return shiroRequestHelper.call("lookup/strategies", () -> {
+        return shiroRequestHelper.call("lookup/strategies", (csrfToken) -> {
             List<Map<String, String>> results = Lists.newArrayList();
             for (ChaosStrategyKey s : ChaosStrategyKey.values()) {
                 results.add(ImmutableMap.of("key", s.name(), "name", s.description));
@@ -163,7 +163,7 @@ public class AsyncLookupEndpoints {
                 return o1.get("key").compareTo(o2.get("key"));
             });
 
-            return Response.ok(objectMapper.writeValueAsString(results)).build();
+            return Response.ok(objectMapper.writeValueAsString(results));
         });
     }
 

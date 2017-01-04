@@ -55,6 +55,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
     }
 
     public Object renderChangelog(String releaseKey) throws Exception {
+        SecurityUtils.getSubject().checkPermission("write");
         ReleaseGroup releaseGroup = upenaStore.releaseGroups.get(new ReleaseGroupKey(releaseKey));
         if (releaseGroup == null) {
             return "No release group for " + releaseKey;
@@ -82,6 +83,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
     }
 
     public Object renderScm(String releaseKey) throws Exception {
+        SecurityUtils.getSubject().checkPermission("write");
         ReleaseGroup releaseGroup = upenaStore.releaseGroups.get(new ReleaseGroupKey(releaseKey));
         if (releaseGroup == null) {
             return "No release group for " + releaseKey;
@@ -587,6 +589,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
     }
 
     public String doExport(ReleasesPluginRegionInput input, String user) {
+        SecurityUtils.getSubject().checkPermission("write");
         try {
             ReleaseGroupFilter filter = new ReleaseGroupFilter(
                 input.name.isEmpty() ? null : input.name,
@@ -613,6 +616,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
     }
 
     public String doImport(String in, String user) {
+        SecurityUtils.getSubject().checkPermission("write");
         Map<String, Object> data = Maps.newHashMap();
         try {
             ListOfReleaseGroup values = mapper.readValue(in, ListOfReleaseGroup.class);
@@ -635,7 +639,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
     static class ListOfReleaseGroup extends ArrayList<ReleaseGroup> {
     }
 
-    public String instanceToHumanReadableString(Instance instance) throws Exception {
+    private String instanceToHumanReadableString(Instance instance) throws Exception {
         Cluster cluster = upenaStore.clusters.get(instance.clusterKey);
         Host host = upenaStore.hosts.get(instance.hostKey);
         Service service = upenaStore.services.get(instance.serviceKey);
@@ -648,6 +652,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
     }
 
     public void add(String remoteUser, PropertyUpdate update) throws Exception {
+        SecurityUtils.getSubject().checkPermission("write");
         ReleaseGroupKey releaseGroupKey = new ReleaseGroupKey(update.releaseKey);
         ReleaseGroup releaseGroup = upenaStore.releaseGroups.get(releaseGroupKey);
         if (releaseGroup != null) {
@@ -657,6 +662,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
     }
 
     public void remove(String remoteUser, PropertyUpdate update) throws Exception {
+        SecurityUtils.getSubject().checkPermission("write");
         ReleaseGroupKey releaseGroupKey = new ReleaseGroupKey(update.releaseKey);
         ReleaseGroup releaseGroup = upenaStore.releaseGroups.get(releaseGroupKey);
         if (releaseGroup != null) {

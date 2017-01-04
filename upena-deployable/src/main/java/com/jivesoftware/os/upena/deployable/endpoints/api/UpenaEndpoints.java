@@ -58,7 +58,7 @@ public class UpenaEndpoints {
     @Produces(MediaType.TEXT_HTML)
     public Response get(@Context HttpServletRequest httpRequest,
         @Context UriInfo uriInfo) throws Exception {
-        String rendered = soyService.render(httpRequest.getRemoteUser());
+        String rendered = soyService.render(httpRequest.getRemoteUser(), null);
         return Response.ok(rendered).build();
     }
 

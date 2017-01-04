@@ -561,7 +561,7 @@ public class UpenaMain {
         UpenaHealth upenaHealth = new UpenaHealth(amzaService, upenaSSLConfig, upenaConfigStore, ubaService, ringHost, hostKey);
 
         DiscoveredRoutes discoveredRoutes = new DiscoveredRoutes();
-        ShiroRequestHelper shiroRequestHelper = new ShiroRequestHelper();
+        ShiroRequestHelper shiroRequestHelper = new ShiroRequestHelper(TimeUnit.DAYS.toMillis(1)); // TODO expose Sys prop?
 
         String shiroConfigLocation = System.getProperty("shiro.ini.location", "classpath:shiro.ini"); // classpath:oktashiro.ini
 

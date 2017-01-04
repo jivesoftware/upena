@@ -43,10 +43,10 @@ public class InstancesPluginEndpoints {
     @GET
     @Produces(MediaType.TEXT_HTML)
     public Response instances(@Context HttpServletRequest httpRequest) {
-        return shiroRequestHelper.call("instances", () -> {
-            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+        return shiroRequestHelper.call("instances", (csrfToken) -> {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), csrfToken, pluginRegion,
                 new InstancesPluginRegionInput("", "", "", "", "", "", "", "", "", "", false, false, false, "", "", ""));
-            return Response.ok(rendered).build();
+            return Response.ok(rendered);
         });
     }
 
@@ -54,6 +54,7 @@ public class InstancesPluginEndpoints {
     @Produces(MediaType.TEXT_HTML)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response action(@Context HttpServletRequest httpRequest,
+        @FormParam("csrfToken") String csrfToken,
         @FormParam("key") @DefaultValue("") String key,
         @FormParam("clusterKey") @DefaultValue("") String clusterKey,
         @FormParam("cluster") @DefaultValue("") String cluster,
@@ -71,8 +72,8 @@ public class InstancesPluginEndpoints {
         @FormParam("interval") @DefaultValue("30") String interval,
         @FormParam("action") @DefaultValue("") String action) {
 
-        return shiroRequestHelper.call("instance/actions", () -> {
-            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+        return shiroRequestHelper.csrfCall(csrfToken, "instance/actions", (csrfToken1) -> {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), csrfToken1, pluginRegion,
                 new InstancesPluginRegionInput(key,
                     clusterKey,
                     cluster,
@@ -89,7 +90,7 @@ public class InstancesPluginEndpoints {
                     intervalUnits,
                     interval,
                     action));
-            return Response.ok(rendered).build();
+            return Response.ok(rendered);
         });
     }
 
@@ -98,15 +99,16 @@ public class InstancesPluginEndpoints {
     @Produces(MediaType.TEXT_HTML)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response add(@Context HttpServletRequest httpRequest,
+        @FormParam("csrfToken") String csrfToken,
         @FormParam("clusterKey") @DefaultValue("") String clusterKey,
         @FormParam("hostKeys") @DefaultValue("") List<String> hostKeys,
         @FormParam("serviceKey") @DefaultValue("") String serviceKey,
         @FormParam("releaseKey") @DefaultValue("") String releaseKey) {
 
-        return shiroRequestHelper.call("instance/add", () -> {
+        return shiroRequestHelper.csrfCall(csrfToken, "instance/add", (csrfToken1) -> {
             String result = pluginRegion.add(httpRequest.getRemoteUser(), clusterKey, hostKeys, serviceKey, releaseKey);
             URI location = new URI("/ui/health");
-            return Response.seeOther(location).build();
+            return Response.seeOther(location);
         });
     }
 
@@ -116,9 +118,9 @@ public class InstancesPluginEndpoints {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response add(@Context HttpServletRequest httpRequest, PortUpdate update) {
 
-        return shiroRequestHelper.call("instance/ports/add", () -> {
+        return shiroRequestHelper.call("instance/ports/add", (csrfToken) -> {
             pluginRegion.add(httpRequest.getRemoteUser(), update);
-            return Response.ok().build();
+            return Response.ok();
         });
     }
 
@@ -127,9 +129,9 @@ public class InstancesPluginEndpoints {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response remove(@Context HttpServletRequest httpRequest, PortUpdate update) {
-        return shiroRequestHelper.call("instance/ports/remove", () -> {
+        return shiroRequestHelper.call("instance/ports/remove", (csrfToken) -> {
             pluginRegion.remove(httpRequest.getRemoteUser(), update);
-            return Response.ok().build();
+            return Response.ok();
         });
     }
 

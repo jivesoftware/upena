@@ -48,21 +48,21 @@ public class HealthPluginEndpoints {
         @QueryParam("host") @DefaultValue("") String host,
         @QueryParam("service") @DefaultValue("") String service) {
 
-        return shiroRequestHelper.call("health", () -> {
-            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+        return shiroRequestHelper.call("health", (csrfToken) -> {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), csrfToken, pluginRegion,
                 new HealthPluginRegionInput(datacenter, rack, cluster, host, service));
-            return Response.ok(rendered).build();
+            return Response.ok(rendered);
         });
     }
 
-    @GET
+    /*@GET
     @Produces(MediaType.TEXT_HTML)
     @Path("/uis")
     public Response uis(@QueryParam("instanceKey") @DefaultValue("") String instanceKey) throws Exception {
         return shiroRequestHelper.call("health/uis", () -> {
             return Response.ok(pluginRegion.renderInstanceHealth(instanceKey)).build();
         });
-    }
+    }*/
 
     @GET
     @Path("/live")
@@ -74,9 +74,8 @@ public class HealthPluginEndpoints {
         @QueryParam("host") @DefaultValue("") String host,
         @QueryParam("service") @DefaultValue("") String service) {
 
-        return shiroRequestHelper.call("health/live", () -> {
-            return Response.ok(pluginRegion.renderLive(httpRequest.getRemoteUser(), new HealthPluginRegionInput(datacenter, rack, cluster, host, service)))
-                .build();
+        return shiroRequestHelper.call("health/live", (csrfToken) -> {
+            return Response.ok(pluginRegion.renderLive(httpRequest.getRemoteUser(), new HealthPluginRegionInput(datacenter, rack, cluster, host, service)));
         });
     }
 

@@ -24,6 +24,7 @@ public class ChromeRegion<I extends PluginInput, R extends PageRegion<I>> implem
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
     private final String template;
+    private final String csrfToken;
     private final SoyRenderer renderer;
     //private final HeaderRegion headerRegion;
     private final MenuRegion menuRegion;
@@ -33,6 +34,7 @@ public class ChromeRegion<I extends PluginInput, R extends PageRegion<I>> implem
     
 
     public ChromeRegion(String template,
+        String csrfToken,
         SoyRenderer renderer,
         //HeaderRegion headerRegion,
         MenuRegion menuRegion,
@@ -43,6 +45,7 @@ public class ChromeRegion<I extends PluginInput, R extends PageRegion<I>> implem
         UpenaStore upenaStore) {
 
         this.template = template;
+        this.csrfToken = csrfToken;
         this.renderer = renderer;
         //this.headerRegion = headerRegion;
         this.menuRegion = menuRegion;
@@ -105,6 +108,7 @@ public class ChromeRegion<I extends PluginInput, R extends PageRegion<I>> implem
         Map<String, Object> data = Maps.newHashMap();
         //data.put("header", headerRegion.render(user, headerData));
         data.put("menu", menuRegion.render(user, headerData));
+        data.put("csrfToken", csrfToken);
         data.put("region", htmlRegion);
         data.put("title", title);
         data.put("plugins", p);

@@ -44,12 +44,13 @@ public class LoadBalancersPluginEndpoints {
     @GET
     @Produces(MediaType.TEXT_HTML)
     public Response loadBalancers(@Context HttpServletRequest httpRequest) {
-        return shiroRequestHelper.call("lb", () -> {
+        return shiroRequestHelper.call("lb", (csrfToken) -> {
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(),
+                csrfToken,
                 pluginRegion,
                 new LoadBalancersPluginRegionInput("", "", "", "", 0, 0, Collections.emptyList(), "", "", "", Collections.emptyList(),
                     Collections.emptyList(), Collections.emptyMap(), "", "", "", "", "", "", ""));
-            return Response.ok(rendered).build();
+            return Response.ok(rendered);
         });
     }
 
@@ -57,6 +58,7 @@ public class LoadBalancersPluginEndpoints {
     @Produces(MediaType.TEXT_HTML)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response action(@Context HttpServletRequest httpRequest,
+        @FormParam("csrfToken") String csrfToken,
         @FormParam("key") @DefaultValue("") String key,
         @FormParam("name") @DefaultValue("") String name,
         @FormParam("description") @DefaultValue("") String description,
@@ -68,12 +70,12 @@ public class LoadBalancersPluginEndpoints {
         @FormParam("release") @DefaultValue("") String releaseGroup,
         @FormParam("action") @DefaultValue("") String action) {
 
-        return shiroRequestHelper.call("lb/actions", () -> {
-            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+        return shiroRequestHelper.csrfCall(csrfToken, "lb/actions", (csrfToken1) -> {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), csrfToken1, pluginRegion,
                 new LoadBalancersPluginRegionInput(key, name, description, null, -1, -1, null, null, null,
                     null, null, null, Collections.emptyMap(), clusterKey, cluster, serviceKey, service, releaseGroupKey, releaseGroup,
                     action));
-            return Response.ok(rendered).build();
+            return Response.ok(rendered);
         });
     }
 
@@ -82,6 +84,7 @@ public class LoadBalancersPluginEndpoints {
     @Produces(MediaType.TEXT_HTML)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response config(@Context HttpServletRequest httpRequest,
+        @FormParam("csrfToken") String csrfToken,
         @FormParam("key") @DefaultValue("") String key,
         @FormParam("scheme") @DefaultValue("") String scheme,
         @FormParam("loadBalancerPort") @DefaultValue("-1") int loadBalancerPort,
@@ -93,8 +96,10 @@ public class LoadBalancersPluginEndpoints {
         @FormParam("securityGroups") @DefaultValue("") String securityGroups,
         @FormParam("subnets") @DefaultValue("") String subnets) {
 
-        return shiroRequestHelper.call("lb/config", () -> {
-            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+        return shiroRequestHelper.csrfCall(csrfToken, "lb/config", (csrfToken1) -> {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(),
+                csrfToken1,
+                pluginRegion,
                 new LoadBalancersPluginRegionInput(key, null, null,
                     scheme,
                     loadBalancerPort,
@@ -108,7 +113,7 @@ public class LoadBalancersPluginEndpoints {
                     Collections.emptyMap(),
                     null, null, null, null, null, null,
                     "update"));
-            return Response.ok(rendered).build();
+            return Response.ok(rendered);
         });
     }
 

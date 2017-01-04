@@ -41,10 +41,10 @@ public class UsersPluginEndpoints {
     @GET
     @Produces(MediaType.TEXT_HTML)
     public Response services(@Context HttpServletRequest httpRequest) {
-        return shiroRequestHelper.call("services", () -> {
-            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+        return shiroRequestHelper.call("services", (csrfToken1) -> {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), csrfToken1, pluginRegion,
                 new UsersPluginRegionInput("", "", "", ""));
-            return Response.ok(rendered).build();
+            return Response.ok(rendered);
         });
     }
 
@@ -52,14 +52,15 @@ public class UsersPluginEndpoints {
     @Produces(MediaType.TEXT_HTML)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response action(@Context HttpServletRequest httpRequest,
+        @FormParam("csrfToken") String csrfToken,
         @FormParam("key") @DefaultValue("") String key,
         @FormParam("name") @DefaultValue("") String name,
         @FormParam("email") @DefaultValue("") String email,
         @FormParam("action") @DefaultValue("") String action) {
-        return shiroRequestHelper.call("service/action", () -> {
-            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+        return shiroRequestHelper.csrfCall(csrfToken,"service/action", (csrfToken1) -> {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), csrfToken1, pluginRegion,
                 new UsersPluginRegionInput(key, name, email, action));
-            return Response.ok(rendered).build();
+            return Response.ok(rendered);
         });
     }
 
@@ -69,9 +70,9 @@ public class UsersPluginEndpoints {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response add(@Context HttpServletRequest httpRequest, PermissionUpdate update) {
 
-        return shiroRequestHelper.call("users/permission/add", () -> {
+        return shiroRequestHelper.call("users/permission/add", (csrfToken1) -> {
             pluginRegion.add(httpRequest.getRemoteUser(), update);
-            return Response.ok().build();
+            return Response.ok();
         });
     }
 
@@ -80,9 +81,9 @@ public class UsersPluginEndpoints {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response remove(@Context HttpServletRequest httpRequest, PermissionUpdate update) {
-        return shiroRequestHelper.call("users/permission/remove", () -> {
+        return shiroRequestHelper.call("users/permission/remove", (csrfToken1) -> {
             pluginRegion.remove(httpRequest.getRemoteUser(), update);
-            return Response.ok().build();
+            return Response.ok();
         });
     }
 

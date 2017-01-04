@@ -42,9 +42,11 @@ public class ProfilerPluginEndpoints {
     @GET
     @Produces(MediaType.TEXT_HTML)
     public Response profiler(@Context HttpServletRequest httpRequest) {
-        return shiroRequestHelper.call("profiler", () -> {
+        return shiroRequestHelper.call("profiler", (csrfToken) -> {
 
-            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(),
+                csrfToken,
+                pluginRegion,
                 new ProfilerPluginRegionInput(true,
                     "",
                     800,
@@ -57,7 +59,7 @@ public class ProfilerPluginEndpoints {
                     VStrategies.StackOrder.ascending.name(),
                     0,
                     0));
-            return Response.ok(rendered).build();
+            return Response.ok(rendered);
         });
     }
 
@@ -65,6 +67,7 @@ public class ProfilerPluginEndpoints {
     @Produces(MediaType.TEXT_HTML)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response action(@Context HttpServletRequest httpRequest,
+        @FormParam("csrfToken") String csrfToken,
         @FormParam("enabled") @DefaultValue("false") boolean enabled,
         @FormParam("serviceName") @DefaultValue("") String serviceName,
         @FormParam("height") @DefaultValue("800") int height,
@@ -77,8 +80,10 @@ public class ProfilerPluginEndpoints {
         @FormParam("stackOrder") @DefaultValue("ascending") String stackOrder,
         @FormParam("x") @DefaultValue("0") int mouseX,
         @FormParam("y") @DefaultValue("0") int mouseY) {
-        return shiroRequestHelper.call("profiler/action", () -> {
-            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+        return shiroRequestHelper.csrfCall(csrfToken, "profiler/action", (csrfToken1) -> {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(),
+                csrfToken1,
+                pluginRegion,
                 new ProfilerPluginRegionInput(enabled,
                     serviceName,
                     height,
@@ -91,7 +96,7 @@ public class ProfilerPluginEndpoints {
                     stackOrder,
                     mouseX,
                     mouseY));
-            return Response.ok(rendered).build();
+            return Response.ok(rendered);
         });
     }
 }

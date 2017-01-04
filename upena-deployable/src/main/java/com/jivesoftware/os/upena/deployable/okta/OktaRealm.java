@@ -30,11 +30,7 @@ public class OktaRealm extends AuthorizingRealm {
         return "OktaRealm";
     }
 
-    //private Map<String, SimpleAccount> userAccount = new ConcurrentHashMap<>(16);
-
     protected SimpleAccount getAccount(String username) {
-
-        //SimpleAccount account = userAccount.computeIfAbsent(username, s -> {
 
         SimpleAccount account1 = new SimpleAccount(username, "password", getName());
 
@@ -69,11 +65,7 @@ public class OktaRealm extends AuthorizingRealm {
             account1.addStringPermission("read");
         }
 
-        //account.addStringPermission("blogEntry:edit"); //this user is allowed to 'edit' _any_ blogEntry
-        //account.addStringPermission("printer:print:laserjet2000"); //allowed to 'print' to the 'printer' identified
         return account1;
-        //});
-        //return account;
     }
 
 

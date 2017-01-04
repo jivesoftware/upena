@@ -41,17 +41,19 @@ public class ChangeLogPluginEndpoints {
     @GET
     @Produces(MediaType.TEXT_HTML)
     public Response changelog(@Context SecurityContext sc, @Context HttpServletRequest httpRequest) {
-        return shiroRequestHelper.call("changeLog", () -> {
-            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+        return shiroRequestHelper.call("changeLog", (csrfToken) -> {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), csrfToken, pluginRegion,
                 new ChangeLogPluginRegionInput("", "", "", "", "", "", ""));
-            return Response.ok(rendered).build();
+            return Response.ok(rendered);
         });
     }
 
     @POST
     @Produces(MediaType.TEXT_HTML)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    public Response action(@Context SecurityContext sc, @Context HttpServletRequest httpRequest,
+    public Response action(@Context SecurityContext sc,
+        @Context HttpServletRequest httpRequest,
+        @FormParam("csrfToken") String csrfToken,
         @FormParam("who") @DefaultValue("") String who,
         @FormParam("what") @DefaultValue("") String what,
         @FormParam("when") @DefaultValue("") String when,
@@ -60,10 +62,10 @@ public class ChangeLogPluginEndpoints {
         @FormParam("how") @DefaultValue("") String how,
         @FormParam("action") @DefaultValue("") String action) {
 
-        return shiroRequestHelper.call("changeLog", () -> {
-            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+        return shiroRequestHelper.csrfCall(csrfToken, "changeLog", (csrfToken1) -> {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), csrfToken1, pluginRegion,
                 new ChangeLogPluginRegionInput(who, what, when, where, why, how, action));
-            return Response.ok(rendered).build();
+            return Response.ok(rendered);
         });
 
     }

@@ -44,10 +44,10 @@ public class TopologyPluginEndpoints {
     @GET
     @Produces(MediaType.TEXT_HTML)
     public Response topology(@Context HttpServletRequest httpRequest) {
-        return shiroRequestHelper.call("topology", () -> {
-            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion, new TopologyPluginRegionInput("", "", "", "", "", "", "", "",
+        return shiroRequestHelper.call("topology", (csrfToken1) -> {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), csrfToken1, pluginRegion, new TopologyPluginRegionInput("", "", "", "", "", "", "", "",
                 new HashSet<>(Arrays.asList("linkCluster", "linkService", "linkInstance", "linkHost", "linkRelease"))));
-            return Response.ok(rendered).build();
+            return Response.ok(rendered);
         });
     }
 
@@ -55,6 +55,7 @@ public class TopologyPluginEndpoints {
     @Produces(MediaType.TEXT_HTML)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response renderWithOptions(@Context HttpServletRequest httpRequest,
+        @FormParam("csrfToken") String csrfToken,
         @FormParam("clusterKey") @DefaultValue("") String clusterKey,
         @FormParam("cluster") @DefaultValue("") String cluster,
         @FormParam("hostKey") @DefaultValue("") String hostKey,
@@ -64,10 +65,10 @@ public class TopologyPluginEndpoints {
         @FormParam("releaseKey") @DefaultValue("") String releaseKey,
         @FormParam("release") @DefaultValue("") String release,
         @FormParam("linkType") @DefaultValue("linkCluster,linkService,linkInstance,linkHost,linkRelease") List<String> linkType) {
-        return shiroRequestHelper.call("topology/options", () -> {
-            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+        return shiroRequestHelper.csrfCall(csrfToken, "topology/options", (csrfToken1) -> {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), csrfToken1, pluginRegion,
                 new TopologyPluginRegionInput(clusterKey, cluster, hostKey, host, serviceKey, service, releaseKey, release, new HashSet<>(linkType)));
-            return Response.ok(rendered).build();
+            return Response.ok(rendered);
         });
     }
 

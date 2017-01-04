@@ -46,10 +46,10 @@ public class ServicesPluginEndpoints {
     @GET
     @Produces(MediaType.TEXT_HTML)
     public Response services(@Context HttpServletRequest httpRequest) {
-        return shiroRequestHelper.call("services", () -> {
-            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+        return shiroRequestHelper.call("services", (csrfToken1) -> {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), csrfToken1, pluginRegion,
                 new ServicesPluginRegionInput("", "", "", ""));
-            return Response.ok(rendered).build();
+            return Response.ok(rendered);
         });
     }
 
@@ -57,18 +57,19 @@ public class ServicesPluginEndpoints {
     @Produces(MediaType.TEXT_HTML)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response action(@Context HttpServletRequest httpRequest,
+        @FormParam("csrfToken") String csrfToken,
         @FormParam("key") @DefaultValue("") String key,
         @FormParam("name") @DefaultValue("") String name,
         @FormParam("description") @DefaultValue("") String description,
         @FormParam("action") @DefaultValue("") String action) {
-        return shiroRequestHelper.call("service/action", () -> {
+        return shiroRequestHelper.csrfCall(csrfToken, "service/action", (csrfToken1) -> {
             if (action.startsWith("export")) {
                 String export = pluginRegion.doExport(new ServicesPluginRegionInput(key, name, description, "export"), httpRequest.getRemoteUser());
-                return Response.ok(export, MediaType.APPLICATION_OCTET_STREAM_TYPE).build();
+                return Response.ok(export, MediaType.APPLICATION_OCTET_STREAM_TYPE);
             } else {
-                String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+                String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), csrfToken1, pluginRegion,
                     new ServicesPluginRegionInput(key, name, description, action));
-                return Response.ok(rendered).build();
+                return Response.ok(rendered);
             }
         });
     }
@@ -77,13 +78,14 @@ public class ServicesPluginEndpoints {
     @Path("/import")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     public Response importTopology(@Context HttpServletRequest httpRequest,
+        @FormParam("csrfToken") String csrfToken,
         @FormDataParam("file") InputStream fileInputStream,
         @FormDataParam("file") FormDataContentDisposition contentDispositionHeader) {
-        return shiroRequestHelper.call("service/import", () -> {
+        return shiroRequestHelper.csrfCall(csrfToken, "service/import", (csrfToken1) -> {
             String json = IOUtils.toString(fileInputStream, StandardCharsets.UTF_8);
             pluginRegion.doImport(json, httpRequest.getRemoteUser());
             URI location = new URI("/ui/services");
-            return Response.seeOther(location).build();
+            return Response.seeOther(location);
         });
     }
 

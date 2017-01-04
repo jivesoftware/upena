@@ -59,6 +59,8 @@ public class OktaFormAuthenticationFilter extends FormAuthenticationFilter {
         try {
             Subject subject = getSubject(request, response);
             subject.login(token);
+            subject.getSession().stop();
+            subject.getSession(true);
             return onLoginSuccess(token, subject, request, response);
         } catch (AuthenticationException e) {
             return onLoginFailure(token, e, request, response);

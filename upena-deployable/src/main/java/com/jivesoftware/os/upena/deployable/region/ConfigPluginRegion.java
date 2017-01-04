@@ -193,6 +193,7 @@ public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
     }
 
     public String export(ConfigPluginRegionInput input) throws Exception {
+        SecurityUtils.getSubject().checkPermission("write");
 
         ConcurrentSkipListMap<String, List<Map<String, String>>> properties = new ConcurrentSkipListMap<>();
         InstanceFilter filter = new InstanceFilter(
@@ -281,8 +282,7 @@ public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
 
     }
 
-    public void append(List<String> config, InstanceKey instanceKey, Map<String, String> properties) {
-
+    private void append(List<String> config, InstanceKey instanceKey, Map<String, String> properties) {
         for (Entry<String, String> p : properties.entrySet()) {
             StringBuilder sb = new StringBuilder();
             sb.append(instanceKey).append(", ")
