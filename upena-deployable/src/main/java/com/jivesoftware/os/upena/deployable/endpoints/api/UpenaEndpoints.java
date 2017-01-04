@@ -15,6 +15,7 @@
  */
 package com.jivesoftware.os.upena.deployable.endpoints.api;
 
+import com.jivesoftware.os.upena.deployable.HeaderDecoration;
 import com.jivesoftware.os.upena.deployable.UpenaHealth;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
 
@@ -59,7 +60,7 @@ public class UpenaEndpoints {
     public Response get(@Context HttpServletRequest httpRequest,
         @Context UriInfo uriInfo) throws Exception {
         String rendered = soyService.render(httpRequest.getRemoteUser(), null);
-        return Response.ok(rendered).build();
+        return HeaderDecoration.decorate(Response.ok(rendered)).build();
     }
 
     @Path("/ui/overview")
@@ -68,7 +69,7 @@ public class UpenaEndpoints {
     public Response overview(@Context HttpServletRequest httpRequest,
         @Context UriInfo uriInfo) throws Exception {
         String rendered = soyService.renderOverview(httpRequest.getRemoteUser());
-        return Response.ok(rendered).build();
+        return HeaderDecoration.decorate(Response.ok(rendered)).build();
     }
 
     @Path("/ui/healthGradient")
@@ -76,7 +77,7 @@ public class UpenaEndpoints {
     @Produces(MediaType.TEXT_PLAIN)
     public Response healthGradient(@Context HttpServletRequest httpRequest,
         @Context UriInfo uriInfo) throws Exception {
-        return Response.ok(upenaHealth.healthGradient()).build();
+        return HeaderDecoration.decorate(Response.ok(upenaHealth.healthGradient())).build();
     }
 
 }

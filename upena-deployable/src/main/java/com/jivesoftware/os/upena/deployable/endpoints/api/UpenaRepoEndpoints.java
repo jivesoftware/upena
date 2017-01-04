@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
+import com.jivesoftware.os.upena.deployable.HeaderDecoration;
 import com.jivesoftware.os.upena.deployable.UpenaAutoRelease;
 import com.jivesoftware.os.upena.shared.PathToRepo;
 import io.swagger.annotations.Api;
@@ -35,7 +36,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import org.apache.commons.io.FileUtils;
@@ -82,7 +82,7 @@ public class UpenaRepoEndpoints {
         File f = new File(localPathToRepo.get(), subResources);
         try {
             if (!f.exists()) {
-                return Response.status(Response.Status.NOT_FOUND).build();
+                return HeaderDecoration.decorate(Response.status(Response.Status.NOT_FOUND)).build();
             }
 
             return (StreamingOutput) (OutputStream os) -> {
@@ -107,7 +107,7 @@ public class UpenaRepoEndpoints {
             };
         } catch (Exception x) {
             LOG.error("Failed to read " + f, x);
-            return Response.serverError().entity(x.toString()).type(MediaType.TEXT_PLAIN).build();
+            return Response.serverError().build();
         }
     }
 
@@ -124,14 +124,14 @@ public class UpenaRepoEndpoints {
         } catch (Exception x) {
             LOG.error("Failed to write " + f, x);
             FileUtils.deleteQuietly(f);
-            return Response.serverError().entity(x.toString()).type(MediaType.TEXT_PLAIN).build();
+            return Response.serverError().build();
         }
 
         if (f.getName().endsWith(".pom")) {
             autoRelease.uploaded(f);
         }
 
-        return Response.ok("Success").build();
+        return HeaderDecoration.decorate(Response.ok("Success")).build();
     }
 
     // save uploaded file to a defined location on the server

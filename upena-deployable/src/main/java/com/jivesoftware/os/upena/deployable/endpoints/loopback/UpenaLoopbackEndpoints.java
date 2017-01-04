@@ -19,18 +19,32 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
-import com.jivesoftware.os.routing.bird.shared.*;
+import com.jivesoftware.os.routing.bird.shared.ConnectionDescriptorsRequest;
+import com.jivesoftware.os.routing.bird.shared.ConnectionDescriptorsResponse;
+import com.jivesoftware.os.routing.bird.shared.InstanceConnectionHealth;
+import com.jivesoftware.os.routing.bird.shared.InstanceDescriptorsRequest;
+import com.jivesoftware.os.routing.bird.shared.InstanceDescriptorsResponse;
+import com.jivesoftware.os.routing.bird.shared.ResponseHelper;
+import com.jivesoftware.os.upena.deployable.HeaderDecoration;
 import com.jivesoftware.os.upena.deployable.UpenaHealth;
-import com.jivesoftware.os.upena.service.*;
-
+import com.jivesoftware.os.upena.service.DiscoveredRoutes;
+import com.jivesoftware.os.upena.service.SessionStore;
+import com.jivesoftware.os.upena.service.SessionValidation;
+import com.jivesoftware.os.upena.service.UpenaService;
+import com.jivesoftware.os.upena.service.UpenaStore;
+import java.nio.charset.StandardCharsets;
 import javax.inject.Singleton;
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
-import java.nio.charset.StandardCharsets;
 
 /**
  *
@@ -83,7 +97,7 @@ public class UpenaLoopbackEndpoints {
     @Path("/request/keyStorePassword/{instanceKey}")
     public Response requestKeyStorePassword(@PathParam("instanceKey") String instanceKey) {
         try {
-            return Response.ok(upenaService.keyStorePassword(instanceKey)).build();
+            return HeaderDecoration.decorate(Response.ok(upenaService.keyStorePassword(instanceKey))).build();
         } catch (Exception x) {
             LOG.warn("Failed to provide password for:" + instanceKey, x);
             return Response.serverError().build();
@@ -95,7 +109,7 @@ public class UpenaLoopbackEndpoints {
     @Path("/request/instance/publicKey/{instanceKey}")
     public Response requestInstancePublicKey(@PathParam("instanceKey") String instanceKey) {
         try {
-            return Response.ok(mapper.writeValueAsString(upenaService.instancePublicKey(instanceKey))).build();
+            return HeaderDecoration.decorate(Response.ok(mapper.writeValueAsString(upenaService.instancePublicKey(instanceKey)))).build();
         } catch (Exception x) {
             LOG.warn("Failed to provide password for:" + instanceKey, x);
             return Response.serverError().build();
@@ -107,7 +121,7 @@ public class UpenaLoopbackEndpoints {
     @Path("/session/validate")
     public Response sessionValidate(SessionValidation sessionValidation) {
         try {
-            return Response.ok(upenaService.isValid(sessionValidation)).build();
+            return HeaderDecoration.decorate(Response.ok(upenaService.isValid(sessionValidation))).build();
         } catch (Exception x) {
             LOG.warn("Failed validate session", x);
             return Response.serverError().build();
@@ -123,7 +137,7 @@ public class UpenaLoopbackEndpoints {
             if (sessionToken == null) {
                 return Response.status(Status.UNAUTHORIZED).build();
             } else {
-                return Response.ok(sessionToken.getBytes(StandardCharsets.UTF_8)).build();
+                return HeaderDecoration.decorate(Response.ok(sessionToken.getBytes(StandardCharsets.UTF_8))).build();
             }
         } catch (Exception x) { 
             LOG.warn("Failed to exchange access token for:" + instanceKey, x);
@@ -197,9 +211,9 @@ public class UpenaLoopbackEndpoints {
             if (minHealth < health) {
                 upenaStore.record(upenaHealth.host, "checkHealth", System.currentTimeMillis(), "health:" + minHealth + " < " + health, "endpoint", sb
                     .toString());
-                return Response.status(Response.Status.NOT_ACCEPTABLE).entity(sb.toString()).type(MediaType.TEXT_PLAIN).build();
+                return HeaderDecoration.decorate(Response.status(Response.Status.NOT_ACCEPTABLE).entity(sb.toString()).type(MediaType.TEXT_PLAIN)).build();
             } else {
-                return Response.ok(minHealth, MediaType.TEXT_PLAIN).build();
+                return HeaderDecoration.decorate(Response.ok(minHealth, MediaType.TEXT_PLAIN)).build();
             }
         } catch (Exception x) {
             LOG.error("Failed to check instance health. {} {} ", new Object[]{clusterName, health}, x);

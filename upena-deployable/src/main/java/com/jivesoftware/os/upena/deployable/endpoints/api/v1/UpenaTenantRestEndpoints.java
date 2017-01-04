@@ -18,6 +18,7 @@ package com.jivesoftware.os.upena.deployable.endpoints.api.v1;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.routing.bird.shared.ResponseHelper;
+import com.jivesoftware.os.upena.deployable.HeaderDecoration;
 import com.jivesoftware.os.upena.service.UpenaStore;
 import com.jivesoftware.os.upena.shared.ReleaseGroup;
 import com.jivesoftware.os.upena.shared.ReleaseGroupFilter;
@@ -27,7 +28,9 @@ import com.jivesoftware.os.upena.shared.TenantFilter;
 import com.jivesoftware.os.upena.shared.TenantKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
 import io.swagger.annotations.Api;
-
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentNavigableMap;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -37,9 +40,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ConcurrentNavigableMap;
 
 @Api(value = "Upena Tenant CRUD")
 @Path("/api/v1/upena/tenant")
@@ -141,7 +141,7 @@ public class UpenaTenantRestEndpoints {
             }
 
             LOG.info("Mapped tenant to release: tenantId:" + tenantId + " releaseId:" + releaseId);
-            return Response.ok("", MediaType.TEXT_PLAIN).build();
+            return HeaderDecoration.decorate(Response.ok("", MediaType.TEXT_PLAIN)).build();
         } catch (Exception x) {
             LOG.warn("Failed to map tenant to release: tenantId:" + tenantId + " releaseId:" + releaseId, x);
             return ResponseHelper.INSTANCE.errorResponse("Failed to map tenant to release: tenantId:" + tenantId + " releaseId:" + releaseId, x);
