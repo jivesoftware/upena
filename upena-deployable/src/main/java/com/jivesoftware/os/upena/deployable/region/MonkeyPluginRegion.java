@@ -425,7 +425,7 @@ public class MonkeyPluginRegion implements PageRegion<MonkeyPluginRegion.MonkeyP
         return map;
     }
 
-    public String monkeyToHumanReadableString(Monkey monkey) throws Exception {
+    private String monkeyToHumanReadableString(Monkey monkey) throws Exception {
         Cluster cluster = upenaStore.clusters.get(monkey.clusterKey);
         Host host = upenaStore.hosts.get(monkey.hostKey);
         Service service = upenaStore.services.get(monkey.serviceKey);
@@ -436,6 +436,7 @@ public class MonkeyPluginRegion implements PageRegion<MonkeyPluginRegion.MonkeyP
     }
 
     public void add(MonkeyPropertyUpdate update) throws Exception {
+        SecurityUtils.getSubject().checkPermission("debug");
         MonkeyKey monkeyKey = new MonkeyKey(update.monkeyKey);
         Monkey monkey = upenaStore.monkeys.get(monkeyKey);
         if (monkey != null) {
@@ -453,6 +454,7 @@ public class MonkeyPluginRegion implements PageRegion<MonkeyPluginRegion.MonkeyP
     }
 
     public void remove(MonkeyPropertyUpdate update) throws Exception {
+        SecurityUtils.getSubject().checkPermission("debug");
         MonkeyKey monkeyKey = new MonkeyKey(update.monkeyKey);
         Monkey monkey = upenaStore.monkeys.get(monkeyKey);
         if (monkey != null) {

@@ -45,11 +45,11 @@ public class BreakpointDumperPluginEndpoints {
     @Produces(MediaType.TEXT_HTML)
     public Response breakpoint(@Context HttpServletRequest httpRequest) {
 
-        return shiroRequestHelper.call("breakpoint", () -> {
-            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+        return shiroRequestHelper.call("breakpoint", (csrfToken) -> {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), csrfToken, pluginRegion,
                 new BreakpointDumperPluginRegionInput("", "", "", "", "", "", "", "", "", "", Collections.emptyList(),
                     "", 0, 1, 0, "", "", "", 0, 0, "", ""));
-            return Response.ok(rendered).build();
+            return Response.ok(rendered);
         });
     }
 
@@ -57,6 +57,7 @@ public class BreakpointDumperPluginEndpoints {
     @Produces(MediaType.TEXT_HTML)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response breakpoint(@Context HttpServletRequest httpRequest,
+        @FormParam("csrfToken") String csrfToken,
         @FormParam("instanceKey") @DefaultValue("") String instanceKey,
         @FormParam("clusterKey") @DefaultValue("") String clusterKey,
         @FormParam("cluster") @DefaultValue("") String cluster,
@@ -80,9 +81,10 @@ public class BreakpointDumperPluginEndpoints {
         @FormParam("breakpoint") @DefaultValue("") String breakpoint,
         @FormParam("action") @DefaultValue("") String action) {
 
-        return shiroRequestHelper.call("breakpoint", () -> {
+        return shiroRequestHelper.csrfCall(csrfToken, "breakpoint", (csrfToken1) -> {
 
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(),
+                csrfToken1,
                 pluginRegion,
                 new BreakpointDumperPluginRegionInput(instanceKey,
                     clusterKey,
@@ -106,7 +108,7 @@ public class BreakpointDumperPluginEndpoints {
                     maxVersions,
                     breakpoint,
                     action));
-            return Response.ok(rendered).build();
+            return Response.ok(rendered);
         });
     }
 
@@ -116,6 +118,8 @@ public class BreakpointDumperPluginEndpoints {
     public Response dumpId(@Context HttpServletRequest httpRequest,
         @PathParam("sessionId") @DefaultValue("") String sessionId,
         @PathParam("connectionId") @DefaultValue("") String connectionId) throws Exception {
-        return Response.ok(pluginRegion.dump(httpRequest.getRemoteUser(), sessionId, connectionId)).build();
+        return shiroRequestHelper.call("breakpoint", (csrfToken) -> {
+            return Response.ok(pluginRegion.dump(httpRequest.getRemoteUser(), sessionId, connectionId));
+        });
     }
 }

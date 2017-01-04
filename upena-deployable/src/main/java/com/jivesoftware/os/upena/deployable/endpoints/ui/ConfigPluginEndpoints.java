@@ -47,17 +47,18 @@ public class ConfigPluginEndpoints {
     @GET
     @Produces(MediaType.TEXT_HTML)
     public Response config(@Context HttpServletRequest httpRequest) {
-        return shiroRequestHelper.call("config", () -> {
-            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+        return shiroRequestHelper.call("config", (csrfToken1) -> {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), csrfToken1, pluginRegion,
                 new ConfigPluginRegionInput("", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", false, true, false,
                     "", -1, "", -1, ""));
-            return Response.ok(rendered).build();
+            return Response.ok(rendered);
         });
     }
 
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response action(@Context HttpServletRequest httpRequest,
+        @FormParam("csrfToken") String csrfToken,
         @FormParam("aClusterKey") @DefaultValue("") String aClusterKey,
         @FormParam("aCluster") @DefaultValue("") String aCluster,
         @FormParam("aHostKey") @DefaultValue("") String aHostKey,
@@ -88,7 +89,7 @@ public class ConfigPluginEndpoints {
         @FormParam("bRemoteConfigPort") @DefaultValue("-1") int bRemoteConfigPort,
         @FormParam("action") @DefaultValue("") String action) throws Exception {
 
-        return shiroRequestHelper.call("config/action", () -> {
+        return shiroRequestHelper.csrfCall(csrfToken, "config/action", (csrfToken1) -> {
 
             ConfigPluginRegionInput configPluginRegionInput = new ConfigPluginRegionInput(
                 aClusterKey, aCluster, aHostKey, aHost, aServiceKey, aService, aInstance, aReleaseKey, aRelease, bClusterKey,
@@ -96,11 +97,11 @@ public class ConfigPluginEndpoints {
                 property, healthProperty, value, overridden, service, health, aRemoteConfigHost, aRemoteConfigPort, bRemoteConfigHost, bRemoteConfigPort, action);
             if (action.equals("export")) {
                 String export = pluginRegion.export(configPluginRegionInput);
-                return Response.ok(export, MediaType.TEXT_PLAIN_TYPE).build();
+                return Response.ok(export, MediaType.TEXT_PLAIN_TYPE);
             } else {
-                String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+                String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), csrfToken1, pluginRegion,
                     configPluginRegionInput);
-                return Response.ok(rendered, MediaType.TEXT_HTML).build();
+                return Response.ok(rendered, MediaType.TEXT_HTML);
             }
         });
     }
@@ -109,10 +110,10 @@ public class ConfigPluginEndpoints {
     @Path("/modify")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response modifyConfigs(@Context HttpServletRequest httpRequest, ModifyRequest modifyRequest) {
-        return shiroRequestHelper.call("clusters/modify", () -> {
+        return shiroRequestHelper.call("clusters/modify", (csrfToken1) -> {
             Map<String, Map<String, String>> propertyMap = modifyRequest.getUpdates();
             pluginRegion.modified(httpRequest.getRemoteUser(), propertyMap);
-            return Response.ok().build();
+            return Response.ok();
         });
     }
 
@@ -133,12 +134,14 @@ public class ConfigPluginEndpoints {
     @Path("/upload")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     public Response uploadConfigFile(
+        @FormParam("csrfToken") String csrfToken,
         @FormDataParam("file") InputStream fileInputStream,
         @FormDataParam("file") FormDataContentDisposition contentDispositionHeader) {
-        return shiroRequestHelper.call("clusters/upload", () -> {
+        return shiroRequestHelper.csrfCall(csrfToken, "clusters/upload", (csrfToken1) -> {
+
             saveFile(fileInputStream);
             String output = "Your config was uploaded";
-            return Response.status(200).entity(output).build();
+            return Response.status(200).entity(output);
         });
     }
 

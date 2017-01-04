@@ -49,16 +49,19 @@ public class ReleasesPluginEndpoints {
     @GET
     @Produces(MediaType.TEXT_HTML)
     public Response releases(@Context HttpServletRequest httpRequest) {
-        return shiroRequestHelper.call("releases", () -> {
-            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+        return shiroRequestHelper.call("releases", (csrfToken) -> {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(),
+                csrfToken,
+                pluginRegion,
                 new ReleasesPluginRegionInput("", "", "", "", "", "", "", "", false, ""));
-            return Response.ok(rendered).build();
+            return Response.ok(rendered);
         });
     }
 
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response action(@Context HttpServletRequest httpRequest,
+        @FormParam("csrfToken") String csrfToken,
         @FormParam("key") @DefaultValue("") String key,
         @FormParam("name") @DefaultValue("") String name,
         @FormParam("description") @DefaultValue("") String description,
@@ -70,15 +73,15 @@ public class ReleasesPluginEndpoints {
         @FormParam("autoRelease") @DefaultValue("false") boolean autoRelease,
         @FormParam("action") @DefaultValue("") String action) {
 
-        return shiroRequestHelper.call("releases/action", () -> {
+        return shiroRequestHelper.csrfCall(csrfToken, "releases/action", (csrfToken1) -> {
             if (action.startsWith("export")) {
                 String export = pluginRegion.doExport(new ReleasesPluginRegionInput(key, name, description, rollback, version, upgrade, repository, email,
                     autoRelease, "export"), httpRequest.getRemoteUser());
-                return Response.ok(export, MediaType.APPLICATION_OCTET_STREAM_TYPE).build();
+                return Response.ok(export, MediaType.APPLICATION_OCTET_STREAM_TYPE);
             } else {
-                String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+                String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), csrfToken1, pluginRegion,
                     new ReleasesPluginRegionInput(key, name, description, rollback, version, upgrade, repository, email, autoRelease, action));
-                return Response.ok(rendered, MediaType.TEXT_HTML).build();
+                return Response.ok(rendered, MediaType.TEXT_HTML);
             }
         });
     }
@@ -87,8 +90,8 @@ public class ReleasesPluginEndpoints {
     @Produces(MediaType.TEXT_HTML)
     @Path("/changelog")
     public Response changelog(@QueryParam("releaseKey") @DefaultValue("") String releaseKey) throws Exception {
-        return shiroRequestHelper.call("releases/changeLog", () -> {
-            return Response.ok(pluginRegion.renderChangelog(releaseKey)).build();
+        return shiroRequestHelper.call("releases/changeLog", (csrfToken1) -> {
+            return Response.ok(pluginRegion.renderChangelog(releaseKey));
         });
     }
 
@@ -96,8 +99,8 @@ public class ReleasesPluginEndpoints {
     @Produces(MediaType.TEXT_HTML)
     @Path("/scm")
     public Response scm(@QueryParam("releaseKey") @DefaultValue("") String releaseKey) throws Exception {
-        return shiroRequestHelper.call("releases/scm", () -> {
-            return Response.ok(pluginRegion.renderScm(releaseKey)).build();
+        return shiroRequestHelper.call("releases/scm", (csrfToken1) -> {
+            return Response.ok(pluginRegion.renderScm(releaseKey));
         });
     }
 
@@ -105,13 +108,14 @@ public class ReleasesPluginEndpoints {
     @Path("/import")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     public Response importTopology(@Context HttpServletRequest httpRequest,
+        @FormParam("csrfToken") String csrfToken,
         @FormDataParam("file") InputStream fileInputStream,
         @FormDataParam("file") FormDataContentDisposition contentDispositionHeader) {
-        return shiroRequestHelper.call("releases/import", () -> {
+        return shiroRequestHelper.csrfCall(csrfToken, "releases/import", (csrfToken1) -> {
             String json = IOUtils.toString(fileInputStream, StandardCharsets.UTF_8);
             pluginRegion.doImport(json, httpRequest.getRemoteUser());
             URI location = new URI("/ui/releases");
-            return Response.seeOther(location).build();
+            return Response.seeOther(location);
         });
     }
 
@@ -120,10 +124,9 @@ public class ReleasesPluginEndpoints {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response add(@Context HttpServletRequest httpRequest, PropertyUpdate update) {
-
-       return shiroRequestHelper.call("releases/property/add", () -> {
+       return shiroRequestHelper.call("releases/property/add", (csrfToken1) -> {
             pluginRegion.add(httpRequest.getRemoteUser(), update);
-            return Response.ok().build();
+            return Response.ok();
         });
     }
 
@@ -132,9 +135,9 @@ public class ReleasesPluginEndpoints {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response remove(@Context HttpServletRequest httpRequest, PropertyUpdate update) {
-        return shiroRequestHelper.call("releases/property/remove", () -> {
+        return shiroRequestHelper.call("releases/property/remove", (csrfToken1) -> {
             pluginRegion.remove(httpRequest.getRemoteUser(), update);
-            return Response.ok().build();
+            return Response.ok();
         });
     }
 

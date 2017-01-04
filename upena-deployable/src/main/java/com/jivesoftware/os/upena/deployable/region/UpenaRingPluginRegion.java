@@ -69,6 +69,8 @@ public class UpenaRingPluginRegion implements PageRegion<UpenaRingPluginRegionIn
 
     // TODO Would be nice if this was stream based
     public String doExport(String remoteUser) throws Exception {
+        SecurityUtils.getSubject().checkPermission("write");
+
         Export export = new Export();
         upenaStore.clusters.scan((key, value) -> {
             export.clustersExport.put(key, value);
@@ -113,6 +115,7 @@ public class UpenaRingPluginRegion implements PageRegion<UpenaRingPluginRegionIn
 
     // TODO Would be nice if this was stream based
     public void doImport(String json, String remoteUser) throws Exception {
+        SecurityUtils.getSubject().checkPermission("write");
         Export export = mapper.readValue(json, Export.class);
 
         for (Map.Entry<ClusterKey, Cluster> entry : export.clustersExport.entrySet()) {

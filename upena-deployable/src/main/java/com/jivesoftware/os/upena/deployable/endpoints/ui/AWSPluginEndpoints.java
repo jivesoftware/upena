@@ -40,10 +40,10 @@ public class AWSPluginEndpoints {
     @GET
     @Produces(MediaType.TEXT_HTML)
     public Response aws(@Context HttpServletRequest httpRequest) {
-        return shiroRequestHelper.call("aws", () -> {
-            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+        return shiroRequestHelper.call("aws", (csrfToken) -> {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), csrfToken, pluginRegion,
                 new AWSPluginRegionInput(""));
-            return Response.ok(rendered).build();
+            return Response.ok(rendered);
         });
     }
 
@@ -51,11 +51,12 @@ public class AWSPluginEndpoints {
     @Produces(MediaType.TEXT_HTML)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response action(@Context HttpServletRequest httpRequest,
+        @FormParam("csrfToken") String csrfToken,
         @FormParam("action") @DefaultValue("") String action) {
-        return shiroRequestHelper.call("aws/action", () -> {
-            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+        return shiroRequestHelper.csrfCall(csrfToken, "aws/action", (csrfToken1) -> {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), csrfToken, pluginRegion,
                 new AWSPluginRegionInput(action));
-            return Response.ok(rendered).build();
+            return Response.ok(rendered);
         });
     }
 }

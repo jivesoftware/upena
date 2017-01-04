@@ -40,11 +40,12 @@ public class ClustersPluginEndpoints {
     @GET
     @Produces(MediaType.TEXT_HTML)
     public Response clusters(@Context HttpServletRequest httpRequest) {
-        return shiroRequestHelper.call("clusters", () -> {
+        return shiroRequestHelper.call("clusters", (csrfToken) -> {
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(),
+                csrfToken,
                 pluginRegion,
                 new ClustersPluginRegionInput("", "", "", ""));
-            return Response.ok(rendered).build();
+            return Response.ok(rendered);
         });
     }
 
@@ -52,15 +53,16 @@ public class ClustersPluginEndpoints {
     @Produces(MediaType.TEXT_HTML)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response action(@Context HttpServletRequest httpRequest,
+        @FormParam("csrfToken") String csrfToken,
         @FormParam("key") @DefaultValue("") String key,
         @FormParam("name") @DefaultValue("") String name,
         @FormParam("description") @DefaultValue("") String description,
         @FormParam("action") @DefaultValue("") String action) {
 
-        return shiroRequestHelper.call("clusters/action", () -> {
-            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+        return shiroRequestHelper.csrfCall(csrfToken, "clusters/action", (csrfToken1) -> {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), csrfToken1, pluginRegion,
                 new ClustersPluginRegionInput(key, name, description, action));
-            return Response.ok(rendered).build();
+            return Response.ok(rendered);
         });
     }
 
@@ -69,9 +71,9 @@ public class ClustersPluginEndpoints {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response add(ClustersPluginRegion.ReleaseGroupUpdate update, @Context HttpServletRequest httpRequest) {
-        return shiroRequestHelper.call("clusters/add", () -> {
+        return shiroRequestHelper.call("clusters/add", (csrfToken) -> {
             pluginRegion.add(httpRequest.getRemoteUser(), update);
-            return Response.ok().build();
+            return Response.ok();
         });
     }
 
@@ -80,9 +82,9 @@ public class ClustersPluginEndpoints {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response remove(ClustersPluginRegion.ReleaseGroupUpdate update, @Context HttpServletRequest httpRequest) {
-        return shiroRequestHelper.call("clusters/remove", () -> {
+        return shiroRequestHelper.call("clusters/remove", (csrfToken) -> {
             pluginRegion.remove(httpRequest.getRemoteUser(), update);
-            return Response.ok().build();
+            return Response.ok();
         });
     }
 

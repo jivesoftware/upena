@@ -1,5 +1,6 @@
 window.$ = window.jQuery;
 window.upena = {};
+upena.csrfToken = null;
 upena.hs = {
     installed: null,
     queuedUninstall: null,
@@ -1089,6 +1090,14 @@ upena.healthGradient = {
 };
 
 $(document).ready(function () {
+
+    $("form").each( function(i, e) {
+          $('<input />').attr('type', 'hidden')
+              .attr('name', "csrfToken")
+              .attr('value', upena.csrfToken)
+              .appendTo(e);
+          return true;
+     });
 
     $('[data-toggle="tabajax"]').click(function(e) {
         var $this = $(this),

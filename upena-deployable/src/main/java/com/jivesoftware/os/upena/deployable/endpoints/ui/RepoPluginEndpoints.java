@@ -43,10 +43,10 @@ public class RepoPluginEndpoints {
     @GET
     @Produces(MediaType.TEXT_HTML)
     public Response repo(@Context HttpServletRequest httpRequest) {
-       return shiroRequestHelper.call("repo", () -> {
-            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+        return shiroRequestHelper.call("repo", (csrfToken1) -> {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), csrfToken1, pluginRegion,
                 new RepoPluginRegionInput("", "", "", "", ""));
-            return Response.ok(rendered).build();
+            return Response.ok(rendered);
         });
     }
 
@@ -54,15 +54,16 @@ public class RepoPluginEndpoints {
     @Produces(MediaType.TEXT_HTML)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response action(@Context HttpServletRequest httpRequest,
+        @FormParam("csrfToken") String csrfToken,
         @FormParam("groupIdFilter") @DefaultValue("") String groupIdFilter,
         @FormParam("artifactIdFilter") @DefaultValue("") String artifactIdFilter,
         @FormParam("versionFilter") @DefaultValue("") String versionFilter,
         @FormParam("fileNameFilter") @DefaultValue("") String fileNameFilter,
         @FormParam("action") @DefaultValue("") String action) {
-        return shiroRequestHelper.call("repo/action", () -> {
-            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+        return shiroRequestHelper.csrfCall(csrfToken, "repo/action", (csrfToken1) -> {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), csrfToken1, pluginRegion,
                 new RepoPluginRegionInput(groupIdFilter, artifactIdFilter, versionFilter, fileNameFilter, action));
-            return Response.ok(rendered).build();
+            return Response.ok(rendered);
         });
     }
 }

@@ -55,10 +55,10 @@ public class MonkeyPluginEndpoints {
     @GET
     @Produces(MediaType.TEXT_HTML)
     public Response monkeys(@Context HttpServletRequest httpRequest) {
-        return shiroRequestHelper.call("monkeys", () -> {
-            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+        return shiroRequestHelper.call("monkeys", (csrfToken) -> {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), csrfToken, pluginRegion,
                 new MonkeyPluginRegionInput("", false, "", "", "", "", "", "", "", "", ""));
-            return Response.ok(rendered).build();
+            return Response.ok(rendered);
         });
     }
 
@@ -66,6 +66,7 @@ public class MonkeyPluginEndpoints {
     @Produces(MediaType.TEXT_HTML)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response action(@Context HttpServletRequest httpRequest,
+        @FormParam("csrfToken") String csrfToken,
         @FormParam("key") @DefaultValue("") String key,
         @FormParam("enabled") @DefaultValue("false") boolean enabled,
         @FormParam("clusterKey") @DefaultValue("") String clusterKey,
@@ -77,11 +78,11 @@ public class MonkeyPluginEndpoints {
         @FormParam("strategyKey") @DefaultValue("") String strategyKey,
         @FormParam("strategy") @DefaultValue("") String strategy,
         @FormParam("action") @DefaultValue("") String action) {
-        return shiroRequestHelper.call("monkey/actions", () -> {
-            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+        return shiroRequestHelper.csrfCall(csrfToken, "monkey/actions", (csrfToken1) -> {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), csrfToken1, pluginRegion,
                 new MonkeyPluginRegionInput(key, enabled, clusterKey, cluster, hostKey,
                     host, serviceKey, service, strategyKey, strategy, action));
-            return Response.ok(rendered).build();
+            return Response.ok(rendered);
         });
     }
 
@@ -90,9 +91,9 @@ public class MonkeyPluginEndpoints {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response add(@Context HttpServletRequest httpRequest, MonkeyPropertyUpdate update) {
-        return shiroRequestHelper.call("monkeys/add", () -> {
+        return shiroRequestHelper.call("monkeys/add", (csrfToken) -> {
             pluginRegion.add(update);
-            return Response.ok().build();
+            return Response.ok();
         });
     }
 
@@ -101,9 +102,9 @@ public class MonkeyPluginEndpoints {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response remove(@Context HttpServletRequest httpRequest, MonkeyPropertyUpdate update) {
-        return shiroRequestHelper.call("monkeys/remove", () -> {
+        return shiroRequestHelper.call("monkeys/remove", (csrfToken) -> {
             pluginRegion.remove(update);
-            return Response.ok().build();
+            return Response.ok();
         });
     }
 

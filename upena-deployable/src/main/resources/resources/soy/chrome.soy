@@ -1,6 +1,7 @@
 {namespace soy.chrome}
 
 /**
+ * @param csrfToken
  * @param title
  * @param menu
  * @param region
@@ -12,6 +13,7 @@
 	    <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>{$title}</title>
         {call .resources /}
+        <script type="text/javascript">upena.csrfToken = "{$csrfToken}";</script>
 	</head>
 	<body>
         {$menu|noAutoescape}

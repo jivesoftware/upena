@@ -10,7 +10,6 @@ import com.jivesoftware.os.upena.deployable.region.PluginHandle;
 import com.jivesoftware.os.upena.deployable.region.PluginInput;
 import com.jivesoftware.os.upena.service.UpenaStore;
 import com.jivesoftware.os.upena.shared.HostKey;
-
 import java.util.List;
 
 /**
@@ -47,17 +46,18 @@ public class SoyService {
 
     }
 
-    public String render(String user) throws Exception {
+    public String render(String user, String csrfToken) throws Exception {
 
-        return chrome("soy.chrome.chromeRegion", homeRegion).render(user, new HomeInput());
+        return chrome("soy.chrome.chromeRegion", csrfToken, homeRegion).render(user, new HomeInput());
     }
 
     public void registerPlugin(PluginHandle plugin) {
         plugins.add(plugin);
     }
 
-    private <I extends PluginInput, R extends PageRegion<I>> ChromeRegion<I, R> chrome(String template, R region) {
+    private <I extends PluginInput, R extends PageRegion<I>> ChromeRegion<I, R> chrome(String template, String csrfToken, R region) {
         return new ChromeRegion<>(template,
+            csrfToken,
             renderer,
             //headerRegion,
             menuRegion,
@@ -73,16 +73,16 @@ public class SoyService {
     }
 
 
-    public <I extends PluginInput> String renderNoChromePlugin(String user, PageRegion<I> pluginRegion, I input) throws Exception {
-        return chrome("soy.chrome.noChromeRegion", pluginRegion).render(user, input);
+    public <I extends PluginInput> String renderNoChromePlugin(String user, String csrfToken, PageRegion<I> pluginRegion, I input) throws Exception {
+        return chrome("soy.chrome.noChromeRegion", csrfToken, pluginRegion).render(user, input);
     }
 
-    public <I extends PluginInput> String renderPlugin(String user, PageRegion<I> pluginRegion, I input) throws Exception {
-        return chrome("soy.chrome.chromeRegion",pluginRegion).render(user, input);
+    public <I extends PluginInput> String renderPlugin(String user, String csrfToken, PageRegion<I> pluginRegion, I input) throws Exception {
+        return chrome("soy.chrome.chromeRegion", csrfToken, pluginRegion).render(user, input);
     }
 
-    public <I extends PluginInput> String wrapWithChrome(String path, String user, String name, String title, String htmlRegion) {
-        return chrome("soy.chrome.chromeRegion", null).render(path, user, name, title, htmlRegion);
+    public <I extends PluginInput> String wrapWithChrome(String path, String user, String csrfToken, String name, String title, String htmlRegion) {
+        return chrome("soy.chrome.chromeRegion", csrfToken, null).render(path, user, name, title, htmlRegion);
     }
 
 }

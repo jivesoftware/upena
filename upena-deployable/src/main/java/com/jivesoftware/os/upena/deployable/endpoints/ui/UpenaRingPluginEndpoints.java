@@ -47,10 +47,10 @@ public class UpenaRingPluginEndpoints {
     @GET
     @Produces(MediaType.TEXT_HTML)
     public Response ring(@Context HttpServletRequest httpRequest) {
-        return shiroRequestHelper.call("ring", () -> {
-            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+        return shiroRequestHelper.call("ring", (csrfToken1) -> {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), csrfToken1, pluginRegion,
                 new UpenaRingPluginRegionInput("", "", ""));
-            return Response.ok(rendered).build();
+            return Response.ok(rendered);
         });
     }
 
@@ -58,17 +58,18 @@ public class UpenaRingPluginEndpoints {
     @Produces(MediaType.TEXT_HTML)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response action(@Context HttpServletRequest httpRequest,
+        @FormParam("csrfToken") String csrfToken,
         @FormParam("host") @DefaultValue("") String host,
         @FormParam("port") @DefaultValue("") String port,
         @FormParam("action") @DefaultValue("") String action) {
-        return shiroRequestHelper.call("ring/action", () -> {
+        return shiroRequestHelper.csrfCall(csrfToken, "ring/action", (csrfToken1) -> {
             if (action.startsWith("export")) {
                 String export = pluginRegion.doExport(httpRequest.getRemoteUser());
-                return Response.ok(export, MediaType.APPLICATION_OCTET_STREAM_TYPE).build();
+                return Response.ok(export, MediaType.APPLICATION_OCTET_STREAM_TYPE);
             } else {
-                String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+                String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), csrfToken1, pluginRegion,
                     new UpenaRingPluginRegionInput(host, port, action));
-                return Response.ok(rendered).build();
+                return Response.ok(rendered);
             }
         });
     }
@@ -77,13 +78,14 @@ public class UpenaRingPluginEndpoints {
     @Path("/import")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     public Response importConfig(@Context HttpServletRequest httpRequest,
+        @FormParam("csrfToken") String csrfToken,
         @FormDataParam("file") InputStream fileInputStream,
         @FormDataParam("file") FormDataContentDisposition contentDispositionHeader) {
-        return shiroRequestHelper.call("ring/import", () -> {
+        return shiroRequestHelper.csrfCall(csrfToken, "ring/import", (csrfToken1) -> {
             String json = IOUtils.toString(fileInputStream, StandardCharsets.UTF_8);
             pluginRegion.doImport(json, httpRequest.getRemoteUser());
             URI location = new URI("/ui/services");
-            return Response.seeOther(location).build();
+            return Response.seeOther(location);
         });
     }
 }

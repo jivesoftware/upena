@@ -43,11 +43,12 @@ public class ProjectsPluginEndpoints {
     @GET
     @Produces(MediaType.TEXT_HTML)
     public Response projects(@Context HttpServletRequest httpRequest) {
-        return shiroRequestHelper.call("projects", () -> {
+        return shiroRequestHelper.call("projects", (csrfToken) -> {
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(),
+                csrfToken,
                 pluginRegion,
                 new ProjectsPluginRegionInput("", "", "", "", "", "", "", "", "", "", "", "", "", "", "", false));
-            return Response.ok(rendered).build();
+            return Response.ok(rendered);
         });
     }
 
@@ -55,6 +56,7 @@ public class ProjectsPluginEndpoints {
     @Produces(MediaType.TEXT_HTML)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response action(@Context HttpServletRequest httpRequest,
+        @FormParam("csrfToken") String csrfToken,
         @FormParam("key") @DefaultValue("") String key,
         @FormParam("name") @DefaultValue("") String name,
         @FormParam("description") @DefaultValue("") String description,
@@ -71,14 +73,16 @@ public class ProjectsPluginEndpoints {
         @FormParam("newCoordinate") @DefaultValue("") String newCoordinate,
         @FormParam("action") @DefaultValue("") String action,
         @FormParam("refresh") @DefaultValue("true") boolean refresh) {
-        return shiroRequestHelper.call("projects/actions", () -> {
-            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), pluginRegion,
+        return shiroRequestHelper.csrfCall(csrfToken, "projects/actions", (csrfToken1) -> {
+            String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(),
+                csrfToken1,
+                pluginRegion,
                 new ProjectsPluginRegionInput(key, name, description, localPath, scmUrl, branch, pom, goals, profiles, properties, mavenOpts, mvnHome,
                     oldCoordinate,
                     newCoordinate,
                     action,
                     refresh));
-            return Response.ok(rendered).build();
+            return Response.ok(rendered);
         });
     }
 
@@ -88,12 +92,12 @@ public class ProjectsPluginEndpoints {
     public Response output(@PathParam("key") @DefaultValue("") String key,
         @QueryParam("refresh") @DefaultValue("true") boolean refresh,
         @Context HttpServletRequest httpRequest) {
-        return shiroRequestHelper.call("project/output", () -> {
+        return shiroRequestHelper.call("project/output", (csrfToken) -> {
 
-            String rendered = soyService.wrapWithChrome(pluginRegion.getRootPath(), httpRequest.getRemoteUser(), pluginRegion.getTitle(), "Project Output",
+            String rendered = soyService.wrapWithChrome(pluginRegion.getRootPath(), httpRequest.getRemoteUser(), csrfToken, pluginRegion.getTitle(), "Project Output",
                 pluginRegion.output(key, refresh));
 
-            return Response.ok(rendered).build();
+            return Response.ok(rendered);
         });
     }
 
@@ -103,10 +107,9 @@ public class ProjectsPluginEndpoints {
     public Response tail(@PathParam("key") @DefaultValue("") String key,
         @PathParam("offset") @DefaultValue("0") int offset,
         @Context HttpServletRequest httpRequest) {
-        return shiroRequestHelper.call("projects/tail", () -> {
-
+        return shiroRequestHelper.call("projects/tail", (csrfToken) -> {
             String rendered = pluginRegion.tail(key, offset);
-            return Response.ok(rendered).build();
+            return Response.ok(rendered);
         });
     }
 
@@ -115,9 +118,9 @@ public class ProjectsPluginEndpoints {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response add(ProjectsPluginRegion.ProjectUpdate update, @Context HttpServletRequest httpRequest) {
-        return shiroRequestHelper.call("projects/add", () -> {
+        return shiroRequestHelper.call("projects/add", (csrfToken) -> {
             pluginRegion.add(httpRequest.getRemoteUser(), update);
-            return Response.ok().build();
+            return Response.ok();
         });
     }
 
@@ -126,9 +129,9 @@ public class ProjectsPluginEndpoints {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response remove(ProjectsPluginRegion.ProjectUpdate update, @Context HttpServletRequest httpRequest) {
-        return shiroRequestHelper.call("projects/remove", () -> {
+        return shiroRequestHelper.call("projects/remove", (csrfToken) -> {
             pluginRegion.remove(httpRequest.getRemoteUser(), update);
-            return Response.ok().build();
+            return Response.ok();
         });
     }
 

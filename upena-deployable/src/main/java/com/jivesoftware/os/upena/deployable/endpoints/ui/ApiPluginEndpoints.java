@@ -21,7 +21,6 @@ public class ApiPluginEndpoints {
     @GET
     @Produces(MediaType.TEXT_HTML)
     public Response api() {
-
         return Response.temporaryRedirect(URI.create("/static/vendor/swaggerui/")).build();
     }
 
