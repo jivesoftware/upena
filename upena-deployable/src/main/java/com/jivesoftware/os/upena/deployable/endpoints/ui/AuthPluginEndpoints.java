@@ -2,6 +2,7 @@ package com.jivesoftware.os.upena.deployable.endpoints.ui;
 
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
+import com.jivesoftware.os.upena.deployable.HeaderDecoration;
 import com.jivesoftware.os.upena.deployable.region.AuthPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.AuthPluginRegion.AuthInput;
 import com.jivesoftware.os.upena.deployable.region.OktaMFAAuthPluginRegion;
@@ -53,7 +54,7 @@ public class AuthPluginEndpoints {
     public Response getLogin(@Context HttpServletRequest httpRequest) {
         try {
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), null, pluginRegion, new AuthInput("", false));
-            return Response.ok(rendered).build();
+            return HeaderDecoration.decorate(Response.ok(rendered)).build();
         } catch (Exception e) {
             LOG.error("auth GET", e);
             return Response.serverError().entity(e.getMessage()).build();
@@ -67,7 +68,7 @@ public class AuthPluginEndpoints {
         try {
             Object got = httpRequest.getAttribute("shiroLoginFailure");
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), null, pluginRegion, new AuthInput(username, (got == null ? false : true)));
-            return Response.ok(rendered).build();
+            return HeaderDecoration.decorate(Response.ok(rendered)).build();
         } catch (Exception e) {
             LOG.error("auth GET", e);
             return Response.serverError().entity(e.getMessage()).build();
@@ -82,7 +83,7 @@ public class AuthPluginEndpoints {
             Object got = httpRequest.getAttribute("shiroLoginFailure");
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), null, oktaMFAAuthPluginRegion,
                 new OktaAuthInput(got == null ? false : true));
-            return Response.ok(rendered).build();
+            return HeaderDecoration.decorate(Response.ok(rendered)).build();
         } catch (Exception e) {
             LOG.error("auth GET", e);
             return Response.serverError().entity(e.getMessage()).build();
@@ -97,7 +98,7 @@ public class AuthPluginEndpoints {
             Object got = httpRequest.getAttribute("shiroLoginFailure");
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), null, oktaMFAAuthPluginRegion,
                 new OktaAuthInput(got == null ? false : true));
-            return Response.ok(rendered).build();
+            return HeaderDecoration.decorate(Response.ok(rendered)).build();
         } catch (Exception e) {
             LOG.error("auth GET", e);
             return Response.serverError().entity(e.getMessage()).build();
@@ -112,7 +113,7 @@ public class AuthPluginEndpoints {
             LOG.info("httpRequest:" + httpRequest);
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), null, unauthorizedPluginRegion,
                 new UnauthorizedPluginRegion.UnauthorizedInput());
-            return Response.status(Status.UNAUTHORIZED).entity(rendered).build();
+            return HeaderDecoration.decorate(Response.status(Status.UNAUTHORIZED).entity(rendered)).build();
         } catch (Exception e) {
             LOG.error("auth GET", e);
             return Response.serverError().entity(e.getMessage()).build();
@@ -127,7 +128,7 @@ public class AuthPluginEndpoints {
             LOG.info("httpRequest:" + httpRequest);
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), null, unauthorizedPluginRegion,
                 new UnauthorizedPluginRegion.UnauthorizedInput());
-            return Response.status(Status.UNAUTHORIZED).entity(rendered).build();
+            return HeaderDecoration.decorate(Response.status(Status.UNAUTHORIZED).entity(rendered)).build();
         } catch (Exception e) {
             LOG.error("auth GET", e);
             return Response.serverError().entity(e.getMessage()).build();
@@ -142,7 +143,7 @@ public class AuthPluginEndpoints {
             Subject subject = SecurityUtils.getSubject();
             subject.logout();
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), null, pluginRegion, new AuthInput("", false));
-            return Response.ok(rendered).build();
+            return HeaderDecoration.decorate(Response.ok(rendered)).build();
         } catch (Exception e) {
             LOG.error("auth GET", e);
             return Response.serverError().entity(e.getMessage()).build();

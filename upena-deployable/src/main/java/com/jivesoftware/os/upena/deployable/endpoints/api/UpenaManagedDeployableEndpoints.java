@@ -19,6 +19,7 @@ import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelper;
 import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelperUtils;
+import com.jivesoftware.os.upena.deployable.HeaderDecoration;
 import com.jivesoftware.os.upena.service.SessionStore;
 import com.jivesoftware.os.upena.service.UpenaStore;
 import com.jivesoftware.os.upena.shared.HostKey;
@@ -90,7 +91,7 @@ public class UpenaManagedDeployableEndpoints {
             HttpRequestHelper requestHelper = HttpRequestHelperUtils.buildRequestHelper(manage.sslEnabled, true, null, "localhost", manage.port);
 
             byte[] r = requestHelper.executeGet(get.path);
-            return Response.ok(r).build();
+            return HeaderDecoration.decorate(Response.ok(r)).build();
 
         } catch (Exception x) {
             LOG.warn("HasUI proxy failed", x);
@@ -103,7 +104,7 @@ public class UpenaManagedDeployableEndpoints {
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response uiAccessToken(@PathParam("instanceKey") @DefaultValue("unspecified") String instanceKey) throws Exception {
         try {
-            return Response.ok(sessionStore.generateAccessToken(instanceKey).getBytes(StandardCharsets.UTF_8)).build();
+            return HeaderDecoration.decorate(Response.ok(sessionStore.generateAccessToken(instanceKey).getBytes(StandardCharsets.UTF_8))).build();
         } catch (Exception x) {
             LOG.warn("UI access token failed", x);
             return Response.serverError().build();
