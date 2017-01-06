@@ -295,8 +295,17 @@ public class UpenaMain {
 
 
         Properties buildProperties = new Properties();
-        buildProperties.load(UpenaMain.class.getClassLoader().getResourceAsStream("upena/build.properties"));
-        String upenaVersion = buildProperties.getProperty("my.version","")+" "+buildProperties.getProperty("my.timestamp","")+" sha:"+buildProperties.getProperty("git.commit.id","");
+        String upenaVersion = "";
+        try {
+            buildProperties.load(UpenaMain.class.getClassLoader().getResourceAsStream("build.properties"));
+            upenaVersion = buildProperties.getProperty("my.version", "")
+                + " "
+                + buildProperties.getProperty("my.timestamp", "")
+                + " sha:"
+                + buildProperties.getProperty("git.commit.id", "");
+        } catch (Exception x) {
+            LOG.warn("Failed to locate build.properties");
+        }
 
 
         String workingDir = System.getProperty("user.dir");

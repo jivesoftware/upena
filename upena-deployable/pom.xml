@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.jivesoftware.os.upena.inheritance.poms</groupId>
         <artifactId>global-version-management</artifactId>
-        <version>0.835</version>
+        <version>0.836</version>
         <relativePath>../inheritance-poms/global-version-management/pom.xml</relativePath>
     </parent>
     <groupId>com.jivesoftware.os.upena</groupId>
@@ -29,7 +29,7 @@
                             <goal>write-project-properties</goal>
                         </goals>
                         <configuration>
-                            <outputFile>target/build.properties</outputFile>
+                            <outputFile>target/classes/build.properties</outputFile>
                         </configuration>
                     </execution>
                 </executions>
@@ -64,9 +64,9 @@
                     </archive>
                     <appendAssemblyId>false</appendAssemblyId>
                     <finalName>upena</finalName>
-                    <descriptors>
+                    <!--<descriptors>
                         <descriptor>src/assembly/distribution.xml</descriptor>
-                    </descriptors>
+                    </descriptors>-->
                 </configuration>
             </plugin>
             <plugin>
