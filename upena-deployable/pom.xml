@@ -29,7 +29,7 @@
                             <goal>write-project-properties</goal>
                         </goals>
                         <configuration>
-                            <outputFile>target/build.properties</outputFile>
+                            <outputFile>target/classes/build.properties</outputFile>
                         </configuration>
                     </execution>
                 </executions>
@@ -64,9 +64,9 @@
                     </archive>
                     <appendAssemblyId>false</appendAssemblyId>
                     <finalName>upena</finalName>
-                    <descriptors>
+                    <!--<descriptors>
                         <descriptor>src/assembly/distribution.xml</descriptor>
-                    </descriptors>
+                    </descriptors>-->
                 </configuration>
             </plugin>
             <plugin>
