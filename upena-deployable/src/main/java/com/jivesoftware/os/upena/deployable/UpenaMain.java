@@ -188,6 +188,7 @@ import java.util.Base64;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.NavigableMap;
+import java.util.Properties;
 import java.util.Random;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentSkipListMap;
@@ -291,6 +292,12 @@ public class UpenaMain {
     }
 
     public void run(String[] args) throws Exception {
+
+
+        Properties buildProperties = new Properties();
+        buildProperties.load(UpenaMain.class.getClassLoader().getResourceAsStream("upena/build.properties"));
+        String upenaVersion = buildProperties.getProperty("my.version","")+" "+buildProperties.getProperty("my.timestamp","")+" sha:"+buildProperties.getProperty("git.commit.id","");
+
 
         String workingDir = System.getProperty("user.dir");
         long start = System.currentTimeMillis();
@@ -664,7 +671,8 @@ public class UpenaMain {
 
         String accountName = System.getProperty("account.name", clusterDiscoveryName == null ? "" : clusterDiscoveryName);
         String humanReadableUpenaClusterName = datacenter + " - " + accountName;
-        injectUI(awsClientFactory,
+        injectUI(upenaVersion,
+            awsClientFactory,
             storeMapper,
             mapper,
             jvmapi,
@@ -797,7 +805,8 @@ public class UpenaMain {
         }, 1, 1, TimeUnit.MINUTES); // TODO better
     }
 
-    private void injectUI(AWSClientFactory awsClientFactory,
+    private void injectUI(String upenaVersion,
+        AWSClientFactory awsClientFactory,
         ObjectMapper storeMapper,
         ObjectMapper mapper,
         JDIAPI jvmapi,
@@ -847,7 +856,8 @@ public class UpenaMain {
         SoyFileSet sfs = soyFileSetBuilder.build();
         SoyTofu tofu = sfs.compileToTofu();
         SoyRenderer renderer = new SoyRenderer(tofu, new SoyDataUtils());
-        SoyService soyService = new SoyService(renderer,
+        SoyService soyService = new SoyService(upenaVersion,
+            renderer,
             //new HeaderRegion("soy.chrome.headerRegion", renderer),
             new MenuRegion("soy.chrome.menuRegion", renderer),
             new HomeRegion("soy.page.homeRegion", renderer, hostKey, upenaStore, ubaService),

@@ -16,7 +16,7 @@ import java.util.List;
  *
  */
 public class SoyService {
-
+    private final String upenaVersion;
     private final SoyRenderer renderer;
     //private final HeaderRegion headerRegion;
     private final MenuRegion menuRegion;
@@ -28,6 +28,7 @@ public class SoyService {
     private final List<PluginHandle> plugins = Lists.newCopyOnWriteArrayList();
 
     public SoyService(
+        String upenaVersion,
         SoyRenderer renderer,
         //HeaderRegion headerRegion,
         MenuRegion menuRegion,
@@ -36,6 +37,7 @@ public class SoyService {
         HostKey hostKey,
         UpenaStore upenaStore
     ) {
+        this.upenaVersion = upenaVersion;
         this.renderer = renderer;
         //this.headerRegion = headerRegion;
         this.menuRegion = menuRegion;
@@ -56,7 +58,8 @@ public class SoyService {
     }
 
     private <I extends PluginInput, R extends PageRegion<I>> ChromeRegion<I, R> chrome(String template, String csrfToken, R region) {
-        return new ChromeRegion<>(template,
+        return new ChromeRegion<>(upenaVersion,
+            template,
             csrfToken,
             renderer,
             //headerRegion,
