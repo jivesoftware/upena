@@ -85,7 +85,7 @@
                             <classifier>git</classifier>
                             <repositoryId>${project.distributionManagement.repository.id}</repositoryId>
                             <url>${project.distributionManagement.repository.url}</url>
-                            <file>target/build.properties</file>
+                            <file>target/classes/build.properties</file>
                             <generatePom>false</generatePom>
                         </configuration>
                     </execution>
