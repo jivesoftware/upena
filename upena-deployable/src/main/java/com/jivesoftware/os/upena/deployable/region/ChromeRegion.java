@@ -23,6 +23,7 @@ public class ChromeRegion<I extends PluginInput, R extends PageRegion<I>> implem
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
+    private final String upenaVersion;
     private final String template;
     private final String csrfToken;
     private final SoyRenderer renderer;
@@ -33,7 +34,8 @@ public class ChromeRegion<I extends PluginInput, R extends PageRegion<I>> implem
     private final String cluster;
     
 
-    public ChromeRegion(String template,
+    public ChromeRegion(String upenaVersion,
+        String template,
         String csrfToken,
         SoyRenderer renderer,
         //HeaderRegion headerRegion,
@@ -44,6 +46,7 @@ public class ChromeRegion<I extends PluginInput, R extends PageRegion<I>> implem
         HostKey hostKey,
         UpenaStore upenaStore) {
 
+        this.upenaVersion = upenaVersion;
         this.template = template;
         this.csrfToken = csrfToken;
         this.renderer = renderer;
@@ -100,6 +103,8 @@ public class ChromeRegion<I extends PluginInput, R extends PageRegion<I>> implem
             return map;
         }).collect(Collectors.toList());
 
+
+        headerData.put("upenaVersion", upenaVersion);
         headerData.put("plugins", p);
         headerData.put("user", user);
         headerData.put("cluster", cluster);
@@ -108,6 +113,7 @@ public class ChromeRegion<I extends PluginInput, R extends PageRegion<I>> implem
         Map<String, Object> data = Maps.newHashMap();
         //data.put("header", headerRegion.render(user, headerData));
         data.put("menu", menuRegion.render(user, headerData));
+        data.put("upenaVersion", upenaVersion);
         data.put("csrfToken", csrfToken);
         data.put("region", htmlRegion);
         data.put("title", title);

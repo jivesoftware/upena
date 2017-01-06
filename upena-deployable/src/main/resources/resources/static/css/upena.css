@@ -51,6 +51,11 @@ div.upena-title {
     font-weight: bold;
 }
 
+div.upena-version {
+    margin: 0 75px;
+    text-align: center;
+}
+
 .dropdown:hover .dropdown-menu {
     display: block;
     margin-top: 0; // remove the gap so it doesn't close
