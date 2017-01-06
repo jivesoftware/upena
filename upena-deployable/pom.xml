@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.jivesoftware.os.upena.inheritance.poms</groupId>
         <artifactId>global-version-management</artifactId>
-        <version>0.836</version>
+        <version>0.837</version>
         <relativePath>../inheritance-poms/global-version-management/pom.xml</relativePath>
     </parent>
     <groupId>com.jivesoftware.os.upena</groupId>
@@ -85,7 +85,7 @@
                             <classifier>git</classifier>
                             <repositoryId>${project.distributionManagement.repository.id}</repositoryId>
                             <url>${project.distributionManagement.repository.url}</url>
-                            <file>target/build.properties</file>
+                            <file>target/classes/build.properties</file>
                             <generatePom>false</generatePom>
                         </configuration>
                     </execution>
