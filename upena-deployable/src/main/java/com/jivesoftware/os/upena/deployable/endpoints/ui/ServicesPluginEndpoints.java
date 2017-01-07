@@ -78,7 +78,7 @@ public class ServicesPluginEndpoints {
     @Path("/import")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     public Response importTopology(@Context HttpServletRequest httpRequest,
-        @FormParam("csrfToken") String csrfToken,
+        @FormDataParam("csrfToken") String csrfToken,
         @FormDataParam("file") InputStream fileInputStream,
         @FormDataParam("file") FormDataContentDisposition contentDispositionHeader) {
         return shiroRequestHelper.csrfCall(csrfToken, "service/import", (csrfToken1) -> {

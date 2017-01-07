@@ -279,7 +279,7 @@ public class UpenaMain {
         try {
             if (args.length == 0) {
                 for (String u : USAGE) {
-                    LOG.info(u);
+                    System.out.println(u);
                 }
                 System.exit(1);
             } else {

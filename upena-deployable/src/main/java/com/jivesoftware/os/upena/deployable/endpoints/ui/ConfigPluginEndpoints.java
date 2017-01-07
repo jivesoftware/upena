@@ -134,7 +134,7 @@ public class ConfigPluginEndpoints {
     @Path("/upload")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     public Response uploadConfigFile(
-        @FormParam("csrfToken") String csrfToken,
+        @FormDataParam("csrfToken") String csrfToken,
         @FormDataParam("file") InputStream fileInputStream,
         @FormDataParam("file") FormDataContentDisposition contentDispositionHeader) {
         return shiroRequestHelper.csrfCall(csrfToken, "clusters/upload", (csrfToken1) -> {
