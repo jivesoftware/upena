@@ -6,10 +6,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
-import com.jivesoftware.os.routing.bird.endpoints.base.HasUI;
-import com.jivesoftware.os.routing.bird.endpoints.base.HasUI.UI;
-import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelper;
-import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelperUtils;
 import com.jivesoftware.os.routing.bird.shared.InstanceDescriptor;
 import com.jivesoftware.os.upena.amza.shared.RingHost;
 import com.jivesoftware.os.upena.deployable.UpenaHealth;
@@ -24,6 +20,7 @@ import com.jivesoftware.os.upena.shared.HostKey;
 import com.jivesoftware.os.upena.shared.Instance;
 import com.jivesoftware.os.upena.shared.InstanceKey;
 import com.jivesoftware.os.upena.shared.ReleaseGroup;
+import com.jivesoftware.os.upena.shared.ReleaseGroup.Type;
 import com.jivesoftware.os.upena.shared.ReleaseGroupFilter;
 import com.jivesoftware.os.upena.shared.ReleaseGroupKey;
 import com.jivesoftware.os.upena.shared.Service;
@@ -137,6 +134,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
 
             Map<String, Double> minHostHealth = new HashMap<>();
             Map<String, Double> minServiceHealth = new HashMap<>();
+            Map<ReleaseGroupKey, ReleaseGroup> releaseGroups = new HashMap<>();
             for (UpenaHealth.NodeHealth nodeHealth : upenaHealth.buildClusterHealth().values()) {
 
                 for (UpenaHealth.NannyHealth nannyHealth : nodeHealth.nannyHealths) {
@@ -164,15 +162,32 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                                     label = nannyHealth.serviceHealth.fullyOnline ? nannyHealth.status : "startup";
                                 }
 
+                                ReleaseGroup releaseGroup = releaseGroups.computeIfAbsent(instance.releaseGroupKey, releaseGroupKey -> {
+                                    try {
+                                        return upenaStore.releaseGroups.get(releaseGroupKey);
+                                    } catch (Exception x) {
+                                        LOG.warn("Failed to get releaseGroup:{}", releaseGroupKey);
+                                        return null;
+                                    }
+                                });
+
+                                if (releaseGroup != null && releaseGroup.type != Type.stable) {
+                                    if (nannyHealth.serviceHealth.version.equals(releaseGroup.rollbackVersion)) {
+                                        label = label + " OLD";
+                                    } else {
+                                        label = label + " " + releaseGroup.type.name().toUpperCase();
+                                    }
+                                }
+
                                 minHostHealth.compute(nannyHealth.instanceDescriptor.clusterName + ":" + nodeHealth.host + ":" + nodeHealth.port,
                                     (String k, Double ev) -> {
-                                        double nh =  nannyHealth.serviceHealth.fullyOnline ? nannyHealth.serviceHealth.health : 0;
+                                        double nh = nannyHealth.serviceHealth.fullyOnline ? nannyHealth.serviceHealth.health : 0;
                                         return ev == null ? nh : Math.min(ev, nh);
                                     });
 
                                 minServiceHealth.compute(nannyHealth.instanceDescriptor.clusterName + ":" + nannyHealth.instanceDescriptor.serviceName,
                                     (String k, Double ev) -> {
-                                        double nh =  nannyHealth.serviceHealth.fullyOnline ? nannyHealth.serviceHealth.health : 0;
+                                        double nh = nannyHealth.serviceHealth.fullyOnline ? nannyHealth.serviceHealth.health : 0;
                                         return ev == null ? nh : Math.min(ev, nh);
                                     });
 
@@ -840,6 +855,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
 
         return String.valueOf((int) (val * 100));
     }
+/*
 
     public String renderInstanceHealth(String instanceKey) throws Exception {
 
@@ -896,8 +912,9 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
         return renderer.render(instanceTemplate, data);
 
     }
+*/
 
-    public void serviceHealth(UpenaHealth.NannyHealth nannyHealth, Map<String, Object> data) throws IOException {
+    /*public void serviceHealth(UpenaHealth.NannyHealth nannyHealth, Map<String, Object> data) throws IOException {
         if (nannyHealth == null) {
             return;
         }
@@ -934,7 +951,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
             data.put("healths", instanceHealths);
         }
 
-    }
+    }*/
 
     public List<Map<String, String>> simpleServiceHealth(String instanceKey) throws IOException {
         for (UpenaHealth.NodeHealth nodeHealth : upenaHealth.nodeHealths.values()) {
