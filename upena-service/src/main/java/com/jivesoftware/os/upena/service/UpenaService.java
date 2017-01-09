@@ -410,7 +410,7 @@ public class UpenaService {
             for (Entry<InstanceKey, TimestampedValue<Instance>> e : instances.entrySet()) {
                 if (!e.getValue().getTombstoned()) {
                     boolean healthy = instanceHealthly.isHealth(e.getKey(), releaseGroup.version);
-                    healths.put(e.getKey(), healthy)
+                    healths.put(e.getKey(), healthy);
                     int instanceId = e.getValue().getValue().instanceId;
                     if (instanceId < instance.instanceId) {
                         anybodyLessThanMeUnhealthy |= !healthy;
