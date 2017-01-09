@@ -32,6 +32,7 @@ import com.jivesoftware.os.upena.shared.Instance.Port;
 import com.jivesoftware.os.upena.shared.InstanceFilter;
 import com.jivesoftware.os.upena.shared.InstanceKey;
 import com.jivesoftware.os.upena.shared.ReleaseGroup;
+import com.jivesoftware.os.upena.shared.ReleaseGroup.Type;
 import com.jivesoftware.os.upena.shared.ReleaseGroupKey;
 import com.jivesoftware.os.upena.shared.Service;
 import com.jivesoftware.os.upena.shared.ServiceKey;
@@ -53,12 +54,15 @@ public class UpenaService {
 
     private final UpenaStore upenaStore;
     private final ChaosService chaosService;
+    private final InstanceHealthly instanceHealthly;
 
-    public UpenaService(PasswordStore passwordStore, SessionStore sessionStore, UpenaStore upenaStore, ChaosService chaosService) throws Exception {
+    public UpenaService(PasswordStore passwordStore, SessionStore sessionStore, UpenaStore upenaStore, ChaosService chaosService,
+        InstanceHealthly instanceHealthly) throws Exception {
         this.passwordStore = passwordStore;
         this.sessionStore = sessionStore;
         this.upenaStore = upenaStore;
         this.chaosService = chaosService;
+        this.instanceHealthly = instanceHealthly;
     }
 
     public ConnectionDescriptorsResponse connectionRequest(ConnectionDescriptorsRequest connectionsRequest) throws Exception {
@@ -282,22 +286,192 @@ public class UpenaService {
         }
         String releaseGroupName = releaseGroup.name;
 
-        InstanceDescriptor instanceDescriptor = new InstanceDescriptor(host.datacenterName,
-            host.rackName,
-            host.name,
-            clusterKey.getKey(),
-            clusterName,
-            serviceKey.getKey(),
-            serviceName,
-            releaseGroupKey.getKey(),
-            releaseGroupName,
-            instanceKey.getKey(),
-            instance.instanceId,
-            releaseGroup.version,
-            releaseGroup.repository,
-            instance.publicKey,
-            instance.restartTimestampGMTMillis,
-            instance.enabled);
+        InstanceDescriptor instanceDescriptor;
+        if (releaseGroup.type == Type.stable || releaseGroup.rollbackVersion == null) {
+            instanceDescriptor = new InstanceDescriptor(host.datacenterName,
+                host.rackName,
+                host.name,
+                clusterKey.getKey(),
+                clusterName,
+                serviceKey.getKey(),
+                serviceName,
+                releaseGroupKey.getKey(),
+                releaseGroupName,
+                instanceKey.getKey(),
+                instance.instanceId,
+                releaseGroup.version,
+                releaseGroup.repository,
+                instance.publicKey,
+                instance.restartTimestampGMTMillis,
+                instance.enabled);
+        } else if (releaseGroup.type == Type.immediate) {
+
+            instanceDescriptor = new InstanceDescriptor(host.datacenterName,
+                host.rackName,
+                host.name,
+                clusterKey.getKey(),
+                clusterName,
+                serviceKey.getKey(),
+                serviceName,
+                releaseGroupKey.getKey(),
+                releaseGroupName,
+                instanceKey.getKey(),
+                instance.instanceId,
+                releaseGroup.version,
+                releaseGroup.repository,
+                instance.publicKey,
+                instance.restartTimestampGMTMillis,
+                instance.enabled);
+
+            InstanceFilter filter = new InstanceFilter(clusterKey, null, serviceKey, releaseGroupKey, null, 0, Integer.MAX_VALUE);
+            ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> instances = upenaStore.instances.find(false, filter);
+
+            int count = instances.size();
+            for (Entry<InstanceKey, TimestampedValue<Instance>> e : instances.entrySet()) {
+                if (!e.getValue().getTombstoned()) {
+                    if (instanceHealthly.isHealth(e.getKey(), releaseGroup.version)) {
+                        count--;
+                    }
+                } else {
+                    count--;
+                }
+            }
+
+            if (count == 0 && releaseGroup.type != Type.stable) {
+                ReleaseGroup newReleaseGroup = new ReleaseGroup(Type.stable,
+                    releaseGroup.name,
+                    releaseGroup.email,
+                    releaseGroup.rollbackVersion,
+                    releaseGroup.version,
+                    releaseGroup.repository,
+                    releaseGroup.description,
+                    releaseGroup.autoRelease,
+                    releaseGroup.properties
+                );
+                upenaStore.releaseGroups.update(releaseGroupKey, newReleaseGroup);
+            }
+
+        } else if (releaseGroup.type == Type.canary) {
+            InstanceFilter filter = new InstanceFilter(clusterKey, null, serviceKey, releaseGroupKey, null, 0, Integer.MAX_VALUE);
+            ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> instances = upenaStore.instances.find(false, filter);
+            int minInstanceId = Integer.MAX_VALUE;
+            for (TimestampedValue<Instance> instanceTimestampedValue : instances.values()) {
+                if (!instanceTimestampedValue.getTombstoned()) {
+                    minInstanceId = Math.min(minInstanceId, instanceTimestampedValue.getValue().instanceId);
+                }
+            }
+            if (instance.instanceId == minInstanceId) {
+                instanceDescriptor = new InstanceDescriptor(host.datacenterName,
+                    host.rackName,
+                    host.name,
+                    clusterKey.getKey(),
+                    clusterName,
+                    serviceKey.getKey(),
+                    serviceName,
+                    releaseGroupKey.getKey(),
+                    releaseGroupName,
+                    instanceKey.getKey(),
+                    instance.instanceId,
+                    releaseGroup.version,
+                    releaseGroup.repository,
+                    instance.publicKey,
+                    instance.restartTimestampGMTMillis,
+                    instance.enabled);
+            } else {
+                instanceDescriptor = new InstanceDescriptor(host.datacenterName,
+                    host.rackName,
+                    host.name,
+                    clusterKey.getKey(),
+                    clusterName,
+                    serviceKey.getKey(),
+                    serviceName,
+                    releaseGroupKey.getKey(),
+                    releaseGroupName,
+                    instanceKey.getKey(),
+                    instance.instanceId,
+                    releaseGroup.rollbackVersion,
+                    releaseGroup.repository,
+                    instance.publicKey,
+                    instance.restartTimestampGMTMillis,
+                    instance.enabled);
+            }
+
+        } else if (releaseGroup.type == Type.rolling) {
+
+
+            InstanceFilter filter = new InstanceFilter(clusterKey, null, serviceKey, releaseGroupKey, null, 0, Integer.MAX_VALUE);
+            ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> instances = upenaStore.instances.find(false, filter);
+
+            boolean anybodyLessThanMeUnhealthy = false;
+            boolean amIUnhealthy = false;
+            boolean anybodyUnhealthy = false;
+
+            for (Entry<InstanceKey, TimestampedValue<Instance>> e : instances.entrySet()) {
+                if (!e.getValue().getTombstoned()) {
+                    boolean healthy = instanceHealthly.isHealth(e.getKey(), releaseGroup.version);
+                    int instanceId = e.getValue().getValue().instanceId;
+                    if (instanceId < instance.instanceId) {
+                        anybodyLessThanMeUnhealthy |= !healthy;
+                    } else if (instanceId == instance.instanceId) {
+                        amIUnhealthy = !healthy;
+                    }
+                    anybodyUnhealthy |= !healthy;
+                }
+            }
+
+            if (amIUnhealthy && !anybodyLessThanMeUnhealthy) {
+                instanceDescriptor = new InstanceDescriptor(host.datacenterName,
+                    host.rackName,
+                    host.name,
+                    clusterKey.getKey(),
+                    clusterName,
+                    serviceKey.getKey(),
+                    serviceName,
+                    releaseGroupKey.getKey(),
+                    releaseGroupName,
+                    instanceKey.getKey(),
+                    instance.instanceId,
+                    releaseGroup.version,
+                    releaseGroup.repository,
+                    instance.publicKey,
+                    instance.restartTimestampGMTMillis,
+                    instance.enabled);
+            } else {
+                instanceDescriptor = new InstanceDescriptor(host.datacenterName,
+                    host.rackName,
+                    host.name,
+                    clusterKey.getKey(),
+                    clusterName,
+                    serviceKey.getKey(),
+                    serviceName,
+                    releaseGroupKey.getKey(),
+                    releaseGroupName,
+                    instanceKey.getKey(),
+                    instance.instanceId,
+                    releaseGroup.rollbackVersion,
+                    releaseGroup.repository,
+                    instance.publicKey,
+                    instance.restartTimestampGMTMillis,
+                    instance.enabled);
+            }
+
+
+            if (!anybodyUnhealthy && releaseGroup.type != Type.stable) {
+                ReleaseGroup newReleaseGroup = new ReleaseGroup(Type.stable,
+                    releaseGroup.name,
+                    releaseGroup.email,
+                    releaseGroup.rollbackVersion,
+                    releaseGroup.version,
+                    releaseGroup.repository,
+                    releaseGroup.description,
+                    releaseGroup.autoRelease,
+                    releaseGroup.properties
+                );
+                upenaStore.releaseGroups.update(releaseGroupKey, newReleaseGroup);
+            }
+        } else {
+            throw new IllegalStateException("Unexpected state:" + releaseGroup.type);
+        }
 
         for (Entry<String, Instance.Port> p : instance.ports.entrySet()) {
             Port value = p.getValue();
@@ -316,7 +490,7 @@ public class UpenaService {
     }
 
     public String keyStorePassword(String instanceKey) throws Exception {
-       return passwordStore.password(instanceKey);
+        return passwordStore.password(instanceKey);
     }
 
     public boolean isValid(SessionValidation sessionValidation) {

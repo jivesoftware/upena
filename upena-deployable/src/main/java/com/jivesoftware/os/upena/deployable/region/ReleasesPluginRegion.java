@@ -10,15 +10,32 @@ import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.deployable.region.ReleasesPluginRegion.ReleasesPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.service.UpenaStore;
-import com.jivesoftware.os.upena.shared.*;
+import com.jivesoftware.os.upena.shared.Cluster;
+import com.jivesoftware.os.upena.shared.Host;
+import com.jivesoftware.os.upena.shared.Instance;
+import com.jivesoftware.os.upena.shared.InstanceFilter;
+import com.jivesoftware.os.upena.shared.InstanceKey;
+import com.jivesoftware.os.upena.shared.ReleaseGroup;
+import com.jivesoftware.os.upena.shared.ReleaseGroup.Type;
+import com.jivesoftware.os.upena.shared.ReleaseGroupFilter;
+import com.jivesoftware.os.upena.shared.ReleaseGroupKey;
+import com.jivesoftware.os.upena.shared.ReleaseGroupPropertyKey;
+import com.jivesoftware.os.upena.shared.Service;
+import com.jivesoftware.os.upena.shared.ServiceKey;
+import com.jivesoftware.os.upena.shared.TimestampedValue;
 import com.jivesoftware.os.upena.uba.service.RepositoryProvider;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.AuthorizationException;
-
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 
 /**
  *
@@ -196,33 +213,48 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
                         input.email.isEmpty() ? null : input.email,
                         0, 100_000);
                     data.put("message", "Filtering: "
-                            + "name.contains '" + input.name + "' "
-                            + "description.contains '" + input.description + "' "
-                            + "version.contains '" + input.version + "' "
-                            + "repository.contains '" + input.repository + "'"
-                            + "email.contains '" + input.email + "'"
+                        + "name.contains '" + input.name + "' "
+                        + "description.contains '" + input.description + "' "
+                        + "version.contains '" + input.version + "' "
+                        + "repository.contains '" + input.repository + "'"
+                        + "email.contains '" + input.email + "'"
                     );
                 } else if (input.action.equals("add")) {
                     SecurityUtils.getSubject().checkPermission("write");
                     handleAdd(filters, input, data, user);
-                } else if (input.action.equals("update")) {
+                } else if (input.action.equals("update-immediate")) {
                     SecurityUtils.getSubject().checkPermission("write");
-                    handleUpdate(filters, input, data, user);
-                } else if (input.action.equals("upgrade")) {
+                    handleUpdate(filters, input, data, user, Type.immediate);
+                } else if (input.action.equals("update-canary")) {
                     SecurityUtils.getSubject().checkPermission("write");
-                    handleUpgrade(filters, input, data, user);
-                } else if (input.action.equals("rolling-upgrade")) {
+                    handleUpdate(filters, input, data, user, Type.canary);
+                } else if (input.action.equals("update-rolling")) {
                     SecurityUtils.getSubject().checkPermission("write");
-                    handleRollingUpgrade(filters, input, data, user);
+                    handleUpdate(filters, input, data, user, Type.rolling);
+                } else if (input.action.equals("upgrade-immediate")) {
+                    SecurityUtils.getSubject().checkPermission("write");
+                    handleUpgrade(filters, input, data, user, Type.immediate);
+                } else if (input.action.equals("upgrade-canary")) {
+                    SecurityUtils.getSubject().checkPermission("write");
+                    handleUpdate(filters, input, data, user, Type.canary);
+                } else if (input.action.equals("upgrade-rolling")) {
+                    SecurityUtils.getSubject().checkPermission("write");
+                    handleUpdate(filters, input, data, user, Type.rolling);
+                } else if (input.action.equals("upgrade-all-immediate")) {
+                    SecurityUtils.getSubject().checkPermission("write");
+                    filter = handleUpgradeAll(Type.immediate, filter, input, user, data);
+                } else if (input.action.equals("upgrade-all-canary")) {
+                    SecurityUtils.getSubject().checkPermission("write");
+                    filter = handleUpgradeAll(Type.canary, filter, input, user, data);
+                } else if (input.action.equals("upgrade-all-rolling")) {
+                    SecurityUtils.getSubject().checkPermission("write");
+                    filter = handleUpgradeAll(Type.rolling, filter, input, user, data);
                 } else if (input.action.equals("rollback")) {
                     SecurityUtils.getSubject().checkPermission("write");
                     handleRollback(filters, input, data, user);
                 } else if (input.action.equals("remove")) {
                     SecurityUtils.getSubject().checkPermission("write");
                     handleRemove(input, data, user);
-                } else if (input.action.equals("upgrade-all")) {
-                    SecurityUtils.getSubject().checkPermission("write");
-                    filter = handleUpgradeAll(filter, input, user, data);
                 }
             }
 
@@ -268,6 +300,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
                 if (value.rollbackVersion != null) {
                     row.put("rollback", value.rollbackVersion);
                 }
+                row.put("type", value.type.toString());
                 row.put("version", value.version);
                 row.put("description", value.description);
 
@@ -329,7 +362,11 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
         return data;
     }
 
-    private ReleaseGroupFilter handleUpgradeAll(ReleaseGroupFilter filter, ReleasesPluginRegionInput input, String user, Map<String, Object> data) {
+    private ReleaseGroupFilter handleUpgradeAll(Type type, ReleaseGroupFilter filter,
+        ReleasesPluginRegionInput input,
+        String user,
+        Map<String, Object> data) {
+
         try {
             filter = new ReleaseGroupFilter(
                 input.name.isEmpty() ? null : input.name,
@@ -362,7 +399,8 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
                 if (newerVersionAvailable) {
                     List<String> errors = new CheckReleasable(repositoryProvider).isReleasable(value.repository, newerVersion.toString());
                     if (errors.isEmpty()) {
-                        ReleaseGroup updated = new ReleaseGroup(value.name,
+                        ReleaseGroup updated = new ReleaseGroup(type,
+                            value.name,
                             value.email,
                             value.version,
                             newerVersion.toString(),
@@ -415,7 +453,8 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
             } else {
                 List<String> errors = new CheckReleasable(repositoryProvider).isReleasable(input.repository, input.version);
                 if (errors.isEmpty()) {
-                    ReleaseGroup updated = new ReleaseGroup(input.name,
+                    ReleaseGroup updated = new ReleaseGroup(Type.immediate,
+                        input.name,
                         input.email,
                         null,
                         input.rollback,
@@ -436,67 +475,8 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
         }
     }
 
-    private void handleRollingUpgrade(Map<String, String> filters, ReleasesPluginRegionInput input, Map<String, Object> data, String user) {
-        filters.clear();
 
-        try {
-            ReleaseGroup release = upenaStore.releaseGroups.get(new ReleaseGroupKey(input.key));
-            if (release == null) {
-                data.put("message", "Could not update. No existing cluster. Someone may have removed it since your last refresh.");
-            } else {
-                List<String> errors = new CheckReleasable(repositoryProvider).isReleasable(input.repository, input.version);
-                if (errors.isEmpty()) {
-                    InstanceFilter instanceFilter = new InstanceFilter(
-                        null,
-                        null,
-                        null,
-                        new ReleaseGroupKey(input.key),
-                        null,
-                        0, 100_000);
-
-                    long now = System.currentTimeMillis();
-                    long stagger = TimeUnit.SECONDS.toMillis(30);
-                    now += stagger;
-                    List<String> restart = new ArrayList<>();
-                    Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(false, instanceFilter);
-                    for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {
-                        InstanceKey key = entrySet.getKey();
-                        TimestampedValue<Instance> timestampedValue = entrySet.getValue();
-                        Instance instance = timestampedValue.getValue();
-                        if (instance.enabled) {
-                            instance.restartTimestampGMTMillis = now;
-                            upenaStore.instances.update(key, instance);
-                            now += stagger;
-                            restart.add(instanceToHumanReadableString(instance));
-                        }
-                    }
-
-                    if (!restart.isEmpty()) {
-                        upenaStore.record(user, "restart", System.currentTimeMillis(), "", "instance-ui", restart.toString());
-                    }
-
-                    ReleaseGroup updated = new ReleaseGroup(input.name,
-                        input.email,
-                        input.version,
-                        input.upgrade,
-                        input.repository,
-                        input.description,
-                        input.autoRelease,
-                        release.properties);
-                    upenaStore.releaseGroups.update(new ReleaseGroupKey(input.key), updated);
-                    data.put("message", "Upgrade Release:" + input.name);
-                    upenaStore.record(user, "upgrade", System.currentTimeMillis(), "", "release-ui", updated.toString());
-                } else {
-                    data.put("message", Joiner.on("\n").join(errors));
-                }
-            }
-        } catch (Exception x) {
-            String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
-            data.put("message", "Error roll-upgrading release:" + input.name + "\n" + trace);
-        }
-    }
-
-    private void handleUpgrade(Map<String, String> filters, ReleasesPluginRegionInput input, Map<String, Object> data, String user) {
+    private void handleUpgrade(Map<String, String> filters, ReleasesPluginRegionInput input, Map<String, Object> data, String user, Type type) {
         filters.clear();
 
         try {
@@ -506,7 +486,8 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
             } else {
                 List<String> errors = new CheckReleasable(repositoryProvider).isReleasable(input.repository, input.version);
                 if (errors.isEmpty()) {
-                    ReleaseGroup updated = new ReleaseGroup(input.name,
+                    ReleaseGroup updated = new ReleaseGroup(type,
+                        input.name,
                         input.email,
                         input.version,
                         input.upgrade,
@@ -528,7 +509,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
         }
     }
 
-    private void handleUpdate(Map<String, String> filters, ReleasesPluginRegionInput input, Map<String, Object> data, String user) {
+    private void handleUpdate(Map<String, String> filters, ReleasesPluginRegionInput input, Map<String, Object> data, String user, Type type) {
         filters.clear();
 
         try {
@@ -538,7 +519,8 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
             } else {
                 List<String> errors = new CheckReleasable(repositoryProvider).isReleasable(input.repository, input.version);
                 if (errors.isEmpty()) {
-                    ReleaseGroup updated = new ReleaseGroup(input.name,
+                    ReleaseGroup updated = new ReleaseGroup(type,
+                        input.name,
                         input.email,
                         release.version,
                         input.version,
@@ -564,7 +546,8 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
         filters.clear();
 
         try {
-            ReleaseGroup newRelease = new ReleaseGroup(input.name,
+            ReleaseGroup newRelease = new ReleaseGroup(Type.stable,
+                input.name,
                 input.email,
                 null,
                 input.version,

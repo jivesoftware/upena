@@ -143,7 +143,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                     if (nannyHealth.serviceHealth != null) {
                         if (nannyHealth.serviceHealth != null) {
 
-                            double h = Math.max(0d, nannyHealth.serviceHealth.health);
+                            double h = Math.max(0d, (nannyHealth.serviceHealth.fullyOnline) ? nannyHealth.serviceHealth.health : 0);
                             if (nannyHealth.instanceDescriptor.enabled) {
 
                                 Instance instance = upenaStore.instances.get(new InstanceKey(nannyHealth.instanceDescriptor.instanceKey));
@@ -161,17 +161,19 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                                 }
 
                                 if (nannyHealth.status != null && nannyHealth.status.length() > 0) {
-                                    label = nannyHealth.status;
+                                    label = nannyHealth.serviceHealth.fullyOnline ? nannyHealth.status : "startup";
                                 }
 
                                 minHostHealth.compute(nannyHealth.instanceDescriptor.clusterName + ":" + nodeHealth.host + ":" + nodeHealth.port,
                                     (String k, Double ev) -> {
-                                        return ev == null ? nannyHealth.serviceHealth.health : Math.min(ev, nannyHealth.serviceHealth.health);
+                                        double nh =  nannyHealth.serviceHealth.fullyOnline ? nannyHealth.serviceHealth.health : 0;
+                                        return ev == null ? nh : Math.min(ev, nh);
                                     });
 
                                 minServiceHealth.compute(nannyHealth.instanceDescriptor.clusterName + ":" + nannyHealth.instanceDescriptor.serviceName,
                                     (String k, Double ev) -> {
-                                        return ev == null ? nannyHealth.serviceHealth.health : Math.min(ev, nannyHealth.serviceHealth.health);
+                                        double nh =  nannyHealth.serviceHealth.fullyOnline ? nannyHealth.serviceHealth.health : 0;
+                                        return ev == null ? nh : Math.min(ev, nh);
                                     });
 
                                 String simpleHealthHtml = "";
@@ -354,8 +356,9 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                 for (UpenaHealth.NannyHealth nannyHealth : nodeHealth.nannyHealths) {
                     if (nannyHealth.serviceHealth != null) {
                         Double got = minClusterHealth.get(nannyHealth.instanceDescriptor.clusterKey);
-                        if (got == null || got > nannyHealth.serviceHealth.health) {
-                            minClusterHealth.put(nannyHealth.instanceDescriptor.clusterKey, nannyHealth.serviceHealth.health);
+                        double nh = nannyHealth.serviceHealth.fullyOnline ? nannyHealth.serviceHealth.health : 0d;
+                        if (got == null || got > nh) {
+                            minClusterHealth.put(nannyHealth.instanceDescriptor.clusterKey, nh);
                         }
                     }
                 }
@@ -430,7 +433,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                             + d2f(nh) + "</div>");
 
                         Double sh = 0d;
-                        if (nannyHealth.serviceHealth != null) {
+                        if (nannyHealth.serviceHealth != null && nannyHealth.serviceHealth.fullyOnline) {
                             sh = nannyHealth.serviceHealth.health;
                         }
                         h.put("service", "<div title=\"" + nannyHealth.instanceDescriptor.serviceName
@@ -545,7 +548,6 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                             ? UpenaHealth.shortHumanReadableUptime(System.currentTimeMillis() - recency)
                             : ">" + UpenaHealth.shortHumanReadableUptime(System.currentTimeMillis() - startupTime);
 
-                        //float hh = (float) Math.max(0, nodeHealth.health);
                         hostRows.get(hi).get(0).put("color", "transparent"); // + getHEXTrafficlightColor(hh, 1f));
                         hostRows.get(hi).get(0).put("host", nodeHealth.host); // TODO change to hostKey
                         hostRows.get(hi).get(0).put("hostKey", nodeHealth.hostKey); // TODO change to hostKey
@@ -598,7 +600,6 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                                 ? UpenaHealth.shortHumanReadableUptime(System.currentTimeMillis() - recency)
                                 : ">" + UpenaHealth.shortHumanReadableUptime(System.currentTimeMillis() - startupTime);
 
-                            //float hh = (float) Math.max(0, nodeHealth.health);
                             hostRows.get(hi).get(0).put("color", "transparent");// + getHEXTrafficlightColor(hh, 1f));
                             hostRows.get(hi).get(0).put("host", nodeHealth.host);
                             hostRows.get(hi).get(0).put("hostKey", nodeHealth.hostKey);
@@ -610,7 +611,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                             uid++;
 
                             double h = 0d;
-                            if (nannyHealth.serviceHealth != null) {
+                            if (nannyHealth.serviceHealth != null && nannyHealth.serviceHealth.fullyOnline) {
                                 h = nannyHealth.serviceHealth.health;
                             }
                             float sh = (float) Math.max(0, h);
@@ -916,6 +917,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
             List<Map<String, String>> instanceHealths = new ArrayList<>();
             for (UpenaHealth.Health health : serviceHealth.healthChecks) {
                 if (-Double.MAX_VALUE != health.health) {
+
                     Map<String, String> healthData = new HashMap<>();
                     healthData.put("color", UpenaHealth.trafficlightColorRGBA(health.health, 1f));
                     healthData.put("name", String.valueOf(health.name));
