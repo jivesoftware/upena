@@ -382,7 +382,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
                 ReleaseGroupKey key = entrySet.getKey();
                 ReleaseGroup value = entrySet.getValue().getValue();
 
-                boolean newerVersionAvailable = false;
+                boolean newerVersionAvailable = value.type != Type.stable;
                 StringBuilder newerVersion = new StringBuilder();
                 LinkedHashMap<String, String> latestRelease =
                     new CheckForLatestRelease(repositoryProvider).isLatestRelease(value.repository, value.version);
