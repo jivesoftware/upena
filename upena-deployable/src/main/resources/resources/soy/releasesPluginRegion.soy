@@ -131,7 +131,12 @@
 
                                                 <li>Auto release:<input form="edit-update-{$r.key}" data-toggle="toggle" type="checkbox" name="autoRelease" value="true" {if $r.autoRelease}checked="checked"{/if}></li>
                                                 {if $readWrite}
-                                                    <li><button form="edit-update-{$r.key}" title="Upgrade" type="submit" name="action" value="update" class="btn btn-default">Update</button></li>
+                                                    <li>
+                                                        Update:
+                                                        <button form="edit-update-{$r.key}" title="Upgrade Immediately" type="submit" name="action" value="update-immediate" class="btn btn-default">Immediate</button>
+                                                        <button form="edit-update-{$r.key}" title="Upgrade Canary" type="submit" name="action" value="update-canary" class="btn btn-default">Canary</button>
+                                                        <button form="edit-update-{$r.key}" title="Upgrade Rolling" type="submit" name="action" value="update-rolling" class="btn btn-default">Rolling</button>
+                                                    </li>
                                                 {/if}
                                         </form>
                                     </ul>
