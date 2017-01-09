@@ -236,10 +236,10 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
                     handleUpgrade(filters, input, data, user, Type.immediate);
                 } else if (input.action.equals("upgrade-canary")) {
                     SecurityUtils.getSubject().checkPermission("write");
-                    handleUpdate(filters, input, data, user, Type.canary);
+                    handleUpgrade(filters, input, data, user, Type.canary);
                 } else if (input.action.equals("upgrade-rolling")) {
                     SecurityUtils.getSubject().checkPermission("write");
-                    handleUpdate(filters, input, data, user, Type.rolling);
+                    handleUpgrade(filters, input, data, user, Type.rolling);
                 } else if (input.action.equals("upgrade-all-immediate")) {
                     SecurityUtils.getSubject().checkPermission("write");
                     filter = handleUpgradeAll(Type.immediate, filter, input, user, data);
