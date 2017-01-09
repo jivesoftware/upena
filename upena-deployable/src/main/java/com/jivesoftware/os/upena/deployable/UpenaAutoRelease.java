@@ -20,6 +20,7 @@ import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.service.UpenaStore;
 import com.jivesoftware.os.upena.shared.ReleaseGroup;
+import com.jivesoftware.os.upena.shared.ReleaseGroup.Type;
 import com.jivesoftware.os.upena.shared.ReleaseGroupFilter;
 import com.jivesoftware.os.upena.shared.ReleaseGroupKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
@@ -102,8 +103,15 @@ public class UpenaAutoRelease {
                         }
 
                         if (changed) {
-                            releaseGroup = new ReleaseGroup(releaseGroup.name, releaseGroup.email, releaseGroup.rollbackVersion, newVersion.toString(),
-                                releaseGroup.repository, releaseGroup.description, releaseGroup.autoRelease, new ConcurrentHashMap<>());
+                            releaseGroup = new ReleaseGroup(Type.rolling,
+                                releaseGroup.name,
+                                releaseGroup.email,
+                                releaseGroup.rollbackVersion,
+                                newVersion.toString(),
+                                releaseGroup.repository,
+                                releaseGroup.description,
+                                releaseGroup.autoRelease,
+                                new ConcurrentHashMap<>());
 
                             upenaStore.releaseGroups.update(entry.getKey(), releaseGroup);
 

@@ -185,9 +185,9 @@ public class UpenaLoopbackEndpoints {
             sb.append("<ul>");
             for (UpenaHealth.NannyHealth nannyHealth : upenaHealth.nannyHealths) {
                 if (clusterName.equals("all") || nannyHealth.instanceDescriptor.clusterName.equals(clusterName)) {
-                    if (nannyHealth.serviceHealth.health < health) {
+                    if (nannyHealth.serviceHealth.health < health || !nannyHealth.serviceHealth.fullyOnline) {
                         for (UpenaHealth.Health h : nannyHealth.serviceHealth.healthChecks) {
-                            if (h.health < health) {
+                            if (h.health < health || !nannyHealth.serviceHealth.fullyOnline) {
                                 sb.append("<li>");
                                 sb.append(nannyHealth.instanceDescriptor.clusterName).append(":");
                                 sb.append(nannyHealth.instanceDescriptor.serviceName).append(":");

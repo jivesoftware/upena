@@ -27,7 +27,15 @@ import java.util.concurrent.ConcurrentHashMap;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ReleaseGroup implements Stored<ReleaseGroup>, Serializable {
 
+    public enum Type {
+        stable,
+        immediate,
+        canary,
+        rolling;
+    }
 
+
+    public final Type type;
     public final String name;
     public final String email;
     public final String rollbackVersion; // deliberately not part of hash or equals
@@ -38,7 +46,9 @@ public class ReleaseGroup implements Stored<ReleaseGroup>, Serializable {
     public final Map<String, String> properties;
 
     @JsonCreator
-    public ReleaseGroup(@JsonProperty("name") String name,
+    public ReleaseGroup(
+        @JsonProperty("type") Type type,
+        @JsonProperty("name") String name,
         @JsonProperty("email") String email,
         @JsonProperty("rollbackVersion") String rollbackVersion,
         @JsonProperty("version") String version,
@@ -46,6 +56,7 @@ public class ReleaseGroup implements Stored<ReleaseGroup>, Serializable {
         @JsonProperty("description") String description,
         @JsonProperty("autoRelease") boolean autoRelease,
         @JsonProperty("properties") Map<String, String> properties) {
+        this.type = type == null ? Type.stable : type;
         this.name = name;
         this.email = email;
         this.rollbackVersion = rollbackVersion;

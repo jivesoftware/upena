@@ -69,6 +69,8 @@ import com.jivesoftware.os.upena.amza.transport.http.replication.HttpUpdatesTake
 import com.jivesoftware.os.upena.amza.transport.http.replication.endpoints.AmzaReplicationRestEndpoints;
 import com.jivesoftware.os.upena.config.UpenaConfigRestEndpoints;
 import com.jivesoftware.os.upena.config.UpenaConfigStore;
+import com.jivesoftware.os.upena.deployable.UpenaHealth.NannyHealth;
+import com.jivesoftware.os.upena.deployable.UpenaHealth.NodeHealth;
 import com.jivesoftware.os.upena.deployable.aws.AWSClientFactory;
 import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaConnectivityEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.api.UpenaEndpoints;
@@ -157,6 +159,7 @@ import com.jivesoftware.os.upena.deployable.soy.SoyService;
 import com.jivesoftware.os.upena.service.ChaosService;
 import com.jivesoftware.os.upena.service.DiscoveredRoutes;
 import com.jivesoftware.os.upena.service.HostKeyProvider;
+import com.jivesoftware.os.upena.service.InstanceHealthly;
 import com.jivesoftware.os.upena.service.SessionStore;
 import com.jivesoftware.os.upena.service.UpenaService;
 import com.jivesoftware.os.upena.service.UpenaStore;
@@ -191,6 +194,7 @@ import java.util.NavigableMap;
 import java.util.Properties;
 import java.util.Random;
 import java.util.StringTokenizer;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -491,7 +495,26 @@ public class UpenaMain {
         SessionStore sessionStore = new SessionStore(TimeUnit.MINUTES.toMillis(60),
             TimeUnit.MINUTES.toMillis(30));
 
-        UpenaService upenaService = new UpenaService(passwordStore, sessionStore, upenaStore, chaosService);
+        AtomicReference<UpenaHealth> upenaHealthProvider = new AtomicReference<>();
+        InstanceHealthly instanceHealthly = new InstanceHealthly() {
+            @Override
+            public boolean isHealth(InstanceKey key, String version) throws Exception {
+                UpenaHealth upenaHealth = upenaHealthProvider.get();
+                if (upenaHealth == null) {
+                    return false;
+                }
+                ConcurrentMap<RingHost, NodeHealth> ringHostNodeHealth = upenaHealth.buildClusterHealth();
+                for (NodeHealth nodeHealth : ringHostNodeHealth.values()) {
+                    for (NannyHealth nannyHealth : nodeHealth.nannyHealths) {
+                        if (nannyHealth.instanceDescriptor.instanceKey.equals(key.getKey())) {
+                            return nannyHealth.serviceHealth.fullyOnline ? nannyHealth.serviceHealth.version.equals(version) : false;
+                        }
+                    }
+                }
+                return false;
+            }
+        };
+        UpenaService upenaService = new UpenaService(passwordStore, sessionStore, upenaStore, chaosService, instanceHealthly);
 
         LOG.info("-----------------------------------------------------------------------");
         LOG.info("|      Upena Service Online");
@@ -575,6 +598,7 @@ public class UpenaMain {
             ubaLog);
 
         UpenaHealth upenaHealth = new UpenaHealth(amzaService, upenaSSLConfig, upenaConfigStore, ubaService, ringHost, hostKey);
+        upenaHealthProvider.set(upenaHealth);
 
         DiscoveredRoutes discoveredRoutes = new DiscoveredRoutes();
         ShiroRequestHelper shiroRequestHelper = new ShiroRequestHelper(TimeUnit.DAYS.toMillis(1)); // TODO expose Sys prop?

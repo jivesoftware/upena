@@ -33,6 +33,7 @@
             <tr>
                 <th><a href="/ui/instances" class="btn btn-default" style="text-align:left; width:100%">Instances</a></th>
                 <th>Name</th>
+                <th>Status</th>
                 <th>Config</th>
                 <th>Actions</th>
             </tr>
@@ -40,8 +41,8 @@
                 <form id="add-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
                     data-jive-ui="jive/ui/typeahead/request_typeahead" method="post" name="addHost">
                     <tr style="background-color:#ddd;">
-                        <td>
-                        </td>
+                        <td></td>
+                        <td></td>
                         <td>
                             <input type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
                                 placeholder="Name" value="{$filters.name?:''}" name="name" id="namePicker" class="form-control">
@@ -63,8 +64,15 @@
                                 <button title="Export" type="submit" name="action" value="export" class="btn btn-default">
                                     <span class="glyphicon glyphicon-export"></span> Export
                                 </button>
-                                <button onclick="return confirm('Are you sure you want to upgrade all releases?')" title="Upgrade All" type="submit" name="action" value="upgrade-all" class="btn btn-default">
-                                    <span class="glyphicon glyphicon-fast-forward"></span> Upgrade-All
+                                Upgrade All:
+                                <button onclick="return confirm('Are you sure you want to upgrade all releases immediately?')" title="Immediate" type="submit" name="action" value="upgrade-all-immediate" class="btn btn-default">
+                                    <span class="glyphicon glyphicon-fast-forward"></span> Immediate
+                                </button>
+                                <button onclick="return confirm('Are you sure you want to upgrade all releases canary?')" title="Canary" type="submit" name="action" value="upgrade-all-canary" class="btn btn-default">
+                                    <span class="glyphicon glyphicon-fast-forward"></span> Canary
+                                </button>
+                                <button onclick="return confirm('Are you sure you want to upgrade all releases immediately?')" title="Rolling" type="submit" name="action" value="upgrade-all-rolling" class="btn btn-default">
+                                    <span class="glyphicon glyphicon-fast-forward"></span> Rolling
                                 </button>
                             {/if}
                         </td>
@@ -80,6 +88,7 @@
                             <div title="ServiceName" class="coloredBox" style="background-color:rgba({$ic.color});">{$ic.count}</div>
                         {/foreach}
                     </td>
+                    <td>{$r.type}</td>
                     <td>
                         <ul style="list-style-type:none">
                             <li>
@@ -141,11 +150,15 @@
                                                 <div>
                                                     <div style="display: inline;">{$r.upgrade}&nbsp;&nbsp;&nbsp;</div>
                                                     <input type="hidden" name="upgrade" value="{$r.upgrade}">
+                                                    Upgrade:
                                                     <div style="display: inline;">
-                                                        <button title="Rolling Upgrade" type="submit" name="action" value="rolling-upgrade" class="btn btn-default" style="color: green;">Rolling</button>
+                                                        <button title="Upgrade" type="submit" name="action" value="upgrade-immediate" class="btn btn-default" style="color: green;">Immediate</button>
                                                     </div>
                                                     <div style="display: inline;">
-                                                        <button title="Upgrade" type="submit" name="action" value="upgrade" class="btn btn-default" style="color: green;">Upgrade</button>
+                                                        <button title="Upgrade" type="submit" name="action" value="upgrade-canary" class="btn btn-default" style="color: green;">Canary</button>
+                                                    </div>
+                                                    <div style="display: inline;">
+                                                        <button title="Upgrade" type="submit" name="action" value="upgrade-rolling" class="btn btn-default" style="color: green;">Rolling</button>
                                                     </div>
                                                 </div>
                                             </form>

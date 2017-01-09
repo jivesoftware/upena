@@ -65,6 +65,8 @@ public class UpenaHealth {
         this.ringHost = ringHost;
         this.ringHostKey = ringHostKey;
         this.mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        this.mapper.configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false);
+        this.mapper.configure(DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES, false);
     }
 
     public String healthGradient() throws Exception {
@@ -195,8 +197,7 @@ public class UpenaHealth {
             try {
 
                 if (!copyLog.isEmpty()) {
-                    serviceHealth = mapper.readValue(Joiner.on("").join(copyLog), ServiceHealth.class
-                    );
+                    serviceHealth = mapper.readValue(Joiner.on("").join(copyLog), ServiceHealth.class);
                     nodeHealth.health = Math.min(nodeHealth.health, serviceHealth.health);
                 }
             } catch (Exception x) {
@@ -283,6 +284,8 @@ public class UpenaHealth {
 
     static public class ServiceHealth {
 
+        public String version = "unknown";
+        public boolean fullyOnline = false;
         public double health = 0d;
         public List<Health> healthChecks = new ArrayList<>();
     }
