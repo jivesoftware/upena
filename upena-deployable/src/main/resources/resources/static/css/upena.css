@@ -54,6 +54,7 @@ div.upena-title {
 div.upena-version {
     margin: 0 75px;
     text-align: center;
+    font-size: x-small;
 }
 
 .dropdown:hover .dropdown-menu {
