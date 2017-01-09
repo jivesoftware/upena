@@ -173,9 +173,13 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
 
                                 if (releaseGroup != null && releaseGroup.type != Type.stable) {
                                     if (nannyHealth.serviceHealth.version.equals(releaseGroup.rollbackVersion)) {
-                                        label = label + " OLD";
+                                        label = label + " old";
                                     } else {
-                                        label = label + " " + releaseGroup.type.name().toUpperCase();
+                                        if (nannyHealth.serviceHealth.fullyOnline) {
+                                            label = label + " updated";
+                                        } else {
+                                            label = label + " " + releaseGroup.type.name().toUpperCase();
+                                        }
                                     }
                                 }
 
