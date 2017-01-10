@@ -1,6 +1,7 @@
 {namespace soy.chrome}
 
 /**
+ * @param upenaVersion
  * @param csrfToken
  * @param title
  * @param menu
@@ -18,9 +19,10 @@
 	<body>
         {$menu|noAutoescape}
         {$region|noAutoescape}
-        {call .footer}
-        {/call}
 
+        <div class="footer navbar-fixed-bottom" style="right: auto;">
+            <a class="btn btn-default btn-xs" aria-expanded="false" href="https://github.com/jivesoftware/upena">Upena {$upenaVersion}</a>
+        </div>
         /*<svg xmlns="http://www.w3.org/2000/svg" version="1.1">
           <defs>
             <filter id="goo">
@@ -102,7 +104,6 @@
 
 
 /**
- * @param upenaVersion
  * @param cluster
  * @param plugins
  * @param user
@@ -159,7 +160,6 @@
                 </button>
             </form>
         {/if}
-        <div class="upena-version">{$upenaVersion}</div>
         <div class="upena-title">{$cluster}</div>
         <div onclick="window.location.href='/ui/health'" id="healthGradient" style="height:9px;"></div>
     </nav>
@@ -176,13 +176,4 @@
 <link rel="icon" type="image/png" sizes="32x32" href="/static/img/favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="96x96" href="/static/img/favicon-96x96.png">
 <link rel="icon" type="image/png" sizes="16x16" href="/static/img/favicon-16x16.png">
-{/template}
-
-/**
- *
- */
-{template .footer}
-    <div class="footer navbar-fixed-bottom" style="right: auto;">
-        <a class="btn btn-default btn-xs" aria-expanded="false" href="https://github.com/jivesoftware/upena">Upena on GitHub</a>
-    </div>
 {/template}
