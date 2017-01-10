@@ -133,11 +133,11 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
                 OperatingSystem os = si.getOperatingSystem();
                 fsys.set(printFileSystem(os, header, values));
                 osys.set(Collections.singletonList(os.toString()));
-                if (hal != null) {
-                    processes.set(printProcesses(os, hal, header, values));
-                } else {
+                //if (hal != null) {
+                //    processes.set(printProcesses(os, hal, header, values));
+                //} else {
                     processes.set(Collections.singletonList("ERROR"));
-                }
+                //}
 
             } catch (Exception x) {
                 LOG.warn("oshi OperatingSystem failed.", x);
