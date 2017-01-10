@@ -1,0 +1,32 @@
+{namespace soy.page}
+
+/**
+ * @param? instanceCount
+ * @param? hostKey
+ * @param? host
+ * @param? readWrite
+ */
+{template .removeHostPluginRegion}
+    <div class="panel panel-info">
+        <div class="panel-heading"><span class="panel-title">Remap / Remove Host</span></div>
+        <div>There are {$instanceCount} which are assigned to {$host}. Would you like to remap or forcefully remove it?</div>
+        <form id="remap" method="post" name="remap">
+            <div>
+                Remap to:
+                <input form="remap" type="hidden" name="key" value="{$hostKey}" />
+                <input form="remap" type="text" autocomplete="off" role="combobox" style="padding-left:10px;"
+                    placeholder="Host" value="{$host?:''}" name="remapHost" id="hostPicker"
+                    class="upena-hs-field form-control" data-upena-lookup="/ui/lookup/hosts">
+                <input form="remap" type="hidden" name="remapHostKey" value="{$hostKey}" />
+            </div>
+            {if $readWrite}
+                <button form="remap" onclick="return confirm('Are you sure you want to remap?')" title="Remap" type="submit" name="action" value="remap" class="btn btn-default">
+                    <span class="glyphicon glyphicon-transfer"></span> Remap
+                </button>
+                <button form="remap" onclick="return confirm('Are you sure you want to force remove?')" title="Remove" type="submit" name="action" value="force-remove" class="btn btn-default">
+                    <span class="glyphicon glyphicon-trash"></span> Force Remove
+                </button>
+            {/if}
+        </form>
+    </div>
+{/template}
