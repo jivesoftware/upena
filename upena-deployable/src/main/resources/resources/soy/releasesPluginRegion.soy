@@ -197,18 +197,20 @@
                                             </div>
                                         </div>
                                     </form>
-                                    <form id="edit-rollback-{$r.key}" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
-                                        method="post" name="roleback">
-                                        <input form="edit-rollback-{$r.key}" type="hidden" name="key" value="{$r.key}">
-                                        <input form="edit-rollback-{$r.key}" type="hidden" name="name" value="{$r.name}">
-                                        <input form="edit-rollback-{$r.key}" type="hidden" name="repository" value="{$r.repository}">
-                                        <input form="edit-rollback-{$r.key}" type="hidden" name="version" value="{$r.version}">
-                                        <div style="display: inline;">{$r.rollback}&nbsp;&nbsp;&nbsp;</div>
-                                        <div style="display: inline;"><input form="edit-rollback-{$r.key}" type="hidden" name="rollback" value="{$r.rollback}"></div>
-                                        <div style="display: inline;">
-                                            <button form="edit-rollback-{$r.key}" onclick="return confirm('Are you sure you want to rollback?')" title="Rollback" type="submit" name="action" value="rollback" class="btn btn-default" style="color: orange;">Rollback</button>
-                                        </div>
-                                    </form>
+                                    {if $r.rollback}
+                                        <form id="edit-rollback-{$r.key}" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                                            method="post" name="roleback">
+                                            <input form="edit-rollback-{$r.key}" type="hidden" name="key" value="{$r.key}">
+                                            <input form="edit-rollback-{$r.key}" type="hidden" name="name" value="{$r.name}">
+                                            <input form="edit-rollback-{$r.key}" type="hidden" name="repository" value="{$r.repository}">
+                                            <input form="edit-rollback-{$r.key}" type="hidden" name="version" value="{$r.version}">
+                                            <div style="display: inline;">{$r.rollback}&nbsp;&nbsp;&nbsp;</div>
+                                            <div style="display: inline;"><input form="edit-rollback-{$r.key}" type="hidden" name="rollback" value="{$r.rollback}"></div>
+                                            <div style="display: inline;">
+                                                <button form="edit-rollback-{$r.key}" onclick="return confirm('Are you sure you want to rollback?')" title="Rollback" type="submit" name="action" value="rollback" class="btn btn-default" style="color: orange;">Rollback</button>
+                                            </div>
+                                        </form>
+                                    {/if}
                                 </li>
                             {/if}
                         {/if}
