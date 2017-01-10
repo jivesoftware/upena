@@ -176,28 +176,28 @@
                         {else}
                             {if $readWrite}
                                 <li>
-                                    <form id="edit-{$r.key}" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
-                                        method="post" name="upgrade">
-                                        <input type="hidden" name="key" value="{$r.key}">
-                                        <input type="hidden" name="name" value="{$r.name}">
-                                        <input type="hidden" name="repository" value="{$r.repository}">
-                                        <input type="hidden" name="version" value="{$r.rollback}">
-                                        <div>
-                                            <div style="display: inline;">{$r.version}&nbsp;&nbsp;&nbsp;</div>
-                                            <input type="hidden" name="upgrade" value="{$r.version}">
-                                            Upgrade:
-                                            <div style="display: inline;">
-                                                <button title="Upgrade" type="submit" name="action" value="upgrade-immediate" class="btn btn-default" style="color: green;">Immediate</button>
-                                            </div>
-                                            <div style="display: inline;">
-                                                <button title="Upgrade" type="submit" name="action" value="upgrade-canary" class="btn btn-default" style="color: green;">Canary</button>
-                                            </div>
-                                            <div style="display: inline;">
-                                                <button title="Upgrade" type="submit" name="action" value="upgrade-rolling" class="btn btn-default" style="color: green;">Rolling</button>
-                                            </div>
-                                        </div>
-                                    </form>
                                     {if $r.rollback}
+                                        <form id="edit-{$r.key}" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                                            method="post" name="upgrade">
+                                            <input type="hidden" name="key" value="{$r.key}">
+                                            <input type="hidden" name="name" value="{$r.name}">
+                                            <input type="hidden" name="repository" value="{$r.repository}">
+                                            <input type="hidden" name="version" value="{$r.rollback}">
+                                            <div>
+                                                <div style="display: inline;">{$r.version}&nbsp;&nbsp;&nbsp;</div>
+                                                <input type="hidden" name="upgrade" value="{$r.version}">
+                                                Upgrade:
+                                                <div style="display: inline;">
+                                                    <button title="Upgrade" type="submit" name="action" value="upgrade-immediate" class="btn btn-default" style="color: green;">Immediate</button>
+                                                </div>
+                                                <div style="display: inline;">
+                                                    <button title="Upgrade" type="submit" name="action" value="upgrade-canary" class="btn btn-default" style="color: green;">Canary</button>
+                                                </div>
+                                                <div style="display: inline;">
+                                                    <button title="Upgrade" type="submit" name="action" value="upgrade-rolling" class="btn btn-default" style="color: green;">Rolling</button>
+                                                </div>
+                                            </div>
+                                        </form>
                                         <form id="edit-rollback-{$r.key}" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
                                             method="post" name="roleback">
                                             <input form="edit-rollback-{$r.key}" type="hidden" name="key" value="{$r.key}">
