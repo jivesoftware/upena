@@ -24,6 +24,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentNavigableMap;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.AuthorizationException;
 
@@ -36,13 +38,16 @@ public class HostsPluginRegion implements PageRegion<HostsPluginRegionInput> {
     private static final MetricLogger log = MetricLoggerFactory.getLogger();
 
     private final String template;
+    private final String remapTemplate;
     private final SoyRenderer renderer;
     private final UpenaStore upenaStore;
 
     public HostsPluginRegion(String template,
+        String remapTemplate,
         SoyRenderer renderer,
         UpenaStore upenaStore) {
         this.template = template;
+        this.remapTemplate = remapTemplate;
         this.renderer = renderer;
         this.upenaStore = upenaStore;
     }
@@ -62,6 +67,7 @@ public class HostsPluginRegion implements PageRegion<HostsPluginRegionInput> {
         final String port;
         final String workingDirectory;
         final String instanceId;
+        final String remapKey;
         final String action;
 
         public HostsPluginRegionInput(String key,
@@ -72,6 +78,7 @@ public class HostsPluginRegion implements PageRegion<HostsPluginRegionInput> {
             String port,
             String workingDirectory,
             String instanceId,
+            String remapKey,
             String action) {
 
             this.key = key;
@@ -83,6 +90,7 @@ public class HostsPluginRegion implements PageRegion<HostsPluginRegionInput> {
             this.workingDirectory = workingDirectory;
             this.instanceId = instanceId;
             this.action = action;
+            this.remapKey = remapKey;
         }
 
         @Override
@@ -173,21 +181,94 @@ public class HostsPluginRegion implements PageRegion<HostsPluginRegionInput> {
                         String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
                         data.put("message", "Error while trying to add Host:" + input.name + "\n" + trace);
                     }
-                } else if (input.action.equals("remove")) {
-                   SecurityUtils.getSubject().checkPermission("write");
-                   if (input.key.isEmpty()) {
+                } else if (input.action.equals("remove") || input.action.equals("force-remove")) {
+                    SecurityUtils.getSubject().checkPermission("write");
+                    if (input.key.isEmpty()) {
                         data.put("message", "Failed to remove Host:" + input.name);
                     } else {
                         try {
                             HostKey hostKey = new HostKey(input.key);
                             Host removing = upenaStore.hosts.get(hostKey);
                             if (removing != null) {
-                                upenaStore.hosts.remove(new HostKey(input.key));
-                                upenaStore.record(user, "removed", System.currentTimeMillis(), "", "host-ui", removing.toString());
+
+                                ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(
+                                    false, new InstanceFilter(
+                                        null,
+                                        hostKey,
+                                        null,
+                                        null,
+                                        null,
+                                        0,
+                                        Integer.MAX_VALUE
+                                    ));
+                                if (found.isEmpty() || input.action.equals("force-remove")) {
+                                    upenaStore.hosts.remove(new HostKey(input.key));
+                                    upenaStore.record(user, "removed", System.currentTimeMillis(), "", "host-ui", removing.toString());
+                                } else {
+                                    data = Maps.newHashMap();
+                                    if (SecurityUtils.getSubject().isPermitted("write")) {
+                                        data.put("readWrite", true);
+                                    }
+                                    data.put("instanceCount", String.valueOf(found.size()));
+                                    data.put("hostKey", hostKey.toString());
+                                    data.put("host", removing.name + " " + removing.hostName);
+                                    return renderer.render(remapTemplate, data);
+                                }
                             }
                         } catch (Exception x) {
                             String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
                             data.put("message", "Error while trying to remove Host:" + input.name + "\n" + trace);
+                        }
+                    }
+                } else if (input.action.equals("remap")) {
+                    SecurityUtils.getSubject().checkPermission("write");
+                    if (input.key.isEmpty()) {
+                        data.put("message", "Failed to remap Host:" + input.name);
+                    } else {
+                        try {
+                            HostKey existingHostKey = new HostKey(input.key);
+
+                            HostKey remapHostKey = new HostKey(input.remapKey);
+                            Host remap = upenaStore.hosts.get(remapHostKey);
+                            if (remap != null) {
+                                ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(
+                                    false, new InstanceFilter(
+                                        null,
+                                        existingHostKey,
+                                        null,
+                                        null,
+                                        null,
+                                        0,
+                                        Integer.MAX_VALUE
+                                    ));
+                                if (!found.isEmpty()) {
+                                    for (Entry<InstanceKey, TimestampedValue<Instance>> entry : found.entrySet()) {
+                                        if (!entry.getValue().getTombstoned()) {
+                                            Instance instance = entry.getValue().getValue();
+                                            Instance updatedInstance = new Instance(
+                                                instance.clusterKey,
+                                                remapHostKey,
+                                                instance.serviceKey,
+                                                instance.releaseGroupKey,
+                                                instance.instanceId,
+                                                instance.enabled,
+                                                instance.locked,
+                                                instance.publicKey,
+                                                instance.restartTimestampGMTMillis,
+                                                instance.ports);
+                                            upenaStore.instances.update(entry.getKey(), updatedInstance);
+                                        }
+                                    }
+                                    data.put("message", "Remapped "+found.size());
+                                } else {
+                                    data.put("message", "There was nothing to remap.");
+                                }
+                            } else {
+                                data.put("message", "Error while trying to remap hosKey:" + input.key + " to hostKey" + input.remapKey);
+                            }
+                        } catch (Exception x) {
+                            String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
+                            data.put("message", "Error while trying to remap Host:" + input.name + "\n" + trace);
                         }
                     }
                 }
@@ -255,7 +336,7 @@ public class HostsPluginRegion implements PageRegion<HostsPluginRegionInput> {
 
             data.put("hosts", rows);
 
-        } catch(AuthorizationException x) {
+        } catch (AuthorizationException x) {
             throw x;
         } catch (Exception e) {
             log.error("Unable to retrieve data", e);

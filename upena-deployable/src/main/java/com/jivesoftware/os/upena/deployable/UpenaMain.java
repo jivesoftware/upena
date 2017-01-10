@@ -920,7 +920,7 @@ public class UpenaMain {
         ReleasesPluginRegion releasesPluginRegion = new ReleasesPluginRegion(mapper, repositoryProvider,
             "soy.page.releasesPluginRegion", "soy.page.releasesPluginRegionList",
             renderer, upenaStore);
-        HostsPluginRegion hostsPluginRegion = new HostsPluginRegion("soy.page.hostsPluginRegion", renderer, upenaStore);
+        HostsPluginRegion hostsPluginRegion = new HostsPluginRegion("soy.page.hostsPluginRegion", "soy.page.removeHostPluginRegion", renderer, upenaStore);
         InstancesPluginRegion instancesPluginRegion = new InstancesPluginRegion("soy.page.instancesPluginRegion",
             "soy.page.instancesPluginRegionList", renderer, upenaHealth, upenaStore, hostKey, healthPluginRegion, awsClientFactory);
 

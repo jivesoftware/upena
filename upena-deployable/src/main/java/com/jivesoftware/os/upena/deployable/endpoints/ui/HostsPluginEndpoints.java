@@ -42,7 +42,7 @@ public class HostsPluginEndpoints {
     public Response hosts(@Context HttpServletRequest httpRequest) {
         return shiroRequestHelper.call("hosts", (csrfToken) -> {
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), csrfToken, pluginRegion,
-                new HostsPluginRegionInput("", "", "", "", "", "", "", "", ""));
+                new HostsPluginRegionInput("", "", "", "", "", "", "", "", "", ""));
             return Response.ok(rendered);
         });
     }
@@ -60,10 +60,11 @@ public class HostsPluginEndpoints {
         @FormParam("port") @DefaultValue("") String port,
         @FormParam("workingDirectory") @DefaultValue("") String workingDirectory,
         @FormParam("instanceId") @DefaultValue("") String instanceId,
+        @FormParam("remapHostKey") @DefaultValue("") String remapHostKey,
         @FormParam("action") @DefaultValue("") String action) {
         return shiroRequestHelper.csrfCall(csrfToken, "hosts/actions", (csrfToken1) -> {
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), csrfToken1, pluginRegion,
-                new HostsPluginRegionInput(key, name, datacenter, rack, host, port, workingDirectory, instanceId, action));
+                new HostsPluginRegionInput(key, name, datacenter, rack, host, port, workingDirectory, instanceId, remapHostKey, action));
             return Response.ok(rendered);
         });
     }
