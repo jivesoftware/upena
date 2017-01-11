@@ -68,11 +68,11 @@
                                 <button onclick="return confirm('Are you sure you want to upgrade all releases immediately?')" title="Immediate" type="submit" name="action" value="upgrade-all-immediate" class="btn btn-default">
                                     <span class="glyphicon glyphicon-fast-forward"></span> Immediate
                                 </button>
-                                <button onclick="return confirm('Are you sure you want to upgrade all releases canary?')" title="Canary" type="submit" name="action" value="upgrade-all-canary" class="btn btn-default">
-                                    <span class="glyphicon glyphicon-fast-forward"></span> Canary
+                                <button onclick="return confirm('Are you sure you want to upgrade all releases with canary?')" title="Canary" type="submit" name="action" value="upgrade-all-canary" class="btn btn-default">
+                                    <span class="glyphicon glyphicon-step-forward"></span> Canary
                                 </button>
-                                <button onclick="return confirm('Are you sure you want to upgrade all releases immediately?')" title="Rolling" type="submit" name="action" value="upgrade-all-rolling" class="btn btn-default">
-                                    <span class="glyphicon glyphicon-fast-forward"></span> Rolling
+                                <button onclick="return confirm('Are you sure you want to upgrade all releases rolling?')" title="Rolling" type="submit" name="action" value="upgrade-all-rolling" class="btn btn-default">
+                                    <span class="glyphicon glyphicon-forward"></span> Rolling
                                 </button>
                             {/if}
                         </td>
@@ -134,9 +134,15 @@
                                                     {if $readWrite}
                                                         <li>
                                                             Update:
-                                                            <button form="edit-update-{$r.key}" title="Upgrade Immediately" type="submit" name="action" value="update-immediate" class="btn btn-default">Immediate</button>
-                                                            <button form="edit-update-{$r.key}" title="Upgrade Canary" type="submit" name="action" value="update-canary" class="btn btn-default">Canary</button>
-                                                            <button form="edit-update-{$r.key}" title="Upgrade Rolling" type="submit" name="action" value="update-rolling" class="btn btn-default">Rolling</button>
+                                                            <button form="edit-update-{$r.key}" title="Upgrade Immediately" type="submit" name="action" value="update-immediate" class="btn btn-default">
+                                                                <span class="glyphicon glyphicon-fast-forward"></span> Immediate
+                                                            </button>
+                                                            <button form="edit-update-{$r.key}" title="Upgrade Canary" type="submit" name="action" value="update-canary" class="btn btn-default">
+                                                                <span class="glyphicon glyphicon-step-forward"></span> Canary
+                                                            </button>
+                                                            <button form="edit-update-{$r.key}" title="Upgrade Rolling" type="submit" name="action" value="update-rolling" class="btn btn-default">
+                                                                <span class="glyphicon glyphicon-forward"></span> Rolling
+                                                            </button>
                                                         </li>
                                                     {/if}
                                             </form>
@@ -158,13 +164,19 @@
                                                         <input type="hidden" name="upgrade" value="{$r.upgrade}">
                                                         Upgrade:
                                                         <div style="display: inline;">
-                                                            <button title="Upgrade" type="submit" name="action" value="upgrade-immediate" class="btn btn-default" style="color: green;">Immediate</button>
+                                                            <button title="Upgrade" type="submit" name="action" value="upgrade-immediate" class="btn btn-default" style="color: green;">
+                                                                <span class="glyphicon glyphicon-fast-forward"></span> Immediate
+                                                            </button>
                                                         </div>
                                                         <div style="display: inline;">
-                                                            <button title="Upgrade" type="submit" name="action" value="upgrade-canary" class="btn btn-default" style="color: green;">Canary</button>
+                                                            <button title="Upgrade" type="submit" name="action" value="upgrade-canary" class="btn btn-default" style="color: green;">
+                                                                <span class="glyphicon glyphicon-step-forward"></span> Canary
+                                                            </button>
                                                         </div>
                                                         <div style="display: inline;">
-                                                            <button title="Upgrade" type="submit" name="action" value="upgrade-rolling" class="btn btn-default" style="color: green;">Rolling</button>
+                                                            <button title="Upgrade" type="submit" name="action" value="upgrade-rolling" class="btn btn-default" style="color: green;">
+                                                                <span class="glyphicon glyphicon-forward"></span> Rolling
+                                                            </button>
                                                         </div>
                                                     </div>
                                                 </form>
@@ -191,13 +203,19 @@
                                             <input type="hidden" name="upgrade" value="{$r.version}">
                                             Upgrade:
                                             <div style="display: inline;">
-                                                <button title="Upgrade" type="submit" name="action" value="upgrade-immediate" class="btn btn-default" style="color: green;">Immediate</button>
+                                                <button title="Upgrade" type="submit" name="action" value="upgrade-immediate" class="btn btn-default" style="color: green;">
+                                                    <span class="glyphicon glyphicon-fast-forward"></span> Immediate
+                                                </button>
                                             </div>
                                             <div style="display: inline;">
-                                                <button title="Upgrade" type="submit" name="action" value="upgrade-canary" class="btn btn-default" style="color: green;">Canary</button>
+                                                <button title="Upgrade" type="submit" name="action" value="upgrade-canary" class="btn btn-default" style="color: green;">
+                                                    <span class="glyphicon glyphicon-step-forward"></span> Canary
+                                                </button>
                                             </div>
                                             <div style="display: inline;">
-                                                <button title="Upgrade" type="submit" name="action" value="upgrade-rolling" class="btn btn-default" style="color: green;">Rolling</button>
+                                                <button title="Upgrade" type="submit" name="action" value="upgrade-rolling" class="btn btn-default" style="color: green;">
+                                                    <span class="glyphicon glyphicon-forward"></span> Rolling
+                                                </button>
                                             </div>
                                         </div>
                                     </form>

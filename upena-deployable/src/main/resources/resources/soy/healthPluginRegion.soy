@@ -204,13 +204,15 @@
                                                 {/if}
                                             </div>
                                             <div id="popoverAnchor-age-{$health.uid}" data-popover-content="#popover-age-{$health.uid}" data-placement="top" data-trigger="hover"
-                                                class="popover-health grid-host-panel health-text" style="text-align:center; color:#222;  border-radius: 0px 4px 4px 0;">
+                                                class="popover-health grid-host-panel " style="text-align:center; color:#222;  border-radius: 0px 4px 4px 0;">
                                                 <span class="health-warn glyphicon glyphicon-warning-sign icon-warn" style="display:none;"></span>
                                                 <span title="Config has changed since last restart" class="config-warn glyphicon glyphicon-asterisk icon-warn" style="display:none;"></span>
-                                                {if $health.health == null}
-                                                {else}
-                                                    {$health.health|noAutoescape}
-                                                {/if}
+                                                <span class="health-text">
+                                                    {if $health.health}
+                                                        {$health.health|noAutoescape}
+                                                    {/if}
+                                                </span>
+                                                <span class="health-status" style="display:none;"></span>
                                             </div>
                                         {elseif $health.health}
                                             <div class="grid-host-panel popover-health health-color"
