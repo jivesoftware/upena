@@ -891,6 +891,7 @@ upena.connectivity = {
 upena.health = {
     color: {},
     text: {},
+    status: {},
     age: {},
     simple: {},
     warn: {},
@@ -923,6 +924,7 @@ upena.health = {
                 var $cell = $('[data-health-hook="' + id + '"');
                 upena.health.color[id] = $cell.find('.health-color');
                 upena.health.text[id] = $cell.find('.health-text');
+                upena.health.status[id] = $cell.find('.health-status');
                 upena.health.age[id] = $cell.find('.health-age');
                 upena.health.simple[id] = $cell.find('.health-simple');
                 upena.health.warn[id] = $cell.find('.health-warn');
@@ -932,6 +934,11 @@ upena.health = {
             upena.health.color[id].css('background-color', "rgba(" + data[i].color + ")");
             upena.health.color[id].show();
             upena.health.text[id].html(data[i].text || '');
+            if (data[i].status) {
+                upena.health.status[id].html('<i class="fa fa-' + data[i].status + '" aria-hidden="true"></i>').show();
+            } else {
+                upena.health.status[id].html('').hide();
+            }
             upena.health.age[id].html(data[i].age);
             if (data[i].simple) {
                 upena.health.simple[id].html(data[i].simple);

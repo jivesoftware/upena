@@ -111,10 +111,10 @@ th.rotate > div > span {
 body {
     margin-top: 65px;
     background-image: url(/static/img/bkg.jpg);
-    background-repeat: no-repeat;
-    background-position: center center;
-    background-size: cover;
-    background-color: #d0d0d0;
+    background-repeat: repeat;
+    /*background-position: center center;
+    background-size: cover;*/
+    background-color: #55abfe;
     background-attachment: fixed;
 }
 

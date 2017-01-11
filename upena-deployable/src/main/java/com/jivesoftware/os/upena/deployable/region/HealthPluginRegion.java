@@ -171,14 +171,18 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                                     }
                                 });
 
+                                String status = null;
                                 if (releaseGroup != null && releaseGroup.type != Type.stable) {
                                     if (nannyHealth.serviceHealth.version.equals(releaseGroup.rollbackVersion)) {
-                                        label = label + " old";
+                                        status = "pause-circle";
                                     } else {
                                         if (nannyHealth.serviceHealth.fullyOnline) {
-                                            label = label + " updated";
+                                            status = "check-circle";
                                         } else {
-                                            label = label + " " + releaseGroup.type.name().toUpperCase();
+                                            status = releaseGroup.type == Type.immediate ? "fast-forward"
+                                                : releaseGroup.type == Type.canary ? "step-forward"
+                                                : releaseGroup.type == Type.rolling ? "forward"
+                                                : "question-circle";
                                         }
                                     }
                                 }
@@ -220,6 +224,10 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                                     .put("text", label)
                                     .put("age", age)
                                     .put("simple", simpleHealthHtml);
+
+                                if (status != null) {
+                                    map.put("status", status);
+                                }
 
                                 if (nannyHealth.unexpectedRestart > -1) {
                                     map.put("unexpectedRestart", UpenaHealth.humanReadableUptime(now - nannyHealth.unexpectedRestart));
