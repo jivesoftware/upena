@@ -220,6 +220,34 @@ public class HostsPluginRegion implements PageRegion<HostsPluginRegionInput> {
                             data.put("message", "Error while trying to remove Host:" + input.name + "\n" + trace);
                         }
                     }
+                } else if (input.action.equals("remapper")) {
+                    SecurityUtils.getSubject().checkPermission("write");
+                    if (input.key.isEmpty()) {
+                        data.put("message", "Failed to remapper Host:" + input.name);
+                    } else {
+                        HostKey hostKey = new HostKey(input.key);
+                        Host removing = upenaStore.hosts.get(hostKey);
+                        if (removing != null) {
+                            ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(
+                                false, new InstanceFilter(
+                                    null,
+                                    hostKey,
+                                    null,
+                                    null,
+                                    null,
+                                    0,
+                                    Integer.MAX_VALUE
+                                ));
+                            data = Maps.newHashMap();
+                            if (SecurityUtils.getSubject().isPermitted("write")) {
+                                data.put("readWrite", true);
+                            }
+                            data.put("instanceCount", String.valueOf(found.size()));
+                            data.put("hostKey", hostKey.toString());
+                            data.put("host", removing.name + " " + removing.hostName);
+                            return renderer.render(remapTemplate, data);
+                        }
+                    }
                 } else if (input.action.equals("remap")) {
                     SecurityUtils.getSubject().checkPermission("write");
                     if (input.key.isEmpty()) {
