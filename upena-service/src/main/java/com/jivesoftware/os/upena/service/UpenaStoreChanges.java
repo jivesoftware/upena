@@ -69,7 +69,7 @@ class UpenaStoreChanges<K, V> implements RowChanges {
                         }
                         V v = null;
                         try {
-                            if (g.getValue() == null) {
+                            if (g.getValue() == null || g.getTombstoned()) {
                                 v = null;
                             } else {
                                 v = mapper.readValue(g.getValue(), valueClass);

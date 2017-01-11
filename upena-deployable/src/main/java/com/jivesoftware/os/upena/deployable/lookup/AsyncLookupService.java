@@ -1,5 +1,6 @@
 package com.jivesoftware.os.upena.deployable.lookup;
 
+import com.google.common.collect.Maps;
 import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelper;
 import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelperUtils;
 import com.jivesoftware.os.upena.deployable.UpenaSSLConfig;
@@ -67,7 +68,13 @@ public class AsyncLookupService {
 
     public Map<HostKey, TimestampedValue<Host>> findHosts(String remoteHost,
         int remotePort, String contains) throws Exception {
-        HostFilter hostsFilter = new HostFilter(contains, null, null, null, null, 0, 100_000);
+        Map<HostKey, TimestampedValue<Host>> found = Maps.newHashMap();
+        found.putAll(getHostKeyTimestampedValueMap(remoteHost, remotePort, new HostFilter(contains, null, null, null, null, 0, 100_000)));
+        found.putAll(getHostKeyTimestampedValueMap(remoteHost, remotePort, new HostFilter(null, contains, null, null, null, 0, 100_000)));
+        return found;
+    }
+
+    private Map<HostKey, TimestampedValue<Host>> getHostKeyTimestampedValueMap(String remoteHost, int remotePort, HostFilter hostsFilter) throws Exception {
         if (remotePort != -1) {
             HttpRequestHelper helper = HttpRequestHelperUtils.buildRequestHelper(upenaSSLConfig.sslEnable, upenaSSLConfig.allowSelfSignedCerts,
                 upenaSSLConfig.signer,
