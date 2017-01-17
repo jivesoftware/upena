@@ -128,7 +128,7 @@
                                         </div>
                                         <div class="btn-group">
                                             <form id="restartService" method="post" action="/ui/instances" name="restartService">
-                                                {if $service.serviceKey}
+                                                {if $service.clusterKey}
                                                     <input type="hidden" name="clusterKey" value="{$service.clusterKey}">
                                                 {/if}
                                                 {if $service.serviceKey}
