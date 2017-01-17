@@ -25,11 +25,6 @@ import com.jivesoftware.os.upena.shared.ReleaseGroupKey;
 import com.jivesoftware.os.upena.shared.Service;
 import com.jivesoftware.os.upena.shared.ServiceKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.time.DurationFormatUtils;
-import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.authz.AuthorizationException;
-
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -42,6 +37,10 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.DurationFormatUtils;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authz.AuthorizationException;
 
 /**
  *
@@ -196,31 +195,31 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
                     handleRemove(user, input, data);
                 } else if (input.action.equals("restartAllNow")) {
                     SecurityUtils.getSubject().checkPermission("write");
-                    handleRestartAllNow(user, filter);
+                    handleRestartAllNow(data, user, filter);
                 } else if (input.action.equals("enable")) {
                     SecurityUtils.getSubject().checkPermission("write");
-                    handleEnable(user, filter);
+                    handleEnable(data, user, filter);
                 } else if (input.action.equals("enableSSL")) {
                     SecurityUtils.getSubject().checkPermission("write");
-                    handleSSL(user, filter, true);
+                    handleSSL(data, user, filter, true);
                 } else if (input.action.equals("disableSSL")) {
                     SecurityUtils.getSubject().checkPermission("write");
-                    handleSSL(user, filter, false);
+                    handleSSL(data, user, filter, false);
                 } else if (input.action.equals("enableSAUTH")) {
                     SecurityUtils.getSubject().checkPermission("write");
-                    handleSAUTH(user, filter, true);
+                    handleSAUTH(data, user, filter, true);
                 } else if (input.action.equals("disableSAUTH")) {
                     SecurityUtils.getSubject().checkPermission("write");
-                    handleSAUTH(user, filter, false);
+                    handleSAUTH(data, user, filter, false);
                 } else if (input.action.equals("disable")) {
                     SecurityUtils.getSubject().checkPermission("write");
-                    handleDisable(user, filter);
+                    handleDisable(data, user, filter);
                 } else if (input.action.equals("restartAll")) {
                     SecurityUtils.getSubject().checkPermission("write");
-                    handleRestartAll(user, filter);
+                    handleRestartAll(data, user, filter);
                 } else if (input.action.equals("cancelRestartAll")) {
                     SecurityUtils.getSubject().checkPermission("write");
-                    handleCancelRestartAll(user, filter);
+                    handleCancelRestartAll(data, user, filter);
                 }
             }
 
@@ -290,7 +289,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
         );
     }
 
-    private void handleCancelRestartAll(String user, InstanceFilter filter) throws Exception {
+    private void handleCancelRestartAll(Map<String, Object> data, String user, InstanceFilter filter) throws Exception {
         Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(false, filter);
         List<String> canceled = new ArrayList<>();
         for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {
@@ -304,12 +303,13 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
             }
         }
         if (!canceled.isEmpty()) {
+            data.put("message", "Canceled restart:\n" + Joiner.on("\n").join(canceled));
             upenaStore.record(user, "cancelRestart", System.currentTimeMillis(), "", "instance-ui", canceled.toString());
 
         }
     }
 
-    private void handleEnable(String user, InstanceFilter filter) throws Exception {
+    private void handleEnable(Map<String, Object> data, String user, InstanceFilter filter) throws Exception {
         List<String> enable = new ArrayList<>();
         Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(false, filter);
         for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {
@@ -323,11 +323,12 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
             }
         }
         if (!enable.isEmpty()) {
+            data.put("message", "Enabled:\n" + Joiner.on("\n").join(enable));
             upenaStore.record(user, "enabled", System.currentTimeMillis(), "", "instance-ui", enable.toString());
         }
     }
 
-    private void handleSSL(String user, InstanceFilter filter, boolean state) throws Exception {
+    private void handleSSL(Map<String, Object> data, String user, InstanceFilter filter, boolean state) throws Exception {
         List<String> enable = new ArrayList<>();
         Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(false, filter);
         for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {
@@ -341,11 +342,12 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
             }
         }
         if (!enable.isEmpty()) {
+            data.put("message", "Enabled SSL:\n" + Joiner.on("\n").join(enable));
             upenaStore.record(user, "SSL=" + state, System.currentTimeMillis(), "", "instance-ui", enable.toString());
         }
     }
 
-    private void handleSAUTH(String user, InstanceFilter filter, boolean state) throws Exception {
+    private void handleSAUTH(Map<String, Object> data, String user, InstanceFilter filter, boolean state) throws Exception {
         List<String> enable = new ArrayList<>();
         Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(false, filter);
         for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {
@@ -359,12 +361,13 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
             }
         }
         if (!enable.isEmpty()) {
+            data.put("message", "Enabled SAUTH:\n" + Joiner.on("\n").join(enable));
             upenaStore.record(user, "SAUTH=" + state, System.currentTimeMillis(), "", "instance-ui", enable.toString());
         }
     }
 
-    private void handleDisable(String user, InstanceFilter filter) throws Exception {
-        List<String> enable = new ArrayList<>();
+    private void handleDisable(Map<String, Object> data, String user, InstanceFilter filter) throws Exception {
+        List<String> disabled = new ArrayList<>();
         Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(false, filter);
         for (Map.Entry<InstanceKey, TimestampedValue<Instance>> entrySet : found.entrySet()) {
             InstanceKey key = entrySet.getKey();
@@ -373,15 +376,16 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
             if (instance.enabled) {
                 instance.enabled = false;
                 upenaStore.instances.update(key, instance);
-                enable.add(instanceToHumanReadableString(instance));
+                disabled.add(instanceToHumanReadableString(instance));
             }
         }
-        if (!enable.isEmpty()) {
-            upenaStore.record(user, "disabled", System.currentTimeMillis(), "", "instance-ui", enable.toString());
+        if (!disabled.isEmpty()) {
+            data.put("message", "Disabled:\n" + Joiner.on("\n").join(disabled));
+            upenaStore.record(user, "disabled", System.currentTimeMillis(), "", "instance-ui", disabled.toString());
         }
     }
 
-    private void handleRestartAll(String user, InstanceFilter filter) throws Exception {
+    private void handleRestartAll(Map<String, Object> data, String user, InstanceFilter filter) throws Exception {
         long now = System.currentTimeMillis();
         long stagger = TimeUnit.SECONDS.toMillis(30);
         now += stagger;
@@ -398,12 +402,14 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
                 restart.add(instanceToHumanReadableString(instance));
             }
         }
+
         if (!restart.isEmpty()) {
+            data.put("message", "Restarting the following instances with 30sec stagger:\n" + Joiner.on("\n").join(restart));
             upenaStore.record(user, "restart", System.currentTimeMillis(), "", "instance-ui", restart.toString());
         }
     }
 
-    private void handleRestartAllNow(String user, InstanceFilter filter) throws Exception {
+    private void handleRestartAllNow(Map<String, Object> data, String user, InstanceFilter filter) throws Exception {
         long now = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(5);
         Map<InstanceKey, TimestampedValue<Instance>> found = upenaStore.instances.find(false, filter);
         List<String> restart = new ArrayList<>();
@@ -418,6 +424,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
             }
         }
         if (!restart.isEmpty()) {
+            data.put("message", "Restarting the following instances in 5 seconds:\n" + Joiner.on("\n").join(restart));
             upenaStore.record(user, "restart", System.currentTimeMillis(), "", "instance-ui", restart.toString());
         }
     }
@@ -432,6 +439,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
                 if (removing != null) {
                     upenaStore.instances.remove(instanceKey);
                     upenaStore.record(user, "removed", System.currentTimeMillis(), "", "instance-ui", removing.toString());
+                    data.put("message", "Removed:" + instanceToHumanReadableString(removing));
                 }
             } catch (Exception x) {
                 String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
@@ -484,9 +492,9 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
                 upenaStore.instances.update(null, newInstance);
                 upenaStore.record(user, "added", System.currentTimeMillis(), "", "instance-ui",
                     instanceToHumanReadableString(newInstance) + "\n" + newInstance
-                    .toString());
+                        .toString());
 
-                data.put("message", "Created Instance.");
+                data.put("message", "Created " + instanceToHumanReadableString(newInstance));
             }
         } catch (Exception x) {
             String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
@@ -555,7 +563,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
                 upenaStore.instances.update(null, newInstance);
                 upenaStore.record(user, "added", System.currentTimeMillis(), "", "instance-ui",
                     instanceToHumanReadableString(newInstance) + "\n" + newInstance
-                    .toString());
+                        .toString());
 
             } catch (Exception x) {
                 String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
@@ -576,6 +584,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
                 upenaStore.instances.update(key, instance);
                 data.put("message", "Instance will be restarted momentarily.");
                 upenaStore.record(user, "restart", System.currentTimeMillis(), "", "instance-ui", instanceToHumanReadableString(instance));
+                data.put("message", "Restarting instance in 5 seconds. " + instanceToHumanReadableString(instance));
             }
 
         } catch (Exception x) {
@@ -648,7 +657,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
                     upenaStore.record(user, "updated", System.currentTimeMillis(), "", "instance-ui", instanceToHumanReadableString(instance) + "\n"
                         + updatedInstance.toString()
                     );
-                    data.put("message", "Updated Instance:" + input.key);
+                    data.put("message", "Updated Instance:" + instanceToHumanReadableString(updatedInstance));
                 }
             }
 
@@ -686,7 +695,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
         double h = 0d;
         if (timestampedValue.getValue().enabled) {
             if (nannyHealth != null) {
-                color = "rgba(" + UpenaHealth.trafficlightColorRGBA(nannyHealth.serviceHealth.health, 1f)+")";
+                color = "rgba(" + UpenaHealth.trafficlightColorRGBA(nannyHealth.serviceHealth.health, 1f) + ")";
                 h = nannyHealth.serviceHealth.health;
             }
         }
