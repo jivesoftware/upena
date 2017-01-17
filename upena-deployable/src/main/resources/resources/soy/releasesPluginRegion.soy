@@ -155,9 +155,8 @@
                                 {if $r.runningLatest}
                                     {if $r.runningLatest != 'true'}
                                         {if $readWrite}
-                                            <form id="edit-{$r.key}" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                                            <form id="edit-{$r.key}" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm" method="post" name="upgrade">
                                                 <li>
-                                                    method="post" name="upgrade">
                                                     <input type="hidden" name="key" value="{$r.key}">
                                                     <input type="hidden" name="name" value="{$r.name}">
                                                     <input type="hidden" name="repository" value="{$r.repository}">
@@ -192,9 +191,8 @@
                             </ul>
                         {else}
                             {if $readWrite}
-                                <form id="edit-{$r.key}" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                                <form id="edit-{$r.key}" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm" method="post" name="upgrade">
                                     <li>
-                                        method="post" name="upgrade">
                                         <input type="hidden" name="key" value="{$r.key}">
                                         <input type="hidden" name="name" value="{$r.name}">
                                         <input type="hidden" name="repository" value="{$r.repository}">
@@ -252,9 +250,8 @@
                                 {if $r.runningLatest}
                                     {if $r.runningLatest != 'true'}
                                         {if $readWrite}
-                                            <form id="edit-{$r.key}" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                                            <form id="edit-{$r.key}" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"  method="post" name="upgrade">
                                                 <li>
-                                                    method="post" name="upgrade">
                                                     <input type="hidden" name="key" value="{$r.key}">
                                                     <input type="hidden" name="name" value="{$r.name}">
                                                     <input type="hidden" name="repository" value="{$r.repository}">
@@ -324,7 +321,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                          {foreach $nv in $r.properties}
+                                        {foreach $nv in $r.properties}
                                             <tr>
                                                 <td>
                                                     {$nv.name}
