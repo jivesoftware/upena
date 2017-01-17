@@ -103,9 +103,11 @@
                                         <ul style="list-style-type:none">
                                             {if $r.rollback}
                                                 {if $readWrite}
-                                                    <form id="edit-rollback-{$r.key}" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                                                    <form id="edit-rollback-{$r.key}" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"  method="post" name="roleback">
                                                         <li>
-                                                            method="post" name="roleback">
+                                                            Rollback to:
+                                                        </li>
+                                                        <li>
                                                             <input form="edit-rollback-{$r.key}" type="hidden" name="key" value="{$r.key}">
                                                             <input form="edit-rollback-{$r.key}" type="hidden" name="name" value="{$r.name}">
                                                             <input form="edit-rollback-{$r.key}" type="hidden" name="repository" value="{$r.repository}">
@@ -191,98 +193,108 @@
                             </ul>
                         {else}
                             {if $readWrite}
-                                <form id="edit-{$r.key}" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm" method="post" name="upgrade">
-                                    <li>
-                                        <input type="hidden" name="key" value="{$r.key}">
-                                        <input type="hidden" name="name" value="{$r.name}">
-                                        <input type="hidden" name="repository" value="{$r.repository}">
-                                        {if $r.rollback}
-                                            <input type="hidden" name="version" value="{$r.rollback}">
-                                        {else}
-                                            <input type="hidden" name="version" value="{$r.version}">
-                                        {/if}
-                                        <div>
-                                            <div style="display: inline;">{$r.version}&nbsp;&nbsp;&nbsp;</div>
-                                            <input type="hidden" name="upgrade" value="{$r.version}">
-                                        </div>
-                                    </li>
-                                    <li>
-                                        </div>
-                                            Upgrade:
-                                            <div style="display: inline;">
-                                                <button title="Upgrade" type="submit" name="action" value="upgrade-immediate" class="btn btn-default" style="color: green;">
-                                                    <span class="glyphicon glyphicon-fast-forward"></span> Immediate
-                                                </button>
+                                <ul style="list-style-type:none">
+                                    <form id="edit-{$r.key}" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm" method="post" name="upgrade">
+                                        <li>
+                                            Upgrade to:
+                                        </li>
+                                        <li>
+                                            <input type="hidden" name="key" value="{$r.key}">
+                                            <input type="hidden" name="name" value="{$r.name}">
+                                            <input type="hidden" name="repository" value="{$r.repository}">
+                                            {if $r.rollback}
+                                                <input type="hidden" name="version" value="{$r.rollback}">
+                                            {else}
+                                                <input type="hidden" name="version" value="{$r.version}">
+                                            {/if}
+                                            <div>
+                                                <div style="display: inline;">{$r.version}&nbsp;&nbsp;&nbsp;</div>
+                                                <input type="hidden" name="upgrade" value="{$r.version}">
                                             </div>
-                                            <div style="display: inline;">
-                                                <button title="Upgrade" type="submit" name="action" value="upgrade-canary" class="btn btn-default" style="color: green;">
-                                                    <span class="glyphicon glyphicon-step-forward"></span> Canary
-                                                </button>
+                                        </li>
+                                        <li>
                                             </div>
-                                            <div style="display: inline;">
-                                                <button title="Upgrade" type="submit" name="action" value="upgrade-rolling" class="btn btn-default" style="color: green;">
-                                                    <span class="glyphicon glyphicon-forward"></span> Rolling
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </li>
-                                </form>
-                                {if $r.rollback}
-                                    {if $readWrite}
-                                        <form id="edit-rollback-{$r.key}" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
-                                            <li>
-                                                method="post" name="roleback">
-                                                <input form="edit-rollback-{$r.key}" type="hidden" name="key" value="{$r.key}">
-                                                <input form="edit-rollback-{$r.key}" type="hidden" name="name" value="{$r.name}">
-                                                <input form="edit-rollback-{$r.key}" type="hidden" name="repository" value="{$r.repository}">
-                                                <input form="edit-rollback-{$r.key}" type="hidden" name="version" value="{$r.version}">
-                                                <div style="display: inline;">{$r.rollback}&nbsp;&nbsp;&nbsp;</div>
-                                                <div style="display: inline;"><input form="edit-rollback-{$r.key}" type="hidden" name="rollback" value="{$r.rollback}"></div>
-                                            </li>
-                                            <li>
+
                                                 <div style="display: inline;">
-                                                    <button form="edit-rollback-{$r.key}" onclick="return confirm('Are you sure you want to rollback?')" title="Rollback" type="submit" name="action" value="rollback" class="btn btn-default" style="color: orange;">Rollback</button>
+                                                    <button title="Upgrade" type="submit" name="action" value="upgrade-immediate" class="btn btn-default" style="color: green;">
+                                                        <span class="glyphicon glyphicon-fast-forward"></span> Immediate
+                                                    </button>
                                                 </div>
-                                            </li>
-                                        </form>
-                                    {/if}
-                                {/if}
-                                {if $r.runningLatest}
-                                    {if $r.runningLatest != 'true'}
+                                                <div style="display: inline;">
+                                                    <button title="Upgrade" type="submit" name="action" value="upgrade-canary" class="btn btn-default" style="color: green;">
+                                                        <span class="glyphicon glyphicon-step-forward"></span> Canary
+                                                    </button>
+                                                </div>
+                                                <div style="display: inline;">
+                                                    <button title="Upgrade" type="submit" name="action" value="upgrade-rolling" class="btn btn-default" style="color: green;">
+                                                        <span class="glyphicon glyphicon-forward"></span> Rolling
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </li>
+                                    </form>
+                                    {if $r.rollback}
                                         {if $readWrite}
-                                            <form id="edit-{$r.key}" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"  method="post" name="upgrade">
+                                            <form id="edit-rollback-{$r.key}" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm" method="post" name="roleback">
                                                 <li>
-                                                    <input type="hidden" name="key" value="{$r.key}">
-                                                    <input type="hidden" name="name" value="{$r.name}">
-                                                    <input type="hidden" name="repository" value="{$r.repository}">
-                                                    <input type="hidden" name="version" value="{$r.version}">
-                                                    <div>
-                                                        <div style="display: inline;">{$r.upgrade}&nbsp;&nbsp;&nbsp;</div>
-                                                        <input type="hidden" name="upgrade" value="{$r.upgrade}">
-                                                    </div>
+                                                    Rollback to:
                                                 </li>
                                                 <li>
-                                                    Upgrade:
+
+                                                    <input form="edit-rollback-{$r.key}" type="hidden" name="key" value="{$r.key}">
+                                                    <input form="edit-rollback-{$r.key}" type="hidden" name="name" value="{$r.name}">
+                                                    <input form="edit-rollback-{$r.key}" type="hidden" name="repository" value="{$r.repository}">
+                                                    <input form="edit-rollback-{$r.key}" type="hidden" name="version" value="{$r.version}">
+                                                    <div style="display: inline;">{$r.rollback}&nbsp;&nbsp;&nbsp;</div>
+                                                    <div style="display: inline;"><input form="edit-rollback-{$r.key}" type="hidden" name="rollback" value="{$r.rollback}"></div>
+                                                </li>
+                                                <li>
                                                     <div style="display: inline;">
-                                                        <button title="Upgrade" type="submit" name="action" value="upgrade-immediate" class="btn btn-default" style="color: green;">
-                                                            <span class="glyphicon glyphicon-fast-forward"></span> Immediate
-                                                        </button>
-                                                    </div>
-                                                    <div style="display: inline;">
-                                                        <button title="Upgrade" type="submit" name="action" value="upgrade-canary" class="btn btn-default" style="color: green;">
-                                                            <span class="glyphicon glyphicon-step-forward"></span> Canary
-                                                        </button>
-                                                    </div>
-                                                    <div style="display: inline;">
-                                                        <button title="Upgrade" type="submit" name="action" value="upgrade-rolling" class="btn btn-default" style="color: green;">
-                                                            <span class="glyphicon glyphicon-forward"></span> Rolling
-                                                        </button>
+                                                        <button form="edit-rollback-{$r.key}" onclick="return confirm('Are you sure you want to rollback?')" title="Rollback" type="submit" name="action" value="rollback" class="btn btn-default" style="color: orange;">Rollback</button>
                                                     </div>
                                                 </li>
                                             </form>
                                         {/if}
                                     {/if}
-                                {/if}
+                                    {if $r.runningLatest}
+                                        {if $r.runningLatest != 'true'}
+                                            {if $readWrite}
+                                                <form id="edit-{$r.key}" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"  method="post" name="upgrade">
+                                                    <li>
+                                                        Upgrade to:
+                                                    </li>
+                                                    <li>
+                                                        <input type="hidden" name="key" value="{$r.key}">
+                                                        <input type="hidden" name="name" value="{$r.name}">
+                                                        <input type="hidden" name="repository" value="{$r.repository}">
+                                                        <input type="hidden" name="version" value="{$r.version}">
+                                                        <div>
+                                                            <div style="display: inline;">{$r.upgrade}&nbsp;&nbsp;&nbsp;</div>
+                                                            <input type="hidden" name="upgrade" value="{$r.upgrade}">
+                                                        </div>
+                                                    </li>
+                                                    <li>
+                                                        <div style="display: inline;">
+                                                            <button title="Upgrade" type="submit" name="action" value="upgrade-immediate" class="btn btn-default" style="color: green;">
+                                                                <span class="glyphicon glyphicon-fast-forward"></span> Immediate
+                                                            </button>
+                                                        </div>
+                                                        <div style="display: inline;">
+                                                            <button title="Upgrade" type="submit" name="action" value="upgrade-canary" class="btn btn-default" style="color: green;">
+                                                                <span class="glyphicon glyphicon-step-forward"></span> Canary
+                                                            </button>
+                                                        </div>
+                                                        <div style="display: inline;">
+                                                            <button title="Upgrade" type="submit" name="action" value="upgrade-rolling" class="btn btn-default" style="color: green;">
+                                                                <span class="glyphicon glyphicon-forward"></span> Rolling
+                                                            </button>
+                                                        </div>
+                                                    </li>
+                                                </form>
+                                            {/if}
+                                        {/if}
+                                    {/if}
+                                </ul>
                             {/if}
                         {/if}
                     </td>
