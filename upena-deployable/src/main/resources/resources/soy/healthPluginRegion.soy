@@ -113,10 +113,28 @@
                                             </form>
                                         </div>
                                         <div class="btn-group">
+                                            <form id="releaseService" method="post" action="/ui/releases" name="releaseService">
+                                                {if $service.release}
+                                                    <input type="hidden" name="release" value="{$service.release}">
+                                                {/if}
+                                                {if $service.version}
+                                                    <input type="hidden" name="version" value="{$service.version}">
+                                                {/if}
+                                                <input type="hidden" name="action" value="filter">
+                                                <button type="submit" class="btn btn-primary">
+                                                    Releases
+                                                </button>
+                                            </form>
+                                        </div>
+                                        <div class="btn-group">
                                             <form id="restartService" method="post" action="/ui/instances" name="restartService">
+                                                {if $service.serviceKey}
+                                                    <input type="hidden" name="clusterKey" value="{$service.clusterKey}">
+                                                {/if}
                                                 {if $service.serviceKey}
                                                     <input type="hidden" name="serviceKey" value="{$service.serviceKey}">
                                                 {/if}
+                                                <input type="hidden" name="action" value="restartAllNow">
                                                 <button type="submit" class="btn btn-primary">
                                                     Restart
                                                 </button>
@@ -363,6 +381,20 @@
                                                                     </form>
                                                                 </div>
                                                                 <div class="btn-group">
+                                                                    <form id="relaseService" method="post" action="/ui/releases" name="releaseService">
+                                                                        {if $health.version}
+                                                                            <input type="hidden" name="version" value="{$health.version}">
+                                                                        {/if}
+                                                                        {if $health.release}
+                                                                            <input type="hidden" name="release" value="{$health.release}">
+                                                                        {/if}
+                                                                        <input type="hidden" name="action" value="filter">
+                                                                        <button type="submit" class="btn btn-info">
+                                                                            Releases
+                                                                        </button>
+                                                                    </form>
+                                                                </div>
+                                                                <div class="btn-group">
                                                                     <form id="editService" method="post" action="/ui/instances" name="editService">
                                                                         {if $health.clusterKey}
                                                                             <input type="hidden" name="clusterKey" value="{$health.clusterKey}">
@@ -425,6 +457,7 @@
                                                                         {if $health.instance}
                                                                             <input type="hidden" name="instanceId" value="{$health.instance}">
                                                                         {/if}
+                                                                        <input type="hidden" name="action" value="restartAllNow">
                                                                         <button type="submit" class="btn btn-info">
                                                                             Restart
                                                                         </button>
