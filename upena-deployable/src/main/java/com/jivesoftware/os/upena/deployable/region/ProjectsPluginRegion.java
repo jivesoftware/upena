@@ -834,6 +834,10 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
             request.setMavenOpts("-Xmx3000m");
 
             Properties prprts = new Properties();
+
+            prprts.setProperty("maven.wagon.http.ssl.insecure", "true");
+            prprts.setProperty("maven.wagon.http.ssl.allowall", "true");
+            prprts.setProperty("maven.wagon.http.ssl.ignore.validity.date", "true");
             prprts.put("groupId", newCoordinate[0]);
             prprts.put("artifactId", newCoordinate[1]);
             prprts.put("oldVersion", oldCoordinate[2]);
@@ -970,6 +974,10 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
         request.setMavenOpts("-Xmx3000m");
 
         Properties prprts = new Properties();
+        prprts.setProperty("maven.wagon.http.ssl.insecure", "true");
+        prprts.setProperty("maven.wagon.http.ssl.allowall", "true");
+        prprts.setProperty("maven.wagon.http.ssl.ignore.validity.date", "true");
+
         prprts.put("outputFile", deps.getAbsolutePath());
         prprts.put("tokens", "whitespace");
         prprts.put("outputType", "text");

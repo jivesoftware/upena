@@ -663,6 +663,7 @@ public class UpenaMain {
             false
         );
         oAuthValidator.start();
+        authValidationFilter.addEvaluator(new NoAuthEvaluator(), "/repo/*");
         authValidationFilter.addEvaluator(new OAuthEvaluator(oAuthValidator, verifier), "/upena/*", "/amza/*");
 
 
