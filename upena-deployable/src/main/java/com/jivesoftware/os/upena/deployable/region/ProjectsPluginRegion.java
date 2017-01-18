@@ -65,6 +65,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInput> {
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
+    public static final String mvnOpts = "-Xmx3000m -Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true -Dmaven.wagon.http.ssl.ignore.validity.date=true";
 
     private final String template;
     private final String outputTemplate;
@@ -339,7 +340,7 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
                                                 request.setOutputHandler((line) -> {
                                                     ps.println(line);
                                                 });
-                                                request.setMavenOpts("-Xmx3000m -Dmaven.wagon.http.ssl.allowall=true -Dmaven.wagon.http.ssl.ignore.validity.date=true");
+                                                request.setMavenOpts(mvnOpts);
 
                                                 InvocationResult result = invoker.execute(request);
 
@@ -365,7 +366,7 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
                                                     request.setShowErrors(true);
                                                     request.setShowVersion(true);
 
-                                                    request.setMavenOpts("-Xmx3000m -Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true -Dmaven.wagon.http.ssl.ignore.validity.date=true");
+                                                    request.setMavenOpts(mvnOpts);
                                                     request.setDebug(false);
 
                                                     Properties properties = new Properties();
@@ -832,7 +833,7 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
             request.setOutputHandler((line) -> {
                 ps.println(line);
             });
-            request.setMavenOpts("-Xmx3000m -Dmaven.wagon.http.ssl.allowall=true -Dmaven.wagon.http.ssl.ignore.validity.date=true");
+            request.setMavenOpts(mvnOpts);
 
             Properties prprts = new Properties();
 
@@ -972,7 +973,7 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
         request.setOutputHandler((line) -> {
             ps.println(line);
         });
-        request.setMavenOpts("-Xmx3000m  -Dmaven.wagon.http.ssl.allowall=true -Dmaven.wagon.http.ssl.ignore.validity.date=true");
+        request.setMavenOpts(mvnOpts);
 
         Properties prprts = new Properties();
         prprts.setProperty("maven.wagon.http.ssl.insecure", "true");
