@@ -370,7 +370,7 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
 
                                                     Properties properties = new Properties();
 
-                                                    String repoUrl = "http://localhost:1175/repo";
+                                                    String repoUrl = "https://localhost:1175/repo";
 
                                                     // TODO deploy to backup/HA url
                                                     
