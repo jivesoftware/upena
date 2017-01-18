@@ -365,7 +365,7 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
                                                     request.setShowErrors(true);
                                                     request.setShowVersion(true);
 
-                                                    request.setMavenOpts("-Xmx3000m");
+                                                    request.setMavenOpts("-Xmx3000m -Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true -Dmaven.wagon.http.ssl.ignore.validity.date=true");
                                                     request.setDebug(false);
 
                                                     Properties properties = new Properties();
@@ -390,6 +390,7 @@ public class ProjectsPluginRegion implements PageRegion<ProjectsPluginRegionInpu
                                                     invoker = new DefaultInvoker();
                                                     invoker.setLocalRepositoryDirectory(repoFile);
                                                     invoker.setMavenHome(new File(project.mvnHome));
+
                                                     result = invoker.execute(request);
 
                                                     if (!runningProjects.containsKey(projectKey)) {
