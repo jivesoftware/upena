@@ -208,13 +208,19 @@
                                                         rbga({$health.color})
                                                     {else}transparent{/if}; color:#222; border-radius: 4px 0 0 4px;">
 
-                                                {if $health.sslEnabled or $health.serviceAuthEnabled}
+                                                {if not $health.sslEnabled or not $health.serviceAuthEnabled}
                                                     <span class="fa">
-                                                        {if $health.sslEnabled}
-                                                            <i class="fa fa-lock" aria-hidden="true"></i>
+                                                        {if not $health.sslEnabled}
+                                                            <span class="icon-stack">
+                                                                <i class="fa fa-lock" aria-hidden="true"></i>
+                                                                <i class="icon-ban-circle icon-stack-base text-error"></i>
+                                                            </span>
                                                         {/if}
-                                                        {if $health.serviceAuthEnabled}
-                                                            <i class="fa fa-key" aria-hidden="true"></i>
+                                                        {if not $health.serviceAuthEnabled}
+                                                            <span class="icon-stack">
+                                                                <i class="fa fa-key" aria-hidden="true"></i>
+                                                                <i class="icon-ban-circle icon-stack-base text-error"></i>
+                                                            </span>
                                                         {/if}
                                                     </span>
                                                 {else}
