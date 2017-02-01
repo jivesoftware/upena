@@ -211,15 +211,15 @@
                                                 {if not $health.sslEnabled or not $health.serviceAuthEnabled}
                                                     <span class="fa">
                                                         {if not $health.sslEnabled}
-                                                            <span class="icon-stack">
-                                                                <i class="fa fa-lock" aria-hidden="true"></i>
-                                                                <i class="icon-ban-circle icon-stack-base text-error"></i>
+                                                            <span class="fa-stack fa-lg">
+                                                              <i class="fa fa-lock fa-stack-1x"></i>
+                                                              <i class="fa fa-ban fa-stack-2x text-danger"></i>
                                                             </span>
                                                         {/if}
                                                         {if not $health.serviceAuthEnabled}
-                                                            <span class="icon-stack">
-                                                                <i class="fa fa-key" aria-hidden="true"></i>
-                                                                <i class="icon-ban-circle icon-stack-base text-error"></i>
+                                                            <span class="fa-stack fa-lg">
+                                                              <i class="fa fa-key fa-stack-1x"></i>
+                                                              <i class="fa fa-ban fa-stack-2x text-danger"></i>
                                                             </span>
                                                         {/if}
                                                     </span>
