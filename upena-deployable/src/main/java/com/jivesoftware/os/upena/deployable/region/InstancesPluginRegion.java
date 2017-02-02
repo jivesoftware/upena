@@ -706,8 +706,6 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
         if (value.restartTimestampGMTMillis > 0 && now < value.restartTimestampGMTMillis) {
             map.put("status", "Will restart in:" + DurationFormatUtils.formatDurationHMS(value.restartTimestampGMTMillis - now));
         } else {
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("EEE, dd MMM yyyy hh:mm:ss z");
-            simpleDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
             long snowflakeTime = timestampedValue.getTimestamp();
             long time = JiveEpochTimestampProvider.JIVE_EPOCH + new SnowflakeIdPacker().unpack(snowflakeTime)[0];
             map.put("status", "Modified:" + DurationFormatUtils.formatDurationHMS(System.currentTimeMillis() - time) + " ago.");

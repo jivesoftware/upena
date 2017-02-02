@@ -250,7 +250,7 @@ public class ManagedDeployablePluginRegion implements PageRegion<ManagedDeployab
             LOG.error("Unable to retrieve data", x);
             String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
             data.put("result", "Error while trying to " + input.action + "\n" + trace);
-
+            return "<h3>Error in embedded probe, please check the logs.</h3>";
         }
         return renderer.render(template, data);
     }
