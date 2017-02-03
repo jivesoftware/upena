@@ -19,7 +19,7 @@ import com.jivesoftware.os.jive.utils.ordered.id.OrderIdProvider;
 import com.jivesoftware.os.upena.shared.Monkey;
 import com.jivesoftware.os.upena.shared.MonkeyKey;
 
-class MonkeyKeyProvider implements UpenaTable.UpenaKeyProvider<MonkeyKey, Monkey> {
+class MonkeyKeyProvider implements UpenaMap.UpenaKeyProvider<MonkeyKey, Monkey> {
 
     private final OrderIdProvider idProvider;
 
@@ -28,7 +28,7 @@ class MonkeyKeyProvider implements UpenaTable.UpenaKeyProvider<MonkeyKey, Monkey
     }
 
     @Override
-    public MonkeyKey getNodeKey(UpenaTable<MonkeyKey, Monkey> table, Monkey value) {
+    public MonkeyKey getNodeKey(UpenaMap<MonkeyKey,Monkey> table, Monkey value) {
         String k = Long.toString(idProvider.nextId());
         return new MonkeyKey(k);
     }

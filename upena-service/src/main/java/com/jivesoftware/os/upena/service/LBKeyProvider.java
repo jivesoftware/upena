@@ -16,7 +16,7 @@
 package com.jivesoftware.os.upena.service;
 
 import com.jivesoftware.os.jive.utils.ordered.id.OrderIdProvider;
-import com.jivesoftware.os.upena.service.UpenaTable.UpenaKeyProvider;
+import com.jivesoftware.os.upena.service.UpenaMap.UpenaKeyProvider;
 import com.jivesoftware.os.upena.shared.LB;
 import com.jivesoftware.os.upena.shared.LBKey;
 
@@ -30,7 +30,7 @@ public class LBKeyProvider implements UpenaKeyProvider<LBKey, LB> {
 
 
     @Override
-    public LBKey getNodeKey(UpenaTable<LBKey, LB> table, LB value) {
+    public LBKey getNodeKey(UpenaMap<LBKey,LB> table, LB value) {
         String k = Long.toString(Math.abs(idProvider.nextId()));
         return new LBKey(k);
     }

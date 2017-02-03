@@ -70,34 +70,34 @@ public class UpenaStore {
     private final InstanceChanges instanceRemoved;
     private final TenantChanges tenantChanges;
 
-    public final TableName userStoreKey = new TableName("master", "users", null, null);
-    public final TableName permissionStoreKey = new TableName("master", "permissions", null, null);
-    public final TableName projectStoreKey = new TableName("master", "projects", null, null);
-    public final TableName clusterStoreKey = new TableName("master", "clusters", null, null);
-    public final TableName loadbalancers = new TableName("master", "loadbalancers", null, null);
-    public final TableName hostStoreKey = new TableName("master", "hosts", null, null);
-    public final TableName serviceStoreKey = new TableName("master", "services", null, null);
-    public final TableName releaseGroupStoreKey = new TableName("master", "releaseGroups", null, null);
-    public final TableName instanceStoreKey = new TableName("master", "intances", null, null);
-    public final TableName tenantStoreKey = new TableName("master", "tenants", null, null);
-    public final TableName monkeyStoreKey = new TableName("master", "monkeys", null, null);
-    public final TableName chaosStateStoreKey = new TableName("master", "chaosState", null, null);
-    public final TableName changeLogStoreKey = new TableName("master", "changeLog", null, null);
+    private final TableName userStoreKey = new TableName("master", "users", null, null);
+    private final TableName permissionStoreKey = new TableName("master", "permissions", null, null);
+    private final TableName projectStoreKey = new TableName("master", "projects", null, null);
+    private final TableName clusterStoreKey = new TableName("master", "clusters", null, null);
+    private final TableName loadbalancers = new TableName("master", "loadbalancers", null, null);
+    private final TableName hostStoreKey = new TableName("master", "hosts", null, null);
+    private final TableName serviceStoreKey = new TableName("master", "services", null, null);
+    private final TableName releaseGroupStoreKey = new TableName("master", "releaseGroups", null, null);
+    private final TableName instanceStoreKey = new TableName("master", "intances", null, null);
+    private final TableName tenantStoreKey = new TableName("master", "tenants", null, null);
+    private final TableName monkeyStoreKey = new TableName("master", "monkeys", null, null);
+    private final TableName chaosStateStoreKey = new TableName("master", "chaosState", null, null);
+    private final TableName changeLogStoreKey = new TableName("master", "changeLog", null, null);
 
-    public final UpenaTable<UserKey, User> users;
-    public final UpenaTable<PermissionKey, Permission> permissions;
-    public final UpenaTable<ProjectKey, Project> projects;
-    public final UpenaTable<ClusterKey, Cluster> clusters;
-    public final UpenaTable<LBKey, LB> loadBalancers;
-    public final UpenaTable<HostKey, Host> hosts;
-    public final UpenaTable<ServiceKey, Service> services;
-    public final UpenaTable<ReleaseGroupKey, ReleaseGroup> releaseGroups;
-    public final UpenaTable<InstanceKey, Instance> instances;
-    public final UpenaTable<TenantKey, Tenant> tenants;
-    public final UpenaTable<MonkeyKey, Monkey> monkeys;
-    public final UpenaTable<ChaosStateKey, ChaosState> chaosStates;
+    private final AmzaTable changeLog;
 
-    public final AmzaTable changeLog;
+    public final UpenaMap<UserKey, User> users;
+    public final UpenaMap<PermissionKey, Permission> permissions;
+    public final UpenaMap<ProjectKey, Project> projects;
+    public final UpenaMap<ClusterKey, Cluster> clusters;
+    public final UpenaMap<LBKey, LB> loadBalancers;
+    public final UpenaMap<HostKey, Host> hosts;
+    public final UpenaMap<ServiceKey, Service> services;
+    public final UpenaMap<ReleaseGroupKey, ReleaseGroup> releaseGroups;
+    public final UpenaMap<InstanceKey, Instance> instances;
+    public final UpenaMap<TenantKey, Tenant> tenants;
+    public final UpenaMap<MonkeyKey, Monkey> monkeys;
+    public final UpenaMap<ChaosStateKey, ChaosState> chaosStates;
 
     public UpenaStore(OrderIdProvider idProvider,
         ObjectMapper mapper,
@@ -116,7 +116,8 @@ public class UpenaStore {
         this.tenantChanges = tenantChanges;
 
         users = new UpenaTable<>(mapper, amzaService.getTable(userStoreKey), UserKey.class, User.class, new UserKeyProvider(), null);
-        permissions = new UpenaTable<>(mapper, amzaService.getTable(permissionStoreKey), PermissionKey.class, Permission.class, new PermissionKeyProvider(), null);
+        permissions = new UpenaTable<>(mapper, amzaService.getTable(permissionStoreKey), PermissionKey.class, Permission.class, new PermissionKeyProvider(),
+            null);
 
         projects = new UpenaTable<>(mapper, amzaService.getTable(projectStoreKey), ProjectKey.class, Project.class, new ProjectKeyProvider(idProvider), null);
         clusters = new UpenaTable<>(mapper, amzaService.getTable(clusterStoreKey), ClusterKey.class, Cluster.class, new ClusterKeyProvider(idProvider), null);

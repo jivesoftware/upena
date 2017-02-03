@@ -13,7 +13,7 @@ import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelperUtils;
 import com.jivesoftware.os.routing.bird.shared.InstanceDescriptor;
 import com.jivesoftware.os.upena.amza.shared.AmzaInstance;
 import com.jivesoftware.os.upena.amza.shared.RingHost;
-import com.jivesoftware.os.upena.config.UpenaConfigStore;
+import com.jivesoftware.os.upena.service.UpenaConfigStore;
 import com.jivesoftware.os.upena.deployable.region.SparseCircularHitsBucketBuffer;
 import com.jivesoftware.os.upena.shared.HostKey;
 import com.jivesoftware.os.upena.uba.service.Nanny;

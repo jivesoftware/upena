@@ -16,7 +16,7 @@
 package com.jivesoftware.os.upena.service;
 
 import com.jivesoftware.os.jive.utils.ordered.id.OrderIdProvider;
-import com.jivesoftware.os.upena.service.UpenaTable.UpenaKeyProvider;
+import com.jivesoftware.os.upena.service.UpenaMap.UpenaKeyProvider;
 import com.jivesoftware.os.upena.shared.ReleaseGroup;
 import com.jivesoftware.os.upena.shared.ReleaseGroupKey;
 
@@ -29,7 +29,7 @@ public class ReleaseGroupKeyProvider implements UpenaKeyProvider<ReleaseGroupKey
     }
 
     @Override
-    public ReleaseGroupKey getNodeKey(UpenaTable<ReleaseGroupKey, ReleaseGroup> table, ReleaseGroup value) {
+    public ReleaseGroupKey getNodeKey(UpenaMap<ReleaseGroupKey,ReleaseGroup> table, ReleaseGroup value) {
         String k = Long.toString(Math.abs(idProvider.nextId()));
         return new ReleaseGroupKey(k);
     }

@@ -235,15 +235,16 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
         for (Map.Entry<String, Map<String, Map<String, ConnectionHealth>>> entrySet : routes.entrySet()) {
             String instanceId = entrySet.getKey();
             Instance instance = upenaStore.instances.get(new InstanceKey(instanceId));
-            if (instance != null && !filter.filter(new InstanceKey(instanceId), instance)) {
+            if (instance == null || !filter.filter(new InstanceKey(instanceId), instance)) {
                 continue;
             }
 
-            Service service = null;
-            if (instance != null) {
-                service = upenaStore.services.get(instance.serviceKey);
+            Service service = upenaStore.services.get(instance.serviceKey);
+            if (service == null) {
+                continue;
             }
-            String serviceName = service != null ? service.name : instanceId;
+
+            String serviceName = service.name;
             Node from = nodes.get(serviceName);
             if (from == null) {
 

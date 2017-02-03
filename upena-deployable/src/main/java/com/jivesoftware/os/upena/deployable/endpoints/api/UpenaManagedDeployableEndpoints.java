@@ -83,7 +83,7 @@ public class UpenaManagedDeployableEndpoints {
                 LOG.warn("There is no instance for key:{}", instanceKey);
                 return Response.serverError().build();
             } else if (!instance.hostKey.equals(hostKey)) {
-                LOG.warn("This is the wrong host fot instance for key:{}", instanceKey);
+                LOG.warn("This is the wrong host for instance for key:{}", instanceKey);
                 return Response.serverError().build();
             }
 

@@ -15,7 +15,7 @@
  */
 package com.jivesoftware.os.upena.service;
 
-import com.jivesoftware.os.upena.service.UpenaTable.UpenaKeyProvider;
+import com.jivesoftware.os.upena.service.UpenaMap.UpenaKeyProvider;
 import com.jivesoftware.os.upena.shared.Permission;
 import com.jivesoftware.os.upena.shared.PermissionKey;
 import java.nio.charset.StandardCharsets;
@@ -24,7 +24,7 @@ public class PermissionKeyProvider implements UpenaKeyProvider<PermissionKey, Pe
 
 
     @Override
-    public PermissionKey getNodeKey(UpenaTable<PermissionKey, Permission> table, Permission value) {
+    public PermissionKey getNodeKey(UpenaMap<PermissionKey,Permission> table, Permission value) {
         return forgePermissionKey(value.permission);
     }
 

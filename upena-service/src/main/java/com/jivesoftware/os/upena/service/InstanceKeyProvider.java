@@ -16,7 +16,7 @@
 package com.jivesoftware.os.upena.service;
 
 import com.jivesoftware.os.jive.utils.ordered.id.OrderIdProvider;
-import com.jivesoftware.os.upena.service.UpenaTable.UpenaKeyProvider;
+import com.jivesoftware.os.upena.service.UpenaMap.UpenaKeyProvider;
 import com.jivesoftware.os.upena.shared.Instance;
 import com.jivesoftware.os.upena.shared.InstanceKey;
 
@@ -29,7 +29,7 @@ public class InstanceKeyProvider implements UpenaKeyProvider<InstanceKey, Instan
     }
 
     @Override
-    public InstanceKey getNodeKey(UpenaTable<InstanceKey, Instance> table, Instance value) {
+    public InstanceKey getNodeKey(UpenaMap<InstanceKey,Instance> table, Instance value) {
         String k = Long.toString(Math.abs(idProvider.nextId()));
         return new InstanceKey(k);
     }
