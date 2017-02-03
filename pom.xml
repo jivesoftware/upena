@@ -19,7 +19,6 @@
         <module>upena-deployable</module>
         <module>uba-service</module>
         <module>uba-shared</module>
-        <module>upena-config</module>
         <module>inheritance-poms</module>
         <module>latent-profiler-agent</module>
     </modules>

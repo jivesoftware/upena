@@ -16,7 +16,7 @@
 package com.jivesoftware.os.upena.service;
 
 import com.jivesoftware.os.jive.utils.ordered.id.OrderIdProvider;
-import com.jivesoftware.os.upena.service.UpenaTable.UpenaKeyProvider;
+import com.jivesoftware.os.upena.service.UpenaMap.UpenaKeyProvider;
 import com.jivesoftware.os.upena.shared.Service;
 import com.jivesoftware.os.upena.shared.ServiceKey;
 
@@ -29,7 +29,7 @@ public class ServiceKeyProvider implements UpenaKeyProvider<ServiceKey, Service>
     }
 
     @Override
-    public ServiceKey getNodeKey(UpenaTable<ServiceKey, Service> table, Service value) {
+    public ServiceKey getNodeKey(UpenaMap<ServiceKey,Service> table, Service value) {
         String k = Long.toString(idProvider.nextId());
         return new ServiceKey(k);
     }

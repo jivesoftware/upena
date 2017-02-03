@@ -19,7 +19,7 @@ import com.jivesoftware.os.jive.utils.ordered.id.OrderIdProvider;
 import com.jivesoftware.os.upena.shared.ChaosState;
 import com.jivesoftware.os.upena.shared.ChaosStateKey;
 
-class ChaosStateKeyProvider implements UpenaTable.UpenaKeyProvider<ChaosStateKey, ChaosState> {
+class ChaosStateKeyProvider implements UpenaMap.UpenaKeyProvider<ChaosStateKey, ChaosState> {
 
     private final OrderIdProvider idProvider;
 
@@ -28,7 +28,7 @@ class ChaosStateKeyProvider implements UpenaTable.UpenaKeyProvider<ChaosStateKey
     }
 
     @Override
-    public ChaosStateKey getNodeKey(UpenaTable<ChaosStateKey, ChaosState> table, ChaosState value) {
+    public ChaosStateKey getNodeKey(UpenaMap<ChaosStateKey,ChaosState> table, ChaosState value) {
         String k = Long.toString(idProvider.nextId());
         return new ChaosStateKey(k);
     }

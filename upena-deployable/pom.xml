@@ -195,11 +195,6 @@
         </dependency>
         <dependency>
             <groupId>com.jivesoftware.os.upena</groupId>
-            <artifactId>upena-config</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.jivesoftware.os.upena</groupId>
             <artifactId>uba-shared</artifactId>
             <version>${project.version}</version>
         </dependency>

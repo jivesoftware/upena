@@ -15,7 +15,7 @@
  */
 package com.jivesoftware.os.upena.service;
 
-import com.jivesoftware.os.upena.service.UpenaTable.UpenaValueValidator;
+import com.jivesoftware.os.upena.service.UpenaMap.UpenaValueValidator;
 import com.jivesoftware.os.upena.shared.HostKey;
 import com.jivesoftware.os.upena.shared.Instance;
 import com.jivesoftware.os.upena.shared.InstanceFilter;
@@ -37,7 +37,7 @@ public class InstanceValidator implements UpenaValueValidator<InstanceKey, Insta
     }
 
     @Override
-    public Instance validate(UpenaTable<InstanceKey, Instance> table, InstanceKey key, Instance value) throws Exception {
+    public Instance validate(UpenaMap<InstanceKey, Instance> table, InstanceKey key, Instance value) throws Exception {
         Set<Integer> usedPorts = usedPorts(table, value.hostKey, key);
         return populatePorts(usedPorts, value);
     }
@@ -72,7 +72,7 @@ public class InstanceValidator implements UpenaValueValidator<InstanceKey, Insta
         return value;
     }
 
-    Set<Integer> usedPorts(UpenaTable<InstanceKey, Instance> table, HostKey hostKey, InstanceKey excludeThisInstanceKey) throws Exception {
+    Set<Integer> usedPorts(UpenaMap<InstanceKey, Instance> table, HostKey hostKey, InstanceKey excludeThisInstanceKey) throws Exception {
         Set<Integer> usedPorts = new HashSet<>();
         InstanceFilter impactedFilter = new InstanceFilter(null, hostKey, null, null, null, 0, Integer.MAX_VALUE);
         ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> got = table.find(false, impactedFilter);

@@ -16,7 +16,7 @@
 package com.jivesoftware.os.upena.service;
 
 import com.jivesoftware.os.jive.utils.ordered.id.OrderIdProvider;
-import com.jivesoftware.os.upena.service.UpenaTable.UpenaKeyProvider;
+import com.jivesoftware.os.upena.service.UpenaMap.UpenaKeyProvider;
 import com.jivesoftware.os.upena.shared.Cluster;
 import com.jivesoftware.os.upena.shared.ClusterKey;
 
@@ -29,7 +29,7 @@ public class ClusterKeyProvider implements UpenaKeyProvider<ClusterKey, Cluster>
     }
 
     @Override
-    public ClusterKey getNodeKey(UpenaTable<ClusterKey, Cluster> table, Cluster value) {
+    public ClusterKey getNodeKey(UpenaMap<ClusterKey,Cluster> table, Cluster value) {
         String k = Long.toString(Math.abs(idProvider.nextId()));
         return new ClusterKey(k);
     }

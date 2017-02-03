@@ -29,20 +29,10 @@ import com.jivesoftware.os.upena.shared.TimestampedValue;
 import java.util.List;
 import java.util.concurrent.ConcurrentNavigableMap;
 
-public class UpenaTable<K extends Key, V extends Stored> {
+public class UpenaTable<K extends Key, V extends Stored> implements UpenaMap<K, V> {
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
-
-    static public interface UpenaKeyProvider<KK extends Key, VV extends Stored> {
-
-        KK getNodeKey(UpenaTable<KK, VV> table, VV value);
-    }
-
-    static public interface UpenaValueValidator<KK extends Key, VV extends Stored> {
-
-        VV validate(UpenaTable<KK, VV> table, KK key, VV value) throws Exception;
-    }
 
     private final ObjectMapper mapper;
     private final AmzaTable store;
@@ -67,12 +57,14 @@ public class UpenaTable<K extends Key, V extends Stored> {
     }
 
 
+    @Override
     public void putIfAbsent(K key, V value) throws Exception {
         if (get(key) == null) {
             update(key, value);
         }
     }
 
+    @Override
     public V get(K key) throws Exception {
         byte[] rawKey = mapper.writeValueAsBytes(key);
         byte[] got = store.get(new RowIndexKey(rawKey));
@@ -82,6 +74,7 @@ public class UpenaTable<K extends Key, V extends Stored> {
         return mapper.readValue(got, valueClass);
     }
 
+    @Override
     public void scan(final Stream<K, V> stream) throws Exception {
         store.scan((l, key, value) -> {
             if (!value.getTombstoned()) {
@@ -94,11 +87,7 @@ public class UpenaTable<K extends Key, V extends Stored> {
         });
     }
 
-    public interface Stream<K, V> {
-
-        boolean stream(K key, V value) throws Exception;
-    }
-
+    @Override
     @SuppressWarnings("unchecked")
     public ConcurrentNavigableMap<K, TimestampedValue<V>> find(boolean removeBadKeysEnabled, final KeyValueFilter<K, V> filter) throws Exception {
         final ConcurrentNavigableMap<K, TimestampedValue<V>> results = filter == null ? null : filter.createCollector();
@@ -135,6 +124,7 @@ public class UpenaTable<K extends Key, V extends Stored> {
         return results;
     }
 
+    @Override
     synchronized public K update(K key, V value) throws Exception {
         if (key == null) {
             key = keyProvider.getNodeKey(this, value);
@@ -149,6 +139,7 @@ public class UpenaTable<K extends Key, V extends Stored> {
         return gotKey;
     }
 
+    @Override
     synchronized public boolean remove(K key) throws Exception {
         byte[] rawKey = mapper.writeValueAsBytes(key);
         return store.remove(new RowIndexKey(rawKey));

@@ -16,7 +16,7 @@
 package com.jivesoftware.os.upena.service;
 
 import com.jivesoftware.os.jive.utils.ordered.id.OrderIdProvider;
-import com.jivesoftware.os.upena.service.UpenaTable.UpenaKeyProvider;
+import com.jivesoftware.os.upena.service.UpenaMap.UpenaKeyProvider;
 import com.jivesoftware.os.upena.shared.Project;
 import com.jivesoftware.os.upena.shared.ProjectKey;
 
@@ -29,7 +29,7 @@ public class ProjectKeyProvider implements UpenaKeyProvider<ProjectKey, Project>
     }
 
     @Override
-    public ProjectKey getNodeKey(UpenaTable<ProjectKey, Project> table, Project value) {
+    public ProjectKey getNodeKey(UpenaMap<ProjectKey,Project> table, Project value) {
         String k = Long.toString(Math.abs(idProvider.nextId()));
         return new ProjectKey(k);
     }

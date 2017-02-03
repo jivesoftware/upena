@@ -15,7 +15,7 @@
  */
 package com.jivesoftware.os.upena.service;
 
-import com.jivesoftware.os.upena.service.UpenaTable.UpenaKeyProvider;
+import com.jivesoftware.os.upena.service.UpenaMap.UpenaKeyProvider;
 import com.jivesoftware.os.upena.shared.User;
 import com.jivesoftware.os.upena.shared.UserKey;
 import java.nio.charset.StandardCharsets;
@@ -24,7 +24,7 @@ public class UserKeyProvider implements UpenaKeyProvider<UserKey, User> {
 
 
     @Override
-    public UserKey getNodeKey(UpenaTable<UserKey, User> table, User value) {
+    public UserKey getNodeKey(UpenaMap<UserKey,User> table, User value) {
         JenkinsHash jenkinsHash = new JenkinsHash();
         String k = Long.toString(Math.abs(jenkinsHash.hash(value.email.getBytes(StandardCharsets.UTF_8), 2)));
         return new UserKey(k);
