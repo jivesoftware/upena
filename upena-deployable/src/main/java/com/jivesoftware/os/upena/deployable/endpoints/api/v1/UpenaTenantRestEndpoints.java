@@ -31,6 +31,7 @@ import io.swagger.annotations.Api;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentNavigableMap;
+import javax.inject.Singleton;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -41,6 +42,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+@Singleton
 @Api(value = "Upena Tenant CRUD")
 @Path("/api/v1/upena/tenant")
 public class UpenaTenantRestEndpoints {

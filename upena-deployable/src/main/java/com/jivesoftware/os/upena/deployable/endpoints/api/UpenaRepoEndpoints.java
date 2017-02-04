@@ -44,7 +44,9 @@ import org.apache.commons.io.FileUtils;
  *
  * @author jonathan.colt
  */
-@Api(value = "Upena Maven Repo")@Singleton
+
+@Singleton
+@Api(value = "Upena Maven Repo")
 @Path("/repo")
 public class UpenaRepoEndpoints {
 

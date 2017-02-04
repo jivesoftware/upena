@@ -11,6 +11,7 @@ package com.jivesoftware.os.upena.deployable.profiler.server.endpoints;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jivesoftware.os.upena.deployable.profiler.sample.LatentSample;
 import java.io.IOException;
+import javax.inject.Singleton;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -21,6 +22,7 @@ import javax.ws.rs.core.Response;
 /**
  *
  */
+@Singleton
 @Path("/profile")
 public class PerfServiceEndpoints {
 

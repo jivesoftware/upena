@@ -15,6 +15,9 @@
  */
 package com.jivesoftware.os.upena.amza.transport.http.replication.endpoints;
 
+import com.jivesoftware.os.mlogger.core.MetricLogger;
+import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
+import com.jivesoftware.os.routing.bird.shared.ResponseHelper;
 import com.jivesoftware.os.upena.amza.shared.AmzaInstance;
 import com.jivesoftware.os.upena.amza.shared.RingHost;
 import com.jivesoftware.os.upena.amza.shared.RowIndexKey;
@@ -25,11 +28,9 @@ import com.jivesoftware.os.upena.amza.shared.TableName;
 import com.jivesoftware.os.upena.amza.storage.RowMarshaller;
 import com.jivesoftware.os.upena.amza.storage.binary.BinaryRowMarshaller;
 import com.jivesoftware.os.upena.amza.transport.http.replication.RowUpdates;
-import com.jivesoftware.os.mlogger.core.MetricLogger;
-import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
-import com.jivesoftware.os.routing.bird.shared.ResponseHelper;
 import java.util.ArrayList;
 import java.util.List;
+import javax.inject.Singleton;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -37,6 +38,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import org.apache.commons.lang.mutable.MutableLong;
 
+@Singleton
 @Path("/amza")
 public class AmzaReplicationRestEndpoints {
 
