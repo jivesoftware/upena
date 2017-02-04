@@ -25,6 +25,7 @@ import com.jivesoftware.os.upena.shared.ServiceKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
 import io.swagger.annotations.Api;
 
+import javax.inject.Singleton;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -33,6 +34,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import java.util.Map;
 
+@Singleton
 @Api(value = "Upena Service CRUD")
 @Path("/api/v1/upena/service")
 public class UpenaServiceRestEndpoints {

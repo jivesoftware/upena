@@ -67,5 +67,9 @@
             <groupId>com.jivesoftware.os.filer</groupId>
             <artifactId>map-store</artifactId>
         </dependency>
+        <dependency>
+            <groupId>javax.inject</groupId>
+            <artifactId>javax.inject</artifactId>
+        </dependency>
     </dependencies>
 </project>

@@ -22,6 +22,7 @@ import com.jivesoftware.os.routing.bird.shared.ResponseHelper;
 import com.jivesoftware.os.upena.service.UpenaConfigStore;
 import java.util.ArrayList;
 import java.util.Map;
+import javax.inject.Singleton;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -31,6 +32,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+@Singleton
 @Path("/upenaConfig")
 public class UpenaConfigRestEndpoints {
 

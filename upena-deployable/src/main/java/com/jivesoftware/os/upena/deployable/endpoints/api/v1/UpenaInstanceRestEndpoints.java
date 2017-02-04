@@ -25,6 +25,7 @@ import com.jivesoftware.os.upena.shared.InstanceKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
 import io.swagger.annotations.Api;
 import java.util.Map;
+import javax.inject.Singleton;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -32,6 +33,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
+@Singleton
 @Api(value = "Upena Instance CRUD")
 @Path("/api/v1/upena/instance")
 public class UpenaInstanceRestEndpoints {
