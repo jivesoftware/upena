@@ -27,11 +27,11 @@ public interface AmzaInstance {
 
     void destroyTable(TableName tableName) throws Exception;
 
-    void addRingHost(String ringName, RingHost ringHost) throws Exception;
+    void addRingHost(String ringName, UpenaRingHost ringHost) throws Exception;
 
-    void removeRingHost(String ringName, RingHost ringHost) throws Exception;
+    void removeRingHost(String ringName, UpenaRingHost ringHost) throws Exception;
 
-    List<RingHost> getRing(String ringName) throws Exception;
+    List<UpenaRingHost> getRing(String ringName) throws Exception;
 
     long getTimestamp(long timestamp, long millisAgo) throws Exception;
 }

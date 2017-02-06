@@ -15,15 +15,15 @@
  */
 package com.jivesoftware.os.upena.amza.service.storage.replication;
 
-import com.jivesoftware.os.upena.amza.shared.RingHost;
+import com.jivesoftware.os.upena.amza.shared.UpenaRingHost;
 
 /**
  *
  * @author jonathan.colt
  */
-public interface TakeFailureListener {
+public interface UpenaTakeFailureListener {
 
-    void failedToTake(RingHost ringHost, Throwable reason);
+    void failedToTake(UpenaRingHost ringHost, Throwable reason);
 
-    void tookFrom(RingHost ringHost);
+    void tookFrom(UpenaRingHost ringHost);
 }

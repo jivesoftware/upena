@@ -15,7 +15,7 @@
  */
 package com.jivesoftware.os.upena.amza.service.storage.replication;
 
-import com.jivesoftware.os.upena.amza.shared.RingHost;
+import com.jivesoftware.os.upena.amza.shared.UpenaRingHost;
 
 /**
  *
@@ -23,7 +23,7 @@ import com.jivesoftware.os.upena.amza.shared.RingHost;
  */
 public interface SendFailureListener {
 
-    void failedToSend(RingHost ringHost, Throwable reason);
+    void failedToSend(UpenaRingHost ringHost, Throwable reason);
 
-    void sent(RingHost ringHost);
+    void sent(UpenaRingHost ringHost);
 }

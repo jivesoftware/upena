@@ -5,7 +5,7 @@ import com.google.common.collect.Maps;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.amza.shared.AmzaInstance;
-import com.jivesoftware.os.upena.amza.shared.RingHost;
+import com.jivesoftware.os.upena.amza.shared.UpenaRingHost;
 import com.jivesoftware.os.upena.service.UpenaConfigStore;
 import com.jivesoftware.os.upena.deployable.region.UpenaRingPluginRegion.UpenaRingPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
@@ -175,13 +175,10 @@ public class UpenaRingPluginRegion implements PageRegion<UpenaRingPluginRegionIn
         try {
             if (input.action.equals("add")) {
                 SecurityUtils.getSubject().checkPermission("write");
-                amzaInstance.addRingHost("master", new RingHost(input.host, Integer.parseInt(input.port)));
+                amzaInstance.addRingHost("master", new UpenaRingHost(input.host, Integer.parseInt(input.port)));
             } else if (input.action.equals("remove")) {
                 SecurityUtils.getSubject().checkPermission("write");
-                amzaInstance.removeRingHost("master", new RingHost(input.host, Integer.parseInt(input.port)));
-            } else if (input.action.equals("clearChangeLog")) {
-                SecurityUtils.getSubject().checkPermission("write");
-                upenaStore.clearChangeLog();
+                amzaInstance.removeRingHost("master", new UpenaRingHost(input.host, Integer.parseInt(input.port)));
             } else if (input.action.equals("removeBadKeys")) {
                 SecurityUtils.getSubject().checkPermission("write");
                 upenaStore.clusters.find(true, null);
@@ -194,7 +191,7 @@ public class UpenaRingPluginRegion implements PageRegion<UpenaRingPluginRegionIn
             }
 
             List<Map<String, String>> rows = new ArrayList<>();
-            for (RingHost host : amzaInstance.getRing("master")) {
+            for (UpenaRingHost host : amzaInstance.getRing("master")) {
                 Map<String, String> row = new HashMap<>();
                 row.put("host", host.getHost());
                 row.put("port", String.valueOf(host.getPort()));

@@ -21,7 +21,7 @@ import com.jivesoftware.os.upena.amza.service.storage.replication.HostRingProvid
 import com.jivesoftware.os.upena.amza.service.storage.replication.MemoryBackedHighWaterMarks;
 import com.jivesoftware.os.upena.amza.service.storage.replication.SendFailureListener;
 import com.jivesoftware.os.upena.amza.service.storage.replication.TableReplicator;
-import com.jivesoftware.os.upena.amza.service.storage.replication.TakeFailureListener;
+import com.jivesoftware.os.upena.amza.service.storage.replication.UpenaTakeFailureListener;
 import com.jivesoftware.os.upena.amza.shared.Marshaller;
 import com.jivesoftware.os.upena.amza.shared.RowChanges;
 import com.jivesoftware.os.upena.amza.shared.RowsChanged;
@@ -32,9 +32,9 @@ import com.jivesoftware.os.jive.utils.ordered.id.TimestampedOrderIdProvider;
 import java.io.File;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class AmzaServiceInitializer {
+public class UpenaAmzaServiceInitializer {
 
-    public static class AmzaServiceConfig {
+    public static class UpenaAmzaServiceConfig {
 
         public String workingDirectory = "./var/data/";
         public int replicationFactor = 1;
@@ -46,7 +46,7 @@ public class AmzaServiceInitializer {
         public long compactTombstoneIfOlderThanNMillis = 30 * 24 * 60 * 60 * 1000L;
     }
 
-    public AmzaService initialize(AmzaServiceConfig config,
+    public UpenaAmzaService initialize(UpenaAmzaServiceConfig config,
         TimestampedOrderIdProvider orderIdProvider,
         Marshaller marshaller,
         RowsStorageProvider amzaStores,
@@ -55,7 +55,7 @@ public class AmzaServiceInitializer {
         UpdatesSender updatesSender,
         UpdatesTaker updatesTaker,
         Optional<SendFailureListener> sendFailureListener,
-        Optional<TakeFailureListener> takeFailureListener,
+        Optional<UpenaTakeFailureListener> takeFailureListener,
         final RowChanges allRowChanges) throws Exception {
 
         final AtomicReference<HostRingProvider> hostRingProvider = new AtomicReference<>();
@@ -90,7 +90,7 @@ public class AmzaServiceInitializer {
             takeFailureListener);
         replicator.set(tableReplicator);
 
-        AmzaService service = new AmzaService(orderIdProvider, marshaller, tableReplicator, storesProvider, amzaTableWatcher);
+        UpenaAmzaService service = new UpenaAmzaService(orderIdProvider, marshaller, tableReplicator, storesProvider, amzaTableWatcher);
         hostRingProvider.set(service);
         return service;
     }

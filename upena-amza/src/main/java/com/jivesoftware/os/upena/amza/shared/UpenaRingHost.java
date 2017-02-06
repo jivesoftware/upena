@@ -20,13 +20,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.Objects;
 
-public class RingHost implements Comparable<RingHost>, Serializable {
+public class UpenaRingHost implements Comparable<UpenaRingHost>, Serializable {
 
     private final String host;
     private final int port;
 
     @JsonCreator
-    public RingHost(@JsonProperty("host") String host,
+    public UpenaRingHost(@JsonProperty("host") String host,
             @JsonProperty("port") int port) {
         this.host = host;
         this.port = port;
@@ -61,7 +61,7 @@ public class RingHost implements Comparable<RingHost>, Serializable {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final RingHost other = (RingHost) obj;
+        final UpenaRingHost other = (UpenaRingHost) obj;
         if (!Objects.equals(this.host, other.host)) {
             return false;
         }
@@ -72,7 +72,7 @@ public class RingHost implements Comparable<RingHost>, Serializable {
     }
 
     @Override
-    public int compareTo(RingHost o) {
+    public int compareTo(UpenaRingHost o) {
         int i = host.compareTo(o.host);
         if (i != 0) {
             return i;

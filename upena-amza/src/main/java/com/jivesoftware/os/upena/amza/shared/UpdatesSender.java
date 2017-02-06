@@ -17,5 +17,5 @@ package com.jivesoftware.os.upena.amza.shared;
 
 public interface UpdatesSender {
 
-    void sendUpdates(RingHost ringHost, TableName tableName, RowScanable rowUpdates) throws Exception;
+    void sendUpdates(UpenaRingHost ringHost, TableName tableName, RowScanable rowUpdates) throws Exception;
 }

@@ -20,7 +20,7 @@ import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelper;
 import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelperUtils;
 import com.jivesoftware.os.routing.bird.http.client.OAuthSigner;
-import com.jivesoftware.os.upena.amza.shared.RingHost;
+import com.jivesoftware.os.upena.amza.shared.UpenaRingHost;
 import com.jivesoftware.os.upena.amza.shared.RowScan;
 import com.jivesoftware.os.upena.amza.shared.TableName;
 import com.jivesoftware.os.upena.amza.shared.UpdatesTaker;
@@ -33,7 +33,7 @@ public class HttpUpdatesTaker implements UpdatesTaker {
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
-    private final ConcurrentHashMap<RingHost, HttpRequestHelper> requestHelpers = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<UpenaRingHost, HttpRequestHelper> requestHelpers = new ConcurrentHashMap<>();
     private final boolean sslEnable;
     private final boolean allowSelfSignedCerts;
     private final OAuthSigner signer;
@@ -45,7 +45,7 @@ public class HttpUpdatesTaker implements UpdatesTaker {
     }
 
     @Override
-    public void takeUpdates(RingHost ringHost,
+    public void takeUpdates(UpenaRingHost ringHost,
         TableName tableName,
         long transationId,
         RowScan tookRowUpdates) throws Exception {
@@ -66,7 +66,7 @@ public class HttpUpdatesTaker implements UpdatesTaker {
         }
     }
 
-    HttpRequestHelper getRequestHelper(RingHost ringHost) throws Exception {
+    HttpRequestHelper getRequestHelper(UpenaRingHost ringHost) throws Exception {
         HttpRequestHelper requestHelper = requestHelpers.get(ringHost);
         if (requestHelper == null) {
             requestHelper = HttpRequestHelperUtils.buildRequestHelper(sslEnable, allowSelfSignedCerts, signer, ringHost.getHost(), ringHost.getPort());

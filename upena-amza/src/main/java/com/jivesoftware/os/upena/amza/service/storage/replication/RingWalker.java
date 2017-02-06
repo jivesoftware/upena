@@ -15,21 +15,21 @@
  */
 package com.jivesoftware.os.upena.amza.service.storage.replication;
 
-import com.jivesoftware.os.upena.amza.shared.RingHost;
+import com.jivesoftware.os.upena.amza.shared.UpenaRingHost;
 
 class RingWalker {
-    private final RingHost[] ringHosts;
+    private final UpenaRingHost[] ringHosts;
     private final int replicationFactor;
     int replicated = 0;
     int loops = 0;
     int failed = 0;
 
-    public RingWalker(RingHost[] ringHosts, int replicationFactor) {
+    public RingWalker(UpenaRingHost[] ringHosts, int replicationFactor) {
         this.ringHosts = ringHosts;
         this.replicationFactor = replicationFactor;
     }
 
-    public RingHost host() {
+    public UpenaRingHost host() {
         int i = failed + (loops * 2);
         if (i >= ringHosts.length) {
             return null;
@@ -37,7 +37,7 @@ class RingWalker {
         if (replicated >= replicationFactor) {
             return null;
         }
-        RingHost ringHost = ringHosts[i];
+        UpenaRingHost ringHost = ringHosts[i];
         ringHosts[i] = null;
         return ringHost;
     }

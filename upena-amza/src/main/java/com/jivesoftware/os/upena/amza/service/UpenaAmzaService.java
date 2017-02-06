@@ -29,7 +29,7 @@ import com.jivesoftware.os.upena.amza.service.storage.replication.HostRingProvid
 import com.jivesoftware.os.upena.amza.service.storage.replication.TableReplicator;
 import com.jivesoftware.os.upena.amza.shared.AmzaInstance;
 import com.jivesoftware.os.upena.amza.shared.Marshaller;
-import com.jivesoftware.os.upena.amza.shared.RingHost;
+import com.jivesoftware.os.upena.amza.shared.UpenaRingHost;
 import com.jivesoftware.os.upena.amza.shared.RowChanges;
 import com.jivesoftware.os.upena.amza.shared.RowIndexKey;
 import com.jivesoftware.os.upena.amza.shared.RowIndexValue;
@@ -58,10 +58,10 @@ import java.util.concurrent.TimeUnit;
  *
  *
  */
-public class AmzaService implements HostRingProvider, AmzaInstance {
+public class UpenaAmzaService implements HostRingProvider, AmzaInstance {
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
-    private RingHost ringHost;
+    private UpenaRingHost ringHost;
     private ScheduledExecutorService scheduledThreadPool;
     private final TimestampedOrderIdProvider orderIdProvider;
     private final Marshaller marshaller;
@@ -70,7 +70,7 @@ public class AmzaService implements HostRingProvider, AmzaInstance {
     private final TableStoreProvider tableStoreProvider;
     private final TableName tableIndexKey = new TableName("MASTER", "TABLE_INDEX", null, null);
 
-    public AmzaService(TimestampedOrderIdProvider orderIdProvider,
+    public UpenaAmzaService(TimestampedOrderIdProvider orderIdProvider,
         Marshaller marshaller,
         TableReplicator tableReplicator,
         TableStoreProvider tableStoreProvider,
@@ -82,11 +82,11 @@ public class AmzaService implements HostRingProvider, AmzaInstance {
         this.amzaTableWatcher = amzaTableWatcher;
     }
 
-    synchronized public RingHost ringHost() {
+    synchronized public UpenaRingHost ringHost() {
         return ringHost;
     }
 
-    synchronized public void start(RingHost ringHost,
+    synchronized public void start(UpenaRingHost ringHost,
         long resendReplicasIntervalInMillis,
         long applyReplicasIntervalInMillis,
         long takeFromNeighborsIntervalInMillis,
@@ -105,7 +105,7 @@ public class AmzaService implements HostRingProvider, AmzaInstance {
                 public void run() {
                     try {
                         failedToSend = 0;
-                        tableReplicator.resendLocalChanges(AmzaService.this);
+                        tableReplicator.resendLocalChanges(UpenaAmzaService.this);
                     } catch (Exception x) {
                         LOG.debug("Failed while resending replicas.", x);
                         if (failedToSend % silenceBackToBackErrors == 0) {
@@ -141,7 +141,7 @@ public class AmzaService implements HostRingProvider, AmzaInstance {
                 public void run() {
                     try {
                         failedToTake = 0;
-                        tableReplicator.takeChanges(AmzaService.this);
+                        tableReplicator.takeChanges(UpenaAmzaService.this);
                     } catch (Exception x) {
                         LOG.debug("Failing to take from above and below.", x);
                         if (failedToTake % silenceBackToBackErrors == 0) {
@@ -171,7 +171,7 @@ public class AmzaService implements HostRingProvider, AmzaInstance {
                 }
             }, checkIfCompactionIsNeededIntervalInMillis, checkIfCompactionIsNeededIntervalInMillis, TimeUnit.MILLISECONDS);
 
-            tableReplicator.takeChanges(AmzaService.this);
+            tableReplicator.takeChanges(UpenaAmzaService.this);
         }
     }
 
@@ -189,7 +189,7 @@ public class AmzaService implements HostRingProvider, AmzaInstance {
     }
 
     @Override
-    public void addRingHost(String ringName, RingHost ringHost) throws Exception {
+    public void addRingHost(String ringName, UpenaRingHost ringHost) throws Exception {
         if (ringName == null) {
             throw new IllegalArgumentException("ringName cannot be null.");
         }
@@ -205,7 +205,7 @@ public class AmzaService implements HostRingProvider, AmzaInstance {
     }
 
     @Override
-    public void removeRingHost(String ringName, RingHost ringHost) throws Exception {
+    public void removeRingHost(String ringName, UpenaRingHost ringHost) throws Exception {
         if (ringName == null) {
             throw new IllegalArgumentException("ringName cannot be null.");
         }
@@ -221,19 +221,19 @@ public class AmzaService implements HostRingProvider, AmzaInstance {
     }
 
     @Override
-    public List<RingHost> getRing(String ringName) throws Exception {
+    public List<UpenaRingHost> getRing(String ringName) throws Exception {
         TableName ringIndexKey = createRingTableName(ringName);
         TableStore ringIndex = tableStoreProvider.getTableStore(ringIndexKey);
         if (ringIndex == null) {
             LOG.warn("No ring defined for ringName:" + ringName);
             return new ArrayList<>();
         } else {
-            final Set<RingHost> ringHosts = new HashSet<>();
+            final Set<UpenaRingHost> ringHosts = new HashSet<>();
             List<RowIndexKey> badKeys = Lists.newArrayList();
             ringIndex.rowScan((orderId, key, value) -> {
                 if (!value.getTombstoned()) {
                     try {
-                        ringHosts.add(marshaller.deserialize(value.getValue(), RingHost.class));
+                        ringHosts.add(marshaller.deserialize(value.getValue(), UpenaRingHost.class));
                     } catch (Exception x) {
                         LOG.error("FAILED to deserialize RingHost:{}", new Object[]{value.getValue()}, x);
                         badKeys.add(key);
@@ -339,7 +339,7 @@ public class AmzaService implements HostRingProvider, AmzaInstance {
     }
 
     public void buildRandomSubRing(String ringName, int desiredRingSize) throws Exception {
-        List<RingHost> ring = getRing("MASTER");
+        List<UpenaRingHost> ring = getRing("MASTER");
         if (ring.size() < desiredRingSize) {
             throw new IllegalStateException("Current master ring is not large enough to support a ring of size:" + desiredRingSize);
         }

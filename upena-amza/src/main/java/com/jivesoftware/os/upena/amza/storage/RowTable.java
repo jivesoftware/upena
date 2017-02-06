@@ -212,7 +212,7 @@ public class RowTable implements RowsStorage {
             RowsIndex rowsIndex = tableIndex.get();
             rowsIndex.rowScan(new RowScan<E>() {
                 @Override
-                public boolean row(long transactionId, RowIndexKey key, RowIndexValue value) throws E {
+                public boolean row(long transactionId, RowIndexKey key, RowIndexValue value) throws Exception {
                     return rowStream.row(transactionId, key, hydrateRowIndexValue(value));
                 }
             });
@@ -228,7 +228,7 @@ public class RowTable implements RowsStorage {
             RowsIndex rowsIndex = tableIndex.get();
             rowsIndex.rangeScan(from, to, new RowScan<E>() {
                 @Override
-                public boolean row(long transactionId, RowIndexKey key, RowIndexValue value) throws E {
+                public boolean row(long transactionId, RowIndexKey key, RowIndexValue value) throws Exception {
                     return rowScan.row(transactionId, key, hydrateRowIndexValue(value));
                 }
             });

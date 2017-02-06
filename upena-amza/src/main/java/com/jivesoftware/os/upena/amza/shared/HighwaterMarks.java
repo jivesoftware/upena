@@ -17,11 +17,11 @@ package com.jivesoftware.os.upena.amza.shared;
 
 public interface HighwaterMarks {
 
-    void clearRing(RingHost ringHost);
+    void clearRing(UpenaRingHost ringHost);
 
-    void set(RingHost ringHost, TableName tableName, long highWatermark);
+    void set(UpenaRingHost ringHost, TableName tableName, long highWatermark);
 
-    void clear(RingHost ringHost, TableName tableName);
+    void clear(UpenaRingHost ringHost, TableName tableName);
 
-    Long get(RingHost ringHost, TableName tableName);
+    Long get(UpenaRingHost ringHost, TableName tableName);
 }

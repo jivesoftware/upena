@@ -14,7 +14,7 @@ import com.jivesoftware.os.routing.bird.shared.ConnectionHealth;
 import com.jivesoftware.os.routing.bird.shared.InstanceConnectionHealth;
 import com.jivesoftware.os.routing.bird.shared.InstanceDescriptor;
 import com.jivesoftware.os.upena.amza.shared.AmzaInstance;
-import com.jivesoftware.os.upena.amza.shared.RingHost;
+import com.jivesoftware.os.upena.amza.shared.UpenaRingHost;
 import com.jivesoftware.os.upena.deployable.UpenaHealth;
 import com.jivesoftware.os.upena.deployable.UpenaHealth.NannyHealth;
 import com.jivesoftware.os.upena.deployable.UpenaHealth.NodeHealth;
@@ -835,9 +835,9 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
         return "Topology";
     }
 
-    private final ConcurrentMap<RingHost, Routes> nodeRoutes = Maps.newConcurrentMap();
+    private final ConcurrentMap<UpenaRingHost, Routes> nodeRoutes = Maps.newConcurrentMap();
     private final ConcurrentMap<String, Long> nodeRecency = Maps.newConcurrentMap();
-    private final ConcurrentMap<RingHost, Boolean> currentlyExecuting = Maps.newConcurrentMap();
+    private final ConcurrentMap<UpenaRingHost, Boolean> currentlyExecuting = Maps.newConcurrentMap();
 
     private List<Route> buildClusterRoutes() throws Exception {
         List<Route> allRoutes = new ArrayList<>();
@@ -847,7 +847,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
             allRoutes.addAll(v.getRoutes());
         }
 
-        for (final RingHost ringHost : amzaInstance.getRing("MASTER")) {
+        for (final UpenaRingHost ringHost : amzaInstance.getRing("MASTER")) {
             if (currentlyExecuting.putIfAbsent(ringHost, true) == null) {
                 executorService.submit(() -> {
                     long start = System.currentTimeMillis();
