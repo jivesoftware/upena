@@ -63,6 +63,9 @@ import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.routing.bird.authentication.AuthValidationFilter;
 import com.jivesoftware.os.routing.bird.authentication.NoAuthEvaluator;
+import com.jivesoftware.os.routing.bird.health.api.HealthCheckConfigBinder;
+import com.jivesoftware.os.routing.bird.health.api.HealthCheckRegistry;
+import com.jivesoftware.os.routing.bird.health.api.HealthChecker;
 import com.jivesoftware.os.routing.bird.health.api.HealthFactory;
 import com.jivesoftware.os.routing.bird.health.api.HealthTimer;
 import com.jivesoftware.os.routing.bird.health.api.PercentileHealthCheckConfig;
@@ -261,9 +264,12 @@ import org.apache.commons.io.IOUtils;
 import org.glassfish.jersey.oauth1.signature.OAuth1Request;
 import org.glassfish.jersey.oauth1.signature.OAuth1Signature;
 import org.merlin.config.BindInterfaceToConfiguration;
+import org.merlin.config.Config;
 import org.merlin.config.defaults.DoubleDefault;
 import org.merlin.config.defaults.LongDefault;
 import org.merlin.config.defaults.StringDefault;
+
+import static org.merlin.config.BindInterfaceToConfiguration.bindDefault;
 
 public class UpenaMain {
 
@@ -771,7 +777,7 @@ public class UpenaMain {
             .addInjectable(UpenaAutoRelease.class, new UpenaAutoRelease(repositoryProvider, upenaStore))
             .addInjectable(PathToRepo.class, localPathToRepo);
 
-        PercentileHealthCheckConfig phcc = BindInterfaceToConfiguration.bindDefault(PercentileHealthCheckConfig.class);
+        PercentileHealthCheckConfig phcc = bindDefault(PercentileHealthCheckConfig.class);
         PercentileHealthChecker authFilterHealthCheck = new PercentileHealthChecker(phcc);
         AuthValidationFilter authValidationFilter = new AuthValidationFilter(authFilterHealthCheck);
         authValidationFilter.addEvaluator(new NoAuthEvaluator(),
@@ -1315,6 +1321,24 @@ public class UpenaMain {
         TenantAwareHttpClient<String> stripedTakeClient,
         TenantAwareHttpClient<String> ringClient, AtomicReference<Callable<RingTopology>> topologyProvider) throws Exception {
 
+        HealthFactory.initialize(new HealthCheckConfigBinder() {
+            @Override
+            public <C extends Config> C bindConfig(Class<C> aClass) {
+                return BindInterfaceToConfiguration.bindDefault(aClass);
+            }
+        }, new HealthCheckRegistry() {
+
+            @Override
+            public void register(HealthChecker<?> healthChecker) {
+
+            }
+
+            @Override
+            public void unregister(HealthChecker<?> healthChecker) {
+
+            }
+        });
+
         //Deployable deployable = new Deployable(new String[0]);
 
         SnowflakeIdPacker idPacker = new SnowflakeIdPacker();
@@ -1366,7 +1390,7 @@ public class UpenaMain {
         AvailableRowsTaker availableRowsTaker = new HttpAvailableRowsTaker(ringClient, baInterner, mapper);
         AquariumStats aquariumStats = new AquariumStats();
 
-        QuorumTimeouts quorumTimeoutsConfig = BindInterfaceToConfiguration.bindDefault(QuorumTimeouts.class);
+        QuorumTimeouts quorumTimeoutsConfig = bindDefault(QuorumTimeouts.class);
 
         TriggerTimeoutHealthCheck quorumTimeoutHealthCheck = new TriggerTimeoutHealthCheck(
             () -> amzaStats.getGrandTotal().quorumTimeouts.longValue(),
@@ -1375,7 +1399,7 @@ public class UpenaMain {
         //deployable.addHealthCheck(quorumTimeoutHealthCheck);
 
         //LABPointerIndexConfig amzaLabConfig = deployable.config(LABPointerIndexConfig.class);
-        LABPointerIndexConfig amzaLabConfig = BindInterfaceToConfiguration.bindDefault(UpenaLABPointerIndexConfig.class);
+        LABPointerIndexConfig amzaLabConfig = bindDefault(UpenaLABPointerIndexConfig.class);
 
         AmzaServiceConfig amzaServiceConfig = new AmzaServiceConfig();
         Set<RingMember> blacklistRingMembers = Sets.newHashSet();
