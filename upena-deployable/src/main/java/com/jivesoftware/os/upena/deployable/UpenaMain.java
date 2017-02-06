@@ -359,6 +359,24 @@ public class UpenaMain {
 
     public void run(String[] args) throws Exception {
 
+        HealthFactory.initialize(new HealthCheckConfigBinder() {
+            @Override
+            public <C extends Config> C bindConfig(Class<C> aClass) {
+                return BindInterfaceToConfiguration.bindDefault(aClass);
+            }
+        }, new HealthCheckRegistry() {
+
+            @Override
+            public void register(HealthChecker<?> healthChecker) {
+
+            }
+
+            @Override
+            public void unregister(HealthChecker<?> healthChecker) {
+
+            }
+        });
+
 
         Properties buildProperties = new Properties();
         String upenaVersion = "";
@@ -1321,23 +1339,7 @@ public class UpenaMain {
         TenantAwareHttpClient<String> stripedTakeClient,
         TenantAwareHttpClient<String> ringClient, AtomicReference<Callable<RingTopology>> topologyProvider) throws Exception {
 
-        HealthFactory.initialize(new HealthCheckConfigBinder() {
-            @Override
-            public <C extends Config> C bindConfig(Class<C> aClass) {
-                return BindInterfaceToConfiguration.bindDefault(aClass);
-            }
-        }, new HealthCheckRegistry() {
 
-            @Override
-            public void register(HealthChecker<?> healthChecker) {
-
-            }
-
-            @Override
-            public void unregister(HealthChecker<?> healthChecker) {
-
-            }
-        });
 
         //Deployable deployable = new Deployable(new String[0]);
 
