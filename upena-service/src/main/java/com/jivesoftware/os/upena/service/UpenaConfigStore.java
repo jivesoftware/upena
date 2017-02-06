@@ -18,51 +18,111 @@ package com.jivesoftware.os.upena.service;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
-import com.jivesoftware.os.upena.amza.service.AmzaService;
+import com.jivesoftware.os.amza.api.partition.Consistency;
+import com.jivesoftware.os.amza.api.partition.Durability;
+import com.jivesoftware.os.amza.api.partition.PartitionName;
+import com.jivesoftware.os.amza.api.partition.PartitionProperties;
+import com.jivesoftware.os.amza.api.stream.RowType;
+import com.jivesoftware.os.amza.service.AmzaService;
+import com.jivesoftware.os.amza.service.EmbeddedClientProvider;
+import com.jivesoftware.os.amza.service.EmbeddedClientProvider.CheckOnline;
+import com.jivesoftware.os.amza.service.EmbeddedClientProvider.EmbeddedClient;
+import com.jivesoftware.os.mlogger.core.MetricLogger;
+import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.amza.service.AmzaTable;
-import com.jivesoftware.os.upena.amza.shared.RowIndexKey;
+import com.jivesoftware.os.upena.amza.service.UpenaAmzaService;
 import com.jivesoftware.os.upena.amza.shared.TableName;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 public class UpenaConfigStore {
 
-    private final AmzaService amzaService;
+    public static final MetricLogger LOG = MetricLoggerFactory.getLogger();
+
     private final ObjectMapper mapper;
+    private final UpenaAmzaService upenaAmzaService;
+    private final AmzaService amzaService;
+    private final EmbeddedClientProvider embeddedClientProvider;
     private final Map<String, FetchedVersion> lastFetchedVersion = Maps.newConcurrentMap();
 
-    public UpenaConfigStore(ObjectMapper mapper, AmzaService amzaService) {
+    private final PartitionProperties partitionProperties = new PartitionProperties(Durability.fsync_async,
+        TimeUnit.DAYS.toMillis(30), TimeUnit.DAYS.toMillis(10), TimeUnit.DAYS.toMillis(30), TimeUnit.DAYS.toMillis(10),
+        0, 0, 0, 0,
+        false, Consistency.quorum, true, true, false, RowType.snappy_primary, "lab", -1, null, -1, -1);
+
+    public UpenaConfigStore(ObjectMapper mapper,
+        UpenaAmzaService upenaAmzaService,
+        AmzaService amzaService,
+        EmbeddedClientProvider embeddedClientProvider) throws Exception {
+
         this.mapper = mapper;
+        this.upenaAmzaService = upenaAmzaService;
         this.amzaService = amzaService;
+        this.embeddedClientProvider = embeddedClientProvider;
     }
+
+
+    public void init() throws Exception {
+        EmbeddedClient client = client();
+        TableName tableName = new TableName("master", "config", null, null);
+        AmzaTable table = upenaAmzaService.getTable(tableName);
+        long[] count = { 0 };
+        table.scan((transactionId, key, value) -> {
+            count[0]++;
+            client.commit(Consistency.quorum, null,
+                commitKeyValueStream -> commitKeyValueStream.commit(key.getKey(), value.getValue(), value.getTimestampId(), value.getTombstoned()),
+                30_000, TimeUnit.MILLISECONDS);
+            return true;
+        });
+        LOG.info("UPGRADE: carried {} configs forward.", count[0]);
+    }
+
+    private EmbeddedClient client() throws Exception {
+        PartitionName partitionName = new PartitionName(false, "upena".getBytes(), ("upena-config").getBytes());
+        amzaService.getRingWriter().ensureMaximalRing(partitionName.getRingName(), 30_000L); //TODO config
+        amzaService.createPartitionIfAbsent(partitionName, partitionProperties);
+        amzaService.awaitOnline(partitionName, 30_000L); //TODO config
+        return embeddedClientProvider.getClient(partitionName, CheckOnline.once);
+    }
+
 
     private String createTableName(String instanceKey, String context) {
         return "config/" + instanceKey + "/" + context;
     }
 
-    synchronized private AmzaTable getPartition() throws Exception {
 
-        TableName tableName = new TableName("master", "config", null, null);
-        return amzaService.getTable(tableName);
+    synchronized private byte[] get(String instanceKey, String context) throws Exception {
+        String key = createTableName(instanceKey, context);
+        return client().getValue(Consistency.none, null, key.getBytes(StandardCharsets.UTF_8));
     }
 
-    synchronized public void remove(String instanceKey, String context) throws Exception {
-        AmzaTable partition = getPartition();
+    synchronized private void set(String instanceKey, String context, byte[] rawProperties) throws Exception {
         String key = createTableName(instanceKey, context);
-        partition.remove(new RowIndexKey(key.getBytes("utf-8")));
+        client().commit(Consistency.quorum, null,
+            commitKeyValueStream -> commitKeyValueStream.commit(key.getBytes(StandardCharsets.UTF_8), rawProperties, -1L, false),
+            30_000, TimeUnit.MILLISECONDS);
+    }
+
+
+    synchronized public void remove(String instanceKey, String context) throws Exception {
+        String key = createTableName(instanceKey, context);
+        client().commit(Consistency.quorum, null,
+            commitKeyValueStream -> commitKeyValueStream.commit(key.getBytes(StandardCharsets.UTF_8), null, -1L, true),
+            30_000, TimeUnit.MILLISECONDS);
         lastFetchedVersion.remove(key);
     }
 
+
     public void putAll(String instanceKey, String context, Map<String, String> properties) throws Exception {
-        AmzaTable partition = getPartition();
         String key = createTableName(instanceKey, context);
-        RowIndexKey tableIndexKey = new RowIndexKey(key.getBytes("utf-8"));
-        byte[] rawProperties = partition.get(tableIndexKey);
+        byte[] rawProperties = get(instanceKey, context);
         if (rawProperties == null) {
-            partition.set(tableIndexKey, mapper.writeValueAsBytes(properties));
+            set(instanceKey, context, mapper.writeValueAsBytes(properties));
         } else {
             Map<String, String> current = mapper.readValue(rawProperties, new TypeReference<HashMap<String, String>>() {
             });
@@ -74,24 +134,22 @@ public class UpenaConfigStore {
                 }
             }
             if (changed) {
-                partition.set(tableIndexKey, mapper.writeValueAsBytes(current));
+                set(instanceKey, context, mapper.writeValueAsBytes(current));
             }
         }
         lastFetchedVersion.remove(key);
     }
 
     public void remove(String instanceKey, String context, Set<String> keys) throws Exception {
-        AmzaTable partition = getPartition();
         String key = createTableName(instanceKey, context);
-        RowIndexKey tableIndexKey = new RowIndexKey(key.getBytes("utf-8"));
-        byte[] rawProperties = partition.get(tableIndexKey);
+        byte[] rawProperties = get(instanceKey, context);
         if (rawProperties != null) {
             Map<String, String> current = mapper.readValue(rawProperties, new TypeReference<HashMap<String, String>>() {
             });
             for (String k : keys) {
                 current.remove(k);
             }
-            partition.set(tableIndexKey, mapper.writeValueAsBytes(current));
+            set(instanceKey, context, mapper.writeValueAsBytes(current));
         }
         lastFetchedVersion.remove(key);
     }
@@ -124,11 +182,9 @@ public class UpenaConfigStore {
     }
 
     public Map<String, String> get(String instanceKey, String context, List<String> keys, boolean cacheFetchedVersion) throws Exception {
-        final Map<String, String> results = new HashMap<>();
-        AmzaTable partition = getPartition();
+        Map<String, String> results = new HashMap<>();
         String key = createTableName(instanceKey, context);
-        RowIndexKey tableIndexKey = new RowIndexKey(key.getBytes("utf-8"));
-        byte[] rawProperties = partition.get(tableIndexKey);
+        byte[] rawProperties = get(instanceKey, context);
         if (rawProperties != null) {
             Map<String, String> current = mapper.readValue(rawProperties, new TypeReference<HashMap<String, String>>() {
             });

@@ -19,7 +19,7 @@ import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.routing.bird.shared.ResponseHelper;
 import com.jivesoftware.os.upena.amza.shared.AmzaInstance;
-import com.jivesoftware.os.upena.amza.shared.RingHost;
+import com.jivesoftware.os.upena.amza.shared.UpenaRingHost;
 import com.jivesoftware.os.upena.amza.shared.RowIndexKey;
 import com.jivesoftware.os.upena.amza.shared.RowIndexValue;
 import com.jivesoftware.os.upena.amza.shared.RowScan;
@@ -52,7 +52,7 @@ public class AmzaReplicationRestEndpoints {
     @POST
     @Consumes("application/json")
     @Path("/ring/add")
-    public Response addHost(final RingHost ringHost) {
+    public Response addHost(final UpenaRingHost ringHost) {
         try {
             LOG.info("Attempting to add RingHost: " + ringHost);
             amzaInstance.addRingHost("master", ringHost);
@@ -66,7 +66,7 @@ public class AmzaReplicationRestEndpoints {
     @POST
     @Consumes("application/json")
     @Path("/ring/remove")
-    public Response removeHost(final RingHost ringHost) {
+    public Response removeHost(final UpenaRingHost ringHost) {
         try {
             LOG.info("Attempting to remove RingHost: " + ringHost);
             amzaInstance.removeRingHost("master", ringHost);
@@ -83,7 +83,7 @@ public class AmzaReplicationRestEndpoints {
     public Response getRing() {
         try {
             LOG.info("Attempting to get amza ring.");
-            List<RingHost> ring = amzaInstance.getRing("master");
+            List<UpenaRingHost> ring = amzaInstance.getRing("master");
             return ResponseHelper.INSTANCE.jsonResponse(ring);
         } catch (Exception x) {
             LOG.warn("Failed to get amza ring.", x);

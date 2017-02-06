@@ -20,7 +20,7 @@ import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelper;
 import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelperUtils;
 import com.jivesoftware.os.routing.bird.http.client.OAuthSigner;
-import com.jivesoftware.os.upena.amza.shared.RingHost;
+import com.jivesoftware.os.upena.amza.shared.UpenaRingHost;
 import com.jivesoftware.os.upena.amza.shared.RowIndexKey;
 import com.jivesoftware.os.upena.amza.shared.RowIndexValue;
 import com.jivesoftware.os.upena.amza.shared.RowScanable;
@@ -34,7 +34,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class HttpUpdatesSender implements UpdatesSender {
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
-    private final ConcurrentHashMap<RingHost, HttpRequestHelper> requestHelpers = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<UpenaRingHost, HttpRequestHelper> requestHelpers = new ConcurrentHashMap<>();
     private final boolean sslEnable;
     private final boolean allowSelfSignedCerts;
     private final OAuthSigner signer;
@@ -46,7 +46,7 @@ public class HttpUpdatesSender implements UpdatesSender {
     }
 
     @Override
-    public void sendUpdates(RingHost ringHost, TableName tableName, RowScanable changes) throws Exception {
+    public void sendUpdates(UpenaRingHost ringHost, TableName tableName, RowScanable changes) throws Exception {
 
         final BinaryRowMarshaller rowMarshaller = new BinaryRowMarshaller();
         final List<byte[]> rows = new ArrayList<>();
@@ -64,7 +64,7 @@ public class HttpUpdatesSender implements UpdatesSender {
         }
     }
 
-    HttpRequestHelper getRequestHelper(RingHost ringHost) throws Exception {
+    HttpRequestHelper getRequestHelper(UpenaRingHost ringHost) throws Exception {
         HttpRequestHelper requestHelper = requestHelpers.get(ringHost);
         if (requestHelper == null) {
             requestHelper = HttpRequestHelperUtils.buildRequestHelper(sslEnable, allowSelfSignedCerts, signer, ringHost.getHost(), ringHost.getPort());

@@ -21,14 +21,14 @@ import com.jivesoftware.os.jive.utils.ordered.id.JiveEpochTimestampProvider;
 import com.jivesoftware.os.jive.utils.ordered.id.OrderIdProviderImpl;
 import com.jivesoftware.os.jive.utils.ordered.id.TimestampedOrderIdProvider;
 import com.jivesoftware.os.upena.amza.service.AmzaChangeIdPacker;
-import com.jivesoftware.os.upena.amza.service.AmzaService;
-import com.jivesoftware.os.upena.amza.service.AmzaServiceInitializer;
-import com.jivesoftware.os.upena.amza.service.AmzaServiceInitializer.AmzaServiceConfig;
+import com.jivesoftware.os.upena.amza.service.UpenaAmzaService;
+import com.jivesoftware.os.upena.amza.service.UpenaAmzaServiceInitializer;
+import com.jivesoftware.os.upena.amza.service.UpenaAmzaServiceInitializer.UpenaAmzaServiceConfig;
 import com.jivesoftware.os.upena.amza.service.AmzaTable;
 import com.jivesoftware.os.upena.amza.service.storage.replication.SendFailureListener;
-import com.jivesoftware.os.upena.amza.service.storage.replication.TakeFailureListener;
+import com.jivesoftware.os.upena.amza.service.storage.replication.UpenaTakeFailureListener;
 import com.jivesoftware.os.upena.amza.shared.MemoryRowsIndex;
-import com.jivesoftware.os.upena.amza.shared.RingHost;
+import com.jivesoftware.os.upena.amza.shared.UpenaRingHost;
 import com.jivesoftware.os.upena.amza.shared.RowIndexKey;
 import com.jivesoftware.os.upena.amza.shared.RowScan;
 import com.jivesoftware.os.upena.amza.shared.RowScanable;
@@ -55,10 +55,10 @@ import java.util.concurrent.ConcurrentSkipListMap;
 public class AmzaTestCluster {
 
     private final File workingDirctory;
-    private final ConcurrentSkipListMap<RingHost, AmzaNode> cluster = new ConcurrentSkipListMap<>();
+    private final ConcurrentSkipListMap<UpenaRingHost, AmzaNode> cluster = new ConcurrentSkipListMap<>();
     private int oddsOfAConnectionFailureWhenAdding = 0; // 0 never - 100 always
     private int oddsOfAConnectionFailureWhenTaking = 0; // 0 never - 100 always
-    private AmzaService lastAmzaService = null;
+    private UpenaAmzaService lastUpenaAmzaService = null;
 
     public AmzaTestCluster(File workingDirctory,
             int oddsOfAConnectionFailureWhenAdding,
@@ -72,22 +72,22 @@ public class AmzaTestCluster {
         return cluster.values();
     }
 
-    public AmzaNode get(RingHost host) {
+    public AmzaNode get(UpenaRingHost host) {
         return cluster.get(host);
     }
 
-    public void remove(RingHost host) {
+    public void remove(UpenaRingHost host) {
         cluster.remove(host);
     }
 
-    public AmzaNode newNode(final RingHost serviceHost) throws Exception {
+    public AmzaNode newNode(final UpenaRingHost serviceHost) throws Exception {
 
         AmzaNode service = cluster.get(serviceHost);
         if (service != null) {
             return service;
         }
 
-        AmzaServiceConfig config = new AmzaServiceConfig();
+        UpenaAmzaServiceConfig config = new UpenaAmzaServiceConfig();
         config.workingDirectory = workingDirctory.getAbsolutePath() + "/" + serviceHost.getHost() + "-" + serviceHost.getPort();
         config.replicationFactor = 4;
         config.takeFromFactor = 4;
@@ -96,7 +96,7 @@ public class AmzaTestCluster {
         config.takeFromNeighborsIntervalInMillis = 1000;
         config.compactTombstoneIfOlderThanNMillis = 1000L;
 
-        UpdatesSender changeSetSender = (RingHost ringHost, TableName mapName, RowScanable changes) -> {
+        UpdatesSender changeSetSender = (UpenaRingHost ringHost, TableName mapName, RowScanable changes) -> {
             AmzaNode service1 = cluster.get(ringHost);
             if (service1 == null) {
                 throw new IllegalStateException("Service doesn't exists for " + ringHost);
@@ -105,7 +105,7 @@ public class AmzaTestCluster {
             }
         };
 
-        UpdatesTaker tableTaker = (RingHost ringHost, TableName mapName, long transationId, RowScan rowStream) -> {
+        UpdatesTaker tableTaker = (UpenaRingHost ringHost, TableName mapName, long transationId, RowScan rowStream) -> {
             AmzaNode service1 = cluster.get(ringHost);
             if (service1 == null) {
                 throw new IllegalStateException("Service doesn't exists for " + ringHost);
@@ -131,7 +131,7 @@ public class AmzaTestCluster {
         };
 
         FstMarshaller marshaller = new FstMarshaller(FSTConfiguration.getDefaultConfiguration());
-        AmzaService amzaService = new AmzaServiceInitializer().initialize(config,
+        UpenaAmzaService upenaAmzaService = new UpenaAmzaServiceInitializer().initialize(config,
                 orderIdProvider,
                 marshaller,
                 tableStorageProvider,
@@ -140,10 +140,10 @@ public class AmzaTestCluster {
                 changeSetSender,
                 tableTaker,
                 Optional.<SendFailureListener>absent(),
-                Optional.<TakeFailureListener>absent(), (RowsChanged changes) -> {
+                Optional.<UpenaTakeFailureListener>absent(), (RowsChanged changes) -> {
         });
 
-        amzaService.start(serviceHost, config.resendReplicasIntervalInMillis,
+        upenaAmzaService.start(serviceHost, config.resendReplicasIntervalInMillis,
                 config.applyReplicasIntervalInMillis,
                 config.takeFromNeighborsIntervalInMillis,
                 config.checkIfCompactionIsNeededIntervalInMillis,
@@ -151,7 +151,7 @@ public class AmzaTestCluster {
 
         //if (serviceHost.getPort() % 2 == 0) {
         final TableName tableName = new TableName("test", "table1", null, null);
-        amzaService.watch(tableName, (RowsChanged changes) -> {
+        upenaAmzaService.watch(tableName, (RowsChanged changes) -> {
             if (changes.getApply().size() > 0) {
                 System.out.println("Service:" + serviceHost
                     + " Table:" + tableName.getTableName()
@@ -160,18 +160,18 @@ public class AmzaTestCluster {
         });
         //}
 
-        amzaService.addRingHost("test", serviceHost); // ?? Hacky
-        amzaService.addRingHost("MASTER", serviceHost); // ?? Hacky
-        if (lastAmzaService != null) {
-            amzaService.addRingHost("test", lastAmzaService.ringHost()); // ?? Hacky
-            amzaService.addRingHost("MASTER", lastAmzaService.ringHost()); // ?? Hacky
+        upenaAmzaService.addRingHost("test", serviceHost); // ?? Hacky
+        upenaAmzaService.addRingHost("MASTER", serviceHost); // ?? Hacky
+        if (lastUpenaAmzaService != null) {
+            upenaAmzaService.addRingHost("test", lastUpenaAmzaService.ringHost()); // ?? Hacky
+            upenaAmzaService.addRingHost("MASTER", lastUpenaAmzaService.ringHost()); // ?? Hacky
 
-            lastAmzaService.addRingHost("test", serviceHost); // ?? Hacky
-            lastAmzaService.addRingHost("MASTER", serviceHost); // ?? Hacky
+            lastUpenaAmzaService.addRingHost("test", serviceHost); // ?? Hacky
+            lastUpenaAmzaService.addRingHost("MASTER", serviceHost); // ?? Hacky
         }
-        lastAmzaService = amzaService;
+        lastUpenaAmzaService = upenaAmzaService;
 
-        service = new AmzaNode(serviceHost, amzaService);
+        service = new AmzaNode(serviceHost, upenaAmzaService);
         cluster.put(serviceHost, service);
         System.out.println("Added serviceHost:" + serviceHost + " to the cluster.");
         return service;
@@ -180,14 +180,14 @@ public class AmzaTestCluster {
     public class AmzaNode {
 
         private final Random random = new Random();
-        private final RingHost serviceHost;
-        private final AmzaService amzaService;
+        private final UpenaRingHost serviceHost;
+        private final UpenaAmzaService upenaAmzaService;
         private boolean off = false;
         private int flapped = 0;
 
-        public AmzaNode(RingHost serviceHost, AmzaService amzaService) {
+        public AmzaNode(UpenaRingHost serviceHost, UpenaAmzaService upenaAmzaService) {
             this.serviceHost = serviceHost;
-            this.amzaService = amzaService;
+            this.upenaAmzaService = upenaAmzaService;
         }
 
         @Override
@@ -205,7 +205,7 @@ public class AmzaTestCluster {
         }
 
         public void stop() throws Exception {
-            amzaService.stop();
+            upenaAmzaService.stop();
         }
 
         void addToReplicatedWAL(TableName mapName, RowScanable changes) throws Exception {
@@ -215,14 +215,14 @@ public class AmzaTestCluster {
             if (random.nextInt(100) > (100 - oddsOfAConnectionFailureWhenAdding)) {
                 throw new RuntimeException("Random connection failure:" + serviceHost);
             }
-            amzaService.updates(mapName, changes);
+            upenaAmzaService.updates(mapName, changes);
         }
 
         public void update(TableName tableName, RowIndexKey k, byte[] v, long timestamp, boolean tombstone) throws Exception {
             if (off) {
                 throw new RuntimeException("Service is off:" + serviceHost);
             }
-            AmzaTable amzaTable = amzaService.getTable(tableName);
+            AmzaTable amzaTable = upenaAmzaService.getTable(tableName);
             if (tombstone) {
                 amzaTable.remove(k);
             } else {
@@ -235,7 +235,7 @@ public class AmzaTestCluster {
             if (off) {
                 throw new RuntimeException("Service is off:" + serviceHost);
             }
-            AmzaTable amzaTable = amzaService.getTable(tableName);
+            AmzaTable amzaTable = upenaAmzaService.getTable(tableName);
             return amzaTable.get(key);
         }
 
@@ -246,7 +246,7 @@ public class AmzaTestCluster {
             if (random.nextInt(100) > (100 - oddsOfAConnectionFailureWhenTaking)) {
                 throw new RuntimeException("Random take failure:" + serviceHost);
             }
-            AmzaTable got = amzaService.getTable(tableName);
+            AmzaTable got = upenaAmzaService.getTable(tableName);
             if (got != null) {
                 got.takeRowUpdatesSince(transationId, rowStream);
             }
@@ -257,23 +257,23 @@ public class AmzaTestCluster {
                 System.out.println(serviceHost.getHost() + ":" + serviceHost.getPort() + " is OFF flapped:" + flapped);
                 return;
             }
-            amzaService.printService();
+            upenaAmzaService.printService();
         }
 
         public boolean compare(AmzaNode service) throws Exception {
             if (off || service.off) {
                 return true;
             }
-            Map<TableName, AmzaTable> aTables = amzaService.getTables();
-            Map<TableName, AmzaTable> bTables = service.amzaService.getTables();
+            Map<TableName, AmzaTable> aTables = upenaAmzaService.getTables();
+            Map<TableName, AmzaTable> bTables = service.upenaAmzaService.getTables();
 
             Set<TableName> tableNames = new HashSet<>();
             tableNames.addAll(aTables.keySet());
             tableNames.addAll(bTables.keySet());
 
             for (TableName tableName : tableNames) {
-                AmzaTable a = amzaService.getTable(tableName);
-                AmzaTable b = service.amzaService.getTable(tableName);
+                AmzaTable a = upenaAmzaService.getTable(tableName);
+                AmzaTable b = service.upenaAmzaService.getTable(tableName);
                 if (!a.compare(b)) {
                     return false;
                 }

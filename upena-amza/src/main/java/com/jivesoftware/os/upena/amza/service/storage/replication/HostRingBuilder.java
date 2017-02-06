@@ -15,7 +15,7 @@
  */
 package com.jivesoftware.os.upena.amza.service.storage.replication;
 
-import com.jivesoftware.os.upena.amza.shared.RingHost;
+import com.jivesoftware.os.upena.amza.shared.UpenaRingHost;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import java.util.ArrayList;
@@ -25,11 +25,11 @@ public class HostRingBuilder {
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
-    public HostRing build(RingHost serviceHost, Collection<RingHost> ringHosts) {
-        ArrayList<RingHost> ring = new ArrayList<>(ringHosts);
+    public HostRing build(UpenaRingHost serviceHost, Collection<UpenaRingHost> ringHosts) {
+        ArrayList<UpenaRingHost> ring = new ArrayList<>(ringHosts);
         int rootIndex = -1;
         int index = 0;
-        for (RingHost host : ring) {
+        for (UpenaRingHost host : ring) {
             if (host.equals(serviceHost)) {
                 rootIndex = index;
                 break;
@@ -38,11 +38,11 @@ public class HostRingBuilder {
         }
         if (rootIndex == -1) {
             LOG.warn("serviceHost: " + serviceHost + " is not a member of the ring.");
-            return new HostRing(new RingHost[0], new RingHost[0]);
+            return new HostRing(new UpenaRingHost[0], new UpenaRingHost[0]);
         }
 
-        ArrayList<RingHost> above = new ArrayList<>();
-        ArrayList<RingHost> below = new ArrayList<>();
+        ArrayList<UpenaRingHost> above = new ArrayList<>();
+        ArrayList<UpenaRingHost> below = new ArrayList<>();
         int aboveI = rootIndex - 1;
         int belowI = rootIndex + 1;
         for (int i = 1; i < ring.size(); i++) {
@@ -57,6 +57,6 @@ public class HostRingBuilder {
             aboveI--;
             belowI++;
         }
-        return new HostRing(above.toArray(new RingHost[above.size()]), below.toArray(new RingHost[below.size()]));
+        return new HostRing(above.toArray(new UpenaRingHost[above.size()]), below.toArray(new UpenaRingHost[below.size()]));
     }
 }

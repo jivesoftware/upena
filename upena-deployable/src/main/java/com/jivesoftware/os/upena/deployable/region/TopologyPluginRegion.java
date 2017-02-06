@@ -12,7 +12,7 @@ import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelperUtils;
 import com.jivesoftware.os.routing.bird.shared.HostPort;
 import com.jivesoftware.os.routing.bird.shared.InstanceConnectionHealth;
 import com.jivesoftware.os.upena.amza.shared.AmzaInstance;
-import com.jivesoftware.os.upena.amza.shared.RingHost;
+import com.jivesoftware.os.upena.amza.shared.UpenaRingHost;
 import com.jivesoftware.os.upena.deployable.UpenaHealth;
 import com.jivesoftware.os.upena.deployable.UpenaHealth.NannyHealth;
 import com.jivesoftware.os.upena.deployable.UpenaHealth.NodeHealth;
@@ -598,9 +598,9 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
         return "Topology";
     }
 
-    private final ConcurrentMap<RingHost, Routes> nodeRoutes = Maps.newConcurrentMap();
+    private final ConcurrentMap<UpenaRingHost, Routes> nodeRoutes = Maps.newConcurrentMap();
     private final ConcurrentMap<String, Long> nodeRecency = Maps.newConcurrentMap();
-    private final ConcurrentMap<RingHost, Boolean> currentlyExecuting = Maps.newConcurrentMap();
+    private final ConcurrentMap<UpenaRingHost, Boolean> currentlyExecuting = Maps.newConcurrentMap();
 
     private List<Route> buildClusterRoutes() throws Exception {
         List<Route> allRoutes = new ArrayList<>();
@@ -618,7 +618,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
 //            new RingHost("soa-prime-data9.phx1.jivehosted.com", 1175),
 //            new RingHost("soa-prime-data10.phx1.jivehosted.com", 1175)
 //        }) {
-        for (final RingHost ringHost : amzaInstance.getRing("MASTER")) {
+        for (final UpenaRingHost ringHost : amzaInstance.getRing("MASTER")) {
             if (currentlyExecuting.putIfAbsent(ringHost, true) == null) {
                 executorService.submit(() -> {
                     long start = System.currentTimeMillis();

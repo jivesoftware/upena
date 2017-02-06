@@ -11,21 +11,69 @@
     <artifactId>global-version-management</artifactId>
     <packaging>pom</packaging>
     <properties>
+        <aquarium-version>0.31</aquarium-version>
+        <amza-version>0.725</amza-version>
         <aws-version>1.11.29</aws-version>
         <jetty-version>9.3.3.v20150827</jetty-version>
         <glassfish-version>2.22</glassfish-version>
         <mlogger-version>0.23</mlogger-version>
         <jive.utils.version>0.108</jive.utils.version>
-        <routing.bird.version>0.159</routing.bird.version>
+        <routing.bird.version>0.173</routing.bird.version>
         <jackson-version>2.6.6</jackson-version>
         <aetherVersion>1.0.2.v20150114</aetherVersion>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <test.excludedGroups>blocked-by-jira,slow</test.excludedGroups>
         <maven.build.timestamp.format>yyyy-MM-dd-HH:mm:ss.S</maven.build.timestamp.format>
     </properties>
-    
+
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>org.glassfish.jersey.bundles.repackaged</groupId>
+                <artifactId>jersey-guava</artifactId>
+                <version>2.22</version>
+            </dependency>
+             <dependency>
+                <groupId>com.jivesoftware.os.aquarium</groupId>
+                <artifactId>aquarium</artifactId>
+                <version>${aquarium-version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.jivesoftware.os.amza</groupId>
+                <artifactId>amza-berkeleydb-storage</artifactId>
+                <version>${amza-version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.jivesoftware.os.amza</groupId>
+                <artifactId>amza-service</artifactId>
+                <version>${amza-version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.jivesoftware.os.amza</groupId>
+                <artifactId>amza-lab-storage</artifactId>
+                <version>${amza-version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.jivesoftware.os.amza</groupId>
+                <artifactId>amza-api</artifactId>
+                <version>${amza-version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.jivesoftware.os.amza</groupId>
+                <artifactId>amza-service</artifactId>
+                <version>${amza-version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.jivesoftware.os.amza</groupId>
+                <artifactId>amza-embed</artifactId>
+                <version>${amza-version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.jivesoftware.os.amza</groupId>
+                <artifactId>amza-lab-storage</artifactId>
+                <version>${amza-version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.owasp.esapi</groupId>
                 <artifactId>esapi</artifactId>
@@ -172,7 +220,6 @@
             </dependency>
 
 
-
             <dependency>
                 <groupId>javax.inject</groupId>
                 <artifactId>javax.inject</artifactId>
@@ -219,9 +266,9 @@
                 <artifactId>jersey-container-servlet-core</artifactId>
                 <version>${glassfish-version}</version>
             </dependency>
-            
+
             <!--END: force stuff back to older jetty / jersey etc to be compatible with amza 0.21-->
-            
+
             <dependency>
                 <groupId>org.eclipse.aether</groupId>
                 <artifactId>aether-api</artifactId>
@@ -273,8 +320,8 @@
                 <version>3.1.0</version>
                 <type>jar</type>
             </dependency>
-        
-            
+
+
             <dependency>
                 <groupId>commons-collections</groupId>
                 <artifactId>commons-collections</artifactId>

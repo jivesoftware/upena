@@ -17,5 +17,5 @@ package com.jivesoftware.os.upena.amza.shared;
 
 public interface UpdatesTaker {
 
-    void takeUpdates(RingHost ringHost, TableName tableName, long transationId, RowScan updates) throws Exception;
+    void takeUpdates(UpenaRingHost ringHost, TableName tableName, long transationId, RowScan updates) throws Exception;
 }

@@ -22,7 +22,7 @@ import com.jivesoftware.os.upena.amza.service.storage.TableStore;
 import com.jivesoftware.os.upena.amza.service.storage.TableStoreProvider;
 import com.jivesoftware.os.upena.amza.shared.HighwaterMarks;
 import com.jivesoftware.os.upena.amza.shared.MemoryRowsIndex;
-import com.jivesoftware.os.upena.amza.shared.RingHost;
+import com.jivesoftware.os.upena.amza.shared.UpenaRingHost;
 import com.jivesoftware.os.upena.amza.shared.RowIndexKey;
 import com.jivesoftware.os.upena.amza.shared.RowIndexValue;
 import com.jivesoftware.os.upena.amza.shared.RowScan;
@@ -58,7 +58,7 @@ public class TableReplicator {
     private final UpdatesTaker updatesTaker;
     private final HighwaterMarks highwaterMarks;
     private final Optional<SendFailureListener> sendFailureListener;
-    private final Optional<TakeFailureListener> takeFailureListener;
+    private final Optional<UpenaTakeFailureListener> takeFailureListener;
 
     public TableReplicator(TableStoreProvider tables,
         int replicationFactor,
@@ -69,7 +69,7 @@ public class TableReplicator {
         UpdatesSender updatesSender,
         UpdatesTaker updatesTaker,
         Optional<SendFailureListener> sendFailureListener,
-        Optional<TakeFailureListener> takeFailureListener) {
+        Optional<UpenaTakeFailureListener> takeFailureListener) {
         this.tables = tables;
         this.replicationFactor = replicationFactor;
         this.takeFromFactor = takeFromFactor;
@@ -102,7 +102,7 @@ public class TableReplicator {
         }
     }
 
-    private void takeChanges(RingHost[] ringHosts, TableName tableName) throws Exception {
+    private void takeChanges(UpenaRingHost[] ringHosts, TableName tableName) throws Exception {
         final MutableInt taken = new MutableInt(0);
         int i = 0;
         final MutableInt leaps = new MutableInt(0);
@@ -111,7 +111,7 @@ public class TableReplicator {
         while (i < ringHosts.length) {
             i = (leaps.intValue() * 2);
             for (; i < ringHosts.length; i++) {
-                RingHost ringHost = ringHosts[i];
+                UpenaRingHost ringHost = ringHosts[i];
                 if (ringHost == null) {
                     continue;
                 }
@@ -151,14 +151,14 @@ public class TableReplicator {
     static class TakeRowStream implements RowScan {
 
         private final TableStore tableStore;
-        private final RingHost ringHost;
+        private final UpenaRingHost ringHost;
         private final TableName tableName;
         private final HighwaterMarks highWaterMarks;
         private final MutableLong highWaterMark;
         private final TreeMap<RowIndexKey, RowIndexValue> batch = new TreeMap<>();
 
         public TakeRowStream(TableStore tableStore,
-            RingHost ringHost,
+            UpenaRingHost ringHost,
             TableName tableName,
             HighwaterMarks highWaterMarks) {
             this.tableStore = tableStore;
@@ -218,7 +218,7 @@ public class TableReplicator {
         boolean enqueueForResendOnFailure) throws Exception {
 
         HostRing hostRing = hostRingProvider.getHostRing(tableName.getRingName());
-        RingHost[] ringHosts = hostRing.getBelowRing();
+        UpenaRingHost[] ringHosts = hostRing.getBelowRing();
         if (ringHosts == null || ringHosts.length == 0) {
             if (enqueueForResendOnFailure) {
                 TableStore tableStore = resendWAL.getTableStore(tableName);
@@ -229,7 +229,7 @@ public class TableReplicator {
             return false;
         } else {
             RingWalker ringWalker = new RingWalker(ringHosts, replicationFactor);
-            RingHost ringHost;
+            UpenaRingHost ringHost;
             while ((ringHost = ringWalker.host()) != null) {
                 try {
                     updatesSender.sendUpdates(ringHost, tableName, rowUpdates);
@@ -270,7 +270,7 @@ public class TableReplicator {
         for (Map.Entry<TableName, TableStore> updates : resendWAL.getTableStores()) {
             TableName tableName = updates.getKey();
             HostRing hostRing = hostRingProvider.getHostRing(tableName.getRingName());
-            RingHost[] ring = hostRing.getBelowRing();
+            UpenaRingHost[] ring = hostRing.getBelowRing();
             if (ring.length > 0) {
                 logResendLocalChanges = true;
                 TableName mapName = updates.getKey();

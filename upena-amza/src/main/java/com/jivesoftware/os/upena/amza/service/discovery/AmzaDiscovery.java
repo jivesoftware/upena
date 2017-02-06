@@ -18,8 +18,8 @@ package com.jivesoftware.os.upena.amza.service.discovery;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
-import com.jivesoftware.os.upena.amza.service.AmzaService;
-import com.jivesoftware.os.upena.amza.shared.RingHost;
+import com.jivesoftware.os.upena.amza.service.UpenaAmzaService;
+import com.jivesoftware.os.upena.amza.shared.UpenaRingHost;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -40,16 +40,16 @@ public class AmzaDiscovery {
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
-    private final AmzaService amzaService;
+    private final UpenaAmzaService upenaAmzaService;
     private final String clusterName;
-    private final RingHost ringHost;
+    private final UpenaRingHost ringHost;
     private final InetAddress multicastGroup;
     private final int multicastPort;
     private final ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("discovery-%d").build();
     private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(2, namedThreadFactory);
 
-    public AmzaDiscovery(AmzaService amzaService, RingHost ringHost, String clusterName, String multicastGroup, int multicastPort) throws UnknownHostException {
-        this.amzaService = amzaService;
+    public AmzaDiscovery(UpenaAmzaService upenaAmzaService, UpenaRingHost ringHost, String clusterName, String multicastGroup, int multicastPort) throws UnknownHostException {
+        this.upenaAmzaService = upenaAmzaService;
         this.ringHost = ringHost;
         this.clusterName = clusterName;
         this.multicastGroup = InetAddress.getByName(multicastGroup);
@@ -79,11 +79,11 @@ public class AmzaDiscovery {
                                 LOG.debug("received:" + Arrays.toString(clusterHostPort));
                                 String host = clusterHostPort[1];
                                 int port = Integer.parseInt(clusterHostPort[2].trim());
-                                RingHost anotherRingHost = new RingHost(host, port); // TODO need to broadcast rack id
-                                List<RingHost> ring = amzaService.getRing("master");
+                                UpenaRingHost anotherRingHost = new UpenaRingHost(host, port); // TODO need to broadcast rack id
+                                List<UpenaRingHost> ring = upenaAmzaService.getRing("master");
                                 if (!ring.contains(anotherRingHost)) {
                                     LOG.info("Adding host to the cluster: " + anotherRingHost);
-                                    amzaService.addRingHost("master", anotherRingHost);
+                                    upenaAmzaService.addRingHost("master", anotherRingHost);
                                 }
                             }
                         }

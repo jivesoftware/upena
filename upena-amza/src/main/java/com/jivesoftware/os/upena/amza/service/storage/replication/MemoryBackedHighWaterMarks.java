@@ -16,21 +16,21 @@
 package com.jivesoftware.os.upena.amza.service.storage.replication;
 
 import com.jivesoftware.os.upena.amza.shared.HighwaterMarks;
-import com.jivesoftware.os.upena.amza.shared.RingHost;
+import com.jivesoftware.os.upena.amza.shared.UpenaRingHost;
 import com.jivesoftware.os.upena.amza.shared.TableName;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class MemoryBackedHighWaterMarks implements HighwaterMarks {
 
-    private final ConcurrentHashMap<RingHost, ConcurrentHashMap<TableName, Long>> lastTransactionIds = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<UpenaRingHost, ConcurrentHashMap<TableName, Long>> lastTransactionIds = new ConcurrentHashMap<>();
 
     @Override
-    public void clearRing(RingHost ringHost) {
+    public void clearRing(UpenaRingHost ringHost) {
         lastTransactionIds.remove(ringHost);
     }
 
     @Override
-    public void set(RingHost ringHost, TableName tableName, long highWatermark) {
+    public void set(UpenaRingHost ringHost, TableName tableName, long highWatermark) {
         ConcurrentHashMap<TableName, Long> lastTableTransactionIds = lastTransactionIds.get(ringHost);
         if (lastTableTransactionIds == null) {
             lastTableTransactionIds = new ConcurrentHashMap<>();
@@ -40,7 +40,7 @@ public class MemoryBackedHighWaterMarks implements HighwaterMarks {
     }
 
     @Override
-    public void clear(RingHost ringHost, TableName tableName) {
+    public void clear(UpenaRingHost ringHost, TableName tableName) {
         ConcurrentHashMap<TableName, Long> lastTableTransactionIds = lastTransactionIds.get(ringHost);
         if (lastTableTransactionIds != null) {
             lastTableTransactionIds.remove(tableName);
@@ -51,7 +51,7 @@ public class MemoryBackedHighWaterMarks implements HighwaterMarks {
     }
 
     @Override
-    public Long get(RingHost ringHost, TableName tableName) {
+    public Long get(UpenaRingHost ringHost, TableName tableName) {
         ConcurrentHashMap<TableName, Long> lastTableTransactionIds = lastTransactionIds.get(ringHost);
         if (lastTableTransactionIds == null) {
             return -1L;

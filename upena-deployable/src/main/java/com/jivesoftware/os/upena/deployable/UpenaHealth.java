@@ -12,7 +12,7 @@ import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelper;
 import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelperUtils;
 import com.jivesoftware.os.routing.bird.shared.InstanceDescriptor;
 import com.jivesoftware.os.upena.amza.shared.AmzaInstance;
-import com.jivesoftware.os.upena.amza.shared.RingHost;
+import com.jivesoftware.os.upena.amza.shared.UpenaRingHost;
 import com.jivesoftware.os.upena.service.UpenaConfigStore;
 import com.jivesoftware.os.upena.deployable.region.SparseCircularHitsBucketBuffer;
 import com.jivesoftware.os.upena.shared.HostKey;
@@ -43,7 +43,7 @@ public class UpenaHealth {
     private final UpenaSSLConfig upenaSSLConfig;
     private final UpenaConfigStore upenaConfigStore;
     private final UbaService ubaService;
-    private final RingHost ringHost;
+    private final UpenaRingHost ringHost;
     private final HostKey ringHostKey;
     private final long startupTime = System.currentTimeMillis();
 
@@ -55,7 +55,7 @@ public class UpenaHealth {
         UpenaSSLConfig upenaSSLConfig,
         UpenaConfigStore upenaConfigStore,
         UbaService ubaService,
-        RingHost ringHost,
+        UpenaRingHost ringHost,
         HostKey ringHostKey) {
 
         this.amzaInstance = amzaInstance;
@@ -70,7 +70,7 @@ public class UpenaHealth {
     }
 
     public String healthGradient() throws Exception {
-        ConcurrentMap<RingHost, NodeHealth> health = buildClusterHealth();
+        ConcurrentMap<UpenaRingHost, NodeHealth> health = buildClusterHealth();
         List<Double> healths = Lists.newArrayList();
         for (NodeHealth nodeHealth : health.values()) {
             for (NannyHealth nannyHealth : nodeHealth.nannyHealths) {
@@ -96,15 +96,15 @@ public class UpenaHealth {
 
     }
 
-    public final ConcurrentMap<RingHost, UpenaHealth.NodeHealth> nodeHealths = Maps.newConcurrentMap();
+    public final ConcurrentMap<UpenaRingHost, UpenaHealth.NodeHealth> nodeHealths = Maps.newConcurrentMap();
     public final ConcurrentMap<String, Long> nodeRecency = Maps.newConcurrentMap();
-    public final ConcurrentMap<RingHost, Boolean> currentlyExecuting = Maps.newConcurrentMap();
-    public final ConcurrentMap<RingHost, Long> lastExecuted = Maps.newConcurrentMap();
+    public final ConcurrentMap<UpenaRingHost, Boolean> currentlyExecuting = Maps.newConcurrentMap();
+    public final ConcurrentMap<UpenaRingHost, Long> lastExecuted = Maps.newConcurrentMap();
     public final Map<String, InstanceSparseCircularHitsBucketBuffer> instanceHealthHistory = new ConcurrentHashMap<>();
 
-    public ConcurrentMap<RingHost, NodeHealth> buildClusterHealth() throws Exception {
+    public ConcurrentMap<UpenaRingHost, NodeHealth> buildClusterHealth() throws Exception {
 
-        for (RingHost ringHost : amzaInstance.getRing("MASTER")) {
+        for (UpenaRingHost ringHost : amzaInstance.getRing("MASTER")) {
             if (currentlyExecuting.putIfAbsent(ringHost, true) == null) {
 
                 Long timestamp = lastExecuted.get(ringHost);

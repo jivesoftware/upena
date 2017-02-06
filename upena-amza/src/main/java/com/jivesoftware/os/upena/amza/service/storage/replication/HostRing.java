@@ -15,23 +15,23 @@
  */
 package com.jivesoftware.os.upena.amza.service.storage.replication;
 
-import com.jivesoftware.os.upena.amza.shared.RingHost;
+import com.jivesoftware.os.upena.amza.shared.UpenaRingHost;
 
 public class HostRing {
 
-    private final RingHost[] aboveRing;
-    private final RingHost[] belowRing;
+    private final UpenaRingHost[] aboveRing;
+    private final UpenaRingHost[] belowRing;
 
-    public HostRing(RingHost[] aboveRing, RingHost[] belowRing) {
+    public HostRing(UpenaRingHost[] aboveRing, UpenaRingHost[] belowRing) {
         this.aboveRing = aboveRing;
         this.belowRing = belowRing;
     }
 
-    public RingHost[] getAboveRing() {
+    public UpenaRingHost[] getAboveRing() {
         return aboveRing;
     }
 
-    public RingHost[] getBelowRing() {
+    public UpenaRingHost[] getBelowRing() {
         return belowRing;
     }
 }
