@@ -586,9 +586,10 @@ public class UpenaMain {
             .maxConnections(1_000)
             .socketTimeoutInMillis(60_000)
             .build(); // TODO expose to conf
+        AmzaStats amzaStats = new AmzaStats();
 
 
-        AmzaService amzaService = startAmza(workingDir, baInterner, writerId, new RingHost(datacenter, rack, ringHost.getHost(), ringHost.getPort()),
+        AmzaService amzaService = startAmza(workingDir, amzaStats, baInterner, writerId, new RingHost(datacenter, rack, ringHost.getHost(), ringHost.getPort()),
             new RingMember(ringHost.getHost() + ":" + ringHost.getPort()), authSigner, systemTakeClient, stripedTakeClient, ringClient, topologyProvider,
             clusterDiscoveryName, multicastGroup, multicastPort);
 
@@ -886,7 +887,7 @@ public class UpenaMain {
             discoveredRoutes);
 
 
-        injectAmza(baInterner, jerseyEndpoints, amzaService, ringClient);
+        injectAmza(baInterner, amzaStats, jerseyEndpoints, amzaService, ringClient);
 
         InitializeRestfulServer initializeRestfulServer = new InitializeRestfulServer(false,
             port,
@@ -1331,6 +1332,7 @@ public class UpenaMain {
     }
 
     public AmzaService startAmza(String workingDir,
+        AmzaStats amzaStats,
         BAInterner baInterner,
         int writerId,
         RingHost ringHost,
@@ -1348,9 +1350,6 @@ public class UpenaMain {
 
         SnowflakeIdPacker idPacker = new SnowflakeIdPacker();
         JiveEpochTimestampProvider timestampProvider = new JiveEpochTimestampProvider();
-
-        AmzaStats amzaStats = new AmzaStats();
-
 
         SickThreads sickThreads = new SickThreads();
         SickPartitions sickPartitions = new SickPartitions();
@@ -1529,6 +1528,7 @@ public class UpenaMain {
 
 
     private void injectAmza(BAInterner baInterner,
+        AmzaStats amzaStats,
         UpenaJerseyEndpoints jerseyEndpoints,
         AmzaService amzaService,
         TenantAwareHttpClient<String> ringClient) {
@@ -1564,6 +1564,7 @@ public class UpenaMain {
             });*/
 
         jerseyEndpoints.addEndpoint(AmzaReplicationRestEndpoints.class);
+        jerseyEndpoints.addInjectable(AmzaStats.class, amzaStats);
         jerseyEndpoints.addInjectable(AmzaService.class, amzaService);
         jerseyEndpoints.addInjectable(AmzaRingWriter.class, amzaService.getRingWriter());
         jerseyEndpoints.addInjectable(AmzaRingReader.class, amzaService.getRingReader());
