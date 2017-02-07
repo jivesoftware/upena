@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.jivesoftware.os.amza.api.ring.RingHost;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.routing.bird.shared.InstanceDescriptor;
@@ -376,7 +377,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
             filter.put("service", input.service);
             data.put("filter", filter);
 
-            ConcurrentMap<UpenaRingHost, UpenaHealth.NodeHealth> nodeHealths = upenaHealth.buildClusterHealth();
+            ConcurrentMap<RingHost, UpenaHealth.NodeHealth> nodeHealths = upenaHealth.buildClusterHealth();
 
             Map<String, Double> minClusterHealth = new HashMap<>();
             for (UpenaHealth.NodeHealth nodeHealth : nodeHealths.values()) {

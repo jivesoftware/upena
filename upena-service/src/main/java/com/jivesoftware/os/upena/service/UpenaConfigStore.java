@@ -68,18 +68,21 @@ public class UpenaConfigStore {
 
 
     public void init() throws Exception {
-        EmbeddedClient client = client();
-        TableName tableName = new TableName("master", "config", null, null);
-        AmzaTable table = upenaAmzaService.getTable(tableName);
-        long[] count = { 0 };
-        table.scan((transactionId, key, value) -> {
-            count[0]++;
-            client.commit(Consistency.quorum, null,
-                commitKeyValueStream -> commitKeyValueStream.commit(key.getKey(), value.getValue(), value.getTimestampId(), value.getTombstoned()),
-                30_000, TimeUnit.MILLISECONDS);
-            return true;
-        });
-        LOG.info("UPGRADE: carried {} configs forward.", count[0]);
+
+        if (upenaAmzaService != null) {
+            EmbeddedClient client = client();
+            TableName tableName = new TableName("master", "config", null, null);
+            AmzaTable table = upenaAmzaService.getTable(tableName);
+            long[] count = { 0 };
+            table.scan((transactionId, key, value) -> {
+                count[0]++;
+                client.commit(Consistency.quorum, null,
+                    commitKeyValueStream -> commitKeyValueStream.commit(key.getKey(), value.getValue(), value.getTimestampId(), value.getTombstoned()),
+                    30_000, TimeUnit.MILLISECONDS);
+                return true;
+            });
+            LOG.info("UPGRADE: carried {} configs forward.", count[0]);
+        }
     }
 
     private EmbeddedClient client() throws Exception {

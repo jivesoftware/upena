@@ -2,13 +2,16 @@ package com.jivesoftware.os.upena.deployable.region;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
+import com.jivesoftware.os.amza.api.ring.RingHost;
+import com.jivesoftware.os.amza.api.ring.RingMember;
+import com.jivesoftware.os.amza.api.ring.RingMemberAndHost;
+import com.jivesoftware.os.amza.service.AmzaService;
+import com.jivesoftware.os.amza.service.ring.AmzaRingReader;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
-import com.jivesoftware.os.upena.amza.shared.UpenaAmzaInstance;
-import com.jivesoftware.os.upena.amza.shared.UpenaRingHost;
-import com.jivesoftware.os.upena.service.UpenaConfigStore;
 import com.jivesoftware.os.upena.deployable.region.UpenaRingPluginRegion.UpenaRingPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
+import com.jivesoftware.os.upena.service.UpenaConfigStore;
 import com.jivesoftware.os.upena.service.UpenaStore;
 import com.jivesoftware.os.upena.shared.Cluster;
 import com.jivesoftware.os.upena.shared.ClusterKey;
@@ -20,9 +23,6 @@ import com.jivesoftware.os.upena.shared.ReleaseGroup;
 import com.jivesoftware.os.upena.shared.ReleaseGroupKey;
 import com.jivesoftware.os.upena.shared.Service;
 import com.jivesoftware.os.upena.shared.ServiceKey;
-import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.authz.AuthorizationException;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -31,6 +31,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authz.AuthorizationException;
 
 /**
  *
@@ -43,21 +45,21 @@ public class UpenaRingPluginRegion implements PageRegion<UpenaRingPluginRegionIn
     private final ObjectMapper mapper;
     private final String template;
     private final SoyRenderer renderer;
-    private final UpenaAmzaInstance amzaInstance;
+    private final AmzaService amzaService;
     private final UpenaStore upenaStore;
     private final UpenaConfigStore configStore;
 
     public UpenaRingPluginRegion(ObjectMapper mapper,
         String template,
         SoyRenderer renderer,
-        UpenaAmzaInstance amzaInstance,
+        AmzaService amzaService,
         UpenaStore upenaStore,
         UpenaConfigStore configStore) {
 
         this.mapper = mapper;
         this.template = template;
         this.renderer = renderer;
-        this.amzaInstance = amzaInstance;
+        this.amzaService = amzaService;
         this.upenaStore = upenaStore;
         this.configStore = configStore;
     }
@@ -175,10 +177,14 @@ public class UpenaRingPluginRegion implements PageRegion<UpenaRingPluginRegionIn
         try {
             if (input.action.equals("add")) {
                 SecurityUtils.getSubject().checkPermission("write");
-                amzaInstance.addRingHost("master", new UpenaRingHost(input.host, Integer.parseInt(input.port)));
+                amzaService.getRingWriter().register(
+                    new RingMember(input.host + ":" + input.port),
+                    new RingHost("", "", input.host, Integer.parseInt(input.port)),
+                    0L,
+                    false);
             } else if (input.action.equals("remove")) {
                 SecurityUtils.getSubject().checkPermission("write");
-                amzaInstance.removeRingHost("master", new UpenaRingHost(input.host, Integer.parseInt(input.port)));
+                amzaService.getRingWriter().deregister(new RingMember(input.host + ":" + input.port));
             } else if (input.action.equals("removeBadKeys")) {
                 SecurityUtils.getSubject().checkPermission("write");
                 upenaStore.clusters.find(true, null);
@@ -186,15 +192,20 @@ public class UpenaRingPluginRegion implements PageRegion<UpenaRingPluginRegionIn
                 upenaStore.services.find(true, null);
                 upenaStore.releaseGroups.find(true, null);
                 upenaStore.instances.find(true, null);
-            }  else if (input.action.equals("forceShutdown")) {
+            } else if (input.action.equals("forceShutdown")) {
                 System.exit(1);
             }
 
             List<Map<String, String>> rows = new ArrayList<>();
-            for (UpenaRingHost host : amzaInstance.getRing("master")) {
+            for (RingMemberAndHost ringMemberAndHost : amzaService.getRingReader().getRing(AmzaRingReader.SYSTEM_RING, 30_000L).entries) {
+
+
                 Map<String, String> row = new HashMap<>();
-                row.put("host", host.getHost());
-                row.put("port", String.valueOf(host.getPort()));
+                row.put("member", ringMemberAndHost.ringMember.getMember());
+                row.put("datacenter", ringMemberAndHost.ringHost.getDatacenter());
+                row.put("rack", ringMemberAndHost.ringHost.getRack());
+                row.put("host", ringMemberAndHost.ringHost.getHost());
+                row.put("port", String.valueOf(ringMemberAndHost.ringHost.getPort()));
                 rows.add(row);
             }
             data.put("ring", rows);
@@ -206,11 +217,11 @@ public class UpenaRingPluginRegion implements PageRegion<UpenaRingPluginRegionIn
                 data.put("tail", sb.toString());
 
             } catch (Exception x) {
-                LOG.warn("Failed to tail log.",x);
+                LOG.warn("Failed to tail log.", x);
             }
 
 
-        } catch(AuthorizationException x) {
+        } catch (AuthorizationException x) {
             throw x;
         } catch (Exception e) {
             LOG.error("Unable to retrieve data", e);

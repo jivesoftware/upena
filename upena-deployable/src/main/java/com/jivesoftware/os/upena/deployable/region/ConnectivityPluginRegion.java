@@ -6,6 +6,10 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.jivesoftware.os.amza.api.ring.RingHost;
+import com.jivesoftware.os.amza.api.ring.RingMemberAndHost;
+import com.jivesoftware.os.amza.service.AmzaService;
+import com.jivesoftware.os.amza.service.ring.AmzaRingReader;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelper;
@@ -13,8 +17,6 @@ import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelperUtils;
 import com.jivesoftware.os.routing.bird.shared.ConnectionHealth;
 import com.jivesoftware.os.routing.bird.shared.InstanceConnectionHealth;
 import com.jivesoftware.os.routing.bird.shared.InstanceDescriptor;
-import com.jivesoftware.os.upena.amza.shared.UpenaAmzaInstance;
-import com.jivesoftware.os.upena.amza.shared.UpenaRingHost;
 import com.jivesoftware.os.upena.deployable.UpenaHealth;
 import com.jivesoftware.os.upena.deployable.UpenaHealth.NannyHealth;
 import com.jivesoftware.os.upena.deployable.UpenaHealth.NodeHealth;
@@ -39,8 +41,6 @@ import com.jivesoftware.os.upena.shared.Service;
 import com.jivesoftware.os.upena.shared.ServiceFilter;
 import com.jivesoftware.os.upena.shared.ServiceKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
-import org.apache.commons.lang.exception.ExceptionUtils;
-
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -55,6 +55,7 @@ import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+import org.apache.commons.lang.exception.ExceptionUtils;
 
 /**
  *
@@ -71,7 +72,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
     private final String connectionOverviewTemplate;
     private final SoyRenderer renderer;
     private final UpenaHealth upenaHealth;
-    private final UpenaAmzaInstance amzaInstance;
+    private final AmzaService amzaService;
     private final UpenaSSLConfig upenaSSLConfig;
     private final UpenaStore upenaStore;
     private final HealthPluginRegion healthPluginRegion;
@@ -85,7 +86,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
         String connectionOverviewTemplate,
         SoyRenderer renderer,
         UpenaHealth upenaHealth,
-        UpenaAmzaInstance amzaInstance,
+        AmzaService amzaService,
         UpenaSSLConfig upenaSSLConfig,
         UpenaStore upenaStore,
         HealthPluginRegion healthPluginRegion,
@@ -97,7 +98,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
         this.connectionOverviewTemplate = connectionOverviewTemplate;
         this.renderer = renderer;
         this.upenaHealth = upenaHealth;
-        this.amzaInstance = amzaInstance;
+        this.amzaService = amzaService;
         this.upenaSSLConfig = upenaSSLConfig;
         this.upenaStore = upenaStore;
         this.healthPluginRegion = healthPluginRegion;
@@ -835,9 +836,9 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
         return "Topology";
     }
 
-    private final ConcurrentMap<UpenaRingHost, Routes> nodeRoutes = Maps.newConcurrentMap();
+    private final ConcurrentMap<RingHost, Routes> nodeRoutes = Maps.newConcurrentMap();
     private final ConcurrentMap<String, Long> nodeRecency = Maps.newConcurrentMap();
-    private final ConcurrentMap<UpenaRingHost, Boolean> currentlyExecuting = Maps.newConcurrentMap();
+    private final ConcurrentMap<RingHost, Boolean> currentlyExecuting = Maps.newConcurrentMap();
 
     private List<Route> buildClusterRoutes() throws Exception {
         List<Route> allRoutes = new ArrayList<>();
@@ -847,7 +848,8 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
             allRoutes.addAll(v.getRoutes());
         }
 
-        for (final UpenaRingHost ringHost : amzaInstance.getRing("MASTER")) {
+        for (final RingMemberAndHost ringMemberAndHost : amzaService.getRingReader().getRing(AmzaRingReader.SYSTEM_RING,30_000L).entries) {
+            RingHost ringHost = ringMemberAndHost.ringHost;
             if (currentlyExecuting.putIfAbsent(ringHost, true) == null) {
                 executorService.submit(() -> {
                     long start = System.currentTimeMillis();
