@@ -64,6 +64,7 @@ import com.jivesoftware.os.upena.shared.UserKey;
 import java.util.Collections;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class UpenaStore {
@@ -105,6 +106,7 @@ public class UpenaStore {
 
     private final AmzaService amzaService;
     private final EmbeddedClientProvider embeddedClientProvider;
+    private final AtomicBoolean initialized = new AtomicBoolean(false);
 
     public UpenaStore(
         ObjectMapper mapper,
@@ -244,6 +246,12 @@ public class UpenaStore {
             getPartitionName("chaos"), ChaosStateKey.class, ChaosState.class, new ChaosStateKeyProvider(idProvider), null);
 
         chaosStates = copy("chaosStates", upenaChaosStates, amzaChaosStates, cleanup);
+
+        initialized.set(true);
+    }
+
+    public boolean isReady() {
+        return initialized.get();
     }
 
     private EmbeddedClient changeLogClient() throws Exception {
