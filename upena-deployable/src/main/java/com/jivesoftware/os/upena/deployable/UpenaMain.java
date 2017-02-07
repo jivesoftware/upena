@@ -897,7 +897,7 @@ public class UpenaMain {
             sslKeystorePath,
             128,
             10_000);
-t
+
         buildSwagger();
         initializeRestfulServer.addClasspathResource("/resources");
         initializeRestfulServer.addContextHandler("/", jerseyEndpoints);
