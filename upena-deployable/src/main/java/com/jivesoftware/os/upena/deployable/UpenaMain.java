@@ -1041,13 +1041,51 @@ public class UpenaMain {
         LOG.info("|     End Migration");
         LOG.info("-----------------------------------------------------------------------");
 
+        addManualPeers(amzaService);
+
         Host gotHost = upenaStore.hosts.get(hostKey);
         if (gotHost == null || !gotHost.equals(host)) {
             upenaStore.hosts.update(hostKey, host);
         }
-
     }
 
+    private void addManualPeers(AmzaService amzaService) {
+        String peers = System.getProperty("manual.peers");
+        if (peers != null) {
+            String[] hostPortTuples = peers.split(",");
+            for (String hostPortTuple : hostPortTuples) {
+                String hostPort = hostPortTuple.trim();
+                if (hostPort.length() > 0 && hostPort.contains(":")) {
+                    String[] host_port = hostPort.split(":");
+                    try {
+                        String host = host_port[0].trim();
+                        int port = Integer.parseInt(host_port[1].trim());
+                        RingTopology ring = amzaService.getRingReader().getRing(AmzaRingReader.SYSTEM_RING, -1);
+                        for (RingMemberAndHost ringMemberAndHost : ring.entries) {
+                            if (!ringMemberAndHost.ringHost.getHost().equals(host) && ringMemberAndHost.ringHost.getPort() != port) {
+                                continue;
+                            }
+                            try {
+                                amzaService.getRingWriter().register(
+                                    new RingMember(host + ":" + port),
+                                    new RingHost("", "", host, port),
+                                    1L,
+                                    false
+                                );
+                                break;
+                            } catch (Exception x) {
+                                LOG.error("Failed to register {}:{}", new Object[] { host, port }, x);
+                            }
+                        }
+                    } catch (Exception x) {
+                        LOG.warn("Malformed hostPortTuple {}", hostPort);
+                    }
+                } else {
+                    LOG.warn("Malformed hostPortTuple {}", hostPort);
+                }
+            }
+        }
+    }
 
     private void injectUI(String upenaVersion,
         AWSClientFactory awsClientFactory,
@@ -1497,36 +1535,7 @@ public class UpenaMain {
             });
 
 
-        String peers = System.getProperty("manual.peers");
-        if (peers != null) {
-            String[] hostPortTuples = peers.split(",");
-            for (String hostPortTuple : hostPortTuples) {
-                String hostPort = hostPortTuple.trim();
-                if (hostPort.length() > 0 && hostPort.contains(":")) {
-                    String[] host_port = hostPort.split(":");
-                    try {
-                        String host = host_port[0].trim();
-                        int port = Integer.parseInt(host_port[1].trim());
-                        RingTopology ring = amzaService.getRingReader().getRing(AmzaRingReader.SYSTEM_RING, -1);
-                        for (RingMemberAndHost ringMemberAndHost : ring.entries) {
-                            if (!ringMemberAndHost.ringHost.getHost().equals(host) && ringMemberAndHost.ringHost.getPort() != port) {
-                                continue;
-                            }
-                            amzaService.getRingWriter().register(
-                                new RingMember(host + ":" + port),
-                                new RingHost("", "", host, port), 1L,
-                                false
-                            );
-                            break;
-                        }
-                    } catch (Exception x) {
-                        LOG.warn("Malformed hostPortTuple {}", hostPort);
-                    }
-                } else {
-                    LOG.warn("Malformed hostPortTuple {}", hostPort);
-                }
-            }
-        }
+
 
         topologyProvider.set(() -> amzaService.getRingReader().getRing(AmzaRingReader.SYSTEM_RING, -1));
 
