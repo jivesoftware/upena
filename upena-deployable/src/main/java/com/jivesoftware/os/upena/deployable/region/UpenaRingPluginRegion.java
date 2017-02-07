@@ -180,7 +180,7 @@ public class UpenaRingPluginRegion implements PageRegion<UpenaRingPluginRegionIn
                 amzaService.getRingWriter().register(
                     new RingMember(input.host + ":" + input.port),
                     new RingHost("", "", input.host, Integer.parseInt(input.port)),
-                    0L,
+                    System.currentTimeMillis(),
                     false);
             } else if (input.action.equals("remove")) {
                 SecurityUtils.getSubject().checkPermission("write");
