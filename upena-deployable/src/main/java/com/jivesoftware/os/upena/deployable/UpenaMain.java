@@ -579,7 +579,7 @@ public class UpenaMain {
             .build(); // TODO expose to conf
 
 
-        AmzaService amzaService = startAmza(baInterner, writerId, new RingHost(datacenter, rack, ringHost.getHost(), ringHost.getPort()),
+        AmzaService amzaService = startAmza(workingDir, baInterner, writerId, new RingHost(datacenter, rack, ringHost.getHost(), ringHost.getPort()),
             new RingMember(ringHost.getHost() + ":" + ringHost.getPort()), authSigner, systemTakeClient, stripedTakeClient, ringClient, topologyProvider);
 
 
@@ -1325,7 +1325,8 @@ public class UpenaMain {
         beanConfig.setTitle("Upena");
     }
 
-    public AmzaService startAmza(BAInterner baInterner,
+    public AmzaService startAmza(String workingDir,
+        BAInterner baInterner,
         int writerId,
         RingHost ringHost,
         RingMember ringMember,
@@ -1399,6 +1400,16 @@ public class UpenaMain {
         LABPointerIndexConfig amzaLabConfig = bindDefault(UpenaLABPointerIndexConfig.class);
 
         AmzaServiceConfig amzaServiceConfig = new AmzaServiceConfig();
+        amzaServiceConfig.systemRingSize = 1;
+        amzaServiceConfig.workingDirectories = new String[]{new File(workingDir, "state").getAbsolutePath()};
+        amzaServiceConfig.checkIfCompactionIsNeededIntervalInMillis = TimeUnit.MINUTES.toMillis(30);
+        amzaServiceConfig.deltaMergeThreads = 2;
+        amzaServiceConfig.maxUpdatesBeforeDeltaStripeCompaction = 10_000;
+        amzaServiceConfig.numberOfTakerThreads = 2;
+        amzaServiceConfig.hardFsync = true;
+        amzaServiceConfig.takeSlowThresholdInMillis = 1_000;
+        amzaServiceConfig.rackDistributionEnabled = false;
+
         Set<RingMember> blacklistRingMembers = Sets.newHashSet();
         AmzaService amzaService = new AmzaServiceInitializer().initialize(amzaServiceConfig,
             baInterner,
