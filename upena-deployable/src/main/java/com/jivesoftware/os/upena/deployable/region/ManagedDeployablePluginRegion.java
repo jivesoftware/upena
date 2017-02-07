@@ -256,11 +256,11 @@ public class ManagedDeployablePluginRegion implements PageRegion<ManagedDeployab
     }
 
     public String renderHtml(String html) {
-        return renderer.render("soy.page.deployablePluginRegionHtml", ImmutableMap.of("htmlResult",(html == null ? "" : html)));
+        return renderer.render("soy.upena.page.deployablePluginRegionHtml", ImmutableMap.of("htmlResult",(html == null ? "" : html)));
     }
 
     public String renderText(String text) {
-        return renderer.render("soy.page.deployablePluginRegionText", ImmutableMap.of("textResult",(text == null ? "" : text)));
+        return renderer.render("soy.upena.page.deployablePluginRegionText", ImmutableMap.of("textResult",(text == null ? "" : text)));
     }
 
     @Override

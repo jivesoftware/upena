@@ -373,7 +373,7 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
                 Map<String, Object> data = new HashMap<>();
                 data.put("sid", sessionId);
                 data.put("c", connectionData(state));
-                return renderer.render("soy.page.liveBreakpoints", data);
+                return renderer.render("soy.upena.page.liveBreakpoints", data);
             }
         }
         return "No state for "+sessionId+":"+connectionId+" "+System.currentTimeMillis();

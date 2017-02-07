@@ -1074,19 +1074,19 @@ public class UpenaMain {
         SoyRenderer renderer = new SoyRenderer(tofu, new SoyDataUtils());
         SoyService soyService = new SoyService(upenaVersion,
             renderer,
-            //new HeaderRegion("soy.chrome.headerRegion", renderer),
-            new MenuRegion("soy.chrome.menuRegion", renderer),
-            new HomeRegion("soy.page.upenaHomeRegion", renderer, hostKey, upenaStore, ubaService),
+            //new HeaderRegion("soy.upena.chrome.headerRegion", renderer),
+            new MenuRegion("soy.upena.chrome.menuRegion", renderer),
+            new HomeRegion("soy.upena.page.homeRegion", renderer, hostKey, upenaStore, ubaService),
             humanReadableUpenaClusterName,
             hostKey,
             upenaStore
         );
 
-        AuthPluginRegion authRegion = new AuthPluginRegion("soy.page.authPluginRegion", renderer);
-        OktaMFAAuthPluginRegion oktaMFAAuthRegion = new OktaMFAAuthPluginRegion("soy.page.oktaMFAAuthPluginRegion", renderer);
+        AuthPluginRegion authRegion = new AuthPluginRegion("soy.upena.page.authPluginRegion", renderer);
+        OktaMFAAuthPluginRegion oktaMFAAuthRegion = new OktaMFAAuthPluginRegion("soy.upena.page.oktaMFAAuthPluginRegion", renderer);
         jerseyEndpoints.addInjectable(OktaMFAAuthPluginRegion.class, oktaMFAAuthRegion);
 
-        UnauthorizedPluginRegion unauthorizedRegion = new UnauthorizedPluginRegion("soy.page.unauthorizedPluginRegion", renderer);
+        UnauthorizedPluginRegion unauthorizedRegion = new UnauthorizedPluginRegion("soy.upena.page.unauthorizedPluginRegion", renderer);
 
         PluginHandle auth = new PluginHandle("login", null, "Login", "/ui/auth/login",
             AuthPluginEndpoints.class, authRegion, null, "read");
@@ -1094,25 +1094,25 @@ public class UpenaMain {
         HealthPluginRegion healthPluginRegion = new HealthPluginRegion(mapper,
             System.currentTimeMillis(),
             ringHost,
-            "soy.page.healthPluginRegion",
-            "soy.page.instanceHealthPluginRegion",
-            "soy.page.healthPopup",
+            "soy.upena.page.healthPluginRegion",
+            "soy.upena.page.instanceHealthPluginRegion",
+            "soy.upena.page.healthPopup",
             renderer,
             upenaHealth,
             upenaStore);
         ReleasesPluginRegion releasesPluginRegion = new ReleasesPluginRegion(mapper, repositoryProvider,
-            "soy.page.releasesPluginRegion", "soy.page.releasesPluginRegionList",
+            "soy.upena.page.releasesPluginRegion", "soy.upena.page.releasesPluginRegionList",
             renderer, upenaStore);
-        HostsPluginRegion hostsPluginRegion = new HostsPluginRegion("soy.page.hostsPluginRegion", "soy.page.removeHostPluginRegion", renderer, upenaStore);
-        InstancesPluginRegion instancesPluginRegion = new InstancesPluginRegion("soy.page.instancesPluginRegion",
-            "soy.page.instancesPluginRegionList", renderer, upenaHealth, upenaStore, hostKey, healthPluginRegion, awsClientFactory);
+        HostsPluginRegion hostsPluginRegion = new HostsPluginRegion("soy.upena.page.hostsPluginRegion", "soy.upena.page.removeHostPluginRegion", renderer, upenaStore);
+        InstancesPluginRegion instancesPluginRegion = new InstancesPluginRegion("soy.upena.page.instancesPluginRegion",
+            "soy.upena.page.instancesPluginRegionList", renderer, upenaHealth, upenaStore, hostKey, healthPluginRegion, awsClientFactory);
 
         PluginHandle health = new PluginHandle("fire", null, "Health", "/ui/health",
             HealthPluginEndpoints.class, healthPluginRegion, null, "read");
 
         PluginHandle topology = new PluginHandle("th", null, "Topology", "/ui/topology",
             TopologyPluginEndpoints.class,
-            new TopologyPluginRegion(mapper, "soy.page.topologyPluginRegion", "soy.page.connectionsHealth",
+            new TopologyPluginRegion(mapper, "soy.upena.page.topologyPluginRegion", "soy.upena.page.connectionsHealth",
                 renderer, upenaHealth, amzaInstance, upenaSSLConfig, upenaStore, healthPluginRegion, hostsPluginRegion, releasesPluginRegion,
                 instancesPluginRegion,
                 discoveredRoutes), null,
@@ -1120,78 +1120,78 @@ public class UpenaMain {
 
         PluginHandle connectivity = new PluginHandle("transfer", null, "Connectivity", "/ui/connectivity",
             ConnectivityPluginEndpoints.class,
-            new ConnectivityPluginRegion(mapper, "soy.page.connectivityPluginRegion", "soy.page.connectionsHealth", "soy.page.connectionOverview",
+            new ConnectivityPluginRegion(mapper, "soy.upena.page.connectivityPluginRegion", "soy.upena.page.connectionsHealth", "soy.upena.page.connectionOverview",
                 renderer, upenaHealth, amzaInstance, upenaSSLConfig, upenaStore, healthPluginRegion,
                 discoveredRoutes), null,
             "read");
 
         PluginHandle changes = new PluginHandle("road", null, "Changes", "/ui/changeLog",
             ChangeLogPluginEndpoints.class,
-            new ChangeLogPluginRegion("soy.page.changeLogPluginRegion", renderer, upenaStore), null, "read");
+            new ChangeLogPluginRegion("soy.upena.page.changeLogPluginRegion", renderer, upenaStore), null, "read");
 
         PluginHandle instances = new PluginHandle("star", null, "Instances", "/ui/instances",
             InstancesPluginEndpoints.class, instancesPluginRegion, null, "read");
 
         PluginHandle config = new PluginHandle("cog", null, "Config", "/ui/config",
             ConfigPluginEndpoints.class,
-            new ConfigPluginRegion(mapper, "soy.page.configPluginRegion", renderer, upenaSSLConfig, upenaStore, upenaConfigStore), null, "read");
+            new ConfigPluginRegion(mapper, "soy.upena.page.configPluginRegion", renderer, upenaSSLConfig, upenaStore, upenaConfigStore), null, "read");
 
         PluginHandle repo = new PluginHandle("hdd", null, "Repository", "/ui/repo",
             RepoPluginEndpoints.class,
-            new RepoPluginRegion("soy.page.repoPluginRegion", renderer, upenaStore, localPathToRepo), null, "read");
+            new RepoPluginRegion("soy.upena.page.repoPluginRegion", renderer, upenaStore, localPathToRepo), null, "read");
 
         PluginHandle projects = new PluginHandle("folder-open", null, "Projects", "/ui/projects",
             ProjectsPluginEndpoints.class,
-            new ProjectsPluginRegion("soy.page.projectsPluginRegion", "soy.page.projectBuildOutput", "soy.page.projectBuildOutputTail", renderer, upenaStore,
+            new ProjectsPluginRegion("soy.upena.page.projectsPluginRegion", "soy.upena.page.projectBuildOutput", "soy.upena.page.projectBuildOutputTail", renderer, upenaStore,
                 localPathToRepo), null, "read");
 
         PluginHandle users = new PluginHandle("user", null, "Users", "/ui/users",
             UsersPluginEndpoints.class,
-            new UsersPluginRegion("soy.page.usersPluginRegion", renderer, upenaStore), null, "read");
+            new UsersPluginRegion("soy.upena.page.usersPluginRegion", renderer, upenaStore), null, "read");
 
 
         PluginHandle permissions = new PluginHandle("lock", null, "Permission", "/ui/permissions",
             PermissionsPluginEndpoints.class,
-            new PermissionsPluginRegion("soy.page.permissionsPluginRegion", renderer, upenaStore), null, "read");
+            new PermissionsPluginRegion("soy.upena.page.permissionsPluginRegion", renderer, upenaStore), null, "read");
 
 
         PluginHandle clusters = new PluginHandle("cloud", null, "Clusters", "/ui/clusters",
             ClustersPluginEndpoints.class,
-            new ClustersPluginRegion("soy.page.clustersPluginRegion", renderer, upenaStore), null, "read");
+            new ClustersPluginRegion("soy.upena.page.clustersPluginRegion", renderer, upenaStore), null, "read");
 
         PluginHandle hosts = new PluginHandle("tasks", null, "Hosts", "/ui/hosts",
             HostsPluginEndpoints.class, hostsPluginRegion, null, "read");
 
         PluginHandle services = new PluginHandle("tint", null, "Services", "/ui/services",
             ServicesPluginEndpoints.class,
-            new ServicesPluginRegion(mapper, "soy.page.servicesPluginRegion", renderer, upenaStore), null, "read");
+            new ServicesPluginRegion(mapper, "soy.upena.page.servicesPluginRegion", renderer, upenaStore), null, "read");
 
         PluginHandle releases = new PluginHandle("send", null, "Releases", "/ui/releases",
             ReleasesPluginEndpoints.class, releasesPluginRegion, null, "read");
 
         PluginHandle modules = new PluginHandle("wrench", null, "Modules", "/ui/modules",
             ModulesPluginEndpoints.class,
-            new ModulesPluginRegion(mapper, repositoryProvider, "soy.page.modulesPluginRegion", renderer, upenaStore), null, "read");
+            new ModulesPluginRegion(mapper, repositoryProvider, "soy.upena.page.modulesPluginRegion", renderer, upenaStore), null, "read");
 
         PluginHandle proxy = new PluginHandle("random", null, "Proxies", "/ui/proxy",
             ProxyPluginEndpoints.class,
-            new ProxyPluginRegion("soy.page.proxyPluginRegion", renderer), null, "read", "debug");
+            new ProxyPluginRegion("soy.upena.page.proxyPluginRegion", renderer), null, "read", "debug");
 
         PluginHandle ring = new PluginHandle("leaf", null, "Upena", "/ui/ring",
             UpenaRingPluginEndpoints.class,
-            new UpenaRingPluginRegion(storeMapper, "soy.page.upenaRingPluginRegion", renderer, amzaInstance, upenaStore, upenaConfigStore), null, "read",
+            new UpenaRingPluginRegion(storeMapper, "soy.upena.page.upenaRingPluginRegion", renderer, amzaInstance, upenaStore, upenaConfigStore), null, "read",
             "debug");
 
         PluginHandle loadBalancer = new PluginHandle("scale", null, "Load Balancer", "/ui/loadbalancers",
             LoadBalancersPluginEndpoints.class,
-            new LoadBalancersPluginRegion("soy.page.loadBalancersPluginRegion", renderer, upenaStore, awsClientFactory), null, "read", "debug");
+            new LoadBalancersPluginRegion("soy.upena.page.loadBalancersPluginRegion", renderer, upenaStore, awsClientFactory), null, "read", "debug");
 
         ServicesCallDepthStack servicesCallDepthStack = new ServicesCallDepthStack();
         PerfService perfService = new PerfService(servicesCallDepthStack);
 
         PluginHandle profiler = new PluginHandle("hourglass", null, "Profiler", "/ui/profiler",
             ProfilerPluginEndpoints.class,
-            new ProfilerPluginRegion("soy.page.profilerPluginRegion", renderer, new VisualizeProfile(new NameUtils(), servicesCallDepthStack)), null, "read",
+            new ProfilerPluginRegion("soy.upena.page.profilerPluginRegion", renderer, new VisualizeProfile(new NameUtils(), servicesCallDepthStack)), null, "read",
             "debug");
 
         PluginHandle jvm = null;
@@ -1199,21 +1199,21 @@ public class UpenaMain {
         if (jvmapi != null) {
             jvm = new PluginHandle("camera", null, "JVM", "/ui/jvm",
                 JVMPluginEndpoints.class,
-                new JVMPluginRegion("soy.page.jvmPluginRegion", renderer, upenaStore, jvmapi), null, "read", "debug");
+                new JVMPluginRegion("soy.upena.page.jvmPluginRegion", renderer, upenaStore, jvmapi), null, "read", "debug");
 
             breakpointDumper = new PluginHandle("record", null, "Breakpoint Dumper", "/ui/breakpoint",
                 BreakpointDumperPluginEndpoints.class,
-                new BreakpointDumperPluginRegion("soy.page.breakpointDumperPluginRegion", renderer, upenaStore, jvmapi), null, "read", "debug");
+                new BreakpointDumperPluginRegion("soy.upena.page.breakpointDumperPluginRegion", renderer, upenaStore, jvmapi), null, "read", "debug");
         }
 
         PluginHandle aws = null;
         aws = new PluginHandle("globe", null, "AWS", "/ui/aws",
             AWSPluginEndpoints.class,
-            new AWSPluginRegion("soy.page.awsPluginRegion", renderer, awsClientFactory), null, "read", "debug");
+            new AWSPluginRegion("soy.upena.page.awsPluginRegion", renderer, awsClientFactory), null, "read", "debug");
 
         PluginHandle monkey = new PluginHandle("flash", null, "Chaos", "/ui/chaos",
             MonkeyPluginEndpoints.class,
-            new MonkeyPluginRegion("soy.page.monkeyPluginRegion", renderer, upenaStore), null, "read", "debug");
+            new MonkeyPluginRegion("soy.upena.page.monkeyPluginRegion", renderer, upenaStore), null, "read", "debug");
 
         PluginHandle api = new PluginHandle("play-circle", null, "API", "/ui/api",
             ApiPluginEndpoints.class,
@@ -1221,13 +1221,13 @@ public class UpenaMain {
 
         PluginHandle thrown = new PluginHandle("equalizer", null, "Thrown", "/ui/thrown",
             ThrownPluginEndpoints.class,
-            new ThrownPluginRegion(hostKey, "soy.page.thrownPluginRegion", renderer, upenaStore), null, "read", "debug");
+            new ThrownPluginRegion(hostKey, "soy.upena.page.thrownPluginRegion", renderer, upenaStore), null, "read", "debug");
 
         PluginHandle probe = new PluginHandle("hand-right", null, "Deployable", "/ui/deployable",
             ManagedDeployablePluginEndpoints.class,
             new ManagedDeployablePluginRegion(sessionStore,
                 hostKey,
-                "soy.page.deployablePluginRegion",
+                "soy.upena.page.deployablePluginRegion",
                 renderer,
                 upenaStore,
                 upenaSSLConfig,

@@ -292,7 +292,7 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
         data.put("progress", progress);
         data.put("color", color);
         data.put("value", value);
-        return renderer.render("soy.page.upenaStackedProgress", data);
+        return renderer.render("soy.upena.page.upenaStackedProgress", data);
 
     }
 

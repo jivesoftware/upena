@@ -50,7 +50,7 @@ public class SoyService {
 
     public String render(String user, String csrfToken) throws Exception {
 
-        return chrome("soy.chrome.chromeRegion", csrfToken, homeRegion).render(user, new HomeInput());
+        return chrome("soy.upena.chrome.chromeRegion", csrfToken, homeRegion).render(user, new HomeInput());
     }
 
     public void registerPlugin(PluginHandle plugin) {
@@ -77,15 +77,15 @@ public class SoyService {
 
 
     public <I extends PluginInput> String renderNoChromePlugin(String user, String csrfToken, PageRegion<I> pluginRegion, I input) throws Exception {
-        return chrome("soy.chrome.noChromeRegion", csrfToken, pluginRegion).render(user, input);
+        return chrome("soy.upena.chrome.noChromeRegion", csrfToken, pluginRegion).render(user, input);
     }
 
     public <I extends PluginInput> String renderPlugin(String user, String csrfToken, PageRegion<I> pluginRegion, I input) throws Exception {
-        return chrome("soy.chrome.chromeRegion", csrfToken, pluginRegion).render(user, input);
+        return chrome("soy.upena.chrome.chromeRegion", csrfToken, pluginRegion).render(user, input);
     }
 
     public <I extends PluginInput> String wrapWithChrome(String path, String user, String csrfToken, String name, String title, String htmlRegion) {
-        return chrome("soy.chrome.chromeRegion", csrfToken, null).render(path, user, name, title, htmlRegion);
+        return chrome("soy.upena.chrome.chromeRegion", csrfToken, null).render(path, user, name, title, htmlRegion);
     }
 
 }
