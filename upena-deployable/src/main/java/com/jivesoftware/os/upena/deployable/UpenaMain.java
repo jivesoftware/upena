@@ -1493,7 +1493,7 @@ public class UpenaMain {
 
         topologyProvider.set(() -> amzaService.getRingReader().getRing(AmzaRingReader.SYSTEM_RING, -1));
 
-
+        amzaService.start(ringMember, ringHost);
         return amzaService;
     }
 
