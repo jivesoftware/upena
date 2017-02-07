@@ -584,12 +584,7 @@ public class UpenaMain {
             new RingMember(ringHost.getHost() + ":" + ringHost.getPort()), authSigner, systemTakeClient, stripedTakeClient, ringClient, topologyProvider);
 
 
-        while (amzaService.isReady()) {
-
-        }
-
         EmbeddedClientProvider embeddedClientProvider = new EmbeddedClientProvider(amzaService);
-        boolean cleanup = false;
 
         LOG.info("-----------------------------------------------------------------------");
         LOG.info("|      Amza Service Online");
@@ -999,6 +994,14 @@ public class UpenaMain {
             }
         }, 1, 1, TimeUnit.MINUTES); // TODO better
 
+
+        LOG.info("-----------------------------------------------------------------------");
+        LOG.info("|     Waiting for amza to be ready....");
+        LOG.info("-----------------------------------------------------------------------");
+        while (!amzaService.isReady()) {
+            Thread.sleep(1000);
+        }
+
         LOG.info("-----------------------------------------------------------------------");
         LOG.info("|     Begin Migration");
         LOG.info("-----------------------------------------------------------------------");
@@ -1104,7 +1107,8 @@ public class UpenaMain {
         ReleasesPluginRegion releasesPluginRegion = new ReleasesPluginRegion(mapper, repositoryProvider,
             "soy.upena.page.releasesPluginRegion", "soy.upena.page.releasesPluginRegionList",
             renderer, upenaStore);
-        HostsPluginRegion hostsPluginRegion = new HostsPluginRegion("soy.upena.page.hostsPluginRegion", "soy.upena.page.removeHostPluginRegion", renderer, upenaStore);
+        HostsPluginRegion hostsPluginRegion = new HostsPluginRegion("soy.upena.page.hostsPluginRegion", "soy.upena.page.removeHostPluginRegion", renderer,
+            upenaStore);
         InstancesPluginRegion instancesPluginRegion = new InstancesPluginRegion("soy.upena.page.instancesPluginRegion",
             "soy.upena.page.instancesPluginRegionList", renderer, upenaHealth, upenaStore, hostKey, healthPluginRegion, awsClientFactory);
 
@@ -1121,7 +1125,8 @@ public class UpenaMain {
 
         PluginHandle connectivity = new PluginHandle("transfer", null, "Connectivity", "/ui/connectivity",
             ConnectivityPluginEndpoints.class,
-            new ConnectivityPluginRegion(mapper, "soy.upena.page.connectivityPluginRegion", "soy.upena.page.connectionsHealth", "soy.upena.page.connectionOverview",
+            new ConnectivityPluginRegion(mapper, "soy.upena.page.connectivityPluginRegion", "soy.upena.page.connectionsHealth",
+                "soy.upena.page.connectionOverview",
                 renderer, upenaHealth, amzaInstance, upenaSSLConfig, upenaStore, healthPluginRegion,
                 discoveredRoutes), null,
             "read");
@@ -1143,7 +1148,8 @@ public class UpenaMain {
 
         PluginHandle projects = new PluginHandle("folder-open", null, "Projects", "/ui/projects",
             ProjectsPluginEndpoints.class,
-            new ProjectsPluginRegion("soy.upena.page.projectsPluginRegion", "soy.upena.page.projectBuildOutput", "soy.upena.page.projectBuildOutputTail", renderer, upenaStore,
+            new ProjectsPluginRegion("soy.upena.page.projectsPluginRegion", "soy.upena.page.projectBuildOutput", "soy.upena.page.projectBuildOutputTail",
+                renderer, upenaStore,
                 localPathToRepo), null, "read");
 
         PluginHandle users = new PluginHandle("user", null, "Users", "/ui/users",
@@ -1192,7 +1198,8 @@ public class UpenaMain {
 
         PluginHandle profiler = new PluginHandle("hourglass", null, "Profiler", "/ui/profiler",
             ProfilerPluginEndpoints.class,
-            new ProfilerPluginRegion("soy.upena.page.profilerPluginRegion", renderer, new VisualizeProfile(new NameUtils(), servicesCallDepthStack)), null, "read",
+            new ProfilerPluginRegion("soy.upena.page.profilerPluginRegion", renderer, new VisualizeProfile(new NameUtils(), servicesCallDepthStack)), null,
+            "read",
             "debug");
 
         PluginHandle jvm = null;
@@ -1402,7 +1409,7 @@ public class UpenaMain {
 
         AmzaServiceConfig amzaServiceConfig = new AmzaServiceConfig();
         amzaServiceConfig.systemRingSize = 1;
-        amzaServiceConfig.workingDirectories = new String[]{new File(workingDir, "state").getAbsolutePath()};
+        amzaServiceConfig.workingDirectories = new String[] { new File(workingDir, "state").getAbsolutePath() };
         amzaServiceConfig.checkIfCompactionIsNeededIntervalInMillis = TimeUnit.MINUTES.toMillis(30);
         amzaServiceConfig.deltaMergeThreads = 2;
         amzaServiceConfig.maxUpdatesBeforeDeltaStripeCompaction = 10_000;
@@ -1594,7 +1601,6 @@ public class UpenaMain {
         @Override
         Double get95ThPecentileMax();
     }
-
 
 
 }
