@@ -25,6 +25,7 @@ import com.jivesoftware.os.amza.service.AmzaService;
 import com.jivesoftware.os.amza.service.EmbeddedClientProvider;
 import com.jivesoftware.os.amza.service.EmbeddedClientProvider.CheckOnline;
 import com.jivesoftware.os.amza.service.EmbeddedClientProvider.EmbeddedClient;
+import com.jivesoftware.os.amza.service.Partition.ScanRange;
 import com.jivesoftware.os.jive.utils.ordered.id.OrderIdProvider;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
@@ -64,6 +65,7 @@ import com.jivesoftware.os.upena.shared.TimestampedValue;
 import com.jivesoftware.os.upena.shared.User;
 import com.jivesoftware.os.upena.shared.UserKey;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentNavigableMap;
@@ -331,7 +333,7 @@ public class UpenaStore {
 
         @Override
         public void scan(Stream<K, V> stream) throws Exception {
-            client().scan(null, (byte[] prefix, byte[] key, byte[] value, long timestamp, long version) -> {
+            client().scan(Collections.singletonList(ScanRange.ROW_SCAN), (byte[] prefix, byte[] key, byte[] value, long timestamp, long version) -> {
                 K k = mapper.readValue(key, keyClass);
                 V v = mapper.readValue(key, valueClass);
                 return stream.stream(k, v);
@@ -342,7 +344,7 @@ public class UpenaStore {
         public ConcurrentNavigableMap<K, TimestampedValue<V>> find(boolean removeBadKeysEnabled, KeyValueFilter<K, V> filter) throws Exception {
             ConcurrentNavigableMap<K, TimestampedValue<V>> results = filter == null ? null : filter.createCollector();
             if (results != null) {
-                client().scan(null, (byte[] prefix, byte[] key, byte[] value, long timestamp, long version) -> {
+                client().scan(Collections.singletonList(ScanRange.ROW_SCAN), (byte[] prefix, byte[] key, byte[] value, long timestamp, long version) -> {
                     K k = mapper.readValue(key, keyClass);
                     V v = mapper.readValue(key, valueClass);
                     if (filter.filter(k, v)) {
