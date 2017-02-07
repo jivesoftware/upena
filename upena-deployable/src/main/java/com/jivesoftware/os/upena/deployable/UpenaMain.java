@@ -1076,7 +1076,7 @@ public class UpenaMain {
             renderer,
             //new HeaderRegion("soy.chrome.headerRegion", renderer),
             new MenuRegion("soy.chrome.menuRegion", renderer),
-            new HomeRegion("soy.page.homeRegion", renderer, hostKey, upenaStore, ubaService),
+            new HomeRegion("soy.page.upenaHomeRegion", renderer, hostKey, upenaStore, ubaService),
             humanReadableUpenaClusterName,
             hostKey,
             upenaStore
