@@ -11,7 +11,7 @@ import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelper;
 import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelperUtils;
 import com.jivesoftware.os.routing.bird.shared.InstanceDescriptor;
-import com.jivesoftware.os.upena.amza.shared.AmzaInstance;
+import com.jivesoftware.os.upena.amza.shared.UpenaAmzaInstance;
 import com.jivesoftware.os.upena.amza.shared.UpenaRingHost;
 import com.jivesoftware.os.upena.service.UpenaConfigStore;
 import com.jivesoftware.os.upena.deployable.region.SparseCircularHitsBucketBuffer;
@@ -39,7 +39,7 @@ public class UpenaHealth {
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
     private final ObjectMapper mapper = new ObjectMapper();
-    private final AmzaInstance amzaInstance;
+    private final UpenaAmzaInstance amzaInstance;
     private final UpenaSSLConfig upenaSSLConfig;
     private final UpenaConfigStore upenaConfigStore;
     private final UbaService ubaService;
@@ -51,7 +51,7 @@ public class UpenaHealth {
     private final ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(), namedThreadFactory);
 
     public UpenaHealth(
-        AmzaInstance amzaInstance,
+        UpenaAmzaInstance amzaInstance,
         UpenaSSLConfig upenaSSLConfig,
         UpenaConfigStore upenaConfigStore,
         UbaService ubaService,

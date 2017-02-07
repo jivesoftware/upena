@@ -27,7 +27,7 @@ import com.jivesoftware.os.upena.amza.service.storage.replication.HostRing;
 import com.jivesoftware.os.upena.amza.service.storage.replication.HostRingBuilder;
 import com.jivesoftware.os.upena.amza.service.storage.replication.HostRingProvider;
 import com.jivesoftware.os.upena.amza.service.storage.replication.TableReplicator;
-import com.jivesoftware.os.upena.amza.shared.AmzaInstance;
+import com.jivesoftware.os.upena.amza.shared.UpenaAmzaInstance;
 import com.jivesoftware.os.upena.amza.shared.Marshaller;
 import com.jivesoftware.os.upena.amza.shared.UpenaRingHost;
 import com.jivesoftware.os.upena.amza.shared.RowChanges;
@@ -58,7 +58,7 @@ import java.util.concurrent.TimeUnit;
  *
  *
  */
-public class UpenaAmzaService implements HostRingProvider, AmzaInstance {
+public class UpenaAmzaService implements HostRingProvider, UpenaAmzaInstance {
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
     private UpenaRingHost ringHost;

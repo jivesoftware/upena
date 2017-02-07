@@ -18,7 +18,7 @@ package com.jivesoftware.os.upena.amza.transport.http.replication.endpoints;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.routing.bird.shared.ResponseHelper;
-import com.jivesoftware.os.upena.amza.shared.AmzaInstance;
+import com.jivesoftware.os.upena.amza.shared.UpenaAmzaInstance;
 import com.jivesoftware.os.upena.amza.shared.UpenaRingHost;
 import com.jivesoftware.os.upena.amza.shared.RowIndexKey;
 import com.jivesoftware.os.upena.amza.shared.RowIndexValue;
@@ -43,9 +43,9 @@ import org.apache.commons.lang.mutable.MutableLong;
 public class AmzaReplicationRestEndpoints {
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
-    private final AmzaInstance amzaInstance;
+    private final UpenaAmzaInstance amzaInstance;
 
-    public AmzaReplicationRestEndpoints(@Context AmzaInstance amzaInstance) {
+    public AmzaReplicationRestEndpoints(@Context UpenaAmzaInstance amzaInstance) {
         this.amzaInstance = amzaInstance;
     }
 

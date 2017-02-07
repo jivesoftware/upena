@@ -17,7 +17,7 @@ package com.jivesoftware.os.upena.amza.shared;
 
 import java.util.List;
 
-public interface AmzaInstance {
+public interface UpenaAmzaInstance {
 
     void updates(TableName tableName, RowScanable updates) throws Exception;
 

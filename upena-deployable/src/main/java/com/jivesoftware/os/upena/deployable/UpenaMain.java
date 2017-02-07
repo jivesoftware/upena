@@ -35,6 +35,7 @@ import com.jivesoftware.os.amza.berkeleydb.BerkeleyDBWALIndexProvider;
 import com.jivesoftware.os.amza.embed.EmbedAmzaServiceInitializer.QuorumTimeouts;
 import com.jivesoftware.os.amza.lab.pointers.LABPointerIndexConfig;
 import com.jivesoftware.os.amza.lab.pointers.LABPointerIndexWALIndexProvider;
+import com.jivesoftware.os.amza.service.AmzaInstance;
 import com.jivesoftware.os.amza.service.AmzaService;
 import com.jivesoftware.os.amza.service.AmzaServiceInitializer;
 import com.jivesoftware.os.amza.service.AmzaServiceInitializer.AmzaServiceConfig;
@@ -103,7 +104,6 @@ import com.jivesoftware.os.upena.amza.service.UpenaAmzaServiceInitializer.UpenaA
 import com.jivesoftware.os.upena.amza.service.discovery.AmzaDiscovery;
 import com.jivesoftware.os.upena.amza.service.storage.replication.SendFailureListener;
 import com.jivesoftware.os.upena.amza.service.storage.replication.UpenaTakeFailureListener;
-import com.jivesoftware.os.upena.amza.shared.AmzaInstance;
 import com.jivesoftware.os.upena.amza.shared.MemoryRowsIndex;
 import com.jivesoftware.os.upena.amza.shared.RowIndexKey;
 import com.jivesoftware.os.upena.amza.shared.RowIndexValue;
@@ -111,6 +111,7 @@ import com.jivesoftware.os.upena.amza.shared.RowsIndexProvider;
 import com.jivesoftware.os.upena.amza.shared.RowsStorageProvider;
 import com.jivesoftware.os.upena.amza.shared.UpdatesSender;
 import com.jivesoftware.os.upena.amza.shared.UpdatesTaker;
+import com.jivesoftware.os.upena.amza.shared.UpenaAmzaInstance;
 import com.jivesoftware.os.upena.amza.shared.UpenaRingHost;
 import com.jivesoftware.os.upena.amza.storage.RowTable;
 import com.jivesoftware.os.upena.amza.storage.binary.BinaryRowMarshaller;
@@ -774,7 +775,7 @@ public class UpenaMain {
             .addInjectable(upenaConfigStore)
             .addInjectable(ubaService)
             //.addEndpoint(AmzaReplicationRestEndpoints.class)
-            .addInjectable(AmzaInstance.class, upenaAmzaService)
+            .addInjectable(UpenaAmzaInstance.class, upenaAmzaService)
             .addEndpoint(UpenaEndpoints.class)
             .addEndpoint(UpenaConnectivityEndpoints.class)
             .addEndpoint(UpenaManagedDeployableEndpoints.class)

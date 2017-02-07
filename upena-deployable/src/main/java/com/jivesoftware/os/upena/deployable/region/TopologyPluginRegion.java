@@ -11,7 +11,7 @@ import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelper;
 import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelperUtils;
 import com.jivesoftware.os.routing.bird.shared.HostPort;
 import com.jivesoftware.os.routing.bird.shared.InstanceConnectionHealth;
-import com.jivesoftware.os.upena.amza.shared.AmzaInstance;
+import com.jivesoftware.os.upena.amza.shared.UpenaAmzaInstance;
 import com.jivesoftware.os.upena.amza.shared.UpenaRingHost;
 import com.jivesoftware.os.upena.deployable.UpenaHealth;
 import com.jivesoftware.os.upena.deployable.UpenaHealth.NannyHealth;
@@ -69,7 +69,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
     private final String connectionHealthTemplate;
     private final SoyRenderer renderer;
     private final UpenaHealth upenaHealth;
-    private final AmzaInstance amzaInstance;
+    private final UpenaAmzaInstance amzaInstance;
     private final UpenaSSLConfig upenaSSLConfig;
     private final UpenaStore upenaStore;
     private final HealthPluginRegion healthPluginRegion;
@@ -84,7 +84,7 @@ public class TopologyPluginRegion implements PageRegion<TopologyPluginRegionInpu
         String template,
         String connectionHealthTemplate,
         SoyRenderer renderer,
-        UpenaHealth upenaHealth, AmzaInstance amzaInstance,
+        UpenaHealth upenaHealth, UpenaAmzaInstance amzaInstance,
         UpenaSSLConfig upenaSSLConfig,
         UpenaStore upenaStore,
         HealthPluginRegion healthPluginRegion,

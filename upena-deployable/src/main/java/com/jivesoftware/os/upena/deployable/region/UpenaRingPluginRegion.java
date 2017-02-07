@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
-import com.jivesoftware.os.upena.amza.shared.AmzaInstance;
+import com.jivesoftware.os.upena.amza.shared.UpenaAmzaInstance;
 import com.jivesoftware.os.upena.amza.shared.UpenaRingHost;
 import com.jivesoftware.os.upena.service.UpenaConfigStore;
 import com.jivesoftware.os.upena.deployable.region.UpenaRingPluginRegion.UpenaRingPluginRegionInput;
@@ -43,14 +43,14 @@ public class UpenaRingPluginRegion implements PageRegion<UpenaRingPluginRegionIn
     private final ObjectMapper mapper;
     private final String template;
     private final SoyRenderer renderer;
-    private final AmzaInstance amzaInstance;
+    private final UpenaAmzaInstance amzaInstance;
     private final UpenaStore upenaStore;
     private final UpenaConfigStore configStore;
 
     public UpenaRingPluginRegion(ObjectMapper mapper,
         String template,
         SoyRenderer renderer,
-        AmzaInstance amzaInstance,
+        UpenaAmzaInstance amzaInstance,
         UpenaStore upenaStore,
         UpenaConfigStore configStore) {
 
