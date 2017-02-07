@@ -40,12 +40,12 @@ import org.apache.commons.lang.mutable.MutableLong;
 
 @Singleton
 @Path("/amza")
-public class AmzaReplicationRestEndpoints {
+public class UpenaAmzaReplicationRestEndpoints {
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
     private final UpenaAmzaInstance amzaInstance;
 
-    public AmzaReplicationRestEndpoints(@Context UpenaAmzaInstance amzaInstance) {
+    public UpenaAmzaReplicationRestEndpoints(@Context UpenaAmzaInstance amzaInstance) {
         this.amzaInstance = amzaInstance;
     }
 
