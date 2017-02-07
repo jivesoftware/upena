@@ -1435,7 +1435,8 @@ public class UpenaMain {
         AmzaServiceConfig amzaServiceConfig = new AmzaServiceConfig();
         amzaServiceConfig.systemRingSize = 1;
         amzaServiceConfig.workingDirectories = new String[] { new File(workingDir, "state").getAbsolutePath() };
-        amzaServiceConfig.checkIfCompactionIsNeededIntervalInMillis = TimeUnit.MINUTES.toMillis(30);
+        amzaServiceConfig.aquariumLivelinessFeedEveryMillis = 5_000;
+        amzaServiceConfig.checkIfCompactionIsNeededIntervalInMillis = 30_000;
         amzaServiceConfig.deltaMergeThreads = 2;
         amzaServiceConfig.maxUpdatesBeforeDeltaStripeCompaction = 10_000;
         amzaServiceConfig.numberOfTakerThreads = 2;
@@ -1616,10 +1617,10 @@ public class UpenaMain {
         @StringDefault("upena")
         String getHeapPressureName();
 
-        @LongDefault(200_000_000L)
+        @LongDefault(100_000_000L)
         long getGlobalBlockOnHeapPressureInBytes();
 
-        @LongDefault(100_000_000L)
+        @LongDefault(50_000_000L)
         long getGlobalMaxHeapPressureInBytes();
 
         @LongDefault(1_000_000L)
