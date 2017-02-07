@@ -534,8 +534,8 @@ public class UpenaMain {
                 RingTopology systemRing = topologyProvider.get().call();
                 List<ConnectionDescriptor> descriptors = Lists.newArrayList(Iterables.transform(systemRing.entries,
                     input -> new ConnectionDescriptor(instanceDescriptor,
-                        false,
-                        false,
+                        sslEnable,
+                        true,
                         new HostPort(input.ringHost.getHost(), input.ringHost.getPort()),
                         Collections.emptyMap(),
                         Collections.emptyMap())));
