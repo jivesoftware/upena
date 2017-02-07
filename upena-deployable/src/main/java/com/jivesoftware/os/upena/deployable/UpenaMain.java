@@ -63,7 +63,6 @@ import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.routing.bird.authentication.AuthValidationFilter;
 import com.jivesoftware.os.routing.bird.authentication.NoAuthEvaluator;
-import com.jivesoftware.os.routing.bird.health.api.HealthCheckConfigBinder;
 import com.jivesoftware.os.routing.bird.health.api.HealthCheckRegistry;
 import com.jivesoftware.os.routing.bird.health.api.HealthChecker;
 import com.jivesoftware.os.routing.bird.health.api.HealthFactory;
@@ -264,7 +263,6 @@ import org.apache.commons.io.IOUtils;
 import org.glassfish.jersey.oauth1.signature.OAuth1Request;
 import org.glassfish.jersey.oauth1.signature.OAuth1Signature;
 import org.merlin.config.BindInterfaceToConfiguration;
-import org.merlin.config.Config;
 import org.merlin.config.defaults.DoubleDefault;
 import org.merlin.config.defaults.LongDefault;
 import org.merlin.config.defaults.StringDefault;
@@ -359,23 +357,20 @@ public class UpenaMain {
 
     public void run(String[] args) throws Exception {
 
-        HealthFactory.initialize(new HealthCheckConfigBinder() {
-            @Override
-            public <C extends Config> C bindConfig(Class<C> aClass) {
-                return BindInterfaceToConfiguration.bindDefault(aClass);
+        HealthFactory.initialize(BindInterfaceToConfiguration::bindDefault,
+            new HealthCheckRegistry() {
+
+                @Override
+                public void register(HealthChecker<?> healthChecker) {
+
+                }
+
+                @Override
+                public void unregister(HealthChecker<?> healthChecker) {
+
+                }
             }
-        }, new HealthCheckRegistry() {
-
-            @Override
-            public void register(HealthChecker<?> healthChecker) {
-
-            }
-
-            @Override
-            public void unregister(HealthChecker<?> healthChecker) {
-
-            }
-        });
+        );
 
 
         Properties buildProperties = new Properties();
@@ -1340,7 +1335,6 @@ public class UpenaMain {
         TenantAwareHttpClient<String> ringClient, AtomicReference<Callable<RingTopology>> topologyProvider) throws Exception {
 
 
-
         //Deployable deployable = new Deployable(new String[0]);
 
         SnowflakeIdPacker idPacker = new SnowflakeIdPacker();
@@ -1393,6 +1387,7 @@ public class UpenaMain {
         AquariumStats aquariumStats = new AquariumStats();
 
         QuorumTimeouts quorumTimeoutsConfig = bindDefault(QuorumTimeouts.class);
+        HealthTimer quorumLatency = HealthFactory.getHealthTimer(QuorumLatency.class, TimerHealthChecker.FACTORY);
 
         TriggerTimeoutHealthCheck quorumTimeoutHealthCheck = new TriggerTimeoutHealthCheck(
             () -> amzaStats.getGrandTotal().quorumTimeouts.longValue(),
@@ -1588,6 +1583,6 @@ public class UpenaMain {
         Double get95ThPecentileMax();
     }
 
-    private final HealthTimer quorumLatency = HealthFactory.getHealthTimer(QuorumLatency.class, TimerHealthChecker.FACTORY);
+
 
 }
