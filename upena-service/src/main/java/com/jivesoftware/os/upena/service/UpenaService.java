@@ -66,6 +66,10 @@ public class UpenaService {
     }
 
     public ConnectionDescriptorsResponse connectionRequest(ConnectionDescriptorsRequest connectionsRequest) throws Exception {
+        if (!upenaStore.isReady()) {
+            throw new RuntimeException("Upena store is not ready.");
+        }
+
         InstanceKey instanceKey = new InstanceKey(connectionsRequest.getInstanceId());
         Instance instance = upenaStore.instances.get(instanceKey);
         if (instance == null) {
