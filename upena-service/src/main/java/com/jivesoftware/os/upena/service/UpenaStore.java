@@ -335,7 +335,7 @@ public class UpenaStore {
         public void scan(Stream<K, V> stream) throws Exception {
             client().scan(Collections.singletonList(ScanRange.ROW_SCAN), (byte[] prefix, byte[] key, byte[] value, long timestamp, long version) -> {
                 K k = mapper.readValue(key, keyClass);
-                V v = mapper.readValue(key, valueClass);
+                V v = mapper.readValue(value, valueClass);
                 return stream.stream(k, v);
             }, true);
         }
@@ -346,7 +346,7 @@ public class UpenaStore {
             if (results != null) {
                 client().scan(Collections.singletonList(ScanRange.ROW_SCAN), (byte[] prefix, byte[] key, byte[] value, long timestamp, long version) -> {
                     K k = mapper.readValue(key, keyClass);
-                    V v = mapper.readValue(key, valueClass);
+                    V v = mapper.readValue(value, valueClass);
                     if (filter.filter(k, v)) {
                         results.put(k, new BasicTimestampedValue<>(v, timestamp, false));
                     }
