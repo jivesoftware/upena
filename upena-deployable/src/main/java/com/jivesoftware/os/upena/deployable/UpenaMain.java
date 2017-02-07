@@ -689,10 +689,6 @@ public class UpenaMain {
         String hostInstanceId = System.getProperty("host.instance.id", hostKey.getKey());
         host = new Host(publicHost, datacenter, rack, ringHost.getHost(), ringHost.getPort(), workingDir, hostInstanceId, null);
 
-        Host gotHost = upenaStore.hosts.get(hostKey);
-        if (gotHost == null || !gotHost.equals(host)) {
-            upenaStore.hosts.update(hostKey, host);
-        }
 
         UbaLog ubaLog = (what, why, how) -> {
             try {
@@ -1017,6 +1013,10 @@ public class UpenaMain {
         LOG.info("|     End Migration");
         LOG.info("-----------------------------------------------------------------------");
 
+        Host gotHost = upenaStore.hosts.get(hostKey);
+        if (gotHost == null || !gotHost.equals(host)) {
+            upenaStore.hosts.update(hostKey, host);
+        }
 
     }
 
