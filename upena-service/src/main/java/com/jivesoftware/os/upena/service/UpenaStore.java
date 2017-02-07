@@ -29,8 +29,6 @@ import com.jivesoftware.os.amza.service.Partition.ScanRange;
 import com.jivesoftware.os.jive.utils.ordered.id.OrderIdProvider;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
-import com.jivesoftware.os.routing.bird.shared.InstanceChanged;
-import com.jivesoftware.os.routing.bird.shared.TenantChanged;
 import com.jivesoftware.os.upena.amza.service.UpenaAmzaService;
 import com.jivesoftware.os.upena.amza.shared.TableName;
 import com.jivesoftware.os.upena.shared.BasicTimestampedValue;
@@ -41,7 +39,6 @@ import com.jivesoftware.os.upena.shared.ClusterKey;
 import com.jivesoftware.os.upena.shared.Host;
 import com.jivesoftware.os.upena.shared.HostKey;
 import com.jivesoftware.os.upena.shared.Instance;
-import com.jivesoftware.os.upena.shared.InstanceFilter;
 import com.jivesoftware.os.upena.shared.InstanceKey;
 import com.jivesoftware.os.upena.shared.Key;
 import com.jivesoftware.os.upena.shared.KeyValueFilter;
@@ -64,10 +61,7 @@ import com.jivesoftware.os.upena.shared.TenantKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
 import com.jivesoftware.os.upena.shared.User;
 import com.jivesoftware.os.upena.shared.UserKey;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
-import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -259,10 +253,16 @@ public class UpenaStore {
             false, Consistency.quorum, true, true, false, RowType.snappy_primary, "lab", -1, null, -1, -1);
 
         PartitionName partitionName = getPartitionName("change-log");
-        amzaService.getRingWriter().ensureMaximalRing(partitionName.getRingName(), 30_000L); //TODO config
-        amzaService.createPartitionIfAbsent(partitionName, partitionProperties);
-        amzaService.awaitOnline(partitionName, 30_000L); //TODO config
-        return embeddedClientProvider.getClient(partitionName, CheckOnline.once);
+        while (true) {
+            try {
+                amzaService.getRingWriter().ensureMaximalRing(partitionName.getRingName(), 30_000L); //TODO config
+                amzaService.createPartitionIfAbsent(partitionName, partitionProperties);
+                amzaService.awaitOnline(partitionName, 30_000L); //TODO config
+                return embeddedClientProvider.getClient(partitionName, CheckOnline.once);
+            } catch (Exception x) {
+                LOG.warn("Failed to get client for " + partitionName.getName() + ". Retrying...", x);
+            }
+        }
     }
 
     private PartitionName getPartitionName(String name) {
@@ -292,6 +292,9 @@ public class UpenaStore {
     }
 
     static public class AmzaUpenaMap<K extends Key, V extends Stored> implements UpenaMap<K, V> {
+
+        public static final MetricLogger LOG = MetricLoggerFactory.getLogger();
+
         private final ObjectMapper mapper;
         private final PartitionProperties partitionProperties;
         private final PartitionName partitionName;
@@ -403,10 +406,17 @@ public class UpenaStore {
         }
 
         private EmbeddedClient client() throws Exception {
-            amzaService.getRingWriter().ensureMaximalRing(partitionName.getRingName(), 30_000L); //TODO config
-            amzaService.createPartitionIfAbsent(partitionName, partitionProperties);
-            amzaService.awaitOnline(partitionName, 30_000L); //TODO config
-            return embeddedClientProvider.getClient(partitionName, CheckOnline.once);
+            while (true) {
+                try {
+
+                    amzaService.getRingWriter().ensureMaximalRing(partitionName.getRingName(), 30_000L); //TODO config
+                    amzaService.createPartitionIfAbsent(partitionName, partitionProperties);
+                    amzaService.awaitOnline(partitionName, 30_000L); //TODO config
+                    return embeddedClientProvider.getClient(partitionName, CheckOnline.once);
+                } catch (Exception x) {
+                    LOG.warn("Failed to get client for " + partitionName.getName() + ". Retrying...", x);
+                }
+            }
         }
     }
 

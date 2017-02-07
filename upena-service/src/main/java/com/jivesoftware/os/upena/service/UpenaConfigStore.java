@@ -87,10 +87,16 @@ public class UpenaConfigStore {
 
     private EmbeddedClient client() throws Exception {
         PartitionName partitionName = new PartitionName(false, "upena".getBytes(), ("upena-config").getBytes());
-        amzaService.getRingWriter().ensureMaximalRing(partitionName.getRingName(), 30_000L); //TODO config
-        amzaService.createPartitionIfAbsent(partitionName, partitionProperties);
-        amzaService.awaitOnline(partitionName, 30_000L); //TODO config
-        return embeddedClientProvider.getClient(partitionName, CheckOnline.once);
+        while (true) {
+            try {
+                amzaService.getRingWriter().ensureMaximalRing(partitionName.getRingName(), 30_000L); //TODO config
+                amzaService.createPartitionIfAbsent(partitionName, partitionProperties);
+                amzaService.awaitOnline(partitionName, 30_000L); //TODO config
+                return embeddedClientProvider.getClient(partitionName, CheckOnline.once);
+            } catch (Exception x) {
+                LOG.warn("Failed to get client for " + partitionName.getName() + ". Retrying...", x);
+            }
+        }
     }
 
 
