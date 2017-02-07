@@ -529,6 +529,31 @@ public class UpenaMain {
         AtomicReference<Callable<RingTopology>> topologyProvider = new AtomicReference<>(); // bit of a hack
         InstanceDescriptor instanceDescriptor = new InstanceDescriptor(datacenter, rack, "", "", "", "", "", "", "", "", 0,
             "", "", "", 0L, true);
+        ConnectionDescriptorsProvider noAuthConnectionsProvider = (connectionDescriptorsRequest, expectedReleaseGroup) -> {
+            try {
+                RingTopology systemRing = topologyProvider.get().call();
+                List<ConnectionDescriptor> descriptors = Lists.newArrayList(Iterables.transform(systemRing.entries,
+                    input -> new ConnectionDescriptor(instanceDescriptor,
+                        sslEnable,
+                        false,
+                        new HostPort(input.ringHost.getHost(), input.ringHost.getPort()),
+                        Collections.emptyMap(),
+                        Collections.emptyMap())));
+                return new ConnectionDescriptorsResponse(200, Collections.emptyList(), "", descriptors, connectionDescriptorsRequest.getRequestUuid());
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        };
+
+        TenantsServiceConnectionDescriptorProvider<String> noAuthConnectionPoolProvider = new TenantsServiceConnectionDescriptorProvider<>(
+            Executors.newScheduledThreadPool(1),
+            "",
+            noAuthConnectionsProvider,
+            "",
+            "",
+            10_000); // TODO config
+        noAuthConnectionPoolProvider.start();
+
         ConnectionDescriptorsProvider connectionsProvider = (connectionDescriptorsRequest, expectedReleaseGroup) -> {
             try {
                 RingTopology systemRing = topologyProvider.get().call();
@@ -544,6 +569,7 @@ public class UpenaMain {
                 throw new RuntimeException(e);
             }
         };
+
         TenantsServiceConnectionDescriptorProvider<String> connectionPoolProvider = new TenantsServiceConnectionDescriptorProvider<>(
             Executors.newScheduledThreadPool(1),
             "",
@@ -558,7 +584,7 @@ public class UpenaMain {
         TenantRoutingHttpClientInitializer<String> nonSigningClientInitializer = new TenantRoutingHttpClientInitializer<>(null);
 
         TenantAwareHttpClient<String> systemTakeClient = nonSigningClientInitializer.builder(
-            connectionPoolProvider, // TODO config
+            noAuthConnectionPoolProvider, // TODO config
             clientHealthProvider)
             .deadAfterNErrors(10)
             .checkDeadEveryNMillis(10_000)
@@ -566,7 +592,7 @@ public class UpenaMain {
             .socketTimeoutInMillis(60_000)
             .build(); // TODO expose to conf
         TenantAwareHttpClient<String> stripedTakeClient = nonSigningClientInitializer.builder(
-            connectionPoolProvider, // TODO config
+            noAuthConnectionPoolProvider, // TODO config
             clientHealthProvider)
             .deadAfterNErrors(10)
             .checkDeadEveryNMillis(10_000)
