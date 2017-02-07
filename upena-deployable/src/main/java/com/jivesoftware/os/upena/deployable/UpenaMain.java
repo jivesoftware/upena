@@ -708,7 +708,7 @@ public class UpenaMain {
         LOG.info("|      Upena Service Online");
         LOG.info("-----------------------------------------------------------------------");
 
-        File defaultPathToRepo = new File(new File(System.getProperty("user.home"), ".m2"), "repository");
+        File defaultPathToRepo = new File(new File(System.getProperty("user.dir"), ".m2"), "repository");
         PathToRepo localPathToRepo = new PathToRepo(new File(System.getProperty("pathToRepo", defaultPathToRepo.getAbsolutePath())));
         RepositoryProvider repositoryProvider = new RepositoryProvider(localPathToRepo);
 
