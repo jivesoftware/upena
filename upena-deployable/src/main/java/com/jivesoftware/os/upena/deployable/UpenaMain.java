@@ -1511,7 +1511,11 @@ public class UpenaMain {
                             if (!ringMemberAndHost.ringHost.getHost().equals(host) && ringMemberAndHost.ringHost.getPort() != port) {
                                 continue;
                             }
-                            amzaService.getRingWriter().register(new RingMember(host + ":" + port), new RingHost("", "", host, port), 0L, false);
+                            amzaService.getRingWriter().register(
+                                new RingMember(host + ":" + port),
+                                new RingHost("", "", host, port), 1L,
+                                false
+                            );
                             break;
                         }
                     } catch (Exception x) {
