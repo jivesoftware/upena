@@ -484,6 +484,7 @@ public class UpenaStore {
         boolean stream(RecordedChange change) throws Exception;
     }
 
+    /*
     public void attachWatchers() throws Exception {
         upenaAmzaService.watch(clusterStoreKey, new UpenaStoreChanges<>(mapper, ClusterKey.class, Cluster.class,
             (key, value) -> {
@@ -588,6 +589,6 @@ public class UpenaStore {
                     tenantChanges.changed(changes);
                 }
             }));
-    }
+    }*/
 
 }
