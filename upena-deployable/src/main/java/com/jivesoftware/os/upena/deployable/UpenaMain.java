@@ -637,7 +637,7 @@ public class UpenaMain {
             amzaService,
             embeddedClientProvider
         );
-        upenaStore.attachWatchers();
+        //upenaStore.attachWatchers();
 
         ChaosService chaosService = new ChaosService(upenaStore);
         SecureRandom random = new SecureRandom();
@@ -897,7 +897,7 @@ public class UpenaMain {
             sslKeystorePath,
             128,
             10_000);
-
+t
         buildSwagger();
         initializeRestfulServer.addClasspathResource("/resources");
         initializeRestfulServer.addContextHandler("/", jerseyEndpoints);
