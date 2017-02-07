@@ -472,7 +472,8 @@ public class UpenaStore {
         final long minTimestampExclusize = time - whenAgoElapseLargestMillis;
 
         final AtomicInteger count = new AtomicInteger(minCount);
-        changeLogClient().scan(null, (byte[] prefix, byte[] key, byte[] value, long timestamp, long version) -> {
+        changeLogClient().scan(Collections.singletonList(ScanRange.ROW_SCAN),
+            (byte[] prefix, byte[] key, byte[] value, long timestamp, long version) -> {
             RecordedChange change = mapper.readValue(value, RecordedChange.class);
             if (change.when <= maxTimestampInclusize && (change.when > minTimestampExclusize || count.get() > 0)) {
                 if (who != null && who.length() > 0 && !change.who.contains(who)) {
