@@ -208,19 +208,13 @@
                                                         rbga({$health.color})
                                                     {else}transparent{/if}; color:#222; border-radius: 4px 0 0 4px;">
 
-                                                {if not $health.sslEnabled or not $health.serviceAuthEnabled}
+                                                {if  $health.sslEnabled or  $health.serviceAuthEnabled}
                                                     <span class="fa">
-                                                        {if not $health.sslEnabled}
-                                                            <span class="fa-stack">
-                                                              <i class="fa fa-lock fa-stack-1x"></i>
-                                                              <i class="fa fa-ban fa-stack-2x text-danger"></i>
-                                                            </span>
+                                                        {if $health.sslEnabled}
+                                                          <i class="fa fa-lock"></i>
                                                         {/if}
-                                                        {if not $health.serviceAuthEnabled}
-                                                            <span class="fa-stack">
-                                                              <i class="fa fa-key fa-stack-1x"></i>
-                                                              <i class="fa fa-ban fa-stack-2x text-danger"></i>
-                                                            </span>
+                                                        {if $health.serviceAuthEnabled}
+                                                          <i class="fa fa-key"></i>
                                                         {/if}
                                                     </span>
                                                 {else}
