@@ -6,15 +6,17 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.jivesoftware.os.amza.api.ring.RingHost;
+import com.jivesoftware.os.amza.api.ring.RingMemberAndHost;
+import com.jivesoftware.os.amza.service.AmzaService;
+import com.jivesoftware.os.amza.service.ring.AmzaRingReader;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelper;
 import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelperUtils;
 import com.jivesoftware.os.routing.bird.shared.InstanceDescriptor;
-import com.jivesoftware.os.upena.amza.shared.UpenaAmzaInstance;
-import com.jivesoftware.os.upena.amza.shared.UpenaRingHost;
-import com.jivesoftware.os.upena.service.UpenaConfigStore;
 import com.jivesoftware.os.upena.deployable.region.SparseCircularHitsBucketBuffer;
+import com.jivesoftware.os.upena.service.UpenaConfigStore;
 import com.jivesoftware.os.upena.shared.HostKey;
 import com.jivesoftware.os.upena.uba.service.Nanny;
 import com.jivesoftware.os.upena.uba.service.UbaService;
@@ -39,11 +41,11 @@ public class UpenaHealth {
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
     private final ObjectMapper mapper = new ObjectMapper();
-    private final UpenaAmzaInstance amzaInstance;
+    private final AmzaService amzaService;
     private final UpenaSSLConfig upenaSSLConfig;
     private final UpenaConfigStore upenaConfigStore;
     private final UbaService ubaService;
-    private final UpenaRingHost ringHost;
+    private final RingHost ringHost;
     private final HostKey ringHostKey;
     private final long startupTime = System.currentTimeMillis();
 
@@ -51,14 +53,14 @@ public class UpenaHealth {
     private final ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(), namedThreadFactory);
 
     public UpenaHealth(
-        UpenaAmzaInstance amzaInstance,
+        AmzaService amzaService,
         UpenaSSLConfig upenaSSLConfig,
         UpenaConfigStore upenaConfigStore,
         UbaService ubaService,
-        UpenaRingHost ringHost,
+        RingHost ringHost,
         HostKey ringHostKey) {
 
-        this.amzaInstance = amzaInstance;
+        this.amzaService = amzaService;
         this.upenaSSLConfig = upenaSSLConfig;
         this.upenaConfigStore = upenaConfigStore;
         this.ubaService = ubaService;
@@ -70,7 +72,7 @@ public class UpenaHealth {
     }
 
     public String healthGradient() throws Exception {
-        ConcurrentMap<UpenaRingHost, NodeHealth> health = buildClusterHealth();
+        ConcurrentMap<RingHost, NodeHealth> health = buildClusterHealth();
         List<Double> healths = Lists.newArrayList();
         for (NodeHealth nodeHealth : health.values()) {
             for (NannyHealth nannyHealth : nodeHealth.nannyHealths) {
@@ -96,15 +98,16 @@ public class UpenaHealth {
 
     }
 
-    public final ConcurrentMap<UpenaRingHost, UpenaHealth.NodeHealth> nodeHealths = Maps.newConcurrentMap();
+    public final ConcurrentMap<RingHost, UpenaHealth.NodeHealth> nodeHealths = Maps.newConcurrentMap();
     public final ConcurrentMap<String, Long> nodeRecency = Maps.newConcurrentMap();
-    public final ConcurrentMap<UpenaRingHost, Boolean> currentlyExecuting = Maps.newConcurrentMap();
-    public final ConcurrentMap<UpenaRingHost, Long> lastExecuted = Maps.newConcurrentMap();
+    public final ConcurrentMap<RingHost, Boolean> currentlyExecuting = Maps.newConcurrentMap();
+    public final ConcurrentMap<RingHost, Long> lastExecuted = Maps.newConcurrentMap();
     public final Map<String, InstanceSparseCircularHitsBucketBuffer> instanceHealthHistory = new ConcurrentHashMap<>();
 
-    public ConcurrentMap<UpenaRingHost, NodeHealth> buildClusterHealth() throws Exception {
+    public ConcurrentMap<RingHost, NodeHealth> buildClusterHealth() throws Exception {
 
-        for (UpenaRingHost ringHost : amzaInstance.getRing("MASTER")) {
+        for (RingMemberAndHost ringMemberAndHost : amzaService.getRingReader().getRing(AmzaRingReader.SYSTEM_RING,30_000L).entries) {
+            RingHost ringHost = ringMemberAndHost.ringHost;
             if (currentlyExecuting.putIfAbsent(ringHost, true) == null) {
 
                 Long timestamp = lastExecuted.get(ringHost);

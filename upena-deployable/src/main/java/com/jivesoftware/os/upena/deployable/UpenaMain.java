@@ -41,6 +41,7 @@ import com.jivesoftware.os.amza.service.AmzaServiceInitializer;
 import com.jivesoftware.os.amza.service.AmzaServiceInitializer.AmzaServiceConfig;
 import com.jivesoftware.os.amza.service.EmbeddedClientProvider;
 import com.jivesoftware.os.amza.service.SickPartitions;
+import com.jivesoftware.os.amza.service.discovery.AmzaDiscovery;
 import com.jivesoftware.os.amza.service.replication.TakeFailureListener;
 import com.jivesoftware.os.amza.service.replication.http.HttpAvailableRowsTaker;
 import com.jivesoftware.os.amza.service.replication.http.HttpRowsTaker;
@@ -101,7 +102,6 @@ import com.jivesoftware.os.uba.shared.PasswordStore;
 import com.jivesoftware.os.upena.amza.service.UpenaAmzaService;
 import com.jivesoftware.os.upena.amza.service.UpenaAmzaServiceInitializer;
 import com.jivesoftware.os.upena.amza.service.UpenaAmzaServiceInitializer.UpenaAmzaServiceConfig;
-import com.jivesoftware.os.upena.amza.service.discovery.AmzaDiscovery;
 import com.jivesoftware.os.upena.amza.service.storage.replication.SendFailureListener;
 import com.jivesoftware.os.upena.amza.service.storage.replication.UpenaTakeFailureListener;
 import com.jivesoftware.os.upena.amza.shared.MemoryRowsIndex;
@@ -111,7 +111,6 @@ import com.jivesoftware.os.upena.amza.shared.RowsIndexProvider;
 import com.jivesoftware.os.upena.amza.shared.RowsStorageProvider;
 import com.jivesoftware.os.upena.amza.shared.UpdatesSender;
 import com.jivesoftware.os.upena.amza.shared.UpdatesTaker;
-import com.jivesoftware.os.upena.amza.shared.UpenaAmzaInstance;
 import com.jivesoftware.os.upena.amza.shared.UpenaRingHost;
 import com.jivesoftware.os.upena.amza.storage.RowTable;
 import com.jivesoftware.os.upena.amza.storage.binary.BinaryRowMarshaller;
@@ -254,6 +253,7 @@ import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -438,7 +438,6 @@ public class UpenaMain {
         mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
-        final UpenaAmzaServiceConfig upenaAmzaServiceConfig = new UpenaAmzaServiceConfig();
 
         RowsStorageProvider rowsStorageProvider = rowsStorageProvider(orderIdProvider);
 
@@ -488,32 +487,41 @@ public class UpenaMain {
             return oAuthConsumer.sign(request);
         };
         UpenaSSLConfig upenaSSLConfig = new UpenaSSLConfig(sslEnable, sslAutoGenerateSelfSignedCert, authSigner);
-        UpdatesSender changeSetSender = new HttpUpdatesSender(sslEnable, sslAutoGenerateSelfSignedCert, authSigner);
-        UpdatesTaker tableTaker = new HttpUpdatesTaker(sslEnable, sslAutoGenerateSelfSignedCert, authSigner);
 
-        UpenaAmzaService upenaAmzaService = new UpenaAmzaServiceInitializer().initialize(upenaAmzaServiceConfig,
-            orderIdProvider,
-            new com.jivesoftware.os.upena.amza.storage.FstMarshaller(FSTConfiguration.getDefaultConfiguration()),
-            rowsStorageProvider,
-            rowsStorageProvider,
-            rowsStorageProvider,
-            changeSetSender,
-            tableTaker,
-            Optional.<SendFailureListener>absent(),
-            Optional.<UpenaTakeFailureListener>absent(),
-            (changes) -> {
-            }
-        );
+        UpenaAmzaService upenaAmzaService = null;
+        if (!new File("./state").exists()) {
+            UpdatesSender changeSetSender = new HttpUpdatesSender(sslEnable, sslAutoGenerateSelfSignedCert, authSigner);
+            UpdatesTaker tableTaker = new HttpUpdatesTaker(sslEnable, sslAutoGenerateSelfSignedCert, authSigner);
 
-        upenaAmzaService.start(ringHost, upenaAmzaServiceConfig.resendReplicasIntervalInMillis,
+            UpenaAmzaServiceConfig upenaAmzaServiceConfig = new UpenaAmzaServiceConfig();
+            upenaAmzaService = new UpenaAmzaServiceInitializer().initialize(upenaAmzaServiceConfig,
+                orderIdProvider,
+                new com.jivesoftware.os.upena.amza.storage.FstMarshaller(FSTConfiguration.getDefaultConfiguration()),
+                rowsStorageProvider,
+                rowsStorageProvider,
+                rowsStorageProvider,
+                changeSetSender,
+                tableTaker,
+                Optional.<SendFailureListener>absent(),
+                Optional.<UpenaTakeFailureListener>absent(),
+                (changes) -> {
+                }
+            );
+
+        /*upenaAmzaService.start(ringHost, upenaAmzaServiceConfig.resendReplicasIntervalInMillis,
             upenaAmzaServiceConfig.applyReplicasIntervalInMillis,
             upenaAmzaServiceConfig.takeFromNeighborsIntervalInMillis,
             upenaAmzaServiceConfig.checkIfCompactionIsNeededIntervalInMillis,
-            upenaAmzaServiceConfig.compactTombstoneIfOlderThanNMillis);
+            upenaAmzaServiceConfig.compactTombstoneIfOlderThanNMillis);*/
 
-        LOG.info("-----------------------------------------------------------------------");
-        LOG.info("|      OLD Amza Service Online");
-        LOG.info("-----------------------------------------------------------------------");
+            LOG.info("-----------------------------------------------------------------------");
+            LOG.info("|      OLD Amza Service Online");
+            LOG.info("-----------------------------------------------------------------------");
+        } else {
+            LOG.info("-----------------------------------------------------------------------");
+            LOG.info("|      OLD Amza Data is decomissionable");
+            LOG.info("-----------------------------------------------------------------------");
+        }
 
         BAInterner baInterner = new BAInterner();
 
@@ -581,7 +589,8 @@ public class UpenaMain {
 
 
         AmzaService amzaService = startAmza(workingDir, baInterner, writerId, new RingHost(datacenter, rack, ringHost.getHost(), ringHost.getPort()),
-            new RingMember(ringHost.getHost() + ":" + ringHost.getPort()), authSigner, systemTakeClient, stripedTakeClient, ringClient, topologyProvider);
+            new RingMember(ringHost.getHost() + ":" + ringHost.getPort()), authSigner, systemTakeClient, stripedTakeClient, ringClient, topologyProvider,
+            clusterDiscoveryName, multicastGroup, multicastPort);
 
 
         EmbeddedClientProvider embeddedClientProvider = new EmbeddedClientProvider(amzaService);
@@ -651,23 +660,20 @@ public class UpenaMain {
             TimeUnit.MINUTES.toMillis(30));
 
         AtomicReference<UpenaHealth> upenaHealthProvider = new AtomicReference<>();
-        InstanceHealthly instanceHealthly = new InstanceHealthly() {
-            @Override
-            public boolean isHealth(InstanceKey key, String version) throws Exception {
-                UpenaHealth upenaHealth = upenaHealthProvider.get();
-                if (upenaHealth == null) {
-                    return false;
-                }
-                ConcurrentMap<UpenaRingHost, NodeHealth> ringHostNodeHealth = upenaHealth.buildClusterHealth();
-                for (NodeHealth nodeHealth : ringHostNodeHealth.values()) {
-                    for (NannyHealth nannyHealth : nodeHealth.nannyHealths) {
-                        if (nannyHealth.instanceDescriptor.instanceKey.equals(key.getKey())) {
-                            return nannyHealth.serviceHealth.fullyOnline ? nannyHealth.serviceHealth.version.equals(version) : false;
-                        }
-                    }
-                }
+        InstanceHealthly instanceHealthly = (key, version) -> {
+            UpenaHealth upenaHealth = upenaHealthProvider.get();
+            if (upenaHealth == null) {
                 return false;
             }
+            ConcurrentMap<RingHost, NodeHealth> ringHostNodeHealth = upenaHealth.buildClusterHealth();
+            for (NodeHealth nodeHealth : ringHostNodeHealth.values()) {
+                for (NannyHealth nannyHealth : nodeHealth.nannyHealths) {
+                    if (nannyHealth.instanceDescriptor.instanceKey.equals(key.getKey())) {
+                        return nannyHealth.serviceHealth.fullyOnline ? nannyHealth.serviceHealth.version.equals(version) : false;
+                    }
+                }
+            }
+            return false;
         };
         UpenaService upenaService = new UpenaService(passwordStore, sessionStore, upenaStore, chaosService, instanceHealthly);
 
@@ -748,7 +754,8 @@ public class UpenaMain {
             null,
             ubaLog);
 
-        UpenaHealth upenaHealth = new UpenaHealth(upenaAmzaService, upenaSSLConfig, upenaConfigStore, ubaService, ringHost, hostKey);
+        UpenaHealth upenaHealth = new UpenaHealth(amzaService, upenaSSLConfig, upenaConfigStore, ubaService,
+            new RingHost(datacenter, rack, ringHost.getHost(), ringHost.getPort()), hostKey);
         upenaHealthProvider.set(upenaHealth);
 
         DiscoveredRoutes discoveredRoutes = new DiscoveredRoutes();
@@ -770,7 +777,7 @@ public class UpenaMain {
             .addInjectable(upenaConfigStore)
             .addInjectable(ubaService)
             //.addEndpoint(AmzaReplicationRestEndpoints.class)
-            .addInjectable(UpenaAmzaInstance.class, upenaAmzaService)
+            //.addInjectable(UpenaAmzaInstance.class, upenaAmzaService)
             .addEndpoint(UpenaEndpoints.class)
             .addEndpoint(UpenaConnectivityEndpoints.class)
             .addEndpoint(UpenaManagedDeployableEndpoints.class)
@@ -862,7 +869,7 @@ public class UpenaMain {
             storeMapper,
             mapper,
             jvmapi,
-            upenaAmzaService,
+            amzaService,
             localPathToRepo,
             repositoryProvider,
             hostKey,
@@ -948,19 +955,9 @@ public class UpenaMain {
         }
         ubaServiceReference.set(ubaService);
 
-        if (clusterDiscoveryName != null) {
-            AmzaDiscovery amzaDiscovery = new AmzaDiscovery(upenaAmzaService, ringHost, clusterDiscoveryName, multicastGroup, multicastPort);
-            amzaDiscovery.start();
-            LOG.info("-----------------------------------------------------------------------");
-            LOG.info("|      Amza Service Discovery Online");
-            LOG.info("-----------------------------------------------------------------------");
-        } else {
-            LOG.info("-----------------------------------------------------------------------");
-            LOG.info("|     Amza Service is in manual Discovery mode.  No cluster discovery name was specified");
-            LOG.info("-----------------------------------------------------------------------");
-        }
 
-        String peers = System.getProperty("manual.peers");
+
+        /*String peers = System.getProperty("manual.peers");
         if (peers != null) {
             String[] hostPortTuples = peers.split(",");
             for (String hostPortTuple : hostPortTuples) {
@@ -981,7 +978,7 @@ public class UpenaMain {
                     LOG.warn("Malformed hostPortTuple {}", hostPort);
                 }
             }
-        }
+        }*/
 
         String vpc = System.getProperty("aws.vpc", null);
         UpenaAWSLoadBalancerNanny upenaAWSLoadBalancerNanny = new UpenaAWSLoadBalancerNanny(vpc, upenaStore, hostKey, awsClientFactory);
@@ -1030,7 +1027,7 @@ public class UpenaMain {
         ObjectMapper storeMapper,
         ObjectMapper mapper,
         JDIAPI jvmapi,
-        UpenaAmzaService amzaInstance,
+        AmzaService amzaService,
         PathToRepo localPathToRepo,
         RepositoryProvider repositoryProvider,
         HostKey hostKey,
@@ -1118,7 +1115,7 @@ public class UpenaMain {
         PluginHandle topology = new PluginHandle("th", null, "Topology", "/ui/topology",
             TopologyPluginEndpoints.class,
             new TopologyPluginRegion(mapper, "soy.upena.page.topologyPluginRegion", "soy.upena.page.connectionsHealth",
-                renderer, upenaHealth, amzaInstance, upenaSSLConfig, upenaStore, healthPluginRegion, hostsPluginRegion, releasesPluginRegion,
+                renderer, upenaHealth, amzaService, upenaSSLConfig, upenaStore, healthPluginRegion, hostsPluginRegion, releasesPluginRegion,
                 instancesPluginRegion,
                 discoveredRoutes), null,
             "read");
@@ -1127,7 +1124,7 @@ public class UpenaMain {
             ConnectivityPluginEndpoints.class,
             new ConnectivityPluginRegion(mapper, "soy.upena.page.connectivityPluginRegion", "soy.upena.page.connectionsHealth",
                 "soy.upena.page.connectionOverview",
-                renderer, upenaHealth, amzaInstance, upenaSSLConfig, upenaStore, healthPluginRegion,
+                renderer, upenaHealth, amzaService, upenaSSLConfig, upenaStore, healthPluginRegion,
                 discoveredRoutes), null,
             "read");
 
@@ -1186,7 +1183,7 @@ public class UpenaMain {
 
         PluginHandle ring = new PluginHandle("leaf", null, "Upena", "/ui/ring",
             UpenaRingPluginEndpoints.class,
-            new UpenaRingPluginRegion(storeMapper, "soy.upena.page.upenaRingPluginRegion", renderer, amzaInstance, upenaStore, upenaConfigStore), null, "read",
+            new UpenaRingPluginRegion(storeMapper, "soy.upena.page.upenaRingPluginRegion", renderer, amzaService, upenaStore, upenaConfigStore), null, "read",
             "debug");
 
         PluginHandle loadBalancer = new PluginHandle("scale", null, "Load Balancer", "/ui/loadbalancers",
@@ -1341,7 +1338,10 @@ public class UpenaMain {
         OAuthSigner authSigner,
         TenantAwareHttpClient<String> systemTakeClient,
         TenantAwareHttpClient<String> stripedTakeClient,
-        TenantAwareHttpClient<String> ringClient, AtomicReference<Callable<RingTopology>> topologyProvider) throws Exception {
+        TenantAwareHttpClient<String> ringClient, AtomicReference<Callable<RingTopology>> topologyProvider,
+        String clusterDiscoveryName,
+        String multicastGroup,
+        int multicastPort) throws Exception {
 
 
         //Deployable deployable = new Deployable(new String[0]);
@@ -1501,6 +1501,29 @@ public class UpenaMain {
         topologyProvider.set(() -> amzaService.getRingReader().getRing(AmzaRingReader.SYSTEM_RING, -1));
 
         amzaService.start(ringMember, ringHost);
+        LOG.info("-----------------------------------------------------------------------");
+        LOG.info("|      Amza Service Started");
+        LOG.info("-----------------------------------------------------------------------");
+
+
+        if (clusterDiscoveryName != null) {
+            AmzaDiscovery amzaDiscovery = new AmzaDiscovery(amzaService.getRingReader(),
+                amzaService.getRingWriter(),
+                clusterDiscoveryName,
+                multicastGroup,
+                multicastPort,
+                new AtomicInteger(amzaService.getRingReader().getRingSize(AmzaRingReader.SYSTEM_RING, -1)) // Grrr
+            );
+            amzaDiscovery.start();
+            LOG.info("-----------------------------------------------------------------------");
+            LOG.info("|      Amza Service Discovery Online");
+            LOG.info("-----------------------------------------------------------------------");
+        } else {
+            LOG.info("-----------------------------------------------------------------------");
+            LOG.info("|     Amza Service is in manual Discovery mode.  No cluster discovery name was specified");
+            LOG.info("-----------------------------------------------------------------------");
+        }
+
         return amzaService;
     }
 
