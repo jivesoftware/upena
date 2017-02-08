@@ -27,6 +27,7 @@ import com.jivesoftware.os.amza.service.AmzaService;
 import com.jivesoftware.os.amza.service.EmbeddedClientProvider;
 import com.jivesoftware.os.amza.service.EmbeddedClientProvider.CheckOnline;
 import com.jivesoftware.os.amza.service.EmbeddedClientProvider.EmbeddedClient;
+import com.jivesoftware.os.jive.utils.ordered.id.TimestampedOrderIdProvider;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.amza.service.AmzaTable;
@@ -44,6 +45,7 @@ public class UpenaConfigStore {
 
     public static final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
+    private final TimestampedOrderIdProvider orderIdProvider;
     private final ObjectMapper mapper;
     private final UpenaAmzaService upenaAmzaService;
     private final AmzaService amzaService;
@@ -55,11 +57,13 @@ public class UpenaConfigStore {
         0, 0, 0, 0,
         false, Consistency.quorum, true, true, false, RowType.snappy_primary, "lab", -1, null, -1, -1);
 
-    public UpenaConfigStore(ObjectMapper mapper,
+    public UpenaConfigStore(TimestampedOrderIdProvider orderIdProvider,
+        ObjectMapper mapper,
         UpenaAmzaService upenaAmzaService,
         AmzaService amzaService,
         EmbeddedClientProvider embeddedClientProvider) throws Exception {
 
+        this.orderIdProvider = orderIdProvider;
         this.mapper = mapper;
         this.upenaAmzaService = upenaAmzaService;
         this.amzaService = amzaService;
@@ -113,7 +117,7 @@ public class UpenaConfigStore {
     synchronized private void set(String instanceKey, String context, byte[] rawProperties) throws Exception {
         String key = createTableName(instanceKey, context);
         client().commit(Consistency.quorum, null,
-            commitKeyValueStream -> commitKeyValueStream.commit(key.getBytes(StandardCharsets.UTF_8), rawProperties, -1L, false),
+            commitKeyValueStream -> commitKeyValueStream.commit(key.getBytes(StandardCharsets.UTF_8), rawProperties, orderIdProvider.nextId(), false),
             30_000, TimeUnit.MILLISECONDS);
     }
 
@@ -121,7 +125,7 @@ public class UpenaConfigStore {
     synchronized public void remove(String instanceKey, String context) throws Exception {
         String key = createTableName(instanceKey, context);
         client().commit(Consistency.quorum, null,
-            commitKeyValueStream -> commitKeyValueStream.commit(key.getBytes(StandardCharsets.UTF_8), null, -1L, true),
+            commitKeyValueStream -> commitKeyValueStream.commit(key.getBytes(StandardCharsets.UTF_8), null, orderIdProvider.nextId(), true),
             30_000, TimeUnit.MILLISECONDS);
         lastFetchedVersion.remove(key);
     }
