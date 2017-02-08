@@ -630,7 +630,7 @@ public class UpenaMain {
         ObjectMapper storeMapper = new ObjectMapper();
         mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        UpenaConfigStore upenaConfigStore = new UpenaConfigStore(storeMapper, upenaAmzaService, amzaService, embeddedClientProvider);
+        UpenaConfigStore upenaConfigStore = new UpenaConfigStore(orderIdProvider, storeMapper, upenaAmzaService, amzaService, embeddedClientProvider);
 
         LOG.info("-----------------------------------------------------------------------");
         LOG.info("|      Upena Config Store Online");
