@@ -90,7 +90,7 @@ import com.jivesoftware.os.routing.bird.server.oauth.OAuthSecretManager;
 import com.jivesoftware.os.routing.bird.server.oauth.OAuthServiceLocatorShim;
 import com.jivesoftware.os.routing.bird.server.oauth.validator.AuthValidator;
 import com.jivesoftware.os.routing.bird.server.oauth.validator.DefaultOAuthValidator;
-import com.jivesoftware.os.routing.bird.shared.AuthEvaluator.AuthStatus;
+import com.jivesoftware.os.routing.bird.shared.AuthEvaluator;
 import com.jivesoftware.os.routing.bird.shared.ConnectionDescriptor;
 import com.jivesoftware.os.routing.bird.shared.ConnectionDescriptorsProvider;
 import com.jivesoftware.os.routing.bird.shared.ConnectionDescriptorsResponse;
@@ -257,6 +257,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import javax.ws.rs.container.ContainerRequestContext;
 import jersey.repackaged.com.google.common.collect.Sets;
 import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
 import oauth.signpost.signature.HmacSha1MessageSigner;
@@ -858,27 +859,36 @@ public class UpenaMain {
         String upenaApiPassword = System.getProperty("upena.api.password", null);
 
         if (upenaApiUsername != null && upenaApiPassword != null) {
-            authValidationFilter.addEvaluator(containerRequestContext -> {
-                String authCredentials = containerRequestContext.getHeaderString("Authorization");
-                if (authCredentials == null) {
-                    return AuthStatus.not_handled;
+            authValidationFilter.addEvaluator(new AuthEvaluator() {
+                @Override
+                public AuthStatus authorize(ContainerRequestContext containerRequestContext) throws IOException {
+                    String authCredentials = containerRequestContext.getHeaderString("Authorization");
+                    if (authCredentials == null) {
+                        return AuthStatus.not_handled;
+                    }
+
+                    final String encodedUserPassword = authCredentials.replaceFirst("Basic" + " ", "");
+                    String usernameAndPassword = null;
+                    try {
+                        byte[] decodedBytes = Base64.getDecoder().decode(encodedUserPassword);
+                        usernameAndPassword = new String(decodedBytes, "UTF-8");
+                    } catch (IOException e) {
+                        return AuthStatus.denied;
+                    }
+                    final StringTokenizer tokenizer = new StringTokenizer(usernameAndPassword, ":");
+                    final String username = tokenizer.nextToken();
+                    final String password = tokenizer.nextToken();
+
+                    boolean authenticationStatus = upenaApiUsername.equals(username) && upenaApiPassword.equals(password);
+
+                    return authenticationStatus ? AuthStatus.authorized : AuthStatus.denied;
+
                 }
 
-                final String encodedUserPassword = authCredentials.replaceFirst("Basic" + " ", "");
-                String usernameAndPassword = null;
-                try {
-                    byte[] decodedBytes = Base64.getDecoder().decode(encodedUserPassword);
-                    usernameAndPassword = new String(decodedBytes, "UTF-8");
-                } catch (IOException e) {
-                    return AuthStatus.denied;
+                @Override
+                public String name() {
+                    return "UpenaApiAuthEvaluator";
                 }
-                final StringTokenizer tokenizer = new StringTokenizer(usernameAndPassword, ":");
-                final String username = tokenizer.nextToken();
-                final String password = tokenizer.nextToken();
-
-                boolean authenticationStatus = upenaApiUsername.equals(username) && upenaApiPassword.equals(password);
-
-                return authenticationStatus ? AuthStatus.authorized : AuthStatus.denied;
             }, "/api/*");
         }
 
@@ -1533,8 +1543,6 @@ public class UpenaMain {
             Optional.<TakeFailureListener>absent(),
             rowsChanged -> {
             });
-
-
 
 
         topologyProvider.set(() -> amzaService.getRingReader().getRing(AmzaRingReader.SYSTEM_RING, -1));
