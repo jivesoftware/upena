@@ -5,20 +5,20 @@
     <parent>
         <groupId>com.jivesoftware.os.upena.inheritance.poms</groupId>
         <artifactId>global-repo-management</artifactId>
-        <version>0.904</version>
+        <version>0.905</version>
         <relativePath>../global-repo-management/pom.xml</relativePath>
     </parent>
     <artifactId>global-version-management</artifactId>
     <packaging>pom</packaging>
     <properties>
         <aquarium-version>0.31</aquarium-version>
-        <amza-version>0.731</amza-version>
+        <amza-version>0.735</amza-version>
         <aws-version>1.11.29</aws-version>
         <jetty-version>9.3.3.v20150827</jetty-version>
         <glassfish-version>2.22</glassfish-version>
-        <mlogger-version>0.23</mlogger-version>
-        <jive.utils.version>0.108</jive.utils.version>
-        <routing.bird.version>0.173</routing.bird.version>
+        <mlogger-version>0.25</mlogger-version>
+        <jive.utils.version>0.111</jive.utils.version>
+        <routing.bird.version>0.174</routing.bird.version>
         <jackson-version>2.6.6</jackson-version>
         <aetherVersion>1.0.2.v20150114</aetherVersion>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
