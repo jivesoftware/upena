@@ -8,11 +8,10 @@
     <parent>
         <groupId>com.jivesoftware.os.upena.inheritance.poms</groupId>
         <artifactId>global-repo-management</artifactId>
-        <version>0.906</version>
+        <version>0.907</version>
         <relativePath>inheritance-poms/global-repo-management/pom.xml</relativePath>
     </parent>
     <modules>
-        <module>upena-amza</module>
         <module>upena-status</module>
         <module>upena-service</module>
         <module>upena-shared</module>

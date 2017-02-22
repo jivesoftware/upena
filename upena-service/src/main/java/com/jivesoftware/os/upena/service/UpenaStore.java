@@ -29,8 +29,6 @@ import com.jivesoftware.os.amza.service.Partition.ScanRange;
 import com.jivesoftware.os.jive.utils.ordered.id.OrderIdProvider;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
-import com.jivesoftware.os.upena.amza.service.UpenaAmzaService;
-import com.jivesoftware.os.upena.amza.shared.TableName;
 import com.jivesoftware.os.upena.shared.BasicTimestampedValue;
 import com.jivesoftware.os.upena.shared.ChaosState;
 import com.jivesoftware.os.upena.shared.ChaosStateKey;
@@ -72,24 +70,6 @@ public class UpenaStore {
     private final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
     private final ObjectMapper mapper;
-    private final UpenaAmzaService upenaAmzaService;
-
-    private final InstanceChanges instanceChanges;
-    private final InstanceChanges instanceRemoved;
-    private final TenantChanges tenantChanges;
-
-    private final TableName userStoreKey = new TableName("master", "users", null, null);
-    private final TableName permissionStoreKey = new TableName("master", "permissions", null, null);
-    private final TableName projectStoreKey = new TableName("master", "projects", null, null);
-    private final TableName clusterStoreKey = new TableName("master", "clusters", null, null);
-    private final TableName loadbalancers = new TableName("master", "loadbalancers", null, null);
-    private final TableName hostStoreKey = new TableName("master", "hosts", null, null);
-    private final TableName serviceStoreKey = new TableName("master", "services", null, null);
-    private final TableName releaseGroupStoreKey = new TableName("master", "releaseGroups", null, null);
-    private final TableName instanceStoreKey = new TableName("master", "intances", null, null);
-    private final TableName tenantStoreKey = new TableName("master", "tenants", null, null);
-    private final TableName monkeyStoreKey = new TableName("master", "monkeys", null, null);
-    private final TableName chaosStateStoreKey = new TableName("master", "chaosState", null, null);
 
     public UpenaMap<UserKey, User> users;
     public UpenaMap<PermissionKey, Permission> permissions;
@@ -110,7 +90,6 @@ public class UpenaStore {
 
     public UpenaStore(
         ObjectMapper mapper,
-        UpenaAmzaService upenaAmzaService,
         InstanceChanges instanceChanges,
         InstanceChanges instanceRemoved,
         TenantChanges tenantChanges,
@@ -122,10 +101,6 @@ public class UpenaStore {
         this.embeddedClientProvider = embeddedClientProvider;
 
         this.mapper = mapper;
-        this.upenaAmzaService = upenaAmzaService;
-        this.instanceChanges = instanceChanges;
-        this.instanceRemoved = instanceRemoved;
-        this.tenantChanges = tenantChanges;
     }
 
     public void init(OrderIdProvider idProvider,
@@ -137,115 +112,44 @@ public class UpenaStore {
             TimeUnit.DAYS.toMillis(30), TimeUnit.DAYS.toMillis(10), TimeUnit.DAYS.toMillis(30), TimeUnit.DAYS.toMillis(10), 0, 0, 0, 0,
             false, Consistency.quorum, true, true, false, RowType.snappy_primary, "lab", -1, null, -1, -1);
 
-        UpenaMap<UserKey, User> upenaUsers = upenaAmzaService == null ? null : new UpenaTable<>(mapper, upenaAmzaService.getTable(userStoreKey),
-            UserKey.class, User.class, new UserKeyProvider(), null);
 
-        UpenaMap<UserKey, User> amzaUsers = new AmzaUpenaMap<>(mapper, amzaService, embeddedClientProvider, partitionProperties,
+        users = new AmzaUpenaMap<>(mapper, amzaService, embeddedClientProvider, partitionProperties,
             getPartitionName("user"), UserKey.class, User.class, new UserKeyProvider(), null);
 
-        users = copy("users", upenaUsers, amzaUsers, cleanup);
-
-        UpenaMap<PermissionKey, Permission> upenaPermissions = upenaAmzaService == null ? null : new UpenaTable<>(mapper,
-            upenaAmzaService.getTable(permissionStoreKey),
-            PermissionKey.class, Permission.class, new PermissionKeyProvider(), null);
-
-        UpenaMap<PermissionKey, Permission> amzaPermissions = new AmzaUpenaMap<>(mapper, amzaService, embeddedClientProvider, partitionProperties,
+        permissions = new AmzaUpenaMap<>(mapper, amzaService, embeddedClientProvider, partitionProperties,
             getPartitionName("permissions"), PermissionKey.class, Permission.class, new PermissionKeyProvider(), null);
 
-        permissions = copy("permissions", upenaPermissions, amzaPermissions, cleanup);
-
-        UpenaMap<ProjectKey, Project> upenaProjects = upenaAmzaService == null ? null : new UpenaTable<>(mapper, upenaAmzaService.getTable(projectStoreKey),
-            ProjectKey.class, Project.class, new ProjectKeyProvider(idProvider), null);
-
-        UpenaMap<ProjectKey, Project> amzaProjects = new AmzaUpenaMap<>(mapper, amzaService, embeddedClientProvider, partitionProperties,
+        projects = new AmzaUpenaMap<>(mapper, amzaService, embeddedClientProvider, partitionProperties,
             getPartitionName("projects"), ProjectKey.class, Project.class, new ProjectKeyProvider(idProvider), null);
 
-        projects = copy("projects", upenaProjects, amzaProjects, cleanup);
 
-
-        UpenaMap<ClusterKey, Cluster> upenaClusters = upenaAmzaService == null ? null : new UpenaTable<>(mapper, upenaAmzaService.getTable(clusterStoreKey),
-            ClusterKey.class, Cluster.class, new ClusterKeyProvider(idProvider), null);
-
-
-        UpenaMap<ClusterKey, Cluster> amzaClusters = new AmzaUpenaMap<>(mapper, amzaService, embeddedClientProvider, partitionProperties,
+        clusters = new AmzaUpenaMap<>(mapper, amzaService, embeddedClientProvider, partitionProperties,
             getPartitionName("clusters"), ClusterKey.class, Cluster.class, new ClusterKeyProvider(idProvider), null);
 
-        clusters = copy("clusters", upenaClusters, amzaClusters, cleanup);
-
-
-        UpenaMap<LBKey, LB> upenaLoadBalancers = upenaAmzaService == null ? null : new UpenaTable<>(mapper, upenaAmzaService.getTable(loadbalancers),
-            LBKey.class, LB.class, new LBKeyProvider(idProvider), null);
-
-        UpenaMap<LBKey, LB> amzaLoadbalancers = new AmzaUpenaMap<>(mapper, amzaService, embeddedClientProvider, partitionProperties,
+        loadBalancers = new AmzaUpenaMap<>(mapper, amzaService, embeddedClientProvider, partitionProperties,
             getPartitionName("load-balancers"), LBKey.class, LB.class, new LBKeyProvider(idProvider), null);
 
-        loadBalancers = copy("loadBalancers", upenaLoadBalancers, amzaLoadbalancers, cleanup);
-
-
-        UpenaMap<HostKey, Host> upenaHosts = upenaAmzaService == null ? null : new UpenaTable<>(mapper, upenaAmzaService.getTable(hostStoreKey),
-            HostKey.class, Host.class, new HostKeyProvider(), null);
-
-        UpenaMap<HostKey, Host> amzaHosts = new AmzaUpenaMap<>(mapper, amzaService, embeddedClientProvider, partitionProperties,
+        hosts = new AmzaUpenaMap<>(mapper, amzaService, embeddedClientProvider, partitionProperties,
             getPartitionName("hosts"), HostKey.class, Host.class, new HostKeyProvider(), null);
 
-        hosts = copy("hosts", upenaHosts, amzaHosts, cleanup);
-
-
-        UpenaMap<ServiceKey, Service> upenaServices = upenaAmzaService == null ? null : new UpenaTable<>(mapper, upenaAmzaService.getTable(serviceStoreKey),
-            ServiceKey.class, Service.class, new ServiceKeyProvider(idProvider), null);
-
-        UpenaMap<ServiceKey, Service> amzaServices = new AmzaUpenaMap<>(mapper, amzaService, embeddedClientProvider, partitionProperties,
+        services = new AmzaUpenaMap<>(mapper, amzaService, embeddedClientProvider, partitionProperties,
             getPartitionName("services"), ServiceKey.class, Service.class, new ServiceKeyProvider(idProvider), null);
 
-        services = copy("services", upenaServices, amzaServices, cleanup);
-
-        UpenaMap<ReleaseGroupKey, ReleaseGroup> upenaReleases = upenaAmzaService == null ? null : new UpenaTable<>(mapper,
-            upenaAmzaService.getTable(releaseGroupStoreKey),
-            ReleaseGroupKey.class, ReleaseGroup.class, new ReleaseGroupKeyProvider(idProvider), null);
-
-        UpenaMap<ReleaseGroupKey, ReleaseGroup> amzaReleases = new AmzaUpenaMap<>(mapper, amzaService, embeddedClientProvider, partitionProperties,
+        releaseGroups = new AmzaUpenaMap<>(mapper, amzaService, embeddedClientProvider, partitionProperties,
             getPartitionName("releases"), ReleaseGroupKey.class, ReleaseGroup.class, new ReleaseGroupKeyProvider(idProvider), null);
 
-        releaseGroups = copy("releaseGroups", upenaReleases, amzaReleases, cleanup);
-
-
-        UpenaMap<InstanceKey, Instance> upenaInstances = upenaAmzaService == null ? null : new UpenaTable<>(mapper,
-            upenaAmzaService.getTable(instanceStoreKey),
-            InstanceKey.class, Instance.class, new InstanceKeyProvider(idProvider), new InstanceValidator(minServicePort, maxServicePort));
-
-        UpenaMap<InstanceKey, Instance> amzaInstance = new AmzaUpenaMap<>(mapper, amzaService, embeddedClientProvider, partitionProperties,
+        instances = new AmzaUpenaMap<>(mapper, amzaService, embeddedClientProvider, partitionProperties,
             getPartitionName("instances"), InstanceKey.class, Instance.class, new InstanceKeyProvider(idProvider),
             new InstanceValidator(minServicePort, maxServicePort));
 
-        instances = copy("instances", upenaInstances, amzaInstance, cleanup);
-
-
-        UpenaMap<TenantKey, Tenant> upenaTenants = upenaAmzaService == null ? null : new UpenaTable<>(mapper, upenaAmzaService.getTable(tenantStoreKey),
-            TenantKey.class, Tenant.class, new TenantKeyProvider(), null);
-
-        UpenaMap<TenantKey, Tenant> amzaTenants = new AmzaUpenaMap<>(mapper, amzaService, embeddedClientProvider, partitionProperties,
+        tenants = new AmzaUpenaMap<>(mapper, amzaService, embeddedClientProvider, partitionProperties,
             getPartitionName("tenants"), TenantKey.class, Tenant.class, new TenantKeyProvider(), null);
 
-        tenants = copy("tenants", upenaTenants, amzaTenants, cleanup);
-
-
-        UpenaMap<MonkeyKey, Monkey> upenaMonkeys = upenaAmzaService == null ? null : new UpenaTable<>(mapper, upenaAmzaService.getTable(monkeyStoreKey),
-            MonkeyKey.class, Monkey.class, new MonkeyKeyProvider(idProvider), null);
-
-        UpenaMap<MonkeyKey, Monkey> amzaMonkeys = new AmzaUpenaMap<>(mapper, amzaService, embeddedClientProvider, partitionProperties,
+        monkeys = new AmzaUpenaMap<>(mapper, amzaService, embeddedClientProvider, partitionProperties,
             getPartitionName("monkeys"), MonkeyKey.class, Monkey.class, new MonkeyKeyProvider(idProvider), null);
 
-        monkeys = copy("monkeys", upenaMonkeys, amzaMonkeys, cleanup);
-
-
-        UpenaMap<ChaosStateKey, ChaosState> upenaChaosStates = upenaAmzaService == null ? null : new UpenaTable<>(mapper,
-            upenaAmzaService.getTable(chaosStateStoreKey),
-            ChaosStateKey.class, ChaosState.class, new ChaosStateKeyProvider(idProvider), null);
-
-        UpenaMap<ChaosStateKey, ChaosState> amzaChaosStates = new AmzaUpenaMap<>(mapper, amzaService, embeddedClientProvider, partitionProperties,
+        chaosStates = new AmzaUpenaMap<>(mapper, amzaService, embeddedClientProvider, partitionProperties,
             getPartitionName("chaos"), ChaosStateKey.class, ChaosState.class, new ChaosStateKeyProvider(idProvider), null);
-
-        chaosStates = copy("chaosStates", upenaChaosStates, amzaChaosStates, cleanup);
 
         initialized.set(true);
     }
@@ -474,28 +378,28 @@ public class UpenaStore {
         final AtomicInteger count = new AtomicInteger(minCount);
         changeLogClient().scan(Collections.singletonList(ScanRange.ROW_SCAN),
             (byte[] prefix, byte[] key, byte[] value, long timestamp, long version) -> {
-            RecordedChange change = mapper.readValue(value, RecordedChange.class);
-            if (change.when <= maxTimestampInclusize && (change.when > minTimestampExclusize || count.get() > 0)) {
-                if (who != null && who.length() > 0 && !change.who.contains(who)) {
-                    return true;
+                RecordedChange change = mapper.readValue(value, RecordedChange.class);
+                if (change.when <= maxTimestampInclusize && (change.when > minTimestampExclusize || count.get() > 0)) {
+                    if (who != null && who.length() > 0 && !change.who.contains(who)) {
+                        return true;
+                    }
+                    if (what != null && what.length() > 0 && !change.what.contains(what)) {
+                        return true;
+                    }
+                    if (why != null && why.length() > 0 && !change.why.contains(why)) {
+                        return true;
+                    }
+                    if (where != null && where.length() > 0 && !change.where.contains(where)) {
+                        return true;
+                    }
+                    if (how != null && how.length() > 0 && !change.how.contains(how)) {
+                        return true;
+                    }
+                    count.decrementAndGet();
+                    return logStream.stream(change);
                 }
-                if (what != null && what.length() > 0 && !change.what.contains(what)) {
-                    return true;
-                }
-                if (why != null && why.length() > 0 && !change.why.contains(why)) {
-                    return true;
-                }
-                if (where != null && where.length() > 0 && !change.where.contains(where)) {
-                    return true;
-                }
-                if (how != null && how.length() > 0 && !change.how.contains(how)) {
-                    return true;
-                }
-                count.decrementAndGet();
-                return logStream.stream(change);
-            }
-            return change.when > maxTimestampInclusize || count.get() > 0;
-        }, true);
+                return change.when > maxTimestampInclusize || count.get() > 0;
+            }, true);
     }
 
     public interface LogStream {
