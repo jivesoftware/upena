@@ -8,7 +8,6 @@ import com.jivesoftware.os.amza.api.ring.RingHost;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.routing.bird.shared.InstanceDescriptor;
-import com.jivesoftware.os.upena.amza.shared.UpenaRingHost;
 import com.jivesoftware.os.upena.deployable.UpenaHealth;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.service.UpenaStore;
@@ -52,7 +51,6 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
     private final ObjectMapper mapper;
     private final long startupTime;
-    private final UpenaRingHost ringHost;
     private final String template;
     private final String instanceTemplate;
     private final String popupTemplate;
@@ -63,7 +61,6 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
 
     public HealthPluginRegion(ObjectMapper mapper,
         long startupTime,
-        UpenaRingHost ringHost,
         String template,
         String instanceTemplate,
         String popupTemplate,
@@ -73,7 +70,6 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
 
         this.mapper = mapper;
         this.startupTime = startupTime;
-        this.ringHost = ringHost;
         this.template = template;
         this.instanceTemplate = instanceTemplate;
         this.popupTemplate = popupTemplate;

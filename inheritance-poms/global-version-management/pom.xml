@@ -24,6 +24,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <test.excludedGroups>blocked-by-jira,slow</test.excludedGroups>
         <maven.build.timestamp.format>yyyy-MM-dd-HH:mm:ss.S</maven.build.timestamp.format>
+        <checkstyle.failsOnError>false</checkstyle.failsOnError>
+
     </properties>
 
     <dependencyManagement>
@@ -58,20 +60,9 @@
                 <artifactId>amza-api</artifactId>
                 <version>${amza-version}</version>
             </dependency>
-
-            <dependency>
-                <groupId>com.jivesoftware.os.amza</groupId>
-                <artifactId>amza-service</artifactId>
-                <version>${amza-version}</version>
-            </dependency>
             <dependency>
                 <groupId>com.jivesoftware.os.amza</groupId>
                 <artifactId>amza-embed</artifactId>
-                <version>${amza-version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.jivesoftware.os.amza</groupId>
-                <artifactId>amza-lab-storage</artifactId>
                 <version>${amza-version}</version>
             </dependency>
             <dependency>

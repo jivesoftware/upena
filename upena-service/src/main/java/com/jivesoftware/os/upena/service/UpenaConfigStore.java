@@ -30,9 +30,6 @@ import com.jivesoftware.os.amza.service.EmbeddedClientProvider.EmbeddedClient;
 import com.jivesoftware.os.jive.utils.ordered.id.TimestampedOrderIdProvider;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
-import com.jivesoftware.os.upena.amza.service.AmzaTable;
-import com.jivesoftware.os.upena.amza.service.UpenaAmzaService;
-import com.jivesoftware.os.upena.amza.shared.TableName;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
@@ -47,7 +44,6 @@ public class UpenaConfigStore {
 
     private final TimestampedOrderIdProvider orderIdProvider;
     private final ObjectMapper mapper;
-    private final UpenaAmzaService upenaAmzaService;
     private final AmzaService amzaService;
     private final EmbeddedClientProvider embeddedClientProvider;
     private final Map<String, FetchedVersion> lastFetchedVersion = Maps.newConcurrentMap();
@@ -59,34 +55,13 @@ public class UpenaConfigStore {
 
     public UpenaConfigStore(TimestampedOrderIdProvider orderIdProvider,
         ObjectMapper mapper,
-        UpenaAmzaService upenaAmzaService,
         AmzaService amzaService,
         EmbeddedClientProvider embeddedClientProvider) throws Exception {
 
         this.orderIdProvider = orderIdProvider;
         this.mapper = mapper;
-        this.upenaAmzaService = upenaAmzaService;
         this.amzaService = amzaService;
         this.embeddedClientProvider = embeddedClientProvider;
-    }
-
-
-    public void init() throws Exception {
-
-        if (upenaAmzaService != null) {
-            EmbeddedClient client = client();
-            TableName tableName = new TableName("master", "config", null, null);
-            AmzaTable table = upenaAmzaService.getTable(tableName);
-            long[] count = { 0 };
-            table.scan((transactionId, key, value) -> {
-                count[0]++;
-                client.commit(Consistency.quorum, null,
-                    commitKeyValueStream -> commitKeyValueStream.commit(key.getKey(), value.getValue(), value.getTimestampId(), value.getTombstoned()),
-                    30_000, TimeUnit.MILLISECONDS);
-                return true;
-            });
-            LOG.info("UPGRADE: carried {} configs forward.", count[0]);
-        }
     }
 
     private EmbeddedClient client() throws Exception {
