@@ -142,7 +142,7 @@ public class ManagedDeployablePluginRegion implements PageRegion<ManagedDeployab
                 HasUI hasUI = proxy.get("/manage/hasUI", HasUI.class, null);
                 List<Map<String, String>> uis = Lists.newArrayList();
                 int uiId = 0;
-                if (hasUI.uis != null) {
+                if (hasUI != null && hasUI.uis != null) {
                     for (HasUI.UI ui : hasUI.uis) {
                         Instance.Port port = instance.ports.get(ui.portName);
                         if (port != null) {
