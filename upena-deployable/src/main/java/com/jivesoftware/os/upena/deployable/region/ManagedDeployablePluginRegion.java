@@ -95,9 +95,9 @@ public class ManagedDeployablePluginRegion implements PageRegion<ManagedDeployab
                 String token = proxy.allocateAccessToken();
 
                 return URI.create((port.sslEnabled ? "https" : "http") + "://" + host.name
-                        + ":" + port.port
-                        + (uiPath.startsWith("/") ? uiPath : "/" + uiPath)
-                        + "?rb_access_token=" + token
+                    + ":" + port.port
+                    + (uiPath.startsWith("/") ? uiPath : "/" + uiPath)
+                    + "?rb_access_token=" + token
                 );
             }
         }
@@ -108,11 +108,11 @@ public class ManagedDeployablePluginRegion implements PageRegion<ManagedDeployab
         Instance instance = upenaStore.instances.get(new InstanceKey(instanceKey));
         ProxyAsNeeded proxy = null;
         if (instance == null) {
-            data.put("result", Arrays.asList(new String[]{"There is no instance for key:" + instanceKey}));
+            data.put("result", Arrays.asList(new String[] { "There is no instance for key:" + instanceKey }));
         } else {
             Host host = upenaStore.hosts.get(instance.hostKey);
             if (host == null) {
-                data.put("result", Arrays.asList(new String[]{"There is no host for key:" + instance.hostKey}));
+                data.put("result", Arrays.asList(new String[] { "There is no host for key:" + instance.hostKey }));
             } else if (instance.hostKey.equals(hostKey)) {
                 proxy = new Local(instanceKey, instance);
             } else {
@@ -142,23 +142,25 @@ public class ManagedDeployablePluginRegion implements PageRegion<ManagedDeployab
                 HasUI hasUI = proxy.get("/manage/hasUI", HasUI.class, null);
                 List<Map<String, String>> uis = Lists.newArrayList();
                 int uiId = 0;
-                for (HasUI.UI ui : hasUI.uis) {
-                    Instance.Port port = instance.ports.get(ui.portName);
-                    if (port != null) {
-                        if (managePort != null && managePort.port != port.port) {
+                if (hasUI.uis != null) {
+                    for (HasUI.UI ui : hasUI.uis) {
+                        Instance.Port port = instance.ports.get(ui.portName);
+                        if (port != null) {
+                            if (managePort != null && managePort.port != port.port) {
 
-                            Map<String, String> u = new HashMap<>();
-                            u.put("id", String.valueOf(uiId));
-                            u.put("name", ui.name);
-                            u.put("scheme", (port.sslEnabled) ? "https" : "http");
-                            u.put("host", host.name);
-                            u.put("port", String.valueOf(port.port));
-                            u.put("url", ui.url);
-                            u.put("uiPath", "/ui/deployable/redirect/" + input.instanceKey + "?portName=" + ui.portName + "&path=" + ui.url);
-                            uis.add(u);
+                                Map<String, String> u = new HashMap<>();
+                                u.put("id", String.valueOf(uiId));
+                                u.put("name", ui.name);
+                                u.put("scheme", (port.sslEnabled) ? "https" : "http");
+                                u.put("host", host.name);
+                                u.put("port", String.valueOf(port.port));
+                                u.put("url", ui.url);
+                                u.put("uiPath", "/ui/deployable/redirect/" + input.instanceKey + "?portName=" + ui.portName + "&path=" + ui.url);
+                                uis.add(u);
+                            }
                         }
+                        uiId++;
                     }
-                    uiId++;
                 }
                 data.put("uis", uis);
 
@@ -202,13 +204,15 @@ public class ManagedDeployablePluginRegion implements PageRegion<ManagedDeployab
                                         sb.append("<input type=\"hidden\" name=\"instanceKey\" value=\"" + instanceKey + "\"/>");
                                         sb.append("<input type=\"hidden\" name=\"className\" value=\"" + className + "\"/>");
                                         sb.append("<input type=\"hidden\" name=\"lineNumber\" value=\"" + lineNumber + "\"/>");
-                                        sb.append("<button style=\"display: inline;\" title=\"filter\" type=\"submit\" name=\"action\" value=\"addConnections\" class=\"btn btn-success btn-xs ladda-button\"  data-spinner-color=\"#222\" data-style=\"expand-right\">");
+                                        sb.append(
+                                            "<button style=\"display: inline;\" title=\"filter\" type=\"submit\" name=\"action\" value=\"addConnections\" " +
+                                                "class=\"btn btn-success btn-xs ladda-button\"  data-spinner-color=\"#222\" data-style=\"expand-right\">");
                                         sb.append("<span class=\"fa fa-bug\"></span>");
                                         sb.append("</button>");
                                         sb.append("</form>");
                                     }
                                 } catch (Exception x) {
-                                    LOG.error("Failed find expected class and line in "+l);
+                                    LOG.error("Failed find expected class and line in " + l);
                                 }
                                 sb.append("\n");
 
@@ -256,11 +260,11 @@ public class ManagedDeployablePluginRegion implements PageRegion<ManagedDeployab
     }
 
     public String renderHtml(String html) {
-        return renderer.render("soy.upena.page.deployablePluginRegionHtml", ImmutableMap.of("htmlResult",(html == null ? "" : html)));
+        return renderer.render("soy.upena.page.deployablePluginRegionHtml", ImmutableMap.of("htmlResult", (html == null ? "" : html)));
     }
 
     public String renderText(String text) {
-        return renderer.render("soy.upena.page.deployablePluginRegionText", ImmutableMap.of("textResult",(text == null ? "" : text)));
+        return renderer.render("soy.upena.page.deployablePluginRegionText", ImmutableMap.of("textResult", (text == null ? "" : text)));
     }
 
     @Override
