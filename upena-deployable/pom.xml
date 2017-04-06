@@ -135,10 +135,6 @@
             <artifactId>javax.inject</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.jivesoftware.os.mlogger</groupId>
-            <artifactId>core</artifactId>
-        </dependency>
-        <dependency>
             <groupId>javax.ws.rs</groupId>
             <artifactId>javax.ws.rs-api</artifactId>
         </dependency>
@@ -396,6 +392,11 @@
             <groupId>com.jivesoftware.os.amza</groupId>
             <artifactId>amza-api</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.jivesoftware.os.mlogger</groupId>
+            <artifactId>core</artifactId>
+        </dependency>
+
 
     </dependencies>
 </project>

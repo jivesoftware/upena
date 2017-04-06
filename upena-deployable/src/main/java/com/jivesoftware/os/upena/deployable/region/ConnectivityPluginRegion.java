@@ -314,51 +314,53 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
             }
             String serviceName = service != null ? service.name : instanceId;
             Node from = nodes.get(serviceName);
+            if (from != null) {
 
-            MinMaxDouble mmd = new MinMaxDouble();
+                MinMaxDouble mmd = new MinMaxDouble();
 
-            // TODO fix with async: This is crap because it clobbers
-            if (from.focusHtml == null) {
-                from.focusHtml = Lists.newArrayList();
-            }
-            ((List) from.focusHtml).add(renderConnections(mmd, nodes, serviceName, instanceId));
-
-            for (Map.Entry<String, Map<String, ConnectionHealth>> to_Family_ConnectionHealth : to_Family_ConnectionHealths.entrySet()) {
-
-                Map<String, ConnectionHealth> familyConnectionHealths = to_Family_ConnectionHealth.getValue();
-                Node to = null;
-                MinMaxDouble edgeWeight = new MinMaxDouble();
-                double successPerSecond = 0;
-
-                for (Map.Entry<String, ConnectionHealth> familyConnectionHealth : familyConnectionHealths.entrySet()) {
-                    ConnectionHealth connectionHealth = familyConnectionHealth.getValue();
-                    if (to == null) {
-                        InstanceDescriptor instanceDescriptor = connectionHealth.connectionDescriptor.getInstanceDescriptor();
-                        String toServiceName = instanceDescriptor.serviceName;
-                        to = nodes.get(toServiceName);
-                        if (to == null) {
-                            to = new Node(toServiceName, id, serviceIdColor(serviceColor, toServiceName), "12", 0);
-                            to.sslEnabled = instanceDescriptor.ports.get("main").sslEnabled;
-                            to.serviceAuthEnabled = instanceDescriptor.ports.get("main").serviceAuthEnabled;
-
-                            nodes.put(toServiceName, to);
-                            id++;
-                        }
-
-                    }
-                    successPerSecond += connectionHealth.successPerSecond;
-
-                    edgeWeight.value(connectionHealth.latencyStats.latency90th);
-                    edgeWeight.value(connectionHealth.latencyStats.latency95th);
-                    edgeWeight.value(connectionHealth.latencyStats.latency99th);
+                // TODO fix with async: This is crap because it clobbers
+                if (from.focusHtml == null) {
+                    from.focusHtml = Lists.newArrayList();
                 }
+                ((List) from.focusHtml).add(renderConnections(mmd, nodes, serviceName, instanceId));
 
-                Edge edge = addEdge(edges, from, to);
-                edge.min = 1d - mmd.zeroToOne(edgeWeight.min);
-                edge.max = 1d - mmd.zeroToOne(edgeWeight.max);
+                for (Map.Entry<String, Map<String, ConnectionHealth>> to_Family_ConnectionHealth : to_Family_ConnectionHealths.entrySet()) {
+
+                    Map<String, ConnectionHealth> familyConnectionHealths = to_Family_ConnectionHealth.getValue();
+                    Node to = null;
+                    MinMaxDouble edgeWeight = new MinMaxDouble();
+                    double successPerSecond = 0;
+
+                    for (Map.Entry<String, ConnectionHealth> familyConnectionHealth : familyConnectionHealths.entrySet()) {
+                        ConnectionHealth connectionHealth = familyConnectionHealth.getValue();
+                        if (to == null) {
+                            InstanceDescriptor instanceDescriptor = connectionHealth.connectionDescriptor.getInstanceDescriptor();
+                            String toServiceName = instanceDescriptor.serviceName;
+                            to = nodes.get(toServiceName);
+                            if (to == null) {
+                                to = new Node(toServiceName, id, serviceIdColor(serviceColor, toServiceName), "12", 0);
+                                to.sslEnabled = instanceDescriptor.ports.get("main").sslEnabled;
+                                to.serviceAuthEnabled = instanceDescriptor.ports.get("main").serviceAuthEnabled;
+
+                                nodes.put(toServiceName, to);
+                                id++;
+                            }
+
+                        }
+                        successPerSecond += connectionHealth.successPerSecond;
+
+                        edgeWeight.value(connectionHealth.latencyStats.latency90th);
+                        edgeWeight.value(connectionHealth.latencyStats.latency95th);
+                        edgeWeight.value(connectionHealth.latencyStats.latency99th);
+                    }
+
+                    Edge edge = addEdge(edges, from, to);
+                    edge.min = 1d - mmd.zeroToOne(edgeWeight.min);
+                    edge.max = 1d - mmd.zeroToOne(edgeWeight.max);
 
 
-                edge.label = numberFormat.format(successPerSecond) + "/sec ";
+                    edge.label = numberFormat.format(successPerSecond) + "/sec ";
+                }
             }
         }
 
@@ -848,7 +850,7 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
             allRoutes.addAll(v.getRoutes());
         }
 
-        for (final RingMemberAndHost ringMemberAndHost : amzaService.getRingReader().getRing(AmzaRingReader.SYSTEM_RING,30_000L).entries) {
+        for (final RingMemberAndHost ringMemberAndHost : amzaService.getRingReader().getRing(AmzaRingReader.SYSTEM_RING, 30_000L).entries) {
             RingHost ringHost = ringMemberAndHost.ringHost;
             if (currentlyExecuting.putIfAbsent(ringHost, true) == null) {
                 executorService.submit(() -> {
