@@ -26,13 +26,12 @@ import com.google.common.io.Files;
 import com.google.template.soy.SoyFileSet;
 import com.google.template.soy.base.SoySyntaxException;
 import com.google.template.soy.tofu.SoyTofu;
-import com.jivesoftware.os.amza.api.BAInterner;
+import com.jivesoftware.os.amza.api.AmzaInterner;
 import com.jivesoftware.os.amza.api.partition.PartitionProperties;
 import com.jivesoftware.os.amza.api.ring.RingHost;
 import com.jivesoftware.os.amza.api.ring.RingMember;
 import com.jivesoftware.os.amza.api.ring.RingMemberAndHost;
 import com.jivesoftware.os.amza.berkeleydb.BerkeleyDBWALIndexProvider;
-import com.jivesoftware.os.amza.embed.EmbedAmzaServiceInitializer.QuorumTimeouts;
 import com.jivesoftware.os.amza.lab.pointers.LABPointerIndexConfig;
 import com.jivesoftware.os.amza.lab.pointers.LABPointerIndexWALIndexProvider;
 import com.jivesoftware.os.amza.service.AmzaInstance;
@@ -42,7 +41,6 @@ import com.jivesoftware.os.amza.service.AmzaServiceInitializer.AmzaServiceConfig
 import com.jivesoftware.os.amza.service.EmbeddedClientProvider;
 import com.jivesoftware.os.amza.service.SickPartitions;
 import com.jivesoftware.os.amza.service.discovery.AmzaDiscovery;
-import com.jivesoftware.os.amza.service.replication.TakeFailureListener;
 import com.jivesoftware.os.amza.service.replication.http.HttpAvailableRowsTaker;
 import com.jivesoftware.os.amza.service.replication.http.HttpRowsTaker;
 import com.jivesoftware.os.amza.service.replication.http.endpoints.AmzaReplicationRestEndpoints;
@@ -70,9 +68,7 @@ import com.jivesoftware.os.routing.bird.health.api.HealthChecker;
 import com.jivesoftware.os.routing.bird.health.api.HealthFactory;
 import com.jivesoftware.os.routing.bird.health.api.HealthTimer;
 import com.jivesoftware.os.routing.bird.health.api.PercentileHealthCheckConfig;
-import com.jivesoftware.os.routing.bird.health.api.SickHealthCheckConfig;
 import com.jivesoftware.os.routing.bird.health.api.TimerHealthCheckConfig;
-import com.jivesoftware.os.routing.bird.health.api.TriggerTimeoutHealthCheck;
 import com.jivesoftware.os.routing.bird.health.checkers.PercentileHealthChecker;
 import com.jivesoftware.os.routing.bird.health.checkers.SickThreads;
 import com.jivesoftware.os.routing.bird.health.checkers.TimerHealthChecker;
@@ -319,7 +315,6 @@ public class UpenaMain {
         "", };
 
     public static void main(String[] args) throws Exception {
-
         try {
             if (args.length == 0) {
                 for (String u : USAGE) {
@@ -336,22 +331,17 @@ public class UpenaMain {
     }
 
     public void run(String[] args) throws Exception {
-
         HealthFactory.initialize(BindInterfaceToConfiguration::bindDefault,
             new HealthCheckRegistry() {
-
                 @Override
                 public void register(HealthChecker<?> healthChecker) {
-
                 }
 
                 @Override
                 public void unregister(HealthChecker<?> healthChecker) {
-
                 }
             }
         );
-
 
         Properties buildProperties = new Properties();
         String upenaVersion = "";
@@ -365,7 +355,6 @@ public class UpenaMain {
         } catch (Exception x) {
             LOG.warn("Failed to locate build.properties");
         }
-
 
         String workingDir = System.getProperty("user.dir");
         long start = System.currentTimeMillis();
@@ -415,7 +404,6 @@ public class UpenaMain {
         mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
-
         boolean sslEnable = Boolean.parseBoolean(System.getProperty("ssl.enabled", "true"));
         String sslKeystorePassword = System.getProperty("ssl.keystore.password", "password");
         String sslKeystorePath = System.getProperty("ssl.keystore.path", "./certs/sslKeystore");
@@ -463,9 +451,7 @@ public class UpenaMain {
         };
         UpenaSSLConfig upenaSSLConfig = new UpenaSSLConfig(sslEnable, sslAutoGenerateSelfSignedCert, authSigner);
 
-
-        BAInterner baInterner = new BAInterner();
-
+        AmzaInterner amzaInterner = new AmzaInterner();
 
         AtomicReference<Callable<RingTopology>> topologyProvider = new AtomicReference<>(); // bit of a hack
         InstanceDescriptor instanceDescriptor = new InstanceDescriptor(datacenter, rack, "", "", "", "", "", "", "", "", 0,
@@ -541,7 +527,6 @@ public class UpenaMain {
             .socketTimeoutInMillis(60_000)
             .build(); // TODO expose to conf
 
-
         TenantRoutingHttpClientInitializer<String> tenantRoutingHttpClientInitializer = new TenantRoutingHttpClientInitializer<>(
             new OAuthSignerProvider(() -> authSigner));
 
@@ -555,18 +540,25 @@ public class UpenaMain {
             .build(); // TODO expose to conf
         AmzaStats amzaStats = new AmzaStats();
 
-
-        AmzaService amzaService = startAmza(workingDir, amzaStats, baInterner, writerId, new RingHost(datacenter, rack, hostname, port),
-            new RingMember(hostname + ":" + port), authSigner, systemTakeClient, stripedTakeClient, ringClient, topologyProvider,
-            clusterDiscoveryName, multicastGroup, multicastPort);
-
+        AmzaService amzaService = startAmza(workingDir,
+            amzaStats,
+            amzaInterner,
+            writerId,
+            new RingHost(datacenter, rack, hostname, port),
+            new RingMember(hostname + ":" + port),
+            systemTakeClient,
+            stripedTakeClient,
+            ringClient,
+            topologyProvider,
+            clusterDiscoveryName,
+            multicastGroup,
+            multicastPort);
 
         EmbeddedClientProvider embeddedClientProvider = new EmbeddedClientProvider(amzaService);
 
         LOG.info("-----------------------------------------------------------------------");
         LOG.info("|      Amza Service Online");
         LOG.info("-----------------------------------------------------------------------");
-
 
         ObjectMapper storeMapper = new ObjectMapper();
         mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
@@ -576,7 +568,6 @@ public class UpenaMain {
         LOG.info("-----------------------------------------------------------------------");
         LOG.info("|      Upena Config Store Online");
         LOG.info("-----------------------------------------------------------------------");
-
 
         ExecutorService instanceChangedThreads = Executors.newFixedThreadPool(32);
 
@@ -604,7 +595,6 @@ public class UpenaMain {
             amzaService,
             embeddedClientProvider
         );
-        //upenaStore.attachWatchers();
 
         ChaosService chaosService = new ChaosService(upenaStore);
         SecureRandom random = new SecureRandom();
@@ -658,7 +648,6 @@ public class UpenaMain {
         String hostInstanceId = System.getProperty("host.instance.id", hostKey.getKey());
         host = new Host(publicHost, datacenter, rack, hostname, port, workingDir, hostInstanceId, null);
 
-
         UbaLog ubaLog = (what, why, how) -> {
             try {
                 upenaStore.record("Uba", what, System.currentTimeMillis(), why, hostname + ":" + port, how);
@@ -677,7 +666,6 @@ public class UpenaMain {
 
         OktaCredentialsMatcher.oktaLog = oktaLog;
         OktaRealm.oktaLog = oktaLog;
-
 
         UpenaClient upenaClient = new UpenaClient() {
             @Override
@@ -702,7 +690,6 @@ public class UpenaMain {
                         i.ports));
                 }
             }
-
         };
 
         final UbaService ubaService = new UbaServiceInitializer().initialize(passwordStore,
@@ -743,8 +730,6 @@ public class UpenaMain {
             .addInjectable(upenaStore)
             .addInjectable(upenaConfigStore)
             .addInjectable(ubaService)
-            //.addEndpoint(AmzaReplicationRestEndpoints.class)
-            //.addInjectable(UpenaAmzaInstance.class, upenaAmzaService)
             .addEndpoint(UpenaEndpoints.class)
             .addEndpoint(UpenaConnectivityEndpoints.class)
             .addEndpoint(UpenaManagedDeployableEndpoints.class)
@@ -790,7 +775,6 @@ public class UpenaMain {
         oAuthValidator.start();
         authValidationFilter.addEvaluator(new NoAuthEvaluator(), "/repo/*", "/amza/rows/stream/*", "/amza/rows/taken/*", "/amza/pong/*", "/amza/invalidate/*");
         authValidationFilter.addEvaluator(new OAuthEvaluator(oAuthValidator, verifier), "/upena/*", "/amza/*");
-
 
         // TODO something better someday
         String upenaApiUsername = System.getProperty("upena.api.username", null);
@@ -859,8 +843,7 @@ public class UpenaMain {
             humanReadableUpenaClusterName,
             discoveredRoutes);
 
-
-        injectAmza(baInterner, amzaStats, jerseyEndpoints, amzaService, ringClient);
+        injectAmza(amzaInterner, amzaStats, jerseyEndpoints, amzaService);
 
         InitializeRestfulServer initializeRestfulServer = new InitializeRestfulServer(false,
             port,
@@ -879,11 +862,9 @@ public class UpenaMain {
         RestfulServer restfulServer = initializeRestfulServer.build();
         restfulServer.start();
 
-
         LOG.info("-----------------------------------------------------------------------");
         LOG.info("|      Jetty Service Online");
         LOG.info("-----------------------------------------------------------------------");
-
 
         UpenaJerseyEndpoints loopbackJerseyEndpoints = new UpenaJerseyEndpoints(null)
             .addEndpoint(UpenaLoopbackEndpoints.class)
@@ -929,31 +910,6 @@ public class UpenaMain {
         }
         ubaServiceReference.set(ubaService);
 
-
-
-        /*String peers = System.getProperty("manual.peers");
-        if (peers != null) {
-            String[] hostPortTuples = peers.split(",");
-            for (String hostPortTuple : hostPortTuples) {
-                String hostPort = hostPortTuple.trim();
-                if (hostPort.length() > 0 && hostPort.contains(":")) {
-                    String[] host_port = hostPort.split(":");
-                    try {
-                        UpenaRingHost anotherRingHost = new UpenaRingHost(host_port[0].trim(), Integer.parseInt(host_port[1].trim()));
-                        List<UpenaRingHost> ring = upenaAmzaService.getRing("master");
-                        if (!ring.contains(anotherRingHost)) {
-                            LOG.info("Adding host to the cluster: " + anotherRingHost);
-                            upenaAmzaService.addRingHost("master", anotherRingHost);
-                        }
-                    } catch (Exception x) {
-                        LOG.warn("Malformed hostPortTuple {}", hostPort);
-                    }
-                } else {
-                    LOG.warn("Malformed hostPortTuple {}", hostPort);
-                }
-            }
-        }*/
-
         String vpc = System.getProperty("aws.vpc", null);
         UpenaAWSLoadBalancerNanny upenaAWSLoadBalancerNanny = new UpenaAWSLoadBalancerNanny(vpc, upenaStore, hostKey, awsClientFactory);
 
@@ -964,7 +920,6 @@ public class UpenaMain {
                 LOG.warn("Failures while nannying load loadbalancer.", x);
             }
         }, 1, 1, TimeUnit.MINUTES); // TODO better
-
 
         LOG.info("-----------------------------------------------------------------------");
         LOG.info("|     Waiting for amza to be ready....");
@@ -1056,7 +1011,6 @@ public class UpenaMain {
 
         LOG.info("Add....");
 
-
         URL dirURL = UpenaMain.class.getClassLoader().getResource("resources/soy/");
         if (dirURL != null && dirURL.getProtocol().equals("jar")) {
             String jarPath = dirURL.getPath().substring(5, dirURL.getPath().indexOf("!"));
@@ -1078,13 +1032,11 @@ public class UpenaMain {
             }
         }
 
-
         SoyFileSet sfs = soyFileSetBuilder.build();
         SoyTofu tofu = sfs.compileToTofu();
         SoyRenderer renderer = new SoyRenderer(tofu, new SoyDataUtils());
         SoyService soyService = new SoyService(upenaVersion,
             renderer,
-            //new HeaderRegion("soy.upena.chrome.headerRegion", renderer),
             new MenuRegion("soy.upena.chrome.menuRegion", renderer),
             new HomeRegion("soy.upena.page.homeRegion", renderer, hostKey, upenaStore, ubaService),
             humanReadableUpenaClusterName,
@@ -1161,11 +1113,9 @@ public class UpenaMain {
             UsersPluginEndpoints.class,
             new UsersPluginRegion("soy.upena.page.usersPluginRegion", renderer, upenaStore), null, "read");
 
-
         PluginHandle permissions = new PluginHandle("lock", null, "Permission", "/ui/permissions",
             PermissionsPluginEndpoints.class,
             new PermissionsPluginRegion("soy.upena.page.permissionsPluginRegion", renderer, upenaStore), null, "read");
-
 
         PluginHandle clusters = new PluginHandle("cloud", null, "Clusters", "/ui/clusters",
             ClustersPluginEndpoints.class,
@@ -1305,27 +1255,23 @@ public class UpenaMain {
         jerseyEndpoints.addInjectable(probe.region.getClass(), probe.region);
 
         jerseyEndpoints.addInjectable(UnauthorizedPluginRegion.class, unauthorizedRegion);
-        //jerseyEndpoints.addEndpoint(UpenaPropagatorEndpoints.class);
     }
 
-    public static void buildSwagger() {
-        // This configures Swagger
+    private void buildSwagger() {
         BeanConfig beanConfig = new BeanConfig();
         beanConfig.setVersion("1.0.0");
         beanConfig.setResourcePackage("com.jivesoftware.os.upena.deployable");
         beanConfig.setScan(true);
         beanConfig.setBasePath("/");
-        //beanConfig.setDescription("Upena");
         beanConfig.setTitle("Upena");
     }
 
-    public AmzaService startAmza(String workingDir,
+    private AmzaService startAmza(String workingDir,
         AmzaStats amzaStats,
-        BAInterner baInterner,
+        AmzaInterner amzaInterner,
         int writerId,
         RingHost ringHost,
         RingMember ringMember,
-        OAuthSigner authSigner,
         TenantAwareHttpClient<String> systemTakeClient,
         TenantAwareHttpClient<String> stripedTakeClient,
         TenantAwareHttpClient<String> ringClient, AtomicReference<Callable<RingTopology>> topologyProvider,
@@ -1333,16 +1279,11 @@ public class UpenaMain {
         String multicastGroup,
         int multicastPort) throws Exception {
 
-
-        //Deployable deployable = new Deployable(new String[0]);
-
         SnowflakeIdPacker idPacker = new SnowflakeIdPacker();
         JiveEpochTimestampProvider timestampProvider = new JiveEpochTimestampProvider();
 
         SickThreads sickThreads = new SickThreads();
         SickPartitions sickPartitions = new SickPartitions();
-        //deployable.addHealthCheck(new SickThreadsHealthCheck(deployable.config(AmzaSickThreadsHealthConfig.class), sickThreads));
-        //deployable.addHealthCheck(new SickPartitionsHealthCheck(sickPartitions));
 
         TimestampedOrderIdProvider orderIdProvider = new OrderIdProviderImpl(new ConstantWriterIdProvider(writerId),
             idPacker, timestampProvider);
@@ -1373,25 +1314,16 @@ public class UpenaMain {
         };
 
         BinaryPrimaryRowMarshaller primaryRowMarshaller = new BinaryPrimaryRowMarshaller(); // hehe you cant change this :)
-        BinaryHighwaterRowMarshaller highwaterRowMarshaller = new BinaryHighwaterRowMarshaller(baInterner);
+        BinaryHighwaterRowMarshaller highwaterRowMarshaller = new BinaryHighwaterRowMarshaller(amzaInterner);
 
-        RowsTakerFactory systemRowsTakerFactory = () -> new HttpRowsTaker(amzaStats, systemTakeClient, mapper, baInterner);
-        RowsTakerFactory rowsTakerFactory = () -> new HttpRowsTaker(amzaStats, stripedTakeClient, mapper, baInterner);
+        RowsTakerFactory systemRowsTakerFactory = () -> new HttpRowsTaker(amzaStats, systemTakeClient, mapper, amzaInterner);
+        RowsTakerFactory rowsTakerFactory = () -> new HttpRowsTaker(amzaStats, stripedTakeClient, mapper, amzaInterner);
 
-
-        AvailableRowsTaker availableRowsTaker = new HttpAvailableRowsTaker(ringClient, baInterner, mapper);
+        AvailableRowsTaker availableRowsTaker = new HttpAvailableRowsTaker(ringClient, amzaInterner, mapper);
         AquariumStats aquariumStats = new AquariumStats();
 
-        QuorumTimeouts quorumTimeoutsConfig = bindDefault(QuorumTimeouts.class);
         HealthTimer quorumLatency = HealthFactory.getHealthTimer(QuorumLatency.class, TimerHealthChecker.FACTORY);
 
-        TriggerTimeoutHealthCheck quorumTimeoutHealthCheck = new TriggerTimeoutHealthCheck(
-            () -> amzaStats.getGrandTotal().quorumTimeouts.longValue(),
-            quorumTimeoutsConfig
-        );
-        //deployable.addHealthCheck(quorumTimeoutHealthCheck);
-
-        //LABPointerIndexConfig amzaLabConfig = deployable.config(LABPointerIndexConfig.class);
         LABPointerIndexConfig amzaLabConfig = bindDefault(UpenaLABPointerIndexConfig.class);
 
         AmzaServiceConfig amzaServiceConfig = new AmzaServiceConfig();
@@ -1408,7 +1340,7 @@ public class UpenaMain {
 
         Set<RingMember> blacklistRingMembers = Sets.newHashSet();
         AmzaService amzaService = new AmzaServiceInitializer().initialize(amzaServiceConfig,
-            baInterner,
+            amzaInterner,
             aquariumStats,
             amzaStats,
             quorumLatency,
@@ -1445,7 +1377,8 @@ public class UpenaMain {
                         workingIndexDirectories),
                     persistentRowIOProvider);
 
-                indexProviderRegistry.register(new LABPointerIndexWALIndexProvider(amzaLabConfig,
+                indexProviderRegistry.register(new LABPointerIndexWALIndexProvider(amzaInterner,
+                        amzaLabConfig,
                         LABPointerIndexWALIndexProvider.INDEX_CLASS_NAME,
                         partitionStripeFunction,
                         workingIndexDirectories),
@@ -1454,10 +1387,9 @@ public class UpenaMain {
             availableRowsTaker,
             systemRowsTakerFactory,
             rowsTakerFactory,
-            Optional.<TakeFailureListener>absent(),
+            Optional.absent(),
             rowsChanged -> {
             });
-
 
         topologyProvider.set(() -> amzaService.getRingReader().getRing(AmzaRingReader.SYSTEM_RING, -1));
 
@@ -1465,7 +1397,6 @@ public class UpenaMain {
         LOG.info("-----------------------------------------------------------------------");
         LOG.info("|      Amza Service Started");
         LOG.info("-----------------------------------------------------------------------");
-
 
         if (clusterDiscoveryName != null) {
             AmzaDiscovery amzaDiscovery = new AmzaDiscovery(amzaService.getRingReader(),
@@ -1488,60 +1419,20 @@ public class UpenaMain {
         return amzaService;
     }
 
-
-    private void injectAmza(BAInterner baInterner,
+    private void injectAmza(AmzaInterner amzaInterner,
         AmzaStats amzaStats,
         UpenaJerseyEndpoints jerseyEndpoints,
-        AmzaService amzaService,
-        TenantAwareHttpClient<String> ringClient) {
-
-        /*AmzaClientProvider<HttpClient, HttpClientException> clientProvider = new AmzaClientProvider<>(
-            new HttpPartitionClientFactory(baInterner),
-            new HttpPartitionHostsProvider(baInterner, ringClient, mapper),
-            new RingHostHttpClientProvider(ringClient),
-            Executors.newCachedThreadPool(),
-            10_000, //TODO expose to conf
-            -1,
-            -1);*/
-
-
-
-        /*new AmzaUIInitializer().initialize("upena", ringHost, amzaService, clientProvider, aquariumStats, amzaStats, timestampProvider, idPacker,
-            new AmzaUIInitializer.InjectionCallback() {
-
-                @Override
-                public void addEndpoint(Class clazz) {
-                    deployable.addEndpoints(clazz);
-                }
-
-                @Override
-                public void addInjectable(Class clazz, Object instance) {
-                    deployable.addInjectables(clazz, instance);
-                }
-
-                @Override
-                public void addSessionAuth(String... paths) throws Exception {
-                    deployable.addSessionAuth(paths);
-                }
-            });*/
-
+        AmzaService amzaService) {
         jerseyEndpoints.addEndpoint(AmzaReplicationRestEndpoints.class);
         jerseyEndpoints.addInjectable(AmzaStats.class, amzaStats);
         jerseyEndpoints.addInjectable(AmzaService.class, amzaService);
         jerseyEndpoints.addInjectable(AmzaRingWriter.class, amzaService.getRingWriter());
         jerseyEndpoints.addInjectable(AmzaRingReader.class, amzaService.getRingReader());
         jerseyEndpoints.addInjectable(AmzaInstance.class, amzaService);
-        jerseyEndpoints.addInjectable(BAInterner.class, baInterner);
-
-       /* Resource staticResource = new Resource(null)
-            .addClasspathResource("resources/static/amza")
-            .setDirectoryListingAllowed(false)
-            .setContext("/static/amza");
-        deployable.addResource(staticResource);*/
+        jerseyEndpoints.addInjectable(AmzaInterner.class, amzaInterner);
     }
 
     interface UpenaLABPointerIndexConfig extends LABPointerIndexConfig {
-
         @LongDefault(100_000_000L)
         long getSplitWhenValuesAndKeysTotalExceedsNBytes();
 
@@ -1558,23 +1449,7 @@ public class UpenaMain {
         long getMaxHeapPressureInBytes();
     }
 
-    interface AmzaSickThreadsHealthConfig extends SickHealthCheckConfig {
-
-        @Override
-        @StringDefault("sick>threads")
-        String getName();
-
-        @Override
-        @StringDefault("No sick threads")
-        String getDescription();
-
-        @Override
-        @DoubleDefault(0.2)
-        Double getSickHealth();
-    }
-
     public interface QuorumLatency extends TimerHealthCheckConfig {
-
         @StringDefault("ack>quorum>latency")
         @Override
         String getName();
@@ -1587,6 +1462,5 @@ public class UpenaMain {
         @Override
         Double get95ThPecentileMax();
     }
-
 
 }
