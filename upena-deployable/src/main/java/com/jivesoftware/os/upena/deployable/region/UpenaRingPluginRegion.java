@@ -198,8 +198,6 @@ public class UpenaRingPluginRegion implements PageRegion<UpenaRingPluginRegionIn
 
             List<Map<String, String>> rows = new ArrayList<>();
             for (RingMemberAndHost ringMemberAndHost : amzaService.getRingReader().getRing(AmzaRingReader.SYSTEM_RING, 30_000L).entries) {
-
-
                 Map<String, String> row = new HashMap<>();
                 row.put("member", ringMemberAndHost.ringMember.getMember());
                 row.put("datacenter", ringMemberAndHost.ringHost.getDatacenter());
@@ -210,17 +208,11 @@ public class UpenaRingPluginRegion implements PageRegion<UpenaRingPluginRegionIn
             }
             data.put("ring", rows);
 
-
             try {
-                StringBuilder sb = new StringBuilder();
-                sb.append(tailLogFile(new File("./logs/service.log"), 80 * 1000)); // barf
-                data.put("tail", sb.toString());
-
+                data.put("tail", tailLogFile(new File("./logs/service.log"), 80 * 1000));
             } catch (Exception x) {
                 LOG.warn("Failed to tail log.", x);
             }
-
-
         } catch (AuthorizationException x) {
             throw x;
         } catch (Exception e) {
@@ -234,10 +226,9 @@ public class UpenaRingPluginRegion implements PageRegion<UpenaRingPluginRegionIn
         return "Upena Ring";
     }
 
-
     private String tailLogFile(File file, int lastNBytes) {
         if (!file.exists()) {
-            return "Log file:" + file.getAbsolutePath() + " doesnt exist?";
+            return "Log file:" + file.getAbsolutePath() + " does not exist.";
         }
         try (RandomAccessFile fileHandler = new RandomAccessFile(file, "r")) {
             long fileLength = file.length() - 1;
@@ -250,11 +241,11 @@ public class UpenaRingPluginRegion implements PageRegion<UpenaRingPluginRegionIn
             fileHandler.readFully(bytes);
             return new String(bytes, "ASCII");
         } catch (FileNotFoundException e) {
-            LOG.warn("Tailing failed locate file. " + file);
-            return "Tailing failed locate file. " + file;
+            LOG.warn("Tailing failed to locate file: " + file);
+            return "Tailing failed to locate file: " + file;
         } catch (IOException e) {
-            LOG.warn("Tailing file encountered the following error. " + file, e);
-            return "Tailing file encountered the following error. " + file;
+            LOG.warn("Tailing file encountered an error: " + file, e);
+            return "Tailing file encountered an error: " + file;
         }
     }
 
