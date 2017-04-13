@@ -40,7 +40,7 @@ public class HealthLogPluginEndpoints {
 
     @GET
     @Produces(MediaType.TEXT_HTML)
-    public Response changelog(@Context SecurityContext sc, @Context HttpServletRequest httpRequest) {
+    public Response healthlog(@Context SecurityContext sc, @Context HttpServletRequest httpRequest) {
         return shiroRequestHelper.call("healthLog", (csrfToken) -> {
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), csrfToken, pluginRegion,
                 new HealthLogPluginRegionInput("", "", "", "", "", "", ""));
@@ -62,7 +62,7 @@ public class HealthLogPluginEndpoints {
         @FormParam("how") @DefaultValue("") String how,
         @FormParam("action") @DefaultValue("") String action) {
 
-        return shiroRequestHelper.csrfCall(csrfToken, "changeLog", (csrfToken1) -> {
+        return shiroRequestHelper.csrfCall(csrfToken, "healthLog", (csrfToken1) -> {
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), csrfToken1, pluginRegion,
                 new HealthLogPluginRegionInput(who, what, when, where, why, how, action));
             return Response.ok(rendered);

@@ -103,7 +103,7 @@ public class ChangeLogPluginRegion implements PageRegion<ChangeLogPluginRegionIn
                     return true;
                 });
 
-            data.put("changeLog", rows);
+            data.put("log", rows);
 
         } catch (Exception e) {
             LOG.error("Unable to retrieve data", e);

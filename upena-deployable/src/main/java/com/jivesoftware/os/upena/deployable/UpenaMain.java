@@ -1092,16 +1092,13 @@ public class UpenaMain {
                 discoveredRoutes), null,
             "read");
 
-        PluginHandle changes = new PluginHandle("road", null, "Changes", "/ui/changeLog",
+        PluginHandle changes = new PluginHandle("road", null, "Change-Log", "/ui/changeLog",
             ChangeLogPluginEndpoints.class,
             new ChangeLogPluginRegion("soy.upena.page.changeLogPluginRegion", renderer, upenaStore), null, "read");
 
-
-        PluginHandle healthLog = new PluginHandle("tie", null, "Health-Log", "/ui/changeLog",
+        PluginHandle healthLog = new PluginHandle("time", null, "Health-Log", "/ui/healthLog",
             HealthLogPluginEndpoints.class,
             new HealthLogPluginRegion("soy.upena.page.healthLogPluginRegion", renderer, upenaStore), null, "read");
-
-
 
         PluginHandle instances = new PluginHandle("star", null, "Instances", "/ui/instances",
             InstancesPluginEndpoints.class, instancesPluginRegion, null, "read");
