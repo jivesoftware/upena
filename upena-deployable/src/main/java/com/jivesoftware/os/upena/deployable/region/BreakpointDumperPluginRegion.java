@@ -328,7 +328,7 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
         connection.put("id", String.valueOf(state.id));
 
         connection.put("name", state.name);
-        connection.put("log", state.breakpointDebugger.getLog());
+        connection.put("changeLog", state.breakpointDebugger.getLog());
         if (state.isCapturing()) {
             connection.put("attached", String.valueOf(true));
         }

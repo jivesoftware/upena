@@ -25,7 +25,6 @@ import com.jivesoftware.os.upena.shared.ReleaseGroupKey;
 import com.jivesoftware.os.upena.shared.Service;
 import com.jivesoftware.os.upena.shared.ServiceKey;
 import com.jivesoftware.os.upena.shared.TimestampedValue;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -35,7 +34,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DurationFormatUtils;
@@ -304,7 +302,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
         }
         if (!canceled.isEmpty()) {
             data.put("message", "Canceled restart:\n" + Joiner.on("\n").join(canceled));
-            upenaStore.record(user, "cancelRestart", System.currentTimeMillis(), "", "instance-ui", canceled.toString());
+            upenaStore.recordChange(user, "cancelRestart", System.currentTimeMillis(), "", "instance-ui", canceled.toString());
 
         }
     }
@@ -324,7 +322,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
         }
         if (!enable.isEmpty()) {
             data.put("message", "Enabled:\n" + Joiner.on("\n").join(enable));
-            upenaStore.record(user, "enabled", System.currentTimeMillis(), "", "instance-ui", enable.toString());
+            upenaStore.recordChange(user, "enabled", System.currentTimeMillis(), "", "instance-ui", enable.toString());
         }
     }
 
@@ -343,7 +341,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
         }
         if (!enable.isEmpty()) {
             data.put("message", "Enabled SSL:\n" + Joiner.on("\n").join(enable));
-            upenaStore.record(user, "SSL=" + state, System.currentTimeMillis(), "", "instance-ui", enable.toString());
+            upenaStore.recordChange(user, "SSL=" + state, System.currentTimeMillis(), "", "instance-ui", enable.toString());
         }
     }
 
@@ -362,7 +360,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
         }
         if (!enable.isEmpty()) {
             data.put("message", "Enabled SAUTH:\n" + Joiner.on("\n").join(enable));
-            upenaStore.record(user, "SAUTH=" + state, System.currentTimeMillis(), "", "instance-ui", enable.toString());
+            upenaStore.recordChange(user, "SAUTH=" + state, System.currentTimeMillis(), "", "instance-ui", enable.toString());
         }
     }
 
@@ -381,7 +379,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
         }
         if (!disabled.isEmpty()) {
             data.put("message", "Disabled:\n" + Joiner.on("\n").join(disabled));
-            upenaStore.record(user, "disabled", System.currentTimeMillis(), "", "instance-ui", disabled.toString());
+            upenaStore.recordChange(user, "disabled", System.currentTimeMillis(), "", "instance-ui", disabled.toString());
         }
     }
 
@@ -405,7 +403,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
 
         if (!restart.isEmpty()) {
             data.put("message", "Restarting the following instances with 30sec stagger:\n" + Joiner.on("\n").join(restart));
-            upenaStore.record(user, "restart", System.currentTimeMillis(), "", "instance-ui", restart.toString());
+            upenaStore.recordChange(user, "restart", System.currentTimeMillis(), "", "instance-ui", restart.toString());
         }
     }
 
@@ -425,7 +423,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
         }
         if (!restart.isEmpty()) {
             data.put("message", "Restarting the following instances in 5 seconds:\n" + Joiner.on("\n").join(restart));
-            upenaStore.record(user, "restart", System.currentTimeMillis(), "", "instance-ui", restart.toString());
+            upenaStore.recordChange(user, "restart", System.currentTimeMillis(), "", "instance-ui", restart.toString());
         }
     }
 
@@ -438,7 +436,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
                 Instance removing = upenaStore.instances.get(instanceKey);
                 if (removing != null) {
                     upenaStore.instances.remove(instanceKey);
-                    upenaStore.record(user, "removed", System.currentTimeMillis(), "", "instance-ui", removing.toString());
+                    upenaStore.recordChange(user, "removed", System.currentTimeMillis(), "", "instance-ui", removing.toString());
                     data.put("message", "Removed:" + instanceToHumanReadableString(removing));
                 }
             } catch (Exception x) {
@@ -490,7 +488,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
                     new HashMap<>()
                 );
                 upenaStore.instances.update(null, newInstance);
-                upenaStore.record(user, "added", System.currentTimeMillis(), "", "instance-ui",
+                upenaStore.recordChange(user, "added", System.currentTimeMillis(), "", "instance-ui",
                     instanceToHumanReadableString(newInstance) + "\n" + newInstance
                         .toString());
 
@@ -561,7 +559,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
                     new HashMap<>()
                 );
                 upenaStore.instances.update(null, newInstance);
-                upenaStore.record(user, "added", System.currentTimeMillis(), "", "instance-ui",
+                upenaStore.recordChange(user, "added", System.currentTimeMillis(), "", "instance-ui",
                     instanceToHumanReadableString(newInstance) + "\n" + newInstance
                         .toString());
 
@@ -583,7 +581,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
                 instance.restartTimestampGMTMillis = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(5);
                 upenaStore.instances.update(key, instance);
                 data.put("message", "Instance will be restarted momentarily.");
-                upenaStore.record(user, "restart", System.currentTimeMillis(), "", "instance-ui", instanceToHumanReadableString(instance));
+                upenaStore.recordChange(user, "restart", System.currentTimeMillis(), "", "instance-ui", instanceToHumanReadableString(instance));
                 data.put("message", "Restarting instance in 5 seconds. " + instanceToHumanReadableString(instance));
             }
 
@@ -654,7 +652,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
 
                     upenaStore.instances.update(new InstanceKey(input.key), updatedInstance);
 
-                    upenaStore.record(user, "updated", System.currentTimeMillis(), "", "instance-ui", instanceToHumanReadableString(instance) + "\n"
+                    upenaStore.recordChange(user, "updated", System.currentTimeMillis(), "", "instance-ui", instanceToHumanReadableString(instance) + "\n"
                         + updatedInstance.toString()
                     );
                     data.put("message", "Updated Instance:" + instanceToHumanReadableString(updatedInstance));
@@ -823,7 +821,7 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
         }
 
         upenaStore.instances.update(instanceKey, instance);
-        upenaStore.record(user, "updated", System.currentTimeMillis(), "", "instance-ui", instanceToHumanReadableString(instance) + "\n" + instance
+        upenaStore.recordChange(user, "updated", System.currentTimeMillis(), "", "instance-ui", instanceToHumanReadableString(instance) + "\n" + instance
             .toString());
     }
 
@@ -835,13 +833,13 @@ public class InstancesPluginRegion implements PageRegion<InstancesPluginRegionIn
             if (port != null) {
                 port.properties.remove(update.propertyName);
                 upenaStore.instances.update(instanceKey, instance);
-                upenaStore.record(user, "updated", System.currentTimeMillis(), "", "instance-ui", instanceToHumanReadableString(instance) + "\n" + instance
+                upenaStore.recordChange(user, "updated", System.currentTimeMillis(), "", "instance-ui", instanceToHumanReadableString(instance) + "\n" + instance
                     .toString());
             }
         } else {
             instance.ports.remove(update.portName);
             upenaStore.instances.update(instanceKey, instance);
-            upenaStore.record(user, "updated", System.currentTimeMillis(), "", "instance-ui", instanceToHumanReadableString(instance) + "\n" + instance
+            upenaStore.recordChange(user, "updated", System.currentTimeMillis(), "", "instance-ui", instanceToHumanReadableString(instance) + "\n" + instance
                 .toString());
         }
     }

@@ -260,7 +260,7 @@ public class MonkeyPluginRegion implements PageRegion<MonkeyPluginRegion.MonkeyP
                 }
 
                 upenaStore.monkeys.update(null, newMonkey);
-                upenaStore.record(user, "added", System.currentTimeMillis(), "", "monkey-ui",
+                upenaStore.recordChange(user, "added", System.currentTimeMillis(), "", "monkey-ui",
                         monkeyToHumanReadableString(newMonkey) + "\n" + newMonkey.toString());
 
                 data.put("message", "Created Monkey.");
@@ -338,7 +338,7 @@ public class MonkeyPluginRegion implements PageRegion<MonkeyPluginRegion.MonkeyP
                         }
                     }
 
-                    upenaStore.record(user, "updated", System.currentTimeMillis(), "", "monkey-ui",
+                    upenaStore.recordChange(user, "updated", System.currentTimeMillis(), "", "monkey-ui",
                             monkeyToHumanReadableString(monkey) + "\n"
                                     + updatedMonkey.toString());
 
@@ -369,7 +369,7 @@ public class MonkeyPluginRegion implements PageRegion<MonkeyPluginRegion.MonkeyP
                         upenaStore.chaosStates.remove(entry.getKey());
                     }
 
-                    upenaStore.record(user, "removed", System.currentTimeMillis(), "", "monkey-ui", removing.toString());
+                    upenaStore.recordChange(user, "removed", System.currentTimeMillis(), "", "monkey-ui", removing.toString());
                 }
             } catch (Exception x) {
                 String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());

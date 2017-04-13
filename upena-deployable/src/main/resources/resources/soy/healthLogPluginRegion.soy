@@ -1,0 +1,75 @@
+{namespace soy.upena.page}
+
+/**
+ * @param? message
+ * @param? filters
+ * @param? log
+ */
+{template .healthLogPluginRegion}
+    {if $log}
+        <div class="panel panel-info">
+            <div class="panel-heading"><span class="panel-title">Health Log</span></div>
+
+            {if $message}
+                <pre>{$message}</pre>
+            {/if}
+
+            <table class="table  float-table-head table-condensed table-hover table-responsive">
+                <thead class="upena-thead">
+                    <tr>
+                        <th>When</th>
+                        <th>Who</th>
+                        <th>What</th>
+                        <th>Where</th>
+                        <th>Why</th>
+                        <th>How</th>
+                        <th>Action</th>
+                    </tr>
+                    <form id="add-host" class="j-form" data-active-class="btn-default" data-input-el="#requestPicker" data-form-el="#requestPickerForm"
+                        method="post">
+                        <tr class="well">
+                            <td>
+                                <input type="text" style="padding-left:10px;"
+                                placeholder="When" value="{$filters.when?:''}" name="when" id="whenPicker" class="form-control">
+                            </td>
+                            <td>
+                                <input type="text" style="padding-left:10px;"
+                                placeholder="Who" value="{$filters.who?:''}" name="who" id="whoPicker" class="form-control">
+                            </td>
+                            <td>
+                                <input type="text" style="padding-left:10px;"
+                                placeholder="What" value="{$filters.what?:''}" name="what" id="whatPicker" class="form-control">
+                            </td>
+                            <td>
+                                <input type="text" style="padding-left:10px;"
+                                placeholder="Where" value="{$filters.where?:''}" name="where" id="whyPicker" class="form-control">
+                            </td>
+                            <td>
+                                <input type="text" style="padding-left:10px;"
+                                placeholder="Why" value="{$filters.why?:''}" name="why" id="whyPicker" class="form-control">
+                            </td>
+                            <td>
+                                <input type="text" style="padding-left:10px;"
+                                placeholder="How" value="{$filters.how?:''}" name="how" id="howPicker" class="form-control">
+                            </td>
+                            <td>
+                                <button title="Filter" type="submit" name="action" value="filter" class="btn btn-primary ladda-button"  data-spinner-color="#222" data-style="expand-right"><span class="glyphicon glyphicon-search"></span> Filter</button>
+                            <td>
+                        </tr>
+                    </form>
+                </thead>
+                {foreach $l in $log}
+                    <tr>
+                        <td>{$l.when}</td>
+                        <td>{$l.who}</td>
+                        <td>{$l.what}</td>
+                        <td>{$l.where}</td>
+                        <td>{$l.why}</td>
+                        <td>{$l.how}</td>
+                        <td></td>
+                    </tr>
+                {/foreach}
+            </table>
+        </div>
+    {/if}
+{/template}

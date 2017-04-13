@@ -3,7 +3,7 @@ package com.jivesoftware.os.upena.deployable.region;
 import com.google.common.collect.Maps;
 import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
-import com.jivesoftware.os.upena.deployable.region.ChangeLogPluginRegion.ChangeLogPluginRegionInput;
+import com.jivesoftware.os.upena.deployable.region.HealthLogPluginRegion.HealthLogPluginRegionInput;
 import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.service.UpenaStore;
 import com.jivesoftware.os.upena.shared.RecordedChange;
@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicLong;
  *
  */
 // soy.page.hostsPluginRegion
-public class ChangeLogPluginRegion implements PageRegion<ChangeLogPluginRegionInput> {
+public class HealthLogPluginRegion implements PageRegion<HealthLogPluginRegionInput> {
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
@@ -26,7 +26,7 @@ public class ChangeLogPluginRegion implements PageRegion<ChangeLogPluginRegionIn
     private final SoyRenderer renderer;
     private final UpenaStore upenaStore;
 
-    public ChangeLogPluginRegion(String template,
+    public HealthLogPluginRegion(String template,
         SoyRenderer renderer,
         UpenaStore upenaStore) {
         this.template = template;
@@ -36,10 +36,10 @@ public class ChangeLogPluginRegion implements PageRegion<ChangeLogPluginRegionIn
 
     @Override
     public String getRootPath() {
-        return "/ui/changeLog";
+        return "/ui/healthLog";
     }
 
-    public static class ChangeLogPluginRegionInput implements PluginInput {
+    public static class HealthLogPluginRegionInput implements PluginInput {
 
         final String who;
         final String what;
@@ -49,7 +49,7 @@ public class ChangeLogPluginRegion implements PageRegion<ChangeLogPluginRegionIn
         final String how;
         final String action;
 
-        public ChangeLogPluginRegionInput(String who, String what, String when, String where, String why, String how, String action) {
+        public HealthLogPluginRegionInput(String who, String what, String when, String where, String why, String how, String action) {
             this.who = who;
             this.what = what;
             this.when = when;
@@ -67,7 +67,7 @@ public class ChangeLogPluginRegion implements PageRegion<ChangeLogPluginRegionIn
     }
 
     @Override
-    public String render(String user, ChangeLogPluginRegionInput input) {
+    public String render(String user, HealthLogPluginRegionInput input) {
         Map<String, Object> data = Maps.newHashMap();
 
         try {
@@ -81,7 +81,7 @@ public class ChangeLogPluginRegion implements PageRegion<ChangeLogPluginRegionIn
 
             final List<Map<String, String>> rows = new ArrayList<>();
             AtomicLong i = new AtomicLong();
-            upenaStore.changeLog(TimeUnit.DAYS.toMillis(2), // TODO expose?
+            upenaStore.healthLog(TimeUnit.DAYS.toMillis(2), // TODO expose?
                 0,
                 100, // TODO expose?
                 input.who,
@@ -114,7 +114,7 @@ public class ChangeLogPluginRegion implements PageRegion<ChangeLogPluginRegionIn
 
     @Override
     public String getTitle() {
-        return "Change Log";
+        return "Health Log";
     }
 
     public static String humanReadableUptime(long millis) {
@@ -122,11 +122,11 @@ public class ChangeLogPluginRegion implements PageRegion<ChangeLogPluginRegionIn
             return String.valueOf(millis);
         }
 
-        long hours = java.util.concurrent.TimeUnit.MILLISECONDS.toHours(millis);
-        millis -= java.util.concurrent.TimeUnit.HOURS.toMillis(hours);
-        long minutes = java.util.concurrent.TimeUnit.MILLISECONDS.toMinutes(millis);
-        millis -= java.util.concurrent.TimeUnit.MINUTES.toMillis(minutes);
-        long seconds = java.util.concurrent.TimeUnit.MILLISECONDS.toSeconds(millis);
+        long hours = TimeUnit.MILLISECONDS.toHours(millis);
+        millis -= TimeUnit.HOURS.toMillis(hours);
+        long minutes = TimeUnit.MILLISECONDS.toMinutes(millis);
+        millis -= TimeUnit.MINUTES.toMillis(minutes);
+        long seconds = TimeUnit.MILLISECONDS.toSeconds(millis);
 
         StringBuilder sb = new StringBuilder(64);
         if (hours < 10) {

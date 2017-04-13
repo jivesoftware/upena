@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.jivesoftware.os.amza.api.ring.RingHost;
 import com.jivesoftware.os.amza.api.ring.RingMemberAndHost;
 import com.jivesoftware.os.amza.service.AmzaService;
@@ -14,6 +13,7 @@ import com.jivesoftware.os.mlogger.core.MetricLogger;
 import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelper;
 import com.jivesoftware.os.routing.bird.http.client.HttpRequestHelperUtils;
+import com.jivesoftware.os.routing.bird.shared.BoundedExecutor;
 import com.jivesoftware.os.routing.bird.shared.InstanceDescriptor;
 import com.jivesoftware.os.upena.deployable.region.SparseCircularHitsBucketBuffer;
 import com.jivesoftware.os.upena.service.UpenaConfigStore;
@@ -29,8 +29,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -49,8 +47,7 @@ public class UpenaHealth {
     private final HostKey ringHostKey;
     private final long startupTime = System.currentTimeMillis();
 
-    private final ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("nodeHealths-%d").build();
-    private final ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(), namedThreadFactory);
+    private final ExecutorService executorService = BoundedExecutor.newBoundedExecutor(Runtime.getRuntime().availableProcessors(), "node-health");
 
     public UpenaHealth(
         AmzaService amzaService,

@@ -115,7 +115,7 @@ public class UpenaAutoRelease {
 
                             upenaStore.releaseGroups.update(entry.getKey(), releaseGroup);
 
-                            upenaStore.record("autoRelease", "updated release", System.currentTimeMillis(), "new version detected", releaseGroup.name,
+                            upenaStore.recordChange("autoRelease", "updated release", System.currentTimeMillis(), "new version detected", releaseGroup.name,
                                 newVersion
                                     .toString());
                         }

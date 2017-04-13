@@ -149,7 +149,7 @@ public class HostsPluginRegion implements PageRegion<HostsPluginRegionInput> {
                         );
                         upenaStore.hosts.update(null, newHost);
 
-                        upenaStore.record(user, "added", System.currentTimeMillis(), "", "host-ui", newHost.toString());
+                        upenaStore.recordChange(user, "added", System.currentTimeMillis(), "", "host-ui", newHost.toString());
 
                         data.put("message", "Created Host:" + input.name);
                     } catch (Exception x) {
@@ -173,7 +173,7 @@ public class HostsPluginRegion implements PageRegion<HostsPluginRegionInput> {
                                 input.instanceId,
                                 null);
                             upenaStore.hosts.update(new HostKey(input.key), updatedHost);
-                            upenaStore.record(user, "updated", System.currentTimeMillis(), "", "host-ui", updatedHost.toString());
+                            upenaStore.recordChange(user, "updated", System.currentTimeMillis(), "", "host-ui", updatedHost.toString());
                             data.put("message", "Updated Release:" + input.name);
                         }
 
@@ -203,7 +203,7 @@ public class HostsPluginRegion implements PageRegion<HostsPluginRegionInput> {
                                     ));
                                 if (found.isEmpty() || input.action.equals("force-remove")) {
                                     upenaStore.hosts.remove(new HostKey(input.key));
-                                    upenaStore.record(user, "removed", System.currentTimeMillis(), "", "host-ui", removing.toString());
+                                    upenaStore.recordChange(user, "removed", System.currentTimeMillis(), "", "host-ui", removing.toString());
                                 } else {
                                     data = Maps.newHashMap();
                                     if (SecurityUtils.getSubject().isPermitted("write")) {

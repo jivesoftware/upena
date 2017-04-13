@@ -151,7 +151,7 @@ public class PermissionsPluginRegion implements PageRegion<PermissionsPluginRegi
                 upenaStore.permissions.update(null, create);
 
                 data.put("message", "Created permission:" + input.permission);
-                upenaStore.record(user, "added", System.currentTimeMillis(), "", "permissions-ui", create.toString());
+                upenaStore.recordChange(user, "added", System.currentTimeMillis(), "", "permissions-ui", create.toString());
             } else {
                 data.put("message", "Sorry but you don't have adequate permissions to create permission:"+input.permission);
             }
@@ -171,7 +171,7 @@ public class PermissionsPluginRegion implements PageRegion<PermissionsPluginRegi
                 if (SecurityUtils.getSubject().isPermitted(input.permission)) {
                     Permission update = new Permission(input.permission, input.description);
                     upenaStore.permissions.update(new PermissionKey(input.key), update);
-                    upenaStore.record(user, "updated", System.currentTimeMillis(), "", "permissions-ui", update.toString());
+                    upenaStore.recordChange(user, "updated", System.currentTimeMillis(), "", "permissions-ui", update.toString());
                     data.put("message", "Updated permission:" + input.permission);
                 }
             }
@@ -191,7 +191,7 @@ public class PermissionsPluginRegion implements PageRegion<PermissionsPluginRegi
                     Permission removing = upenaStore.permissions.get(key);
                     if (removing != null) {
                         upenaStore.permissions.remove(key);
-                        upenaStore.record(user, "removed", System.currentTimeMillis(), "", "permissions-ui", removing.toString());
+                        upenaStore.recordChange(user, "removed", System.currentTimeMillis(), "", "permissions-ui", removing.toString());
                     }
                 }
 

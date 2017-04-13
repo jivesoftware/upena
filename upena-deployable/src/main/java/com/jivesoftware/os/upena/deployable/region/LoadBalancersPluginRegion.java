@@ -193,7 +193,7 @@ public class LoadBalancersPluginRegion implements PageRegion<LoadBalancersPlugin
                             new ServiceKey(input.serviceKey),
                             new ReleaseGroupKey(input.releaseGroupKey));
                         upenaStore.loadBalancers.update(null, newLoadBalancer);
-                        upenaStore.record(user, "added", System.currentTimeMillis(), "", "loadBalancers-ui", newLoadBalancer.toString());
+                        upenaStore.recordChange(user, "added", System.currentTimeMillis(), "", "loadBalancers-ui", newLoadBalancer.toString());
 
                         data.put("message", "Created LoadBalancer:" + input.name);
                     } catch (Exception x) {
@@ -227,7 +227,7 @@ public class LoadBalancersPluginRegion implements PageRegion<LoadBalancersPlugin
 
                             upenaStore.loadBalancers.update(new LBKey(input.key), updatedLoadBalancer);
                             data.put("message", "Updated LoadBalancer:" + input.name);
-                            upenaStore.record(user, "updated", System.currentTimeMillis(), "", "loadBalancers-ui", loadBalancer.toString());
+                            upenaStore.recordChange(user, "updated", System.currentTimeMillis(), "", "loadBalancers-ui", loadBalancer.toString());
                         }
                     } catch (Exception x) {
                         String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
@@ -243,7 +243,7 @@ public class LoadBalancersPluginRegion implements PageRegion<LoadBalancersPlugin
                             LB removing = upenaStore.loadBalancers.get(loadBalancerKey);
                             if (removing != null) {
                                 upenaStore.loadBalancers.remove(loadBalancerKey);
-                                upenaStore.record(user, "removed", System.currentTimeMillis(), "", "loadBalancers-ui", removing.toString());
+                                upenaStore.recordChange(user, "removed", System.currentTimeMillis(), "", "loadBalancers-ui", removing.toString());
                             }
                         } catch (Exception x) {
                             String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
@@ -617,7 +617,7 @@ public class LoadBalancersPluginRegion implements PageRegion<LoadBalancersPlugin
                 loadBalancer.releaseGroupKey);
 
             upenaStore.loadBalancers.update(loadBalancerKey, updatedLoadBalancer);
-            upenaStore.record(remoteUser, "added tag", System.currentTimeMillis(), "", "loadBalancers-ui", loadBalancer.toString());
+            upenaStore.recordChange(remoteUser, "added tag", System.currentTimeMillis(), "", "loadBalancers-ui", loadBalancer.toString());
         }
     }
 

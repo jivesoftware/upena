@@ -209,9 +209,9 @@ public class UpenaRingPluginRegion implements PageRegion<UpenaRingPluginRegionIn
             data.put("ring", rows);
 
             try {
-                data.put("tail", tailLogFile(new File("./logs/service.log"), 80 * 1000));
+                data.put("tail", tailLogFile(new File("./logs/service.changeLog"), 80 * 1000));
             } catch (Exception x) {
-                LOG.warn("Failed to tail log.", x);
+                LOG.warn("Failed to tail changeLog.", x);
             }
         } catch (AuthorizationException x) {
             throw x;

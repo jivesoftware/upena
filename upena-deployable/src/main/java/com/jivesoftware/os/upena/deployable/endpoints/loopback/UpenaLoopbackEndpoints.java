@@ -209,7 +209,7 @@ public class UpenaLoopbackEndpoints {
             }
             sb.append("</ul>");
             if (minHealth < health) {
-                upenaStore.record(upenaHealth.host, "checkHealth", System.currentTimeMillis(), "health:" + minHealth + " < " + health, "endpoint", sb
+                upenaStore.recordHealth(upenaHealth.host, "checkHealth", System.currentTimeMillis(), "health:" + minHealth + " < " + health, "endpoint", sb
                     .toString());
                 return HeaderDecoration.decorate(Response.status(Response.Status.NOT_ACCEPTABLE).entity(sb.toString()).type(MediaType.TEXT_PLAIN)).build();
             } else {
