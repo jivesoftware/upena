@@ -61,7 +61,7 @@ public class HealthLogPluginRegion implements PageRegion<HealthLogPluginRegionIn
 
         @Override
         public String name() {
-            return "Changes";
+            return "Health-Log";
         }
 
     }
@@ -103,7 +103,7 @@ public class HealthLogPluginRegion implements PageRegion<HealthLogPluginRegionIn
                     return true;
                 });
 
-            data.put("changeLog", rows);
+            data.put("log", rows);
 
         } catch (Exception e) {
             LOG.error("Unable to retrieve data", e);
