@@ -454,7 +454,7 @@ public class UserApiClient extends JsonApiClient {
     }
 
     /**
-     * Reset password for a user, the user can no longer log in with the old password.
+     * Reset password for a user, the user can no longer changeLog in with the old password.
      *
      * @param  userId       The id of the user to reset password for.
      * @return User         The user that has gotten its password reset.
@@ -466,7 +466,7 @@ public class UserApiClient extends JsonApiClient {
     }
 
     /**
-     * Reset password for a user, the user can no longer log in with the old password.
+     * Reset password for a user, the user can no longer changeLog in with the old password.
      *
      * @param  userId       The id of the user to reset password for.
      * @param  sendEmail    Determines whether to notify user with an email.

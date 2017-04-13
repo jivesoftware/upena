@@ -86,6 +86,7 @@ import com.jivesoftware.os.routing.bird.server.oauth.OAuthServiceLocatorShim;
 import com.jivesoftware.os.routing.bird.server.oauth.validator.AuthValidator;
 import com.jivesoftware.os.routing.bird.server.oauth.validator.DefaultOAuthValidator;
 import com.jivesoftware.os.routing.bird.shared.AuthEvaluator;
+import com.jivesoftware.os.routing.bird.shared.BoundedExecutor;
 import com.jivesoftware.os.routing.bird.shared.ConnectionDescriptor;
 import com.jivesoftware.os.routing.bird.shared.ConnectionDescriptorsProvider;
 import com.jivesoftware.os.routing.bird.shared.ConnectionDescriptorsResponse;
@@ -120,6 +121,7 @@ import com.jivesoftware.os.upena.deployable.endpoints.ui.ChangeLogPluginEndpoint
 import com.jivesoftware.os.upena.deployable.endpoints.ui.ClustersPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ui.ConfigPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ui.ConnectivityPluginEndpoints;
+import com.jivesoftware.os.upena.deployable.endpoints.ui.HealthLogPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ui.HealthPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ui.HostsPluginEndpoints;
 import com.jivesoftware.os.upena.deployable.endpoints.ui.InstancesPluginEndpoints;
@@ -155,6 +157,7 @@ import com.jivesoftware.os.upena.deployable.region.ChangeLogPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ClustersPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ConfigPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.ConnectivityPluginRegion;
+import com.jivesoftware.os.upena.deployable.region.HealthLogPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.HealthPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.HomeRegion;
 import com.jivesoftware.os.upena.deployable.region.HostsPluginRegion;
@@ -569,7 +572,8 @@ public class UpenaMain {
         LOG.info("|      Upena Config Store Online");
         LOG.info("-----------------------------------------------------------------------");
 
-        ExecutorService instanceChangedThreads = Executors.newFixedThreadPool(32);
+
+        ExecutorService instanceChangedThreads = BoundedExecutor.newBoundedExecutor( 32, "instance-changed");
 
         AtomicReference<UbaService> ubaServiceReference = new AtomicReference<>();
         UpenaStore upenaStore = new UpenaStore(
@@ -650,7 +654,7 @@ public class UpenaMain {
 
         UbaLog ubaLog = (what, why, how) -> {
             try {
-                upenaStore.record("Uba", what, System.currentTimeMillis(), why, hostname + ":" + port, how);
+                upenaStore.recordChange("Uba", what, System.currentTimeMillis(), why, hostname + ":" + port, how);
             } catch (Exception x) {
                 x.printStackTrace(); // Hmm lame
             }
@@ -658,7 +662,7 @@ public class UpenaMain {
 
         OktaLog oktaLog = (who, what, why, how) -> {
             try {
-                upenaStore.record("okta:" + who, what, System.currentTimeMillis(), why, hostname + ":" + port, how);
+                upenaStore.recordChange("okta:" + who, what, System.currentTimeMillis(), why, hostname + ":" + port, how);
             } catch (Exception x) {
                 x.printStackTrace(); // Hmm lame
             }
@@ -1092,6 +1096,13 @@ public class UpenaMain {
             ChangeLogPluginEndpoints.class,
             new ChangeLogPluginRegion("soy.upena.page.changeLogPluginRegion", renderer, upenaStore), null, "read");
 
+
+        PluginHandle healthLog = new PluginHandle("tie", null, "Health-Log", "/ui/changeLog",
+            HealthLogPluginEndpoints.class,
+            new HealthLogPluginRegion("soy.upena.page.healthLogPluginRegion", renderer, upenaStore), null, "read");
+
+
+
         PluginHandle instances = new PluginHandle("star", null, "Instances", "/ui/instances",
             InstancesPluginEndpoints.class, instancesPluginRegion, null, "read");
 
@@ -1208,6 +1219,7 @@ public class UpenaMain {
         plugins.add(new PluginHandle(null, null, "Config", null, null, null, "separator", "read"));
         plugins.add(aws);
         plugins.add(changes);
+        plugins.add(healthLog);
         plugins.add(config);
         plugins.add(clusters);
         plugins.add(hosts);

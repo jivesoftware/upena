@@ -175,7 +175,7 @@ public class ConfigPluginRegion implements PageRegion<ConfigPluginRegionInput> {
         }
         sb.append("</ul>");
 
-        upenaStore.record(user, "modified", System.currentTimeMillis(), "", "config", sb.toString());
+        upenaStore.recordChange(user, "modified", System.currentTimeMillis(), "", "config", sb.toString());
 
     }
 

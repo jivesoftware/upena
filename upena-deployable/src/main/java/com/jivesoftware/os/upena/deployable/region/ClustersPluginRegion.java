@@ -105,7 +105,7 @@ public class ClustersPluginRegion implements PageRegion<ClustersPluginRegionInpu
                         Cluster newCluster = new Cluster(input.name, input.description,
                             new HashMap<>());
                         upenaStore.clusters.update(null, newCluster);
-                        upenaStore.record(user, "added", System.currentTimeMillis(), "", "clusters-ui", newCluster.toString());
+                        upenaStore.recordChange(user, "added", System.currentTimeMillis(), "", "clusters-ui", newCluster.toString());
 
                         data.put("message", "Created Cluster:" + input.name);
                     } catch (Exception x) {
@@ -124,7 +124,7 @@ public class ClustersPluginRegion implements PageRegion<ClustersPluginRegionInpu
                                 cluster.defaultReleaseGroups);
                             upenaStore.clusters.update(new ClusterKey(input.key), updatedCluster);
                             data.put("message", "Updated Cluster:" + input.name);
-                            upenaStore.record(user, "updated", System.currentTimeMillis(), "", "clusters-ui", cluster.toString());
+                            upenaStore.recordChange(user, "updated", System.currentTimeMillis(), "", "clusters-ui", cluster.toString());
                         }
                     } catch (Exception x) {
                         String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
@@ -140,7 +140,7 @@ public class ClustersPluginRegion implements PageRegion<ClustersPluginRegionInpu
                             Cluster removing = upenaStore.clusters.get(clusterKey);
                             if (removing != null) {
                                 upenaStore.clusters.remove(clusterKey);
-                                upenaStore.record(user, "removed", System.currentTimeMillis(), "", "clusters-ui", removing.toString());
+                                upenaStore.recordChange(user, "removed", System.currentTimeMillis(), "", "clusters-ui", removing.toString());
                             }
                         } catch (Exception x) {
                             String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
@@ -235,7 +235,7 @@ public class ClustersPluginRegion implements PageRegion<ClustersPluginRegionInpu
         if (cluster != null) {
             cluster.defaultReleaseGroups.put(new ServiceKey(releaseGroupUpdate.serviceId), new ReleaseGroupKey(releaseGroupUpdate.releaseGroupId));
             upenaStore.clusters.update(clusterKey, cluster);
-            upenaStore.record(user, "updated", System.currentTimeMillis(), "", "clusters-ui", cluster.toString());
+            upenaStore.recordChange(user, "updated", System.currentTimeMillis(), "", "clusters-ui", cluster.toString());
         }
     }
 
@@ -245,7 +245,7 @@ public class ClustersPluginRegion implements PageRegion<ClustersPluginRegionInpu
         if (cluster != null) {
             if (cluster.defaultReleaseGroups.remove(new ServiceKey(releaseGroupUpdate.serviceId)) != null) {
                 upenaStore.clusters.update(clusterKey, cluster);
-                upenaStore.record(user, "updated", System.currentTimeMillis(), "", "clusters-ui", cluster.toString());
+                upenaStore.recordChange(user, "updated", System.currentTimeMillis(), "", "clusters-ui", cluster.toString());
             }
         }
     }

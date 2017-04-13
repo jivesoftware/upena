@@ -164,7 +164,27 @@ public class UpenaStore {
             TimeUnit.DAYS.toMillis(30), TimeUnit.DAYS.toMillis(10), TimeUnit.DAYS.toMillis(30), TimeUnit.DAYS.toMillis(10),
             false, Consistency.quorum, true, true, false, RowType.snappy_primary, "lab", -1, null, -1, -1);
 
-        PartitionName partitionName = getPartitionName("change-log");
+        PartitionName partitionName = getPartitionName("change-changeLog");
+        while (true) {
+            try {
+                amzaService.getRingWriter().ensureMaximalRing(partitionName.getRingName(), 30_000L); //TODO config
+                amzaService.createPartitionIfAbsent(partitionName, partitionProperties);
+                amzaService.awaitOnline(partitionName, 30_000L); //TODO config
+                return embeddedClientProvider.getClient(partitionName, CheckOnline.once);
+            } catch (Exception x) {
+                LOG.warn("Failed to get client for " + partitionName.getName() + ". Retrying...", x);
+            }
+        }
+    }
+
+
+    private EmbeddedClient healthLogClient() throws Exception {
+        PartitionProperties partitionProperties = new PartitionProperties(Durability.fsync_async,
+            TimeUnit.DAYS.toMillis(30), TimeUnit.DAYS.toMillis(10), TimeUnit.DAYS.toMillis(30), TimeUnit.DAYS.toMillis(10),
+            TimeUnit.DAYS.toMillis(30), TimeUnit.DAYS.toMillis(10), TimeUnit.DAYS.toMillis(30), TimeUnit.DAYS.toMillis(10),
+            false, Consistency.quorum, true, true, false, RowType.snappy_primary, "lab", -1, null, -1, -1);
+
+        PartitionName partitionName = getPartitionName("health-changeLog");
         while (true) {
             try {
                 amzaService.getRingWriter().ensureMaximalRing(partitionName.getRingName(), 30_000L); //TODO config
@@ -333,7 +353,7 @@ public class UpenaStore {
     }
 
 
-    public void record(String who, String what, long whenTimestampMillis, String why, String where, String how) throws Exception {
+    public void recordChange(String who, String what, long whenTimestampMillis, String why, String where, String how) throws Exception {
         if (who == null) {
             who = "null";
         }
@@ -341,6 +361,23 @@ public class UpenaStore {
         long descendingTimestamp = Long.MAX_VALUE - whenTimestampMillis;
 
         changeLogClient().commit(Consistency.quorum, null, commitKeyValueStream -> commitKeyValueStream.commit(
+            longBytes(descendingTimestamp, new byte[8], 0),
+            mapper.writeValueAsBytes(new RecordedChange(w, what, whenTimestampMillis, where, why, how)),
+            -1,
+            false
+            ),
+            30_000,
+            TimeUnit.MILLISECONDS);
+    }
+
+    public void recordHealth(String who, String what, long whenTimestampMillis, String why, String where, String how) throws Exception {
+        if (who == null) {
+            who = "null";
+        }
+        String w = who;
+        long descendingTimestamp = Long.MAX_VALUE - whenTimestampMillis;
+
+        healthLogClient().commit(Consistency.quorum, null, commitKeyValueStream -> commitKeyValueStream.commit(
             longBytes(descendingTimestamp, new byte[8], 0),
             mapper.writeValueAsBytes(new RecordedChange(w, what, whenTimestampMillis, where, why, how)),
             -1,
@@ -362,15 +399,16 @@ public class UpenaStore {
         return _bytes;
     }
 
-    public void log(long whenAgoElapseLargestMillis,
+    public void changeLog(long whenAgoElapseLargestMillis,
         long whenAgoElapseSmallestMillis,
         int minCount, //
-        final String who,
-        final String what,
-        final String why,
-        final String where,
-        final String how,
-        final LogStream logStream) throws Exception {
+         String who,
+         String what,
+         String why,
+         String where,
+         String how,
+         LogStream logStream) throws Exception {
+
         long time = System.currentTimeMillis();
         final long maxTimestampInclusize = time - whenAgoElapseSmallestMillis;
         final long minTimestampExclusize = time - whenAgoElapseLargestMillis;
@@ -402,116 +440,54 @@ public class UpenaStore {
             }, true);
     }
 
+    public void healthLog(long whenAgoElapseLargestMillis,
+        long whenAgoElapseSmallestMillis,
+        int minCount, //
+        String who,
+        String what,
+        String why,
+        String where,
+        String how,
+        LogStream logStream) throws Exception {
+
+        long time = System.currentTimeMillis();
+        final long maxTimestampInclusize = time - whenAgoElapseSmallestMillis;
+        final long minTimestampExclusize = time - whenAgoElapseLargestMillis;
+
+        final AtomicInteger count = new AtomicInteger(minCount);
+        healthLogClient().scan(Collections.singletonList(ScanRange.ROW_SCAN),
+            (byte[] prefix, byte[] key, byte[] value, long timestamp, long version) -> {
+                RecordedChange change = mapper.readValue(value, RecordedChange.class);
+                if (change.when <= maxTimestampInclusize && (change.when > minTimestampExclusize || count.get() > 0)) {
+                    if (who != null && who.length() > 0 && !change.who.contains(who)) {
+                        return true;
+                    }
+                    if (what != null && what.length() > 0 && !change.what.contains(what)) {
+                        return true;
+                    }
+                    if (why != null && why.length() > 0 && !change.why.contains(why)) {
+                        return true;
+                    }
+                    if (where != null && where.length() > 0 && !change.where.contains(where)) {
+                        return true;
+                    }
+                    if (how != null && how.length() > 0 && !change.how.contains(how)) {
+                        return true;
+                    }
+                    count.decrementAndGet();
+                    return logStream.stream(change);
+                }
+                return change.when > maxTimestampInclusize || count.get() > 0;
+            }, true);
+    }
+
+
+
     public interface LogStream {
 
         boolean stream(RecordedChange change) throws Exception;
     }
 
-    /*
-    public void attachWatchers() throws Exception {
-        upenaAmzaService.watch(clusterStoreKey, new UpenaStoreChanges<>(mapper, ClusterKey.class, Cluster.class,
-            (key, value) -> {
-                InstanceFilter impactedFilter = new InstanceFilter(key, null, null, null, null, 0, Integer.MAX_VALUE);
-                ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> got = instances.find(false, impactedFilter);
-                List<InstanceChanged> changes = new ArrayList<>();
-                for (Entry<InstanceKey, TimestampedValue<Instance>> instance : got.entrySet()) {
-                    changes.add(new InstanceChanged(instance.getValue().getValue().hostKey.getKey(), instance.getKey().getKey()));
-                }
-                instanceChanges.changed(changes);
-            },
-            (key, value) -> {
-                InstanceFilter impactedFilter = new InstanceFilter(key, null, null, null, null, 0, Integer.MAX_VALUE);
-                ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> got = instances.find(false, impactedFilter);
-                for (Entry<InstanceKey, TimestampedValue<Instance>> e : got.entrySet()) {
-                    LOG.info("Removing instance:" + e + " because cluster:" + value + " was removed.");
-                    instances.remove(e.getKey());
-                }
-            }));
-        upenaAmzaService.watch(hostStoreKey, new UpenaStoreChanges<>(mapper, HostKey.class, Host.class,
-            (key, value) -> {
-                InstanceFilter impactedFilter = new InstanceFilter(null, key, null, null, null, 0, Integer.MAX_VALUE);
-                ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> got = instances.find(false, impactedFilter);
-                List<InstanceChanged> changes = new ArrayList<>();
-                for (Entry<InstanceKey, TimestampedValue<Instance>> instance : got.entrySet()) {
-                    changes.add(new InstanceChanged(instance.getValue().getValue().hostKey.getKey(), instance.getKey().getKey()));
-                }
-                instanceChanges.changed(changes);
-            },
-            (key, value) -> {
-                InstanceFilter impactedFilter = new InstanceFilter(null, key, null, null, null, 0, Integer.MAX_VALUE);
-                ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> got = instances.find(false, impactedFilter);
-                for (Entry<InstanceKey, TimestampedValue<Instance>> e : got.entrySet()) {
-                    LOG.info("Removing instance:" + e + " because host:" + value + " was removed.");
-                    instances.remove(e.getKey());
-                }
-            }));
-        upenaAmzaService.watch(serviceStoreKey, new UpenaStoreChanges<>(mapper, ServiceKey.class, Service.class,
-            (key, value) -> {
-                InstanceFilter impactedFilter = new InstanceFilter(null, null, key, null, null, 0, Integer.MAX_VALUE);
-                ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> got = instances.find(false, impactedFilter);
-                List<InstanceChanged> changes = new ArrayList<>();
-                for (Entry<InstanceKey, TimestampedValue<Instance>> instance : got.entrySet()) {
-                    changes.add(new InstanceChanged(instance.getValue().getValue().hostKey.getKey(), instance.getKey().getKey()));
-                }
-                instanceChanges.changed(changes);
-            },
-            (key, value) -> {
-                InstanceFilter impactedFilter = new InstanceFilter(null, null, key, null, null, 0, Integer.MAX_VALUE);
-                ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> got = instances.find(false, impactedFilter);
-                for (Entry<InstanceKey, TimestampedValue<Instance>> e : got.entrySet()) {
-                    LOG.info("Removing instance:" + e + " because service:" + value + " was removed.");
-                    instances.remove(e.getKey());
-                }
-            }));
-        upenaAmzaService.watch(releaseGroupStoreKey, new UpenaStoreChanges<>(mapper, ReleaseGroupKey.class, ReleaseGroup.class,
-            (key, value) -> {
-                InstanceFilter impactedFilter = new InstanceFilter(null, null, null, key, null, 0, Integer.MAX_VALUE);
-                ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> got = instances.find(false, impactedFilter);
-                List<InstanceChanged> changes = new ArrayList<>();
-                for (Entry<InstanceKey, TimestampedValue<Instance>> instance : got.entrySet()) {
-                    changes.add(new InstanceChanged(instance.getValue().getValue().hostKey.getKey(), instance.getKey().getKey()));
-                }
-                instanceChanges.changed(changes);
-            },
-            (key, value) -> {
-                InstanceFilter impactedFilter = new InstanceFilter(null, null, null, key, null, 0, Integer.MAX_VALUE);
-                ConcurrentNavigableMap<InstanceKey, TimestampedValue<Instance>> got = instances.find(false, impactedFilter);
-                for (Entry<InstanceKey, TimestampedValue<Instance>> e : got.entrySet()) {
-                    LOG.info("Removing instance:" + e + " because release group:" + value + " was removed.");
-                    instances.remove(e.getKey());
-                }
-            }));
-        upenaAmzaService.watch(instanceStoreKey, new UpenaStoreChanges<>(mapper, InstanceKey.class, Instance.class,
-            (key, value) -> {
-                if (value.getValue() != null) {
-                    List<InstanceChanged> changes = new ArrayList<>();
-                    changes.add(new InstanceChanged(value.getValue().hostKey.getKey(), key.getKey()));
-                    instanceChanges.changed(changes);
-                }
-            },
-            (key, value) -> {
-                if (value.getValue() != null) {
-                    List<InstanceChanged> changes = new ArrayList<>();
-                    changes.add(new InstanceChanged(value.getValue().hostKey.getKey(), key.getKey()));
-                    instanceRemoved.changed(changes);
-                }
-            }));
 
-        upenaAmzaService.watch(tenantStoreKey, new UpenaStoreChanges<>(mapper, TenantKey.class, Tenant.class,
-            (key, value) -> {
-                if (value.getValue() != null) {
-                    List<TenantChanged> changes = new ArrayList<>();
-                    changes.add(new TenantChanged(value.getValue().tenantId));
-                    tenantChanges.changed(changes);
-                }
-            },
-            (key, value) -> {
-                if (value.getValue() != null) {
-                    List<TenantChanged> changes = new ArrayList<>();
-                    changes.add(new TenantChanged(value.getValue().tenantId));
-                    tenantChanges.changed(changes);
-                }
-            }));
-    }*/
 
 }

@@ -176,7 +176,7 @@ public class UsersPluginRegion implements PageRegion<UsersPluginRegionInput> {
             upenaStore.users.update(null, newUser);
 
             data.put("message", "Created User:" + input.name);
-            upenaStore.record(user, "added", System.currentTimeMillis(), "", "user-ui", newUser.toString());
+            upenaStore.recordChange(user, "added", System.currentTimeMillis(), "", "user-ui", newUser.toString());
         } catch (Exception x) {
             String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
             data.put("message", "Error while trying to add User:" + input.name + "\n" + trace);
@@ -192,7 +192,7 @@ public class UsersPluginRegion implements PageRegion<UsersPluginRegionInput> {
             } else {
                 User update = new User(input.name, input.email, had.permissions);
                 upenaStore.users.update(new UserKey(input.key), update);
-                upenaStore.record(user, "updated", System.currentTimeMillis(), "", "user-ui", update.toString());
+                upenaStore.recordChange(user, "updated", System.currentTimeMillis(), "", "user-ui", update.toString());
                 data.put("message", "Updated user:" + input.name);
             }
         } catch (Exception x) {
@@ -210,7 +210,7 @@ public class UsersPluginRegion implements PageRegion<UsersPluginRegionInput> {
                 User had = upenaStore.users.get(key);
                 if (had != null) {
                     upenaStore.users.remove(key);
-                    upenaStore.record(user, "removed", System.currentTimeMillis(), "", "user-ui", had.toString());
+                    upenaStore.recordChange(user, "removed", System.currentTimeMillis(), "", "user-ui", had.toString());
                 }
             } catch (Exception x) {
                 String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
@@ -230,7 +230,6 @@ public class UsersPluginRegion implements PageRegion<UsersPluginRegionInput> {
                 if (SecurityUtils.getSubject().isPermitted(update.permission)) {
 
                 }
-
                 // TODO forge permission if current user has permission
             } else {
                 // TODO ensure current user has permission to grant permission

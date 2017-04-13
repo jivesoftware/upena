@@ -17,7 +17,7 @@ public abstract class ApiObject {
 
     @JsonAnySetter
     public void handleUnknown(String key, Object value) {
-        // TODO: log a warning
+        // TODO: changeLog a warning
         unmapped.put(key, value);
     }
 }

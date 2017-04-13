@@ -936,7 +936,7 @@ public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthP
                 + " " + ((port.getValue().sslEnabled) ? "SSL" : "") + " " + ((port.getValue().serviceAuthEnabled) ? "SAUTH" : ""));
         }
         data.put("ports", ports);
-        data.put("log", nannyHealth.log);
+        data.put("changeLog", nannyHealth.changeLog);
 
         if (serviceHealth != null) {
 

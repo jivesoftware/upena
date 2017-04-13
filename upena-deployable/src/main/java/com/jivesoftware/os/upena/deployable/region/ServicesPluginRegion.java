@@ -167,7 +167,7 @@ public class ServicesPluginRegion implements PageRegion<ServicesPluginRegionInpu
             upenaStore.services.update(null, newService);
 
             data.put("message", "Created Service:" + input.name);
-            upenaStore.record(user, "added", System.currentTimeMillis(), "", "service-ui", newService.toString());
+            upenaStore.recordChange(user, "added", System.currentTimeMillis(), "", "service-ui", newService.toString());
         } catch (Exception x) {
             String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
             data.put("message", "Error while trying to add Service:" + input.name + "\n" + trace);
@@ -183,7 +183,7 @@ public class ServicesPluginRegion implements PageRegion<ServicesPluginRegionInpu
             } else {
                 Service update = new Service(input.name, input.description);
                 upenaStore.services.update(new ServiceKey(input.key), update);
-                upenaStore.record(user, "updated", System.currentTimeMillis(), "", "service-ui", update.toString());
+                upenaStore.recordChange(user, "updated", System.currentTimeMillis(), "", "service-ui", update.toString());
                 data.put("message", "Service Cluster:" + input.name);
             }
         } catch (Exception x) {
@@ -201,7 +201,7 @@ public class ServicesPluginRegion implements PageRegion<ServicesPluginRegionInpu
                 Service removing = upenaStore.services.get(serviceKey);
                 if (removing != null) {
                     upenaStore.services.remove(serviceKey);
-                    upenaStore.record(user, "updated", System.currentTimeMillis(), "", "service-ui", removing.toString());
+                    upenaStore.recordChange(user, "updated", System.currentTimeMillis(), "", "service-ui", removing.toString());
                 }
 
             } catch (Exception x) {
@@ -248,7 +248,7 @@ public class ServicesPluginRegion implements PageRegion<ServicesPluginRegionInpu
                 upenaStore.services.update(null, value);
 
                 data.put("message", "Import:" + value.name);
-                upenaStore.record(user, "imported", System.currentTimeMillis(), "", "release-ui", value.toString());
+                upenaStore.recordChange(user, "imported", System.currentTimeMillis(), "", "release-ui", value.toString());
             }
 
             return "Imported " + values.size();

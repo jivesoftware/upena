@@ -410,7 +410,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
                             value.properties);
                         upenaStore.releaseGroups.update(key, updated);
                         messages.add("Updated Release:" + value.name);
-                        upenaStore.record(user, "updated", System.currentTimeMillis(), "", "release-ui", updated.toString());
+                        upenaStore.recordChange(user, "updated", System.currentTimeMillis(), "", "release-ui", updated.toString());
                     } else {
                         messages.add(Joiner.on("\n").join(errors));
                     }
@@ -434,7 +434,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
                 ReleaseGroup removing = upenaStore.releaseGroups.get(releaseGroupKey);
                 if (removing != null) {
                     upenaStore.releaseGroups.remove(releaseGroupKey);
-                    upenaStore.record(user, "removed", System.currentTimeMillis(), "", "release-ui", removing.toString());
+                    upenaStore.recordChange(user, "removed", System.currentTimeMillis(), "", "release-ui", removing.toString());
                 }
             } catch (Exception x) {
                 String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
@@ -464,7 +464,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
                         release.properties);
                     upenaStore.releaseGroups.update(new ReleaseGroupKey(input.key), updated);
                     data.put("message", "Rollback Release:" + input.name);
-                    upenaStore.record(user, "rollback", System.currentTimeMillis(), "", "release-ui", updated.toString());
+                    upenaStore.recordChange(user, "rollback", System.currentTimeMillis(), "", "release-ui", updated.toString());
                 } else {
                     data.put("message", Joiner.on("\n").join(errors));
                 }
@@ -498,7 +498,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
 
                     upenaStore.releaseGroups.update(new ReleaseGroupKey(input.key), updated);
                     data.put("message", "Upgrade Release:" + input.name);
-                    upenaStore.record(user, "upgrade", System.currentTimeMillis(), "", "release-ui", updated.toString());
+                    upenaStore.recordChange(user, "upgrade", System.currentTimeMillis(), "", "release-ui", updated.toString());
                 } else {
                     data.put("message", Joiner.on("\n").join(errors));
                 }
@@ -531,7 +531,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
 
                     upenaStore.releaseGroups.update(new ReleaseGroupKey(input.key), updated);
                     data.put("message", "Updated Release:" + input.name);
-                    upenaStore.record(user, "updated", System.currentTimeMillis(), "", "release-ui", updated.toString());
+                    upenaStore.recordChange(user, "updated", System.currentTimeMillis(), "", "release-ui", updated.toString());
                 } else {
                     data.put("message", Joiner.on("\n").join(errors));
                 }
@@ -559,7 +559,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
             upenaStore.releaseGroups.update(null, newRelease);
 
             data.put("message", "Created Release:" + input.name);
-            upenaStore.record(user, "added", System.currentTimeMillis(), "", "release-ui", newRelease.toString());
+            upenaStore.recordChange(user, "added", System.currentTimeMillis(), "", "release-ui", newRelease.toString());
         } catch (Exception x) {
             String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
             data.put("message", "Error adding release:" + input.name + "\n" + trace);
@@ -608,7 +608,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
                 upenaStore.releaseGroups.update(null, value);
 
                 data.put("message", "Import:" + value.name);
-                upenaStore.record(user, "imported", System.currentTimeMillis(), "", "release-ui", value.toString());
+                upenaStore.recordChange(user, "imported", System.currentTimeMillis(), "", "release-ui", value.toString());
             }
 
             return "Imported " + values.size();

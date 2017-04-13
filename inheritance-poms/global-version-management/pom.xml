@@ -13,12 +13,12 @@
 
     <properties>
         <aquarium-version>0.31</aquarium-version>
-        <amza-version>0.770</amza-version>
+        <amza-version>0.773</amza-version>
         <aws-version>1.11.29</aws-version>
         <jetty-version>9.3.3.v20150827</jetty-version>
         <glassfish-version>2.22</glassfish-version>
         <mlogger-version>0.26</mlogger-version>
-        <jive.utils.version>0.111</jive.utils.version>
+        <jive.utils.version>0.112</jive.utils.version>
         <routing.bird.version>0.188</routing.bird.version>
         <jackson-version>2.6.6</jackson-version>
         <aetherVersion>1.0.2.v20150114</aetherVersion>
