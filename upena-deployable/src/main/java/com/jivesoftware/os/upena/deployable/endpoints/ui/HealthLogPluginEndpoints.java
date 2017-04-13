@@ -22,7 +22,7 @@ import javax.ws.rs.core.SecurityContext;
  *
  */
 @Singleton
-@Path("/ui/changeLog")
+@Path("/ui/healthLog")
 public class HealthLogPluginEndpoints {
 
     private final ShiroRequestHelper shiroRequestHelper;
