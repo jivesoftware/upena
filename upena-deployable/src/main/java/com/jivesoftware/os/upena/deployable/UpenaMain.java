@@ -748,7 +748,9 @@ public class UpenaMain {
             .addInjectable(DiscoveredRoutes.class, discoveredRoutes)
             .addInjectable(HostKey.class, hostKey)
             .addInjectable(UpenaAutoRelease.class, new UpenaAutoRelease(repositoryProvider, upenaStore))
-            .addInjectable(PathToRepo.class, localPathToRepo);
+            .addInjectable(PathToRepo.class, localPathToRepo)
+            .addInjectable(ObjectMapper.class, mapper);
+
 
         PercentileHealthCheckConfig phcc = bindDefault(PercentileHealthCheckConfig.class);
         PercentileHealthChecker authFilterHealthCheck = new PercentileHealthChecker(phcc);
