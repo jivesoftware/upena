@@ -16,6 +16,7 @@
 package com.jivesoftware.os.upena.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Maps;
 import com.jivesoftware.os.amza.api.partition.Consistency;
 import com.jivesoftware.os.amza.api.partition.Durability;
 import com.jivesoftware.os.amza.api.partition.PartitionName;
@@ -60,6 +61,7 @@ import com.jivesoftware.os.upena.shared.TimestampedValue;
 import com.jivesoftware.os.upena.shared.User;
 import com.jivesoftware.os.upena.shared.UserKey;
 import java.util.Collections;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -87,6 +89,8 @@ public class UpenaStore {
     private final AmzaService amzaService;
     private final EmbeddedClientProvider embeddedClientProvider;
     private final AtomicBoolean initialized = new AtomicBoolean(false);
+
+    private final ConcurrentMap<String, EmbeddedClient> clientMap = Maps.newConcurrentMap();
 
     public UpenaStore(
         ObjectMapper mapper,
@@ -165,16 +169,16 @@ public class UpenaStore {
             false, Consistency.quorum, true, true, false, RowType.snappy_primary, "lab", -1, null, -1, -1);
 
         PartitionName partitionName = getPartitionName("change-changeLog");
-        while (true) {
+        return clientMap.computeIfAbsent("change-changeLog", s -> {
             try {
                 amzaService.getRingWriter().ensureMaximalRing(partitionName.getRingName(), 30_000L); //TODO config
                 amzaService.createPartitionIfAbsent(partitionName, partitionProperties);
                 amzaService.awaitOnline(partitionName, 30_000L); //TODO config
                 return embeddedClientProvider.getClient(partitionName, CheckOnline.once);
-            } catch (Exception x) {
-                LOG.warn("Failed to get client for " + partitionName.getName() + ". Retrying...", x);
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to get amza client", e);
             }
-        }
+        });
     }
 
 
@@ -185,16 +189,17 @@ public class UpenaStore {
             false, Consistency.quorum, true, true, false, RowType.snappy_primary, "lab", -1, null, -1, -1);
 
         PartitionName partitionName = getPartitionName("health-changeLog");
-        while (true) {
+        return clientMap.computeIfAbsent("health-changeLog", s -> {
             try {
                 amzaService.getRingWriter().ensureMaximalRing(partitionName.getRingName(), 30_000L); //TODO config
                 amzaService.createPartitionIfAbsent(partitionName, partitionProperties);
                 amzaService.awaitOnline(partitionName, 30_000L); //TODO config
                 return embeddedClientProvider.getClient(partitionName, CheckOnline.once);
-            } catch (Exception x) {
-                LOG.warn("Failed to get client for " + partitionName.getName() + ". Retrying...", x);
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to get amza client", e);
             }
-        }
+        });
+
     }
 
     private PartitionName getPartitionName(String name) {
@@ -236,6 +241,7 @@ public class UpenaStore {
         private final Class<V> valueClass;
         private final UpenaKeyProvider<K, V> keyProvider;
         private final UpenaValueValidator<K, V> valueValidator;
+        private final ConcurrentMap<String, EmbeddedClient> clientMap = Maps.newConcurrentMap();
 
 
         public AmzaUpenaMap(ObjectMapper mapper,
@@ -338,17 +344,17 @@ public class UpenaStore {
         }
 
         private EmbeddedClient client() throws Exception {
-            while (true) {
-                try {
 
+            return clientMap.computeIfAbsent(new String(partitionName.getName()), s -> {
+                try {
                     amzaService.getRingWriter().ensureMaximalRing(partitionName.getRingName(), 30_000L); //TODO config
                     amzaService.createPartitionIfAbsent(partitionName, partitionProperties);
                     amzaService.awaitOnline(partitionName, 30_000L); //TODO config
                     return embeddedClientProvider.getClient(partitionName, CheckOnline.once);
-                } catch (Exception x) {
-                    LOG.warn("Failed to get client for " + partitionName.getName() + ". Retrying...", x);
+                } catch (Exception e) {
+                    throw new RuntimeException("Failed to get amza client", e);
                 }
-            }
+            });
         }
     }
 

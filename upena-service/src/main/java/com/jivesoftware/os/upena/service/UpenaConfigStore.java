@@ -36,6 +36,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
 public class UpenaConfigStore {
@@ -53,6 +54,8 @@ public class UpenaConfigStore {
         0, 0, 0, 0,
         false, Consistency.quorum, true, true, false, RowType.snappy_primary, "lab", -1, null, -1, -1);
 
+    private final ConcurrentMap<String, EmbeddedClient> clientMap = Maps.newConcurrentMap();
+
     public UpenaConfigStore(TimestampedOrderIdProvider orderIdProvider,
         ObjectMapper mapper,
         AmzaService amzaService,
@@ -65,17 +68,18 @@ public class UpenaConfigStore {
     }
 
     private EmbeddedClient client() throws Exception {
+
         PartitionName partitionName = new PartitionName(false, "upena".getBytes(), ("upena-config").getBytes());
-        while (true) {
+        return clientMap.computeIfAbsent("upena", s -> {
             try {
                 amzaService.getRingWriter().ensureMaximalRing(partitionName.getRingName(), 30_000L); //TODO config
                 amzaService.createPartitionIfAbsent(partitionName, partitionProperties);
                 amzaService.awaitOnline(partitionName, 30_000L); //TODO config
                 return embeddedClientProvider.getClient(partitionName, CheckOnline.once);
-            } catch (Exception x) {
-                LOG.warn("Failed to get client for " + partitionName.getName() + ". Retrying...", x);
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to get amza client", e);
             }
-        }
+        });
     }
 
 
