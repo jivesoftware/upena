@@ -541,9 +541,12 @@ public class UpenaMain {
             .maxConnections(1_000)
             .socketTimeoutInMillis(60_000)
             .build(); // TODO expose to conf
+
+        AmzaStats amzaSystemStats = new AmzaStats();
         AmzaStats amzaStats = new AmzaStats();
 
         AmzaService amzaService = startAmza(workingDir,
+            amzaSystemStats,
             amzaStats,
             amzaInterner,
             writerId,
@@ -1279,6 +1282,7 @@ public class UpenaMain {
     }
 
     private AmzaService startAmza(String workingDir,
+        AmzaStats amzaSystemStats,
         AmzaStats amzaStats,
         AmzaInterner amzaInterner,
         int writerId,
@@ -1328,8 +1332,10 @@ public class UpenaMain {
         BinaryPrimaryRowMarshaller primaryRowMarshaller = new BinaryPrimaryRowMarshaller(); // hehe you cant change this :)
         BinaryHighwaterRowMarshaller highwaterRowMarshaller = new BinaryHighwaterRowMarshaller(amzaInterner);
 
-        RowsTakerFactory systemRowsTakerFactory = () -> new HttpRowsTaker(amzaStats, systemTakeClient, mapper, amzaInterner);
-        RowsTakerFactory rowsTakerFactory = () -> new HttpRowsTaker(amzaStats, stripedTakeClient, mapper, amzaInterner);
+        ExecutorService executors = Executors.newCachedThreadPool();
+
+        RowsTakerFactory systemRowsTakerFactory = () -> new HttpRowsTaker("sys", amzaSystemStats, systemTakeClient, mapper, amzaInterner, executors, executors);
+        RowsTakerFactory rowsTakerFactory = () -> new HttpRowsTaker("striped", amzaStats, stripedTakeClient, mapper, amzaInterner, executors, executors);
 
         AvailableRowsTaker availableRowsTaker = new HttpAvailableRowsTaker(ringClient, amzaInterner, mapper);
         AquariumStats aquariumStats = new AquariumStats();
@@ -1350,10 +1356,12 @@ public class UpenaMain {
         amzaServiceConfig.takeSlowThresholdInMillis = 1_000;
         amzaServiceConfig.rackDistributionEnabled = false;
 
+
         Set<RingMember> blacklistRingMembers = Sets.newHashSet();
         AmzaService amzaService = new AmzaServiceInitializer().initialize(amzaServiceConfig,
             amzaInterner,
             aquariumStats,
+            amzaSystemStats,
             amzaStats,
             quorumLatency,
             () -> {
@@ -1391,6 +1399,10 @@ public class UpenaMain {
 
                 indexProviderRegistry.register(new LABPointerIndexWALIndexProvider(amzaInterner,
                         amzaLabConfig,
+                        executors,
+                        executors,
+                        executors,
+                        executors,
                         LABPointerIndexWALIndexProvider.INDEX_CLASS_NAME,
                         partitionStripeFunction,
                         workingIndexDirectories),
@@ -1401,6 +1413,9 @@ public class UpenaMain {
             rowsTakerFactory,
             Optional.absent(),
             rowsChanged -> {
+            },
+            (i, s) -> {
+                return executors;
             });
 
         topologyProvider.set(() -> amzaService.getRingReader().getRing(AmzaRingReader.SYSTEM_RING, -1));
