@@ -617,8 +617,11 @@ public class UpenaMain {
             return password;
         };
 
-        SessionStore sessionStore = new SessionStore(TimeUnit.MINUTES.toMillis(60),
-            TimeUnit.MINUTES.toMillis(30));
+
+        SessionStore sessionStore = new SessionStore(
+            TimeUnit.MINUTES.toMillis(Integer.parseInt(System.getProperty("expire.deployable.session.after.millis","60"))),
+            TimeUnit.MINUTES.toMillis(Integer.parseInt(System.getProperty("expire.deployable.idle.session.after.millis","30")))
+        );
 
         AtomicReference<UpenaHealth> upenaHealthProvider = new AtomicReference<>();
         InstanceHealthly instanceHealthly = (key, version) -> {
