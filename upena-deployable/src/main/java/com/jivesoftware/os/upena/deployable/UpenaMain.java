@@ -619,8 +619,8 @@ public class UpenaMain {
 
 
         SessionStore sessionStore = new SessionStore(
-            TimeUnit.MINUTES.toMillis(Integer.parseInt(System.getProperty("expire.deployable.session.after.millis","60"))),
-            TimeUnit.MINUTES.toMillis(Integer.parseInt(System.getProperty("expire.deployable.idle.session.after.millis","30")))
+            TimeUnit.MINUTES.toMillis(Integer.parseInt(System.getProperty("expire.deployable.session.after.minutes","60"))),
+            TimeUnit.MINUTES.toMillis(Integer.parseInt(System.getProperty("expire.deployable.idle.session.after.minutes","30")))
         );
 
         AtomicReference<UpenaHealth> upenaHealthProvider = new AtomicReference<>();
