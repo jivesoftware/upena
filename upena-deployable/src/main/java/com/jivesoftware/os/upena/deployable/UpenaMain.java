@@ -785,7 +785,8 @@ public class UpenaMain {
             false
         );
         oAuthValidator.start();
-        authValidationFilter.addEvaluator(new NoAuthEvaluator(), "/repo/*", "/amza/rows/stream/*", "/amza/rows/taken/*", "/amza/pong/*", "/amza/invalidate/*");
+        authValidationFilter.addEvaluator(new NoAuthEvaluator(),
+            "/amza/ackBatch", "/repo/*", "/amza/rows/stream/*", "/amza/rows/taken/*", "/amza/pong/*", "/amza/invalidate/*");
         authValidationFilter.addEvaluator(new OAuthEvaluator(oAuthValidator, verifier), "/upena/*", "/amza/*");
 
         // TODO something better someday
