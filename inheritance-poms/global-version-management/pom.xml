@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.jivesoftware.os.upena.inheritance.poms</groupId>
         <artifactId>global-repo-management</artifactId>
-        <version>0.918</version>
+        <version>0.919</version>
         <relativePath>../global-repo-management/pom.xml</relativePath>
     </parent>
     <artifactId>global-version-management</artifactId>
@@ -110,11 +110,6 @@
                 <groupId>com.google.template</groupId>
                 <artifactId>soy</artifactId>
                 <version>2012-12-21</version>
-            </dependency>
-            <dependency>
-                <groupId>de.ruedigermoeller</groupId>
-                <artifactId>fst</artifactId>
-                <version>1.34</version>
             </dependency>
             <dependency>
                 <groupId>com.jivesoftware.os.filer</groupId>
