@@ -536,8 +536,10 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
 
         long success = 0;
         long failure = 0;
+        long interrupted = 0;
         long successPerSecond = 0;
         long failurePerSecond = 0;
+        long interruptedPerSecond = 0;
         long inflight = 0;
 
         double latencyMin = 0;
@@ -563,9 +565,11 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
                 }
                 success += value.success;
                 failure += value.failure;
+                interrupted += value.interrupted;
                 successPerSecond += value.successPerSecond;
                 failurePerSecond += value.failurePerSecond;
-                inflight += (value.attempt - value.success - value.failure);
+                interruptedPerSecond += value.interruptedPerSecond;
+                inflight += (value.attempt - value.success - value.failure - value.interrupted);
 
                 latencyMin = Math.min(latencyMin, value.latencyStats.latencyMin);
                 latencyMean = Math.max(latencyMean, value.latencyStats.latencyMean);
@@ -606,8 +610,10 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
 
         health.put("success", numberFormat.format(success));
         health.put("failure", numberFormat.format(failure));
+        health.put("interrupted", numberFormat.format(interrupted));
         health.put("successPerSecond", numberFormat.format(successPerSecond));
         health.put("failurePerSecond", numberFormat.format(failurePerSecond));
+        health.put("interruptedPerSecond", numberFormat.format(interruptedPerSecond));
 
         health.put("inflight", numberFormat.format(inflight));
 
@@ -679,10 +685,12 @@ public class ConnectivityPluginRegion implements PageRegion<ConnectivityPluginRe
 
                 health.put("success", numberFormat.format(value.success));
                 health.put("failure", numberFormat.format(value.failure));
+                health.put("interrupted", numberFormat.format(value.interrupted));
                 health.put("successPerSecond", numberFormat.format(value.successPerSecond));
                 health.put("failurePerSecond", numberFormat.format(value.failurePerSecond));
+                health.put("interruptedPerSecond", numberFormat.format(value.interruptedPerSecond));
 
-                health.put("inflight", numberFormat.format(value.attempt - value.success - value.failure));
+                health.put("inflight", numberFormat.format(value.attempt - value.success - value.failure - value.interrupted));
 
                 health.put("min", numberFormat.format(value.latencyStats.latencyMin));
                 health.put("minColor", UpenaHealth.trafficlightColorRGBA(1d - mmd.zeroToOne(value.latencyStats.latencyMin), 1f));
