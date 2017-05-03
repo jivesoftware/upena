@@ -49,22 +49,24 @@ public class UpenaConfigStore {
     private final EmbeddedClientProvider embeddedClientProvider;
     private final Map<String, FetchedVersion> lastFetchedVersion = Maps.newConcurrentMap();
 
-    private final PartitionProperties partitionProperties = new PartitionProperties(Durability.fsync_async,
-        TimeUnit.DAYS.toMillis(30), TimeUnit.DAYS.toMillis(10), TimeUnit.DAYS.toMillis(30), TimeUnit.DAYS.toMillis(10),
-        0, 0, 0, 0,
-        false, Consistency.quorum, true, true, false, RowType.snappy_primary, "lab", -1, null, -1, -1);
+    private final PartitionProperties partitionProperties;
 
     private final ConcurrentMap<String, EmbeddedClient> clientMap = Maps.newConcurrentMap();
 
     public UpenaConfigStore(TimestampedOrderIdProvider orderIdProvider,
         ObjectMapper mapper,
         AmzaService amzaService,
-        EmbeddedClientProvider embeddedClientProvider) throws Exception {
+        EmbeddedClientProvider embeddedClientProvider,
+        boolean snappyEnabled) throws Exception {
 
         this.orderIdProvider = orderIdProvider;
         this.mapper = mapper;
         this.amzaService = amzaService;
         this.embeddedClientProvider = embeddedClientProvider;
+        this.partitionProperties = new PartitionProperties(Durability.fsync_async,
+            TimeUnit.DAYS.toMillis(30), TimeUnit.DAYS.toMillis(10), TimeUnit.DAYS.toMillis(30), TimeUnit.DAYS.toMillis(10),
+            0, 0, 0, 0,
+            false, Consistency.quorum, true, true, false, snappyEnabled ? RowType.snappy_primary : RowType.primary, "lab", -1, null, -1, -1);
     }
 
     private EmbeddedClient client() throws Exception {

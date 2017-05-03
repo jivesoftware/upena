@@ -72,6 +72,7 @@ public class UpenaStore {
     private final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
     private final ObjectMapper mapper;
+    private final boolean snappyEnabled;
 
     public UpenaMap<UserKey, User> users;
     public UpenaMap<PermissionKey, Permission> permissions;
@@ -97,24 +98,24 @@ public class UpenaStore {
         InstanceChanges instanceChanges,
         InstanceChanges instanceRemoved,
         TenantChanges tenantChanges,
-
         AmzaService amzaService,
-        EmbeddedClientProvider embeddedClientProvider) throws Exception {
+        EmbeddedClientProvider embeddedClientProvider,
+        boolean snappyEnabled) throws Exception {
 
         this.amzaService = amzaService;
         this.embeddedClientProvider = embeddedClientProvider;
 
         this.mapper = mapper;
+        this.snappyEnabled = snappyEnabled;
     }
 
     public void init(OrderIdProvider idProvider,
         int minServicePort,
-        int maxServicePort,
-        boolean cleanup) throws Exception {
+        int maxServicePort) throws Exception {
 
         PartitionProperties partitionProperties = new PartitionProperties(Durability.fsync_async,
             TimeUnit.DAYS.toMillis(30), TimeUnit.DAYS.toMillis(10), TimeUnit.DAYS.toMillis(30), TimeUnit.DAYS.toMillis(10), 0, 0, 0, 0,
-            false, Consistency.quorum, true, true, false, RowType.snappy_primary, "lab", -1, null, -1, -1);
+            false, Consistency.quorum, true, true, false, snappyEnabled ? RowType.snappy_primary : RowType.primary, "lab", -1, null, -1, -1);
 
 
         users = new AmzaUpenaMap<>(mapper, amzaService, embeddedClientProvider, partitionProperties,
@@ -166,7 +167,7 @@ public class UpenaStore {
         PartitionProperties partitionProperties = new PartitionProperties(Durability.fsync_async,
             TimeUnit.DAYS.toMillis(30), TimeUnit.DAYS.toMillis(10), TimeUnit.DAYS.toMillis(30), TimeUnit.DAYS.toMillis(10),
             TimeUnit.DAYS.toMillis(30), TimeUnit.DAYS.toMillis(10), TimeUnit.DAYS.toMillis(30), TimeUnit.DAYS.toMillis(10),
-            false, Consistency.quorum, true, true, false, RowType.snappy_primary, "lab", -1, null, -1, -1);
+            false, Consistency.quorum, true, true, false, snappyEnabled ? RowType.snappy_primary : RowType.primary, "lab", -1, null, -1, -1);
 
         PartitionName partitionName = getPartitionName("change-changeLog");
         return clientMap.computeIfAbsent("change-changeLog", s -> {
@@ -186,7 +187,7 @@ public class UpenaStore {
         PartitionProperties partitionProperties = new PartitionProperties(Durability.fsync_async,
             TimeUnit.DAYS.toMillis(30), TimeUnit.DAYS.toMillis(10), TimeUnit.DAYS.toMillis(30), TimeUnit.DAYS.toMillis(10),
             TimeUnit.DAYS.toMillis(30), TimeUnit.DAYS.toMillis(10), TimeUnit.DAYS.toMillis(30), TimeUnit.DAYS.toMillis(10),
-            false, Consistency.quorum, true, true, false, RowType.snappy_primary, "lab", -1, null, -1, -1);
+            false, Consistency.quorum, true, true, false, snappyEnabled ? RowType.snappy_primary : RowType.primary, "lab", -1, null, -1, -1);
 
         PartitionName partitionName = getPartitionName("health-changeLog");
         return clientMap.computeIfAbsent("health-changeLog", s -> {
@@ -408,12 +409,12 @@ public class UpenaStore {
     public void changeLog(long whenAgoElapseLargestMillis,
         long whenAgoElapseSmallestMillis,
         int minCount, //
-         String who,
-         String what,
-         String why,
-         String where,
-         String how,
-         LogStream logStream) throws Exception {
+        String who,
+        String what,
+        String why,
+        String where,
+        String how,
+        LogStream logStream) throws Exception {
 
         long time = System.currentTimeMillis();
         final long maxTimestampInclusize = time - whenAgoElapseSmallestMillis;
@@ -488,12 +489,10 @@ public class UpenaStore {
     }
 
 
-
     public interface LogStream {
 
         boolean stream(RecordedChange change) throws Exception;
     }
-
 
 
 }

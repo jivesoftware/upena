@@ -285,6 +285,7 @@ public class UpenaMain {
         "    -Dpublic.host.name=<publiclyReachableHostname>",
         "    -Dmanual.peers=<upenaPeer1Host:port,upenaPeer2Host:port,...>",
         "",
+        "    -Damza.snappy.enabled=true",
         "    -Damza.port=1175",
         "    -Damza.loopback.port=1174",
         "    -Damza.loopback.strict=true",
@@ -569,14 +570,17 @@ public class UpenaMain {
         ObjectMapper storeMapper = new ObjectMapper();
         mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        UpenaConfigStore upenaConfigStore = new UpenaConfigStore(orderIdProvider, storeMapper, amzaService, embeddedClientProvider);
+
+
+        boolean snappyEnabled = Boolean.parseBoolean(System.getProperty("amza.snappy.enabled", "true"));
+        UpenaConfigStore upenaConfigStore = new UpenaConfigStore(orderIdProvider, storeMapper, amzaService, embeddedClientProvider, snappyEnabled);
 
         LOG.info("-----------------------------------------------------------------------");
         LOG.info("|      Upena Config Store Online");
         LOG.info("-----------------------------------------------------------------------");
 
 
-        ExecutorService instanceChangedThreads = BoundedExecutor.newBoundedExecutor( 32, "instance-changed");
+        ExecutorService instanceChangedThreads = BoundedExecutor.newBoundedExecutor(32, "instance-changed");
 
         AtomicReference<UbaService> ubaServiceReference = new AtomicReference<>();
         UpenaStore upenaStore = new UpenaStore(
@@ -600,7 +604,8 @@ public class UpenaMain {
                 LOG.info("TODO: tie into conductor. " + change);
             },
             amzaService,
-            embeddedClientProvider
+            embeddedClientProvider,
+            snappyEnabled
         );
 
         ChaosService chaosService = new ChaosService(upenaStore);
@@ -622,8 +627,8 @@ public class UpenaMain {
 
 
         SessionStore sessionStore = new SessionStore(
-            TimeUnit.MINUTES.toMillis(Integer.parseInt(System.getProperty("expire.deployable.session.after.minutes","60"))),
-            TimeUnit.MINUTES.toMillis(Integer.parseInt(System.getProperty("expire.deployable.idle.session.after.minutes","30")))
+            TimeUnit.MINUTES.toMillis(Integer.parseInt(System.getProperty("expire.deployable.session.after.minutes", "60"))),
+            TimeUnit.MINUTES.toMillis(Integer.parseInt(System.getProperty("expire.deployable.idle.session.after.minutes", "30")))
         );
 
         AtomicReference<UpenaHealth> upenaHealthProvider = new AtomicReference<>();
@@ -947,8 +952,8 @@ public class UpenaMain {
 
         upenaStore.init(orderIdProvider,
             Integer.parseInt(System.getProperty("min.service.port", "10000")),
-            Integer.parseInt(System.getProperty("max.service.port", String.valueOf(Short.MAX_VALUE))),
-            false);
+            Integer.parseInt(System.getProperty("max.service.port", String.valueOf(Short.MAX_VALUE)))
+        );
 
         LOG.info("-----------------------------------------------------------------------");
         LOG.info("|     End Migration");
