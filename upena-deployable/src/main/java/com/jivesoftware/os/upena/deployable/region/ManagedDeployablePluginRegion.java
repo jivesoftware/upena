@@ -84,20 +84,20 @@ public class ManagedDeployablePluginRegion implements PageRegion<ManagedDeployab
     }
 
     public URI redirectToUI(String instanceKey, String portName, String uiPath) throws Exception {
-
         ProxyAsNeeded proxy = buildProxy(instanceKey, new HashMap<>());
         if (proxy != null) {
             Instance instance = upenaStore.instances.get(new InstanceKey(instanceKey));
             Host host = upenaStore.hosts.get(instance.hostKey);
             Instance.Port port = instance.ports.get(portName);
             if (port != null) {
-
                 String token = proxy.allocateAccessToken();
 
                 return URI.create((port.sslEnabled ? "https" : "http") + "://" + host.name
                     + ":" + port.port
                     + (uiPath.startsWith("/") ? uiPath : "/" + uiPath)
                     + "?rb_access_token=" + token
+                    + "&rb_access_redir_ssl=" + upenaSSLConfig.sslEnable
+                    + "&rb_access_redir_port=" + upenaPort
                 );
             }
         }
@@ -147,7 +147,6 @@ public class ManagedDeployablePluginRegion implements PageRegion<ManagedDeployab
                         Instance.Port port = instance.ports.get(ui.portName);
                         if (port != null) {
                             if (managePort != null && managePort.port != port.port) {
-
                                 Map<String, String> u = new HashMap<>();
                                 u.put("id", String.valueOf(uiId));
                                 u.put("name", ui.name);
@@ -196,10 +195,6 @@ public class ManagedDeployablePluginRegion implements PageRegion<ManagedDeployab
                                     if (!split[1].contains("Native")) {
                                         String lineNumber = split[1].substring(split[1].lastIndexOf(':') + 1, split[1].lastIndexOf(')'));
 
-//                                        System.out.println("'" + className + "'");
-//                                        System.out.println("'" + lineNumber + "'");
-
-
                                         sb.append("<form action=\"/ui/breakpoint\" style=\"display: inline;\" method=\"post\" >");
                                         sb.append("<input type=\"hidden\" name=\"instanceKey\" value=\"" + instanceKey + "\"/>");
                                         sb.append("<input type=\"hidden\" name=\"className\" value=\"" + className + "\"/>");
@@ -225,7 +220,7 @@ public class ManagedDeployablePluginRegion implements PageRegion<ManagedDeployab
 
                     }
 
-                    return renderHtml(sb.toString());//data.put("htmlResult", sb.toString());
+                    return renderHtml(sb.toString());
                 } else if (input.action.equals("forceGC")) {
                     SecurityUtils.getSubject().checkPermission("read");
                     String r = proxy.get("/manage/forceGC");
@@ -273,14 +268,11 @@ public class ManagedDeployablePluginRegion implements PageRegion<ManagedDeployab
     }
 
     class Local implements ProxyAsNeeded {
-
         private final String instanceKey;
-        private final Instance instance;
         HttpRequestHelper requestHelper;
 
-        public Local(String instanceKey, Instance instance) throws Exception {
+        Local(String instanceKey, Instance instance) throws Exception {
             this.instanceKey = instanceKey;
-            this.instance = instance;
             Instance.Port manage = instance.ports.get("manage");
             this.requestHelper = HttpRequestHelperUtils.buildRequestHelper(manage.sslEnabled, true, null, "localhost", manage.port);
         }
@@ -300,15 +292,13 @@ public class ManagedDeployablePluginRegion implements PageRegion<ManagedDeployab
         public String allocateAccessToken() {
             return sessionStore.generateAccessToken(instanceKey);
         }
-
     }
 
     class Proxied implements ProxyAsNeeded {
-
         private final String instanceKey;
         private final HttpRequestHelper requestHelper;
 
-        public Proxied(String instanceKey, String host) throws Exception {
+        Proxied(String instanceKey, String host) throws Exception {
             this.instanceKey = instanceKey;
             this.requestHelper = HttpRequestHelperUtils.buildRequestHelper(upenaSSLConfig.sslEnable,
                 upenaSSLConfig.allowSelfSignedCerts,
@@ -320,10 +310,7 @@ public class ManagedDeployablePluginRegion implements PageRegion<ManagedDeployab
         @Override
         public String get(String path) {
             byte[] r = requestHelper.executeRequest(new LoopbackGet(path), "/upena/deployable/loopback/" + instanceKey, null);
-            if (r == null) {
-                return null;
-            }
-            return new String(r);
+            return r == null ? null : new String(r);
         }
 
         @Override
@@ -338,7 +325,7 @@ public class ManagedDeployablePluginRegion implements PageRegion<ManagedDeployab
         }
     }
 
-    static interface ProxyAsNeeded {
+    interface ProxyAsNeeded {
 
         String get(String path);
 
