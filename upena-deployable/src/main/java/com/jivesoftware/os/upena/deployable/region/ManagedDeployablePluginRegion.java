@@ -86,18 +86,19 @@ public class ManagedDeployablePluginRegion implements PageRegion<ManagedDeployab
     public URI redirectToUI(String instanceKey, String portName, String uiPath) throws Exception {
         ProxyAsNeeded proxy = buildProxy(instanceKey, new HashMap<>());
         if (proxy != null) {
+            Host upenaHost = upenaStore.hosts.get(hostKey);
+
             Instance instance = upenaStore.instances.get(new InstanceKey(instanceKey));
-            Host host = upenaStore.hosts.get(instance.hostKey);
+            Host instanceHost = upenaStore.hosts.get(instance.hostKey);
             Instance.Port port = instance.ports.get(portName);
+
             if (port != null) {
                 String token = proxy.allocateAccessToken();
 
-                return URI.create((port.sslEnabled ? "https" : "http") + "://" + host.name
-                    + ":" + port.port
+                return URI.create((port.sslEnabled ? "https" : "http") + "://" + instanceHost.name + ":" + port.port
                     + (uiPath.startsWith("/") ? uiPath : "/" + uiPath)
                     + "?rb_access_token=" + token
-                    + "&rb_access_redir_ssl=" + upenaSSLConfig.sslEnable
-                    + "&rb_access_redir_port=" + upenaPort
+                    + "&rb_access_redir_url=" + (upenaSSLConfig.sslEnable ? "https" : "http") + "://" + upenaHost.name + ":" + upenaHost.port
                 );
             }
         }
