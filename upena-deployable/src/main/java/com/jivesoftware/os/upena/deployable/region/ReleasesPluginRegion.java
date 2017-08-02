@@ -285,7 +285,7 @@ public class ReleasesPluginRegion implements PageRegion<ReleasesPluginRegionInpu
                 for (ServiceKey sk : new HashSet<>(serviceKeyCount)) {
                     instanceCounts.add(ImmutableMap.of(
                         "count", String.valueOf(serviceKeyCount.count(sk)),
-                        "color", serviceColor.get(sk)
+                        "color", (serviceColor.get(sk) == null ? "255,255,255" : serviceColor.get(sk))
                     ));
                 }
 
