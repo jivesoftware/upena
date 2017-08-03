@@ -1,7 +1,6 @@
 {namespace soy.upena.page}
 
 /**
- * 
  * @param? username
  * @param? message
  */
@@ -15,7 +14,7 @@
                 {/if}
             <br>
             <div class="well">
-                <form id="auth-login" data-active-class="btn-default" method="post" name="addProxy">
+                <form id="auth-login" data-active-class="btn-default" method="post" name="doAuthLogin">
                     <div class="text-center">
                         <div>
                             <img src="/static/img/icon.png" alt="Upena"  height="128">
@@ -29,18 +28,13 @@
                                     <div class="form-group">
                                        <div class="right-inner-addon">
                                             <i class="fa fa-envelope-open" aria-hidden="true"></i>
-                                            <input form="auth-login" name="username" class="form-control input-lg" placeholder="Email Address" type="text" value="{$username?:''}">
+                                            <input form="auth-login" id="username" name="username" class="form-control input-lg" placeholder="Email Address" type="text" value="{$username?:''}" autocomplete="on">
                                         </div>
                                     </div>
                                     <div class="form-group">
                                         <div class="right-inner-addon">
                                             <i class="fa fa-key" aria-hidden="true"></i>
-                                            <input form="auth-login" name="password" class="form-control input-lg" placeholder="Password" type="password">
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <div class="right-inner-addon">
-                                            <input form="auth-login" type="checkbox" name="rememberMe" value="true" data-toggle="toggle"/> Remember me
+                                            <input form="auth-login" id="password" name="password" class="form-control input-lg" placeholder="Password" type="password" autocomplete="on">
                                         </div>
                                     </div>
                                 </div>
@@ -56,5 +50,3 @@
         </div>
     </div>
 {/template}
-
-

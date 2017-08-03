@@ -571,14 +571,12 @@ public class UpenaMain {
         mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
-
         boolean snappyEnabled = Boolean.parseBoolean(System.getProperty("amza.snappy.enabled", "true"));
         UpenaConfigStore upenaConfigStore = new UpenaConfigStore(orderIdProvider, storeMapper, amzaService, embeddedClientProvider, snappyEnabled);
 
         LOG.info("-----------------------------------------------------------------------");
         LOG.info("|      Upena Config Store Online");
         LOG.info("-----------------------------------------------------------------------");
-
 
         ExecutorService instanceChangedThreads = BoundedExecutor.newBoundedExecutor(32, "instance-changed");
 
@@ -624,7 +622,6 @@ public class UpenaMain {
             }
             return password;
         };
-
 
         SessionStore sessionStore = new SessionStore(
             TimeUnit.MINUTES.toMillis(Integer.parseInt(System.getProperty("expire.deployable.session.after.minutes", "60"))),
@@ -756,7 +753,6 @@ public class UpenaMain {
             .addInjectable(PathToRepo.class, localPathToRepo)
             .addInjectable(ObjectMapper.class, mapper);
 
-
         PercentileHealthCheckConfig phcc = bindDefault(PercentileHealthCheckConfig.class);
         PercentileHealthChecker authFilterHealthCheck = new PercentileHealthChecker(phcc);
         AuthValidationFilter authValidationFilter = new AuthValidationFilter(authFilterHealthCheck);
@@ -808,7 +804,7 @@ public class UpenaMain {
                     }
 
                     final String encodedUserPassword = authCredentials.replaceFirst("Basic" + " ", "");
-                    String usernameAndPassword = null;
+                    String usernameAndPassword;
                     try {
                         byte[] decodedBytes = Base64.getDecoder().decode(encodedUserPassword);
                         usernameAndPassword = new String(decodedBytes, "UTF-8");
@@ -1191,7 +1187,7 @@ public class UpenaMain {
                 new BreakpointDumperPluginRegion("soy.upena.page.breakpointDumperPluginRegion", renderer, upenaStore, jvmapi), null, "read", "debug");
         }
 
-        PluginHandle aws = null;
+        PluginHandle aws;
         aws = new PluginHandle("globe", null, "AWS", "/ui/aws",
             AWSPluginEndpoints.class,
             new AWSPluginRegion("soy.upena.page.awsPluginRegion", renderer, awsClientFactory), null, "read", "debug");
@@ -1337,7 +1333,7 @@ public class UpenaMain {
             }
         };
 
-        BinaryPrimaryRowMarshaller primaryRowMarshaller = new BinaryPrimaryRowMarshaller(); // hehe you cant change this :)
+        BinaryPrimaryRowMarshaller primaryRowMarshaller = new BinaryPrimaryRowMarshaller();
         BinaryHighwaterRowMarshaller highwaterRowMarshaller = new BinaryHighwaterRowMarshaller(amzaInterner);
 
         ExecutorService executors = Executors.newCachedThreadPool();
@@ -1363,7 +1359,6 @@ public class UpenaMain {
         amzaServiceConfig.hardFsync = true;
         amzaServiceConfig.takeSlowThresholdInMillis = 1_000;
         amzaServiceConfig.rackDistributionEnabled = false;
-
 
         Set<RingMember> blacklistRingMembers = Sets.newHashSet();
         AmzaService amzaService = new AmzaServiceInitializer().initialize(amzaServiceConfig,
