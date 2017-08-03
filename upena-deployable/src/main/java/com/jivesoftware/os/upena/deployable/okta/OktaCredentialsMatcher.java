@@ -24,10 +24,6 @@ import org.apache.shiro.authc.credential.CredentialsMatcher;
  */
 public class OktaCredentialsMatcher implements CredentialsMatcher {
 
-    public static void main(String[] args) throws IOException {
-    }
-
-
     public static final MetricLogger LOG = MetricLoggerFactory.getLogger();
     public static OktaLog oktaLog;
 
@@ -92,7 +88,6 @@ public class OktaCredentialsMatcher implements CredentialsMatcher {
                     return false;
                 }
 
-
                 AuthResult result = authApiClient.authenticateWithFactor(oktaUsernamePasswordToken.getToken(),
                     factorId,
                     oktaUsernamePasswordToken.getPassCode(),
@@ -110,10 +105,7 @@ public class OktaCredentialsMatcher implements CredentialsMatcher {
                 LOG.error("Authentication failed:", e);
                 return false;
             }
-
         } else {
-
-
             try {
                 SecureRandom random = new SecureRandom();
                 AuthResult result = authApiClient.authenticate(
