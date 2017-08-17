@@ -82,7 +82,7 @@ public class UpenaAWSLoadBalancerNanny {
             Cluster cluster = upenaStore.clusters.get(instance.clusterKey);
             Service service = upenaStore.services.get(instance.serviceKey);
             ReleaseGroup releaseGroup = upenaStore.releaseGroups.get(instance.releaseGroupKey);
-            if (releaseGroup.properties != null) {
+            if (releaseGroup != null) {
                 String got = releaseGroup.properties.get(ReleaseGroupPropertyKey.loadBalanced.key());
                 if (got != null && Boolean.valueOf(got) == true) {
                     String targetGroupId = instance.clusterKey.getKey() + "|" + instance.serviceKey.getKey() + "|" + instance.releaseGroupKey.getKey();
