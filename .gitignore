@@ -21,3 +21,7 @@ target/
 .DS_Store
 dependency-reduced-pom.xml
 tmp/
+onlyLetOneRunningAtATime
+certs/
+logs/
+state/

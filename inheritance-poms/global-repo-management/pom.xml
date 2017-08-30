@@ -25,9 +25,6 @@
             <url>http://nexus-int-qa.eng.jiveland.com/content/repositories/snapshots</url>
         </snapshotRepository>
     </distributionManagement>
-
-
-
     <scm>
         <url>https://github.com/jivesoftware/upena</url>
         <connection>scm:git:git://github.com/jivesoftware/upena.git</connection>
