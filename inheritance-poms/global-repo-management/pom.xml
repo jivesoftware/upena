@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.jivesoftware.os.upena.inheritance.poms</groupId>
     <artifactId>global-repo-management</artifactId>
-    <version>0.932</version>
+    <version>0.933</version>
     <packaging>pom</packaging>
     <inceptionYear>2013</inceptionYear>
     <licenses>
@@ -25,9 +25,6 @@
             <url>http://nexus-int-qa.eng.jiveland.com/content/repositories/snapshots</url>
         </snapshotRepository>
     </distributionManagement>
-
-
-
     <scm>
         <url>https://github.com/jivesoftware/upena</url>
         <connection>scm:git:git://github.com/jivesoftware/upena.git</connection>
