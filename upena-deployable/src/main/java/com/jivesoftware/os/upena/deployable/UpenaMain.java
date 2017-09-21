@@ -207,6 +207,7 @@ import com.jivesoftware.os.upena.uba.service.UbaService;
 import com.jivesoftware.os.upena.uba.service.UbaServiceInitializer;
 import com.jivesoftware.os.upena.uba.service.UpenaClient;
 import io.swagger.jaxrs.config.BeanConfig;
+
 import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -235,9 +236,11 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import javax.ws.rs.container.ContainerRequestContext;
+
 import jersey.repackaged.com.google.common.collect.Sets;
 import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
 import oauth.signpost.signature.HmacSha1MessageSigner;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.glassfish.jersey.oauth1.signature.OAuth1Request;
 import org.glassfish.jersey.oauth1.signature.OAuth1Signature;
@@ -252,7 +255,7 @@ public class UpenaMain {
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
-    public static final String[] USAGE = new String[] {
+    public static final String[] USAGE = new String[]{
         "Usage:",
         "",
         "    java -jar upena.jar <hostName>                   (manual cluster discovery)",
@@ -316,7 +319,7 @@ public class UpenaMain {
         " Example:",
         " nohup java -Xdebug -Xrunjdwp:transport=dt_socket,address=1176,server=y,suspend=n -classpath \"/usr/java/latest/lib/tools.jar:./upena.jar\" com" +
             ".jivesoftware.os.upena.deployable.UpenaMain `hostname` dev",
-        "", };
+        "",};
 
     public static void main(String[] args) throws Exception {
         try {
@@ -988,7 +991,7 @@ public class UpenaMain {
                                 );
                                 break;
                             } catch (Exception x) {
-                                LOG.error("Failed to register {}:{}", new Object[] { host, port }, x);
+                                LOG.error("Failed to register {}:{}", new Object[]{host, port}, x);
                             }
                         }
                     } catch (Exception x) {
@@ -1038,11 +1041,17 @@ public class UpenaMain {
                     soyFileSetBuilder.add(this.getClass().getResource("/" + name), soyName);
                 }
             }
-        } else {
+        } else if (this.getClass().getResourceAsStream("resources/soy/") != null) {
             List<String> soyFiles = IOUtils.readLines(this.getClass().getResourceAsStream("resources/soy/"), StandardCharsets.UTF_8);
             for (String soyFile : soyFiles) {
                 LOG.info("Adding {}", soyFile);
                 soyFileSetBuilder.add(this.getClass().getResource("/resources/soy/" + soyFile), soyFile);
+            }
+        } else {
+            // local debugging
+            File soyPath = new File("upena-deployable/src/main/resources/resources/soy/");
+            for (File file : FileUtils.listFiles(soyPath, null, true)) {
+                soyFileSetBuilder.add(file);
             }
         }
 
@@ -1350,7 +1359,7 @@ public class UpenaMain {
 
         AmzaServiceConfig amzaServiceConfig = new AmzaServiceConfig();
         amzaServiceConfig.systemRingSize = 1;
-        amzaServiceConfig.workingDirectories = new String[] { new File(workingDir, "state").getAbsolutePath() };
+        amzaServiceConfig.workingDirectories = new String[]{new File(workingDir, "state").getAbsolutePath()};
         amzaServiceConfig.aquariumLivelinessFeedEveryMillis = 5_000;
         amzaServiceConfig.checkIfCompactionIsNeededIntervalInMillis = 30_000;
         amzaServiceConfig.deltaMergeThreads = 2;
