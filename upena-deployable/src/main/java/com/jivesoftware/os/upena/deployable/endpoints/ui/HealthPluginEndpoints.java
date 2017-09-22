@@ -1,6 +1,5 @@
 package com.jivesoftware.os.upena.deployable.endpoints.ui;
 
-import com.jivesoftware.os.routing.bird.shared.ResponseHelper;
 import com.jivesoftware.os.upena.deployable.ShiroRequestHelper;
 import com.jivesoftware.os.upena.deployable.region.HealthPluginRegion;
 import com.jivesoftware.os.upena.deployable.region.HealthPluginRegion.HealthPluginRegionInput;
@@ -28,7 +27,6 @@ public class HealthPluginEndpoints {
 
     private final SoyService soyService;
     private final HealthPluginRegion pluginRegion;
-    private final ResponseHelper responseHelper = ResponseHelper.INSTANCE;
 
     public HealthPluginEndpoints(@Context ShiroRequestHelper shiroRequestHelper,
         @Context SoyService soyService,
@@ -55,15 +53,6 @@ public class HealthPluginEndpoints {
         });
     }
 
-    /*@GET
-    @Produces(MediaType.TEXT_HTML)
-    @Path("/uis")
-    public Response uis(@QueryParam("instanceKey") @DefaultValue("") String instanceKey) throws Exception {
-        return shiroRequestHelper.call("health/uis", () -> {
-            return Response.ok(pluginRegion.renderInstanceHealth(instanceKey)).build();
-        });
-    }*/
-
     @GET
     @Path("/live")
     @Produces(MediaType.APPLICATION_JSON)
@@ -74,9 +63,9 @@ public class HealthPluginEndpoints {
         @QueryParam("host") @DefaultValue("") String host,
         @QueryParam("service") @DefaultValue("") String service) {
 
-        return shiroRequestHelper.call("health/live", (csrfToken) -> {
-            return Response.ok(pluginRegion.renderLive(httpRequest.getRemoteUser(), new HealthPluginRegionInput(datacenter, rack, cluster, host, service)));
-        });
+        return shiroRequestHelper.call("health/live",
+            csrfToken -> Response.ok(pluginRegion.renderLive())
+        );
     }
 
 }

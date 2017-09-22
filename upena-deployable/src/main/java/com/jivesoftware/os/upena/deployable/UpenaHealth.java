@@ -20,6 +20,7 @@ import com.jivesoftware.os.upena.service.UpenaConfigStore;
 import com.jivesoftware.os.upena.shared.HostKey;
 import com.jivesoftware.os.upena.uba.service.Nanny;
 import com.jivesoftware.os.upena.uba.service.UbaService;
+
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -91,8 +92,8 @@ public class UpenaHealth {
             }
             gradient.add(color);
         }
-        return "linear-gradient(to right, " + Joiner.on(", ").join(gradient) + ")";
 
+        return "linear-gradient(to right, " + Joiner.on(", ").join(gradient) + ")";
     }
 
     public final ConcurrentMap<RingHost, UpenaHealth.NodeHealth> nodeHealths = Maps.newConcurrentMap();
@@ -102,19 +103,17 @@ public class UpenaHealth {
     public final Map<String, InstanceSparseCircularHitsBucketBuffer> instanceHealthHistory = new ConcurrentHashMap<>();
 
     public ConcurrentMap<RingHost, NodeHealth> buildClusterHealth() throws Exception {
-
-        for (RingMemberAndHost ringMemberAndHost : amzaService.getRingReader().getRing(AmzaRingReader.SYSTEM_RING,30_000L).entries) {
+        for (RingMemberAndHost ringMemberAndHost : amzaService.getRingReader().getRing(AmzaRingReader.SYSTEM_RING, 30_000L).entries) {
             RingHost ringHost = ringMemberAndHost.ringHost;
             if (currentlyExecuting.putIfAbsent(ringHost, true) == null) {
-
                 Long timestamp = lastExecuted.get(ringHost);
                 if (timestamp == null || timestamp + 1 < System.currentTimeMillis()) {
                     executorService.submit(() -> {
                         try {
                             HttpRequestHelper requestHelper = HttpRequestHelperUtils.buildRequestHelper(upenaSSLConfig.sslEnable,
                                 upenaSSLConfig.allowSelfSignedCerts, upenaSSLConfig.signer, ringHost.getHost(), ringHost.getPort());
-                            UpenaHealth.NodeHealth nodeHealth = requestHelper.executeGetRequest("/upena/health/instance", UpenaHealth.NodeHealth.class,
-                                null);
+                            UpenaHealth.NodeHealth nodeHealth = requestHelper.executeGetRequest(
+                                "/upena/health/instance", UpenaHealth.NodeHealth.class, null);
                             nodeHealths.put(ringHost, nodeHealth);
 
                             for (UpenaHealth.NannyHealth nannyHealth : nodeHealth.nannyHealths) {
@@ -144,6 +143,7 @@ public class UpenaHealth {
                 }
             }
         }
+
         return nodeHealths;
     }
 
@@ -158,7 +158,6 @@ public class UpenaHealth {
         }
     }
 
-
     public static String getHEXIdColor(double value, float sat) {
         float hue = (float) value / 3f;
         hue = (1f / 3f) + (hue * 2);
@@ -167,7 +166,6 @@ public class UpenaHealth {
     }
 
     public static String idColorRGB(double value, float sat) {
-        //String s = Integer.toHexString(Color.HSBtoRGB(0.6f, 1f - ((float) value), sat) & 0xffffff);
         float hue = (float) value / 3f;
         hue = (1f / 3f) + (hue * 2);
         Color color = new Color(Color.HSBtoRGB(hue, sat, 1f));
@@ -175,7 +173,6 @@ public class UpenaHealth {
     }
 
     public static String getHEXTrafficlightColor(double value, float sat) {
-        //String s = Integer.toHexString(Color.HSBtoRGB(0.6f, 1f - ((float) value), sat) & 0xffffff);
         String s = Integer.toHexString(Color.HSBtoRGB((float) value / 3f, sat, 1f) & 0xffffff);
         return "000000".substring(s.length()) + s;
     }
@@ -188,14 +185,16 @@ public class UpenaHealth {
 
     public NodeHealth buildNodeHealth() throws Exception {
         NodeHealth nodeHealth = new NodeHealth(ringHostKey.getKey(), ringHost.getHost(), ringHost.getPort());
+
         for (Map.Entry<String, Nanny> nanny : ubaService.iterateNannies()) {
             Nanny n = nanny.getValue();
+            LOG.info("copyLog {}", n.getHealthLog());
             InstanceDescriptor id = n.getInstanceDescriptor();
             List<String> log = n.getDeployLog().commitedLog();
             List<String> copyLog = n.getHealthLog().commitedLog();
             ServiceHealth serviceHealth = null;
             try {
-
+                LOG.info("copyLog {}", copyLog);
                 if (!copyLog.isEmpty()) {
                     serviceHealth = mapper.readValue(Joiner.on("").join(copyLog), ServiceHealth.class);
                     nodeHealth.health = Math.min(nodeHealth.health, serviceHealth.health);
@@ -205,11 +204,13 @@ public class UpenaHealth {
                 nodeHealth.health = 0.0d;
                 log.add("Failed to parse serviceHealth" + x.getMessage());
             }
+
             if (serviceHealth == null) {
                 serviceHealth = new ServiceHealth();
                 serviceHealth.health = 0;
             }
-            String uptime = "";
+
+            String uptime;
             if (nanny.getValue().getStartTimeMillis() > 0) {
                 uptime = shortHumanReadableUptime(System.currentTimeMillis() - nanny.getValue().getStartTimeMillis());
             } else {
@@ -228,20 +229,12 @@ public class UpenaHealth {
 
             nannyHealth.status = n.getStatus();
             nodeHealth.nannyHealths.add(nannyHealth);
-
         }
+
         return nodeHealth;
-
-    }
-
-    static public class ClusterHealth {
-
-        public double health = 1d;
-        public List<NodeHealth> nodeHealths = new ArrayList<>();
     }
 
     static public class NodeHealth {
-
         public double health = 1d;
         public String hostKey;
         public String host;
@@ -256,11 +249,9 @@ public class UpenaHealth {
             this.host = host;
             this.port = port;
         }
-
     }
 
     static public class NannyHealth {
-
         public String uptime;
         public InstanceDescriptor instanceDescriptor;
         public List<String> log;
@@ -279,11 +270,9 @@ public class UpenaHealth {
             this.log = log;
             this.serviceHealth = serviceHealth;
         }
-
     }
 
     static public class ServiceHealth {
-
         public String version = "unknown";
         public boolean fullyOnline = false;
         public double health = 0d;
@@ -291,7 +280,6 @@ public class UpenaHealth {
     }
 
     static public class Health {
-
         public String name;
         public double health;
         public String status;
@@ -314,28 +302,6 @@ public class UpenaHealth {
         }
     }
 
-    public static String humanReadableLatency(long millis) {
-        if (millis < 0) {
-            return String.valueOf(millis);
-        }
-
-        long seconds = TimeUnit.MILLISECONDS.toSeconds(millis);
-        millis -= TimeUnit.SECONDS.toMillis(seconds);
-
-        StringBuilder sb = new StringBuilder(64);
-        sb.append(seconds);
-        sb.append(".");
-
-        if (millis < 100) {
-            sb.append('0');
-        }
-        if (millis < 10) {
-            sb.append('0');
-        }
-        sb.append(millis);
-        return (sb.toString());
-    }
-
     public static String humanReadableUptime(long millis) {
         if (millis < 0) {
             return String.valueOf(millis);
@@ -346,7 +312,6 @@ public class UpenaHealth {
         long minutes = TimeUnit.MILLISECONDS.toMinutes(millis);
         millis -= TimeUnit.MINUTES.toMillis(minutes);
         long seconds = TimeUnit.MILLISECONDS.toSeconds(millis);
-        millis -= TimeUnit.SECONDS.toMillis(seconds);
 
         StringBuilder sb = new StringBuilder(64);
         if (hours < 10) {
@@ -379,7 +344,6 @@ public class UpenaHealth {
         long minutes = TimeUnit.MILLISECONDS.toMinutes(millis);
         millis -= TimeUnit.MINUTES.toMillis(minutes);
         long seconds = TimeUnit.MILLISECONDS.toSeconds(millis);
-        millis -= TimeUnit.SECONDS.toMillis(seconds);
 
         StringBuilder sb = new StringBuilder(64);
         if (days > 0) {
