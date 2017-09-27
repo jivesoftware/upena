@@ -188,13 +188,12 @@ public class UpenaHealth {
 
         for (Map.Entry<String, Nanny> nanny : ubaService.iterateNannies()) {
             Nanny n = nanny.getValue();
-            LOG.info("copyLog {}", n.getHealthLog());
             InstanceDescriptor id = n.getInstanceDescriptor();
             List<String> log = n.getDeployLog().commitedLog();
             List<String> copyLog = n.getHealthLog().commitedLog();
             ServiceHealth serviceHealth = null;
             try {
-                LOG.info("copyLog {}", copyLog);
+                LOG.debug("copyLog {}", copyLog);
                 if (!copyLog.isEmpty()) {
                     serviceHealth = mapper.readValue(Joiner.on("").join(copyLog), ServiceHealth.class);
                     nodeHealth.health = Math.min(nodeHealth.health, serviceHealth.health);
