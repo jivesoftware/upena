@@ -19,18 +19,17 @@ import com.jivesoftware.os.upena.shared.Host;
 import com.jivesoftware.os.upena.shared.HostKey;
 import com.jivesoftware.os.upena.shared.Instance;
 import com.jivesoftware.os.upena.shared.InstanceKey;
+
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.AuthorizationException;
 
-/**
- *
- */
 // soy.page.upenaRingPluginRegion
 public class ManagedDeployablePluginRegion implements PageRegion<ManagedDeployablePluginRegionInput> {
 
@@ -109,11 +108,11 @@ public class ManagedDeployablePluginRegion implements PageRegion<ManagedDeployab
         Instance instance = upenaStore.instances.get(new InstanceKey(instanceKey));
         ProxyAsNeeded proxy = null;
         if (instance == null) {
-            data.put("result", Arrays.asList(new String[] { "There is no instance for key:" + instanceKey }));
+            data.put("result", Collections.singletonList("There is no instance for key:" + instanceKey));
         } else {
             Host host = upenaStore.hosts.get(instance.hostKey);
             if (host == null) {
-                data.put("result", Arrays.asList(new String[] { "There is no host for key:" + instance.hostKey }));
+                data.put("result", Collections.singletonList("There is no host for key:" + instance.hostKey));
             } else if (instance.hostKey.equals(hostKey)) {
                 proxy = new Local(instanceKey, instance);
             } else {
@@ -129,7 +128,6 @@ public class ManagedDeployablePluginRegion implements PageRegion<ManagedDeployab
 
         Map<String, Object> data = Maps.newHashMap();
         data.put("instanceKey", input.instanceKey);
-        data.put("instance", "TODO");
         data.put("action", input.action);
 
         try {
@@ -191,7 +189,6 @@ public class ManagedDeployablePluginRegion implements PageRegion<ManagedDeployab
                                     String instanceKey = input.instanceKey;
                                     String[] split = l.trim().split("\\(");
 
-
                                     String className = split[0].substring(3, split[0].lastIndexOf('.'));
                                     if (!split[1].contains("Native")) {
                                         String lineNumber = split[1].substring(split[1].lastIndexOf(':') + 1, split[1].lastIndexOf(')'));
@@ -210,15 +207,14 @@ public class ManagedDeployablePluginRegion implements PageRegion<ManagedDeployab
                                 } catch (Exception x) {
                                     LOG.error("Failed find expected class and line in " + l);
                                 }
-                                sb.append("\n");
 
+                                sb.append("\n");
                             } else {
                                 sb.append(l);
                                 sb.append("\n");
                             }
                         }
                         sb.append("</pre>");
-
                     }
 
                     return renderHtml(sb.toString());
@@ -242,6 +238,10 @@ public class ManagedDeployablePluginRegion implements PageRegion<ManagedDeployab
                     SecurityUtils.getSubject().checkPermission("read");
                     String r = proxy.get("/manage/tenant/routing/report");
                     return renderText(r);
+                } else if (input.action.equals("setLogLevel")) {
+                    SecurityUtils.getSubject().checkPermission("read");
+                    String r = proxy.get("/manage/setLogLevel");
+                    return renderText(r);
                 }
             }
         } catch (AuthorizationException x) {
@@ -252,6 +252,7 @@ public class ManagedDeployablePluginRegion implements PageRegion<ManagedDeployab
             data.put("result", "Error while trying to " + input.action + "\n" + trace);
             return "<h3>Error in embedded probe, please check the logs.</h3>";
         }
+
         return renderer.render(template, data);
     }
 
@@ -327,11 +328,11 @@ public class ManagedDeployablePluginRegion implements PageRegion<ManagedDeployab
     }
 
     interface ProxyAsNeeded {
-
         String get(String path);
 
         <J> J get(String path, Class<J> c, J d);
 
         String allocateAccessToken();
     }
+
 }

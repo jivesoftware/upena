@@ -77,9 +77,8 @@ public class ManagedDeployablePluginEndpoints {
     public Response embeddedProbe(@PathParam("instanceKey") @DefaultValue("unspecified") String instanceKey,
         @PathParam("action") @DefaultValue("unspecified") String action,
         @Context HttpServletRequest httpRequest) {
-        return shiroRequestHelper.call("/ui/deployable/embeddedProbe", (csrfToken) -> {
-            return Response.ok(pluginRegion.render("", new ManagedDeployablePluginRegion.ManagedDeployablePluginRegionInput(instanceKey, action)));
-        });
+        return shiroRequestHelper.call("/ui/deployable/embeddedProbe", csrfToken ->
+            Response.ok(pluginRegion.render("", new ManagedDeployablePluginRegion.ManagedDeployablePluginRegionInput(instanceKey, action))));
     }
 
 
