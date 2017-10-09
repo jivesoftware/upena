@@ -241,7 +241,7 @@ public class ManagedDeployablePluginRegion implements PageRegion<ManagedDeployab
                 } else if (input.action.equals("setLogLevel")) {
                     SecurityUtils.getSubject().checkPermission("read");
                     String r = proxy.get("/manage/setLogLevel");
-                    return renderText(r);
+                    return renderHtml(r);
                 }
             }
         } catch (AuthorizationException x) {
