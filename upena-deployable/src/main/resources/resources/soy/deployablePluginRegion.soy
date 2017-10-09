@@ -8,7 +8,6 @@
  */
 {template .deployablePluginRegion}
     <div class="panel">
-
         <ul class="nav nav-tabs tabs-up">
             {if $uis}
                 {foreach $u in $uis}
@@ -55,7 +54,7 @@
             </li>
             <li>
                 <a href="/ui/deployable/embeddedProbe/{$instanceKey}/resetThrown" data-target="#d-resetThrown-{$instanceKey}" class="btn btn-default" id="rd-esetThrown-{$instanceKey}_tab" data-toggle="tabajax{$instanceKey}" rel="tooltip">
-                    Rest Thrown
+                    Reset Thrown
                 </a>
             </li>
             <li>
@@ -63,9 +62,12 @@
                     Reset Health
                 </a>
             </li>
-
+            <li>
+                <a href="/ui/deployable/embeddedProbe/{$instanceKey}/setLogLevel" data-target="#d-setLogLevel-{$instanceKey}" class="btn btn-default" id="d-setLogLevel-{$instanceKey}_tab" data-toggle="tabajax{$instanceKey}" rel="tooltip">
+                    Set Log Level
+                </a>
+            </li>
         </ul>
-
         <div class="tab-content">
             <div class="tab-pane active" id="d-health-{$instanceKey}"></div>
             <div class="tab-pane" id="d-tail-{$instanceKey}"></div>
@@ -76,8 +78,8 @@
             <div class="tab-pane" id="d-resetErrors-{$instanceKey}"></div>
             <div class="tab-pane" id="d-resetThrown-{$instanceKey}"></div>
             <div class="tab-pane" id="d-resetHealth-{$instanceKey}"></div>
+            <div class="tab-pane" id="d-setLogLevel-{$instanceKey}"></div>
         </div>
-
         <script>
             $('[data-toggle="tabajax{$instanceKey}"]').click(function(e) {lb}
                 var $this = $(this),
@@ -106,7 +108,6 @@
                  {rb}
               {rb});
         </script>
-
     </div>
 {/template}
 
@@ -117,11 +118,9 @@
     <pre style="white-space: pre-wrap; word-wrap: normal; word-break: break-word;">{$textResult}</pre>
 {/template}
 
-
 /**
  * @param? htmlResult
  */
 {template .deployablePluginRegionHtml}
     {$htmlResult|noAutoescape}
 {/template}
-
