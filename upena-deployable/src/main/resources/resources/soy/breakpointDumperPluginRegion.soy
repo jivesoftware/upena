@@ -146,12 +146,12 @@
                                     </ul>
                                 </div>
                                 <div style="display: inline;">&nbsp;&nbsp;&nbsp;{$c.name}&nbsp;&nbsp;&nbsp;</div>
-                                <form style="display: inline;" id="dettachHostDebugger" method="post" name="dettachHostDebugger">
+                                <form style="display: inline;" id="detachHostDebugger" method="post" name="detachHostDebugger">
                                     <input type="hidden" name="sessionId" value="{$s.id}"/>
                                     <input type="hidden" name="connectionId" value="{$c.id}"/>
 
                                     {if $c.attached}
-                                        <button style="display: inline;" title="dettach" type="submit" name="action" value="dettach" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
+                                        <button style="display: inline;" title="detach" type="submit" name="action" value="detach" class="btn btn-default ladda-button"  data-spinner-color="#222" data-style="expand-right">
                                             <span class="glyphicon glyphicon-stop"></span>
                                         </button>
                                     {else}
@@ -218,7 +218,7 @@
                 &nbsp;&nbsp;&nbsp;{$b.className}:{$b.lineNumber}&nbsp;&nbsp;&nbsp;
             </div>
             {if $c.attached}{else}
-                <form style="display: inline;" id="dettachBreakPointDebugger" method="post" name="dettachBreakPointDebugger">
+                <form style="display: inline;" id="detachBreakPointDebugger" method="post" name="detachBreakPointDebugger">
                     <input type="hidden" name="sessionId" value="{$sid}"/>
                     <input type="hidden" name="connectionId" value="{$c.id}"/>
                     <input type="hidden" name="className" value="{$b.className}"/>
@@ -263,7 +263,7 @@
                 {foreach $d in $b.dump}
                     <tr>
                         <td>
-                            <form style="display: inline;" id="dettachBreakPointDebugger" method="post" name="dettachBreakPointDebugger">
+                            <form style="display: inline;" id="detachBreakPointDebugger" method="post" name="detachBreakPointDebugger">
                                 <input type="hidden" name="sessionId" value="{$sid}"/>
                                 <input type="hidden" name="connectionId" value="{$c.id}"/>
                                 <input type="hidden" name="breakPointFieldName" value="{$d.fieldName}"/>
@@ -302,7 +302,7 @@
                                 </a>
                             </div>
                             <div id="popover-filter-{$d.fieldName}" class="hide">
-                                <form style="display: inline;" id="dettachBreakPointDebugger" method="post" name="dettachBreakPointDebugger">
+                                <form style="display: inline;" id="detachBreakPointDebugger" method="post" name="detachBreakPointDebugger">
                                     <input type="hidden" name="sessionId" value="{$sid}"/>
                                     <input type="hidden" name="className" value="{$b.className}"/>
                                     <input type="hidden" name="lineNumber" value="{$b.lineNumber}"/>
@@ -349,7 +349,7 @@
                                     {foreach $cf in $d.fieldNames}
                                         <li class="list-group-item">
                                             <div style="display: inline;">
-                                                <form style="display: inline;" id="dettachBreakPointDebugger" method="post" name="dettachBreakPointDebugger">
+                                                <form style="display: inline;" id="detachBreakPointDebugger" method="post" name="detachBreakPointDebugger">
                                                     <input type="hidden" name="sessionId" value="{$sid}"/>
                                                     <input type="hidden" name="fieldName" value="{$d.fieldName}"/>
                                                     <input type="hidden" name="childFieldName" value="{$cf.name}"/>
@@ -428,7 +428,7 @@
                 {foreach $d in $b.dump}
                     <tr>
                         <td>
-                            <form style="display: inline;" id="dettachBreakPointDebugger" method="post" name="dettachBreakPointDebugger">
+                            <form style="display: inline;" id="detachBreakPointDebugger" method="post" name="detachBreakPointDebugger">
                                 <input type="hidden" name="sessionId" value="{$sid}"/>
                                 <input type="hidden" name="connectionId" value="{$c.id}"/>
                                 <input type="hidden" name="breakPointFieldName" value="{$d.fieldName}"/>
@@ -476,7 +476,7 @@
                                     {foreach $cf in $d.fieldNames}
                                         <li class="list-group-item">
                                             <div style="display: inline;">
-                                                <form style="display: inline;" id="dettachBreakPointDebugger" method="post" name="dettachBreakPointDebugger">
+                                                <form style="display: inline;" id="detachBreakPointDebugger" method="post" name="detachBreakPointDebugger">
                                                     <input type="hidden" name="sessionId" value="{$sid}"/>
                                                     <input type="hidden" name="fieldName" value="{$d.fieldName}"/>
                                                     <input type="hidden" name="childFieldName" value="{$cf.name}"/>

@@ -44,9 +44,6 @@ import org.apache.shiro.SecurityUtils;
 import static com.jivesoftware.os.upena.deployable.UpenaHealth.getHEXTrafficlightColor;
 import static com.jivesoftware.os.upena.deployable.UpenaHealth.trafficlightColorRGBA;
 
-/**
- *
- */
 // soy.page.healthPluginRegion
 public class HealthPluginRegion implements PageRegion<HealthPluginRegion.HealthPluginRegionInput> {
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();

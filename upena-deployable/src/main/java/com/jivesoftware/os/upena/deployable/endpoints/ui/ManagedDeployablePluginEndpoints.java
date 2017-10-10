@@ -1,7 +1,5 @@
 package com.jivesoftware.os.upena.deployable.endpoints.ui;
 
-import com.jivesoftware.os.mlogger.core.MetricLogger;
-import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.deployable.ShiroRequestHelper;
 import com.jivesoftware.os.upena.deployable.region.ManagedDeployablePluginRegion;
 import com.jivesoftware.os.upena.deployable.soy.SoyService;
@@ -29,8 +27,6 @@ import java.net.URI;
 @Path("/ui/deployable")
 public class ManagedDeployablePluginEndpoints {
 
-    private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
-
     private final ShiroRequestHelper shiroRequestHelper;
     private final SoyService soyService;
     private final ManagedDeployablePluginRegion pluginRegion;
@@ -49,7 +45,7 @@ public class ManagedDeployablePluginEndpoints {
     @Produces(MediaType.TEXT_HTML)
     public Response javaDeployableProbe(@PathParam("instanceKey") @DefaultValue("unspecified") String instanceKey,
         @Context HttpServletRequest httpRequest) {
-        return shiroRequestHelper.call("/ui/deployable/probe", (csrfToken) -> {
+        return shiroRequestHelper.call("/ui/deployable/probe", csrfToken -> {
             String rendered = soyService.renderNoChromePlugin(httpRequest.getRemoteUser(), csrfToken, pluginRegion,
                 new ManagedDeployablePluginRegion.ManagedDeployablePluginRegionInput(instanceKey, ""));
             return Response.ok(rendered);
@@ -64,7 +60,7 @@ public class ManagedDeployablePluginEndpoints {
         @Context HttpServletRequest httpRequest,
         @FormParam("csrfToken") String csrfToken,
         @FormParam("action") @DefaultValue("") String action) {
-        return shiroRequestHelper.csrfCall(csrfToken, "/ui/deployable/probe/action", (csrfToken1) -> {
+        return shiroRequestHelper.csrfCall(csrfToken, "/ui/deployable/probe/action", csrfToken1 -> {
             String rendered = soyService.renderNoChromePlugin(httpRequest.getRemoteUser(), csrfToken1, pluginRegion,
                 new ManagedDeployablePluginRegion.ManagedDeployablePluginRegionInput(instanceKey, action));
             return Response.ok(rendered);
@@ -81,7 +77,6 @@ public class ManagedDeployablePluginEndpoints {
             Response.ok(pluginRegion.render("", new ManagedDeployablePluginRegion.ManagedDeployablePluginRegionInput(instanceKey, action))));
     }
 
-
     @Path("/redirect/{instanceKey}")
     @GET()
     @Produces(MediaType.TEXT_HTML)
@@ -89,13 +84,28 @@ public class ManagedDeployablePluginEndpoints {
         @QueryParam("portName") @DefaultValue("unspecified") String portName,
         @QueryParam("path") @DefaultValue("unspecified") String uiPath,
         @Context HttpServletRequest httpRequest) {
-
-        return shiroRequestHelper.call("/ui/deployable/redirect", (csrfToken) -> {
+        return shiroRequestHelper.call("/ui/deployable/redirect", csrfToken -> {
             URI uri = pluginRegion.redirectToUI(instanceKey, portName, uiPath);
             if (uri == null) {
                 return Response.ok("Failed to redirect.");
             }
             return Response.temporaryRedirect(uri);
+        });
+    }
+
+    @Path("/setLogLevel/{instanceKey}")
+    @GET()
+    @Produces(MediaType.TEXT_HTML)
+    public Response setLogLevel(@PathParam("instanceKey") @DefaultValue("unspecified") String instanceKey,
+        @FormParam("logger") @DefaultValue("") String loggerName,
+        @FormParam("level") @DefaultValue("null") String loggerLevel,
+        @Context HttpServletRequest httpRequest) {
+        return shiroRequestHelper.call("/ui/deployable/setLogLevel", csrfToken -> {
+            String response = pluginRegion.setLogLevel(instanceKey, loggerName, loggerLevel);
+            if (response == null) {
+                return Response.ok("Failed to set log level.");
+            }
+            return Response.ok(response);
         });
     }
 

@@ -42,7 +42,7 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  *
  */
-// soy.page.upenaRingPluginRegion
+// soy.page.breakpointDumperPluginRegion
 public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumperPluginRegionInput> {
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
@@ -71,7 +71,6 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
     public String getRootPath() {
         return "/ui/breakpoint";
     }
-
 
     public static class BreakpointDumperPluginRegionInput implements PluginInput {
 
@@ -185,8 +184,8 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
                 data.put("message", session.attachAll());
             }
 
-            if (input.action.equals("dettachAll")) {
-                data.put("message", session.dettachAll());
+            if (input.action.equals("detachAll")) {
+                data.put("message", session.detachAll());
             }
 
             if (input.action.equals("removeAllConnections")) {
@@ -197,13 +196,11 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
                 data.put("message", session.attach(input.connectionId));
             }
 
-            if (input.action.equals("dettach")) {
-                data.put("message", session.dettach(input.connectionId));
+            if (input.action.equals("detach")) {
+                data.put("message", session.detach(input.connectionId));
             }
 
-
             if (input.action.equals("addConnections")) {
-
                 if (!input.instanceKey.isEmpty()) {
                     Instance instance = upenaStore.instances.get(new InstanceKey(input.instanceKey));
                     if (instance != null) {
@@ -253,7 +250,6 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
                     }
                 }
             }
-
 
             if (input.action.equals("removeConnection")) {
                 data.put("message", session.removeConnection(input.connectionId));
@@ -379,23 +375,17 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
         return "No state for "+sessionId+":"+connectionId+" "+System.currentTimeMillis();
     }
 
-
-
     public String render(String user) throws Exception {
-
         Map<String, Object> data = Maps.newHashMap();
-
         return renderer.render(template, data);
     }
 
     @Override
     public String getTitle() {
         return "Breakpoint Dump";
-
     }
 
     class BreakpointDebuggerSession {
-
         final long id;
         final int maxVersions;
         final Map<Long, BreakpointDebuggerState> breakpointDebuggers = new ConcurrentHashMap<>();
@@ -442,23 +432,23 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
             BreakpointDebuggerState got = breakpointDebuggers.get(connectionId);
             if (got != null) {
                 got.attaching.set(true);
-                sb.append("submited ").append(got.name).append("... ");
+                sb.append("submitted ").append(got.name).append("... ");
                 debuggerThread.execute(got);
             } else {
-                sb.append("could not dettach because there was no debugger for connectionId=").append(connectionId).append("... ");
+                sb.append("could not detach because there was no debugger for connectionId=").append(connectionId).append("... ");
             }
             return sb.toString();
         }
 
-        private String dettach(long connectionId) {
+        private String detach(long connectionId) {
             StringBuilder sb = new StringBuilder();
             BreakpointDebuggerState got = breakpointDebuggers.get(connectionId);
             if (got != null) {
                 got.attaching.set(false);
-                sb.append("dettach ").append(got.name).append("... ");
-                got.breakpointDebugger.dettach();
+                sb.append("detach ").append(got.name).append("... ");
+                got.breakpointDebugger.detach();
             } else {
-                sb.append("could not dettach because there was no debugger for connectionId=").append(connectionId).append("... ");
+                sb.append("could not detach because there was no debugger for connectionId=").append(connectionId).append("... ");
             }
             return sb.toString();
         }
@@ -467,8 +457,8 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
             StringBuilder sb = new StringBuilder();
             BreakpointDebuggerState got = breakpointDebuggers.get(connectionId);
             if (got != null) {
-                sb.append("dettach ").append(got.name).append("... ");
-                got.breakpointDebugger.dettach();
+                sb.append("detach ").append(got.name).append("... ");
+                got.breakpointDebugger.detach();
                 sb.append("removed connectionId ").append(connectionId).append("... ");
                 breakpointDebuggers.remove(connectionId);
             } else {
@@ -480,17 +470,17 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
         private String attachAll() {
             StringBuilder sb = new StringBuilder();
             for (BreakpointDebuggerState value : breakpointDebuggers.values()) {
-                sb.append("submited ").append(value.name).append("... ");
+                sb.append("submitted ").append(value.name).append("... ");
                 debuggerThread.execute(value);
             }
             return sb.toString();
         }
 
-        private String dettachAll() {
+        private String detachAll() {
             StringBuilder sb = new StringBuilder();
             for (BreakpointDebuggerState value : breakpointDebuggers.values()) {
-                sb.append("dettach ").append(value.name).append("... ");
-                value.breakpointDebugger.dettach();
+                sb.append("detach ").append(value.name).append("... ");
+                value.breakpointDebugger.detach();
             }
             return sb.toString();
         }
@@ -498,8 +488,8 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
         private String removeAllConnection() {
             StringBuilder sb = new StringBuilder();
             for (Map.Entry<Long, BreakpointDebuggerState> entry : breakpointDebuggers.entrySet()) {
-                sb.append("dettach ").append(entry.getValue().breakpointDebugger.getHostName()).append("... ");
-                entry.getValue().breakpointDebugger.dettach();
+                sb.append("detach ").append(entry.getValue().breakpointDebugger.getHostName()).append("... ");
+                entry.getValue().breakpointDebugger.detach();
                 sb.append("removed breakpointDebugger ").append(entry.getKey()).append("... ");
                 breakpointDebuggers.remove(entry.getKey());
             }
@@ -570,8 +560,6 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
 
         public final AtomicBoolean attaching = new AtomicBoolean();
 
-
-
         @Override
         public void run() {
             if (breakpointDebugger.attached()) {
@@ -586,7 +574,7 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
                 breakpointDebugger.log(x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace()));
                 LOG.error("", x);
             } finally {
-                breakpointDebugger.dettach();
+                breakpointDebugger.detach();
             }
         }
 
@@ -755,8 +743,7 @@ public class BreakpointDumperPluginRegion implements PageRegion<BreakpointDumper
     }
 
     static class Capturing extends ConcurrentSkipListMap<String, Map<String, Object>> {
-
         public boolean filterFailed = false;
-
     }
+
 }

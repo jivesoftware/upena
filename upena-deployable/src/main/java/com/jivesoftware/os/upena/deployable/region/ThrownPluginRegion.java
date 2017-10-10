@@ -32,7 +32,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  *
  */
-// soy.page.upenaRingPluginRegion
+// soy.page.thrownPluginRegion
 public class ThrownPluginRegion implements PageRegion<ThrownPluginRegion.ThrownPluginRegionInput> {
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();

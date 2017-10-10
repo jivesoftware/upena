@@ -32,7 +32,7 @@ import java.util.Map;
 /**
  *
  */
-// soy.page.upenaRingPluginRegion
+// soy.page.awsPluginRegion
 public class AWSPluginRegion implements PageRegion<AWSPluginRegionInput> {
 
     private static final MetricLogger log = MetricLoggerFactory.getLogger();

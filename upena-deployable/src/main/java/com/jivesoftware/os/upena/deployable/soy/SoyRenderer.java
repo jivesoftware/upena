@@ -2,6 +2,7 @@ package com.jivesoftware.os.upena.deployable.soy;
 
 import com.google.common.base.Preconditions;
 import com.google.template.soy.tofu.SoyTofu;
+
 import java.util.Map;
 
 /**
@@ -23,11 +24,12 @@ public class SoyRenderer {
 
         SoyTofu.Renderer renderer = tofu.newRenderer(template);
         if (renderer == null) {
-            throw new IllegalArgumentException("No renderer found for template : " + template + ".  Are you sure it exists?");
+            throw new IllegalArgumentException("No renderer found for template:" + template);
         }
 
         renderer.setData(soyDataUtils.toSoyCompatibleMap(data));
 
         return renderer.render();
     }
+
 }

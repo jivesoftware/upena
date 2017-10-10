@@ -61,14 +61,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- *
  * @author jonathan.colt
  */
 public class JDIAPI {
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
 
-    public static enum ThreadDumpLineType {
+    public enum ThreadDumpLineType {
         thread, monitor, location, eod
     }
 
@@ -131,14 +130,13 @@ public class JDIAPI {
 
     /*
         public static final int THREAD_STATUS_UNKNOWN = -1;
-    public static final int THREAD_STATUS_ZOMBIE = 0;
-    public static final int THREAD_STATUS_RUNNING = 1;
-    public static final int THREAD_STATUS_SLEEPING = 2;
-    public static final int THREAD_STATUS_MONITOR = 3;
-    public static final int THREAD_STATUS_WAIT = 4;
-    public static final int THREAD_STATUS_NOT_STARTED = 5;
-
-     */
+        public static final int THREAD_STATUS_ZOMBIE = 0;
+        public static final int THREAD_STATUS_RUNNING = 1;
+        public static final int THREAD_STATUS_SLEEPING = 2;
+        public static final int THREAD_STATUS_MONITOR = 3;
+        public static final int THREAD_STATUS_WAIT = 4;
+        public static final int THREAD_STATUS_NOT_STARTED = 5;
+    */
     static String[] STATUS = new String[]{
         "ZOMBIE",
         "RUNNING",
@@ -180,7 +178,6 @@ public class JDIAPI {
     }
 
     public interface MemoryHisto {
-
         boolean histo(String name);
     }
 
@@ -210,7 +207,6 @@ public class JDIAPI {
             try {
                 vm.suspend();
                 if (vm instanceof HotSpotVirtualMachine) {
-                    String LIVE_OBJECTS_OPTION = "-live";
                     String ALL_OBJECTS_OPTION = "-all";
                     InputStream in = ((HotSpotVirtualMachine) vm).heapHisto(ALL_OBJECTS_OPTION);
                     String drain = drain(in);
@@ -360,7 +356,7 @@ public class JDIAPI {
             return attached.get();
         }
 
-        public void dettach() {
+        public void detach() {
             attached.set(false);
         }
 
@@ -370,14 +366,6 @@ public class JDIAPI {
 
         public Set<Breakpoint> getBreakpoints() {
             return breakpoints;
-        }
-
-        public Set<Breakpoint> getAttachedBreakpoints() {
-            return attachedBreakpoints;
-        }
-
-        public boolean isAttached(Breakpoint breakpoint) {
-            return attachedBreakpoints.contains(breakpoint);
         }
 
         public void addBreakpoint(String className, int lineNumber) {
@@ -390,11 +378,6 @@ public class JDIAPI {
             if (breakpoints.remove(new Breakpoint(className, lineNumber))) {
                 version.incrementAndGet();
             }
-        }
-
-        public void clearBreakpoints() {
-            breakpoints.clear();
-            version.incrementAndGet();
         }
 
         public void log(String message) {

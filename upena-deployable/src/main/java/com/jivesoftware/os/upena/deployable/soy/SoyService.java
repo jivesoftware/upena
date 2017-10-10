@@ -10,15 +10,12 @@ import com.jivesoftware.os.upena.deployable.region.PluginHandle;
 import com.jivesoftware.os.upena.deployable.region.PluginInput;
 import com.jivesoftware.os.upena.service.UpenaStore;
 import com.jivesoftware.os.upena.shared.HostKey;
+
 import java.util.List;
 
-/**
- *
- */
 public class SoyService {
     private final String upenaVersion;
     private final SoyRenderer renderer;
-    //private final HeaderRegion headerRegion;
     private final MenuRegion menuRegion;
     private final HomeRegion homeRegion;
     private final String cluster;
@@ -30,26 +27,21 @@ public class SoyService {
     public SoyService(
         String upenaVersion,
         SoyRenderer renderer,
-        //HeaderRegion headerRegion,
         MenuRegion menuRegion,
         HomeRegion homeRegion,
         String cluster,
         HostKey hostKey,
-        UpenaStore upenaStore
-    ) {
+        UpenaStore upenaStore) {
         this.upenaVersion = upenaVersion;
         this.renderer = renderer;
-        //this.headerRegion = headerRegion;
         this.menuRegion = menuRegion;
         this.homeRegion = homeRegion;
         this.cluster = cluster;
         this.hostKey = hostKey;
         this.upenaStore = upenaStore;
-
     }
 
     public String render(String user, String csrfToken) throws Exception {
-
         return chrome("soy.upena.chrome.chromeRegion", csrfToken, homeRegion).render(user, new HomeInput());
     }
 
@@ -62,7 +54,6 @@ public class SoyService {
             template,
             csrfToken,
             renderer,
-            //headerRegion,
             menuRegion,
             plugins,
             region,
@@ -74,7 +65,6 @@ public class SoyService {
     public String renderOverview(String user) throws Exception {
         return homeRegion.renderOverview(user);
     }
-
 
     public <I extends PluginInput> String renderNoChromePlugin(String user, String csrfToken, PageRegion<I> pluginRegion, I input) throws Exception {
         return chrome("soy.upena.chrome.noChromeRegion", csrfToken, pluginRegion).render(user, input);

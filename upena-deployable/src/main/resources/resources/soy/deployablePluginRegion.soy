@@ -12,7 +12,7 @@
             {if $uis}
                 {foreach $u in $uis}
                     <li>
-                        <a class="btn btn-info" href="{$u.uiPath}"><span class="glyphicon glyphicon-new-window"></span> {$u.name}</a>
+                        <a class="btn btn-info" href="{$u.uiPath}" target="_blank"><span class="glyphicon glyphicon-new-window"></span> {$u.name}</a>
                     </li>
                     <li>
                         <a class="btn btn-info" href="/ui/proxy/redirect?host={$u.host}&amp;port={$u.port}&amp;path={$u.url}"><span class="glyphicon glyphicon-random"></span></a>
@@ -63,7 +63,7 @@
                 </a>
             </li>
             <li>
-                <a href="/ui/deployable/embeddedProbe/{$instanceKey}/setLogLevel" data-target="#d-setLogLevel-{$instanceKey}" class="btn btn-default" id="d-setLogLevel-{$instanceKey}_tab" data-toggle="tabajax{$instanceKey}" rel="tooltip">
+                <a href="/ui/deployable/embeddedProbe/{$instanceKey}/logLevel" data-target="#d-logLevel-{$instanceKey}" class="btn btn-default" id="d-logLevel-{$instanceKey}_tab" data-toggle="tabajax{$instanceKey}" rel="tooltip">
                     Set Log Level
                 </a>
             </li>
@@ -78,7 +78,7 @@
             <div class="tab-pane" id="d-resetErrors-{$instanceKey}"></div>
             <div class="tab-pane" id="d-resetThrown-{$instanceKey}"></div>
             <div class="tab-pane" id="d-resetHealth-{$instanceKey}"></div>
-            <div class="tab-pane" id="d-setLogLevel-{$instanceKey}"></div>
+            <div class="tab-pane" id="d-logLevel-{$instanceKey}"></div>
         </div>
         <script>
             $('[data-toggle="tabajax{$instanceKey}"]').click(function(e) {lb}

@@ -17,10 +17,7 @@ import java.util.List;
 import java.util.Map;
 import org.apache.shiro.SecurityUtils;
 
-/**
- *
- */
-// soy.page.upenaRingPluginRegion
+// soy.page.jvmPluginRegion
 public class JVMPluginRegion implements PageRegion<JVMPluginRegionInput> {
 
     private static final MetricLogger log = MetricLoggerFactory.getLogger();

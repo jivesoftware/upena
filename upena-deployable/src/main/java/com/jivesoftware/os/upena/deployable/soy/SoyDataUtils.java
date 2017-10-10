@@ -25,6 +25,7 @@ package com.jivesoftware.os.upena.deployable.soy;
 
 import com.google.common.collect.Lists;
 import com.google.common.primitives.Primitives;
+
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
@@ -70,8 +71,8 @@ public class SoyDataUtils {
             return obj;
         }
         if (Primitives.isWrapperType(obj.getClass())
-                || obj.getClass().isPrimitive()
-                || obj instanceof String) {
+            || obj.getClass().isPrimitive()
+            || obj instanceof String) {
             return obj;
         }
         if (obj instanceof Map) {
