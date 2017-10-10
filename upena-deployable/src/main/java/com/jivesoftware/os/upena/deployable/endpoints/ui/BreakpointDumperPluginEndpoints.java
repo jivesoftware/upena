@@ -44,8 +44,7 @@ public class BreakpointDumperPluginEndpoints {
     @GET
     @Produces(MediaType.TEXT_HTML)
     public Response breakpoint(@Context HttpServletRequest httpRequest) {
-
-        return shiroRequestHelper.call("breakpoint", (csrfToken) -> {
+        return shiroRequestHelper.call("breakpoint", csrfToken -> {
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(), csrfToken, pluginRegion,
                 new BreakpointDumperPluginRegionInput("", "", "", "", "", "", "", "", "", "", Collections.emptyList(),
                     "", 0, 1, 0, "", "", "", 0, 0, "", ""));
@@ -80,9 +79,7 @@ public class BreakpointDumperPluginEndpoints {
         @FormParam("maxVersions") @DefaultValue("1") int maxVersions,
         @FormParam("breakpoint") @DefaultValue("") String breakpoint,
         @FormParam("action") @DefaultValue("") String action) {
-
-        return shiroRequestHelper.csrfCall(csrfToken, "breakpoint", (csrfToken1) -> {
-
+        return shiroRequestHelper.csrfCall(csrfToken, "breakpoint", csrfToken1 -> {
             String rendered = soyService.renderPlugin(httpRequest.getRemoteUser(),
                 csrfToken1,
                 pluginRegion,
@@ -118,8 +115,8 @@ public class BreakpointDumperPluginEndpoints {
     public Response dumpId(@Context HttpServletRequest httpRequest,
         @PathParam("sessionId") @DefaultValue("") String sessionId,
         @PathParam("connectionId") @DefaultValue("") String connectionId) throws Exception {
-        return shiroRequestHelper.call("breakpoint", (csrfToken) -> {
-            return Response.ok(pluginRegion.dump(httpRequest.getRemoteUser(), sessionId, connectionId));
-        });
+        return shiroRequestHelper.call("breakpoint",
+            csrfToken -> Response.ok(pluginRegion.dump(httpRequest.getRemoteUser(), sessionId, connectionId)));
     }
+
 }

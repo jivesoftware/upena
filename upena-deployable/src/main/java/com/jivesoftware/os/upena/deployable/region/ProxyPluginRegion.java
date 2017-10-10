@@ -18,7 +18,7 @@ import org.apache.shiro.SecurityUtils;
 /**
  *
  */
-// soy.page.upenaRingPluginRegion
+// soy.page.proxyPluginRegion
 public class ProxyPluginRegion implements PageRegion<ProxyInput> {
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();

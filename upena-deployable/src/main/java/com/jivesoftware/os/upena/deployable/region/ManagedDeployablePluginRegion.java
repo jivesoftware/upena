@@ -30,7 +30,7 @@ import java.util.Map;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.AuthorizationException;
 
-// soy.page.upenaRingPluginRegion
+// soy.page.deployablePluginRegion
 public class ManagedDeployablePluginRegion implements PageRegion<ManagedDeployablePluginRegionInput> {
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
@@ -49,8 +49,7 @@ public class ManagedDeployablePluginRegion implements PageRegion<ManagedDeployab
         SoyRenderer renderer,
         UpenaStore upenaStore,
         UpenaSSLConfig upenaSSLConfig,
-        int upenaPort
-    ) {
+        int upenaPort) {
         this.sessionStore = sessionStore;
         this.hostKey = hostKey;
         this.template = template;
@@ -197,9 +196,8 @@ public class ManagedDeployablePluginRegion implements PageRegion<ManagedDeployab
                                         sb.append("<input type=\"hidden\" name=\"instanceKey\" value=\"" + instanceKey + "\"/>");
                                         sb.append("<input type=\"hidden\" name=\"className\" value=\"" + className + "\"/>");
                                         sb.append("<input type=\"hidden\" name=\"lineNumber\" value=\"" + lineNumber + "\"/>");
-                                        sb.append(
-                                            "<button style=\"display: inline;\" title=\"filter\" type=\"submit\" name=\"action\" value=\"addConnections\" " +
-                                                "class=\"btn btn-success btn-xs ladda-button\"  data-spinner-color=\"#222\" data-style=\"expand-right\">");
+                                        sb.append("<button style=\"display: inline;\" title=\"filter\" type=\"submit\" name=\"action\" value=\"addConnections\" " +
+                                            "class=\"btn btn-success btn-xs ladda-button\" data-spinner-color=\"#222\" data-style=\"expand-right\">");
                                         sb.append("<span class=\"fa fa-bug\"></span>");
                                         sb.append("</button>");
                                         sb.append("</form>");
@@ -238,9 +236,9 @@ public class ManagedDeployablePluginRegion implements PageRegion<ManagedDeployab
                     SecurityUtils.getSubject().checkPermission("read");
                     String r = proxy.get("/manage/tenant/routing/report");
                     return renderText(r);
-                } else if (input.action.equals("setLogLevel")) {
+                } else if (input.action.equals("logLevel")) {
                     SecurityUtils.getSubject().checkPermission("read");
-                    String r = proxy.get("/manage/setLogLevel");
+                    String r = proxy.get("/manage/logLevels/" + input.instanceKey);
                     return renderHtml(r);
                 }
             }
@@ -250,10 +248,20 @@ public class ManagedDeployablePluginRegion implements PageRegion<ManagedDeployab
             LOG.error("Unable to retrieve data", x);
             String trace = x.getMessage() + "\n" + Joiner.on("\n").join(x.getStackTrace());
             data.put("result", "Error while trying to " + input.action + "\n" + trace);
-            return "<h3>Error in embedded probe, please check the logs.</h3>";
+            return "<h3>Error in embedded probe. Check the logs.</h3>";
         }
 
         return renderer.render(template, data);
+    }
+
+    public String setLogLevel(String instanceKey, String loggerName, String loggerLevel) throws Exception {
+        ProxyAsNeeded proxy = buildProxy(instanceKey, new HashMap<>());
+        if (proxy != null) {
+            SecurityUtils.getSubject().checkPermission("read");
+            String r = proxy.get("/manage/logging/setLogLevel?logger=" + loggerName + "&level=" + loggerLevel);
+            return renderText(r);
+        }
+        return null;
     }
 
     public String renderHtml(String html) {
