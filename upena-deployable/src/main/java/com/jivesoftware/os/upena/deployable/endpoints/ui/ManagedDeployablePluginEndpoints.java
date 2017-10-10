@@ -101,11 +101,11 @@ public class ManagedDeployablePluginEndpoints {
         @FormParam("level") @DefaultValue("null") String loggerLevel,
         @Context HttpServletRequest httpRequest) {
         return shiroRequestHelper.call("/ui/deployable/setLogLevel", csrfToken -> {
-            String response = pluginRegion.setLogLevel(instanceKey, loggerName, loggerLevel);
-            if (response == null) {
+            String rendered = pluginRegion.setLogLevel(instanceKey, loggerName, loggerLevel);
+            if (rendered == null) {
                 return Response.ok("Failed to set log level.");
             }
-            return Response.ok(response);
+            return Response.ok(rendered);
         });
     }
 
