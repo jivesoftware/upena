@@ -41,7 +41,7 @@ public class ManagedDeployablePluginEndpoints {
     }
 
     @Path("/probe/{instanceKey}")
-    @GET()
+    @GET
     @Produces(MediaType.TEXT_HTML)
     public Response javaDeployableProbe(@PathParam("instanceKey") @DefaultValue("unspecified") String instanceKey,
         @Context HttpServletRequest httpRequest) {
@@ -68,7 +68,7 @@ public class ManagedDeployablePluginEndpoints {
     }
 
     @Path("/embeddedProbe/{instanceKey}/{action}")
-    @GET()
+    @GET
     @Produces(MediaType.TEXT_HTML)
     public Response embeddedProbe(@PathParam("instanceKey") @DefaultValue("unspecified") String instanceKey,
         @PathParam("action") @DefaultValue("unspecified") String action,
@@ -78,7 +78,7 @@ public class ManagedDeployablePluginEndpoints {
     }
 
     @Path("/redirect/{instanceKey}")
-    @GET()
+    @GET
     @Produces(MediaType.TEXT_HTML)
     public Response redirectToUI(@PathParam("instanceKey") @DefaultValue("unspecified") String instanceKey,
         @QueryParam("portName") @DefaultValue("unspecified") String portName,
@@ -94,7 +94,7 @@ public class ManagedDeployablePluginEndpoints {
     }
 
     @Path("/setLogLevel/{instanceKey}")
-    @GET()
+    @POST
     @Produces(MediaType.TEXT_HTML)
     public Response setLogLevel(@PathParam("instanceKey") @DefaultValue("unspecified") String instanceKey,
         @FormParam("logger") @DefaultValue("") String loggerName,
