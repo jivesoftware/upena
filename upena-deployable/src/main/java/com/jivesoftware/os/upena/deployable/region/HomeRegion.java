@@ -11,15 +11,11 @@ import com.jivesoftware.os.upena.deployable.soy.SoyRenderer;
 import com.jivesoftware.os.upena.service.UpenaStore;
 import com.jivesoftware.os.upena.shared.Host;
 import com.jivesoftware.os.upena.shared.HostKey;
-import com.jivesoftware.os.upena.uba.service.UbaService;
-import java.lang.management.ManagementFactory;
-import java.lang.management.RuntimeMXBean;
-import java.text.NumberFormat;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +25,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.subject.Subject;
@@ -44,9 +41,7 @@ import oshi.hardware.PowerSource;
 import oshi.hardware.Sensors;
 import oshi.software.os.FileSystem;
 import oshi.software.os.OSFileStore;
-import oshi.software.os.OSProcess;
 import oshi.software.os.OperatingSystem;
-import oshi.software.os.OperatingSystem.ProcessSort;
 import oshi.util.FormatUtil;
 import oshi.util.Util;
 
@@ -55,33 +50,23 @@ import oshi.util.Util;
  */
 public class HomeRegion implements PageRegion<HomeInput>, Runnable {
 
-
     private final String template;
     private final SoyRenderer renderer;
-    private final HostKey hostKey;
     private final UpenaStore upenaStore;
-    private final UbaService ubaService;
-    private final RuntimeMXBean runtimeBean;
 
     private final ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("home-%d").build();
     private final ScheduledExecutorService homeExecutors = Executors.newScheduledThreadPool(1, namedThreadFactory);
 
     public HomeRegion(String template,
         SoyRenderer renderer,
-        HostKey hostKey,
-        UpenaStore upenaStore,
-        UbaService ubaService) {
+        UpenaStore upenaStore) {
 
         this.template = template;
         this.renderer = renderer;
-        this.hostKey = hostKey;
         this.upenaStore = upenaStore;
-        this.ubaService = ubaService;
-        runtimeBean = ManagementFactory.getRuntimeMXBean();
 
         homeExecutors.scheduleAtFixedRate(this, 10, 10, TimeUnit.SECONDS);
     }
-
 
     private final AtomicReference<List<String>> procs = new AtomicReference<>(Collections.singletonList("ERROR"));
     private final AtomicReference<List<String>> memory = new AtomicReference<>(Collections.singletonList("ERROR"));
@@ -97,10 +82,8 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
     private final AtomicReference<List<String>> overviewHeaders = new AtomicReference<>();
     private final LinkedList<StringBuilder> overview = new LinkedList<>();
 
-
     @Override
     public void run() {
-
         List<String> header = new ArrayList<>();
         header.add("time");
         StringBuilder values = new StringBuilder();
@@ -112,10 +95,10 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
             } catch (Exception x) {
                 LOG.warn("oshi SystemInfo failed.", x);
             }
-            HardwareAbstractionLayer hal = null;
+
+            HardwareAbstractionLayer hal;
             try {
                 hal = si.getHardware();
-
 
                 procs.set(printProcessor(hal, header, values));
                 memory.set(printMemory(hal, header, values));
@@ -124,7 +107,6 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
                 sensor.set(printSensors(hal, header, values));
                 power.set(printPowerSources(hal, header, values));
                 disk.set(printDisks(hal, header, values));
-
             } catch (Exception x) {
                 LOG.warn("oshi HardwareAbstractionLayer failed.", x);
             }
@@ -133,16 +115,10 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
                 OperatingSystem os = si.getOperatingSystem();
                 fsys.set(printFileSystem(os, header, values));
                 osys.set(Collections.singletonList(os.toString()));
-                //if (hal != null) {
-                //    processes.set(printProcesses(os, hal, header, values));
-                //} else {
-                    processes.set(Collections.singletonList("ERROR"));
-                //}
-
+                processes.set(Collections.singletonList("ERROR"));
             } catch (Exception x) {
                 LOG.warn("oshi OperatingSystem failed.", x);
             }
-
         } catch (Exception x) {
             LOG.warn("Home failed...", x);
         }
@@ -173,7 +149,6 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
 
     @Override
     public String render(String user, HomeInput input) {
-
         Subject s;
         try {
             s = SecurityUtils.getSubject();
@@ -186,13 +161,11 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
         LOG.info("Realms:" + principals.getRealmNames());
         LOG.info("Primary:" + principals.getPrimaryPrincipal() + " " + principals.getClass() + " " + principals.getPrimaryPrincipal().getClass());
 
-
         LOG.info("role:readwrite?" + s.hasRole("readwrite"));
         LOG.info("role:readonly?" + s.hasRole("readonly"));
 
         LOG.info("perm:read?" + s.isPermitted("read"));
         LOG.info("perm:write?" + s.isPermitted("write"));
-
 
         Subject subject = s;
         Map<String, Object> data = Maps.newHashMap();
@@ -228,52 +201,24 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
         data.put("os", osys.get());
         data.put("process", processes.get());
 
-
         try {
             return renderer.render(template, data);
         } catch (Exception x) {
             LOG.warn("soy render failed.", x);
-            return "Woop :(";
+            return "";
         }
     }
 
     private static final MetricLogger LOG = MetricLoggerFactory.getLogger();
-    private final NumberFormat numberFormat = NumberFormat.getInstance();
 
     public String renderOverview(String user) throws Exception {
         StringBuilder sb = new StringBuilder();
-
-
-       /* sb.append("<p>");
-        sb.append("<span class=\"badge\">").append("uptime " + getDurationBreakdown(runtimeBean.getUptime())).append("</span>");
-
-
-        UbaReport ubaReport = ubaService.report();
-        Multiset<String> stateCount = HashMultiset.create();
-        double total = 0;
-        for (NannyReport nannyReport : ubaReport.nannyReports) {
-            total++;
-            stateCount.add(nannyReport.state);
-        }
-
-
-        String[] states = stateCount.elementSet().toArray(new String[0]);
-        Arrays.sort(states);
-        for (String state : states) {
-            sb.append(bar(state + " (" + numberFormat.format(stateCount.count(state)) + ")",
-                (int) (((double) stateCount.count(state) / total) * 100),
-                "lime", numberFormat.format(total)));
-        }
-        sb.append("</p>");
-*/
-
 
         for (StringBuilder stringBuilder : overview) {
             sb.append("<tr> ");
             sb.append(stringBuilder.toString());
             sb.append("</tr> ");
         }
-
 
         return sb.toString();
     }
@@ -283,68 +228,6 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
         double v = (100 - progress) / 100d;
         return "<td style=\"background-color: rgba(" + UpenaHealth.trafficlightColorRGBA(v, 1f) + ")\">" + title + "</td>";
     }
-
-
-    private String bar(String title, int progress, String color, String value) {
-
-        Map<String, Object> data = new HashMap<>();
-        data.put("title", title);
-        data.put("progress", progress);
-        data.put("color", color);
-        data.put("value", value);
-        return renderer.render("soy.upena.page.upenaStackedProgress", data);
-
-    }
-
-    public static String getDurationBreakdown(long millis) {
-        if (millis < 0) {
-            return String.valueOf(millis);
-        }
-
-        long hours = TimeUnit.MILLISECONDS.toHours(millis);
-        millis -= TimeUnit.HOURS.toMillis(hours);
-        long minutes = TimeUnit.MILLISECONDS.toMinutes(millis);
-        millis -= TimeUnit.MINUTES.toMillis(minutes);
-        long seconds = TimeUnit.MILLISECONDS.toSeconds(millis);
-        millis -= TimeUnit.SECONDS.toMillis(seconds);
-
-        StringBuilder sb = new StringBuilder(64);
-        boolean showRemaining = true;
-        if (showRemaining || hours > 0) {
-            if (hours < 10) {
-                sb.append('0');
-            }
-            sb.append(hours);
-            sb.append(":");
-            showRemaining = true;
-        }
-        if (showRemaining || minutes > 0) {
-            if (minutes < 10) {
-                sb.append('0');
-            }
-            sb.append(minutes);
-            sb.append(":");
-            showRemaining = true;
-        }
-        if (showRemaining || seconds > 0) {
-            if (seconds < 10) {
-                sb.append('0');
-            }
-            sb.append(seconds);
-            sb.append(".");
-            showRemaining = true;
-        }
-        if (millis < 100) {
-            sb.append('0');
-        }
-        if (millis < 10) {
-            sb.append('0');
-        }
-        sb.append(millis);
-
-        return (sb.toString());
-    }
-
 
     @Override
     public String getTitle() {
@@ -376,15 +259,14 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
             l.add("Swap used: " + FormatUtil.formatBytes(memory.getSwapUsed()) + "/" + FormatUtil.formatBytes(memory.getSwapTotal()));
 
             header.add("memory");
-            values.append(td((int) (((double) memory.getAvailable() / memory.getTotal()) * 100) + "%",
-                (int) (((double) memory.getAvailable() / memory.getTotal()) * 100),
+            values.append(td((int) (100d - (((double) memory.getAvailable() / memory.getTotal()) * 100)) + "%",
+                (int) (100d - (((double) memory.getAvailable() / memory.getTotal()) * 100)),
                 "cyan", FormatUtil.formatBytes(memory.getTotal())));
 
             header.add("swap");
             values.append(td(FormatUtil.formatBytes(memory.getSwapUsed()),
                 (int) (((double) memory.getSwapUsed() / memory.getSwapTotal()) * 100),
                 "cyan", FormatUtil.formatBytes(memory.getSwapTotal())));
-
         } catch (Exception x) {
             l.add("ERROR");
             LOG.warn("Failure", x);
@@ -431,7 +313,6 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
                 + (loadAverage[1] < 0 ? " N/A" : String.format(" %.2f", loadAverage[1]))
                 + (loadAverage[2] < 0 ? " N/A" : String.format(" %.2f", loadAverage[2])));
 
-
             // per core CPU
             StringBuilder procCpu = new StringBuilder("CPU load per processor:");
             double[] load = processor.getProcessorCpuLoadBetweenTicks();
@@ -457,7 +338,6 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
                 (int) (((double) loadAverage[2] / maxLoad) * 100),
                 "navy", String.valueOf(maxLoad)));
 
-
             header.add("User");
             values.append(td(String.valueOf((int) (100d * user / totalCpu)) + "%", (int) (100d * user / totalCpu), "red", String.valueOf(totalCpu)));
             header.add("Nice");
@@ -472,39 +352,6 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
             values.append(td(String.valueOf((int) (100d * irq / totalCpu)) + "%", (int) (100d * irq / totalCpu), "red", String.valueOf(totalCpu)));
             header.add("softIRQ");
             values.append(td(String.valueOf((int) (100d * softirq / totalCpu)) + "%", (int) (100d * softirq / totalCpu), "red", String.valueOf(totalCpu)));
-
-
-        } catch (Exception x) {
-            l.add("ERROR");
-            LOG.warn("Failure", x);
-        }
-        return l;
-    }
-
-    private List<String> printProcesses(OperatingSystem os, HardwareAbstractionLayer hal, List<String> header, StringBuilder values) {
-        List<String> l = new ArrayList<>();
-        try {
-            GlobalMemory memory = hal.getMemory();
-            l.add("Processes: " + os.getProcessCount() + ", Threads: " + os.getThreadCount());
-
-            header.add("process");
-            values.append(td(String.valueOf(os.getProcessCount()), 0, "red", ""));
-
-            header.add("threads");
-            values.append(td(String.valueOf(os.getThreadCount()), 0, "red", ""));
-
-
-            // Sort by highest CPU
-            List<OSProcess> procs = Arrays.asList(os.getProcesses(5, ProcessSort.CPU));
-
-            l.add("   PID  %CPU %MEM       VSZ       RSS Name");
-            for (int i = 0; i < procs.size() && i < 5; i++) {
-                OSProcess p = procs.get(i);
-                l.add(String.format(" %5d, %5.1f, %4.1f, %9s, %9s, %s%n", p.getProcessID(),
-                    100d * (p.getKernelTime() + p.getUserTime()) / p.getUpTime(),
-                    100d * p.getResidentSetSize() / memory.getTotal(), FormatUtil.formatBytes(p.getVirtualSize()),
-                    FormatUtil.formatBytes(p.getResidentSetSize()), p.getName()));
-            }
         } catch (Exception x) {
             l.add("ERROR");
             LOG.warn("Failure", x);
@@ -645,11 +492,8 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
                 lastWriteCount[i - 1].set(readwrite ? disk.getWrites() : -1);
                 lastWrites[i - 1].set(readwrite ? disk.getWriteBytes() : -1);
 
-
                 i++;
             }
-
-
         } catch (Exception x) {
             l.add("ERROR");
             LOG.warn("Failure", x);
@@ -693,7 +537,6 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
     AtomicLong lastTimesstamp = new AtomicLong(-1);
     AtomicLong lastBytesSent = new AtomicLong(-1);
     AtomicLong lastBytesRecv = new AtomicLong(-1);
-
 
     private List<String> printNetworkInterfaces(HardwareAbstractionLayer hal, List<String> header, StringBuilder values) {
         List<String> l = new ArrayList<>();
