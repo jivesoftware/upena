@@ -19,8 +19,7 @@
                             {/foreach}
                         </tr>
                     </thead>
-                    <tbody class="gooey-area">
-                    </tbody>
+                    <tbody class="gooey-area"></tbody>
                </table>
             </div>
         </div>
@@ -44,19 +43,19 @@
     <div style="margin:10% auto 0 auto; width:90%; padding 20px 20px 20px 20px">
         <div class="panel with-nav-tabs panel-default" >
             <div class="panel-heading" style="background-image: linear-gradient(to top,rgb(51, 122, 183) 0,rgb(211, 225, 239) 100%); padding: 0px 0px;">
-                    <ul class="nav nav-tabs">
-                        <li class="active"><a href="#tab1" data-toggle="tab">Instance</a></li>
-                        <li><a href="#tab2" data-toggle="tab">Memory</a></li>
-                        <li><a href="#tab3" data-toggle="tab">Cpu</a></li>
-                        <li><a href="#tab4" data-toggle="tab">Procs</a></li>
-                        <li><a href="#tab5" data-toggle="tab">Process</a></li>
-                        <li><a href="#tab6" data-toggle="tab">Disk</a></li>
-                        <li><a href="#tab7" data-toggle="tab">File System</a></li>
-                        <li><a href="#tab8" data-toggle="tab">Nic</a></li>
-                        <li><a href="#tab9" data-toggle="tab">OS</a></li>
-                        <li><a href="#tab10" data-toggle="tab">Sensor</a></li>
-                        <li><a href="#tab11" data-toggle="tab">Power</a></li>
-                    </ul>
+                <ul class="nav nav-tabs">
+                    <li class="active"><a href="#tab1" data-toggle="tab">Instance</a></li>
+                    <li><a href="#tab2" data-toggle="tab">Memory</a></li>
+                    <li><a href="#tab3" data-toggle="tab">Cpu</a></li>
+                    <li><a href="#tab4" data-toggle="tab">Procs</a></li>
+                    <li><a href="#tab5" data-toggle="tab">Process</a></li>
+                    <li><a href="#tab6" data-toggle="tab">Disk</a></li>
+                    <li><a href="#tab7" data-toggle="tab">File System</a></li>
+                    <li><a href="#tab8" data-toggle="tab">Nic</a></li>
+                    <li><a href="#tab9" data-toggle="tab">OS</a></li>
+                    <li><a href="#tab10" data-toggle="tab">Sensor</a></li>
+                    <li><a href="#tab11" data-toggle="tab">Power</a></li>
+                </ul>
             </div>
             <div class="panel-body">
                 <div class="tab-content">
@@ -65,7 +64,7 @@
                             <li>
                                 <ul class="list-group">
                                     {foreach $i in $instances}
-                                        <li  class="list-group-item"><a href="https://{$i.host}:{$i.port}{$i.path}">{$i.name}</a></li>
+                                        <li class="list-group-item"><a href="https://{$i.host}:{$i.port}{$i.path}">{$i.name}</a></li>
                                     {/foreach}
                                 </ul>
                             </li>
@@ -74,7 +73,7 @@
                     <div class="tab-pane fade" id="tab2">
                         {if $memory}
                             <li>
-                            {call .booya}
+                            {call .displayList}
                                 {param list: $memory /}
                             {/call}
                             </li>
@@ -83,7 +82,7 @@
                     <div class="tab-pane fade" id="tab3">
                          {if $cpu}
                             <li>
-                            {call .booya}
+                            {call .displayList}
                                 {param list: $cpu /}
                             {/call}
                             </li>
@@ -92,7 +91,7 @@
                     <div class="tab-pane fade" id="tab4">
                         {if $procs}
                             <li>
-                            {call .booya}
+                            {call .displayList}
                                 {param list: $procs /}
                             {/call}
                             </li>
@@ -101,7 +100,7 @@
                     <div class="tab-pane fade" id="tab5">
                         {if $process}
                             <li>
-                            {call .booya}
+                            {call .displayList}
                                 {param list: $process /}
                             {/call}
                             </li>
@@ -110,7 +109,7 @@
                     <div class="tab-pane fade" id="tab6">
                         {if $disk}
                             <li>
-                            {call .booya}
+                            {call .displayList}
                                 {param list: $disk /}
                             {/call}
                             </li>
@@ -119,7 +118,7 @@
                     <div class="tab-pane fade" id="tab7">
                          {if $fs}
                             <li>
-                            {call .booya}
+                            {call .displayList}
                                 {param list: $fs /}
                             {/call}
                             </li>
@@ -128,7 +127,7 @@
                     <div class="tab-pane fade" id="tab8">
                         {if $nic}
                             <li>
-                            {call .booya}
+                            {call .displayList}
                                 {param list: $nic /}
                             {/call}
                             </li>
@@ -137,7 +136,7 @@
                     <div class="tab-pane fade" id="tab9">
                         {if $os}
                             <li>
-                            {call .booya}
+                            {call .displayList}
                                 {param list: $os /}
                             {/call}
                             </li>
@@ -146,7 +145,7 @@
                     <div class="tab-pane fade" id="tab10">
                         {if $sensor}
                             <li>
-                            {call .booya}
+                            {call .displayList}
                                 {param list: $sensor /}
                             {/call}
                             </li>
@@ -155,7 +154,7 @@
                     <div class="tab-pane fade" id="tab11">
                         {if $power}
                             <li>
-                            {call .booya}
+                            {call .displayList}
                                 {param list: $power /}
                             {/call}
                             </li>
@@ -167,15 +166,13 @@
     </div>
 {/template}
 
-
 /**
  * @param? list
  */
-{template .booya}
+{template .displayList}
     <ul class="list-group">
         {foreach $i in $list}
-            <li  class="list-group-item">{$i}</li>
+            <li class="list-group-item">{$i}</li>
         {/foreach}
     </ul>
 {/template}
-

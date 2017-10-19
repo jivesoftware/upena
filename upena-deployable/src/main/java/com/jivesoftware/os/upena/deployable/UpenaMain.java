@@ -1061,7 +1061,7 @@ public class UpenaMain {
         SoyService soyService = new SoyService(upenaVersion,
             renderer,
             new MenuRegion("soy.upena.chrome.menuRegion", renderer),
-            new HomeRegion("soy.upena.page.homeRegion", renderer, hostKey, upenaStore, ubaService),
+            new HomeRegion("soy.upena.page.homeRegion", renderer, upenaStore),
             humanReadableUpenaClusterName,
             hostKey,
             upenaStore
