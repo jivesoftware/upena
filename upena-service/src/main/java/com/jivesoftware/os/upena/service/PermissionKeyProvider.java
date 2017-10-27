@@ -18,19 +18,20 @@ package com.jivesoftware.os.upena.service;
 import com.jivesoftware.os.upena.service.UpenaMap.UpenaKeyProvider;
 import com.jivesoftware.os.upena.shared.Permission;
 import com.jivesoftware.os.upena.shared.PermissionKey;
+
 import java.nio.charset.StandardCharsets;
 
 public class PermissionKeyProvider implements UpenaKeyProvider<PermissionKey, Permission> {
 
-
     @Override
-    public PermissionKey getNodeKey(UpenaMap<PermissionKey,Permission> table, Permission value) {
+    public PermissionKey getNodeKey(UpenaMap<PermissionKey, Permission> table, Permission value) {
         return forgePermissionKey(value.permission);
     }
 
     public static PermissionKey forgePermissionKey(String permission) {
-        JenkinsHash jenkinsHash = new JenkinsHash();
-        String k = Long.toString(Math.abs(jenkinsHash.hash(permission.getBytes(StandardCharsets.UTF_8), 2)));
+        String k = Long.toString(Math.abs(
+            new JenkinsHash().hash(permission.getBytes(StandardCharsets.UTF_8), 2)));
         return new PermissionKey(k);
     }
+
 }

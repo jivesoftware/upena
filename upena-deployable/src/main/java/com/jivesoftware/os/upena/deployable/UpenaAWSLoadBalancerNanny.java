@@ -11,7 +11,17 @@ import com.jivesoftware.os.mlogger.core.MetricLoggerFactory;
 import com.jivesoftware.os.upena.deployable.aws.AWSClientFactory;
 import com.jivesoftware.os.upena.service.JenkinsHash;
 import com.jivesoftware.os.upena.service.UpenaStore;
-import com.jivesoftware.os.upena.shared.*;
+import com.jivesoftware.os.upena.shared.Cluster;
+import com.jivesoftware.os.upena.shared.Host;
+import com.jivesoftware.os.upena.shared.HostKey;
+import com.jivesoftware.os.upena.shared.Instance;
+import com.jivesoftware.os.upena.shared.InstanceFilter;
+import com.jivesoftware.os.upena.shared.InstanceKey;
+import com.jivesoftware.os.upena.shared.ReleaseGroup;
+import com.jivesoftware.os.upena.shared.ReleaseGroupKey;
+import com.jivesoftware.os.upena.shared.ReleaseGroupPropertyKey;
+import com.jivesoftware.os.upena.shared.Service;
+import com.jivesoftware.os.upena.shared.TimestampedValue;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -37,7 +47,6 @@ public class UpenaAWSLoadBalancerNanny {
     }
 
     public void ensureSelf() throws Exception {
-
         if (vpcId == null) {
             LOG.info("No vpcId specified.");
             return;
@@ -106,7 +115,7 @@ public class UpenaAWSLoadBalancerNanny {
         Map<String, ReleaseGroupKey> targetGroupRelease,
         Map<String, String> targetGroupIdToName) throws Exception {
 
-        LOG.info("Ensuring target groups....");
+        LOG.info("Ensuring target groups...");
 
         DescribeTargetGroupsRequest describeTargetGroupsRequest = new DescribeTargetGroupsRequest();
         DescribeTargetGroupsResult describeTargetGroups = elbc.describeTargetGroups(describeTargetGroupsRequest);
@@ -256,9 +265,7 @@ public class UpenaAWSLoadBalancerNanny {
         }
 
         if (!missingTargetGroups.isEmpty()) {
-
             for (String missingTargetGroup : missingTargetGroups) {
-
                 ReleaseGroupKey releaseGroupKey = targetGroupRelease.get(missingTargetGroup);
                 ReleaseGroup releaseGroup = upenaStore.releaseGroups.get(releaseGroupKey);
 
@@ -348,7 +355,6 @@ public class UpenaAWSLoadBalancerNanny {
         Map<String, TargetGroup> targetGroups,
         AmazonElasticLoadBalancingClient elbc) throws Exception {
 
-
         LOG.info("Ensure targets registered...");
         // ensure instance is registered
         Host self = upenaStore.hosts.get(selfHostKey);
@@ -366,7 +372,6 @@ public class UpenaAWSLoadBalancerNanny {
             DescribeTargetHealthResult describeTargetHealth = elbc.describeTargetHealth(describeTargetHealthRequest);
             if (describeTargetHealth != null && describeTargetHealth.getTargetHealthDescriptions() != null) {
                 for (TargetHealthDescription targetHealthDescription : describeTargetHealth.getTargetHealthDescriptions()) {
-                    //String healthCheckPort = targetHealthDescription.getHealthCheckPort();
                     TargetDescription targetDescription = targetHealthDescription.getTarget();
                     TargetHealth targetHealth = targetHealthDescription.getTargetHealth();
 
@@ -426,7 +431,6 @@ public class UpenaAWSLoadBalancerNanny {
         }
 
         for (Map.Entry<String, Collection<Instance>> entry : cleanup.asMap().entrySet()) {
-
             if (targetGroups.containsKey(entry.getKey())) {
                 String targetGroupArn = targetGroups.get(entry.getKey()).getTargetGroupArn();
 
@@ -444,15 +448,10 @@ public class UpenaAWSLoadBalancerNanny {
                 deregisterTargetsRequest.setTargets(targetDescriptions);
                 LOG.info("Deregistering {}", deregisterTargetsRequest);
                 elbc.deregisterTargets(deregisterTargetsRequest);
-
             }
         }
 
         LOG.info("All targets registered.");
-    }
-
-    public void cleanupAll() throws Exception {
-
     }
 
     private void updateIfChanged(String currentValue,
@@ -460,21 +459,19 @@ public class UpenaAWSLoadBalancerNanny {
         ReleaseGroupPropertyKey releaseGroupPropertyKey,
         boolean[] updated,
         Update update) {
-
         String value = properties.getOrDefault(releaseGroupPropertyKey.key(), releaseGroupPropertyKey.getDefaultValue());
         if (!value.equals(currentValue)) {
             update.set(value);
             updated[0] = true;
         }
-
     }
 
-    static interface Update {
-
+    interface Update {
         void set(String input);
     }
 
     private String getOrDefault(Map<String, String> properties, ReleaseGroupPropertyKey releaseGroupPropertyKey) {
         return properties.getOrDefault(releaseGroupPropertyKey.key(), releaseGroupPropertyKey.getDefaultValue());
     }
+
 }
