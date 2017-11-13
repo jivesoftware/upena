@@ -321,21 +321,21 @@ public class HomeRegion implements PageRegion<HomeInput>, Runnable {
             }
             l.add(procCpu.toString());
 
-            long maxLoad = load.length * 10; // ??
+            long maxLoad = load.length * 10;
 
             header.add("1min");
             values.append(td((loadAverage[0] < 0 ? " N/A" : String.format(" %.2f", loadAverage[0])),
-                (int) (((double) loadAverage[0] / maxLoad) * 100),
+                (int) ((loadAverage[0] / maxLoad) * 100),
                 "navy", String.valueOf(maxLoad)));
 
             header.add("5min");
             values.append(td((loadAverage[1] < 0 ? " N/A" : String.format(" %.2f", loadAverage[1])),
-                (int) (((double) loadAverage[1] / maxLoad) * 100),
+                (int) ((loadAverage[1] / maxLoad) * 100),
                 "navy", String.valueOf(maxLoad)));
 
             header.add("15min");
             values.append(td((loadAverage[2] < 0 ? " N/A" : String.format(" %.2f", loadAverage[2])),
-                (int) (((double) loadAverage[2] / maxLoad) * 100),
+                (int) ((loadAverage[2] / maxLoad) * 100),
                 "navy", String.valueOf(maxLoad)));
 
             header.add("User");

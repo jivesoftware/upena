@@ -15,16 +15,15 @@
  */
 package com.jivesoftware.os.upena.service;
 
-
 /**
  * Hash algorithm by Bob Jenkins, 1996.
- *
+ * <p>
  * You may use this code any way you wish, private, educational, or commercial.
  * It's free. See: http://burtleburtle.net/bob/hash/doobs.html
- *
+ * <p>
  * Use for hash table lookup, or anything where one collision in 2^^32 is
  * acceptable. Do NOT use for cryptographic purposes.
- *
+ * <p>
  * Java port by Gray Watson http://256.com/gray/
  */
 public class JenkinsHash {
@@ -33,9 +32,9 @@ public class JenkinsHash {
     private static final long MAX_VALUE = 0xFFFFFFFFFFFFFFFFL;
 
     // internal variables used in the various calculations
-    long a;
-    long b;
-    long c;
+    private long a;
+    private long b;
+    private long c;
 
     /**
      * Convert a byte into a long value without making it negative.
@@ -123,11 +122,9 @@ public class JenkinsHash {
      * affects every bit of the return value. Every 1-bit and 2-bit delta
      * achieves avalanche. The best hash table sizes are powers of 2.
      *
-     * @param buffer
-     *            Byte array that we are hashing on.
-     * @param initialValue
-     *            Initial value of the hash if we are continuing from a previous
-     *            run. 0 if none.
+     * @param buffer       Byte array that we are hashing on.
+     * @param initialValue Initial value of the hash if we are continuing from a previous
+     *                     run. 0 if none.
      * @return Hash value for the buffer.
      */
     @SuppressWarnings("fallthrough")
@@ -189,23 +186,19 @@ public class JenkinsHash {
     /**
      * See hash(byte[] buffer, long initialValue).
      *
-     * @param buffer
-     *            Byte array that we are hashing on.
+     * @param buffer Byte array that we are hashing on.
      * @return Hash value for the buffer.
      */
-
     public static long hash(byte[] buffer) {
-        JenkinsHash instance = new JenkinsHash();
-        return instance.hash(buffer, 0);
+        return new JenkinsHash().hash(buffer, 0);
     }
 
     public static long hash(String s) {
         try {
             return hash(s.getBytes("utf-8"));
-            // return hash(s.getBytes());
-
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
+
 }
